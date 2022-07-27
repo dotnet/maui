@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			_strokeStyle = null;
 
 			_dashes = null;
-			_dashOffset = 1;	
+			_dashOffset = 1;
 			_miterLimit = CanvasDefaults.DefaultMiterLimit;
 			_lineCap = CanvasCapStyle.Flat;
 			_lineJoin = CanvasLineJoin.Miter;
@@ -249,7 +249,8 @@ namespace Microsoft.Maui.Graphics.Win2D
 		{
 			if (pattern == null || pattern.Length == 0)
 			{
-				if (_needsStrokeStyle == false) return;
+				if (_needsStrokeStyle == false)
+					return;
 				_dashes = null;
 			}
 			else
@@ -462,12 +463,12 @@ namespace Microsoft.Maui.Graphics.Win2D
 				throw new Exception("Only one clip operation currently supported.");
 
 
-/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
-Before:
-			var layerRect = new Rect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
-After:
-			var layerRect = new global::Windows.Foundation.Rect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
-*/
+			/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
+			Before:
+						var layerRect = new Rect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
+			After:
+						var layerRect = new global::Windows.Foundation.Rect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
+			*/
 			var layerRect = new WRect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
 			_layerBounds = CanvasGeometry.CreateRectangle(_owner.Session, layerRect);
 			var clipGeometry = path.AsPath(_owner.Session, windingMode == WindingMode.NonZero ? CanvasFilledRegionDetermination.Winding : CanvasFilledRegionDetermination.Alternate);
@@ -491,22 +492,22 @@ After:
 				throw new Exception("Only one subtraction currently supported.");
 
 
-/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
-Before:
-			var layerRect = new Rect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
-After:
-			var layerRect = new global::Windows.Foundation.Rect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
-*/
+			/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
+			Before:
+						var layerRect = new Rect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
+			After:
+						var layerRect = new global::Windows.Foundation.Rect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
+			*/
 			var layerRect = new WRect(0, 0, _owner.CanvasSize.Width, _owner.CanvasSize.Height);
 			_layerBounds = CanvasGeometry.CreateRectangle(_owner.Session, layerRect);
 
 
-/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
-Before:
-			var boundsToSubtract = new Rect(x, y, width, height);
-After:
-			var boundsToSubtract = new global::Windows.Foundation.Rect(x, y, width, height);
-*/
+			/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
+			Before:
+						var boundsToSubtract = new Rect(x, y, width, height);
+			After:
+						var boundsToSubtract = new global::Windows.Foundation.Rect(x, y, width, height);
+			*/
 			var boundsToSubtract = new WRect(x, y, width, height);
 			_layerClipBounds = CanvasGeometry.CreateRectangle(_owner.Session, boundsToSubtract);
 

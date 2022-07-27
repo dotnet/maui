@@ -50,19 +50,19 @@ namespace Microsoft.Maui.Graphics.Platform
 			var text = target.Substring(range.Location, range.Length).Value;
 
 			var formatAttributes = new TextAttributes();
-			var run = new AttributedTextRun((int) range.Location, (int) range.Length, formatAttributes);
+			var run = new AttributedTextRun((int)range.Location, (int)range.Length, formatAttributes);
 
 			NSObject font;
 			if (attrs.TryGetValue(NSStringAttributeKey.Font, out font))
 			{
-				var actualFont = (NSFont) font;
+				var actualFont = (NSFont)font;
 #if __MACOS__
 				var fontName = actualFont.FontName;
 #else
 				var fontName = actualFont.Name;
 #endif
 
-				formatAttributes.SetFontSize((float) actualFont.PointSize);
+				formatAttributes.SetFontSize((float)actualFont.PointSize);
 				if (!fontName.StartsWith(".", System.StringComparison.Ordinal))
 					formatAttributes.SetFontName(fontName);
 				else

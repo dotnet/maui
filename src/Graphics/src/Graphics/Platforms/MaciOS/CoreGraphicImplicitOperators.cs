@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Graphics
 {
 	public partial struct RectF
 	{
-		public static implicit operator CGRect(RectF rect) => new CGRect(rect.X,rect.Y,rect.Width,rect.Height);
+		public static implicit operator CGRect(RectF rect) => new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
 	}
 
 	public partial struct Rect
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Graphics
 
 	public partial struct Size
 	{
-		public static implicit operator CGSize(Size size) => new CGSize(size.Width,size.Height);
+		public static implicit operator CGSize(Size size) => new CGSize(size.Width, size.Height);
 		public static implicit operator CGPoint(Size size) => new CGPoint(size.Width, size.Height);
 	}
 

@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				_renderer.GraphicsView = this;
 				_renderer.Drawable = _drawable;
 				var bounds = Bounds;
-				_renderer.SizeChanged((float) bounds.Width, (float) bounds.Height);
+				_renderer.SizeChanged((float)bounds.Width, (float)bounds.Height);
 			}
 		}
 
@@ -93,7 +93,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			base.Draw(dirtyRect);
 
-			if (_drawable == null) return;
+			if (_drawable == null)
+				return;
 
 			var coreGraphics = UIGraphics.GetCurrentContext();
 
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				if (_lastBounds.Width != newBounds.Width || _lastBounds.Height != newBounds.Height)
 				{
 					base.Bounds = value;
-					_renderer.SizeChanged((float) newBounds.Width, (float) newBounds.Height);
+					_renderer.SizeChanged((float)newBounds.Width, (float)newBounds.Height);
 					_renderer.Invalidate();
 
 					_lastBounds = newBounds;

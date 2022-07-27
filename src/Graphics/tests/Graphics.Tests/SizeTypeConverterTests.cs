@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		[MemberData(nameof(SizeFConvertData))]
 		public void ConvertsSizeFFromString(string from, bool expectedSuccess, SizeF expectedResult)
 		{
-			var ok = from.TryConvertFrom<SizeFTypeConverter, SizeF>(out var p); 
+			var ok = from.TryConvertFrom<SizeFTypeConverter, SizeF>(out var p);
 			Assert.Equal(expectedSuccess, ok);
 
 			if (expectedSuccess)

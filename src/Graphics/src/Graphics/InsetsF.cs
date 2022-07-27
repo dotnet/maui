@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Graphics
 
 		public override int GetHashCode()
 		{
-			return (int) _top ^ (int) _left + (int) _bottom ^ (int) _right;
+			return (int)_top ^ (int)_left + (int)_bottom ^ (int)_right;
 		}
 
 		public string ToParsableString()

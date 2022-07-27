@@ -10,7 +10,7 @@
 
 		public LinearGradientPaint(GradientPaint gradientPaint) : base(gradientPaint)
 		{
-		
+
 		}
 
 		public LinearGradientPaint(PaintGradientStop[] gradientStops)

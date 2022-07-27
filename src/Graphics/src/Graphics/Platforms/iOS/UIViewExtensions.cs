@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				var touch = touches[i];
 				var point = touch.LocationInView(target);
-				points[i] = new PointF((float) point.X, (float) point.Y);
+				points[i] = new PointF((float)point.X, (float)point.Y);
 			}
 
 			return points;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				var touch = touches[i];
 				var point = touch.LocationInView(target);
-				points[i] = new PointF((float) point.X, (float) point.Y);
+				points[i] = new PointF((float)point.X, (float)point.Y);
 			}
 
 			return points;

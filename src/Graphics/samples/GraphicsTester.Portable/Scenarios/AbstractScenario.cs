@@ -5,15 +5,15 @@ namespace GraphicsTester.Scenarios
 	public abstract class AbstractScenario : IPicture, IDrawable
 	{
 		public static readonly float[] SOLID = null;
-		public static readonly float[] DOT_DOT = {1, 1};
-		public static readonly float[] DOTTED = {2, 2};
-		public static readonly float[] DASHED = {4, 4};
-		public static readonly float[] LONG_DASHES = {8, 4};
-		public static readonly float[] EXTRA_LONG_DASHES = {16, 4};
-		public static readonly float[] DASHED_DOT = {4, 4, 1, 4};
-		public static readonly float[] DASHED_DOT_DOT = {4, 4, 1, 4, 1, 4};
-		public static readonly float[] LONG_DASHES_DOT = {8, 4, 2, 4};
-		public static readonly float[] EXTRA_LONG_DASHES_DOT = {16, 4, 8, 4};
+		public static readonly float[] DOT_DOT = { 1, 1 };
+		public static readonly float[] DOTTED = { 2, 2 };
+		public static readonly float[] DASHED = { 4, 4 };
+		public static readonly float[] LONG_DASHES = { 8, 4 };
+		public static readonly float[] EXTRA_LONG_DASHES = { 16, 4 };
+		public static readonly float[] DASHED_DOT = { 4, 4, 1, 4 };
+		public static readonly float[] DASHED_DOT_DOT = { 4, 4, 1, 4, 1, 4 };
+		public static readonly float[] LONG_DASHES_DOT = { 8, 4, 2, 4 };
+		public static readonly float[] EXTRA_LONG_DASHES_DOT = { 16, 4, 8, 4 };
 
 		private float x;
 		private float y;

@@ -16,9 +16,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			_image = image;
 		}
 
-		public float Width => (float) (_image?.Size.Width ?? 0);
+		public float Width => (float)(_image?.Size.Width ?? 0);
 
-		public float Height => (float) (_image?.Size.Height ?? 0);
+		public float Height => (float)(_image?.Size.Height ?? 0);
 
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
 		{
-			using (var context = new PlatformBitmapExportContext((int) width, (int) height, 1))
+			using (var context = new PlatformBitmapExportContext((int)width, (int)height, 1))
 			{
 				var fx = width / Width;
 				var fy = height / Height;

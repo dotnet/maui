@@ -54,7 +54,7 @@ namespace Samples
 			};
 			hpanned.Pack1(scroll0, true, true);
 
-			
+
 			_skiaGraphicsView = new GtkSkiaGraphicsView();
 
 			var skiaGraphicsRenderer = new GtkSkiaDirectRenderer
@@ -93,8 +93,8 @@ namespace Samples
 				if (_items.TryGetValue(s, out var scenario))
 				{
 					_skiaGraphicsView.Drawable = scenario;
-					_skiaGraphicsView.HeightRequest = (int) scenario.Height;
-					_skiaGraphicsView.WidthRequest = (int) scenario.Width;
+					_skiaGraphicsView.HeightRequest = (int)scenario.Height;
+					_skiaGraphicsView.WidthRequest = (int)scenario.Width;
 				}
 
 			}

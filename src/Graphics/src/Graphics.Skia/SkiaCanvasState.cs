@@ -168,18 +168,24 @@ namespace Microsoft.Maui.Graphics.Skia
 					_blurRadius = radius;
 					_blurFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, _blurRadius);
 
-					if (_fillPaint != null) _fillPaint.MaskFilter = _blurFilter;
-					if (_strokePaint != null) _strokePaint.MaskFilter = _blurFilter;
-					if (_fontPaint != null) _fontPaint.MaskFilter = _blurFilter;
+					if (_fillPaint != null)
+						_fillPaint.MaskFilter = _blurFilter;
+					if (_strokePaint != null)
+						_strokePaint.MaskFilter = _blurFilter;
+					if (_fontPaint != null)
+						_fontPaint.MaskFilter = _blurFilter;
 				}
 				else
 				{
 					_isBlurred = false;
 					_blurRadius = 0;
 
-					if (_fillPaint != null) _fillPaint.MaskFilter = null;
-					if (_strokePaint != null) _strokePaint.MaskFilter = null;
-					if (_fontPaint != null) _fontPaint.MaskFilter = null;
+					if (_fillPaint != null)
+						_fillPaint.MaskFilter = null;
+					if (_strokePaint != null)
+						_strokePaint.MaskFilter = null;
+					if (_fontPaint != null)
+						_fontPaint.MaskFilter = null;
 				}
 			}
 		}
@@ -286,10 +292,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			{
 				var paint = StrokePaint;
 
-				var r = (byte) (_strokeColor.Red * 255f);
-				var g = (byte) (_strokeColor.Green * 255f);
-				var b = (byte) (_strokeColor.Blue * 255f);
-				var a = (byte) (_strokeColor.Alpha * 255f * Alpha);
+				var r = (byte)(_strokeColor.Red * 255f);
+				var g = (byte)(_strokeColor.Green * 255f);
+				var b = (byte)(_strokeColor.Blue * 255f);
+				var a = (byte)(_strokeColor.Alpha * 255f * Alpha);
 
 				paint.Color = new SKColor(r, g, b, a);
 				return paint;
@@ -302,10 +308,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			{
 				var paint = FillPaint;
 
-				var r = (byte) (_fillColor.Red * 255f);
-				var g = (byte) (_fillColor.Green * 255f);
-				var b = (byte) (_fillColor.Blue * 255f);
-				var a = (byte) (_fillColor.Alpha * 255f * Alpha);
+				var r = (byte)(_fillColor.Red * 255f);
+				var g = (byte)(_fillColor.Green * 255f);
+				var b = (byte)(_fillColor.Blue * 255f);
+				var a = (byte)(_fillColor.Alpha * 255f * Alpha);
 
 				paint.Color = new SKColor(r, g, b, a);
 				return paint;
@@ -401,7 +407,7 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (Alpha < 1)
 			{
-				var color = new SKColor(255, 255, 255, (byte) (Alpha * 255f));
+				var color = new SKColor(255, 255, 255, (byte)(Alpha * 255f));
 				imagePaint.ColorFilter = SKColorFilter.CreateBlendMode(color, SKBlendMode.Modulate);
 			}
 

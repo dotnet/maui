@@ -9,10 +9,10 @@ namespace Microsoft.Maui.Graphics.Skia
 	{
 		public static SKColor AsSKColorMultiplyAlpha(this Color target, float alpha)
 		{
-			var r = (byte) (target.Red * 255f);
-			var g = (byte) (target.Green * 255f);
-			var b = (byte) (target.Blue * 255f);
-			var a = (byte) (target.Alpha * alpha * 255f);
+			var r = (byte)(target.Red * 255f);
+			var g = (byte)(target.Green * 255f);
+			var b = (byte)(target.Blue * 255f);
+			var a = (byte)(target.Alpha * alpha * 255f);
 
 			if (a > 255)
 				a = 255;
@@ -23,10 +23,10 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public static int ToArgb(this Color target)
 		{
-			var a = (int) (target.Alpha * 255f);
-			var r = (int) (target.Red * 255f);
-			var g = (int) (target.Green * 255f);
-			var b = (int) (target.Blue * 255f);
+			var a = (int)(target.Alpha * 255f);
+			var r = (int)(target.Red * 255f);
+			var g = (int)(target.Green * 255f);
+			var b = (int)(target.Blue * 255f);
 
 			var argb = a << 24 | r << 16 | g << 8 | b;
 			return argb;
@@ -34,10 +34,10 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public static int ToArgb(this Color target, float alpha)
 		{
-			var a = (int) (target.Alpha * 255f * alpha);
-			var r = (int) (target.Red * 255f);
-			var g = (int) (target.Green * 255f);
-			var b = (int) (target.Blue * 255f);
+			var a = (int)(target.Alpha * 255f * alpha);
+			var r = (int)(target.Red * 255f);
+			var g = (int)(target.Green * 255f);
+			var b = (int)(target.Blue * 255f);
 
 			var argb = a << 24 | r << 16 | g << 8 | b;
 			return argb;
@@ -45,19 +45,19 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public static SKColor AsSKColor(this Color target)
 		{
-			var r = (byte) (target.Red * 255f);
-			var g = (byte) (target.Green * 255f);
-			var b = (byte) (target.Blue * 255f);
-			var a = (byte) (target.Alpha * 255f);
+			var r = (byte)(target.Red * 255f);
+			var g = (byte)(target.Green * 255f);
+			var b = (byte)(target.Blue * 255f);
+			var a = (byte)(target.Alpha * 255f);
 			return new SKColor(r, g, b, a);
 		}
 
 		public static Color AsColor(this SKColor target)
 		{
-			var r = (int) target.Red;
-			var g = (int) target.Green;
-			var b = (int) target.Blue;
-			var a = (int) target.Alpha;
+			var r = (int)target.Red;
+			var g = (int)target.Green;
+			var b = (int)target.Blue;
+			var a = (int)target.Alpha;
 			return new Color(r, g, b, a);
 		}
 
@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (pattern == null)
 				return null;
 
-			using (var context = new SkiaBitmapExportContext((int) (pattern.Width * scale), (int) (pattern.Height * scale), scale, disposeBitmap: false))
+			using (var context = new SkiaBitmapExportContext((int)(pattern.Width * scale), (int)(pattern.Height * scale), scale, disposeBitmap: false))
 			{
 				var canvas = context.Canvas;
 
@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (pattern == null)
 				return null;
 
-			using (var context = new SkiaBitmapExportContext((int) (pattern.Width * scaleX), (int) (pattern.Height * scaleY), 1, disposeBitmap: false))
+			using (var context = new SkiaBitmapExportContext((int)(pattern.Width * scaleX), (int)(pattern.Height * scaleY), 1, disposeBitmap: false))
 			{
 				var canvas = context.Canvas;
 

@@ -45,6 +45,6 @@ namespace Microsoft.Maui.Graphics.Text.Renderer
 			_runs.Add(new AttributedTextRun(start, length, attributes));
 		}
 
-		public int Count => ((CountingWriter) Writer).Count;
+		public int Count => ((CountingWriter)Writer).Count;
 	}
 }

@@ -77,7 +77,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 				return typeface != null;
 			}
-			catch {
+			catch
+			{
 				typeface = null;
 			}
 

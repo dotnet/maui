@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public SizeF GetStringSize(string value, IFont font, float fontSize)
 		{
-			if (string.IsNullOrEmpty(value)) return new SizeF();
+			if (string.IsNullOrEmpty(value))
+				return new SizeF();
 
 			var nsString = new NSString(value);
 			var uiFont = font?.ToPlatformFont(fontSize) ?? FontExtensions.GetDefaultPlatformFont();

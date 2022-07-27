@@ -21,19 +21,19 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
-			var downsizedImage = _bitmap.Downsize((int) maxWidthOrHeight, disposeOriginal);
+			var downsizedImage = _bitmap.Downsize((int)maxWidthOrHeight, disposeOriginal);
 			return new PlatformImage(downsizedImage);
 		}
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			var downsizedImage = _bitmap.Downsize((int) maxWidth, (int) maxHeight, disposeOriginal);
+			var downsizedImage = _bitmap.Downsize((int)maxWidth, (int)maxHeight, disposeOriginal);
 			return new PlatformImage(downsizedImage);
 		}
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
 		{
-			using (var context = new PlatformBitmapExportContext((int) width, (int) height))
+			using (var context = new PlatformBitmapExportContext((int)width, (int)height))
 			{
 				var fx = width / Width;
 				var fy = height / Height;
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			switch (format)
 			{
 				case ImageFormat.Jpeg:
-					_bitmap.Compress(Bitmap.CompressFormat.Jpeg, (int) (quality * 100), stream);
+					_bitmap.Compress(Bitmap.CompressFormat.Jpeg, (int)(quality * 100), stream);
 					break;
 				default:
 					_bitmap.Compress(Bitmap.CompressFormat.Png, 100, stream);
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			switch (format)
 			{
 				case ImageFormat.Jpeg:
-					await _bitmap.CompressAsync(Bitmap.CompressFormat.Jpeg, (int) (quality * 100), stream);
+					await _bitmap.CompressAsync(Bitmap.CompressFormat.Jpeg, (int)(quality * 100), stream);
 					break;
 				default:
 					await _bitmap.CompressAsync(Bitmap.CompressFormat.Png, 100, stream);
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
-			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, (float) Math.Round(dirtyRect.Width), (float) Math.Round(dirtyRect.Height));
+			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, (float)Math.Round(dirtyRect.Width), (float)Math.Round(dirtyRect.Height));
 		}
 
 		public IImage ToPlatformImage()

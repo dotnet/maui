@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Graphics.Text
 		{
 			if (_runs == null)
 			{
-				_runs = new List<IAttributedTextRun> {run};
+				_runs = new List<IAttributedTextRun> { run };
 				return;
 			}
 

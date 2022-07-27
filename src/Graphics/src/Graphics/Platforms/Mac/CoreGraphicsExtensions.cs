@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				return null;
 
 			var image = new PlatformImage(target);
-			var paint = new ImagePaint {Image = image};
+			var paint = new ImagePaint { Image = image };
 
 			return paint;
 		}

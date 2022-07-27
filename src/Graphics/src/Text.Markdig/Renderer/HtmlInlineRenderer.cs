@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Graphics.Text.Renderer
 						{
 							var style = tag.Substring(firstQuote, secondQuote - firstQuote);
 							var start = renderer.Count;
-							var spanData = new SpanData {Start = start, Style = style};
+							var spanData = new SpanData { Start = start, Style = style };
 							_spans.Push(spanData);
 						}
 					}

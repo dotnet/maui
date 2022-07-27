@@ -23,7 +23,8 @@ namespace GraphicsTester.Scenarios
 			canvas.RestoreState();
 
 			canvas.SaveState();
-			if (blurrableCanvas != null) blurrableCanvas.SetBlur(5);
+			if (blurrableCanvas != null)
+				blurrableCanvas.SetBlur(5);
 			canvas.Translate(0, 200);
 			DrawStrokes(canvas);
 			canvas.RestoreState();
@@ -44,7 +45,8 @@ namespace GraphicsTester.Scenarios
 			canvas.RestoreState();
 
 			canvas.SaveState();
-			if (blurrableCanvas != null) blurrableCanvas.SetBlur(5);
+			if (blurrableCanvas != null)
+				blurrableCanvas.SetBlur(5);
 			canvas.Translate(0, 500);
 			DrawFills(canvas);
 			canvas.RestoreState();

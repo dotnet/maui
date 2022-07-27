@@ -640,7 +640,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				alignment = Layout.Alignment.AlignOpposite;
 			}
 
-			var layout = TextLayoutUtils.CreateLayout(value, CurrentState.FontPaint, (int) width, alignment);
+			var layout = TextLayoutUtils.CreateLayout(value, CurrentState.FontPaint, (int)width, alignment);
 			var offset = layout.GetOffsetsToDrawText(x, y, width, height, horizAlignment, vertAlignment);
 			_canvas.Translate(offset.Width, offset.Height);
 			layout.Draw(_canvas);
@@ -651,7 +651,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			_canvas.Save();
 			var span = value.AsSpannableString();
-			var layout = TextLayoutUtils.CreateLayoutForSpannedString(span, CurrentState.FontPaint, (int) width, Layout.Alignment.AlignNormal);
+			var layout = TextLayoutUtils.CreateLayoutForSpannedString(span, CurrentState.FontPaint, (int)width, Layout.Alignment.AlignNormal);
 			var offset = layout.GetOffsetsToDrawText(x, y, width, height, HorizontalAlignment.Left, VerticalAlignment.Top);
 			_canvas.Translate(offset.Width, offset.Height);
 			layout.Draw(_canvas);

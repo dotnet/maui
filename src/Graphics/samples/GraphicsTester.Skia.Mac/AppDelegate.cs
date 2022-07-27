@@ -7,17 +7,17 @@ namespace GraphicsTester.Skia
 	{
 		MainWindowController mainWindowController;
 
-		public AppDelegate ()
+		public AppDelegate()
 		{
 		}
 
-		public override void DidFinishLaunching (NSNotification notification)
+		public override void DidFinishLaunching(NSNotification notification)
 		{
-			mainWindowController = new MainWindowController ();
-			mainWindowController.Window.MakeKeyAndOrderFront (this);
+			mainWindowController = new MainWindowController();
+			mainWindowController.Window.MakeKeyAndOrderFront(this);
 		}
 
-		public override void WillTerminate (NSNotification notification)
+		public override void WillTerminate(NSNotification notification)
 		{
 			// Insert code here to tear down your application
 		}

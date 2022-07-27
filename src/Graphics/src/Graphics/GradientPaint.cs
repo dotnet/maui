@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Graphics
 				_gradientStops = new PaintGradientStop[source.GradientStops.Length];
 
 				for (var i = 0; i < _gradientStops.Length; i++)
-					_gradientStops[i] = new PaintGradientStop(source.GradientStops[i]);	
+					_gradientStops[i] = new PaintGradientStop(source.GradientStops[i]);
 			}
 		}
 

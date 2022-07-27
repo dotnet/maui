@@ -174,13 +174,15 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 			if (attributes.GetSuperscript())
 			{
-				if (dictionary == null) dictionary = new NSMutableDictionary();
+				if (dictionary == null)
+					dictionary = new NSMutableDictionary();
 				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
 			}
 
 			if (attributes.GetSubscript())
 			{
-				if (dictionary == null) dictionary = new NSMutableDictionary();
+				if (dictionary == null)
+					dictionary = new NSMutableDictionary();
 				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
 			}
 

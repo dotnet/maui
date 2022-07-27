@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Graphics.Text
 				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
 			}
 
-			return new[] {red / 255f, green / 255f, blue / 255f, alpha / 255f};
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
 		}
 
 		public static int[] ParseAsInts(this string color)
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Graphics.Text
 				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
 			}
 
-			return new[] {red, green, blue, alpha};
+			return new[] { red, green, blue, alpha };
 		}
 	}
 }

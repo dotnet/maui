@@ -47,7 +47,7 @@ namespace GraphicsTester.Scenarios
 			canvas.FillColor = Colors.Black;
 			for (int i = 1; i <= 10; i++)
 			{
-				canvas.Alpha = (float) i / 10f;
+				canvas.Alpha = (float)i / 10f;
 				canvas.FillRoundedRectangle(450f, 200f + i * 30, 150, 20, 5);
 			}
 

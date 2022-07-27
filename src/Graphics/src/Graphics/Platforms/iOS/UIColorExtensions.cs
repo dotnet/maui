@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		private static string ToHexString(nfloat value)
 		{
-			var intValue = (int) (255f * value);
+			var intValue = (int)(255f * value);
 			var stringValue = intValue.ToString("X");
 			if (stringValue.Length == 1)
 				return "0" + stringValue;

@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Graphics.Win2D
 		/// <param name="func">The asynchronous function to execute.</param>
 		public static void Run(Func<Task> func)
 		{
-			if (func == null) throw new ArgumentNullException("func");
+			if (func == null)
+				throw new ArgumentNullException("func");
 
 			var prevCtx = SynchronizationContext.Current;
 			try
@@ -28,8 +29,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 				// Invoke the function and alert the context to when it completes
 				var t = func();
-				if (t == null) throw new InvalidOperationException("No task provided.");
-				t.ContinueWith(delegate { syncCtx.Complete(); }, TaskScheduler.Default);
+				if (t == null)
+					throw new InvalidOperationException("No task provided.");
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
 
 				// Pump continuations and propagate any exceptions
 				syncCtx.RunOnCurrentThread();
@@ -45,7 +48,8 @@ namespace Microsoft.Maui.Graphics.Win2D
 		/// <param name="asyncMethod">The asynchronous method to execute.</param>
 		public static T Run<T>(Func<Task<T>> asyncMethod)
 		{
-			if (asyncMethod == null) throw new ArgumentNullException("asyncMethod");
+			if (asyncMethod == null)
+				throw new ArgumentNullException("asyncMethod");
 
 			var prevCtx = SynchronizationContext.Current;
 			try
@@ -56,8 +60,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 				// Invoke the function and alert the context to when it completes
 				var t = asyncMethod();
-				if (t == null) throw new InvalidOperationException("No task provided.");
-				t.ContinueWith(delegate { syncCtx.Complete(); }, TaskScheduler.Default);
+				if (t == null)
+					throw new InvalidOperationException("No task provided.");
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
 
 				// Pump continuations and propagate any exceptions
 				syncCtx.RunOnCurrentThread();
@@ -83,7 +89,8 @@ namespace Microsoft.Maui.Graphics.Win2D
 			/// <param name="state">The object passed to the delegate.</param>
 			public override void Post(SendOrPostCallback d, object state)
 			{
-				if (d == null) throw new ArgumentNullException("d");
+				if (d == null)
+					throw new ArgumentNullException("d");
 				_mQueue.Add(new KeyValuePair<SendOrPostCallback, object>(d, state));
 			}
 

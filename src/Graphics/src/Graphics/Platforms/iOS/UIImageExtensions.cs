@@ -7,8 +7,8 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public static UIImage ScaleImage(this UIImage target, float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			float originalWidth = (float) target.Size.Width;
-			float originalHeight = (float) target.Size.Height;
+			float originalWidth = (float)target.Size.Width;
+			float originalHeight = (float)target.Size.Height;
 
 			float scale = originalWidth / maxWidth;
 

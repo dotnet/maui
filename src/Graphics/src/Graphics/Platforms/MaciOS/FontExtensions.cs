@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			=> string.IsNullOrEmpty(font?.Name)
 				? GetDefaultCGFont()
 				: CGFont.CreateWithFontName(font.Name);
-			
+
 		public static CTFont ToCTFont(this IFont font, nfloat? size = null)
 			=> string.IsNullOrEmpty(font?.Name)
 				? GetDefaultCTFont(size)

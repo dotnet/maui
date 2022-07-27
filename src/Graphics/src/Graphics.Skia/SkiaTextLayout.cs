@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (_textFlow == TextFlow.ClipBounds)
 			{
 				var maxLines = Math.Floor(height / _lineHeight);
-				linesToDraw = (int) Math.Min(maxLines, lines.Count);
+				linesToDraw = (int)Math.Min(maxLines, lines.Count);
 			}
 
 			// Figure out the vertical center of the rect
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				if (_textFlow == TextFlow.ClipBounds && _textAttributes.VerticalAlignment == VerticalAlignment.Top && y > bottom)
 					return lines;
 
-				var count = (int) _paint.BreakText(_value.Substring(index), width, out var textWidth);
+				var count = (int)_paint.BreakText(_value.Substring(index), width, out var textWidth);
 
 				var found = false;
 				if (WordWrap && index + count < length)

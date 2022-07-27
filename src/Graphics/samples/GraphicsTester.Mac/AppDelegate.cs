@@ -10,14 +10,14 @@ namespace GraphicsTester.Mac
 	{
 		MainWindowController mainWindowController;
 
-		public AppDelegate ()
+		public AppDelegate()
 		{
 		}
 
-		public override void DidFinishLaunching (NSNotification notification)
+		public override void DidFinishLaunching(NSNotification notification)
 		{
-			mainWindowController = new MainWindowController ();
-			mainWindowController.Window.MakeKeyAndOrderFront (this);
+			mainWindowController = new MainWindowController();
+			mainWindowController.Window.MakeKeyAndOrderFront(this);
 		}
 	}
 }
