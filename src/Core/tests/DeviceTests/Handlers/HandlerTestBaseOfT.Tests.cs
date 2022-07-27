@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -12,58 +11,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
-
-		// This way of testing leaks currently doesn't seem to work on WinAppSDK
-		// If you set a break point and the app breaks then the test passes?!?
-		// Not sure if you can test this type of thing with WinAppSDK or not
-#if !WINDOWS
-		[Fact(DisplayName = "Handlers Deallocate When No Longer Referenced")]
-		public async Task HandlersDeallocateWhenNoLongerReferenced()
-		{
-			// Once this includes all handlers we can delete this
-			Type[] testedTypes = new[]
-			{
-				typeof(EditorHandler),
-#if IOS
-				typeof(DatePickerHandler)
-#endif
-			};
-
-			if (!testedTypes.Any(t => t.IsAssignableTo(typeof(THandler))))
-				return;
-
-			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
-
-			WeakReference<THandler> weakHandler = new WeakReference<THandler>((THandler)handler);
-			WeakReference<TStub> weakView = new WeakReference<TStub>((TStub)handler.VirtualView);
-
-			handler = null;
-
-			await AssertionExtensions.Wait(() =>
-			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-
-				if (weakHandler.TryGetTarget(out THandler _) ||
-					weakView.TryGetTarget(out TStub _))
-				{
-					return false;
-				}
-
-				return true;
-
-			}, 1500);
-
-			if (weakHandler.TryGetTarget(out THandler _))
-				Assert.True(false, $"{typeof(THandler)} failed to collect");
-
-			if (weakView.TryGetTarget(out TStub _))
-				Assert.True(false, $"{typeof(TStub)} failed to collect");
-		}
-#endif
-
 		[Fact]
 		public async Task DisconnectHandlerDoesntCrash()
 		{

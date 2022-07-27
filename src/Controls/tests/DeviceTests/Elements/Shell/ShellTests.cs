@@ -58,6 +58,12 @@ namespace Microsoft.Maui.DeviceTests
 			int navigatedToFired = 0;
 			int shellNavigatedToFired = 0;
 
+			// If you fail these from the events then
+			// an exception is raised in the middle of the platform
+			// doing platform things which often leads to a crash
+			bool navigatedPartPassed = false;
+			bool navigatedToPartPassed = false;
+
 			contentPage.Appearing += (_, _) =>
 			{
 				contentPageAppearingFired++;
@@ -68,15 +74,15 @@ namespace Microsoft.Maui.DeviceTests
 			contentPage.NavigatedTo += (_, _) =>
 			{
 				navigatedToFired++;
-				Assert.Equal(1, contentPageAppearingFired);
+				navigatedToPartPassed = (contentPageAppearingFired == 1);
 			};
 
 			Shell shell = await CreateShellAsync(shell =>
 			{
 				shell.Navigated += (_, _) =>
 				{
-					Assert.Equal(1, contentPageAppearingFired);
 					shellNavigatedToFired++;
+					navigatedPartPassed = (contentPageAppearingFired == 1);
 
 				};
 
@@ -95,10 +101,13 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
 			{
 				await OnFrameSetToNotEmpty(contentPage);
-				Assert.Equal(1, contentPageAppearingFired);
-				Assert.Equal(1, shellNavigatedToFired);
-				Assert.Equal(1, navigatedToFired);
 			});
+
+			Assert.True(navigatedPartPassed, "Appearing fired too many times before Navigated fired");
+			Assert.True(navigatedToPartPassed, "Appearing fired too many times before NavigatedTo fired");
+			Assert.Equal(1, contentPageAppearingFired);
+			Assert.Equal(1, shellNavigatedToFired);
+			Assert.Equal(1, navigatedToFired);
 		}
 
 		[Fact(DisplayName = "Navigating During Navigated Doesnt ReFire Appearing")]

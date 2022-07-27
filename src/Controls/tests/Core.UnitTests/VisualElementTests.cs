@@ -51,5 +51,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(coreView.Height, Is.EqualTo(Dimension.Unset));
 			Assert.That(visualElement.HeightRequest, Is.EqualTo(-1));
 		}
+
+		[Test]
+		public void BindingContextPropagatesToBackground()
+		{
+			var visualElement = new Label();
+			var brush = new LinearGradientBrush();
+			visualElement.Background = brush;
+
+			var bc1 = new object();
+			visualElement.BindingContext = bc1;
+			Assert.AreEqual(bc1, brush.BindingContext);
+
+			var brush2 = new LinearGradientBrush();
+			visualElement.Background = brush2;
+			Assert.AreEqual(bc1, brush2.BindingContext);
+
+		}
 	}
 }
