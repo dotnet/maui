@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Handlers
 			UpdateContentView(scrollView, handler);
 		}
 
+		// We don't actually have this mapped because we don't need it, but we can't remove it because it's public
 		public static void MapContentSize(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.PlatformView.UpdateContentSize(scrollView.ContentSize);
@@ -169,8 +170,8 @@ namespace Microsoft.Maui.Handlers
 					var scrollViewBounds = scrollView.Bounds;
 					var containerBounds = container.Bounds;
 
-					container.Bounds = new CGRect(0, 0, 
-						Math.Max(containerBounds.Width, scrollViewBounds.Width), 
+					container.Bounds = new CGRect(0, 0,
+						Math.Max(containerBounds.Width, scrollViewBounds.Width),
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
@@ -195,22 +196,88 @@ namespace Microsoft.Maui.Handlers
 				return Size.Zero;
 			}
 
+			var scrollViewBounds = platformScrollView.Bounds;
+			var padding = scrollView.Padding;
+
 			if (widthConstraint == 0)
 			{
-				widthConstraint = platformScrollView.Bounds.Width;
+				widthConstraint = scrollViewBounds.Width;
 			}
 
 			if (heightConstraint == 0)
 			{
-				heightConstraint = platformScrollView.Bounds.Height;
+				heightConstraint = scrollViewBounds.Height;
 			}
 
-			widthConstraint -= scrollView.Padding.HorizontalThickness;
-			heightConstraint -= scrollView.Padding.VerticalThickness;
+			// Account for the ScrollView Padding before measuring the content
+			widthConstraint = AccountForPadding(widthConstraint, padding.HorizontalThickness);
+			heightConstraint = AccountForPadding(heightConstraint, padding.VerticalThickness);
 
 			var result = internalMeasure.Invoke(widthConstraint, heightConstraint);
 
 			return result.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), presentedContent);
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var virtualView = VirtualView;
+			var platformView = PlatformView;
+
+			if (platformView == null || virtualView == null || virtualView.PresentedContent == null)
+			{
+				return new Size(widthConstraint, heightConstraint);
+			}
+
+			var padding = virtualView.Padding;
+
+			// Account for the ScrollView Padding before measuring the content
+			widthConstraint = AccountForPadding(widthConstraint, padding.HorizontalThickness);
+			heightConstraint = AccountForPadding(heightConstraint, padding.VerticalThickness);
+
+			var size = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+
+			// Add the padding back in for the final size
+			size.Width += padding.HorizontalThickness;
+			size.Height += padding.VerticalThickness;
+
+			platformView.ContentSize = size;
+
+			var finalWidth = ViewHandlerExtensions.ResolveConstraints(size.Width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+			var finalHeight = ViewHandlerExtensions.ResolveConstraints(size.Height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+
+			return new Size(finalWidth, finalHeight);
+		}
+
+		public override void PlatformArrange(Rect rect)
+		{
+			base.PlatformArrange(rect);
+
+			// Ensure that the content container for the ScrollView gets arranged, and is large enough
+			// to contain the ScrollView's content
+
+			var contentView = GetContentView(PlatformView);
+
+			if (contentView == null)
+			{
+				return;
+			}
+
+			var desiredSize = VirtualView.PresentedContent?.DesiredSize ?? Size.Zero;
+			var scrollViewPadding = VirtualView.Padding;
+			var platformViewBounds = PlatformView.Bounds;
+
+			var contentBounds = new CGRect(0, 0,
+				Math.Max(desiredSize.Width + scrollViewPadding.HorizontalThickness, platformViewBounds.Width),
+				Math.Max(desiredSize.Height + scrollViewPadding.VerticalThickness, platformViewBounds.Height));
+
+			contentView.Bounds = contentBounds;
+			contentView.Center = new CGPoint(contentBounds.GetMidX(), contentBounds.GetMidY());
+		}
+
+		static double AccountForPadding(double constraint, double padding)
+		{
+			// Remove the padding from the constraint, but don't allow it to go negative
+			return Math.Max(0, constraint - padding);
 		}
 	}
 }

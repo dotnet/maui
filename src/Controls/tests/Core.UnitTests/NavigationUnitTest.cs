@@ -694,7 +694,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var contentPage1 = new ContentPage();
 			var navigationPage = new TestNavigationPage(true, contentPage1);
-			var window = new Window(navigationPage);
+			var window = new TestWindow(navigationPage);
 
 			Assert.IsNotNull(window.Toolbar);
 			Assert.IsNull(contentPage1.Toolbar);
@@ -713,7 +713,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Flyout = new ContentPage() { Title = "Flyout" }
 			};
 
-			var window = new Window(flyoutPage);
+			var window = new TestWindow(flyoutPage);
 
 			Assert.IsNull(window.Toolbar);
 			Assert.IsNull(contentPage1.Toolbar);
@@ -740,7 +740,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var window = new Window(tabbedPage);
+			var window = new TestWindow(tabbedPage);
 
 			Assert.IsNotNull(window.Toolbar);
 			Assert.IsNull(contentPage1.Toolbar);
@@ -752,7 +752,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TabBarSetsOnModalPageWhenWindowAlsoHasNavigationPage()
 		{
-			var window = new Window(new TestNavigationPage(true, new ContentPage()));
+			var window = new TestWindow(new TestNavigationPage(true, new ContentPage()));
 			var contentPage1 = new ContentPage();
 			var navigationPage = new TestNavigationPage(true, contentPage1);
 			await window.Navigation.PushModalAsync(navigationPage);
@@ -765,7 +765,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TabBarSetsOnModalPageForSingleNavigationPage()
 		{
-			var window = new Window(new ContentPage());
+			var window = new TestWindow(new ContentPage());
 			var contentPage1 = new ContentPage();
 			var navigationPage = new TestNavigationPage(true, contentPage1);
 			await window.Navigation.PushModalAsync(navigationPage);
@@ -778,7 +778,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TabBarSetsOnFlyoutPageInsideModalPage()
 		{
-			var window = new Window(new ContentPage());
+			var window = new TestWindow(new ContentPage());
 			var contentPage1 = new ContentPage();
 			var navigationPage = new TestNavigationPage(true, contentPage1);
 			var flyoutPage = new FlyoutPage()
@@ -799,7 +799,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task TabBarSetsOnModalPageWithFlyoutPageNestedInTabbedPage()
 		{
 			// ModalPage => TabbedPage => FlyoutPage => NavigationPage
-			var window = new Window(new ContentPage());
+			var window = new TestWindow(new ContentPage());
 			var contentPage1 = new ContentPage();
 			var navigationPage = new TestNavigationPage(true, contentPage1);
 			var flyoutPage = new FlyoutPage()

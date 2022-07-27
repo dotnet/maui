@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -9,11 +8,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='MinimumProperty']/Docs" />
-		public static readonly BindableProperty MinimumProperty = BindableProperty.Create("Minimum", typeof(double), typeof(Slider), 0d, validateValue: (bindable, value) =>
-		{
-			var slider = (Slider)bindable;
-			return (double)value < slider.Maximum;
-		}, coerceValue: (bindable, value) =>
+		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Slider), 0d, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
 			slider.Value = slider.Value.Clamp((double)value, slider.Maximum);
@@ -21,11 +16,7 @@ namespace Microsoft.Maui.Controls
 		});
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='MaximumProperty']/Docs" />
-		public static readonly BindableProperty MaximumProperty = BindableProperty.Create("Maximum", typeof(double), typeof(Slider), 1d, validateValue: (bindable, value) =>
-		{
-			var slider = (Slider)bindable;
-			return (double)value > slider.Minimum;
-		}, coerceValue: (bindable, value) =>
+		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Slider), 1d, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
 			slider.Value = slider.Value.Clamp(slider.Minimum, (double)value);
@@ -33,7 +24,7 @@ namespace Microsoft.Maui.Controls
 		});
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='ValueProperty']/Docs" />
-		public static readonly BindableProperty ValueProperty = BindableProperty.Create("Value", typeof(double), typeof(Slider), 0d, BindingMode.TwoWay, coerceValue: (bindable, value) =>
+		public static readonly BindableProperty ValueProperty = BindableProperty.Create(nameof(Value), typeof(double), typeof(Slider), 0d, BindingMode.TwoWay, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
 			return ((double)value).Clamp(slider.Minimum, slider.Maximum);
@@ -73,7 +64,7 @@ namespace Microsoft.Maui.Controls
 		public Slider(double min, double max, double val) : this()
 		{
 			if (min >= max)
-				throw new ArgumentOutOfRangeException("min");
+				throw new ArgumentOutOfRangeException(nameof(min));
 
 			if (max > Minimum)
 			{

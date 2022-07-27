@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	// TEST NOTES:
 	//   - a human needs to accept permissions on Android
 	//   - the camera flash is not always available
+	[Category("Flashlight")]
 	public class Flashlight_Tests
 	{
 		[Theory]

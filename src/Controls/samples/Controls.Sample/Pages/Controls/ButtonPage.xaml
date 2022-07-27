@@ -136,7 +136,7 @@
                 <Button
                     Text="Button"
                     HorizontalOptions="Start"
-                    Background="LightGrey"
+                    Background="LightGray"
                     Padding="NaN"/>
                 <Label
                     Text="Padding = 0"
@@ -144,7 +144,7 @@
                 <Button
                     Text="Button"
                     HorizontalOptions="Start"
-                    Background="LightGrey"
+                    Background="LightGray"
                     Padding="0"/>
                 <Label
                     Text="Padding"
@@ -156,7 +156,7 @@
                 <Button
                     Text="Button"
                     HorizontalOptions="Start"
-                    Background="LightGrey"
+                    Background="LightGray"
                     Padding="{Binding Text, Source={Reference paddingEntry}, Converter={StaticResource ThicknessConverter}}"/>
                 <Label
                     Text="LineBreakMode"

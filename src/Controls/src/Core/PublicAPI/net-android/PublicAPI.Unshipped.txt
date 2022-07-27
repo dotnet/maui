@@ -1,6 +1,9 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.MenuFlyoutSeparator
+Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ContentPresenter.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.FlyoutPage.OnDisappearing() -> void
 override Microsoft.Maui.Controls.Grid.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void

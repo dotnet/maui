@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ToolbarExistsForNavigationPage()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var startingPage = new NavigationPage(new ContentPage());
 			window.Page = startingPage;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TitleAndTitleViewAreMutuallyExclusive()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var contentPage = new ContentPage() { Title = "Test Title" };
 			var navigationPage = new NavigationPage(contentPage);
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task InsertPageBeforeRootPageShowsBackButton()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var startingPage = new TestNavigationPage(true, new ContentPage());
 			window.Page = startingPage;
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task RemoveRootPageHidesBackButton()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var startingPage = new TestNavigationPage(true, new ContentPage());
 			window.Page = startingPage;
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void BackButtonNotVisibleForInitialPage()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var startingPage = new NavigationPage(new ContentPage());
 			window.Page = startingPage;
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void NestedNavigation_AppliesFromMostInnerNavigationPage()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var visibleInnerNavigationPage = new NavigationPage(new ContentPage()) { Title = "visibleInnerNavigationPage" };
 			var nonVisibleNavigationPage = new NavigationPage(new ContentPage()) { Title = "nonVisibleNavigationPage" };
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void NestedNavigation_ChangingToTabWithNoNavigationPage()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var innerNavigationPage =
 				new NavigationPage(new ContentPage() { Content = new Label() }) { Title = "innerNavigationPage" };
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void NestedNavigation_NestedNavigationPage()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var innerNavigationPage =
 				new NavigationPage(new ContentPage() { Content = new Label() }) { Title = "innerNavigationPage" };
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task NestedNavigation_BackButtonVisibleIfAnyoneHasPages()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var innerNavigationPage =
 				new NavigationPage(new ContentPage() { Content = new Label() }) { Title = "innerNavigationPage" };
