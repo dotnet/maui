@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0-macos</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-macos</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>GraphicsTester.Mac</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>

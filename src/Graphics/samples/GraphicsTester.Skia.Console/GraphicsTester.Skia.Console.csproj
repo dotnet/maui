@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <RootNamespace>GraphicsTester.ConsoleApp</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

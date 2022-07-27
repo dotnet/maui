@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0-ios</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-ios</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>GraphicsTester.iOS</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>

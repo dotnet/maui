@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0-tizen</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-tizen</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
