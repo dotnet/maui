@@ -2022,5 +2022,32 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// units in the Star column
 			AssertArranged(view0, new Rect(0, 0, 100, 20));
 		}
+
+
+		[Category(GridStarSizing)]
+		[Fact]
+		public void ViewInOneOfMultipleStarColumnsMeasuredAtCorrectWidth()
+		{
+			var screenWidth = 300;
+			var screenHeight = 600;
+			var viewSize = new Size(50, 50);
+
+			var grid = CreateGridLayout(rows: "auto", columns: $"*,*");
+			var view0 = CreateTestView(viewSize);
+
+			SubstituteChildren(grid, view0);
+
+			SetLocation(grid, view0);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Columns are *,*, so view should be measured at 1/2 the width
+			var expectedWidth = screenWidth / 2;
+
+			// Make sure that the views in the columns are actually getting measured at the column width,
+			// and not just at the width of the whole grid
+			view0.Received(1).Measure(Arg.Is<double>(expectedWidth), Arg.Any<double>());
+			view0.Received(1).Measure(Arg.Any<double>(), Arg.Any<double>());
+		}
 	}
 }
