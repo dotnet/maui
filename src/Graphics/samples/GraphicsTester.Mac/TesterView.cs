@@ -7,7 +7,7 @@ namespace GraphicsTester.Mac
 {
 	public class TesterViewController : NSViewController
 	{
-		
+
 		public override void LoadView()
 		{
 			View = new TesterView();
@@ -31,7 +31,8 @@ namespace GraphicsTester.Mac
 		public TesterView() : base()
 		{
 			tableSource = new TesterTableViewSource();
-			tableSource.ScenarioSelected += (drawable) => {
+			tableSource.ScenarioSelected += (drawable) =>
+			{
 				graphicsView.Drawable = drawable;
 				graphicsView.InvalidateDrawable();
 			};

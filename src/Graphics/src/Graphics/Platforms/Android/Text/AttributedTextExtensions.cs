@@ -77,14 +77,14 @@ namespace Microsoft.Maui.Graphics.Platform.Text
 			var foregroundColor = attributes.GetForegroundColor()?.ParseAsInts()?.ToColor();
 			if (foregroundColor != null)
 			{
-				var span = new ForegroundColorSpan((global::Android.Graphics.Color) foregroundColor);
+				var span = new ForegroundColorSpan((global::Android.Graphics.Color)foregroundColor);
 				spannableString.SetSpan(span, start, end, SpanTypes.ExclusiveExclusive);
 			}
 
 			var backgroundColor = attributes.GetBackgroundColor()?.ParseAsInts()?.ToColor();
 			if (backgroundColor != null)
 			{
-				var span = new BackgroundColorSpan((global::Android.Graphics.Color) backgroundColor);
+				var span = new BackgroundColorSpan((global::Android.Graphics.Color)backgroundColor);
 				spannableString.SetSpan(span, start, end, SpanTypes.ExclusiveExclusive);
 			}
 

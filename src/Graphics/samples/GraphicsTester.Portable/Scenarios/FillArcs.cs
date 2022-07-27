@@ -109,7 +109,7 @@ namespace GraphicsTester.Scenarios
 			canvas.StrokeSize = 2;
 			for (int i = 1; i <= 10; i++)
 			{
-				canvas.Alpha = (float) i / 10f;
+				canvas.Alpha = (float)i / 10f;
 				canvas.FillArc(450f, 200f + i * 30, 150, 20, 180, 0, true);
 			}
 

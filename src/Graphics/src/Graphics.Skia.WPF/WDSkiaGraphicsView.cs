@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				_renderer = value ?? CreateDefaultRenderer();
 				_renderer.GraphicsView = this;
 				_renderer.Drawable = _drawable;
-				_renderer.SizeChanged((int) CanvasSize.Width, (int) CanvasSize.Height);
+				_renderer.SizeChanged((int)CanvasSize.Width, (int)CanvasSize.Height);
 			}
 		}
 
@@ -66,9 +66,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			SizeChangedInfo sizeInfo)
 		{
 			base.OnRenderSizeChanged(sizeInfo);
-			_dirtyRect.Width = (float) sizeInfo.NewSize.Width;
-			_dirtyRect.Height = (float) sizeInfo.NewSize.Height;
-			_renderer?.SizeChanged((int) sizeInfo.NewSize.Width, (int) sizeInfo.NewSize.Height);
+			_dirtyRect.Width = (float)sizeInfo.NewSize.Width;
+			_dirtyRect.Height = (float)sizeInfo.NewSize.Height;
+			_renderer?.SizeChanged((int)sizeInfo.NewSize.Width, (int)sizeInfo.NewSize.Height);
 		}
 
 		public void Invalidate()

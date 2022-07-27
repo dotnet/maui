@@ -339,7 +339,8 @@ namespace Microsoft.Maui.Graphics.Platform
 					Color vColor = linearGradientPaint.GradientStops[i].Color;
 					offsets[i] = linearGradientPaint.GradientStops[i].Offset;
 
-					if (vColor == null) vColor = Colors.White;
+					if (vColor == null)
+						vColor = Colors.White;
 
 					gradientColors[g++] = vColor.Red;
 					gradientColors[g++] = vColor.Green;
@@ -362,7 +363,8 @@ namespace Microsoft.Maui.Graphics.Platform
 					Color vColor = radialGradientPaint.GradientStops[i].Color;
 					offsets[i] = radialGradientPaint.GradientStops[i].Offset;
 
-					if (vColor == null) vColor = Colors.White;
+					if (vColor == null)
+						vColor = Colors.White;
 
 					gradientColors[g++] = vColor.Red;
 					gradientColors[g++] = vColor.Green;
@@ -392,13 +394,15 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
 		{
-			if (!_antialias) _context.SetShouldAntialias(false);
+			if (!_antialias)
+				_context.SetShouldAntialias(false);
 
 			_context.MoveTo(x1, y1);
 			_context.AddLineToPoint(x2, y2);
 			_context.StrokePath();
 
-			if (!_antialias) _context.SetShouldAntialias(true);
+			if (!_antialias)
+				_context.SetShouldAntialias(true);
 		}
 
 		protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool close)
@@ -408,15 +412,16 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Width = width;
 			_rect.Height = height;
 
-			if (!_antialias) _context.SetShouldAntialias(false);
+			if (!_antialias)
+				_context.SetShouldAntialias(false);
 			var startAngleInRadians = GeometryUtil.DegreesToRadians(-startAngle);
 			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 			while (startAngleInRadians < 0)
-				startAngleInRadians += (float) Math.PI * 2;
+				startAngleInRadians += (float)Math.PI * 2;
 
 			while (endAngleInRadians < 0)
-				endAngleInRadians += (float) Math.PI * 2;
+				endAngleInRadians += (float)Math.PI * 2;
 
 			if (width == height)
 			{
@@ -447,7 +452,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				path.Dispose();
 			}
 
-			if (!_antialias) _context.SetShouldAntialias(true);
+			if (!_antialias)
+				_context.SetShouldAntialias(true);
 		}
 
 		public override void FillArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise)
@@ -461,10 +467,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 			while (startAngleInRadians < 0)
-				startAngleInRadians += (float) Math.PI * 2;
+				startAngleInRadians += (float)Math.PI * 2;
 
 			while (endAngleInRadians < 0)
-				endAngleInRadians += (float) Math.PI * 2;
+				endAngleInRadians += (float)Math.PI * 2;
 
 			if (width == height)
 			{
@@ -569,9 +575,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Width = width;
 			_rect.Height = height;
 
-			if (!_antialias) _context.SetShouldAntialias(false);
+			if (!_antialias)
+				_context.SetShouldAntialias(false);
 			_context.StrokeRect(_rect);
-			if (!_antialias) _context.SetShouldAntialias(true);
+			if (!_antialias)
+				_context.SetShouldAntialias(true);
 		}
 
 		private void DrawGradient()
@@ -616,7 +624,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var a = point2.X - point1.X;
 			var b = point2.Y - point1.Y;
 
-			return (float) Math.Sqrt(a * a + b * b);
+			return (float)Math.Sqrt(a * a + b * b);
 		}
 
 		private void DrawPatternCallback(CGContext context, IPattern fillPattern)
@@ -730,7 +738,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var patternToDraw = _fillPattern;
 			var pattern = new CGPattern(_fillPatternRect, transform, _fillPattern.StepX, _fillPattern.StepY, CGPatternTiling.ConstantSpacing, true,
 				(handle) => DrawPatternCallback(handle, patternToDraw));
-			_context.SetFillPattern(pattern, new nfloat[] {1});
+			_context.SetFillPattern(pattern, new nfloat[] { 1 });
 			drawingAction();
 
 			// Dispose of the patterns and it's colorspace
@@ -757,7 +765,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			transform.Multiply(new CGAffineTransform(1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f));
 
 			var pattern = new CGPattern(_fillPatternRect, transform, _fillImage.Width, _fillImage.Height, CGPatternTiling.NoDistortion, true, DrawImageCallback);
-			_context.SetFillPattern(pattern, new nfloat[] {1});
+			_context.SetFillPattern(pattern, new nfloat[] { 1 });
 			drawingAction();
 
 			// Dispose of the patterns and it's colorspace
@@ -1100,9 +1108,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (ctFont != null && ctFont.Handle != IntPtr.Zero)
 				attributes.Font = ctFont;
 
-			if (verticalAlignment ==  VerticalAlignment.Center)
+			if (verticalAlignment == VerticalAlignment.Center)
 			{
-			   iy += -(float)(ctFont.DescentMetric / 2);
+				iy += -(float)(ctFont.DescentMetric / 2);
 			}
 			else if (verticalAlignment == VerticalAlignment.Bottom)
 			{
@@ -1260,7 +1268,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void SetShadow(SizeF offset, float blur, Color color)
 		{
-			var actualOffset = offset ;
+			var actualOffset = offset;
 			var sizeF = actualOffset.AsCGSize();
 
 #if MONOMAC

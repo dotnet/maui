@@ -68,7 +68,7 @@ namespace GraphicsTester.Skia.Tizen
 
 			list.ItemSelected += (s, e) =>
 			{
-				var scenario = ScenarioList.Scenarios[e.Item.Index-1];
+				var scenario = ScenarioList.Scenarios[e.Item.Index - 1];
 				graphicsView.Drawable = scenario;
 				navi.Push(graphicsView, scenario.GetType().Name);
 			};

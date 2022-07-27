@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			int finalWidth = int.MaxValue;
 			if (boundedWidth > 0)
-				finalWidth = (int) boundedWidth;
+				finalWidth = (int)boundedWidth;
 
 			var layout = new StaticLayout(
 				text, // Text to layout
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			int finalWidth = int.MaxValue;
 			if (boundedWidth > 0)
-				finalWidth = (int) boundedWidth;
+				finalWidth = (int)boundedWidth;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			var layout = new StaticLayout(

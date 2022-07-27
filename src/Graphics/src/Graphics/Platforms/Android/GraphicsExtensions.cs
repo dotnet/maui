@@ -9,10 +9,10 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public static global::Android.Graphics.Color AsColorMultiplyAlpha(this Color target, float alpha)
 		{
-			var r = (int) (target.Red * 255f);
-			var g = (int) (target.Green * 255f);
-			var b = (int) (target.Blue * 255f);
-			var a = (int) (target.Alpha * alpha * 255f);
+			var r = (int)(target.Red * 255f);
+			var g = (int)(target.Green * 255f);
+			var b = (int)(target.Blue * 255f);
+			var a = (int)(target.Alpha * alpha * 255f);
 
 			if (a > 255)
 			{
@@ -25,19 +25,19 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static global::Android.Graphics.Color AsColor(this Color target)
 		{
-			var r = (int) (target.Red * 255f);
-			var g = (int) (target.Green * 255f);
-			var b = (int) (target.Blue * 255f);
-			var a = (int) (target.Alpha * 255f);
+			var r = (int)(target.Red * 255f);
+			var g = (int)(target.Green * 255f);
+			var b = (int)(target.Blue * 255f);
+			var a = (int)(target.Alpha * 255f);
 			return new global::Android.Graphics.Color(r, g, b, a);
 		}
 
 		public static Color AsColor(this global::Android.Graphics.Color target)
 		{
-			var r = (int) target.R;
-			var g = (int) target.G;
-			var b = (int) target.B;
-			var a = (int) target.A;
+			var r = (int)target.R;
+			var g = (int)target.G;
+			var b = (int)target.B;
+			var a = (int)target.A;
 			return new Color(r, g, b, a);
 		}
 
@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (pattern == null)
 				return null;
 
-			using (var context = new PlatformBitmapExportContext((int) (pattern.Width * scale), (int) (pattern.Height * scale), scale, disposeBitmap: false))
+			using (var context = new PlatformBitmapExportContext((int)(pattern.Width * scale), (int)(pattern.Height * scale), scale, disposeBitmap: false))
 			{
 				var canvas = context.Canvas;
 				canvas.Scale(scale, scale);
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (pattern == null)
 				return null;
 
-			using (var context = new PlatformBitmapExportContext((int) (pattern.Width * scaleX), (int) (pattern.Height * scaleY), disposeBitmap: false))
+			using (var context = new PlatformBitmapExportContext((int)(pattern.Width * scaleX), (int)(pattern.Height * scaleY), disposeBitmap: false))
 			{
 				var scalingCanvas = new ScalingCanvas(context.Canvas);
 				scalingCanvas.Scale(scaleX, scaleY);
@@ -438,15 +438,15 @@ namespace Microsoft.Maui.Graphics.Platform
 
 				if (target.Width > target.Height)
 				{
-					factor = maxSize / (float) target.Width;
+					factor = maxSize / (float)target.Width;
 				}
 				else
 				{
-					factor = maxSize / (float) target.Height;
+					factor = maxSize / (float)target.Height;
 				}
 
-				var w = (int) Math.Round(factor * target.Width);
-				var h = (int) Math.Round(factor * target.Height);
+				var w = (int)Math.Round(factor * target.Width);
+				var h = (int)Math.Round(factor * target.Height);
 
 				var newImage = Bitmap.CreateScaledBitmap(target, w, h, true);
 				if (dispose)

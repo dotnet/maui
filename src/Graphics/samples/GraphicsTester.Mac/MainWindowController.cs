@@ -12,26 +12,26 @@ namespace GraphicsTester.Mac
 		#region Constructors
 
 		// Called when created from unmanaged code
-		public MainWindowController (IntPtr handle) : base (handle)
+		public MainWindowController(IntPtr handle) : base(handle)
 		{
-			Initialize ();
+			Initialize();
 		}
 
 		// Called when created directly from a XIB file
-		[Export ("initWithCoder:")]
-		public MainWindowController (NSCoder coder) : base (coder)
+		[Export("initWithCoder:")]
+		public MainWindowController(NSCoder coder) : base(coder)
 		{
-			Initialize ();
+			Initialize();
 		}
 
 		// Call to load from the XIB/NIB file
-		public MainWindowController () : base ("MainWindow")
+		public MainWindowController() : base("MainWindow")
 		{
-			Initialize ();
+			Initialize();
 		}
 
 		// Shared initialization code
-		void Initialize ()
+		void Initialize()
 		{
 		}
 

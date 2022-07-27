@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics.Platform;
 
 namespace GraphicsTester.Android
 {
-	[Activity (
+	[Activity(
 		Name = "Microsoft.Maui.Graphics.tester.Android.MainActivity",
 		Label = "GraphicsTester.Android",
 		MainLauncher = true,
@@ -16,17 +16,17 @@ namespace GraphicsTester.Android
 	{
 		private MainView _mainView;
 
-		protected override void OnCreate (Bundle bundle)
+		protected override void OnCreate(Bundle bundle)
 		{
-			base.OnCreate (bundle);
+			base.OnCreate(bundle);
 
-			_mainView = new MainView (this);
+			_mainView = new MainView(this);
 			// Defining the LinearLayout layout parameters to fill the parent.
 			LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MatchParent,
 				LinearLayout.LayoutParams.MatchParent);
 
-			SetContentView (_mainView, llp);
+			SetContentView(_mainView, llp);
 		}
 	}
 }

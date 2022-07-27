@@ -4,7 +4,8 @@ namespace Microsoft.Maui.Graphics
 	{
 		public static RectF GetBounds(this IPicture target)
 		{
-			if (target == null) return default;
+			if (target == null)
+				return default;
 			return new RectF(target.X, target.Y, target.Width, target.Height);
 		}
 	}

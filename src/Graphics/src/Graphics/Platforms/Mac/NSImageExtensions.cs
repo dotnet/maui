@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var representations = target.Representations();
 			if (representations.Length > 0 && representations[0] is NSBitmapImageRep)
 			{
-				var rep = (NSBitmapImageRep) representations[0];
+				var rep = (NSBitmapImageRep)representations[0];
 				return rep.RepresentationUsingTypeProperties(NSBitmapImageFileType.Png, new NSMutableDictionary());
 			}
 			else
@@ -61,8 +61,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			CGBitmapContext context;
 
-			var width = (int) size.Width;
-			var height = (int) size.Height;
+			var width = (int)size.Width;
+			var height = (int)size.Height;
 
 			try
 			{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 			catch (Exception exc)
 			{
-				throw new Exception($"Unable to allocate memory to scale the image to the size {size.Width},{size.Height}.",exc);
+				throw new Exception($"Unable to allocate memory to scale the image to the size {size.Width},{size.Height}.", exc);
 			}
 
 			try

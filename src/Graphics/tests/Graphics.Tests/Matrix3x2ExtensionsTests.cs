@@ -58,10 +58,10 @@ namespace Microsoft.Maui.Graphics.Tests
 			var s = reference.GetScale();
 			var r = reference.GetRotation();
 			var t = reference.GetTranslation();
-			
+
 			AssertEqual(refScale, s, 5);
 			Assert.Equal(refRot, r, 5);
-			AssertEqual(refTrans, t, 5);			
+			AssertEqual(refTrans, t, 5);
 
 			var m = Matrix3x2Extensions.CreateMatrix3x2(s, r, t);
 			AssertEqual(reference, m, 5);
@@ -76,9 +76,9 @@ namespace Microsoft.Maui.Graphics.Tests
 			var reference = Matrix3x2.Identity;
 			reference *= Matrix3x2.CreateScale(scaleX, scaleY);
 			reference *= Matrix3x2.CreateRotation(rotation);
-			reference *= Matrix3x2.CreateTranslation(translation);			
+			reference *= Matrix3x2.CreateTranslation(translation);
 
-			ReferenceDeconstruct(reference, out var refScale, out var refRot, out var refTrans);			
+			ReferenceDeconstruct(reference, out var refScale, out var refRot, out var refTrans);
 
 			// concatenation
 			// notice that AffineTransform concatenation order
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Graphics.Tests
 			// concatenation and rotation assign
 
 			m1 = Matrix3x2.Identity;
-			m1 *= Matrix3x2.CreateScale(scaleX, scaleY);			
+			m1 *= Matrix3x2.CreateScale(scaleX, scaleY);
 			m1 = m1.WithRotation(scaleX >= 0 ? rotation : rotation + (float)Math.PI);
 			m1 *= Matrix3x2.CreateTranslation(translation);
 			AssertOrthogonal(m1, 7);
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Graphics.Tests
 			var t = m1.GetTranslation();
 			m1 = Matrix3x2Extensions.CreateMatrix3x2(s, r, t);
 			AssertOrthogonal(m1, 7);
-			AssertEqual(reference, m1, 5);			
+			AssertEqual(reference, m1, 5);
 		}
 
 		[Fact]
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Graphics.Tests
 				Assert.Equal(2, (Matrix3x2.CreateScale(2, 2) * rm).GetLengthScale(), 6);
 				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(1, 2) * rm).GetLengthScale(), 5);
 				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(2, 1) * rm).GetLengthScale(), 5);
-				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(-2, 1) * rm).GetLengthScale(), 5);				
+				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(-2, 1) * rm).GetLengthScale(), 5);
 			}
 		}
 
@@ -172,8 +172,10 @@ namespace Microsoft.Maui.Graphics.Tests
 			var x = Vector2.Normalize(new Vector2(transform.M11, transform.M12));
 			var y = Vector2.Normalize(new Vector2(transform.M21, transform.M22));
 			var d = Vector2.Dot(x, y);
-			if (d < -1) d = -1;
-			if (d > 1) d = 1;
+			if (d < -1)
+				d = -1;
+			if (d > 1)
+				d = 1;
 
 			var skewAngle = (float)((Math.PI / 2) - Math.Acos(d));
 

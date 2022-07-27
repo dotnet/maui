@@ -30,12 +30,12 @@ namespace Microsoft.Maui.Graphics.Win2D
 		private Vector2 _radialGradientCenter;
 		private float _radialGradientRadius;
 
-/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
-Before:
-		private Rect _rect;
-After:
-		private global::Windows.Foundation.Rect _rect;
-*/
+		/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
+		Before:
+				private Rect _rect;
+		After:
+				private global::Windows.Foundation.Rect _rect;
+		*/
 		private WRect _rect;
 		private global::Windows.Foundation.Size _size;
 
@@ -239,42 +239,42 @@ After:
 			try
 			{
 #endif
-				var textFormat = (CurrentState.Font ?? Graphics.Font.Default).ToCanvasTextFormat(CurrentState.FontSize);
-				textFormat.VerticalAlignment = CanvasVerticalAlignment.Top;
+			var textFormat = (CurrentState.Font ?? Graphics.Font.Default).ToCanvasTextFormat(CurrentState.FontSize);
+			textFormat.VerticalAlignment = CanvasVerticalAlignment.Top;
 
-				switch (horizontalAlignment)
-				{
-					case HorizontalAlignment.Left:
-						_rect.X = x;
-						_rect.Width = CanvasSize.Width;
-						textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Left;
-						break;
-					case HorizontalAlignment.Right:
-						_rect.X = x - CanvasSize.Width;
-						_rect.Width = CanvasSize.Width;
-						textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Right;
-						break;
-					default:
-						_rect.X = x - _canvasSize.Width;
-						_rect.Width = _canvasSize.Width * 2;
-						textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Center;
-						break;
-				}
+			switch (horizontalAlignment)
+			{
+				case HorizontalAlignment.Left:
+					_rect.X = x;
+					_rect.Width = CanvasSize.Width;
+					textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Left;
+					break;
+				case HorizontalAlignment.Right:
+					_rect.X = x - CanvasSize.Width;
+					_rect.Width = CanvasSize.Width;
+					textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Right;
+					break;
+				default:
+					_rect.X = x - _canvasSize.Width;
+					_rect.Width = _canvasSize.Width * 2;
+					textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Center;
+					break;
+			}
 
-				_rect.Y = y - CurrentState.FontSize;
-				_rect.Height = CurrentState.FontSize * 2;
+			_rect.Y = y - CurrentState.FontSize;
+			_rect.Height = CurrentState.FontSize * 2;
 
-				_point1.X = (float)_rect.X;
-				_point1.Y = (float)_rect.Y;
+			_point1.X = (float)_rect.X;
+			_point1.Y = (float)_rect.Y;
 
-				var textLayout = new CanvasTextLayout(
-					_session,
-					value,
-					textFormat,
-					(float)_rect.Width,
-					(float)_rect.Height);
+			var textLayout = new CanvasTextLayout(
+				_session,
+				value,
+				textFormat,
+				(float)_rect.Width,
+				(float)_rect.Height);
 
-				Draw(ctx => ctx.DrawTextLayout(textLayout, _point1, CurrentState.PlatformFontBrush));
+			Draw(ctx => ctx.DrawTextLayout(textLayout, _point1, CurrentState.PlatformFontBrush));
 
 #if DEBUG
 
@@ -426,12 +426,12 @@ After:
 							ExtendX = CanvasEdgeBehavior.Wrap,
 							ExtendY = CanvasEdgeBehavior.Wrap,
 
-/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
-Before:
-							SourceRectangle = new Rect(
-After:
-							SourceRectangle = new global::Windows.Foundation.Rect(
-*/
+							/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
+							Before:
+														SourceRectangle = new Rect(
+							After:
+														SourceRectangle = new global::Windows.Foundation.Rect(
+							*/
 							SourceRectangle = new WRect(
 									(pattern.Width - pattern.StepX) / 2,
 									(pattern.Height - pattern.StepY) / 2,
@@ -514,12 +514,12 @@ After:
 			{
 				SetRect(x, y, width, height);
 
-/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
-Before:
-				Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, Rect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
-After:
-				Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, global::Windows.Foundation.Rect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
-*/
+				/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
+				Before:
+								Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, Rect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
+				After:
+								Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, global::Windows.Foundation.Rect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
+				*/
 				Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, WRect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
 			}
 		}

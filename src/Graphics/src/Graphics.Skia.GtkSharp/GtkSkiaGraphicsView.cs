@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				_renderer = value ?? CreateDefaultRenderer();
 				_renderer.GraphicsView = this;
 				_renderer.Drawable = _drawable;
-				_renderer.SizeChanged((int) CanvasSize.Width, (int) CanvasSize.Height);
+				_renderer.SizeChanged((int)CanvasSize.Width, (int)CanvasSize.Height);
 			}
 		}
 
@@ -62,11 +62,12 @@ namespace Microsoft.Maui.Graphics.Skia
 			_renderer?.Draw(e.Surface.Canvas, _dirtyRect);
 		}
 
-		protected override void OnSizeAllocated (Gdk.Rectangle allocation) {
-			_dirtyRect.Width = (float) allocation.Width;
-			_dirtyRect.Height = (float) allocation.Height;
-			_renderer?.SizeChanged((int) allocation.Width, (int) allocation.Height);
-			base.OnSizeAllocated (allocation);
+		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
+		{
+			_dirtyRect.Width = (float)allocation.Width;
+			_dirtyRect.Height = (float)allocation.Height;
+			_renderer?.SizeChanged((int)allocation.Width, (int)allocation.Height);
+			base.OnSizeAllocated(allocation);
 		}
 
 	}

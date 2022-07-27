@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 
 		protected virtual void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
 		{
-			if (_drawable == null) return;
+			if (_drawable == null)
+				return;
 
 			var skiaCanvas = e.Surface.Canvas;
 			skiaCanvas.Clear();

@@ -26,7 +26,7 @@ namespace GraphicsTester.Scenarios
 
 				canvas.DrawRectangle(dx, dy, 190, 140);
 
-				var verticalAlignment = (VerticalAlignment) y;
+				var verticalAlignment = (VerticalAlignment)y;
 
 				canvas.DrawString(
 					longText,

@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Graphics
 			_commands.Add(canvas => canvas.DrawString(value, x, y, horizontalAlignment));
 		}
 
-		public void DrawString(string value,float x, float y, float width, float height, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment,
+		public void DrawString(string value, float x, float y, float width, float height, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment,
 			TextFlow textFlow = TextFlow.ClipBounds, float lineSpacingAdjustment = 0)
 		{
 			_commands.Add(canvas => canvas.DrawString(value, x, y, width, height, horizontalAlignment, verticalAlignment, textFlow, lineSpacingAdjustment));

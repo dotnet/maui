@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Graphics
 
 		public PathF(float x, float y) : this()
 		{
-			MoveTo(x,y);
+			MoveTo(x, y);
 		}
 
 		public PathF()
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (_operations.Count > 0)
-					return _operations[_operations.Count-1] == PathOperation.Close;
+					return _operations[_operations.Count - 1] == PathOperation.Close;
 
 				return false;
 			}
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (_points != null && _points.Count > 0)
-					return _points[_points.Count-1];
+					return _points[_points.Count - 1];
 
 				return default;
 			}
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Graphics
 							operationsCount--;
 						}
 
-						if (_operations[_operations.Count-1] == PathOperation.Close)
+						if (_operations[_operations.Count - 1] == PathOperation.Close)
 						{
 							operationsCount--;
 						}
@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void Open()
 		{
-			if (_operations[_operations.Count-1] == PathOperation.Close)
+			if (_operations[_operations.Count - 1] == PathOperation.Close)
 			{
 				_subPathsClosed.RemoveAt(_subPathCount - 1);
 				_subPathsClosed.Add(false);
@@ -492,35 +492,41 @@ namespace Microsoft.Maui.Graphics
 					var type = _operations[s];
 					if (type == PathOperation.Move)
 					{
-						if (s == segmentIndex) return type;
+						if (s == segmentIndex)
+							return type;
 
 						pointIndex++;
 					}
 					else if (type == PathOperation.Line)
 					{
-						if (s == segmentIndex) return type;
+						if (s == segmentIndex)
+							return type;
 						pointIndex++;
 					}
 					else if (type == PathOperation.Quad)
 					{
-						if (s == segmentIndex) return type;
+						if (s == segmentIndex)
+							return type;
 						pointIndex += 2;
 					}
 					else if (type == PathOperation.Cubic)
 					{
-						if (s == segmentIndex) return type;
+						if (s == segmentIndex)
+							return type;
 						pointIndex += 3;
 					}
 					else if (type == PathOperation.Arc)
 					{
-						if (s == segmentIndex) return type;
+						if (s == segmentIndex)
+							return type;
 						pointIndex += 2;
 						arcAngleIndex += 2;
 						arcClockwiseIndex++;
 					}
 					else if (type == PathOperation.Close)
 					{
-						if (s == segmentIndex) return type;
+						if (s == segmentIndex)
+							return type;
 					}
 				}
 			}
@@ -609,7 +615,7 @@ namespace Microsoft.Maui.Graphics
 					{
 						if (segment == segmentIndex)
 						{
-							var points = new[] {_points[pointIndex]};
+							var points = new[] { _points[pointIndex] };
 							return points;
 						}
 
@@ -619,7 +625,7 @@ namespace Microsoft.Maui.Graphics
 					{
 						if (segment == segmentIndex)
 						{
-							var points = new[] {_points[pointIndex]};
+							var points = new[] { _points[pointIndex] };
 							return points;
 						}
 
@@ -630,7 +636,7 @@ namespace Microsoft.Maui.Graphics
 					{
 						if (segment == segmentIndex)
 						{
-							var points = new[] {_points[pointIndex++], _points[pointIndex]};
+							var points = new[] { _points[pointIndex++], _points[pointIndex] };
 							return points;
 						}
 
@@ -640,7 +646,7 @@ namespace Microsoft.Maui.Graphics
 					{
 						if (segment == segmentIndex)
 						{
-							var points = new[] {_points[pointIndex++], _points[pointIndex++], _points[pointIndex]};
+							var points = new[] { _points[pointIndex++], _points[pointIndex++], _points[pointIndex] };
 							return points;
 						}
 
@@ -650,7 +656,7 @@ namespace Microsoft.Maui.Graphics
 					{
 						if (segment == segmentIndex)
 						{
-							var points = new[] {_points[pointIndex++], _points[pointIndex]};
+							var points = new[] { _points[pointIndex++], _points[pointIndex] };
 							return points;
 						}
 
@@ -783,7 +789,7 @@ namespace Microsoft.Maui.Graphics
 								{
 									if (points.Length > 0)
 									{
-										_points[pointIndex] = (PointF) points[points.Length-1];
+										_points[pointIndex] = (PointF)points[points.Length - 1];
 										for (var i = 0; i < points.Length; i++)
 										{
 											_points.RemoveAt(pointIndex + 1);
@@ -1277,7 +1283,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void MovePoint(int index, float dx, float dy)
 		{
-			_points[index] = _points[index].Offset(dx,dy);
+			_points[index] = _points[index].Offset(dx, dy);
 			Invalidate();
 		}
 
@@ -1429,10 +1435,14 @@ namespace Microsoft.Maui.Graphics
 				for (int i = 1; i < path.Count; i++)
 				{
 					var point = path[i];
-					if (point.X < l) l = point.X;
-					if (point.Y < t) t = point.Y;
-					if (point.X > r) r = point.X;
-					if (point.Y > b) b = point.Y;
+					if (point.X < l)
+						l = point.X;
+					if (point.Y < t)
+						t = point.Y;
+					if (point.X > r)
+						r = point.X;
+					if (point.Y > b)
+						b = point.Y;
 				}
 			}
 
@@ -1475,7 +1485,7 @@ namespace Microsoft.Maui.Graphics
 					case PathOperation.Cubic:
 						flattenedPoints ??= new List<PointF>();
 						flattenedPoints.Clear();
-						FlattenCubicSegment(pointIndex-1, flatness, _points, flattenedPoints);
+						FlattenCubicSegment(pointIndex - 1, flatness, _points, flattenedPoints);
 						foreach (var point in flattenedPoints)
 							flattenedPath.LineTo(point);
 						pointIndex += 3;
@@ -1528,55 +1538,55 @@ namespace Microsoft.Maui.Graphics
 		}
 
 		private void FlattenCubicSegment(int index, double flatness, List<PointF> curvePoints, List<PointF> flattenedPoints)
-        {
-            int i, k;
-            var numberOfPoints = 1;
-            var vectors = new Vector2[4];
+		{
+			int i, k;
+			var numberOfPoints = 1;
+			var vectors = new Vector2[4];
 
-            double rCurve = 0;
+			double rCurve = 0;
 
-            for (i = index + 1; i <= index + 2; i++)
-            {
-                vectors[0] = (GetPointAsVector(curvePoints, i - 1) + GetPointAsVector(curvePoints, i + 1)) * 0.5f - GetPointAsVector(curvePoints, i);
+			for (i = index + 1; i <= index + 2; i++)
+			{
+				vectors[0] = (GetPointAsVector(curvePoints, i - 1) + GetPointAsVector(curvePoints, i + 1)) * 0.5f - GetPointAsVector(curvePoints, i);
 
-                double r = vectors[0].Length();
+				double r = vectors[0].Length();
 
-                if (r > rCurve)
-                    rCurve = r;
-            }
+				if (r > rCurve)
+					rCurve = r;
+			}
 
-            if (rCurve <= 0.5 * flatness)  
-            {
-                var vector = GetPointAsVector(curvePoints, index + 3);
-                flattenedPoints.Add(new Point(vector.X, vector.Y));
-                return;
-            }
+			if (rCurve <= 0.5 * flatness)
+			{
+				var vector = GetPointAsVector(curvePoints, index + 3);
+				flattenedPoints.Add(new Point(vector.X, vector.Y));
+				return;
+			}
 
-            numberOfPoints = (int)(Math.Sqrt(rCurve / flatness)) + 3;
-            if (numberOfPoints > 1000)
-                numberOfPoints = 1000; 
+			numberOfPoints = (int)(Math.Sqrt(rCurve / flatness)) + 3;
+			if (numberOfPoints > 1000)
+				numberOfPoints = 1000;
 
-            var d = 1.0f / numberOfPoints;
+			var d = 1.0f / numberOfPoints;
 
-            vectors[0] = GetPointAsVector(curvePoints, index);
-            for (i = 1; i <= 3; i++)
-            {
-                vectors[i] = DeCasteljau(curvePoints, index, i * d);
-                flattenedPoints.Add(new Point(vectors[i].X, vectors[i].Y));
-            }
+			vectors[0] = GetPointAsVector(curvePoints, index);
+			for (i = 1; i <= 3; i++)
+			{
+				vectors[i] = DeCasteljau(curvePoints, index, i * d);
+				flattenedPoints.Add(new Point(vectors[i].X, vectors[i].Y));
+			}
 
-            for (i = 1; i <= 3; i++)
-                for (k = 0; k <= (3 - i); k++)
-                    vectors[k] = vectors[k + 1] - vectors[k];
+			for (i = 1; i <= 3; i++)
+				for (k = 0; k <= (3 - i); k++)
+					vectors[k] = vectors[k + 1] - vectors[k];
 
-            for (i = 4; i <= numberOfPoints; i++)
-            {
-                for (k = 1; k <= 3; k++)
-                    vectors[k] += vectors[k - 1];
+			for (i = 4; i <= numberOfPoints; i++)
+			{
+				for (k = 1; k <= 3; k++)
+					vectors[k] += vectors[k - 1];
 
-                flattenedPoints.Add(new Point(vectors[3].X, vectors[3].Y));
-            }
-        }
+				flattenedPoints.Add(new Point(vectors[3].X, vectors[3].Y));
+			}
+		}
 
 		private Vector2 DeCasteljau(List<PointF> curvePoints, int index, float t)
 		{

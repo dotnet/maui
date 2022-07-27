@@ -749,7 +749,7 @@ namespace Microsoft.Maui.Graphics
 				}
 			}
 
-ReturnFalse:
+		ReturnFalse:
 			color = default;
 			return false;
 		}
@@ -957,7 +957,7 @@ ReturnFalse:
 
 			return true;
 
-ReturnFalse:
+		ReturnFalse:
 			quad0 = quad1 = quad2 = quad3 = default;
 			return false;
 		}
@@ -993,7 +993,7 @@ ReturnFalse:
 
 			return true;
 
-ReturnFalse:
+		ReturnFalse:
 			triplet0 = triplet1 = triplet2 = default;
 			return false;
 		}
@@ -1030,7 +1030,7 @@ ReturnFalse:
 #if NETSTANDARD2_0 || TIZEN
 				s.ToString(),
 #else
-				s, 
+				s,
 #endif
 				NumberStyles.Number, CultureInfo.InvariantCulture, out value);
 

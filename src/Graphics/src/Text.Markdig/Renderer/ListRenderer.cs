@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Graphics.Text.Renderer
 
 			foreach (var item in listBlock)
 			{
-				var listItem = (ListItemBlock) item;
+				var listItem = (ListItemBlock)item;
 
 				renderer.EnsureLine();
 				renderer.Write("• ");
@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Graphics.Text.Renderer
 			if (length > 0)
 			{
 				var attributes = new TextAttributes();
-				if (!listBlock.IsOrdered) attributes[TextAttribute.UnorderedList] = "True";
+				if (!listBlock.IsOrdered)
+					attributes[TextAttribute.UnorderedList] = "True";
 				renderer.AddTextRun(start, length, attributes);
 			}
 		}

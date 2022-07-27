@@ -4,11 +4,13 @@ using Microsoft.Maui.Graphics.Skia.Views;
 using AppKit;
 using CoreGraphics;
 
-namespace GraphicsTester.Skia {
-	public class TesterViewController : NSViewController {
-		public override void LoadView ()
+namespace GraphicsTester.Skia
+{
+	public class TesterViewController : NSViewController
+	{
+		public override void LoadView()
 		{
-			View = new TesterView ();
+			View = new TesterView();
 		}
 
 		public override void ViewDidAppear()
@@ -20,49 +22,54 @@ namespace GraphicsTester.Skia {
 		}
 	}
 
-	public class TesterView : NSView {
+	public class TesterView : NSView
+	{
 		private readonly NSTableView tableView;
 		private readonly SkiaGraphicsView graphicsView;
 		private readonly TesterTableViewSource tableSource;
 
-		public TesterView () : base ()
+		public TesterView() : base()
 		{
-			tableSource = new TesterTableViewSource ();
-			tableSource.ScenarioSelected += (drawable) => {
+			tableSource = new TesterTableViewSource();
+			tableSource.ScenarioSelected += (drawable) =>
+			{
 				graphicsView.Drawable = drawable;
 			};
 
-			tableView = new NSTableView ();
-			tableView.AddColumn (new NSTableColumn () {
+			tableView = new NSTableView();
+			tableView.AddColumn(new NSTableColumn()
+			{
 				Width = 300,
 			});
 			tableView.Source = tableSource;
 			//tableView.BackgroundColor = NSColor.White;
 
-			AddSubview (tableView);
+			AddSubview(tableView);
 
-			graphicsView = new SkiaGraphicsView ();
-			AddSubview (graphicsView);
+			graphicsView = new SkiaGraphicsView();
+			AddSubview(graphicsView);
 
-			Layout ();
+			Layout();
 
-			tableView.SelectRow (0, false);
+			tableView.SelectRow(0, false);
 		}
 
 		public override bool IsFlipped => true;
 
-		public override void Layout ()
+		public override void Layout()
 		{
 			var bounds = Bounds;
-			tableView.Frame = new CGRect (0, 0, 300, bounds.Height);
-			graphicsView.Frame = new CGRect (300, 0, bounds.Width - 300, bounds.Height);
+			tableView.Frame = new CGRect(0, 0, 300, bounds.Height);
+			graphicsView.Frame = new CGRect(300, 0, bounds.Width - 300, bounds.Height);
 		}
 
-		public override CGRect Frame {
+		public override CGRect Frame
+		{
 			get => base.Frame;
-			set {
+			set
+			{
 				base.Frame = value;
-				Layout ();
+				Layout();
 			}
 		}
 	}

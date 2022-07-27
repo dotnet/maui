@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				_renderer.GraphicsView = this;
 				_renderer.Drawable = _drawable;
 				var bounds = Bounds;
-				_renderer.SizeChanged((float) bounds.Width, (float) bounds.Height);
+				_renderer.SizeChanged((float)bounds.Width, (float)bounds.Height);
 			}
 		}
 
@@ -89,7 +89,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void DrawRect(CGRect dirtyRect)
 		{
-			if (_drawable == null) return;
+			if (_drawable == null)
+				return;
 
 			var nsGraphicsContext = NSGraphicsContext.CurrentContext;
 			var coreGraphics = nsGraphicsContext.GraphicsPort;
@@ -125,7 +126,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var newBounds = Bounds;
 			if (_lastBounds.Width != newBounds.Width || _lastBounds.Height != newBounds.Height)
 			{
-				_renderer.SizeChanged((float) newBounds.Width, (float) newBounds.Height);
+				_renderer.SizeChanged((float)newBounds.Width, (float)newBounds.Height);
 				_renderer.Invalidate();
 
 				_lastBounds = newBounds;

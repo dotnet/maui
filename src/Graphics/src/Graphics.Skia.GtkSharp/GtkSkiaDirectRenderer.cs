@@ -102,8 +102,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			float x,
 			float y,
 			float w,
-			float h) {
-			_graphicsView?.QueueDrawArea ((int) x, (int) y, (int) w, (int) h);
+			float h)
+		{
+			_graphicsView?.QueueDrawArea((int)x, (int)y, (int)w, (int)h);
 		}
 
 	}

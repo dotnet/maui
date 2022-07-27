@@ -20,10 +20,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static RectF AsRectangleF(this CGRect target)
 		{
 			return new RectF(
-				(float) target.Left,
-				(float) target.Top,
-				(float) Math.Abs(target.Width),
-				(float) Math.Abs(target.Height));
+				(float)target.Left,
+				(float)target.Top,
+				(float)Math.Abs(target.Width),
+				(float)Math.Abs(target.Height));
 		}
 
 		public static Rect AsRectangle(this CGRect target)
@@ -38,8 +38,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static SizeF AsSizeF(this CGSize target)
 		{
 			return new SizeF(
-				(float) target.Width,
-				(float) target.Height);
+				(float)target.Width,
+				(float)target.Height);
 		}
 
 		public static Size AsSize(this CGSize target)
@@ -135,12 +135,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 					while (startAngleInRadians < 0)
 					{
-						startAngleInRadians += (float) Math.PI * 2;
+						startAngleInRadians += (float)Math.PI * 2;
 					}
 
 					while (endAngleInRadians < 0)
 					{
-						endAngleInRadians += (float) Math.PI * 2;
+						endAngleInRadians += (float)Math.PI * 2;
 					}
 
 					var cx = (bottomRight.X + topLeft.X) / 2;
@@ -224,12 +224,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 				while (startAngleInRadians < 0)
 				{
-					startAngleInRadians += (float) Math.PI * 2;
+					startAngleInRadians += (float)Math.PI * 2;
 				}
 
 				while (endAngleInRadians < 0)
 				{
-					endAngleInRadians += (float) Math.PI * 2;
+					endAngleInRadians += (float)Math.PI * 2;
 				}
 
 				var cx = (bottomRight.X + topLeft.X) / 2;
@@ -304,12 +304,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 					while (startAngleInRadians < 0)
 					{
-						startAngleInRadians += (float) Math.PI * 2;
+						startAngleInRadians += (float)Math.PI * 2;
 					}
 
 					while (endAngleInRadians < 0)
 					{
-						endAngleInRadians += (float) Math.PI * 2;
+						endAngleInRadians += (float)Math.PI * 2;
 					}
 
 					var cx = (bottomRight.X + topLeft.X) / 2;
@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static PointF AsPointF(this CGPoint target)
 		{
-			return new PointF((float) target.X, (float) target.Y);
+			return new PointF((float)target.X, (float)target.Y);
 		}
 
 		public static Point AsPoint(this CGPoint target)
@@ -418,10 +418,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			var midY = minY + rect.Height / 2;
 
 			context.MoveTo(minX, midY);
-			context.AddArcToPoint(minX, minY, midX, minY, (float) actualRadius);
-			context.AddArcToPoint(maxX, minY, maxX, midY, (float) actualRadius);
-			context.AddArcToPoint(maxX, maxY, midX, maxY, (float) actualRadius);
-			context.AddArcToPoint(minX, maxY, minX, midY, (float) actualRadius);
+			context.AddArcToPoint(minX, minY, midX, minY, (float)actualRadius);
+			context.AddArcToPoint(maxX, minY, maxX, midY, (float)actualRadius);
+			context.AddArcToPoint(maxX, maxY, midX, maxY, (float)actualRadius);
+			context.AddArcToPoint(minX, maxY, minX, midY, (float)actualRadius);
 			context.ClosePath();
 		}
 

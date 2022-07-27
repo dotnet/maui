@@ -279,10 +279,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				var paint = StrokePaint;
 
-				var r = (int) (_strokeColor.Red * 255f);
-				var g = (int) (_strokeColor.Green * 255f);
-				var b = (int) (_strokeColor.Blue * 255f);
-				var a = (int) (_strokeColor.Alpha * 255f * Alpha);
+				var r = (int)(_strokeColor.Red * 255f);
+				var g = (int)(_strokeColor.Green * 255f);
+				var b = (int)(_strokeColor.Blue * 255f);
+				var a = (int)(_strokeColor.Alpha * 255f * Alpha);
 
 				paint.SetARGB(a, r, g, b);
 				return paint;
@@ -295,10 +295,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				var paint = FillPaint;
 
-				var r = (int) (_fillColor.Red * 255f);
-				var g = (int) (_fillColor.Green * 255f);
-				var b = (int) (_fillColor.Blue * 255f);
-				var a = (int) (_fillColor.Alpha * 255f * Alpha);
+				var r = (int)(_fillColor.Red * 255f);
+				var g = (int)(_fillColor.Green * 255f);
+				var b = (int)(_fillColor.Blue * 255f);
+				var a = (int)(_fillColor.Alpha * 255f * Alpha);
 
 				paint.SetARGB(a, r, g, b);
 				return paint;
@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				shadowPaint.SetStyle(global::Android.Graphics.Paint.Style.Fill);
 				shadowPaint.AntiAlias = true;
 				shadowPaint.SetShadowLayer(_shadowBlur, _shadowX * sx, _shadowY * sy, _shadowColor);
-				shadowPaint.Alpha = (int) (Alpha * 255f);
+				shadowPaint.Alpha = (int)(Alpha * 255f);
 				return shadowPaint;
 			}
 
@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				imagePaint.SetARGB(255, 0, 0, 0);
 				imagePaint.SetStyle(global::Android.Graphics.Paint.Style.Fill);
 				imagePaint.AntiAlias = true;
-				imagePaint.Alpha = (int) (Alpha * 255f);
+				imagePaint.Alpha = (int)(Alpha * 255f);
 			}
 
 			return imagePaint;

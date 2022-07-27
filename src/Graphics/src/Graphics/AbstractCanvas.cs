@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Graphics
 			var transform = _currentState.Transform;
 			transform = Matrix3x2.CreateTranslation(x, y) * transform;
 			transform = Matrix3x2.CreateRotation(radians) * transform;
-			transform = Matrix3x2.CreateTranslation(-x, -y) * transform;			
+			transform = Matrix3x2.CreateTranslation(-x, -y) * transform;
 			_currentState.Transform = transform;
 
 			PlatformRotate(degrees, radians, x, y);
@@ -284,8 +284,8 @@ namespace Microsoft.Maui.Graphics
 		{
 			var radians = GeometryUtil.DegreesToRadians(degrees);
 
-			var transform = _currentState.Transform;			
-			transform = Matrix3x2.CreateRotation(radians) * transform;			
+			var transform = _currentState.Transform;
+			transform = Matrix3x2.CreateRotation(radians) * transform;
 			_currentState.Transform = transform;
 
 			PlatformRotate(degrees, radians);

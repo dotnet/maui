@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (color != null)
 			{
 				color.GetRGBA(out var red, out var green, out var blue, out var alpha);
-				return new Color((float) red, (float) green, (float) blue, (float) alpha);
+				return new Color((float)red, (float)green, (float)blue, (float)alpha);
 			}
 
 			return new Color(1f, 1f, 1f, 1f); // White

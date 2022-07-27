@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var convertedColorspace = color.UsingColorSpace(NSColorSpace.GenericRGBColorSpace);
 			convertedColorspace.GetRgba(out var red, out var green, out var blue, out var alpha);
-			return new Color((float) red, (float) green, (float) blue, (float) alpha);
+			return new Color((float)red, (float)green, (float)blue, (float)alpha);
 		}
 
 		public static string ToHex(this NSColor color)

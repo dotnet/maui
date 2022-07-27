@@ -21,7 +21,7 @@ namespace GraphicsTester.Scenarios
 			var rectHeight = 20;
 			canvas.Translate(0, 10);
 			canvas.DrawRectangle(10, 0, 100, rectHeight);
-			canvas.DrawString("Really Short 1",  10, 0, 100, rectHeight, HorizontalAlignment.Center, VerticalAlignment.Center);
+			canvas.DrawString("Really Short 1", 10, 0, 100, rectHeight, HorizontalAlignment.Center, VerticalAlignment.Center);
 			canvas.DrawLine(10, rectHeight / 2, 100, rectHeight / 2);
 
 			rectHeight -= 2;
@@ -33,7 +33,7 @@ namespace GraphicsTester.Scenarios
 			rectHeight -= 2;
 			canvas.Translate(0, 30);
 			canvas.DrawRectangle(10, 0, 100, rectHeight);
-			canvas.DrawString("Really Short 3",  10, 0, 100, rectHeight, HorizontalAlignment.Center, VerticalAlignment.Center);
+			canvas.DrawString("Really Short 3", 10, 0, 100, rectHeight, HorizontalAlignment.Center, VerticalAlignment.Center);
 			canvas.DrawLine(10, rectHeight / 2, 100, rectHeight / 2);
 
 			rectHeight -= 2;
@@ -79,7 +79,7 @@ namespace GraphicsTester.Scenarios
 			rectHeight = 20;
 			canvas.Translate(0, 10);
 			canvas.DrawRectangle(10, 0, 100, rectHeight);
-			canvas.DrawString("Really Short 1",  10, 0, 100, rectHeight, HorizontalAlignment.Center, VerticalAlignment.Bottom);
+			canvas.DrawString("Really Short 1", 10, 0, 100, rectHeight, HorizontalAlignment.Center, VerticalAlignment.Bottom);
 			canvas.DrawLine(10, rectHeight / 2, 100, rectHeight / 2);
 
 			rectHeight -= 2;

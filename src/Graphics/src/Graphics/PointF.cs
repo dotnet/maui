@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Graphics
 			if (!(o is PointF))
 				return false;
 
-			var compareTo = (PointF) o;
+			var compareTo = (PointF)o;
 			return Math.Abs(compareTo.X - X) < epsilon && Math.Abs(compareTo.Y - Y) < epsilon;
 		}
 

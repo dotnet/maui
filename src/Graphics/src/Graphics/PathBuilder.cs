@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Graphics
 			}
 
 			// Note: Illustrator will sometimes export numbers that look like "5.96.88", so we need to be able to handle them
-			var split = value.Split(new[] {'.'});
+			var split = value.Split(new[] { '.' });
 			if (split.Length > 2)
 			{
 				if (float.TryParse($"{split[0]}.{split[1]}", NumberStyles.Any, CultureInfo.InvariantCulture, out number))
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Graphics
 #if DEBUG_PATH
 				System.Diagnostics.Debug.WriteLine(aPathString);
 #endif
-				string[] args = pathAsString.Split(new[] {' ', '\r', '\n', '\t', ','}, StringSplitOptions.RemoveEmptyEntries);
+				string[] args = pathAsString.Split(new[] { ' ', '\r', '\n', '\t', ',' }, StringSplitOptions.RemoveEmptyEntries);
 				for (int i = args.Length - 1; i >= 0; i--)
 				{
 					string entry = args[i];

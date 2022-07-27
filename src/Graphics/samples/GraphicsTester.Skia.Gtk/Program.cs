@@ -5,20 +5,24 @@ using System;
 using Gtk;
 using Microsoft.Maui.Graphics.Skia;
 
-namespace Samples {
+namespace Samples
+{
 
-	class Program {
+	class Program
+	{
 
 		public static Application App;
 		public static Window Win;
 
 		[STAThread]
-		public static void Main(string[] args) {
+		public static void Main(string[] args)
+		{
 			Application.Init();
 
 			App = new Application("Microsoft.Maui.Graphics.Samples.Gtk.Skia", GLib.ApplicationFlags.None);
 
-			App.Startup += (s, e) => {
+			App.Startup += (s, e) =>
+			{
 
 				Win = new MainWindow();
 				App.AddWindow(Win);
@@ -40,15 +44,18 @@ namespace Samples {
 				Win.ShowAll();
 			};
 
-			App.Activated += (s, e) => {
+			App.Activated += (s, e) =>
+			{
 				App.Windows[0].Present();
 			};
 
-			((GLib.Application) App).Run();
+			((GLib.Application)App).Run();
 		}
 
-		private static void AboutActivated(object sender, EventArgs e) {
-			var dialog = new AboutDialog {
+		private static void AboutActivated(object sender, EventArgs e)
+		{
+			var dialog = new AboutDialog
+			{
 				TransientFor = Win,
 				ProgramName = $"{nameof(GtkSkiaGraphicsView)} Sample Application",
 				Version = "1.0.0.0",
@@ -63,8 +70,9 @@ namespace Samples {
 			dialog.Hide();
 		}
 
-		private static void QuitActivated(object sender, EventArgs e) {
-			((GLib.Application) App).Quit();
+		private static void QuitActivated(object sender, EventArgs e)
+		{
+			((GLib.Application)App).Quit();
 		}
 
 	}
