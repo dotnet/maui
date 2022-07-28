@@ -16,6 +16,9 @@ steps:
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
 
+  - pwsh: |
+      gci env:
+
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
     # Provision Xcode
