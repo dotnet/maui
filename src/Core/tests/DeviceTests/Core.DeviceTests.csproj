@@ -48,6 +48,7 @@
     <Compile Remove="Handlers\*\*.cs" />
     <Compile Include="Handlers\ActivityIndicator\*.cs" />
     <Compile Include="Handlers\Button\*.cs" />
+    <Compile Include="Handlers\DatePicker\*.cs" />
     <Compile Include="Handlers\Layout\*.cs" />
     <Compile Include="Handlers\Editor\*.cs" />
     <Compile Include="Handlers\Entry\*.cs" />
