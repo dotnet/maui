@@ -3,3 +3,5 @@ override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IVi
 override Microsoft.Maui.Handlers.EntryHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED* override Microsoft.Maui.Platform.MauiDatePicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
+*REMOVED* override Microsoft.Maui.Platform.MauiTimePicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
