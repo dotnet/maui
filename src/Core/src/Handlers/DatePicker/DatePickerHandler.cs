@@ -18,9 +18,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IDatePicker, IDatePickerHandler> Mapper = new PropertyMapper<IDatePicker, IDatePickerHandler>(ViewHandler.ViewMapper)
 		{
-#if __ANDROID__
+#if ANDROID || WINDOWS
 			[nameof(IDatePicker.Background)] = MapBackground,
-#elif __IOS__
+#elif IOS
 			[nameof(IDatePicker.FlowDirection)] = MapFlowDirection,
 #endif
 			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing,

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(WindowsMauiPlatforms)</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Graphics\Graphics.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\Workload\Shared\LibraryPacks.targets" />
+
+</Project>

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 			if (slider.MaximumTrackColor != null)
 			{
 				if (uiSlider.TraitCollection.UserInterfaceIdiom != UIUserInterfaceIdiom.Mac)
-					uiSlider.MaximumTrackTintColor = slider.MinimumTrackColor.ToPlatform();
+					uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
 			}
 		}
 
