@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(_MauiDotNetTfm)-macos</TargetFramework>
+    <RootNamespace>GraphicsTester.Skia.Mac</RootNamespace>
+    <LangVersion>10.0</LangVersion>
+    <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <UseSGen>false</UseSGen>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="2.88.0" />
+    <PackageReference Include="SkiaSharp.Views" Version="2.88.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Graphics.Skia\Graphics.Skia.csproj" />
+    <ProjectReference Include="..\..\src\Graphics\Graphics.csproj" />
+    <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
+  </ItemGroup>
+
+</Project>
