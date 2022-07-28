@@ -398,8 +398,15 @@
         </ItemGroup>
 
         <!-- Tizen -->
+        <TizenSplashUpdater
+            Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            MauiSplashScreen="@(MauiSplashScreen)" />
+
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
             <MauiImage Include="@(MauiSplashScreen)" />
+            <_MauiSplashScreens Include="$(_MauiIntermediateSplashScreen)splash\*" />
+            <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
 
         <!-- Stamp file for Outputs -->
@@ -527,12 +534,6 @@
             InputsFile="$(_ResizetizerInputsFile)"
             Images="@(MauiImage->Distinct())">
         </ResizetizeImages>
-
-        <!-- Tizen - Move splash images to a specific location -->
-        <TizenSplashUpdater
-            Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(MauiSplashScreen)' != ''"
-            IntermediateOutputPath="$(_MauiIntermediateImages)"
-            MauiSplashScreen="@(MauiSplashScreen)" />
 
         <ItemGroup>
             <!-- Get Images that were generated -->
