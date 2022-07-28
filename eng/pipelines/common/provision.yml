@@ -49,6 +49,7 @@ steps:
     # Setup JDK Paths
     - bash: |
         echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
+        echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
       displayName: 'Setup JDK Paths'
     # Configure VS Mac for Xcode
     - bash: |
