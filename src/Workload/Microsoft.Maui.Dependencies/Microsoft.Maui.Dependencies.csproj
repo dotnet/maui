@@ -13,7 +13,7 @@
   <Import Project="../Shared/LibraryPacks.targets" />
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Graphics" />
+    <ProjectReference Include="..\..\..\src\Graphics\src\Graphics\Graphics.csproj" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <PackageReference Include="Xamarin.Android.Glide" />
@@ -29,13 +29,13 @@
     <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
-    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
+    <ProjectReference Include="..\..\..\src\Graphics\src\Graphics.Win2D\Graphics.Win2D.csproj" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen'" >
     <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
-    <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
+    <ProjectReference Include="..\..\..\src\Graphics\src\Graphics.Skia\Graphics.Skia.csproj" />
   </ItemGroup>
 
 </Project>

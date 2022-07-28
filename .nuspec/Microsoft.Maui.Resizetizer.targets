@@ -49,6 +49,10 @@
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GeneratePackageAppxManifest" />
 
+  <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateTizenManifest" />
+
     <PropertyGroup>
         <CleanDependsOn>
             $(CleanDependsOn);
@@ -93,7 +97,7 @@
         <_ResizetizerIsiOSApp Condition="( '$(_ResizetizerPlatformIsiOS)' == 'True' OR '$(_ResizetizerPlatformIsMacCatalyst)' == 'True' ) And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
         <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(_ResizetizerPlatformIsWindows)' == 'True'">True</_ResizetizerIsWPFApp>
         <_ResizetizerIsWindowsAppSdk Condition="('$(ProjectReunionWinUI)'=='True' Or '$(WindowsAppSDKWinUI)'=='True') And '$(_ResizetizerPlatformIsWindows)' == 'True' And ('$(OutputType)' == 'WinExe' Or '$(OutputType)' == 'Exe')">True</_ResizetizerIsWindowsAppSdk>
-        <_ResizetizerIsTizenApp Condition="'$(_ResizetizerPlatformIsTizen)' == 'True'">True</_ResizetizerIsTizenApp>
+        <_ResizetizerIsTizenApp Condition="'$(_ResizetizerPlatformIsTizen)' == 'True' And ( '$(OutputType)' == 'Exe' )">True</_ResizetizerIsTizenApp>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True'">
@@ -393,9 +397,16 @@
             <FileWrites Include="@(_MauiSplashAssets)" />
         </ItemGroup>
 
-      <!-- Tizen -->
+        <!-- Tizen -->
+        <TizenSplashUpdater
+            Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            MauiSplashScreen="@(MauiSplashScreen)" />
+
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
             <MauiImage Include="@(MauiSplashScreen)" />
+            <_MauiSplashScreens Include="$(_MauiIntermediateSplashScreen)splash\*" />
+            <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
 
         <!-- Stamp file for Outputs -->
@@ -523,13 +534,6 @@
             InputsFile="$(_ResizetizerInputsFile)"
             Images="@(MauiImage->Distinct())">
         </ResizetizeImages>
-
-        <!-- Tizen - Move splash images to a specific location -->
-        <TizenSplashUpdater
-            Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(MauiSplashScreen)' != ''"
-            IntermediateOutputPath="$(_MauiIntermediateImages)"
-            ManifestFile="$(TizenManifestFile)"
-            MauiSplashScreen="@(MauiSplashScreen)" />
 
         <ItemGroup>
             <!-- Get Images that were generated -->
@@ -733,7 +737,36 @@
                 <_Parameter2>@(_MauiAppxManifestVersion)</_Parameter2>
             </AssemblyAttribute>
         </ItemGroup>
+    </Target>
 
+    <Target Name="MauiGenerateTizenManifest"
+            Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
+            BeforeTargets="$(ResizetizeBeforeTargets)"
+            AfterTargets="$(ResizetizeImages)"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);$(TizenManifestFile)"
+            Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)tizen-manifest.xml">
+
+        <GenerateTizenManifest
+            IntermediateOutputPath="$(_MauiIntermediateManifest)"
+            TizenManifestFile="$(TizenManifestFile)"
+            GeneratedFilename="tizen-manifest.xml"
+            ApplicationId="$(ApplicationId)"
+            ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
+            ApplicationVersion="$(ApplicationVersion)"
+            ApplicationTitle="$(ApplicationTitle)"
+            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
+            SplashScreen="@(MauiSplashScreen)" />
+
+        <!-- replace user manifest -->
+        <PropertyGroup>
+          <TizenManifestFile>$(_MauiIntermediateManifest)tizen-manifest.xml</TizenManifestFile>
+        </PropertyGroup>
+
+        <!-- Stamp file for Outputs -->
+        <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
+        <ItemGroup>
+          <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
     </Target>
 
     <Target Name="_CleanResizetizer">

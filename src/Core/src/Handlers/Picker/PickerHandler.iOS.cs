@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		UIPickerView? _pickerView;
 
-#if IOS && !MACCATALYST
+#if !MACCATALYST
 		protected override MauiPicker CreatePlatformView()
 		{
 			_pickerView = new UIPickerView();
@@ -97,9 +97,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditingDidEnd += OnEnded;
 			platformView.EditingChanged += OnEditing;
 
-			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
-
 			base.ConnectHandler(platformView);
 		}
 
@@ -109,19 +106,14 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditingDidEnd -= OnEnded;
 			platformView.EditingChanged -= OnEditing;
 
-			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
-
 			if (_pickerView != null)
 			{
 				if (_pickerView.Model != null)
 				{
-					_pickerView.Model.Dispose();
 					_pickerView.Model = null;
 				}
 
 				_pickerView.RemoveFromSuperview();
-				_pickerView.Dispose();
 				_pickerView = null;
 			}
 
@@ -130,13 +122,13 @@ namespace Microsoft.Maui.Handlers
 
 		static void Reload(IPickerHandler handler)
 		{
-			if (handler.VirtualView == null || handler.PlatformView == null)
-				return;
-
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 
+		// Uncomment me on NET7 [Obsolete]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
+
+		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
 
 		public static void MapTitle(IPickerHandler handler, IPicker picker)
 		{
@@ -216,11 +208,6 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.UndoManager?.RemoveAllActions();
 		}
 
-		void OnRowsCollectionChanged(object? sender, EventArgs e)
-		{
-			Reload(this);
-		}
-
 		void UpdatePickerFromPickerSource(PickerSource? pickerSource)
 		{
 			if (VirtualView == null || PlatformView == null || pickerSource == null)
@@ -254,14 +241,32 @@ namespace Microsoft.Maui.Handlers
 
 	public class PickerSource : UIPickerViewModel
 	{
-		bool _disposed;
+		WeakReference<PickerHandler>? _weakReference;
 
 		public PickerSource(PickerHandler? handler)
 		{
 			Handler = handler;
 		}
 
-		public PickerHandler? Handler { get; set; }
+		public PickerHandler? Handler
+		{
+			get
+			{
+				if (_weakReference?.TryGetTarget(out PickerHandler? target) == true)
+					return target;
+
+				return null;
+			}
+			set
+			{
+				_weakReference = null;
+				if (value == null)
+					return;
+
+				_weakReference = new WeakReference<PickerHandler>(value);
+			}
+		}
+
 		public int SelectedIndex { get; internal set; }
 
 		public override nint GetComponentCount(UIPickerView picker) => 1;
@@ -286,22 +291,6 @@ namespace Microsoft.Maui.Handlers
 
 				platformView.UpdatePicker(virtualView, SelectedIndex);
 			}
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (_disposed)
-				return;
-
-			_disposed = true;
-
-			if (disposing)
-			{
-				if (Handler != null)
-					Handler = null;
-			}
-
-			base.Dispose(disposing);
 		}
 	}
 }

@@ -1,22 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.microsoft.maui.singleproject" version="1.0.0" api-version="7" xmlns="http://tizen.org/ns/packages">
+<manifest package="maui-application-id-placeholder" version="0.0.0" api-version="7" xmlns="http://tizen.org/ns/packages">
   <profile name="common" />
-  <ui-application appid="com.microsoft.maui.singleproject" exec="Maui.Controls.Sample.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" launch_mode="single">
-    <label>SingleProject</label>
-    <icon>appicon.xhigh.png</icon>
+  <ui-application appid="maui-application-id-placeholder" exec="Maui.Controls.Sample.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" launch_mode="single">
+    <label>maui-application-title-placeholder</label>
+    <icon>maui-appicon-placeholder</icon>
     <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
-    <splash-screens>
-      <splash-screen src="splash/appicon_foreground.ldpi.png" type="img" dpi="ldpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-      <splash-screen src="splash/appicon_foreground.ldpi.png" type="img" dpi="ldpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-      <splash-screen src="splash/appicon_foreground.mdpi.png" type="img" dpi="mdpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-      <splash-screen src="splash/appicon_foreground.mdpi.png" type="img" dpi="mdpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-      <splash-screen src="splash/appicon_foreground.hdpi.png" type="img" dpi="hdpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-      <splash-screen src="splash/appicon_foreground.hdpi.png" type="img" dpi="hdpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-      <splash-screen src="splash/appicon_foreground.xhdpi.png" type="img" dpi="xhdpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-      <splash-screen src="splash/appicon_foreground.xhdpi.png" type="img" dpi="xhdpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-      <splash-screen src="splash/appicon_foreground.xxhdpi.png" type="img" dpi="xxhdpi" orientation="portrait" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-      <splash-screen src="splash/appicon_foreground.xxhdpi.png" type="img" dpi="xxhdpi" orientation="landscape" indicator-display="false" app-control-operation="http://tizen.org/appcontrol/operation/default" />
-    </splash-screens>
+    <splash-screens />
   </ui-application>
   <shortcut-list />
   <dependencies />

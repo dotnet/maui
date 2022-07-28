@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ContentPanel platformView, IBorderStroke border)
 		{
-			var hasBorder = border.Shape != null && border.Stroke != null;
+			var hasBorder = border.Shape != null;
 
 			if (hasBorder)
 			{
@@ -222,9 +222,8 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
 		{
-
-			if (border is IView v)
-				(platformView as ContentPanel)?.UpdateBackground(v.Background);
+			if (border is IView view)
+				(platformView as ContentPanel)?.UpdateBackground(view.Background);
 
 			if (platformView is Control control)
 				control.UpdateBackground((Paint?)null);
