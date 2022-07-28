@@ -16,9 +16,6 @@ steps:
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
 
-  - pwsh: |
-      gci env:
-
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
     # Provision Xcode
@@ -49,11 +46,6 @@ steps:
         echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
       displayName: 'Setup SDK Paths'
       condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
-    # Setup JDK Paths
-    - bash: |
-        echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
-        echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
-      displayName: 'Setup JDK Paths'
     # Configure VS Mac for Xcode
     - bash: |
         set -x
@@ -110,6 +102,27 @@ steps:
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
+
+    - pwsh: |
+        if ($env:JAVA_HOME) {
+          echo "JAVA_HOME already set to '$env:JAVA_HOME'"
+        } else {
+          if ($env:JAVA_HOME_11_X64) {
+            $env:JAVA_HOME = $env:JAVA_HOME_11_X64
+          } else {
+            $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-11.*\bin\java.exe) | Select-Object -First 1
+            if ($path -and (Test-Path $path)) {
+              $env:JAVA_HOME = $path.Directory.Parent.FullName
+            }
+          }
+          if ($env:JAVA_HOME) {
+            echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
+            echo "JAVA_HOME set to '$env:JAVA_HOME'"
+          } else {
+            echo "Unable to set JAVA_HOME"
+          }
+        }
+      displayName: 'Setup JDK Paths'
 
   # Prepare Both
   - pwsh: ./build.ps1 --target provision
