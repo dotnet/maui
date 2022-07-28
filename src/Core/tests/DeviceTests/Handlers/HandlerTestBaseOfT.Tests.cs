@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 				handler.DisconnectHandler();
 			});
 		}
-    
+
 		[Fact(DisplayName = "Automation Id is set correctly")]
 		public async Task SetAutomationId()
 		{
@@ -170,7 +170,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(handler.ContainerView);
 		}
 
-		[Theory(DisplayName = "Native View Bounds are not empty")]
+		[Theory(DisplayName = "Native View Bounds are not empty"
+#if WINDOWS
+			, Skip = "Causes intermittent crashes on windows"
+#endif
+		)]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -186,7 +190,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEqual(platformViewBounds, new Graphics.Rect());
 		}
 
-		[Theory(DisplayName = "Native View Bounding Box are not empty")]
+		[Theory(DisplayName = "Native View Bounding Box are not empty"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/9054"
+#endif
+		)]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -233,7 +241,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory(DisplayName = "Native View Transforms are not empty"
 #if __IOS__
-			, Skip = "https://github.com/dotnet/maui/issues/3600"
+					, Skip = "https://github.com/dotnet/maui/issues/3600"
 #endif
 			)]
 		[InlineData(1)]

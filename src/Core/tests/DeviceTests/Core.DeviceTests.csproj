@@ -42,7 +42,6 @@
   <!-- include/exclude the *.<platform>.cs files -->
   <ItemGroup>
     <None Include="@(Compile)" />
-    <None Include="Handlers\Entry\EntryHandlerTests.Windows.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <Compile Remove="Handlers\*\*.cs" />

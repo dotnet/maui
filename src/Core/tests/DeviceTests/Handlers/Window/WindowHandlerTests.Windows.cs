@@ -11,6 +11,7 @@ using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -102,30 +103,19 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				FrameworkElement frameworkElement = null;
-				var content = (Panel)window.Content;
-				try
-				{
-					var scopedContext = new MauiContext(MauiContext.Services);
-					scopedContext.AddWeakSpecific(window);
-					var mauiContext = scopedContext.MakeScoped(true);
-					var windowManager = mauiContext.GetNavigationRootManager();
-					windowManager.Connect(window.Content.ToPlatform(mauiContext));
-					frameworkElement = windowManager.RootView;
+				var scopedContext = new MauiContext(MauiContext.Services);
+				scopedContext.AddWeakSpecific(window);
+				var mauiContext = scopedContext.MakeScoped(true);
+				var windowManager = mauiContext.GetNavigationRootManager();
+				windowManager.Connect(window.Content.ToPlatform(mauiContext));
+				var frameworkElement = windowManager.RootView;
 
-					var taskCompletionSource = new TaskCompletionSource<object>();
-					frameworkElement.Loaded += (object _, RoutedEventArgs __) => taskCompletionSource.SetResult(true);
-					content.Children.Add(frameworkElement);
-					await taskCompletionSource.Task;
-					await action(windowManager);
-				}
-				finally
+				await AssertionExtensions.AttachAndRun(frameworkElement, async () =>
 				{
-					if (frameworkElement != null)
-						content.Children.Remove(frameworkElement);
-				}
+					await action.Invoke(windowManager);
+				});
 
-				return Task.CompletedTask;
+				return;
 			});
 		}
 	}
