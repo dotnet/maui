@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+      <DisableFastUpToDateCheck>false</DisableFastUpToDateCheck>
+  </PropertyGroup>
+</Project>
