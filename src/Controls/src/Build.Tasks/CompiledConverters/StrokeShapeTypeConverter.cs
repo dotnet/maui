@@ -206,7 +206,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 			yield return Instruction.Create(OpCodes.Dup);
 			yield return Instruction.Create(OpCodes.Ldc_I4, i);
 
-			foreach (var instruction in pointTypeConverter.CreatePoint (module, points[i]))
+			foreach (var instruction in pointTypeConverter.CreatePoint(module, points[i]))
 			{
 				yield return instruction;
 			}
