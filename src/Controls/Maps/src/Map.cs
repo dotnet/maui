@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		// center on Rome by default
-		public Map() : this(new MapSpan(new Position(41.890202, 12.492049), 0.1, 0.1))
+		public Map() : this(new MapSpan(new Devices.Sensors.Location(41.890202, 12.492049), 0.1, 0.1))
 		{
 		}
 
@@ -116,15 +117,15 @@ namespace Microsoft.Maui.Controls.Maps
 
 		public event EventHandler<MapClickedEventArgs> MapClicked;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendMapClicked(Position position) => MapClicked?.Invoke(this, new MapClickedEventArgs(position));
+	//	[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendMapClick(Location position) => MapClicked?.Invoke(this, new MapClickedEventArgs(position));
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetVisibleRegion(MapSpan value) => VisibleRegion = value;
+		//[EditorBrowsable(EditorBrowsableState.Never)]
+		//public void SetVisibleRegion(MapSpan value) => VisibleRegion = value;
 		public MapSpan VisibleRegion
 		{
 			get { return _visibleRegion; }
-			internal set
+			set
 			{
 				if (_visibleRegion == value)
 					return;

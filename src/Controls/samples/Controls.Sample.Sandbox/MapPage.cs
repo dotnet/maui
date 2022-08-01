@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
 namespace Maui.Controls.Sample
@@ -23,7 +24,7 @@ namespace Maui.Controls.Sample
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 
-			var map = new Microsoft.Maui.Controls.Maps.Map();
+			var map = new Microsoft.Maui.Controls.Maps.Map(new MapSpan(new Location(41.0116556, -8.642892), 0.1, 0.1));
 			Grid.SetColumnSpan(map, 2);
 
 			var lbl = new Label { Text = "MapType" };

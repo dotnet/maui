@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Controls.Maps
 {
 	public class MapClickedEventArgs
 	{
-		public Position Position { get; }
+		public Location Position { get; }
 
-		public MapClickedEventArgs(Position position)
+		public MapClickedEventArgs(Location position)
 		{
 			Position = position;
 		}

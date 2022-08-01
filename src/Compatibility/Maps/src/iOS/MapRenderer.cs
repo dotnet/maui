@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Maps;
 
 #if __MOBILE__
 using UIKit;
@@ -342,7 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 			var tapPoint = recognizer.LocationInView(Control);
 			var tapGPS = ((MKMapView)Control).ConvertPoint(tapPoint, Control);
-			((Map)Element).SendMapClicked(new Position(tapGPS.Latitude, tapGPS.Longitude));
+			((Map)Element).SendMapClick(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
 		}
 #endif
 
@@ -400,12 +401,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			var mapModel = (Map)Element;
 			var mkMapView = (MKMapView)Control;
 
-			mapModel.SetVisibleRegion(new MapSpan(new Position(mkMapView.Region.Center.Latitude, mkMapView.Region.Center.Longitude), mkMapView.Region.Span.LatitudeDelta, mkMapView.Region.Span.LongitudeDelta));
+			mapModel.VisibleRegion = new MapSpan(new Devices.Sensors.Location(mkMapView.Region.Center.Latitude, mkMapView.Region.Center.Longitude), mkMapView.Region.Span.LatitudeDelta, mkMapView.Region.Span.LongitudeDelta);
 		}
 
 		void MoveToRegion(MapSpan mapSpan, bool animated = true)
 		{
-			Position center = mapSpan.Center;
+			var center = mapSpan.Center;
 			var mapRegion = new MKCoordinateRegion(new CLLocationCoordinate2D(center.Latitude, center.Longitude), new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
 			((MKMapView)Control).SetRegion(mapRegion, animated);
 		}

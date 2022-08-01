@@ -10,17 +10,36 @@ using Microsoft.Maui.Dispatching;
 using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Handlers;
+using System.Drawing;
+using Microsoft.Maui.Maps.Platform;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
+	public class CustomMKMapView : MKMapView
+	{
+		internal event EventHandler<EventArgs>? LayoutSubviewsFired;
+		public override void LayoutSubviews()
+		{
+			LayoutSubviewsFired?.Invoke(this, new EventArgs());
+			base.LayoutSubviews();
+		}
+	}
+
 	public partial class MapHandler : ViewHandler<IMap, MKMapView>
 	{
 		CLLocationManager? _locationManager;
 		object? _lastTouchedView;
+		bool _shouldUpdateRegion;
+
+		UITapGestureRecognizer? _mapClickedGestureRecognizer;
+
 
 		protected override MKMapView CreatePlatformView()
 		{
-			return new MKMapView();
+			// See if we've got an MKMapView available in the pool; if so, use it
+			var mapView = MapPool.Get() ?? new CustomMKMapView();
+
+			return mapView;
 		}
 
 		protected override void ConnectHandler(MKMapView platformView)
@@ -28,8 +47,16 @@ namespace Microsoft.Maui.Maps.Handlers
 			base.ConnectHandler(platformView);
 			_locationManager = new CLLocationManager();
 
-			PlatformView.GetViewForAnnotation = GetViewForAnnotation;
+			_shouldUpdateRegion = true;
+			PlatformView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
+
+			if(platformView is CustomMKMapView customMKMapView)
+				customMKMapView.LayoutSubviewsFired += CustomMKMapViewLayoutSubviewsFired;
+
 			PlatformView.DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
+			PlatformView.RegionChanged += MkMapViewOnRegionChanged;
+			PlatformView.GetViewForAnnotation = GetViewForAnnotation;
+			//PlatformView.OverlayRenderer = GetViewForOverlay;
 
 			var mapsPinsItemsSource = (ObservableCollection<IMapPin>)VirtualView.Pins;
 			mapsPinsItemsSource.CollectionChanged += OnPinCollectionChanged;
@@ -40,6 +67,22 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			base.DisconnectHandler(platformView);
 
+			if (_mapClickedGestureRecognizer != null)
+			{
+				PlatformView.RemoveGestureRecognizer(_mapClickedGestureRecognizer);
+				_mapClickedGestureRecognizer.Dispose();
+				_mapClickedGestureRecognizer = null;
+			}
+
+			if (platformView is CustomMKMapView customMKMapView)
+				customMKMapView.LayoutSubviewsFired -= CustomMKMapViewLayoutSubviewsFired;
+
+
+			platformView.DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
+			platformView.RegionChanged -= MkMapViewOnRegionChanged;
+			platformView.GetViewForAnnotation = null;
+			//platformView.OverlayRenderer = null;
+		
 			var mapsPinsItemsSource = (ObservableCollection<IMapPin>)VirtualView.Pins;
 			mapsPinsItemsSource.CollectionChanged -= OnPinCollectionChanged;
 
@@ -47,6 +90,58 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				pin.PropertyChanged -= PinOnPropertyChanged;
 			}
+
+			// This handler is done with the MKMapView; we can put it in the pool
+			// for other rendererers to use in the future
+			MapPool.Add(platformView);
+		}
+
+		//protected virtual MKOverlayRenderer GetViewForOverlay(MKMapView mapview, IMKOverlay overlay)
+		//{
+		//	//switch (overlay)
+		//	//{
+		//	//	case MKPolyline polyline:
+		//	//		return GetViewForPolyline(polyline);
+		//	//	case MKPolygon polygon:
+		//	//		return GetViewForPolygon(polygon);
+		//	//	case MKCircle circle:
+		//	//		return GetViewForCircle(circle);
+		//	//}
+
+		//	return null;
+		//}
+
+		void CustomMKMapViewLayoutSubviewsFired(object? sender, EventArgs e)
+		{
+			UpdateRegion();
+		}
+
+		void OnMapClicked(UITapGestureRecognizer recognizer)
+		{
+			var tapPoint = recognizer.LocationInView(PlatformView);
+			var tapGPS = PlatformView.ConvertPoint(tapPoint, PlatformView);
+			VirtualView.SendMapClick(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+		}
+
+		void UpdateRegion()
+		{
+			if (_shouldUpdateRegion)
+			{
+				MoveToRegion(VirtualView.LastMoveToRegion, false);
+				_shouldUpdateRegion = false;
+			}
+		}
+
+		void MkMapViewOnRegionChanged(object? sender, MKMapViewChangeEventArgs e)
+		{
+			VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(PlatformView.Region.Center.Latitude, PlatformView.Region.Center.Longitude), PlatformView.Region.Span.LatitudeDelta, PlatformView.Region.Span.LongitudeDelta);
+		}
+
+		void MoveToRegion(MapSpan mapSpan, bool animated = true)
+		{
+			var center = mapSpan.Center;
+			var mapRegion = new MKCoordinateRegion(new CLLocationCoordinate2D(center.Latitude, center.Longitude), new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
+			PlatformView.SetRegion(mapRegion, animated);
 		}
 
 		MKAnnotationView GetViewForAnnotation(MKMapView mapView, IMKAnnotation annotation)

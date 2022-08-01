@@ -1,7 +1,10 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
+using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Controls.Maps
+namespace Microsoft.Maui.Maps
 {
 	public struct Distance
 	{
@@ -49,7 +52,7 @@ namespace Microsoft.Maui.Controls.Maps
 			return new Distance(kilometers * MetersPerKilometer);
 		}
 
-		public static Distance BetweenPositions(Position position1, Position position2)
+		public static Distance BetweenPositions(Location position1, Location position2)
 		{
 			var latitude1 = position1.Latitude.ToRadians();
 			var longitude1 = position1.Longitude.ToRadians();
@@ -74,7 +77,7 @@ namespace Microsoft.Maui.Controls.Maps
 			return Meters.Equals(other.Meters);
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (ReferenceEquals(null, obj))
 				return false;

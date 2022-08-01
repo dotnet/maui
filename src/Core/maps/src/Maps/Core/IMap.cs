@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Maps
 {
@@ -8,7 +9,9 @@ namespace Microsoft.Maui.Maps
 	public interface IMap : IView
 	{
 
-		MapArea VisibleArea { get; set; }
+		MapSpan LastMoveToRegion { get; }
+
+		MapSpan VisibleRegion { get; set;  }
 
 		/// <summary>
 		/// Gets the display type of map that can be shown.
@@ -39,6 +42,11 @@ namespace Microsoft.Maui.Maps
 		/// The pins that are to be shown on this Map.
 		/// </summary>
 		IList<IMapPin> Pins { get; }
+
+
+		bool MoveToLastRegionOnLayoutChange { get; }
+
+		public void SendMapClick(Location position);
 
 	}
 }

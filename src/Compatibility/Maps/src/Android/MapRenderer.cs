@@ -19,6 +19,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Maps;
 using Microsoft.Maui.Platform;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
@@ -338,7 +339,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 			for (int i = 0; i < Map.Pins.Count; i++)
 			{
-				var pin = Map.Pins[i];
+				var pin = (Pin)Map.Pins[i];
 				if ((string)pin.MarkerId == marker.Id)
 				{
 					targetPin = pin;
@@ -386,7 +387,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 		void OnMapClick(object sender, GoogleMap.MapClickEventArgs e)
 		{
-			Map.SendMapClicked(new Position(e.Point.Latitude, e.Point.Longitude));
+			Map.SendMapClick(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
 		}
 
 		void MoveToRegion(MapSpan span, bool animate)
@@ -528,7 +529,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			LatLng lr = projection.FromScreenLocation(new global::Android.Graphics.Point(width, height));
 			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
 			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
-			Element.SetVisibleRegion(new MapSpan(new Position(pos.Latitude, pos.Longitude), dlat, dlong));
+			Element.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong));
 		}
 
 		void MapElementPropertyChanged(object sender, PropertyChangedEventArgs e)

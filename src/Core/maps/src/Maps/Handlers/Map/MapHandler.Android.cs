@@ -180,16 +180,16 @@ namespace Microsoft.Maui.Maps.Handlers
 			LatLng lr = projection.FromScreenLocation(new global::Android.Graphics.Point(width, height));
 			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
 			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
-			VirtualView.VisibleArea = new MapArea(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
+			VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
 		}
 
 		void MapViewLayoutChange(object? sender, Android.Views.View.LayoutChangeEventArgs e)
 		{
-			if (_init)
+			if (_init || VirtualView.MoveToLastRegionOnLayoutChange)
 			{
-				if (VirtualView.VisibleArea != null)
+				if (VirtualView.LastMoveToRegion != null)
 				{
-					MoveToRegion(VirtualView.VisibleArea, false);
+					MoveToRegion(VirtualView.LastMoveToRegion, false);
 				}
 				_init = false;
 			}
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
-		void MoveToRegion(MapArea span, bool animate)
+		void MoveToRegion(MapSpan span, bool animate)
 		{
 			if (Map == null)
 			{
