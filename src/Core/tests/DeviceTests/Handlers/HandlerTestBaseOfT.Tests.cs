@@ -42,23 +42,8 @@ namespace Microsoft.Maui.DeviceTests
 				FlowDirection = flowDirection
 			};
 
-			var expectedFlowDirection = flowDirection;
-
-#if WINDOWS
-			if (view is LayoutStub)
-			{
-				// On Windows, we deliberately _do not_ set the platform FlowDirection
-				// for Layouts, because the cross-platform layout code is already taking
-				// flow direction into account. The result of setting the cross-platform
-				// flow direction will always be Microsoft.UI.Xaml.FlowDirection.LeftToRight
-
-				// https://github.com/dotnet/maui/issues/9111
-				// expectedFlowDirection = FlowDirection.LeftToRight;
-			}
-#endif
-
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
-			Assert.Equal(expectedFlowDirection, id);
+			Assert.Equal(flowDirection, id);
 		}
 
 		[Theory(DisplayName = "Opacity is set correctly")]
