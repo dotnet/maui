@@ -50,7 +50,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			_allTests = new ObservableCollection<TestCaseViewModel>(runInfo.TestCases);
 			_results = new List<TestCaseViewModel>(runInfo.TestCases);
 
-			// AFAICT this doesn't currently ever happen
 			_allTests.CollectionChanged += (_, args) =>
 			{
 				lock (_results)
@@ -257,6 +256,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				return;
 			}
 
+			// This would occasionally crash when running the group operation
+			// most likely because of thread safety issues.
 			Dictionary<TestState, int> results;
 			lock (_results)
 			{

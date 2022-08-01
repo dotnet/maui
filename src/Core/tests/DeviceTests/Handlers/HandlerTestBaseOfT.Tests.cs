@@ -174,7 +174,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory(DisplayName = "Native View Bounds are not empty"
 #if WINDOWS
-			, Skip = "Causes intermittent crashes on windows"
+			, Skip = "https://github.com/dotnet/maui/issues/9054"
 #endif
 		)]
 		[InlineData(1)]
