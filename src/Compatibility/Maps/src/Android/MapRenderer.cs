@@ -199,9 +199,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 				gmap.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
 				gmap.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
 			}
-			else if (e.PropertyName == Map.TrafficEnabledProperty.PropertyName)
+			else if (e.PropertyName == Map.HasTrafficEnabledProperty.PropertyName)
 			{
-				gmap.TrafficEnabled = Map.TrafficEnabled;
+				gmap.TrafficEnabled = Map.HasTrafficEnabled;
 			}
 		}
 
@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
 
-			map.TrafficEnabled = Map.TrafficEnabled;
+			map.TrafficEnabled = Map.HasTrafficEnabled;
 			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
 			map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
 			map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
@@ -529,7 +529,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			LatLng lr = projection.FromScreenLocation(new global::Android.Graphics.Point(width, height));
 			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
 			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
-			Element.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong));
+			Element.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
 		}
 
 		void MapElementPropertyChanged(object sender, PropertyChangedEventArgs e)
