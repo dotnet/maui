@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Platform
 								view.SetBackgroundColor(color);
 								break;
 							case "drawable":
-								using (Drawable drawable = ContextCompat.GetDrawable(context, background.ResourceId))
+								using (Drawable? drawable = ContextCompat.GetDrawable(context, background.ResourceId))
 									view.Background = drawable;
 								break;
 						}
@@ -164,6 +164,29 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this AView platformView, IView view) =>
 			platformView.UpdateBackground(view.Background);
+
+		// TODO: NET7 make this public for net7.0
+		internal static void UpdateBackground(this EditText platformView, IView view)
+		{
+			var paint = view.Background;
+
+			if (paint.IsNullOrEmpty())
+			{
+				return;
+			}
+
+			// Remove previous background gradient if any
+			if (platformView.Background is MauiDrawable mauiDrawable)
+			{
+				platformView.Background = null;
+				mauiDrawable.Dispose();
+			}
+
+			var previousDrawable = platformView.Background;
+			var backgroundDrawable = paint!.ToDrawable(platformView.Context);
+			LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
+			platformView.Background = layer;
+		}
 
 		public static void UpdateBackground(this AView platformView, Paint? background)
 		{

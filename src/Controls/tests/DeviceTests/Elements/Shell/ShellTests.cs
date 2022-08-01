@@ -1,5 +1,4 @@
-﻿#if !IOS
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -59,6 +58,12 @@ namespace Microsoft.Maui.DeviceTests
 			int navigatedToFired = 0;
 			int shellNavigatedToFired = 0;
 
+			// If you fail these from the events then
+			// an exception is raised in the middle of the platform
+			// doing platform things which often leads to a crash
+			bool navigatedPartPassed = false;
+			bool navigatedToPartPassed = false;
+
 			contentPage.Appearing += (_, _) =>
 			{
 				contentPageAppearingFired++;
@@ -69,15 +74,15 @@ namespace Microsoft.Maui.DeviceTests
 			contentPage.NavigatedTo += (_, _) =>
 			{
 				navigatedToFired++;
-				Assert.Equal(1, contentPageAppearingFired);
+				navigatedToPartPassed = (contentPageAppearingFired == 1);
 			};
 
 			Shell shell = await CreateShellAsync(shell =>
 			{
 				shell.Navigated += (_, _) =>
 				{
-					Assert.Equal(1, contentPageAppearingFired);
 					shellNavigatedToFired++;
+					navigatedPartPassed = (contentPageAppearingFired == 1);
 
 				};
 
@@ -96,10 +101,13 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
 			{
 				await OnFrameSetToNotEmpty(contentPage);
-				Assert.Equal(1, contentPageAppearingFired);
-				Assert.Equal(1, shellNavigatedToFired);
-				Assert.Equal(1, navigatedToFired);
 			});
+
+			Assert.True(navigatedPartPassed, "Appearing fired too many times before Navigated fired");
+			Assert.True(navigatedToPartPassed, "Appearing fired too many times before NavigatedTo fired");
+			Assert.Equal(1, contentPageAppearingFired);
+			Assert.Equal(1, shellNavigatedToFired);
+			Assert.Equal(1, navigatedToFired);
 		}
 
 		[Fact(DisplayName = "Navigating During Navigated Doesnt ReFire Appearing")]
@@ -164,6 +172,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !IOS
 		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
 		public async Task SwapShellRootPageForNavigationPage()
 		{
@@ -182,6 +191,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(newPage.Frame.Height > 0);
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
@@ -305,8 +315,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-
+#if !IOS
 		[Fact(DisplayName = "Correctly Adjust to Making Currently Visible Shell Page Invisible")]
 		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
 		{
@@ -343,6 +352,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(shell.CurrentPage, page2);
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "Empty Shell")]
 		public async Task DetailsViewUpdates()
@@ -542,4 +552,3 @@ namespace Microsoft.Maui.DeviceTests
 			});
 	}
 }
-#endif

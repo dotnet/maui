@@ -12,6 +12,12 @@ namespace Microsoft.Maui
 			// functional difference to apps. Thus, hide it.
 			var mauiText = textInput.Text ?? string.Empty;
 			var platformText = text ?? string.Empty;
+
+			var maxLength = textInput.MaxLength;
+
+			if (maxLength >= 0 && platformText.Length > maxLength)
+				platformText = platformText.Substring(0, maxLength);
+
 			if (mauiText != platformText)
 				textInput.Text = platformText;
 		}

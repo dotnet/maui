@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Xml;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using SkiaSharp;
@@ -17,59 +15,47 @@ namespace Microsoft.Maui.Resizetizer
 		[Required]
 		public string IntermediateOutputPath { get; set; }
 
-		public string ManifestFile { get; set; } = "tizen-manifest.xml";
-
 		public ILogger Logger { get; private set; }
+
+		static public Dictionary<(string Resolution, string Orientation), string> splashDpiMap = new Dictionary<(string, string), string>();
+
+		const string splashDirectoryName = "splash";
+		Size hdSize = new Size(720, 1080);
+		Size fhdSize = new Size(1080, 1920);
 
 		public override bool Execute()
 		{
-			if (UpdateSplashImage())
-				UpdateManifest();
-
-			return !Log.HasLoggedErrors;
-		}
-
-		const string namespaceURI = "http://tizen.org/ns/packages";
-		const string splashDirectoryName = "splash";
-		List<string> orientations = new List<string>() { "portrait", "landscape" };
-		Size hdSize = new Size(720, 1080);
-		Size fhdSize = new Size(1080, 1920);
-		Dictionary<(string Resolution, string Orientation), string> splashDpiMap = new Dictionary<(string, string), string>();
-
-		public bool UpdateSplashImage()
-		{
-			var splash = MauiSplashScreen[0];
-
-			var info = ResizeImageInfo.Parse(splash);
-
-			var image = info.OutputName + ".png";
-			var sharedResFullPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, "shared/res/"));
-			var splashFullPath = Path.Combine(sharedResFullPath, splashDirectoryName);
+			var orientations = new List<string>() { "portrait", "landscape" };
+			var splashInfo = ResizeImageInfo.Parse(MauiSplashScreen[0]);
+			var image = splashInfo.OutputName + ".png";
+			var splashFullPath = Path.Combine(IntermediateOutputPath, splashDirectoryName);
 
 			if (Directory.Exists(splashFullPath))
 				Directory.Delete(splashFullPath, true);
 			Directory.CreateDirectory(splashFullPath);
 
+			var appTool = new SkiaSharpAppIconTools(splashInfo, Logger);
+
+			splashDpiMap.Clear();
 			foreach (var dpi in DpiPath.Tizen.SplashScreen)
 			{
-				var imageOutputPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, dpi.Path));
-				var imageFullPath = Path.Combine(imageOutputPath, image);
+				var destination = Resizer.GetFileDestination(splashInfo, dpi, IntermediateOutputPath);
+				destination = Path.ChangeExtension(destination, ".png");
+				appTool.Resize(dpi, destination);
 
-				if (File.Exists(imageFullPath))
+				if (File.Exists(destination))
 				{
 					var resolution = dpi.Path.Split('-')[1].ToLower();
 					foreach (var orientation in orientations)
 					{
-						var newImage = $"{info.OutputName}.{resolution}.{orientation}.png";
-
+						var newImage = splashInfo.OutputName + "." + resolution + "." + orientation + ".png";
+						if (splashDpiMap.ContainsKey((resolution, orientation)))
+						{
+							splashDpiMap.Remove((resolution, orientation));
+						}
 						splashDpiMap.Add((resolution, orientation), $"{splashDirectoryName}/{newImage}");
-						UpdateColorAndMoveFile(GetScreenSize(resolution, orientation), imageFullPath, Path.Combine(splashFullPath, newImage));
+						UpdateColorAndMoveFile(splashInfo, GetScreenSize(resolution, orientation), destination, Path.Combine(splashFullPath, newImage));
 					}
-				}
-				else
-				{
-					Log.LogWarning($"Unable to find splash image at {imageFullPath}.");
-					return false;
 				}
 			}
 
@@ -83,100 +69,43 @@ namespace Microsoft.Maui.Resizetizer
 				_ => orientation == "portrait" ? fhdSize : new Size(fhdSize.Height, fhdSize.Width)
 			};
 
-		public void UpdateColorAndMoveFile(Size screenSize, string sourceFilePath, string destFilePath)
+		void UpdateColorAndMoveFile(ResizeImageInfo splashInfo, Size screenSize, string sourceFilePath, string destFilePath)
 		{
-			var splash = MauiSplashScreen[0];
-
-			var splashInfo = ResizeImageInfo.Parse(splash);
-
-			var color = splashInfo.Color ?? SKColors.White;
-
-			using var bmp = SKBitmap.Decode(sourceFilePath);
-			SKImageInfo info = new SKImageInfo(screenSize.Width, screenSize.Height);
-
-			using var surface = SKSurface.Create(info);
-			SKCanvas canvas = surface.Canvas;
-			canvas.Clear(color);
-
-			using var paint = new SKPaint
+			var color = splashInfo.Color;
+			if (color == null)
 			{
-				IsAntialias = true,
-				FilterQuality = SKFilterQuality.High
-			};
-
-			var left = screenSize.Width <= bmp.Width ? 0 : (screenSize.Width - bmp.Width) / 2;
-			var top = screenSize.Height <= bmp.Height ? 0 : (screenSize.Height - bmp.Height) / 2;
-			var right = screenSize.Width <= bmp.Width ? left + screenSize.Width : left + bmp.Width;
-			var bottom = screenSize.Height <= bmp.Height ? top + screenSize.Height : top + bmp.Height;
-
-			canvas.DrawBitmap(bmp, new SKRect(left, top, right, bottom), paint);
-			canvas.Flush();
-
-			var updatedsplash = surface.Snapshot();
-
-			using var data = updatedsplash.Encode(SKEncodedImageFormat.Png, 100);
-			using var stream = File.Create(destFilePath);
-			data.SaveTo(stream);
-		}
-
-		public void UpdateManifest()
-		{
-			XmlDocument doc = new XmlDocument();
-			var xmlPath = Path.Combine(Environment.CurrentDirectory, ManifestFile);
-			try
-			{
-				doc.Load(xmlPath);
+				Log.LogWarning($"Unable to parse color for '{splashInfo.Filename}'.");
+				color = SKColors.White;
 			}
-			catch
+			using (SKBitmap bmp = SKBitmap.Decode(sourceFilePath))
 			{
-				Log.LogWarning($"Failed to load tizen-manifest.xml");
-				return;
-			}
-
-			var nsmgr = new XmlNamespaceManager(doc.NameTable);
-			nsmgr.AddNamespace("manifest", namespaceURI);
-			var uiApplicationNode = doc.SelectSingleNode("//manifest:ui-application", nsmgr);
-			if (uiApplicationNode == null)
-			{
-				Log.LogWarning($"Failed to find <ui-application>");
-				return;
-			}
-
-			var splashScreensNodeList = doc.SelectNodes("//manifest:splash-screens", nsmgr);
-			XmlNode splashScreensNode;
-			if (splashScreensNodeList.Count == 0)
-			{
-				splashScreensNode = doc.CreateElement("splash-screens", namespaceURI);
-				uiApplicationNode.AppendChild(splashScreensNode);
-			}
-			else
-			{
-				splashScreensNode = splashScreensNodeList[0];
-				List<XmlNode> nodesToRemove = new List<XmlNode>();
-				foreach (XmlNode splashScreenNode in splashScreensNode.ChildNodes)
+				SKImageInfo info = new SKImageInfo(screenSize.Width, screenSize.Height);
+				using (SKSurface surface = SKSurface.Create(info))
 				{
-					var dpiValue = splashScreenNode.Attributes.GetNamedItem("dpi")?.Value;
-					if (dpiValue == "mdpi" || dpiValue == "hdpi")
-						nodesToRemove.Add(splashScreenNode);
-				}
-				foreach (XmlNode node in nodesToRemove)
-				{
-					splashScreensNode.RemoveChild(node);
+					SKCanvas canvas = surface.Canvas;
+					canvas.Clear(color.Value);
+					using SKPaint paint = new SKPaint
+					{
+						IsAntialias = true,
+						FilterQuality = SKFilterQuality.High
+					};
+
+					var left = screenSize.Width <= bmp.Width ? 0 : (screenSize.Width - bmp.Width) / 2;
+					var top = screenSize.Height <= bmp.Height ? 0 : (screenSize.Height - bmp.Height) / 2;
+					var right = screenSize.Width <= bmp.Width ? left + screenSize.Width : left + bmp.Width;
+					var bottom = screenSize.Height <= bmp.Height ? top + screenSize.Height : top + bmp.Height;
+					canvas.DrawBitmap(bmp, new SKRect(left, top, right, bottom), paint);
+					canvas.Flush();
+					var updatedsplash = surface.Snapshot();
+					using (var data = updatedsplash.Encode(SKEncodedImageFormat.Png, 100))
+					{
+						using (var stream = File.Create(destFilePath))
+						{
+							data.SaveTo(stream);
+						}
+					}
 				}
 			}
-
-			foreach (var image in splashDpiMap)
-			{
-				var splashScreenNode = doc.CreateElement("splash-screen", namespaceURI);
-				splashScreenNode.SetAttribute("src", image.Value);
-				splashScreenNode.SetAttribute("type", "img");
-				splashScreenNode.SetAttribute("dpi", image.Key.Resolution);
-				splashScreenNode.SetAttribute("orientation", image.Key.Orientation);
-				splashScreenNode.SetAttribute("indicator-display", "false");
-				splashScreensNode.AppendChild(splashScreenNode);
-			}
-
-			doc.Save(xmlPath);
 		}
 	}
 }

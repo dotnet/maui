@@ -264,6 +264,76 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(window, cp.Window);
 		}
 
+		[Test]
+		public void ApplicationIsSetOnWindowBeforeAppearingIsCalledOnPage()
+		{
+			bool passed = false;
+			ContentPage cp = new ContentPage();
+			cp.Appearing += (_, _) =>
+			{
+				var findApplication = cp?.Parent?.Parent as IApplication;
+				Assert.NotNull(findApplication);
+				passed = true;
+			};
+
+			_ = new TestApp().CreateWindow(cp);
+
+			Assert.IsTrue(passed);
+		}
+
+		public void DeActivatedFiresDisappearingEvent()
+		{
+			int disappear = 0;
+			int appear = 0;
+
+			var cp = new ContentPage();
+			IWindow window = new Window(cp);
+			window.Activated();
+
+			cp.Appearing += (_, __) => appear++;
+			cp.Disappearing += (_, __) => disappear++;
+
+			window.Deactivated();
+			Assert.AreEqual(1, disappear);
+			Assert.AreEqual(0, appear);
+		}
+
+		[Test]
+		public void ReActivatedFiresCorrectActivatedEvent()
+		{
+			int disappear = 0;
+			int appear = 0;
+
+			var cp = new ContentPage();
+			IWindow window = new TestWindow(cp);
+			window.Activated();
+
+			cp.Appearing += (_, __) => appear++;
+			cp.Disappearing += (_, __) => disappear++;
+
+			Assert.AreEqual(0, disappear);
+			window.Deactivated();
+			window.Activated();
+			Assert.AreEqual(1, disappear);
+			Assert.AreEqual(1, appear);
+		}
+
+		[Test]
+		public void RemovedPageFiresDisappearing()
+		{
+			int disappear = 0;
+			int appear = 0;
+
+			var cp = new ContentPage();
+			cp.Disappearing += (_, __) => disappear++;
+
+			Window window = new TestWindow(cp);
+			(window as IWindow).Activated();
+			Assert.AreEqual(0, disappear);
+			window.Page = new ContentPage();
+			Assert.AreEqual(1, disappear);
+		}
+
 		void ValidateSetup(Application app, Page page = null)
 		{
 			var window = (Window)app.Windows[0];
@@ -279,24 +349,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(window.LogicalChildren.Count, 1);
 			Assert.AreEqual(app.NavigationProxy, window.NavigationProxy.Inner);
 			Assert.AreEqual(window.NavigationProxy, page.NavigationProxy.Inner);
-		}
-
-		public class TestApp : Application
-		{
-			public TestWindow CreateWindow() =>
-				(TestWindow)(this as IApplication).CreateWindow(null);
-
-			protected override Window CreateWindow(IActivationState activationState)
-			{
-				return new TestWindow(new ContentPage());
-			}
-		}
-
-		public class TestWindow : Window
-		{
-			public TestWindow(Page page) : base(page)
-			{
-			}
 		}
 	}
 }

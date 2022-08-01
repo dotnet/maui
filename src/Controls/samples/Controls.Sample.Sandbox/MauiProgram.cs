@@ -24,31 +24,31 @@ namespace Maui.Controls.Sample
 				.ConfigureLifecycleEvents(events =>
 				{
 #if __ANDROID__
-				// Log everything in this one
-				events.AddAndroid(android => android
-					.OnCreate((a, b) =>
-					{
-
-						Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
-#pragma warning disable CS0618 // Type or member is obsolete
-						if (GooglePlayServicesUtil.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
-#pragma warning restore 618
+					// Log everything in this one
+					events.AddAndroid(android => android
+						.OnCreate((a, b) =>
 						{
-							try
+
+							Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
+#pragma warning disable CS0618 // Type or member is obsolete
+							if (GooglePlayServicesUtil.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
+#pragma warning restore 618
 							{
-								MapsInitializer.Initialize(a);
+								try
+								{
+									MapsInitializer.Initialize(a);
+								}
+								catch (Exception e)
+								{
+									Console.WriteLine("Google Play Services Not Found");
+									Console.WriteLine("Exception: {0}", e);
+								}
 							}
-							catch (Exception e)
-							{
-								Console.WriteLine("Google Play Services Not Found");
-								Console.WriteLine("Exception: {0}", e);
-							}
-						}
 #pragma warning restore CS0618 // Type or member is obsolete
-					})
+						}));
 #endif
-				);
-			})
+				})
+			
 				.UseMauiApp<App>()
 				.Build();
 	}
@@ -56,6 +56,6 @@ namespace Maui.Controls.Sample
 	class App : Application
 	{
 		protected override Window CreateWindow(IActivationState activationState) =>
-			new Window(new MainPage());
+			new Window(new MapPage());
 	}
 }

@@ -26,12 +26,12 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IPicker.Title)] = MapTitle,
 			[nameof(IPicker.TitleColor)] = MapTitleColor,
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
-			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment
+			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
+			[nameof(IPicker.Items)] = MapItems,
 		};
 
 		public static CommandMapper<IPicker, IPickerHandler> CommandMapper = new(ViewCommandMapper)
 		{
-			["Reload"] = MapReload
 		};
 
 		static PickerHandler()

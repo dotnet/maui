@@ -82,6 +82,15 @@ dotnet cake --target=VS
 
 ### Compile with globally installed `dotnet`
 
+- Try this first. This will build using the workloads installed by VS. If you receive a build failure related to workloads we recommend using a [local dotnet build](https://github.com/dotnet/maui/blob/main/.github/DEVELOPMENT.md#compile-using-a-local-bindotnet). If you want to keep on this path, proceed to the next step and then try to run these commands again.
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS --workloads=global
+```
+
+- If you need/want to update your global workloads to the latest workloads. 
+
 > **Warning**
 > This will replace what Visual Studio has installed for your workloads so now your entire machine will be using the workloads you have installed here.
 
@@ -90,7 +99,7 @@ dotnet cake --target=VS
 > You'll probably need to run these commands with elevated privileges.
 
 > **Warning**
-> This is going to contain the "stable" versions of the packages, so you will have to clear the NuGet cache when this feed changes and when .NET ships. The various `darc-pub-dotnet-*` feeds are temporary and are generated on various builds. These feeds my disappear and be replaced with new ones as new builds come out. Make sure to verify that you are on the latest here and clear the nuget cache if it changes.
+> This is going to contain the "stable" versions of the packages, so you will have to clear the NuGet cache when this feed changes and when .NET ships. The various `darc-pub-dotnet-*` feeds are temporary and are generated on various builds. These feeds may disappear and be replaced with new ones as new builds come out. Make sure to verify that you are on the latest here and clear the nuget cache if it changes.
 > ```
 > dotnet nuget locals all --clear
 > ```
@@ -117,12 +126,6 @@ dotnet workload install maui \
   --source https://api.nuget.org/v3/index.json
 ```
 
-3. This will build and launch Visual Studio using global workloads
-
-```dotnetcli
-dotnet tool restore
-dotnet cake --target=VS --workloads=global
-```
 
 #### MacOS
 
@@ -168,6 +171,76 @@ public static int foo = 2130771968;
    control, such as: `src\Controls\src\Core\Platform\Android\Resource.designer.cs`
 
 5. Restore the commented code in `Directory.Build.targets`.
+
+## What branch should I use?
+
+- net7.0
+  - I want to use the net7.0 sdk and make changes that will be released with the .NET 7 release of MAUI
+- net6.0
+  - This PR seems like it should go out with a net6.0 service release
+- main (start here if you don't know what to use)
+  - I want to use the net6.0 sdk and make changes that will be released with the .NET 7 release of MAUI
+
+## Repository projects
+
+### Samples
+ ```
+├── Controls 
+│   ├── samples
+│   │   ├── Maui.Controls.Sample
+│   │   ├── Maui.Controls.Sample.Sandbox
+├── Essentials 
+│   ├── samples
+│   │   ├── Essentials.Sample
+├── BlazorWebView 
+│   ├── samples
+│   │   ├── BlazorWinFormsApp
+│   │   ├── BlazorWpfApp
+```
+
+- *Maui.Controls.Sample*: Full gallery sample with all of the controls and features of .NET MAUI
+- *Maui.Controls.Sample.Sandbox*: Empty project useful for testing reproductions or use cases
+- *Essentials.Sample*: Full gallery demonstrating  the library previously known as essentials. These are all the non UI related MAUI APIs.
+
+### Device Test Projects
+
+These are tests that will run on an actual device
+
+ ```
+├── Controls 
+│   ├── test
+│   │   ├── Controls.DeviceTests
+├── Core 
+│   ├── test
+│   │   ├── Core.DeviceTests
+├── Essentials 
+│   ├── test
+│   │   ├── Essentials.DeviceTests
+├── BlazorWebView 
+│   ├── test
+│   │   ├── MauiBlazorWebView.DeviceTests
+```
+
+- *Controls.DeviceTests*: .NET MAUI Controls Visual Runner for running device based xunit tests. This is useful for tests that require XAML features
+- *Core.DeviceTests*: .NET MAUI Core Visual Runner for running device based xunit tests. This is for tests that don't require any MAUI Controls based features
+- *Essentials.DeviceTests*: Visual Runner running all the .NET MAUI essentials xunit tests.
+- *MauiBlazorWebView.DeviceTests*: Visual Runner for BlazorWebView tests. 
+
+### Unit Test Projects
+
+These are tests that will not run on a device. This is useful for testing device independent logic.
+
+ ```
+├── Controls 
+│   ├── test
+│   │   ├── Controls.Core.UnitTests
+├── Core 
+│   ├── test
+│   │   ├── Core.UnitTests
+├── Essentials 
+│   ├── test
+│   │   ├── Essentials.UnitTests
+```
 
 ## Stats
 

@@ -13,6 +13,7 @@ if (TestTFM == "default")
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new string[] {
+    "Microsoft.Maui.Graphics.*.nupkg",
 };
 
 // Tasks for CI
@@ -138,6 +139,12 @@ Task("dotnet-templates")
                 ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
                 ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
             } },
+            { "mauiunpackaged:maui", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
+            { "mauiblazorunpackaged:maui-blazor", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
         };
 
         var alsoPack = new [] {
@@ -159,7 +166,7 @@ Task("dotnet-templates")
                 var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
 
                 projectName = $"{tempDir}/{projectName}_{type}";
-                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM}";
+                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM.Replace('.', '_')}";
 
                 // Create
                 StartProcess(dn, $"new {templateName} -o \"{projectName}\" {framework}");
@@ -210,6 +217,7 @@ Task("dotnet-test")
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
+            "**/Graphics.Tests.csproj",
         };
 
         var success = true;
@@ -292,8 +300,7 @@ Task("dotnet-pack-library-packs")
             CleanDirectories(tempDir);
         }
 
-        Download("Microsoft.Maui.Graphics", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json");
-        Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
+        // Download("PACKAGE_ID", "VERSION_VARIABLE", "SOURCE_URL");
     });
 
 Task("dotnet-pack-docs")
