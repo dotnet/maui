@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Maps;
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
 {
@@ -19,13 +20,13 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			{
 				default:
 				case "Street":
-					mapTypeMap.MapType = Microsoft.Maui.MapType.Street;
+					mapTypeMap.MapType = MapType.Street;
 					break;
 				case "Satellite":
-					mapTypeMap.MapType = Microsoft.Maui.MapType.Satellite;
+					mapTypeMap.MapType = MapType.Satellite;
 					break;
 				case "Hybrid":
-					mapTypeMap.MapType = Microsoft.Maui.MapType.Hybrid;
+					mapTypeMap.MapType = MapType.Hybrid;
 					break;
 			}
 		}
