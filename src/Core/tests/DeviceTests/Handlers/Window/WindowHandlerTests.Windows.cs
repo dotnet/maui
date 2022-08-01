@@ -17,7 +17,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowHandlerTests : HandlerTestBase
 	{
-
 		[Fact(DisplayName = "Back Button Not Visible With No Navigation Page")]
 		public async Task BackButtonNotVisibleWithBasicView()
 		{
@@ -33,7 +32,6 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
-
 
 		[Theory(DisplayName = "MauiToolbar Control Visibilities Toggle")]
 		[InlineData("titleIcon")]
@@ -92,8 +90,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-
 		RootNavigationView GetRootNavigationView(NavigationRootManager navigationRootManager)
 		{
 			return (navigationRootManager.RootView as WindowRootView).NavigationViewControl;
@@ -112,6 +108,12 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertionExtensions.AttachAndRun(frameworkElement, async () =>
 				{
+					frameworkElement.Unloaded += (_, _) =>
+					{
+						windowManager?.Disconnect();
+						windowManager = null;
+					};
+
 					await action.Invoke(windowManager);
 				});
 

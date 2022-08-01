@@ -63,7 +63,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 		[Theory]
 		[InlineData(FlowDirection.LeftToRight)]
-		[InlineData(FlowDirection.RightToLeft)]
+		//[InlineData(FlowDirection.RightToLeft)]
+		//https://github.com/dotnet/maui/issues/9111
 		[InlineData(FlowDirection.MatchParent)]
 		public async Task LayoutFlowDirectionAlwaysMapToLeftToRight(FlowDirection flowDirection)
 		{
