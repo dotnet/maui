@@ -1,27 +1,52 @@
-using NView = Tizen.NUI.BaseComponents.View;
+using Tizen.NUI;
+using Tizen.UIExtensions.NUI;
+using NEntry = Tizen.UIExtensions.NUI.Entry;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : ViewHandler<IDatePicker, NView>
+	public partial class DatePickerHandler : ViewHandler<IDatePicker, NEntry>
 	{
-		// TODO Need to implement
-
-		protected override NView CreatePlatformView() => new NView()
+		protected override NEntry CreatePlatformView() => new NEntry
 		{
-			BackgroundColor = Tizen.NUI.Color.Red
+			IsReadOnly = true,
+			VerticalAlignment = VerticalAlignment.Center,
+			Focusable = true
 		};
 
-		[MissingMapper]
-		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker) { }
+		protected override void ConnectHandler(NEntry platformView)
+		{
+			platformView.TouchEvent += OnTouch;
+			platformView.KeyEvent += OnKeyEvent;
+			base.ConnectHandler(platformView);
+		}
 
-		[MissingMapper]
-		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker) { }
+		protected override void DisconnectHandler(NEntry platformView)
+		{
+			platformView.TouchEvent -= OnTouch;
+			platformView.KeyEvent -= OnKeyEvent;
+			base.DisconnectHandler(platformView);
+		}
 
-		[MissingMapper]
-		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView.UpdateFormat(datePicker);
+		}
 
-		[MissingMapper]
-		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView.UpdateDate(datePicker);
+		}
+
+		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView.UpdateFont(datePicker, fontManager);
+		}
+
+		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView.UpdateTextColor(datePicker);
+		}
 
 		[MissingMapper]
 		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker) { }
@@ -29,8 +54,54 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker) { }
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView.UpdateCharacterSpacing(datePicker);
+		}
 
+		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)
+		{
+			if (e.Touch.GetState(0) != PointStateType.Up)
+				return false;
+
+			if (VirtualView == null)
+				return false;
+
+			OpenPopupAsync();
+			return true;
+		}
+
+		bool OnKeyEvent(object source, Tizen.NUI.BaseComponents.View.KeyEventArgs e)
+		{
+			if (e.Key.IsAcceptKeyEvent())
+			{
+				OpenPopupAsync();
+				return true;
+			}
+			return false;
+		}
+
+		async void OpenPopupAsync()
+		{
+			if (VirtualView == null)
+				return;
+
+			var modalStack = MauiContext?.GetModalStack();
+			if (modalStack != null)
+			{
+				await modalStack.PushDummyPopupPage(async () =>
+				{
+					try
+					{
+						using var popup = new MauiDateTimePicker(VirtualView.Date, false);
+						VirtualView.Date = await popup.Open();
+					}
+					catch
+					{
+						// Cancel
+					}
+				});
+			}
+		}
 	}
 }

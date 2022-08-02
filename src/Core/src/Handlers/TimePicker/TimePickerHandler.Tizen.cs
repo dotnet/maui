@@ -1,3 +1,4 @@
+using System;
 using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
 using NEntry = Tizen.UIExtensions.NUI.Entry;
@@ -87,8 +88,9 @@ namespace Microsoft.Maui.Handlers
 				{
 					try
 					{
-						using var popup = new MauiTimePicker(VirtualView.Time);
-						VirtualView.Time = await popup.Open();
+						using var popup = new MauiDateTimePicker(new DateTime() + VirtualView.Time, true);
+						var dateTime = await popup.Open();
+						VirtualView.Time = TimeSpan.FromTicks(dateTime.Ticks);
 					}
 					catch
 					{

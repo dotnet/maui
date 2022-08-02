@@ -381,7 +381,7 @@ Microsoft.Maui.Handlers.IContentViewHandler
 Microsoft.Maui.Handlers.IContentViewHandler.PlatformView.get -> Microsoft.Maui.Platform.ContentViewGroup!
 Microsoft.Maui.Handlers.IContentViewHandler.VirtualView.get -> Microsoft.Maui.IContentView!
 Microsoft.Maui.Handlers.IDatePickerHandler
-Microsoft.Maui.Handlers.IDatePickerHandler.PlatformView.get -> Tizen.NUI.BaseComponents.View!
+Microsoft.Maui.Handlers.IDatePickerHandler.PlatformView.get -> Tizen.UIExtensions.NUI.Entry!
 Microsoft.Maui.Handlers.IDatePickerHandler.VirtualView.get -> Microsoft.Maui.IDatePicker!
 Microsoft.Maui.Handlers.IEditorHandler
 Microsoft.Maui.Handlers.IEditorHandler.PlatformView.get -> Tizen.UIExtensions.NUI.Editor!
@@ -1478,6 +1478,8 @@ Microsoft.Maui.Platform.MauiClipperView
 Microsoft.Maui.Platform.MauiClipperView.Clip.get -> Microsoft.Maui.Graphics.IShape?
 Microsoft.Maui.Platform.MauiClipperView.Clip.set -> void
 Microsoft.Maui.Platform.MauiClipperView.MauiClipperView() -> void
+Microsoft.Maui.Platform.MauiDateTimePicker
+Microsoft.Maui.Platform.MauiDateTimePicker.MauiDateTimePicker(System.DateTime dateTime, bool isTimePicker) -> void
 Microsoft.Maui.Platform.MauiImageButton
 Microsoft.Maui.Platform.MauiImageButton.Clicked -> System.EventHandler?
 Microsoft.Maui.Platform.MauiImageButton.MauiImageButton() -> void
@@ -1533,8 +1535,6 @@ Microsoft.Maui.Platform.MauiSwipeView.UpdateContent() -> void
 Microsoft.Maui.Platform.MauiSwipeView.UpdateIsSwipeEnabled(bool isEnabled) -> void
 Microsoft.Maui.Platform.MauiSwipeView.UpdateIsVisibleSwipeItem(Microsoft.Maui.ISwipeItem! item) -> void
 Microsoft.Maui.Platform.MauiSwipeView.UpdateSwipeTransitionMode(Microsoft.Maui.SwipeTransitionMode swipeTransitionMode) -> void
-Microsoft.Maui.Platform.MauiTimePicker
-Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(System.TimeSpan time) -> void
 Microsoft.Maui.Platform.MauiToolbar
 Microsoft.Maui.Platform.MauiToolbar.BackButtonPressed -> System.EventHandler?
 Microsoft.Maui.Platform.MauiToolbar.Collapse() -> void
@@ -1873,7 +1873,7 @@ override Microsoft.Maui.Handlers.CheckBoxHandler.DisconnectHandler(Tizen.UIExten
 override Microsoft.Maui.Handlers.ContentViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentViewGroup!
 override Microsoft.Maui.Handlers.ContentViewHandler.Dispose(bool disposing) -> void
 override Microsoft.Maui.Handlers.ContentViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
-override Microsoft.Maui.Handlers.DatePickerHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
+
 override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Tizen.UIExtensions.NUI.Editor! nativeView) -> void
 override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Editor!
 override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Editor! nativeView) -> void
@@ -1973,7 +1973,10 @@ override Microsoft.Maui.MauiApplication.OnResume() -> void
 override Microsoft.Maui.MauiApplication.OnTerminate() -> void
 override Microsoft.Maui.Platform.LayoutViewGroup.HitTest(Tizen.NUI.Touch! touch) -> bool
 override Microsoft.Maui.Platform.MauiSearchBar.OnEnabled(bool enabled) -> void
-override Microsoft.Maui.Platform.MauiTimePicker.CreateContent() -> Tizen.NUI.BaseComponents.View!
+override Microsoft.Maui.Platform.MauiDateTimePicker.CreateContent() -> Tizen.NUI.BaseComponents.View!
+override Microsoft.Maui.Handlers.DatePickerHandler.ConnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
+override Microsoft.Maui.Handlers.DatePickerHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Entry!
+override Microsoft.Maui.Handlers.DatePickerHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnResized() -> void
 override Microsoft.Maui.RectangleGridAdorner.Draw(Microsoft.Maui.Graphics.ICanvas! canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
 override Microsoft.Maui.Semantics.ToString() -> string!
