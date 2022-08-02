@@ -65,7 +65,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			base.DisconnectHandler(platformView);
 			platformView.LayoutChange -= MapViewLayoutChange;
 			if (Map != null)
+			{
 				Map.SetOnCameraMoveListener(null);
+				Map.MarkerClick -= OnMarkerClick;
+				Map.InfoWindowClick -= OnInfoWindowClick;
+				Map.MapClick -= OnMapClick;
+			}
+				
 			_mapReady = null;
 		}
 
@@ -160,9 +166,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			Map = map;
 
 			map.SetOnCameraMoveListener(_mapReady);
-			//map.MarkerClick += OnMarkerClick;
-			//map.InfoWindowClick += OnInfoWindowClick;
-			//map.MapClick += OnMapClick;
+			map.MarkerClick += OnMarkerClick;
+			map.InfoWindowClick += OnInfoWindowClick;
+			map.MapClick += OnMapClick;
 		}
 
 		internal void UpdateVisibleRegion(LatLng pos)
@@ -226,6 +232,63 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				MauiContext?.Services.GetService<ILogger<MapHandler>>()?.LogWarning(exc, $"MoveToRegion exception");
 			}
+		}
+
+		void OnMarkerClick(object? sender, GoogleMap.MarkerClickEventArgs e)
+		{
+			var pin = GetPinForMarker(e.Marker);
+
+			if (pin == null)
+			{
+				return;
+			}
+
+			// Setting e.Handled = true will prevent the info window from being presented
+			// SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
+			bool handled = pin.SendMarkerClick();
+			e.Handled = handled;
+		}
+
+		void OnInfoWindowClick(object? sender, GoogleMap.InfoWindowClickEventArgs e)
+		{
+			var marker = e.Marker;
+			var pin = GetPinForMarker(marker);
+
+			if (pin == null)
+			{
+				return;
+			}
+
+			pin.SendMarkerClick();
+
+			// SendInfoWindowClick() returns the value of PinClickedEventArgs.HideInfoWindow
+			bool hideInfoWindow = pin.SendInfoWindowClick();
+			if (hideInfoWindow)
+			{
+				marker.HideInfoWindow();
+			}
+		}
+
+		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e)
+		{
+			VirtualView.SendMapClick(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+		}
+
+		protected IMapPin? GetPinForMarker(Marker marker)
+		{
+			IMapPin? targetPin = null;
+
+			for (int i = 0; i < VirtualView.Pins.Count; i++)
+			{
+				var pin = (IMapPin)VirtualView.Pins[i];
+				if ((string)pin.MarkerId == marker.Id)
+				{
+					targetPin = pin;
+					break;
+				}
+			}
+
+			return targetPin;
 		}
 	}
 }
