@@ -8,6 +8,7 @@ using static Microsoft.Maui.Primitives.Dimension;
 using NColor = Tizen.NUI.Color;
 using NView = Tizen.NUI.BaseComponents.View;
 using Rect = Microsoft.Maui.Graphics.Rect;
+using TRect = Tizen.UIExtensions.Common.Rect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -247,7 +248,7 @@ namespace Microsoft.Maui.Platform
 			if (platformView == null)
 				return new Rect();
 			var screenPostion = platformView.ScreenPosition;
-			return new Rect(screenPostion.X, screenPostion.Y, platformView.SizeWidth, platformView.SizeHeight);
+			return new TRect(screenPostion.X, screenPostion.Y, platformView.SizeWidth, platformView.SizeHeight).ToDP();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
