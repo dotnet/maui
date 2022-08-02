@@ -148,7 +148,7 @@
             {
               "name": "activitySenderHasPermissions",
               "parameters": {
-                "permissions": "none"
+                "permissions": "read"
               }
             },
             {
@@ -1336,7 +1336,7 @@
             {
               "name": "addedToMilestone",
               "parameters": {
-                "milestoneName": "Future"
+                "milestoneName": "Backlog"
               }
             }
           ]
@@ -1346,12 +1346,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Comment: Issue moved to Future",
+        "taskName": "Comment: Issue moved to Backlog",
         "actions": [
           {
             "name": "addReply",
             "parameters": {
-              "comment": "We've moved this issue to the Future milestone. This means that it is not going to be worked on for the coming release. We will reassess the issue following the current release and consider this item at that time."
+              "comment": "We've moved this issue to the Backlog milestone. This means that it is not going to be worked on for the coming release. We will reassess the backlog following the current release and consider this item at that time. To learn more about our issue management process and to have better expectation regarding different types of issues you can read our [Triage Process](https://github.com/dotnet/maui/blob/main/.github/TriageProcess.md)."
             }
           }
         ]
@@ -2005,7 +2005,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for the issue report ${issueAuthor}! This issue appears to be a problem with Visual Studio, so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS.\n\nIf you encounter a problem with Visual Studio, we want to know about it so that we can diagnose and fix it. By using the Report a Problem tool, you can collect detailed information about the problem, and send it to Microsoft with just a few button clicks.\n\n1. Go to the [VS feedback tool](https://docs.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022) to report the issue\n2. Close this bug, and consider adding a link to the VS Feedback issue so that others can follow its activity there.\n\nThis issue will be automatically closed in 3 days if there are no further comments."
+              "comment": "Thanks for the issue report @${issueAuthor}! This issue appears to be a problem with Visual Studio, so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS.\n\nIf you encounter a problem with Visual Studio, we want to know about it so that we can diagnose and fix it. By using the Report a Problem tool, you can collect detailed information about the problem, and send it to Microsoft with just a few button clicks.\n\n1. Go to the [VS feedback tool](https://docs.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022) to report the issue\n2. Close this bug, and consider adding a link to the VS Feedback issue so that others can follow its activity there.\n\nThis issue will be automatically closed in 3 days if there are no further comments."
             }
           }
         ]
@@ -2192,6 +2192,598 @@
             "name": "addLabel",
             "parameters": {
               "label": "s/needs-attention"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "user": "roubachof",
+                "action": "opened"
+              }
+            },
+            {
+              "operator": "or",
+              "operands": [
+                {
+                  "name": "isActivitySender",
+                  "parameters": {
+                    "user": "roubachof"
+                  }
+                },
+                {
+                  "name": "isActivitySender",
+                  "parameters": {
+                    "user": "davidbritch"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Add 'i/great-reporter' when issue is opened by an author we know opens high quality issues",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "i/great-reporter"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "s/try-latest-version"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Add comment when 's/try-latest-version' is applied to the issue",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Hi @${issueAuthor}. We have added the \"s/try-latest-version\" label to this issue, which indicates that we'd like you to try and reproduce this issue on the latest available public version. This can happen because we think that this issue was fixed in a version that has just been released, or the information provided by you indicates that you might be working with an older version.\n\nYou can install the latest version by installing the latest Visual Studio (Preview) with the .NET MAUI workload installed. If the issue still persists, please let us know with any additional details and ideally a [reproduction project](https://github.com/dotnet/maui/blob/main/.github/repro.md) provided through a GitHub repository.\n\nThis issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "scheduled",
+      "capabilityId": "ScheduledSearch",
+      "subCapability": "ScheduledSearch",
+      "version": "1.1",
+      "config": {
+        "frequency": [
+          {
+            "weekDay": 0,
+            "hours": [
+              3,
+              15
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 1,
+            "hours": [
+              3,
+              15
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 2,
+            "hours": [
+              3,
+              15
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 3,
+            "hours": [
+              3,
+              15
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 4,
+            "hours": [
+              3,
+              15
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 5,
+            "hours": [
+              3,
+              15
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 6,
+            "hours": [
+              3,
+              15
+            ],
+            "timezoneOffset": 2
+          }
+        ],
+        "searchTerms": [
+          {
+            "name": "isOpen",
+            "parameters": {}
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "s/try-latest-version"
+            }
+          },
+          {
+            "name": "noActivitySince",
+            "parameters": {
+              "days": 7
+            }
+          }
+        ],
+        "taskName": "[Idle Issue Management] Close stale 's/try-latest-version' issues",
+        "actions": [
+          {
+            "name": "closeIssue",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "activitySenderHasPermissions",
+              "parameters": {
+                "permissions": "read"
+              }
+            },
+            {
+              "operator": "not",
+              "operands": [
+                {
+                  "name": "isActivitySender",
+                  "parameters": {
+                    "user": "dotnet-maestro"
+                  }
+                }
+              ]
+            },
+            {
+              "operator": "not",
+              "operands": [
+                {
+                  "name": "isActivitySender",
+                  "parameters": {
+                    "user": "dotnet-maestro-bot"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Add 'community ✨' label to community contributions",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "community ✨"
+            }
+          },
+          {
+            "name": "addReactionToIssue",
+            "parameters": {
+              "reaction": "heart"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Hey there @${issueAuthor}! Thank you so much for your PR! Someone from the team will get assigned to your PR shortly and we'll get it reviewed."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "scheduled",
+      "capabilityId": "ScheduledSearch",
+      "subCapability": "ScheduledSearch",
+      "version": "1.1",
+      "config": {
+        "frequency": [
+          {
+            "weekDay": 0,
+            "hours": [
+              2,
+              5,
+              8,
+              11,
+              14,
+              17,
+              20,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 1,
+            "hours": [
+              2,
+              5,
+              8,
+              11,
+              14,
+              17,
+              20,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 2,
+            "hours": [
+              2,
+              5,
+              8,
+              11,
+              14,
+              17,
+              20,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 3,
+            "hours": [
+              2,
+              5,
+              8,
+              11,
+              14,
+              17,
+              20,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 4,
+            "hours": [
+              2,
+              5,
+              8,
+              11,
+              14,
+              17,
+              20,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 5,
+            "hours": [
+              2,
+              5,
+              8,
+              11,
+              14,
+              17,
+              20,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 6,
+            "hours": [
+              2,
+              5,
+              8,
+              11,
+              14,
+              17,
+              20,
+              23
+            ],
+            "timezoneOffset": 2
+          }
+        ],
+        "searchTerms": [
+          {
+            "name": "isOpen",
+            "parameters": {}
+          },
+          {
+            "name": "isPr",
+            "parameters": {}
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "s/pr-needs-author-input"
+            }
+          },
+          {
+            "name": "noActivitySince",
+            "parameters": {
+              "days": 10
+            }
+          },
+          {
+            "name": "noLabel",
+            "parameters": {
+              "label": "stale"
+            }
+          }
+        ],
+        "taskName": "Stale PR reminder",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Hi @${issueAuthor}.\nIt seems you haven't touched this PR for the last two weeks. To avoid accumulating old PRs, we're marking it as `stale`.  As a result, it will be closed if no further activity occurs **within 4 days of this comment**. You can learn more about our Issue Management Policies [here](https://github.com/dotnet/maui/blob/main/.github/IssueManagementPolicies.md)."
+            }
+          },
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "stale"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "scheduled",
+      "capabilityId": "ScheduledSearch",
+      "subCapability": "ScheduledSearch",
+      "version": "1.1",
+      "config": {
+        "frequency": [
+          {
+            "weekDay": 0,
+            "hours": [
+              3,
+              7,
+              11,
+              15,
+              19,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 1,
+            "hours": [
+              3,
+              7,
+              11,
+              15,
+              19,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 2,
+            "hours": [
+              3,
+              7,
+              11,
+              15,
+              19,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 3,
+            "hours": [
+              3,
+              7,
+              11,
+              15,
+              19,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 4,
+            "hours": [
+              3,
+              7,
+              11,
+              15,
+              19,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 5,
+            "hours": [
+              3,
+              7,
+              11,
+              15,
+              19,
+              23
+            ],
+            "timezoneOffset": 2
+          },
+          {
+            "weekDay": 6,
+            "hours": [
+              3,
+              7,
+              11,
+              15,
+              19,
+              23
+            ],
+            "timezoneOffset": 2
+          }
+        ],
+        "searchTerms": [
+          {
+            "name": "isOpen",
+            "parameters": {}
+          },
+          {
+            "name": "isPr",
+            "parameters": {}
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "s/pr-needs-author-input"
+            }
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "stale"
+            }
+          },
+          {
+            "name": "noActivitySince",
+            "parameters": {
+              "days": 4
+            }
+          }
+        ],
+        "taskName": "Close stale PRs",
+        "actions": [
+          {
+            "name": "closeIssue",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "stale"
+              }
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "s/pr-needs-author-input"
+              }
+            },
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": {
+                  "type": "author"
+                }
+              }
+            },
+            {
+              "operator": "not",
+              "operands": [
+                {
+                  "name": "activitySenderHasPermissions",
+                  "parameters": {
+                    "permissions": "write"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Revitalize stale PR and reopen",
+        "actions": [
+          {
+            "name": "reopenIssue",
+            "parameters": {}
+          },
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "stale"
+            }
+          },
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "s/pr-needs-author-input"
             }
           }
         ]
