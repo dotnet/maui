@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public abstract partial class TextInputHandlerTests<THandler, TStub> : HandlerTestBase<THandler, TStub>
+	public abstract partial class TextInputHandlerTests<THandler, TStub> : HandlerTestBase
 		where THandler : class, IViewHandler, new()
 		where TStub : StubBase, ITextInputStub, new()
 	{
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(newText ?? string.Empty, e.NewValue);
 			};
 
-			await SetValueAsync(textInput, newText, SetNativeText);
+			await SetValueAsync<string, THandler>(textInput, newText, SetNativeText);
 
 			if (eventExpected)
 				Assert.Equal(1, eventFiredCount);
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 			int cursorPosition = 0;
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var handler = CreateHandler(textInput);
+				var handler = CreateHandler<THandler>(textInput);
 				UpdateCursorStartPosition(handler, 5);
 				handler.UpdateValue(nameof(ITextInput.Text));
 				cursorPosition = GetCursorStartPosition(handler);
