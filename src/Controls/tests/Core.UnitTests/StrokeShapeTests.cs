@@ -84,19 +84,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
-		[TestCase("line")]
-		[TestCase("Line")]
-		[TestCase("line 1 2")]
-		[TestCase("Line 1 2 3 4")]
+		[InlineData("line")]
+		[InlineData("Line")]
+		[InlineData("line 1 2")]
+		[InlineData("Line 1 2 3 4")]
 		public void TestLineConstructor(string value)
 		{
 			Line line = _strokeShapeTypeConverter.ConvertFromInvariantString(value) as Line;
 
-			Assert.IsNotNull(line);
+			Assert.NotNull(line);
 			if (!string.Equals("line", value, StringComparison.OrdinalIgnoreCase))
 			{
-				Assert.NotZero(line.X1);
-				Assert.NotZero(line.Y1);
+				Assert.True(line.X1 != 0);
+				Assert.True(line.Y1 != 0);
 			}
 		}
 

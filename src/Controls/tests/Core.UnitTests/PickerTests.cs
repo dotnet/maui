@@ -477,7 +477,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(picker.SelectedItem);
 		}
 
-		[Test]
+		[Fact]
 		public void NullItemReturnsEmptyStringFromInterface()
 		{
 			var picker = new Picker
@@ -489,7 +489,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var thing = (picker as IPicker).GetItem(0);
-			Assert.IsNotNull(thing);
+			Assert.NotNull(thing);
 		}
 	}
 }

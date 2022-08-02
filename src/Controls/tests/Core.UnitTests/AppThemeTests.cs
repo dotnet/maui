@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Colors.Pink, shell.FlyoutBackgroundColor);
 		}
 
-		[Test]
+		[Fact]
 		public void NullApplicationCurrentFallsBackToEssentials()
 		{
 			var label = new Label
@@ -207,11 +207,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Application.Current = null;
 
-			Assert.AreEqual(Colors.Green, label.TextColor);
+			Assert.Equal(Colors.Green, label.TextColor);
 
 			SetAppTheme(AppTheme.Dark);
 
-			Assert.AreEqual(Colors.Red, label.TextColor);
+			Assert.Equal(Colors.Red, label.TextColor);
 		}
 	}
 }

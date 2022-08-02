@@ -401,7 +401,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => mdp.Flyout = Flyout);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutPageAppearingAndDisappearingPropagatesToFlyout()
 		{
 			int disappearing = 0;
@@ -418,21 +418,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			flyout.Appearing += (_, __) => appearing++;
 			flyout.Disappearing += (_, __) => disappearing++;
 
-			Assert.AreEqual(0, disappearing);
-			Assert.AreEqual(0, appearing);
+			Assert.Equal(0, disappearing);
+			Assert.Equal(0, appearing);
 
 			flyoutPage.SendDisappearing();
 
-			Assert.AreEqual(1, disappearing);
-			Assert.AreEqual(0, appearing);
+			Assert.Equal(1, disappearing);
+			Assert.Equal(0, appearing);
 
 			flyoutPage.SendAppearing();
 
-			Assert.AreEqual(1, disappearing);
-			Assert.AreEqual(1, appearing);
+			Assert.Equal(1, disappearing);
+			Assert.Equal(1, appearing);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutPageAppearingAndDisappearingPropagatesToDetail()
 		{
 			int disappearing = 0;
@@ -450,18 +450,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			detail.Appearing += (_, __) => appearing++;
 			detail.Disappearing += (_, __) => disappearing++;
 
-			Assert.AreEqual(0, disappearing);
-			Assert.AreEqual(0, appearing);
+			Assert.Equal(0, disappearing);
+			Assert.Equal(0, appearing);
 
 			flyoutPage.SendDisappearing();
 
-			Assert.AreEqual(1, disappearing);
-			Assert.AreEqual(0, appearing);
+			Assert.Equal(1, disappearing);
+			Assert.Equal(0, appearing);
 
 			flyoutPage.SendAppearing();
 
-			Assert.AreEqual(1, disappearing);
-			Assert.AreEqual(1, appearing);
+			Assert.Equal(1, disappearing);
+			Assert.Equal(1, appearing);
 		}
 	}
 

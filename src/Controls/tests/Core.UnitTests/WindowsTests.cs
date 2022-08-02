@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(window, cp.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void ApplicationIsSetOnWindowBeforeAppearingIsCalledOnPage()
 		{
 			bool passed = false;
@@ -279,9 +279,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			_ = new TestApp().CreateWindow(cp);
 
-			Assert.IsTrue(passed);
+			Assert.True(passed);
 		}
 
+		[Fact]
 		public void DeActivatedFiresDisappearingEvent()
 		{
 			int disappear = 0;
@@ -295,11 +296,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cp.Disappearing += (_, __) => disappear++;
 
 			window.Deactivated();
-			Assert.AreEqual(1, disappear);
-			Assert.AreEqual(0, appear);
+			Assert.Equal(1, disappear);
+			Assert.Equal(0, appear);
 		}
 
-		[Test]
+		[Fact]
 		public void ReActivatedFiresCorrectActivatedEvent()
 		{
 			int disappear = 0;
@@ -312,14 +313,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cp.Appearing += (_, __) => appear++;
 			cp.Disappearing += (_, __) => disappear++;
 
-			Assert.AreEqual(0, disappear);
+			Assert.Equal(0, disappear);
 			window.Deactivated();
 			window.Activated();
-			Assert.AreEqual(1, disappear);
-			Assert.AreEqual(1, appear);
+			Assert.Equal(1, disappear);
+			Assert.Equal(1, appear);
 		}
 
-		[Test]
+		[Fact]
 		public void RemovedPageFiresDisappearing()
 		{
 			int disappear = 0;
@@ -330,9 +331,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Window window = new TestWindow(cp);
 			(window as IWindow).Activated();
-			Assert.AreEqual(0, disappear);
+			Assert.Equal(0, disappear);
 			window.Page = new ContentPage();
-			Assert.AreEqual(1, disappear);
+			Assert.Equal(1, disappear);
 		}
 
 		void ValidateSetup(Application app, Page page = null)

@@ -2187,7 +2187,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("fallback", bindable.GetValue(property));
 		}
 
-		[Test]
+		[Fact]
 		//https://github.com/xamarin/Xamarin.Forms/issues/3467
 		public void TargetNullValueIgnoredWhenBindingIsResolved()
 		{
@@ -2210,7 +2210,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("fallback", bindable.GetValue(property));
 		}
 
-		[Test]
+		[Fact]
 		//https://github.com/xamarin/Xamarin.Forms/issues/3994
 		public void INPCOnBindingWithSource()
 		{
@@ -2226,7 +2226,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Bar", label.Text);
 		}
 
-		[Test]
+		[Fact]
 		//https://github.com/xamarin/Xamarin.Forms/issues/10405
 		public void TypeConversionExceptionIsCaughtAndLogged()
 		{
@@ -2237,7 +2237,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(MockApplication.MockLogger.Messages.Count == 1, "No error logged");
 		}
 
-		[Test]
+		[Fact]
 		//https://github.com/dotnet/maui/issues/7977
 		public void NullRefWithDefaultCtor()
 		{

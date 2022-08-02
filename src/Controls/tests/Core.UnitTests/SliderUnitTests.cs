@@ -59,14 +59,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestInvalidMaxValue()
 		{
 			var slider = new Slider();
-			Assert.DoesNotThrow(() => slider.Maximum = slider.Minimum - 1);
+			slider.Maximum = slider.Minimum - 1;
 		}
 
 		[Fact]
 		public void TestInvalidMinValue()
 		{
 			var slider = new Slider();
-			Assert.DoesNotThrow(() => slider.Minimum = slider.Maximum + 1);
+			slider.Minimum = slider.Maximum + 1;
 		}
 
 		[Fact]
