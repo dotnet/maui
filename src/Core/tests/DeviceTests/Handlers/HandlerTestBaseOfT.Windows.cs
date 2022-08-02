@@ -133,11 +133,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			var uie = await GetValueAsync(view, handler => GetHitTestVisible(handler));
 
-			if(view is LayoutStub && inputTransparent)
+			if(view is LayoutStub)
 			{
 				// InputTransparent doesn't actually affect hit test visibility for LayoutPanel. 
 				// The panel itself needs to always be hit test visible so it can relay input to non-transparent children.
-				Assert.Equal(true, uie);
+				Assert.True(uie);
 				return;
 			}
 
