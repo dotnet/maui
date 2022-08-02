@@ -187,10 +187,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (_init || VirtualView.MoveToLastRegionOnLayoutChange)
 			{
-				if (VirtualView.LastMoveToRegion != null)
-				{
-					MoveToRegion(VirtualView.LastMoveToRegion, false);
-				}
+				MoveToRegion(VirtualView.LastMoveToRegion, false);
+
 				_init = false;
 			}
 

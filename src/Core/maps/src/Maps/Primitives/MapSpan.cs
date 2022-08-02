@@ -5,8 +5,7 @@ namespace Microsoft.Maui.Maps
 {
 	public sealed class MapSpan
 	{
-		const double EarthRadiusKm = 6371;
-		const double EarthCircumferenceKm = EarthRadiusKm * 2 * Math.PI;
+		const double EarthCircumferenceKm = GeographyUtils.EarthRadiusKm * 2 * Math.PI;
 		const double MinimumRangeDegrees = 0.001 / EarthCircumferenceKm * 360; // 1 meter
 
 		public MapSpan(Location center, double latitudeDegrees, double longitudeDegrees)
@@ -14,15 +13,6 @@ namespace Microsoft.Maui.Maps
 			Center = center;
 			LatitudeDegrees = Math.Min(Math.Max(latitudeDegrees, MinimumRangeDegrees), 90.0);
 			LongitudeDegrees = Math.Min(Math.Max(longitudeDegrees, MinimumRangeDegrees), 180.0);
-		}
-
-		public MapSpan ClampLatitude(double north, double south)
-		{
-			north = Math.Min(Math.Max(north, 0), 90);
-			south = Math.Max(Math.Min(south, 0), -90);
-			double lat = Math.Max(Math.Min(Center.Latitude, north), south);
-			double maxDLat = Math.Min(north - lat, -south + lat) * 2;
-			return new MapSpan(new Location(lat, Center.Longitude), Math.Min(LatitudeDegrees, maxDLat), LongitudeDegrees);
 		}
 
 		public Location Center { get; }
@@ -41,15 +31,54 @@ namespace Microsoft.Maui.Maps
 			}
 		}
 
-		public MapSpan WithZoom(double zoomFactor)
+		public MapSpan ClampLatitude(double north, double south)
 		{
-			double maxDLat = Math.Min(90 - Center.Latitude, 90 + Center.Latitude) * 2;
-			return new MapSpan(Center, Math.Min(LatitudeDegrees / zoomFactor, maxDLat), LongitudeDegrees / zoomFactor);
+			north = Math.Min(Math.Max(north, 0), 90);
+			south = Math.Max(Math.Min(south, 0), -90);
+			double lat = Math.Max(Math.Min(Center.Latitude, north), south);
+			double maxDLat = Math.Min(north - lat, -south + lat) * 2;
+			return new MapSpan(new Location(lat, Center.Longitude), Math.Min(LatitudeDegrees, maxDLat), LongitudeDegrees);
+		}
+
+		public override bool Equals(object? obj)
+		{
+			if (ReferenceEquals(null, obj))
+				return false;
+			if (ReferenceEquals(this, obj))
+				return true;
+			return obj is MapSpan && Equals((MapSpan)obj);
 		}
 
 		public static MapSpan FromCenterAndRadius(Location center, Distance radius)
 		{
 			return new MapSpan(center, 2 * DistanceToLatitudeDegrees(radius), 2 * DistanceToLongitudeDegrees(center, radius));
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hashCode = Center.GetHashCode();
+				hashCode = (hashCode * 397) ^ LongitudeDegrees.GetHashCode();
+				hashCode = (hashCode * 397) ^ LatitudeDegrees.GetHashCode();
+				return hashCode;
+			}
+		}
+
+		public static bool operator ==(MapSpan left, MapSpan right)
+		{
+			return Equals(left, right);
+		}
+
+		public static bool operator !=(MapSpan left, MapSpan right)
+		{
+			return !Equals(left, right);
+		}
+
+		public MapSpan WithZoom(double zoomFactor)
+		{
+			double maxDLat = Math.Min(90 - Center.Latitude, 90 + Center.Latitude) * 2;
+			return new MapSpan(Center, Math.Min(LatitudeDegrees / zoomFactor, maxDLat), LongitudeDegrees / zoomFactor);
 		}
 
 		static double DistanceToLatitudeDegrees(Distance distance)
