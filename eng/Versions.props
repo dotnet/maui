@@ -36,7 +36,7 @@
     <MicrosoftAspNetCoreMetadataPackageVersion>7.0.0-preview.7.22369.8</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>7.0.0-preview.7.22369.8</MicrosoftJSInteropPackageVersion>
     <!-- Other packages -->
-    <MicrosoftCodeAnalysisNetAnalyzersVersion>7.0.0-preview1.22379.1</MicrosoftCodeAnalysisNetAnalyzersVersion>
+    <MicrosoftCodeAnalysisNetAnalyzersVersion>7.0.0-preview1.22274.2</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
     <MicrosoftMauiGraphicsVersion>6.0.403</MicrosoftMauiGraphicsVersion>
