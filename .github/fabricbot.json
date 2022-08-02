@@ -2788,6 +2788,8 @@
           }
         ]
       }
+    },
+    {
       "taskType": "trigger",
       "capabilityId": "IssueResponder",
       "subCapability": "PullRequestResponder",
