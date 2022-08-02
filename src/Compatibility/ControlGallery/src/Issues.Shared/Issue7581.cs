@@ -1,6 +1,8 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -20,9 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			_map.MoveToRegion(MapSpan.FromCenterAndRadius(
-				new Position(-41.342112, 173.179948), Distance.FromMiles(1))); // Nelson NZ
+				new Location(-41.342112, 173.179948), Distance.FromMiles(1))); // Nelson NZ
 
-			var pos1 = new Position(-41.342112, 173.179948);
+			var pos1 = new Location(-41.342112, 173.179948);
 			var pin1 = new Pin
 			{
 				Type = PinType.Place,
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 			_map.Pins.Add(pin1);
 
-			var pos2 = new Position(-41.341861, 173.193816);
+			var pos2 = new Devices.Sensors.Location(-41.341861, 173.193816);
 			var pin2 = new Pin
 			{
 				Type = PinType.Place,

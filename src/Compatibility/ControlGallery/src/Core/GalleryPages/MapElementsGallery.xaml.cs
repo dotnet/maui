@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Maps;
 using Map = Microsoft.Maui.Controls.Maps;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 			Map.MoveToRegion(
 				MapSpan.FromCenterAndRadius(
-					new Position(39.828152, -98.569817),
+					new Devices.Sensors.Location(39.828152, -98.569817),
 					Distance.FromMiles(1681)));
 
 			_polyline = new Maps.Polyline
@@ -74,25 +75,25 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 		void MapClicked(object sender, MapClickedEventArgs e)
 		{
-			switch (_selectedType)
-			{
-				case SelectedElementType.Polyline:
-					_polyline.Geopath.Add(e.Position);
-					break;
-				case SelectedElementType.Polygon:
-					_polygon.Geopath.Add(e.Position);
-					break;
-				case SelectedElementType.Circle:
-					if (_circle.Center == default(Position))
-					{
-						_circle.Center = e.Position;
-					}
-					else
-					{
-						_circle.Radius = Distance.BetweenPositions(_circle.Center, e.Position);
-					}
-					break;
-			}
+			//switch (_selectedType)
+			//{
+			//	case SelectedElementType.Polyline:
+			//		_polyline.Geopath.Add(e.Position);
+			//		break;
+			//	case SelectedElementType.Polygon:
+			//		_polygon.Geopath.Add(e.Position);
+			//		break;
+			//	case SelectedElementType.Circle:
+			//		if (_circle.Center == default(Position))
+			//		{
+			//			_circle.Center = e.Position;
+			//		}
+			//		else
+			//		{
+			//			_circle.Radius = Distance.BetweenPositions(_circle.Center, e.Position);
+			//		}
+			//		break;
+			//}
 		}
 
 		void PickerSelectionChanged(object sender, EventArgs e)

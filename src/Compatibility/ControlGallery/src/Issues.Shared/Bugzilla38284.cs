@@ -3,7 +3,8 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
-
+using Microsoft.Maui.Maps;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		public void DisplayMaps()
 		{
 			map2.IsVisible = false;
-			var mapPinPosition = new Position(Latitude, Longitude);
+			var mapPinPosition = new Location(Latitude, Longitude);
 
 			var type = MapType.Satellite;
 			map1.MapType = type;

@@ -9,6 +9,8 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -25,8 +27,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Map = MakeMap();
 			Map.Pins.ToList().ForEach(pin =>
 			{
-				pin.MarkerClicked += MarkerClicked;
-				pin.InfoWindowClicked += InfoWindowClicked;
+				(pin as Pin).MarkerClicked += MarkerClicked;
+				(pin as Pin).InfoWindowClicked += InfoWindowClicked;
 			});
 			Map.MapClicked += MapClicked;
 
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		public static Map MakeMap()
 		{
-			return new Map(MapSpan.FromCenterAndRadius(new Position(41.890202, 12.492049), Distance.FromMiles(0.5)))
+			return new Map(MapSpan.FromCenterAndRadius(new Devices.Sensors.Location(41.890202, 12.492049), Distance.FromMiles(0.5)))
 			{
 				IsShowingUser = false,
 				Pins =
@@ -45,21 +47,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					new Pin
 					{
 						Type = PinType.Place,
-						Position = new Position (41.890202, 12.492049),
+						Position = new Location(41.890202, 12.492049),
 						Label = "Colosseum",
 						Address = "Piazza del Colosseo, 00184 Rome, Province of Rome, Italy"
 					},
 					new Pin
 					{
 						Type = PinType.Place,
-						Position = new Position (41.898652, 12.476831),
+						Position = new Location (41.898652, 12.476831),
 						Label = "Pantheon",
 						Address = "Piazza della Rotunda, 00186 Rome, Province of Rome, Italy"
 					},
 					new Pin
 					{
 						Type = PinType.Place,
-						Position = new Position (41.903209, 12.454545),
+						Position = new Location (41.903209, 12.454545),
 						Label = "Sistine Chapel",
 						Address = "Piazza della Rotunda, 00186 Rome, Province of Rome, Italy"
 					}
@@ -98,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			if (!positions.Any())
 				return;
 
-			var position = positions.First();
+			var position = new Location(positions.First().Latitude, positions.First().Longitude);
 			Map.MoveToRegion(MapSpan.FromCenterAndRadius(position, Distance.FromMeters(4000)));
 			Map.Pins.Add(new Pin
 			{
@@ -149,12 +151,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		void HomeClicked(object sender, EventArgs e)
 		{
-			Map.MoveToRegion(MapSpan.FromCenterAndRadius(new Position(41.890202, 12.492049), Distance.FromMiles(0.5)));
+			Map.MoveToRegion(MapSpan.FromCenterAndRadius(new Devices.Sensors.Location(41.890202, 12.492049), Distance.FromMiles(0.5)));
 		}
 
 		void ZoomPinClicked(object sender, EventArgs e)
 		{
-			var pos = new Position(41.011995, -8.642995);
+			var pos = new Devices.Sensors.Location(41.011995, -8.642995);
 			Map.Pins.Clear();
 			Map.Pins.Add(new Pin { Position = pos, Label = "Rui" });
 			Map.MoveToRegion(MapSpan.FromCenterAndRadius(pos, Distance.FromMiles(0.5)));
@@ -162,12 +164,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		void EditPinClicked(object sender, EventArgs e)
 		{
-			var pin = Map.Pins.First();
+			var pin = (Pin)Map.Pins.First();
 
 			pin.Label += " Edited";
 			pin.Address = "Edited";
 
-			var pos = new Position(pin.Position.Latitude + 1, pin.Position.Longitude + 1);
+			var pos = new Devices.Sensors.Location(pin.Position.Latitude + 1, pin.Position.Longitude + 1);
 			pin.Position = pos;
 			Map.MoveToRegion(MapSpan.FromCenterAndRadius(pos, Distance.FromMiles(0.5)));
 		}
@@ -186,7 +188,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		void ShowTrafficToggled(object sender, ToggledEventArgs e)
 		{
 			var control = (Switch)sender;
-			Map.TrafficEnabled = control.IsToggled;
+			Map.HasTrafficEnabled = control.IsToggled;
 		}
 	}
 }

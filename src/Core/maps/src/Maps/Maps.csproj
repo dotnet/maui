@@ -19,4 +19,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Platform\Android\" />
+  </ItemGroup>
 </Project>

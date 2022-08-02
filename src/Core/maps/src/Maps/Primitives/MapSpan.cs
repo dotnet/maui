@@ -47,6 +47,11 @@ namespace Microsoft.Maui.Maps
 			return new MapSpan(Center, Math.Min(LatitudeDegrees / zoomFactor, maxDLat), LongitudeDegrees / zoomFactor);
 		}
 
+		public static MapSpan FromCenterAndRadius(Location center, Distance radius)
+		{
+			return new MapSpan(center, 2 * DistanceToLatitudeDegrees(radius), 2 * DistanceToLongitudeDegrees(center, radius));
+		}
+
 		static double DistanceToLatitudeDegrees(Distance distance)
 		{
 			return distance.Kilometers / EarthCircumferenceKm * 360;
