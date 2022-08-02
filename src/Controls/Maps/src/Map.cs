@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls.Maps
 
 		public Map(MapSpan region)
 		{
+			MoveToRegion(region);
 			LastMoveToRegion = region;
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -155,7 +157,7 @@ namespace Microsoft.Maui.Controls.Maps
 			if (mapSpan == null)
 				throw new ArgumentNullException(nameof(mapSpan));
 			LastMoveToRegion = mapSpan;
-			MessagingCenter.Send(this, "MapMoveToRegion", mapSpan);
+			Handler?.Invoke(nameof(IMap.MoveToRegion), mapSpan);
 		}
 
 		void PinsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

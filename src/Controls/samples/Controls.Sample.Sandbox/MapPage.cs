@@ -21,6 +21,7 @@ namespace Maui.Controls.Sample
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 
@@ -68,7 +69,16 @@ namespace Maui.Controls.Sample
 			grid.Children.Add(lbl);
 			grid.Children.Add(picker);
 
+			var buttonGoTo = new Button
+			{
+				Text = "Go To Redmond",
+				Command = new Command(() => map.MoveToRegion(new MapSpan(new Location(47.6434194, -122.1298166), 0.2, 0.2)))
+			};
 
+			Grid.SetRow(buttonGoTo, 7);
+			Grid.SetRow(buttonGoTo, 7);
+			
+			grid.Children.Add(buttonGoTo);
 			Content = grid;
 		}
 

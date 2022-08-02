@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Maps
 	/// </summary>
 	public interface IMap : IView
 	{
-
-		MapSpan LastMoveToRegion { get; }
-
+		/// <summary>
+		/// The currently visible MapSpan of this Map.
+		/// </summary>
 		MapSpan VisibleRegion { get; set;  }
 
 		/// <summary>
@@ -43,10 +43,17 @@ namespace Microsoft.Maui.Maps
 		/// </summary>
 		IList<IMapPin> Pins { get; }
 
+		/// <summary>
+		/// Method called by the handler when user clicks on the Map.
+		/// </summary>
+		void SendMapClick(Location position);
+
+		/// <summary>
+		/// Moves the map so that it displays the specified MapSpan region.
+		/// </summary>
+		void MoveToRegion(MapSpan region);
 
 		bool MoveToLastRegionOnLayoutChange { get; }
-
-		public void SendMapClick(Location position);
 
 	}
 }

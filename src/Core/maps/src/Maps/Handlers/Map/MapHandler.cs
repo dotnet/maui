@@ -24,7 +24,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMap.HasZoomEnabled)] = MapHasZoomEnabled,
 		};
 
-		public static CommandMapper<IMap, IMapHandler> CommandMapper = new(ViewCommandMapper);
+
+		public static CommandMapper<IMap, IMapHandler> CommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(IMap.MoveToRegion)] = MapMoveToRegion,
+		};
 
 		public MapHandler() : base(Mapper, CommandMapper)
 		{

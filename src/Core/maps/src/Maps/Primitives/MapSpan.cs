@@ -65,12 +65,12 @@ namespace Microsoft.Maui.Maps
 			}
 		}
 
-		public static bool operator ==(MapSpan left, MapSpan right)
+		public static bool operator ==(MapSpan? left, MapSpan? right)
 		{
 			return Equals(left, right);
 		}
 
-		public static bool operator !=(MapSpan left, MapSpan right)
+		public static bool operator !=(MapSpan? left, MapSpan? right)
 		{
 			return !Equals(left, right);
 		}

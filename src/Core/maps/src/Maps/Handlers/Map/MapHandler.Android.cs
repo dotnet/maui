@@ -156,6 +156,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			googleMap.UiSettings.ZoomGesturesEnabled = map.HasZoomEnabled;
 		}
 
+		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
+		{
+			MapSpan? newRegion = arg as MapSpan;
+			if (newRegion != null)
+				(handler as MapHandler)?.MoveToRegion(newRegion, true);
+		}
+
 		internal void OnMapReady(GoogleMap map)
 		{
 			if (map == null)
@@ -207,10 +214,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		void MoveToRegion(MapSpan span, bool animate)
 		{
 			if (Map == null)
-			{
 				return;
-			}
-
+		
 			var ne = new LatLng(span.Center.Latitude + span.LatitudeDegrees / 2,
 				span.Center.Longitude + span.LongitudeDegrees / 2);
 			var sw = new LatLng(span.Center.Latitude - span.LatitudeDegrees / 2,

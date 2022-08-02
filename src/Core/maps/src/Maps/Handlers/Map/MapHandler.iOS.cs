@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			_shouldUpdateRegion = true;
 			PlatformView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
 
-			if(platformView is CustomMKMapView customMKMapView)
+			if (platformView is CustomMKMapView customMKMapView)
 				customMKMapView.LayoutSubviewsFired += CustomMKMapViewLayoutSubviewsFired;
 
 			PlatformView.DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			platformView.RegionChanged -= MkMapViewOnRegionChanged;
 			platformView.GetViewForAnnotation = null;
 			//platformView.OverlayRenderer = null;
-		
+
 			var mapsPinsItemsSource = (ObservableCollection<IMapPin>)VirtualView.Pins;
 			mapsPinsItemsSource.CollectionChanged -= OnPinCollectionChanged;
 
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Maps.Handlers
 					mapPin = new MKPinAnnotationView(annotation, defaultPinId);
 
 				}
-				
+
 				mapPin.CanShowCallout = true;
 
 				if (OperatingSystem.IsIOSVersionAtLeast(11))
@@ -394,6 +394,13 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapHasZoomEnabled(IMapHandler handler, IMap map)
 		{
 			handler.PlatformView.ZoomEnabled = map.HasZoomEnabled;
+		}
+
+		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
+		{
+			MapSpan? newRegion = arg as MapSpan;
+			if (newRegion != null)
+				(handler as MapHandler)?.MoveToRegion(newRegion, true);
 		}
 	}
 }
