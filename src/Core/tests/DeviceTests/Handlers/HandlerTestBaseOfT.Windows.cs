@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -133,6 +134,12 @@ namespace Microsoft.Maui.DeviceTests
 			var uie = await GetValueAsync(view, handler => GetHitTestVisible(handler));
 
 			// HitTestVisible should be the opposite value of InputTransparent 
+			if(view is LayoutStub && inputTransparent)
+			{
+				//https://github.com/dotnet/maui/issues/9112
+				return;
+			}
+
 			Assert.NotEqual(inputTransparent, uie);
 		}
 
