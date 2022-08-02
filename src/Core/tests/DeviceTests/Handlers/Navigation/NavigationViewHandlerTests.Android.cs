@@ -35,12 +35,13 @@ namespace Microsoft.Maui.DeviceTests
 
 					fragmentManager
 						.BeginTransaction()
+
 						.Add(linearLayoutCompat.Id, viewFragment)
 						.Commit();
 
 					rootView.AddView(linearLayoutCompat);
 					await viewFragment.FinishedLoading;
-					var handler = CreateHandler(navigationView, viewFragment.ScopedMauiContext);
+					var handler = CreateHandler<NavigationViewHandler>(navigationView, viewFragment.ScopedMauiContext);
 
 					if (navigationView is NavigationViewStub nvs && nvs.NavigationStack?.Count > 0)
 					{
