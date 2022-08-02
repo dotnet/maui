@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Controls
 	class AppThemeBinding : BindingBase
 	{
 		WeakReference<BindableObject> _weakTarget;
-		BindableProperty _targetProperty;
 
 		internal override BindingBase Clone() => new AppThemeBinding
 		{
@@ -66,9 +65,10 @@ namespace Microsoft.Maui.Controls
 			if (string.Equals(e.PropertyName, VisualElement.WindowProperty.PropertyName, StringComparison.Ordinal))
 				if (Target is VisualElement { Window: {} window })
 				{
+					if (window.Parent is Application app) app.RequestedThemeChanged -= OnRequestedThemeChanged;
+
 					window.ParentChanging -= OnApplicationChanging;
 					window.ParentChanged -= OnApplicationChanged;
-					if (window.Parent is Application app) app.RequestedThemeChanged -= OnRequestedThemeChanged;
 				}
 		}
 
@@ -78,10 +78,9 @@ namespace Microsoft.Maui.Controls
 			{
 				if (Target is VisualElement { Window: {} window })
 				{
-					if (window.Parent is Application app) app.RequestedThemeChanged += OnRequestedThemeChanged;
-
 					window.ParentChanging += OnApplicationChanging;
 					window.ParentChanged += OnApplicationChanged;
+					if (window.Parent is Application app) app.RequestedThemeChanged += OnRequestedThemeChanged;
 				}
 
 				ApplyCore(true);
@@ -165,7 +164,7 @@ namespace Microsoft.Maui.Controls
 
 		// Ideally this will get reworked to not use `Application.Current` at all
 		// https://github.com/dotnet/maui/issues/8713
-		// But I'm going with a simple nudge for now so that we can get our 
+		// But I'm going with a simple nudge for now so that we can get our
 		// device tests back to a working state and address issues
 		// of the more crashing variety
 		object GetValue()
