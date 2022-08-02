@@ -45,13 +45,13 @@ namespace Microsoft.Maui.DeviceTests
 		static string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		static void SetNativeText(EntryHandler entryHandler, string text) =>
+		internal static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
-		static int GetCursorStartPosition(EntryHandler entryHandler) =>
+		internal static int GetCursorStartPosition(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).GetCursorPosition();
 
-		static void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
+		internal static void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
 			GetNativeEntry(entryHandler).SelectionStart = position;
 
 		Color GetNativeTextColor(EntryHandler entryHandler) =>

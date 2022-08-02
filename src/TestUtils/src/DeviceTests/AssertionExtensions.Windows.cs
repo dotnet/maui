@@ -114,14 +114,15 @@ namespace Microsoft.Maui.DeviceTests
 				try
 				{
 					result = await Run(action);
+					grid.Children.Clear();
 				}
 				finally
 				{
-					grid.Children.Clear();
+					await unloadedTcs.Task;
+					await Task.Delay(10);
 					window.Close();
 				}
 
-				await unloadedTcs.Task;
 				return result;
 			}
 			else

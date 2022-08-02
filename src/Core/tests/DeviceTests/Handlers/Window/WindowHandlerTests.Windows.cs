@@ -11,12 +11,12 @@ using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowHandlerTests : HandlerTestBase
 	{
-
 		[Fact(DisplayName = "Back Button Not Visible With No Navigation Page")]
 		public async Task BackButtonNotVisibleWithBasicView()
 		{
@@ -32,7 +32,6 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
-
 
 		[Theory(DisplayName = "MauiToolbar Control Visibilities Toggle")]
 		[InlineData("titleIcon")]
@@ -91,8 +90,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-
 		RootNavigationView GetRootNavigationView(NavigationRootManager navigationRootManager)
 		{
 			return (navigationRootManager.RootView as WindowRootView).NavigationViewControl;
@@ -102,30 +99,25 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				FrameworkElement frameworkElement = null;
-				var content = (Panel)window.Content;
-				try
-				{
-					var scopedContext = new MauiContext(MauiContext.Services);
-					scopedContext.AddWeakSpecific(window);
-					var mauiContext = scopedContext.MakeScoped(true);
-					var windowManager = mauiContext.GetNavigationRootManager();
-					windowManager.Connect(window.Content.ToPlatform(mauiContext));
-					frameworkElement = windowManager.RootView;
+				var scopedContext = new MauiContext(MauiContext.Services);
+				scopedContext.AddWeakSpecific(window);
+				var mauiContext = scopedContext.MakeScoped(true);
+				var windowManager = mauiContext.GetNavigationRootManager();
+				windowManager.Connect(window.Content.ToPlatform(mauiContext));
+				var frameworkElement = windowManager.RootView;
 
-					var taskCompletionSource = new TaskCompletionSource<object>();
-					frameworkElement.Loaded += (object _, RoutedEventArgs __) => taskCompletionSource.SetResult(true);
-					content.Children.Add(frameworkElement);
-					await taskCompletionSource.Task;
-					await action(windowManager);
-				}
-				finally
+				await AssertionExtensions.AttachAndRun(frameworkElement, async () =>
 				{
-					if (frameworkElement != null)
-						content.Children.Remove(frameworkElement);
-				}
+					frameworkElement.Unloaded += (_, _) =>
+					{
+						windowManager?.Disconnect();
+						windowManager = null;
+					};
 
-				return Task.CompletedTask;
+					await action.Invoke(windowManager);
+				});
+
+				return;
 			});
 		}
 	}
