@@ -9,16 +9,21 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
 	
-	public class StyleTests : IDisposable
+	public class StyleTests : BaseTestFixture
 	{
 		public StyleTests()
 		{
 			ApplicationExtensions.CreateAndSetMockApplication();
 		}
-		
-		public void Dispose()
+
+		protected override void Dispose(bool disposing)
 		{
-			Application.ClearCurrent();
+			if (disposing)
+			{
+				Application.ClearCurrent();
+			}
+
+			base.Dispose(disposing);
 		}
 
 		[Fact]
