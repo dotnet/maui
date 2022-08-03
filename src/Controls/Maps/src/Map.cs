@@ -38,12 +38,11 @@ namespace Microsoft.Maui.Controls.Maps
 		readonly ObservableCollection<IMapPin> _pins = new ();
 		readonly ObservableCollection<MapElement> _mapElements = new ();
 		MapSpan _visibleRegion;
+		MapSpan _lastMoveToRegion;
 
 		public Map(MapSpan region)
 		{
 			MoveToRegion(region);
-			LastMoveToRegion = region;
-
 #pragma warning disable CS0618 // Type or member is obsolete
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -119,11 +118,8 @@ namespace Microsoft.Maui.Controls.Maps
 
 		public event EventHandler<MapClickedEventArgs> MapClicked;
 
-	//	[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendMapClick(Location position) => MapClicked?.Invoke(this, new MapClickedEventArgs(position));
 
-		//[EditorBrowsable(EditorBrowsableState.Never)]
-		//public void SetVisibleRegion(MapSpan value) => VisibleRegion = value;
 		public MapSpan VisibleRegion
 		{
 			get { return _visibleRegion; }
@@ -139,9 +135,6 @@ namespace Microsoft.Maui.Controls.Maps
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public MapSpan LastMoveToRegion { get; private set; }
-
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
@@ -156,8 +149,8 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			if (mapSpan == null)
 				throw new ArgumentNullException(nameof(mapSpan));
-			LastMoveToRegion = mapSpan;
-			Handler?.Invoke(nameof(IMap.MoveToRegion), mapSpan);
+			_lastMoveToRegion = mapSpan;
+			Handler?.Invoke(nameof(IMap.MoveToRegion), _lastMoveToRegion);
 		}
 
 		void PinsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

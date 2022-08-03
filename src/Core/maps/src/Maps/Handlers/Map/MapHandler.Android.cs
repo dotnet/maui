@@ -198,9 +198,9 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void MapViewLayoutChange(object? sender, Android.Views.View.LayoutChangeEventArgs e)
 		{
-			if (_init || VirtualView.MoveToLastRegionOnLayoutChange)
+			if ((_init || VirtualView.MoveToLastRegionOnLayoutChange) && _lastMoveToRegion != null)
 			{
-				MoveToRegion(VirtualView.LastMoveToRegion, false);
+				MoveToRegion(_lastMoveToRegion, false);
 
 				_init = false;
 			}
@@ -211,8 +211,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
+		MapSpan? _lastMoveToRegion;
+
 		void MoveToRegion(MapSpan span, bool animate)
 		{
+			_lastMoveToRegion = span;
 			if (Map == null)
 				return;
 		

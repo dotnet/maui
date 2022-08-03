@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 
-			var map = new Microsoft.Maui.Controls.Maps.Map(new MapSpan(new Location(41.0116556, -8.642892), 1, 1));
+			var map = new Microsoft.Maui.Controls.Maps.Map(new MapSpan(new Location(41.0116556, -8.642892), 0.2, 0.2));
 			map.MapClicked += async (s, e) => { await DisplayAlert("Map Clicked", $"Clicked on Position:{e.Position}", "ok"); };
 
 			Grid.SetColumnSpan(map, 2);

@@ -29,8 +29,7 @@ namespace Microsoft.Maui.Maps.Handlers
 	{
 		CLLocationManager? _locationManager;
 		object? _lastTouchedView;
-		bool _shouldUpdateRegion;
-
+	
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
 
 
@@ -47,7 +46,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			base.ConnectHandler(platformView);
 			_locationManager = new CLLocationManager();
 
-			_shouldUpdateRegion = true;
 			PlatformView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
 
 			if (platformView is CustomMKMapView customMKMapView)
@@ -113,7 +111,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void CustomMKMapViewLayoutSubviewsFired(object? sender, EventArgs e)
 		{
-			UpdateRegion();
+			//MoveToRegion(VirtualView.LastMoveToRegion, false);
 		}
 
 		void OnMapClicked(UITapGestureRecognizer recognizer)
@@ -121,15 +119,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			var tapPoint = recognizer.LocationInView(PlatformView);
 			var tapGPS = PlatformView.ConvertPoint(tapPoint, PlatformView);
 			VirtualView.SendMapClick(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
-		}
-
-		void UpdateRegion()
-		{
-			if (_shouldUpdateRegion)
-			{
-				MoveToRegion(VirtualView.LastMoveToRegion, false);
-				_shouldUpdateRegion = false;
-			}
 		}
 
 		void MkMapViewOnRegionChanged(object? sender, MKMapViewChangeEventArgs e)
