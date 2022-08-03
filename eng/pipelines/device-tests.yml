@@ -11,8 +11,8 @@ trigger:
     include:
     - '*'
     exclude:
-    - .github/**/*
-    - docs/**/*
+    - .github/*
+    - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
@@ -31,8 +31,8 @@ pr:
     include:
     - '*'
     exclude:
-    - .github/**/*
-    - docs/**/*
+    - .github/*
+    - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
