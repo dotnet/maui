@@ -134,7 +134,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uie = await GetValueAsync(view, handler => GetHitTestVisible(handler));
 
 			// HitTestVisible should be the opposite value of InputTransparent 
-			if(view is LayoutStub && inputTransparent)
+			if (view is LayoutStub && inputTransparent)
 			{
 				//https://github.com/dotnet/maui/issues/9112
 				return;
