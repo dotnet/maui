@@ -283,13 +283,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DeActivatedFiresDisappearingEvent()
+		void DeActivatedFiresDisappearingEvent()
 		{
 			int disappear = 0;
 			int appear = 0;
 
 			var cp = new ContentPage();
-			IWindow window = new Window(cp);
+			IWindow window = new TestWindow(cp);
 			window.Activated();
 
 			cp.Appearing += (_, __) => appear++;
