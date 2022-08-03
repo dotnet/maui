@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Maps;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests

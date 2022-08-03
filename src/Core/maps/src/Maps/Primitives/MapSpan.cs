@@ -112,5 +112,10 @@ namespace Microsoft.Maui.Maps
 			double latCircumference = LatitudeCircumferenceKm(location);
 			return latCircumference * longitudeDegrees / 360;
 		}
+
+		public override string ToString()
+		{
+			return $"{Center}, {LatitudeDegrees}, {LongitudeDegrees}";
+		}
 	}
 }

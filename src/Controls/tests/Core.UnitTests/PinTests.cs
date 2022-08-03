@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Devices.Sensors;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Pin pin = new Pin
 			{
 				Type = PinType.SavedPin,
-				Position = new Position(-92, 178),
+				Position = new Location(-92, 178),
 				Label = "My Desktop",
 				Address = "123 Hello World Street"
 			};
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Pin pin3 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Position(12, -24),
+				Position = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Pin pin4 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Position(12, -24),
+				Position = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pin1 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Position(12, -24),
+				Position = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pin2 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Position(12, -24),
+				Position = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pin1 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Position(11.9, -24),
+				Position = new Location(11.9, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pin2 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Position(12, -24),
+				Position = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};

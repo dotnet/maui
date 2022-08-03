@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices.Sensors;
@@ -75,14 +71,19 @@ namespace Maui.Controls.Sample
 				Command = new Command(() => map.MoveToRegion(new MapSpan(new Location(47.6434194, -122.1298166), 0.2, 0.2)))
 			};
 
+			var lblVisibleRegion = new Label();
+
+			lblVisibleRegion.SetBinding(Label.TextProperty, new Binding(nameof(map.VisibleRegion), source: map));
 			Grid.SetRow(buttonGoTo, 7);
-			Grid.SetRow(buttonGoTo, 7);
+			Grid.SetRow(lblVisibleRegion, 7);
+			Grid.SetColumn(lblVisibleRegion, 1);
 			
 			grid.Children.Add(buttonGoTo);
+			grid.Children.Add(lblVisibleRegion);
 			Content = grid;
 		}
 
-		private static void AddBoolMapOption(Grid grid, string name, int row, bool isToogled, Action<bool> toogled)
+		static void AddBoolMapOption(Grid grid, string name, int row, bool isToogled, Action<bool> toogled)
 		{
 			var lbl = new Label { Text = name };
 			var swt = new Switch
