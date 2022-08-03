@@ -54,6 +54,10 @@
     <!-- Work around the IDE not properly handling the NU1703 warning -->
     <MauiPlatformsNoMacCat>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-android</MauiPlatformsNoMacCat>
     <MauiPlatformsNoMacCat Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatformsNoMacCat);$(WindowsMauiPlatforms)</MauiPlatformsNoMacCat>
+
+    
+    <MauiPlatforms>net6.0-android</MauiPlatforms>
+    <MauiPlatformsNoMacCat>net6.0-android</MauiPlatformsNoMacCat>
   </PropertyGroup>
 
   <PropertyGroup>
