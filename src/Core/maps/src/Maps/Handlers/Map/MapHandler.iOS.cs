@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			var tapPoint = recognizer.LocationInView(PlatformView);
 			var tapGPS = PlatformView.ConvertPoint(tapPoint, PlatformView);
-			VirtualView.SendMapClick(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+			VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
 		}
 
 		void MkMapViewOnRegionChanged(object? sender, MKMapViewChangeEventArgs e)

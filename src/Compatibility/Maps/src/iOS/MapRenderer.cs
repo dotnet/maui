@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 			var tapPoint = recognizer.LocationInView(Control);
 			var tapGPS = ((MKMapView)Control).ConvertPoint(tapPoint, Control);
-			((Map)Element).SendMapClick(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+			((Map)Element).Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
 		}
 #endif
 

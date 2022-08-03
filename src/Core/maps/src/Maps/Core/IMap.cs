@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Maps
 		/// <summary>
 		/// Method called by the handler when user clicks on the Map.
 		/// </summary>
-		void SendMapClick(Location position);
+		void Clicked(Location position);
 
 		/// <summary>
 		/// Moves the map so that it displays the specified MapSpan region.

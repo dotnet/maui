@@ -118,8 +118,6 @@ namespace Microsoft.Maui.Controls.Maps
 
 		public event EventHandler<MapClickedEventArgs> MapClicked;
 
-		public void SendMapClick(Location position) => MapClicked?.Invoke(this, new MapClickedEventArgs(position));
-
 		public MapSpan VisibleRegion
 		{
 			get { return _visibleRegion; }

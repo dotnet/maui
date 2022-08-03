@@ -279,7 +279,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e)
 		{
-			VirtualView.SendMapClick(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+			VirtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
 		}
 
 		protected IMapPin? GetPinForMarker(Marker marker)

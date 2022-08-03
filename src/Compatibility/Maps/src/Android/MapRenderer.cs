@@ -387,7 +387,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 		void OnMapClick(object sender, GoogleMap.MapClickEventArgs e)
 		{
-			Map.SendMapClick(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+			(Map as IMap)?.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
 		}
 
 		void MoveToRegion(MapSpan span, bool animate)
