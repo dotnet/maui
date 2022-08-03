@@ -72,6 +72,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 		[Test]
+		public void SettingCurrentItemOnShellViaContentPage()
+		{
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+			var shell = new TestShell()
+			{
+				Items =
+				{
+					new TabBar()
+					{
+						Items =
+						{
+							new ShellContent() { Content = page1 },
+							new ShellContent() { Content = page2 },
+						}
+					}
+				}
+			};
+
+			shell.CurrentItem = page2;
+			Assert.AreEqual(1, shell.Items.Count);
+			Assert.AreEqual(2, shell.Items[0].Items.Count);
+			Assert.AreEqual(1, shell.Items[0].Items[0].Items.Count);
+			Assert.AreEqual(1, shell.Items[0].Items[1].Items.Count);
+			Assert.AreEqual(shell.CurrentItem.CurrentItem, shell.Items[0].Items[1]);
+		}
+
+		[Test]
 		public void SetCurrentItemAddsToShellCollection()
 		{
 			var shell = new Shell();
@@ -474,20 +502,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void BackButtonBehaviorSet()
-		{
-			var page = new ContentPage();
-
-			Assert.IsNull(Shell.GetBackButtonBehavior(page));
-
-			var backButtonBehavior = new BackButtonBehavior();
-
-			Shell.SetBackButtonBehavior(page, backButtonBehavior);
-
-			Assert.AreEqual(backButtonBehavior, Shell.GetBackButtonBehavior(page));
-		}
-
-		[Test]
 		public void ModalSetters()
 		{
 			var page = new ContentPage();
@@ -499,32 +513,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.IsTrue(IsModal(page));
 			Assert.IsFalse(IsAnimated(page));
-		}
-
-		[Test]
-		public void BackButtonBehaviorBindingContextPropagation()
-		{
-			object bindingContext = new object();
-			var page = new ContentPage();
-			var backButtonBehavior = new BackButtonBehavior();
-
-			Shell.SetBackButtonBehavior(page, backButtonBehavior);
-			page.BindingContext = bindingContext;
-
-			Assert.AreEqual(page.BindingContext, backButtonBehavior.BindingContext);
-		}
-
-		[Test]
-		public void BackButtonBehaviorBindingContextPropagationWithExistingBindingContext()
-		{
-			object bindingContext = new object();
-			var page = new ContentPage();
-			var backButtonBehavior = new BackButtonBehavior();
-
-			page.BindingContext = bindingContext;
-			Shell.SetBackButtonBehavior(page, backButtonBehavior);
-
-			Assert.AreEqual(page.BindingContext, backButtonBehavior.BindingContext);
 		}
 
 		[Test]
@@ -1203,6 +1191,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task GetCurrentPageBetweenSections()
 		{
 			var shell = new Shell();
+			_ = new Window() { Page = shell };
 			var one = new ShellItem { Route = "one" };
 			var two = new ShellItem { Route = "two" };
 
@@ -1237,6 +1226,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetCurrentPageOnInit()
 		{
 			var shell = new Shell();
+			_ = new Window() { Page = shell };
 			Page page = null;
 			shell.Navigated += (_, __) =>
 			{
@@ -1331,6 +1321,188 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var shellItemCount = (shell.CurrentItem as IVisualTreeElement).GetVisualChildren();
 			Assert.AreEqual(shellCount.Count, 1);
 			Assert.AreEqual(shellItemCount.Count, 2);
+		}
+
+		[Test]
+		public void ShellToolbarTitle()
+		{
+			var shellContent = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent)
+			{
+				Title = "Shell Title"
+			};
+
+			var shellToolBar = testShell.Toolbar;
+
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
+
+			shellContent.Title = "Shell Content Title";
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+
+			var page = testShell.CurrentPage;
+			page.Title = "ContentPage Title";
+			Assert.AreEqual("ContentPage Title", shellToolBar.Title);
+		}
+
+		[Test]
+		public void ShellToolbarTitleChangesWithCurrentItem()
+		{
+			var shellContent = CreateShellContent();
+			var shellContent2 = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent, shellContent2)
+			{
+				Title = "Shell Title"
+			};
+
+			shellContent.Title = "Content 1";
+			shellContent2.Title = "Content 2";
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Content 1", shellToolBar.Title);
+
+			testShell.CurrentItem = shellContent2;
+			Assert.AreEqual("Content 2", shellToolBar.Title);
+		}
+
+		[Test]
+		public void ShellToolbarTitleEmptyStringOnNullOrEmptyPageTitle()
+		{
+			var shellContent = CreateShellContent();
+			var shellContent2 = CreateShellContent();
+			TestShell testShell = new TestShell(shellContent, shellContent2)
+			{
+				Title = "Shell Title"
+			};
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
+
+			var page = testShell.CurrentPage;
+			page.Title = String.Empty;
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
+			page.Title = "set";
+			Assert.AreEqual("set", shellToolBar.Title);
+			page.Title = null;
+			Assert.AreEqual(String.Empty, shellToolBar.Title);
+		}
+
+		[Test]
+		public async Task ShellToolbarTitleIgnoresModalTitle()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Shell Title";
+			TestShell testShell = new TestShell(shellContent);
+
+			await testShell.CurrentSection.Navigation.PushModalAsync(new ContentPage()
+			{
+				Title = "Modal Page"
+			});
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Shell Title", shellToolBar.Title);
+
+			await testShell.CurrentSection.Navigation.PopModalAsync();
+
+			Assert.AreEqual("Shell Title", shellToolBar.Title);
+		}
+
+		[Test]
+		public async Task ShellToolbarTitleIgnoresModalTitle_ShellContent()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Shell Content Title";
+
+			var flyoutItem = new FlyoutItem()
+			{
+				Title = "Flyout Item 1",
+				Items =
+				{
+					shellContent
+				}
+			};
+
+			TestShell testShell = new TestShell(flyoutItem)
+			{
+				Title = "Welcome to Shell"
+			};
+
+			await testShell.CurrentSection.Navigation.PushModalAsync(new ContentPage()
+			{
+				Title = "Modal Page"
+			});
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+			await testShell.CurrentSection.Navigation.PopModalAsync();
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+		}
+
+		[Test]
+		public async Task PushedPageDoesntUsesTitleOnShellSection()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Shell Content Title";
+
+			var shellSection = new ShellSection();
+			shellSection.Title = "Shell Section Title";
+			shellSection.Items.Add(shellContent);
+
+			TestShell testShell = new TestShell(shellSection)
+			{
+				Title = "Shell Title"
+			};
+
+			var shellToolBar = testShell.Toolbar;
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+
+			await testShell.CurrentSection.Navigation.PushAsync(new ContentPage());
+
+			Assert.AreEqual("", shellToolBar.Title);
+
+			await testShell.CurrentSection.Navigation.PopAsync();
+			Assert.AreEqual("Shell Content Title", shellToolBar.Title);
+		}
+
+		[Test]
+		public void WindowTitleSetToShellTitle()
+		{
+			TestShell testShell = new TestShell(new ContentPage())
+			{
+				Title = "Shell Title"
+			};
+
+			Window window = new Window()
+			{
+				Page = testShell
+			};
+
+			Assert.AreEqual("Shell Title", (window as IWindow).Title);
+
+			window.Title = "Window Title";
+			Assert.AreEqual("Window Title", (window as IWindow).Title);
+
+			window.Title = null;
+			Assert.AreEqual("Shell Title", (window as IWindow).Title);
+		}
+
+		[Test]
+		public void FlyoutIsPresentedRemainsTrueAfterShellIsInitialized()
+		{
+			TestShell testShell = new TestShell()
+			{
+				FlyoutIsPresented = true
+			};
+
+			testShell.Items.Add(CreateShellItem<FlyoutItem>());
+
+			Assert.IsTrue(testShell.FlyoutIsPresented);
+		}
+
+		public void ShellToolbarNotVisibleWithBasicContentPage()
+		{
+			TestShell testShell = new TestShell(new ContentPage());
+			var shellToolBar = testShell.Toolbar;
+			Assert.False(shellToolBar.IsVisible);
 		}
 	}
 }

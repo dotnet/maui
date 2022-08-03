@@ -22,7 +22,7 @@
         </Grid.RowDefinitions>
        
         <Border x:Name="BorderView" Margin="5">
-            <Label Text="Just a Label" FontSize="20"/>
+            <Label x:Name="BorderContent" Text="Just a Label" FontSize="20"/>
         </Border>
 
         <ScrollView
@@ -61,6 +61,20 @@
                     Text="#0083B0"
                     Placeholder="Background End Color Hex"
                     TextChanged="OnBackgroundChanged"/>
+                <Label
+                    Text="Content Background"
+                    Style="{StaticResource Headline}"/>
+                <StackLayout
+                    Orientation="Horizontal">
+                    <CheckBox 
+                        x:Name="ContentBackgroundCheckBox"
+                        WidthRequest="48"
+                        VerticalOptions="Center"
+                        CheckedChanged="OnContentBackgroundCheckBoxChanged"/>
+                    <Label 
+                        Text="Show Content Background"
+                        VerticalOptions="Center"/>
+                </StackLayout>
                 <Label
                     Text="Border"
                     Style="{StaticResource Headline}"/>

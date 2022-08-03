@@ -102,33 +102,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void TestFontConverter()
-		{
-			var converter = new FontTypeConverter();
-			var microSize = Device.GetNamedSize(NamedSize.Micro, null, false);
-			var mediumSize = Device.GetNamedSize(NamedSize.Medium, null, false);
-			var largeSize = Device.GetNamedSize(NamedSize.Large, null, false);
-			Assert.True(converter.CanConvertFrom(typeof(string)));
-			Assert.AreEqual(Font.SystemFontOfSize(mediumSize), converter.ConvertFromInvariantString("Medium"));
-			Assert.AreEqual(Font.SystemFontOfSize(42), converter.ConvertFromInvariantString("42"));
-			Assert.AreEqual(Font.OfSize("Foo", microSize), converter.ConvertFromInvariantString("Foo, Micro"));
-			Assert.AreEqual(Font.OfSize("Foo", 42), converter.ConvertFromInvariantString("Foo, 42"));
-			Assert.AreEqual(Font.OfSize("Foo", 12.7), converter.ConvertFromInvariantString("Foo, 12.7"));
-			Assert.AreEqual(Font.SystemFontOfSize(largeSize, FontWeight.Bold), converter.ConvertFromInvariantString("Bold, Large"));
-			Assert.AreEqual(Font.SystemFontOfSize(42, FontWeight.Bold), converter.ConvertFromInvariantString("Bold, 42"));
-			Assert.AreEqual(Font.OfSize("Foo", mediumSize), converter.ConvertFromInvariantString("Foo"));
-			Assert.AreEqual(Font.OfSize("Foo", largeSize).WithAttributes(FontAttributes.Bold), converter.ConvertFromInvariantString("Foo, Bold, Large"));
-			Assert.AreEqual(Font.OfSize("Foo", largeSize).WithAttributes(FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Italic, Large"));
-			Assert.AreEqual(Font.OfSize("Foo", largeSize).WithAttributes(FontAttributes.Bold | FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Bold, Italic, Large"));
-			Assert.AreEqual(Font.OfSize("Foo", 12).WithAttributes(FontAttributes.Bold), converter.ConvertFromInvariantString("Foo, Bold, 12"));
-			Assert.AreEqual(Font.OfSize("Foo", 12.7).WithAttributes(FontAttributes.Bold), converter.ConvertFromInvariantString("Foo, Bold, 12.7"));
-			Assert.AreEqual(Font.OfSize("Foo", 12).WithAttributes(FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Italic, 12"));
-			Assert.AreEqual(Font.OfSize("Foo", 12.7).WithAttributes(FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Italic, 12.7"));
-			Assert.AreEqual(Font.OfSize("Foo", 12).WithAttributes(FontAttributes.Bold | FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Bold, Italic, 12"));
-			Assert.AreEqual(Font.OfSize("Foo", 12.7).WithAttributes(FontAttributes.Bold | FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Bold, Italic, 12.7"));
-		}
-
-		[Test]
 		public void TestFontParsing()
 		{
 			var input = "PTM55FT#PTMono-Regular";
@@ -154,6 +127,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsNull(font3.Extension);
 
 		}
-
 	}
 }

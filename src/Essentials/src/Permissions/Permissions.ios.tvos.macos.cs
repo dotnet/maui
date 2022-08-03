@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Photos;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
+		[SupportedOSPlatform("tvos14.0")]
+		[SupportedOSPlatform("macos11.0")]
+		[SupportedOSPlatform("ios14.0")]
 		public partial class Photos : BasePlatformPermission
 		{
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
@@ -29,15 +33,13 @@ namespace Microsoft.Maui.Essentials
 				{
 					return status;
 				}
-#if __IOS__
-                else if (status == PermissionStatus.Limited)
-                {
-                    PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
-                        PHPhotoLibrary.SharedPhotoLibrary,
-                        Platform.GetCurrentUIViewController());
-                    return status;
-                }
-#endif
+				else if (OperatingSystem.IsIOSVersionAtLeast(14) && status == PermissionStatus.Limited)
+				{
+					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
+						PHPhotoLibrary.SharedPhotoLibrary,
+						WindowStateManager.Default.GetCurrentUIViewController());
+					return status;
+				}
 
 				EnsureMainThread();
 
@@ -45,6 +47,9 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
+		[SupportedOSPlatform("tvos14.0")]
+		[SupportedOSPlatform("macos11.0")]
+		[SupportedOSPlatform("ios14.0")] // The enum PHAccessLevel has these attributes
 		public partial class PhotosAddOnly : BasePlatformPermission
 		{
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
@@ -85,18 +90,22 @@ namespace Microsoft.Maui.Essentials
 			=> status switch
 			{
 				PHAuthorizationStatus.Authorized => PermissionStatus.Granted,
+#pragma warning disable CA1416 // 'PHAuthorizationStatus.Limited' is only supported on 'ios' 14.0 and later. 
 				PHAuthorizationStatus.Limited => PermissionStatus.Limited,
+#pragma warning restore CA1416
 				PHAuthorizationStatus.Denied => PermissionStatus.Denied,
 				PHAuthorizationStatus.Restricted => PermissionStatus.Restricted,
 				_ => PermissionStatus.Unknown,
 			};
 
+		[SupportedOSPlatformGuard("iOS14.0")]
+		[SupportedOSPlatformGuard("macOS11.0")]
+		[SupportedOSPlatformGuard("tvOS14.0")]
 		static bool CheckOSVersionForPhotos()
-#if __MACOS__
-        => Platform.HasOSVersion(11, 0);
-#else
-		=> Platform.HasOSVersion(14, 0);
-#endif
-
+		{
+			return OperatingSystem.IsIOSVersionAtLeast(14, 0) ||
+				OperatingSystem.IsMacOSVersionAtLeast(11, 0) ||
+				OperatingSystem.IsTvOSVersionAtLeast(14, 0);
+		}
 	}
 }

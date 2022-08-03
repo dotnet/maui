@@ -1,41 +1,82 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics.Drawables;
+using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class AppActions
+	class AppActionsImplementation : IAppActions, IPlatformAppActions
 	{
-		internal static bool PlatformIsSupported
-			=> Platform.HasApiLevelNMr1;
+		public const string IntentAction = "ACTION_XE_APP_ACTION";
+		const string extraAppActionHandled = "EXTRA_XE_APP_ACTION_HANDLED";
 
-		static Task<IEnumerable<AppAction>> PlatformGetAsync()
+		[SupportedOSPlatformGuard("android25.0")]
+		public bool IsSupported => OperatingSystem.IsAndroidVersionAtLeast(25);
+
+		public Task<IEnumerable<AppAction>> GetAsync()
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
 
 #if __ANDROID_25__
-			return Task.FromResult(Platform.ShortcutManager.DynamicShortcuts.Select(s => s.ToAppAction()));
+			if (Application.Context.GetSystemService(Context.ShortcutService) is not ShortcutManager manager)
+				throw new FeatureNotSupportedException();
+
+#pragma warning disable CA1416 // Known false positive with lambda
+			return Task.FromResult(manager.DynamicShortcuts.Select(s => s.ToAppAction()));
+#pragma warning restore CA1416
 #else
-			return Task.FromResult < IEnumerable < AppAction >>> (null);
+			return Task.FromResult<IEnumerable<AppAction>>(null);
 #endif
 		}
 
-		static Task PlatformSetAsync(IEnumerable<AppAction> actions)
+		public Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
 
 #if __ANDROID_25__
-			Platform.ShortcutManager.SetDynamicShortcuts(actions.Select(a => a.ToShortcutInfo()).ToList());
+			if (Application.Context.GetSystemService(Context.ShortcutService) is not ShortcutManager manager)
+				throw new FeatureNotSupportedException();
+
+#pragma warning disable CA1416 // Known false positive with lambda
+			using var list = new JavaList<ShortcutInfo>(actions.Select(a => a.ToShortcutInfo()));
+#pragma warning disable CA1416
+			manager.SetDynamicShortcuts(list);
 #endif
 			return Task.CompletedTask;
 		}
 
-		static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
+		public event EventHandler<AppActionEventArgs> AppActionActivated;
+
+		public void OnResume(Intent intent) =>
+			OnNewIntent(intent);
+
+		public void OnNewIntent(Intent intent)
+		{
+			if (intent?.Action == IntentAction && !intent.GetBooleanExtra(extraAppActionHandled, false))
+			{
+				// prevent launch intent getting handled on activity resume
+				intent.PutExtra(extraAppActionHandled, true);
+
+				var appAction = intent.ToAppAction();
+
+				if (!string.IsNullOrEmpty(appAction?.Id))
+					AppActionActivated?.Invoke(null, new AppActionEventArgs(appAction));
+			}
+		}
+	}
+
+	static partial class AppActionsExtensions
+	{
+		[SupportedOSPlatform("android25.0")]
+		internal static AppAction ToAppAction(this ShortcutInfo shortcutInfo) =>
 			new AppAction(shortcutInfo.Id, shortcutInfo.ShortLabel, shortcutInfo.LongLabel);
 
 		const string extraAppActionId = "EXTRA_XE_APP_ACTION_ID";
@@ -50,9 +91,12 @@ namespace Microsoft.Maui.Essentials
 				intent.GetStringExtra(extraAppActionSubtitle),
 				intent.GetStringExtra(extraAppActionIcon));
 
-		static ShortcutInfo ToShortcutInfo(this AppAction action)
+		[SupportedOSPlatform("android25.0")]
+		internal static ShortcutInfo ToShortcutInfo(this AppAction action)
 		{
-			var shortcut = new ShortcutInfo.Builder(Platform.AppContext, action.Id)
+			var context = Application.Context;
+
+			var shortcut = new ShortcutInfo.Builder(context, action.Id)
 				.SetShortLabel(action.Title);
 
 			if (!string.IsNullOrWhiteSpace(action.Subtitle))
@@ -62,13 +106,13 @@ namespace Microsoft.Maui.Essentials
 
 			if (!string.IsNullOrWhiteSpace(action.Icon))
 			{
-				var iconResId = Platform.AppContext.Resources.GetIdentifier(action.Icon, "drawable", Platform.AppContext.PackageName);
+				var iconResId = context.Resources.GetIdentifier(action.Icon, "drawable", context.PackageName);
 
-				shortcut.SetIcon(Icon.CreateWithResource(Platform.AppContext, iconResId));
+				shortcut.SetIcon(Icon.CreateWithResource(context, iconResId));
 			}
 
-			var intent = new Intent(Platform.Intent.ActionAppAction);
-			intent.SetPackage(Platform.AppContext.PackageName);
+			var intent = new Intent(AppActionsImplementation.IntentAction);
+			intent.SetPackage(context.PackageName);
 			intent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
 			intent.PutExtra(extraAppActionId, action.Id);
 			intent.PutExtra(extraAppActionTitle, action.Title);

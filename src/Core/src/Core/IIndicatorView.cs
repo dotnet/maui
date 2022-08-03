@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 		Paint? SelectedIndicatorColor { get; }
 
 		/// <summary>
-		/// Shape of native indicators, can be Circle or Square
+		/// Shape of platform indicators, can be Circle or Square
 		/// </summary>
 		IShape IndicatorsShape { get; }
 	}

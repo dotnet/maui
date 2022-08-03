@@ -8,19 +8,19 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class LabelExtensions
 	{
-		public static void UpdateText(this UILabel nativeLabel, Label label)
+		public static void UpdateText(this UILabel platformLabel, Label label)
 		{
 			switch (label.TextType)
 			{
 				case TextType.Html:
-					nativeLabel.UpdateTextHtml(label);
+					platformLabel.UpdateTextHtml(label);
 					break;
 
 				default:
 					if (label.FormattedText != null)
-						nativeLabel.AttributedText = label.ToNSAttributedString();
+						platformLabel.AttributedText = label.ToNSAttributedString();
 					else
-						nativeLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+						platformLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					break;
 			}
 		}

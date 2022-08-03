@@ -1,10 +1,12 @@
+#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CoreLocation;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public class GeocodingImplementation : IGeocoding
+	class GeocodingImplementation : IGeocoding
 	{
 		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{
@@ -12,7 +14,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			{
 				var addressList = await geocoder.ReverseGeocodeLocationAsync(new CLLocation(latitude, longitude));
 
-				return addressList?.ToPlacemarks();
+				return addressList?.ToPlacemarks() ?? Array.Empty<Placemark>();
 			}
 		}
 
@@ -22,7 +24,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			{
 				var positionList = await geocoder.GeocodeAddressAsync(address);
 
-				return positionList?.ToLocations();
+				return positionList?.ToLocations() ?? Array.Empty<Location>();
 			}
 		}
 	}

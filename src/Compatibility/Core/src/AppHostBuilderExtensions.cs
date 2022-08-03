@@ -1,12 +1,15 @@
 #nullable enable
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 
 #if ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -21,7 +24,6 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.P
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.BoxViewBorderRenderer;
 using CellRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.TextCellRenderer;
-using Deserializer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsSerializer;
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.StreamImageSourceHandler;
 using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.UriImageSourceHandler;
@@ -31,129 +33,121 @@ using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using WebViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.WkWebViewRenderer;
 using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
+#elif TIZEN
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using Microsoft.Maui.Graphics.Skia;
+using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.BoxViewRenderer;
+using CollectionViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StructuredItemsViewRenderer;
+using OpenGLViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
+using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StreamImageSourceHandler;
+using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.UriImageSourceHandler;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
+using FrameRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.FrameRenderer;
+using ImageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.ImageRenderer;
+using EllipseRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.EllipseRenderer;
+using LineRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.LineRenderer;
+using PathRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.PathRenderer;
+using PolygonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.PolygonRenderer;
+using PolylineRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.PolylineRenderer;
+using RectangleRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.RectangleRenderer;
 #endif
 
-namespace Microsoft.Maui.Controls.Hosting
+namespace Microsoft.Maui.Controls.Compatibility.Hosting
 {
 	public static class MauiAppBuilderExtensions
 	{
-		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder)
-			where TApp : class, IApplication
+		internal const string UseMapperInstead = "This renderer is obsolete please try to use the corresponding handler/mapper";
+
+		internal static void CheckForCompatibility([CallerMemberName] string memberName = "")
 		{
-			builder.Services.TryAddSingleton<IApplication, TApp>();
-			builder.SetupDefaults();
-			return builder;
+			Controls.Hosting.CompatibilityCheck.CheckForCompatibility(memberName);
 		}
 
-		public static MauiAppBuilder UseMauiApp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
-			where TApp : class, IApplication
+		internal static void ResetCompatibilityCheck()
 		{
-			builder.Services.TryAddSingleton<IApplication>(implementationFactory);
-			builder.SetupDefaults();
-			return builder;
+			Controls.Hosting.CompatibilityCheck.ResetCompatibilityCheck();
 		}
 
-		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
+		public static MauiAppBuilder UseMauiCompatibility(this MauiAppBuilder builder)
 		{
-#if ANDROID || IOS || WINDOWS
+			Controls.Hosting.CompatibilityCheck.UseCompatibility();
+
+#if PLATFORM
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
-			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<NativeBindingService>();
 			DependencyService.Register<NativeValueConverterService>();
-			DependencyService.Register<Deserializer>();
-			DependencyService.Register<ResourcesProvider>();
-			DependencyService.Register<Xaml.ValueConverterProvider>();
-			DependencyService.Register<PlatformInvalidate>();
 #endif
 
 			builder.ConfigureCompatibilityLifecycleEvents();
-			builder.ConfigureImageSourceHandlers();
 			builder
 				.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddMauiControlsHandlers();
+#if PLATFORM
 
-#if ANDROID || IOS || WINDOWS
-					handlers.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
-					handlers.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
-					handlers.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
-					handlers.AddHandler(typeof(EntryCell), typeof(Handlers.Compatibility.EntryCellRenderer));
-					handlers.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
-					handlers.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
-					handlers.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
-					handlers.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-					handlers.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
-
-					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Label), typeof(LabelRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Image), typeof(ImageRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Button), typeof(ButtonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ImageButton), typeof(ImageButtonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(CollectionView), typeof(CollectionViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(CarouselView), typeof(CarouselViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Path), typeof(PathRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Ellipse), typeof(EllipseRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Line), typeof(LineRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Polyline), typeof(PolylineRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Polygon), typeof(PolygonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Shapes.Rectangle), typeof(RectangleRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(RadioButton), typeof(RadioButtonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Slider), typeof(SliderRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(WebView), typeof(WebViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(SearchBar), typeof(SearchBarRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Switch), typeof(SwitchRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(SwipeView), typeof(SwipeViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(DatePicker), typeof(DatePickerRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(TimePicker), typeof(TimePickerRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Picker), typeof(PickerRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Stepper), typeof(StepperRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ProgressBar), typeof(ProgressBarRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ScrollView), typeof(ScrollViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(CheckBox), typeof(CheckBoxRenderer));
 #if !WINDOWS
-					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
 #if !(MACCATALYST || MACOS)
+#pragma warning disable CS0612 // Type or member is obsolete
 					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
+#pragma warning restore CS0612 // Type or member is obsolete
 #endif
 #else
+#pragma warning disable CS0618 // Type or member is obsolete
 					handlers.TryAddCompatibilityRenderer(typeof(Layout), typeof(LayoutRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
-					handlers.TryAddCompatibilityRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Page), typeof(PageRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(RefreshView), typeof(RefreshViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer));
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.Layout<View>), typeof(DefaultRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.RelativeLayout), typeof(DefaultRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Microsoft.Maui.Controls.Compatibility.AbsoluteLayout), typeof(DefaultRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 
+#if TIZEN
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
+					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(LayoutRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(FlyoutPage), typeof(FlyoutPageRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(Cell), typeof(CellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(ImageCell), typeof(ImageCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(EntryCell), typeof(EntryCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#endif
 					// Shimmed renderers go directly to the registrar to load Image Handlers
 					Internals.Registrar.Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
 					Internals.Registrar.Registered.Register(typeof(StreamImageSource), typeof(StreamImagesourceHandler));
 					Internals.Registrar.Registered.Register(typeof(UriImageSource), typeof(ImageLoaderSourceHandler));
+#if !TIZEN
 					Internals.Registrar.Registered.Register(typeof(FontImageSource), typeof(FontImageSourceHandler));
+#endif
 					Internals.Registrar.Registered.Register(typeof(Microsoft.Maui.EmbeddedFont), typeof(Microsoft.Maui.EmbeddedFontLoader));
 #endif
 
 #if IOS || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
-					handlers.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
-					handlers.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 				});
 
+#if WINDOWS
 			builder.AddMauiCompat();
-			builder.RemapForControls();
+#endif
 
 			return builder;
 		}
 
-		private static MauiAppBuilder AddMauiCompat(this MauiAppBuilder builder)
+		static MauiAppBuilder AddMauiCompat(this MauiAppBuilder builder)
 		{
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiCompatInitializer>());
 			return builder;
@@ -164,68 +158,21 @@ namespace Microsoft.Maui.Controls.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 #if WINDOWS
-				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
-				if (dictionaries != null)
-				{
-					// WinUI
-					AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
+				var dispatcher =
+					services.GetService<IDispatcher>() ??
+					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
 
-					// Microsoft.Maui
-					AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
-
-					// Microsoft.Maui.Controls
-					AddLibraryResources("MicrosoftMauiControlsIncluded", "ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
-
-					// Microsoft.Maui.Controls.Compatibility
-					AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf");
-				}
-#endif
-			}
-
-#if WINDOWS
-			static void AddLibraryResources(string key, string uri)
-			{
-				var resources = UI.Xaml.Application.Current?.Resources;
-				if (resources == null)
-					return;
-
-				var dictionaries = resources.MergedDictionaries;
-				if (dictionaries == null)
-					return;
-
-				if (!resources.ContainsKey(key))
-				{
-					dictionaries.Add(new UI.Xaml.ResourceDictionary
+					dispatcher.DispatchIfRequired(() =>
 					{
-						Source = new Uri(uri)
+						var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+						if (UI.Xaml.Application.Current?.Resources != null && dictionaries != null)
+						{
+							// Microsoft.Maui.Controls.Compatibility
+							UI.Xaml.Application.Current.Resources.AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf");
+						}
 					});
-				}
-			}
-
-			static void AddLibraryResources<T>()
-				where T : UI.Xaml.ResourceDictionary, new()
-			{
-				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
-				if (dictionaries == null)
-					return;
-
-				var found = false;
-				foreach (var dic in dictionaries)
-				{
-					if (dic is T)
-					{
-						found = true;
-						break;
-					}
-				}
-
-				if (!found)
-				{
-					var dic = new T();
-					dictionaries.Add(dic);
-				}
-			}
 #endif
+			}
 		}
 	}
 }

@@ -1,31 +1,41 @@
+#nullable enable
+using System;
+using Android.App;
+using Android.Content;
 using Android.Hardware;
-using Android.Runtime;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Gyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
-		internal static bool IsSupported =>
-			   Platform.SensorManager?.GetDefaultSensor(SensorType.Gyroscope) != null;
+		static SensorManager? _sensorManager;
+		static Sensor? gyroscope;
 
-		static GyroscopeListener listener;
-		static Sensor gyroscope;
+		static SensorManager? SensorManager =>
+			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		static Sensor? Sensor =>
+			gyroscope ??= SensorManager?.GetDefaultSensor(SensorType.Gyroscope);
+
+		bool PlatformIsSupported =>
+			Sensor is not null;
+
+		GyroscopeListener? listener;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
-			listener = new GyroscopeListener();
-			gyroscope = Platform.SensorManager.GetDefaultSensor(SensorType.Gyroscope);
-			Platform.SensorManager.RegisterListener(listener, gyroscope, delay);
+			listener = new GyroscopeListener(RaiseReadingChanged);
+			SensorManager!.RegisterListener(listener, Sensor, delay);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
-			if (listener == null || gyroscope == null)
+			if (listener == null || Sensor == null)
 				return;
 
-			Platform.SensorManager.UnregisterListener(listener, gyroscope);
+			SensorManager!.UnregisterListener(listener, Sensor);
 			listener.Dispose();
 			listener = null;
 		}
@@ -33,21 +43,25 @@ namespace Microsoft.Maui.Essentials
 
 	class GyroscopeListener : Java.Lang.Object, ISensorEventListener
 	{
-		internal GyroscopeListener()
+		internal GyroscopeListener(Action<GyroscopeData> callback)
+		{
+			Callback = callback;
+		}
+
+		readonly Action<GyroscopeData> Callback;
+
+		void ISensorEventListener.OnAccuracyChanged(Sensor? sensor, SensorStatus accuracy)
 		{
 		}
 
-		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+		void ISensorEventListener.OnSensorChanged(SensorEvent? e)
 		{
-		}
-
-		void ISensorEventListener.OnSensorChanged(SensorEvent e)
-		{
-			if ((e?.Values?.Count ?? 0) < 3)
+			var values = e?.Values ?? Array.Empty<float>();
+			if (values.Count < 3)
 				return;
 
-			var data = new GyroscopeData(e.Values[0], e.Values[1], e.Values[2]);
-			Gyroscope.OnChanged(data);
+			var data = new GyroscopeData(values[0], values[1], values[2]);
+			Callback?.Invoke(data);
 		}
 	}
 }

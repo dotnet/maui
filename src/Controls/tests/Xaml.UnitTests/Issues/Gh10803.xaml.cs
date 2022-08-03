@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
-			public void SourceInfoForElementsInDT([Values(false, true)] bool useCompiledXaml)
+			public void SourceInfoForElementsInDT([Values(false)] bool useCompiledXaml)
 			{
 				var layout = new Gh10803(useCompiledXaml);
 				var listview = layout.listview;

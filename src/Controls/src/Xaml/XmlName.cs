@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls.Xaml
@@ -42,10 +43,17 @@ namespace Microsoft.Maui.Controls.Xaml
 			unchecked
 			{
 				int hashCode = 0;
+#if NETSTANDARD2_0
 				if (NamespaceURI != null)
 					hashCode = NamespaceURI.GetHashCode();
 				if (LocalName != null)
 					hashCode = (hashCode * 397) ^ LocalName.GetHashCode();
+#else
+				if (NamespaceURI != null)
+					hashCode = NamespaceURI.GetHashCode(StringComparison.Ordinal);
+				if (LocalName != null)
+					hashCode = (hashCode * 397) ^ LocalName.GetHashCode(StringComparison.Ordinal);
+#endif
 				return hashCode;
 			}
 		}

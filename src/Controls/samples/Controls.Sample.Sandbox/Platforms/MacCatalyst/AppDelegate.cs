@@ -4,7 +4,7 @@ using Microsoft.Maui.Hosting;
 using ObjCRuntime;
 using UIKit;
 
-namespace Maui.Controls.Sample.MacCatalyst
+namespace Maui.Controls.Sample.Platform
 {
 	[Register("AppDelegate")]
 	public class AppDelegate : MauiUIApplicationDelegate

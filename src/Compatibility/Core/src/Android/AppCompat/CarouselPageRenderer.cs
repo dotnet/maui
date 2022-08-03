@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
-
+	[System.Obsolete]
 	internal class CarouselPageRenderer : VisualElementRenderer<CarouselPage>, ViewPager.IOnPageChangeListener, IManageFragments
 	{
 		bool _disposed;
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			if (width > 0 && height > 0)
 			{
-				PageController.ContainerArea = new Rectangle(0, 0, context.FromPixels(width), context.FromPixels(height));
+				PageController.ContainerArea = new Rect(0, 0, context.FromPixels(width), context.FromPixels(height));
 				pager.Layout(0, 0, width, b);
 			}
 

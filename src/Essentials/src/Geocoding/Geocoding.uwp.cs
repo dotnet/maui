@@ -1,13 +1,17 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public class GeocodingImplementation: IGeocoding
+	class GeocodingImplementation : IPlatformGeocoding, IGeocoding
 	{
+		public string? MapServiceToken { get; set; }
+
 		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{
 			ValidateMapServiceToken();
@@ -16,7 +20,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			var queryResults = await MapLocationFinder.FindLocationsAtAsync(point).AsTask();
 
-			return queryResults?.Locations?.ToPlacemarks();
+			return queryResults?.Locations?.ToPlacemarks() ?? Array.Empty<Placemark>();
 		}
 
 		public async Task<IEnumerable<Location>> GetLocationsAsync(string address)
@@ -25,16 +29,16 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 			var queryResults = await MapLocationFinder.FindLocationsAsync(address, null, 10);
 
-			return queryResults?.Locations?.ToLocations();
+			return queryResults?.Locations?.ToLocations() ?? Array.Empty<Location>();
 		}
 
-		internal static void ValidateMapServiceToken()
+		void ValidateMapServiceToken()
 		{
-			if (string.IsNullOrWhiteSpace(Platform.MapServiceToken) && string.IsNullOrWhiteSpace(MapService.ServiceToken))
-				throw new ArgumentNullException(nameof(Platform.MapServiceToken), "Please set the map service token(MapService.ServiceToken) to be able to use this API.");
+			if (string.IsNullOrWhiteSpace(MapServiceToken) && string.IsNullOrWhiteSpace(MapService.ServiceToken))
+				throw new ArgumentNullException(nameof(MapServiceToken), "Please set the map service token to be able to use this API.");
 
-			if (!string.IsNullOrWhiteSpace(Platform.MapServiceToken))
-				MapService.ServiceToken = Platform.MapServiceToken;
+			if (!string.IsNullOrWhiteSpace(MapServiceToken))
+				MapService.ServiceToken = MapServiceToken;
 		}
 	}
 }

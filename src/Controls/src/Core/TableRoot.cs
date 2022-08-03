@@ -7,13 +7,13 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/TableRoot.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableRoot']/Docs" />
 	public sealed class TableRoot : TableSectionBase<TableSection>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableRoot.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableRoot.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public TableRoot()
 		{
 			SetupEvents();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableRoot.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/TableRoot.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public TableRoot(string title) : base(title)
 		{
 			SetupEvents();

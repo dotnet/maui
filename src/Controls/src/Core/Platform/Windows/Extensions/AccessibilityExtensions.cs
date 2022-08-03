@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public static UIElement SetAutomationPropertiesLabeledBy(
-			this FrameworkElement Control, 
+			this FrameworkElement Control,
 			Element Element,
 			IMauiContext mauiContext,
 			UIElement _defaultAutomationPropertiesLabeledBy = null)
@@ -89,8 +89,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			FrameworkElement nativeElement = null;
 
-			if(mauiContext != null)
-				nativeElement = (elemValue as IView)?.ToHandler(mauiContext)?.NativeView as FrameworkElement;
+			if (mauiContext != null)
+				nativeElement = (elemValue as IView)?.ToHandler(mauiContext)?.PlatformView as FrameworkElement;
 
 			if (nativeElement != null)
 				Control.SetValue(AutomationProperties.LabeledByProperty, nativeElement);
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls.Platform
 		static string ConcatenateNameAndHint(Element Element)
 		{
 			string separator;
-			
+
 			var name = (string)Element.GetValue(AutomationProperties.NameProperty);
 
 			var hint = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
@@ -133,13 +133,13 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public static void SetAutomationProperties(
-			this FrameworkElement frameworkElement, 
+			this FrameworkElement frameworkElement,
 			Element element,
 			IMauiContext mauiContext,
 			string defaultName = null)
 		{
 			frameworkElement.SetAutomationPropertiesAutomationId(element?.AutomationId);
-			 frameworkElement.SetAutomationPropertiesName(element, defaultName);
+			frameworkElement.SetAutomationPropertiesName(element, defaultName);
 			frameworkElement.SetAutomationPropertiesHelpText(element);
 			frameworkElement.SetAutomationPropertiesLabeledBy(element, mauiContext);
 			frameworkElement.SetAutomationPropertiesAccessibilityView(element);

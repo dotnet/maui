@@ -3,9 +3,9 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public interface INativeViewHandler : IViewHandler
+	public interface IPlatformViewHandler : IViewHandler
 	{
-		new UIView? NativeView { get; }
+		new UIView? PlatformView { get; }
 		new UIView? ContainerView { get; }
 		UIViewController? ViewController { get; }
 	}

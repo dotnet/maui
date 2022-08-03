@@ -9,13 +9,13 @@ namespace Microsoft.Maui.Controls
 		public static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, Element element)
 		{
 			Platform.AutomationPropertiesProvider.SetImportantForAccessibility(
-				handler.NativeView as Android.Views.View, element);
+				handler.PlatformView as Android.Views.View, element);
 		}
 
 		public static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, Element element)
 		{
 			Platform.AutomationPropertiesProvider.SetImportantForAccessibility(
-				handler.NativeView as Android.Views.View, element);
+				handler.PlatformView as Android.Views.View, element);
 		}
 	}
 }

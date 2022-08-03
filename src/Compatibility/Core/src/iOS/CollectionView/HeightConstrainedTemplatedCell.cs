@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete]
 	internal abstract partial class HeightConstrainedTemplatedCell : TemplatedCell
 	{
 		[Export("initWithFrame:")]

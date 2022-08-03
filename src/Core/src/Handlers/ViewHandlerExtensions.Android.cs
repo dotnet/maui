@@ -1,41 +1,109 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Microsoft.Maui.Graphics;
-using NativeView = Android.Views.View;
+using Microsoft.Maui.Platform;
+using static Android.Views.View;
+using PlatformView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	public static partial class ViewHandlerExtensions
+	internal static partial class ViewHandlerExtensions
 	{
+		// TODO: Possibly reconcile this code with LayoutViewGroup.OnLayout
+		// If you make changes here please review if those changes should also
+		// apply to LayoutViewGroup.OnLayout
+		internal static Size LayoutVirtualView(
+			this IPlatformViewHandler viewHandler,
+			int l, int t, int r, int b,
+			Func<Rect, Size>? arrangeFunc = null)
+		{
+			var context = viewHandler.MauiContext?.Context;
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.PlatformView;
+
+			if (context == null || virtualView == null || platformView == null)
+			{
+				return Size.Zero;
+			}
+
+			var destination = context.ToCrossPlatformRectInReferenceFrame(l, t, r, b);
+			arrangeFunc ??= virtualView.Arrange;
+			return arrangeFunc(destination);
+		}
+
+		// TODO: Possibly reconcile this code with LayoutViewGroup.OnMeasure
+		// If you make changes here please review if those changes should also
+		// apply to LayoutViewGroup.OnMeasure
+		internal static Size MeasureVirtualView(
+			this IPlatformViewHandler viewHandler,
+			int platformWidthConstraint,
+			int platformHeightConstraint,
+			Func<double, double, Size>? measureFunc = null)
+		{
+			var context = viewHandler.MauiContext?.Context;
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.PlatformView;
+
+			if (context == null || virtualView == null || platformView == null)
+			{
+				return Size.Zero;
+			}
+
+			var deviceIndependentWidth = platformWidthConstraint.ToDouble(context);
+			var deviceIndependentHeight = platformHeightConstraint.ToDouble(context);
+
+			var widthMode = MeasureSpec.GetMode(platformWidthConstraint);
+			var heightMode = MeasureSpec.GetMode(platformHeightConstraint);
+
+			measureFunc ??= virtualView.Measure;
+			var measure = measureFunc(deviceIndependentWidth, deviceIndependentHeight);
+
+			// If the measure spec was exact, we should return the explicit size value, even if the content
+			// measure came out to a different size
+			var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
+			var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+
+			var platformWidth = context.ToPixels(width);
+			var platformHeight = context.ToPixels(height);
+
+			// Minimum values win over everything
+			platformWidth = Math.Max(platformView.MinimumWidth, platformWidth);
+			platformHeight = Math.Max(platformView.MinimumHeight, platformHeight);
+
+			return new Size(platformWidth, platformHeight);
+		}
+
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{
 			var Context = viewHandler.MauiContext?.Context;
-			var nativeView = viewHandler.ToPlatform();
-			var VirtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.ToPlatform();
+			var virtualView = viewHandler.VirtualView;
 
-			if (nativeView == null || VirtualView == null || Context == null)
+			if (platformView == null || virtualView == null || Context == null)
 			{
 				return Size.Zero;
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = Context.CreateMeasureSpec(widthConstraint, VirtualView.Width, VirtualView.MaximumWidth);
-			var heightSpec = Context.CreateMeasureSpec(heightConstraint, VirtualView.Height, VirtualView.MaximumHeight);
+			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MaximumWidth);
+			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MaximumHeight);
 
-			nativeView.Measure(widthSpec, heightSpec);
+			var packed = PlatformInterop.MeasureAndGetWidthAndHeight(platformView, widthSpec, heightSpec);
+			var measuredWidth = (int)(packed >> 32);
+			var measuredHeight = (int)(packed & 0xffffffffL);
 
 			// Convert back to xplat sizes for the return value
-			return Context.FromPixels(nativeView.MeasuredWidth, nativeView.MeasuredHeight);
-
+			return Context.FromPixels(measuredWidth, measuredHeight);
 		}
 
-		internal static void NativeArrangeHandler(this IViewHandler viewHandler, Rectangle frame)
+		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rect frame)
 		{
-			var nativeView = viewHandler.ToPlatform();
+			var platformView = viewHandler.ToPlatform();
 
 			var Context = viewHandler.MauiContext?.Context;
 			var MauiContext = viewHandler.MauiContext;
 
-			if (nativeView == null || MauiContext == null || Context == null)
+			if (platformView == null || MauiContext == null || Context == null)
 			{
 				return;
 			}
@@ -51,7 +119,7 @@ namespace Microsoft.Maui
 			var bottom = Context.ToPixels(frame.Bottom);
 			var right = Context.ToPixels(frame.Right);
 
-			nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
+			platformView.Layout((int)left, (int)top, (int)right, (int)bottom);
 
 			viewHandler.Invoke(nameof(IView.Frame), frame);
 		}

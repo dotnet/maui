@@ -1,12 +1,14 @@
 using System;
 using System.ComponentModel;
 using SkiaSharp.Views.Tizen;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	/// <summary>
 	/// Renderer of a Layout.
 	/// </summary>
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LayoutRenderer : ViewRenderer<Layout, Native.Canvas>, SkiaSharp.IBackgroundCanvas, ILayoutRenderer
 	{
 		bool _layoutUpdatedRegistered = false;
@@ -67,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					_layoutUpdatedRegistered = false;
 				}
 
-				if (Forms.UseSkiaSharp)
+				if (Forms.UseSkiaSharp && Control != null)
 				{
 					Control.LayoutUpdated -= OnBackgroundLayoutUpdated;
 

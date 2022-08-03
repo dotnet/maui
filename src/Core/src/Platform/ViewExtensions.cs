@@ -2,8 +2,11 @@
 using System.Numerics;
 using Microsoft.Maui.Graphics;
 using System.Threading.Tasks;
-#if NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using INativeViewHandler = Microsoft.Maui.IViewHandler;
+using Microsoft.Maui.Media;
+using System.IO;
+
+#if (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
+using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 #endif
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -14,12 +17,15 @@ using ParentView = Android.Views.IViewParent;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ParentView = Microsoft.UI.Xaml.DependencyObject;
+#elif TIZEN
+using PlatformView = ElmSharp.EvasObject;
+using ParentView = ElmSharp.EvasObject;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
 #endif
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 	/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.ViewExtensions']/Docs" />
 	public static partial class ViewExtensions
@@ -33,9 +39,9 @@ namespace Microsoft.Maui
 		internal static double ExtractAngleInDegrees(this Matrix4x4 matrix) => ExtractAngleInRadians(matrix) * 180 / Math.PI;
 
 		/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="//Member[@MemberName='ToHandler']/Docs" />
-		public static INativeViewHandler ToHandler(this IView view, IMauiContext context) =>
-			(INativeViewHandler)ElementExtensions.ToHandler(view, context);
 
+		public static IPlatformViewHandler ToHandler(this IView view, IMauiContext context) =>
+			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
 
 		internal static T? GetParentOfType<T>(this ParentView? view)
 			where T : class
@@ -81,7 +87,9 @@ namespace Microsoft.Maui
 
 			return view.GetParent()?.GetParentOfType<T>();
 		}
+#endif
 
+#if PLATFORM
 		internal static Task OnUnloadedAsync(this PlatformView platformView, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
@@ -98,6 +106,5 @@ namespace Microsoft.Maui
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 #endif
-
 	}
 }

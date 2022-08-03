@@ -1,11 +1,13 @@
 ﻿#if __IOS__ || MACCATALYST
-using NativeView = Microsoft.Maui.Platform.MauiActivityIndicator;
+using PlatformView = Microsoft.Maui.Platform.MauiActivityIndicator;
 #elif MONOANDROID
-using NativeView = Android.Widget.ProgressBar;
+using PlatformView = Android.Widget.ProgressBar;
 #elif WINDOWS
-using NativeView = Microsoft.Maui.Platform.MauiActivityIndicator;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
+using PlatformView = Microsoft.UI.Xaml.Controls.ProgressRing;
+#elif TIZEN
+using PlatformView = ElmSharp.ProgressBar;
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -19,6 +21,11 @@ namespace Microsoft.Maui.Handlers
 #if __ANDROID__
 			// Android does not have the concept of IsRunning, so we are leveraging the Visibility
 			[nameof(IActivityIndicator.Visibility)] = MapIsRunning,
+#endif
+#if WINDOWS
+			[nameof(IActivityIndicator.Width)] = MapWidth,
+			[nameof(IActivityIndicator.Height)] = MapHeight,
+			[nameof(IActivityIndicator.Background)] = MapBackground,
 #endif
 		};
 
@@ -36,6 +43,6 @@ namespace Microsoft.Maui.Handlers
 
 		IActivityIndicator IActivityIndicatorHandler.VirtualView => VirtualView;
 
-		NativeView IActivityIndicatorHandler.NativeView => NativeView;
+		PlatformView IActivityIndicatorHandler.PlatformView => PlatformView;
 	}
 }

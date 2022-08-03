@@ -9,7 +9,9 @@ using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using ObjCRuntime;
 using UIKit;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(_51173Image), typeof(_51173CustomImageRenderer))]
+#pragma warning restore CS0612 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
 	public sealed class BrokenImageSourceHandler : IImageSourceHandler
@@ -21,6 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		}
 	}
 
+	[System.Obsolete]
 	public class _51173CustomImageRenderer : ImageRenderer
 	{
 		protected override async Task TrySetImage(Image previous = null)

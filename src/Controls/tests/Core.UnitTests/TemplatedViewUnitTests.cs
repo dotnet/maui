@@ -57,6 +57,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void GetTemplatedViewTemplateChildShouldWork()
+		{
+			var xaml =
+				@"<ContentView
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+					x:Class=""Microsoft.Maui.Controls.Core.UnitTests.MyTestTemplatedView"">
+					<TemplatedView.ControlTemplate>
+						<ControlTemplate>
+							<Label x:Name=""label0""/>
+						</ControlTemplate>
+					</TemplatedView.ControlTemplate>
+				</ContentView>";
+
+			var contentView = new MyTestTemplatedView();
+			contentView.LoadFromXaml(xaml);
+
+			IList<Element> internalChildren = contentView.InternalChildren;
+			Assert.AreEqual(internalChildren[0], contentView.TemplateChildObtained);
+		}
+
+		[Test]
 		public void GetContentPageTemplateChildShouldWork()
 		{
 			var xaml = @"<ContentPage
@@ -93,6 +115,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var contentView = new MyTestContentView();
 			contentView.LoadFromXaml(xaml);
+			Assert.IsTrue(contentView.WasOnApplyTemplateCalled);
+		}
+
+		[Test]
+		public void OnTemplatedViewApplyTemplateShouldBeCalled()
+		{
+			var xaml =
+				@"<ContentView
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+					x:Class=""Microsoft.Maui.Controls.Core.UnitTests.MyTestTemplatedView"">
+					<ContentView.ControlTemplate>
+						<ControlTemplate>
+							<Label x:Name=""label0""/>
+						</ControlTemplate>
+					</ContentView.ControlTemplate>
+				</ContentView>";
+
+			var contentView = new MyTestTemplatedView();
+			contentView.LoadFromXaml(xaml);
+
 			Assert.IsTrue(contentView.WasOnApplyTemplateCalled);
 		}
 
@@ -147,6 +190,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assume.That(label.Text, Is.EqualTo("Foo"));
 			cv.ControlTemplate = template1;
 			Assert.That(label.Text, Is.EqualTo("Foo"));
+		}
+	}
+
+	class MyTestTemplatedView : TemplatedView
+	{
+		public bool WasOnApplyTemplateCalled { get; private set; }
+
+		public Element TemplateChildObtained { get; private set; }
+
+		protected override void OnApplyTemplate()
+		{
+			WasOnApplyTemplateCalled = true;
+			TemplateChildObtained = (Element)GetTemplateChild("label0");
 		}
 	}
 

@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				_events?.Dispose();
 				_events = null;
 
-				if(_currentStack != null)
+				if (_currentStack != null)
 				{
 					foreach (var childPageWrapper in _currentStack)
 					{
@@ -394,7 +394,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var vco = Platform.GetRenderer(oldPage);
 			AddChildViewController(vc.ViewController);
 
-            var transitionStyle = NavigationPage.OnThisPlatform().GetNavigationTransitionPushStyle();
+			var transitionStyle = NavigationPage.OnThisPlatform().GetNavigationTransitionPushStyle();
 			return await this.HandleAsyncAnimation(vco.ViewController, vc.ViewController,
 				ToViewControllerTransitionOptions(transitionStyle), () =>
 				{

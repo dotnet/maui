@@ -2,6 +2,7 @@
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.TV
 {
+	[System.Obsolete]
 	public class TVShellSectionStack : ShellSectionStack
 	{
 

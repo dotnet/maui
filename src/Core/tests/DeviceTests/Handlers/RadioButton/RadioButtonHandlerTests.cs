@@ -27,12 +27,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = radioButton.IsChecked,
-					NativeViewValue = GetNativeIsChecked(handler)
+					PlatformViewValue = GetNativeIsChecked(handler)
 				};
 			});
 
 			Assert.Equal(xplatIsChecked, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 	}
 }

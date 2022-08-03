@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				case Device.Android:
 					_prefix = "";
 					break;
-				case Device.UWP:
+				case Device.WinUI:
 					_prefix = "Assets/";
 					break;
 			}

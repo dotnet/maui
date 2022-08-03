@@ -1,9 +1,7 @@
 ﻿#nullable enable
-using Microsoft.Maui.Graphics;
-
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class PolygonStub : StubBase, IShape
+	public class PolygonStub : ShapeViewStub, IShapeView
 	{
 		public PolygonStub()
 		{
@@ -12,12 +10,25 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public PolygonStub(PointCollectionStub? points)
 		{
+			Shape = new PolygonShapeStub(points);
+		}
+	}
+
+	public class PolygonShapeStub : StubBase, IShape
+	{
+		public PolygonShapeStub()
+		{
+
+		}
+
+		public PolygonShapeStub(PointCollectionStub? points)
+		{
 			Points = points;
 		}
 
 		public PointCollectionStub? Points { get; set; }
 
-		public PathF PathForBounds(Rectangle rect)
+		public PathF PathForBounds(Rect rect)
 		{
 			var path = new PathF();
 

@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				var view = (_handler?.ContainerView ?? _handler?.NativeView) as AView;
+				var view = (_handler?.ContainerView ?? _handler?.PlatformView) as AView;
 				if (view.IsAlive())
 					return view;
 
@@ -160,27 +160,27 @@ namespace Microsoft.Maui.Controls.Platform
 			if (View == null)
 				return;
 
-			var nativeView = Control;
-			if (nativeView == null)
+			var platformView = Control;
+			if (platformView == null)
 				return;
 
 			if (View.GestureRecognizers.Count == 0)
 			{
-				nativeView.Touch -= OnNativeViewTouched;
+				platformView.Touch -= OnPlatformViewTouched;
 			}
 			else
 			{
-				nativeView.Touch += OnNativeViewTouched;
+				platformView.Touch += OnPlatformViewTouched;
 			}
 		}
 
-		void OnNativeViewTouched(object? sender, Android.Views.View.TouchEventArgs e)
+		void OnPlatformViewTouched(object? sender, AView.TouchEventArgs e)
 		{
 			if (_disposed)
 			{
-				var nativeView = Control;
-				if (nativeView != null)
-					nativeView.Touch -= OnNativeViewTouched;
+				var platformView = Control;
+				if (platformView != null)
+					platformView.Touch -= OnPlatformViewTouched;
 
 				return;
 			}
@@ -191,9 +191,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
 		{
-			var nativeView = Control;
-			if (nativeView != null)
-				nativeView.Touch -= OnNativeViewTouched;
+			var platformView = Control;
+			if (platformView != null)
+				platformView.Touch -= OnPlatformViewTouched;
 
 			_handler = null;
 			if (oldElement != null)

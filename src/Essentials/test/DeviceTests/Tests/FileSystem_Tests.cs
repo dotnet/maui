@@ -1,10 +1,11 @@
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("FileSystem")]
 	public class FileSystem_Tests
 	{
 		const string bundleFileContents = "This file was in the app bundle.";

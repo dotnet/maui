@@ -111,8 +111,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 		int ItemSpacing => IsHorizontal ? HorizontalItemSpacing : VerticalItemSpacing;
 
-		int ItemWidthConstraint => IsHorizontal ? _allocatedSize.Width * 100 : ColumnSize;
-		int ItemHeightConstraint => IsHorizontal ? ColumnSize : _allocatedSize.Height * 100;
+		// It is a rule, if you want to fit with a content natural size, constraint should be infinity
+		int ItemWidthConstraint => IsHorizontal ? int.MaxValue : ColumnSize;
+		int ItemHeightConstraint => IsHorizontal ? ColumnSize : int.MaxValue;
 
 		int ColumnSize
 		{
@@ -404,7 +405,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		public int GetVisibleItemIndex(int x, int y)
 		{
 			int index = 0;
-			if (x < 0 || y < 0)
+			if (x < 0 || y < 0 || _accumulatedItemSizes == null)
 				return index;
 			if (_scrollCanvasSize.Width < x || _scrollCanvasSize.Height < y)
 				return CollectionView.Count - 1;

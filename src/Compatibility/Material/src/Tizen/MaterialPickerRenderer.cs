@@ -31,11 +31,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Tizen
 			{
 				if (Element.TitleColor.IsDefault)
 				{
-					mp.PlaceholderColor = _defaultTitleColor.ToNative();
+					mp.PlaceholderColor = _defaultTitleColor.ToPlatform();
 				}
 				else
 				{
-					mp.PlaceholderColor = Element.TitleColor.ToNative();
+					mp.PlaceholderColor = Element.TitleColor.ToPlatform();
 				}
 			}
 		}
@@ -46,11 +46,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Tizen
 			{
 				if (Element.TextColor.IsDefault)
 				{
-					mp.TextColor = _defaultTitleColor.ToNative();
+					mp.TextColor = _defaultTitleColor.ToPlatform();
 				}
 				else
 				{
-					mp.TextColor = Element.TextColor.ToNative();
+					mp.TextColor = Element.TextColor.ToPlatform();
 				}
 			}
 		}

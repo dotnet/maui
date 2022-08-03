@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -79,6 +76,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var binding = new Binding(path);
 			Assert.DoesNotThrow(() => new BindingExpression(binding, path));
+		}
+
+		static object[] TryConvertWithNumbersAndCulturesCases => new object[]
+		{
+			new object[]{ "4.2", new CultureInfo("en"), 4.2m },
+			new object[]{ "4,2", new CultureInfo("de"), 4.2m },
+			new object[]{ "-4.2", new CultureInfo("en"), -4.2m },
+			new object[]{ "-4,2", new CultureInfo("de"), -4.2m },
+
+			new object[]{ "4.2", new CultureInfo("en"), new decimal?(4.2m)},
+			new object[]{ "4,2", new CultureInfo("de"), new decimal?(4.2m) },
+			new object[]{ "-4.2", new CultureInfo("en"), new decimal?(-4.2m)},
+			new object[]{ "-4,2", new CultureInfo("de"), new decimal?(-4.2m) },
+
+			new object[]{ "4.2", new CultureInfo("en"), 4.2d },
+			new object[]{ "4,2", new CultureInfo("de"), 4.2d },
+			new object[]{ "-4.2", new CultureInfo("en"), -4.2d },
+			new object[]{ "-4,2", new CultureInfo("de"), -4.2d },
+
+			new object[]{ "4.2", new CultureInfo("en"), new double?(4.2d)},
+			new object[]{ "4,2", new CultureInfo("de"), new double?(4.2d) },
+			new object[]{ "-4.2", new CultureInfo("en"), new double?(-4.2d)},
+			new object[]{ "-4,2", new CultureInfo("de"), new double?(-4.2d) },
+
+			new object[]{ "4.2", new CultureInfo("en"), 4.2f },
+			new object[]{ "4,2", new CultureInfo("de"), 4.2f },
+			new object[]{ "-4.2", new CultureInfo("en"), -4.2f },
+			new object[]{ "-4,2", new CultureInfo("de"), -4.2f },
+
+			new object[]{ "4.2", new CultureInfo("en"), new float?(4.2f)},
+			new object[]{ "4,2", new CultureInfo("de"), new float?(4.2f) },
+			new object[]{ "-4.2", new CultureInfo("en"), new float?(-4.2f)},
+			new object[]{ "-4,2", new CultureInfo("de"), new float?(-4.2f) },
+
+			new object[]{ "4.", new CultureInfo("en"), "4." },
+			new object[]{ "4,", new CultureInfo("de"), "4," },
+			new object[]{ "-0", new CultureInfo("en"), "-0" },
+			new object[]{ "-0", new CultureInfo("de"), "-0" },
+		};
+
+		[TestCaseSource(nameof(TryConvertWithNumbersAndCulturesCases))]
+		public void TryConvertWithNumbersAndCultures(object inputString, CultureInfo culture, object expected)
+		{
+			CultureInfo.CurrentCulture = culture;
+			BindingExpression.TryConvert(ref inputString, Entry.TextProperty, expected.GetType(), false);
+
+			Assert.AreEqual(expected, inputString);
 		}
 	}
 }

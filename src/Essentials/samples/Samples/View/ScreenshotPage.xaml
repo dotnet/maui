@@ -9,23 +9,20 @@
         <viewModel:ScreenshotViewModel />
     </view:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Quickly and easily take screenshots of your app." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
 
                 <Button Text="Take Screenshot" Command="{Binding ScreenshotCommand}" />
 
                 <Button Text="Email Screenshot" Command="{Binding EmailCommand}" />
 
-                <Image VerticalOptions="FillAndExpand"
-                       MinimumHeightRequest="400"
-                       MinimumWidthRequest="400"
-                       Source="{Binding Image}" />
+                <Image Source="{Binding Image}" />
 
             </StackLayout>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </view:BasePage>

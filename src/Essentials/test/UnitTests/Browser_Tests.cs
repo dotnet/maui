@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
 using Xunit;
 
 namespace Tests
@@ -37,7 +37,7 @@ namespace Tests
 		[InlineData("https://xamarin.com/#", "https://xamarin.com/#")]
 		public void Escape_Uri(string uri, string escaped)
 		{
-			var escapedUri = Browser.EscapeUri(new Uri(uri));
+			var escapedUri = WebUtils.EscapeUri(new Uri(uri));
 
 			Assert.Equal(escaped, escapedUri.AbsoluteUri.TrimEnd('/'));
 		}

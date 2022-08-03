@@ -14,6 +14,8 @@ You will need to complete a Contribution License Agreement before any pull reque
 
 Currently, we are in the beginning phases of building up MAUI. Yet, we are still very excited for you to join us during this exciting time :)
 
+Have a look at our [Development Guide](DEVELOPMENT.md) to learn about setting up your development environment.
+
 ### What to work on
 
 If you're looking for something to work on, please browse our [Handler Property Backlog](https://github.com/dotnet/maui/projects/4). Any issue that is not already assigned is up for grabs. Make sure to read over the [Handler Property PR Guidelines](https://github.com/dotnet/maui/wiki/Handler-Property-PR-Guidelines) to acquaint yourself on how you can get started in contributing to our handler conversion efforts. Included is also a sample PR you can model after.

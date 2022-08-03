@@ -1,6 +1,6 @@
 using System;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific;
+using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
 using ESize = ElmSharp.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch

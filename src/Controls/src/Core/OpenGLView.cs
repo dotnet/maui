@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/OpenGLView.xml" path="//Member[@MemberName='OnDisplay']/Docs" />
-		public Action<Rectangle> OnDisplay { get; set; }
+		public Action<Rect> OnDisplay { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/OpenGLView.xml" path="//Member[@MemberName='Display']/Docs" />
 		public void Display()

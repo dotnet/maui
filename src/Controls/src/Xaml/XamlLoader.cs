@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					Visit(rootnode, new HydrationContext
 					{
 						RootElement = view,
-						RootAssembly = rootAssembly ?? view.GetType().GetTypeInfo().Assembly,
+						RootAssembly = rootAssembly ?? view.GetType().Assembly,
 						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null
 					}, useDesignProperties);
 
@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			//the check at the end is preferred (using ResourceLoader). keep this until all the previewers are updated
 
 			string xaml;
-			var assembly = type.GetTypeInfo().Assembly;
+			var assembly = type.Assembly;
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForType(type);
 
 			var rlr = ResourceLoader.ResourceProvider2?.Invoke(new ResourceLoader.ResourceLoadingQuery
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		static readonly Dictionary<Type, string> XamlResources = new Dictionary<Type, string>();
 		static string LegacyGetXamlForType(Type type)
 		{
-			var assembly = type.GetTypeInfo().Assembly;
+			var assembly = type.Assembly;
 
 			string resourceId;
 			if (XamlResources.TryGetValue(type, out resourceId))
@@ -355,7 +355,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				var pattern = $"x:Class *= *\"{type.FullName}\"";
 				var regex = new Regex(pattern, RegexOptions.ECMAScript);
-				if (regex.IsMatch(xaml) || xaml.Contains($"x:Class=\"{type.FullName}\""))
+				if (regex.IsMatch(xaml) || xaml.IndexOf($"x:Class=\"{type.FullName}\"") != -1)
 					return xaml;
 			}
 			return null;

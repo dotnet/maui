@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -93,6 +93,51 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			image = new Image().LoadFromXaml(xaml);
 			Assert.AreEqual("icon_twitter.png", (image.Source as FileImageSource).File);
+		}
+
+		[Test]
+		public void UWPisWinUI()
+		{
+			var xaml = @"
+			<Image xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+				xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+				<Image.Source>
+					<OnPlatform x:TypeArguments=""ImageSource"">
+						<On Platform=""iOS"">icon_twitter.png</On>
+						<On Platform=""Android"">icon_twitter.png</On>
+						<On Platform=""UWP"">Images/icon_twitter.png</On>
+					</OnPlatform>
+				</Image.Source>
+			</Image>";
+
+			Image image;
+
+			mockDeviceInfo.Platform = DevicePlatform.WinUI;
+			image = new Image().LoadFromXaml(xaml);
+			Assert.AreEqual("Images/icon_twitter.png", (image.Source as FileImageSource).File);
+		}
+
+		[Test]
+		public void ChecksPreferWinUI()
+		{
+			var xaml = @"
+			<Image xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+				xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+				<Image.Source>
+					<OnPlatform x:TypeArguments=""ImageSource"">
+						<On Platform=""iOS"">icon_twitter.png</On>
+						<On Platform=""Android"">icon_twitter.png</On>
+						<On Platform=""UWP"">Images/icon_twitter.png</On>
+						<On Platform=""WinUI"">Images/icon_twitter_preferred.png</On>
+					</OnPlatform>
+				</Image.Source>
+			</Image>";
+
+			Image image;
+
+			mockDeviceInfo.Platform = DevicePlatform.WinUI;
+			image = new Image().LoadFromXaml(xaml);
+			Assert.AreEqual("Images/icon_twitter_preferred.png", (image.Source as FileImageSource).File);
 		}
 	}
 

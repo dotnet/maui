@@ -25,6 +25,8 @@
   </ItemGroup>
 
   <Import Project="BundledVersions.targets" />
-  <Import Project="Microsoft.Maui.Sdk.targets" Condition=" '$(UseMaui)' == 'true' " />
+  <Import Project="Microsoft.Maui.Sdk.targets" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true' " />
+  <Import Project="Microsoft.Maui.Core.Sdk.targets" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
+  <Import Project="Microsoft.Maui.Controls.Sdk.targets" Condition=" '$(UseMaui)' == 'true' " />
 
 </Project>

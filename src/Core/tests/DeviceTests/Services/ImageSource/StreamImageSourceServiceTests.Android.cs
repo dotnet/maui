@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, Platform.DefaultContext));
+			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext));
 		}
 
 		[Theory]
@@ -28,15 +28,17 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetDrawableAsync(string colorHex)
 		{
-			var expectedColor = Color.FromArgb(colorHex).ToNative();
+			var expectedColor = Color.FromArgb(colorHex).ToPlatform();
 
 			var service = new StreamImageSourceService();
 
-			var imageSource = new StreamImageSourceStub(CreateBitmapStream(100, 100, expectedColor));
+			var stream = CreateBitmapStream(100, 100, expectedColor);
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			var imageSource = new StreamImageSourceStub(stream);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
+			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 

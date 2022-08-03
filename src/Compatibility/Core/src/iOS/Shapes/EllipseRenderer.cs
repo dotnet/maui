@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EllipseRenderer : ShapeRenderer<Ellipse, EllipseView>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

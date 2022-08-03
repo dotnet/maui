@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 				if (newValue != null)
 				{
-					if (!((Type)newValue).GetTypeInfo().IsEnum)
+					if (!((Type)newValue).IsEnum)
 						throw new ArgumentException("EnumPicker: EnumType property must be enumeration type");
 
 					picker.ItemsSource = Enum.GetValues((Type)newValue);

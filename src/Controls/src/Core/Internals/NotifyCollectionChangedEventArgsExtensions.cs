@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class NotifyCollectionChangedEventArgsExtensions
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='Apply']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='Apply&lt;TFrom&gt;'][1]/Docs" />
 		public static void Apply<TFrom>(this NotifyCollectionChangedEventArgs self, IList<TFrom> from, IList<object> to)
 		{
 			self.Apply((o, i, b) => to.Insert(i, o), (o, i) => to.RemoveAt(i), () =>
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Internals
 			});
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='Apply']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='Apply'][1]/Docs" />
 		public static NotifyCollectionChangedAction Apply(this NotifyCollectionChangedEventArgs self, Action<object, int, bool> insert, Action<object, int> removeAt, Action reset)
 		{
 			if (self == null)

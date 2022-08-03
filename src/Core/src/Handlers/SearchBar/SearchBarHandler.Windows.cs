@@ -6,136 +6,109 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
 	{
-		Brush? _defaultPlaceholderColorBrush;
-		Brush? _defaultPlaceholderColorFocusBrush;
-		
-		Brush? _defaultTextColorBrush;
-		Brush? _defaultTextColorFocusBrush;
-    
-		Brush? _defaultDeleteButtonForegroundColorBrush;
-		Brush? _defaultDeleteButtonBackgroundColorBrush;
+		public AutoSuggestBox? QueryEditor => null;
 
-		MauiSearchTextBox? _queryTextBox;
-		MauiCancelButton? _cancelButton;
-
-		protected override AutoSuggestBox CreateNativeView() => new AutoSuggestBox
+		protected override AutoSuggestBox CreatePlatformView() => new AutoSuggestBox
 		{
 			AutoMaximizeSuggestionArea = false,
 			QueryIcon = new SymbolIcon(Symbol.Find),
-			Style = UI.Xaml.Application.Current.Resources["MauiAutoSuggestBoxStyle"] as UI.Xaml.Style
 		};
 
-		protected override void ConnectHandler(AutoSuggestBox nativeView)
+		protected override void ConnectHandler(AutoSuggestBox platformView)
 		{
-			nativeView.Loaded += OnLoaded;
-			nativeView.QuerySubmitted += OnQuerySubmitted;
-			nativeView.TextChanged += OnTextChanged;
+			platformView.Loaded += OnLoaded;
+			platformView.QuerySubmitted += OnQuerySubmitted;
+			platformView.TextChanged += OnTextChanged;
 		}
 
-		protected override void DisconnectHandler(AutoSuggestBox nativeView)
+		protected override void DisconnectHandler(AutoSuggestBox platformView)
 		{
-			nativeView.Loaded -= OnLoaded;
-			nativeView.QuerySubmitted -= OnQuerySubmitted;
-			nativeView.TextChanged -= OnTextChanged;
+			platformView.Loaded -= OnLoaded;
+			platformView.QuerySubmitted -= OnQuerySubmitted;
+			platformView.TextChanged -= OnTextChanged;
 		}
 
-		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateText(searchBar);
+			handler.PlatformView?.UpdateBackground(searchBar);
 		}
 
-		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdatePlaceholder(searchBar);
-		}
-			
-		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
-		{
-			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdateIsEnabled(searchBar);
 		}
 
-		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdatePlaceholderColor(searchBar, handler._defaultPlaceholderColorBrush, handler._defaultPlaceholderColorFocusBrush, handler._queryTextBox);
+			handler.PlatformView?.UpdateText(searchBar);
 		}
 
-		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdatePlaceholder(searchBar);
 		}
 
-		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapVerticalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar);
+		}
+
+		public static void MapPlaceholderColor(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdatePlaceholderColor(searchBar);
+		}
+
+		public static void MapHorizontalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateHorizontalTextAlignment(searchBar);
+		}
+
+		public static void MapFont(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(searchBar, fontManager);
+			handler.PlatformView?.UpdateFont(searchBar, fontManager);
 		}
 
-		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(searchBar);
+			handler.PlatformView?.UpdateCharacterSpacing(searchBar);
 		}
 
-		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateTextColor(searchBar, handler._defaultTextColorBrush, handler._defaultTextColorFocusBrush, handler._queryTextBox);
+			handler?.PlatformView?.UpdateTextColor(searchBar);
 		}
 
-		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) 
+		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateIsTextPredictionEnabled(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar);
 		}
 
-		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateMaxLength(searchBar, handler._queryTextBox);
+			handler.PlatformView?.UpdateMaxLength(searchBar);
 		}
 
-		[MissingMapper]
-		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
-
-		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapIsReadOnly(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdateCancelButtonColor(searchBar, handler._cancelButton, handler._defaultDeleteButtonBackgroundColorBrush, handler._defaultDeleteButtonForegroundColorBrush);
+			handler.PlatformView?.UpdateIsReadOnly(searchBar);
+		}
+
+		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			// AutoSuggestBox does not support this property
 		}
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			_queryTextBox = NativeView?.GetFirstDescendant<MauiSearchTextBox>();
-
-			if(_queryTextBox != null)
-			{
-				_defaultPlaceholderColorBrush = _queryTextBox.PlaceholderForegroundBrush;
-				_defaultPlaceholderColorFocusBrush = _queryTextBox.PlaceholderForegroundFocusBrush;
-
-				_defaultTextColorBrush = _queryTextBox.Foreground;
-				_defaultTextColorFocusBrush = _queryTextBox.ForegroundFocusBrush;
-			}
-
-			_cancelButton = _queryTextBox?.GetFirstDescendant<MauiCancelButton>();
-
-			if (_cancelButton != null)
-			{
-				if (_defaultDeleteButtonBackgroundColorBrush == null)
-					_defaultDeleteButtonBackgroundColorBrush = _cancelButton.Background;
-
-				if (_defaultDeleteButtonForegroundColorBrush == null)
-					_defaultDeleteButtonForegroundColorBrush = _cancelButton.Foreground;
-
-				// The Cancel button's content won't be loaded right away (because the default Visibility is Collapsed)
-				// So we need to wait until it's ready, then force an update of the button color
-				_cancelButton.ReadyChanged += (o, args) =>
-				{
-					if (VirtualView != null)
-						NativeView?.UpdateCancelButtonColor(VirtualView, _cancelButton, _defaultDeleteButtonBackgroundColorBrush, _defaultDeleteButtonForegroundColorBrush);
-				};
-			}
-
 			if (VirtualView != null)
 			{
-				NativeView?.UpdateTextColor(VirtualView, _defaultTextColorBrush, _defaultTextColorFocusBrush, _queryTextBox);
-				NativeView?.UpdateHorizontalTextAlignment(VirtualView, _queryTextBox);
-				NativeView?.UpdateMaxLength(VirtualView, _queryTextBox);
+				PlatformView?.UpdateTextColor(VirtualView);
+				PlatformView?.UpdatePlaceholderColor(VirtualView);
+				PlatformView?.UpdateHorizontalTextAlignment(VirtualView);
+				PlatformView?.UpdateMaxLength(VirtualView);
+				PlatformView?.UpdateIsReadOnly(VirtualView);
 			}
 		}
 

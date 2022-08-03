@@ -4,10 +4,11 @@ public class NewContent1 : ContentView
 {
 	public NewContent1()
 	{
-		Content = new StackLayout
+		Content = new VerticalStackLayout
 		{
 			Children = {
-				new Label { Text = "Welcome to .NET MAUI!" }
+				new Label { HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, Text = "Welcome to .NET MAUI!"
+				}
 			}
 		};
 	}

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
@@ -150,6 +151,56 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
 			Assert.AreEqual("4321", testPage.SomeQueryParameter);
+		}
+
+		[Test]
+		public async Task NavigationBetweenFlyoutItemsRetainsQueryString()
+		{
+			var testPage1 = new ShellTestPage();
+			var testPage2 = new ShellTestPage();
+
+			var flyoutItem1 = CreateShellItem<FlyoutItem>(testPage1, shellItemRoute: "flyoutItem1");
+			var flyoutItem2 = CreateShellItem<FlyoutItem>(testPage2, shellItemRoute: "flyoutItem2");
+
+			var shell = new TestShell(flyoutItem1, flyoutItem2);
+			var complexParameter = new object();
+
+			IShellController shellController = shell;
+			await shell.GoToAsync(new ShellNavigationState($"//flyoutItem2?{nameof(ShellTestPage.SomeQueryParameter)}=1234"), false,
+				new Dictionary<string, object>()
+				{
+					{nameof(ShellTestPage.ComplexObject), complexParameter }
+				});
+
+			Assert.AreEqual("1234", testPage2.SomeQueryParameter);
+			Assert.AreEqual(complexParameter, testPage2.ComplexObject);
+			await shellController.OnFlyoutItemSelectedAsync(flyoutItem1);
+			await shellController.OnFlyoutItemSelectedAsync(flyoutItem2);
+			Assert.AreEqual("1234", testPage2.SomeQueryParameter);
+			Assert.AreEqual(complexParameter, testPage2.ComplexObject);
+		}
+
+		[Test]
+		public async Task NavigationBetweenFlyoutItemWithPushedPageRetainsQueryString()
+		{
+			var testPage1 = new ShellTestPage();
+			var testPage2 = new ShellTestPage();
+
+			var flyoutItem1 = CreateShellItem<FlyoutItem>(testPage1, shellItemRoute: "flyoutItem1");
+			var flyoutItem2 = CreateShellItem<FlyoutItem>(testPage2, shellItemRoute: "flyoutItem2");
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+
+
+			var shell = new TestShell(flyoutItem1, flyoutItem2);
+
+			IShellController shellController = shell;
+			await shell.GoToAsync(new ShellNavigationState($"//flyoutItem2/details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
+
+			await shellController.OnFlyoutItemSelectedAsync(flyoutItem1);
+			await shellController.OnFlyoutItemSelectedAsync(flyoutItem2);
+
+			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			Assert.AreEqual("1234", testPage.SomeQueryParameter);
 		}
 
 		[Test]
@@ -377,6 +428,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync(new ShellNavigationState($"details"), parameter);
 			var testPage = shell.CurrentPage as ShellTestPage;
 			Assert.AreEqual(urlTest, testPage.SomeQueryParameter);
+		}
+
+		[Test]
+		public void InitialNavigationDoesntSetQueryAttributesProperty()
+		{
+			var content = CreateShellContent();
+			_ = new TestShell(content);
+			Assert.IsFalse(content.IsSet(ShellContent.QueryAttributesProperty));
 		}
 	}
 }

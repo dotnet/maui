@@ -31,16 +31,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				}
 			}
 
-			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
-				{
-					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
-					{
-						typeConverter = context.Module.ImportReference(tc);
-						break;
-					}
-				}
-
 			return node.CanConvertValue(context, targetTypeRef, typeConverter);
 		}
 
@@ -124,16 +114,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				}
 			}
 
-			if (typeConverter == null)
-				foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
-				{
-					if (TypeRefComparer.Default.Equals(context.Module.ImportReference(t), targetTypeRef))
-					{
-						typeConverter = context.Module.ImportReference(tc);
-						break;
-					}
-				}
-
 			return node.PushConvertedValue(context, targetTypeRef, typeConverter, pushServiceProvider, boxValueTypes,
 				unboxValueTypes);
 		}
@@ -161,24 +141,40 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		static Dictionary<TypeReference, Type> CompiledTypeConverters;
+		static Dictionary<TypeReference, Type> KnownCompiledTypeConverters;
 
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context,
 			TypeReference targetTypeRef, TypeReference typeConverter, IEnumerable<Instruction> pushServiceProvider,
 			bool boxValueTypes, bool unboxValueTypes)
 		{
 			var module = context.Body.Method.Module;
-			if (CompiledTypeConverters == null)
+			if (KnownCompiledTypeConverters == null)
 			{
-				CompiledTypeConverters = new Dictionary<TypeReference, Type>();
-				CompiledTypeConverters.Add(module.ImportReference(("Microsoft.Maui", "Microsoft.Maui", "Thickness")), typeof(ThicknessTypeConverter));
+				KnownCompiledTypeConverters = new Dictionary<TypeReference, Type>(TypeRefComparer.Default)
+				{
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "ThicknessTypeConverter")), typeof(ThicknessTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "CornerRadiusTypeConverter")), typeof(CornerRadiusTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "EasingTypeConverter")), typeof(EasingTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "ColorTypeConverter")), typeof(ColorTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "PointTypeConverter")), typeof(PointTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics.Converters", "RectTypeConverter")), typeof(RectangleTypeConverter) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexJustifyTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexJustify>) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexDirectionTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexDirection>) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexAlignContentTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexAlignContent>) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexAlignItemsTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexAlignItems>) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexAlignSelfTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexAlignSelf>) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexWrapTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexWrap>) },
+					{ module.ImportReference(("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexBasisTypeConverter")), typeof(FlexBasisTypeConverter) },
+
+				};
 			}
 
 			var str = (string)node.Value;
 			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
 			Type compiledConverterType;
-			if (typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName && (compiledConverterType = Type.GetType(compiledConverterName)) != null
-				|| (typeConverter != null && CompiledTypeConverters.TryGetValue(typeConverter, out compiledConverterType)))
+			if (typeConverter?.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?.First().Value is string compiledConverterName
+				&& (compiledConverterType = Type.GetType(compiledConverterName)) != null
+				|| (typeConverter != null && KnownCompiledTypeConverters.TryGetValue(typeConverter, out compiledConverterType)))
 			{
 				var compiledConverter = Activator.CreateInstance(compiledConverterType);
 				var converter = typeof(ICompiledTypeConverter).GetMethods().FirstOrDefault(md => md.Name == "ConvertFromString");
@@ -655,8 +651,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				}
 				yield return Create(Ldtoken, context.Body.Method.DeclaringType);
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
-				yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
+				yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System", "Type"), propertyName: "Assembly", flatten: true));
 				yield return Create(Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "XamlTypeResolver"), paramCount: 2));
 				yield return Create(Callvirt, addService);
 			}

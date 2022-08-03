@@ -93,15 +93,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			base.Setup();
 			bindable = new MockItemsView();
-
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
 		}
 
 		MockItemsView bindable;

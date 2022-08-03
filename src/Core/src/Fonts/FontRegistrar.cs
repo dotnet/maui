@@ -12,14 +12,14 @@ namespace Microsoft.Maui
 		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts = new();
 		readonly Dictionary<string, (string Filename, string? Alias)> _nativeFonts = new();
 		readonly Dictionary<string, string?> _fontLookupCache = new();
-		readonly ILogger<FontRegistrar>? _logger;
+		readonly IServiceProvider? _serviceProvider;
 
 		IEmbeddedFontLoader _fontLoader;
 
-		public FontRegistrar(IEmbeddedFontLoader fontLoader, ILogger<FontRegistrar>? logger = null)
+		public FontRegistrar(IEmbeddedFontLoader fontLoader, IServiceProvider? serviceProvider = null)
 		{
 			_fontLoader = fontLoader;
-			_logger = logger;
+			_serviceProvider = serviceProvider;
 		}
 
 		public void Register(string filename, string? alias, Assembly assembly)
@@ -58,7 +58,7 @@ namespace Microsoft.Maui
 			}
 			catch (Exception ex)
 			{
-				_logger?.LogWarning(ex, "Unable to load font '{Font}'.", font);
+				_serviceProvider?.CreateLogger<FontRegistrar>()?.LogWarning(ex, "Unable to load font '{Font}'.", font);
 			}
 
 			return _fontLookupCache[font] = null;

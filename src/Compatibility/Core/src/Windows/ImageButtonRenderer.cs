@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageButtonRenderer : ViewRenderer<ImageButton, FormsButton>, IImageVisualElementRenderer
 	{
 		bool _measured;
@@ -151,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			await ImageElementManager.UpdateSource(this).ConfigureAwait(false);
 		}
 
-
+		[PortHandler]
 		void OnImageOpened(object sender, RoutedEventArgs routedEventArgs)
 		{
 			if (_measured)
@@ -162,6 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Element?.SetIsLoading(false);
 		}
 
+		[PortHandler]
 		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
 			Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning("Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}", exceptionRoutedEventArgs.ErrorMessage);
@@ -210,6 +212,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else if (e.PropertyName == ImageButton.SourceProperty.PropertyName)
 				await TryUpdateSource().ConfigureAwait(false);
 		}
+
+		[PortHandler]
 		void UpdatePadding()
 		{
 			_image.Margin = WinUIHelpers.CreateThickness(0);
@@ -253,14 +257,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateImageButtonBackground()
 		{
 			if (Brush.IsNullOrEmpty(Element.Background))
-				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Element.BackgroundColor.ToNative() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Element.BackgroundColor.ToPlatform() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
 			else
 				Control.BackgroundColor = Element.Background.ToBrush();
 		}
 
 		void UpdateBorderColor()
 		{
-			Control.BorderBrush = Element.BorderColor.IsNotDefault() ? Element.BorderColor.ToNative() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
+			Control.BorderBrush = Element.BorderColor.IsNotDefault() ? Element.BorderColor.ToPlatform() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBorderThemeBrush"];
 		}
 
 		void UpdateBorderRadius()

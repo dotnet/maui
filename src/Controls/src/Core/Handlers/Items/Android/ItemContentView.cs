@@ -4,18 +4,17 @@ using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
-using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class ItemContentView : ViewGroup
 	{
-		protected INativeViewHandler Content;
-		internal IView View => Content?.VirtualView;
 		Size? _size;
 		Action<Size> _reportMeasure;
+
+		protected IPlatformViewHandler Content;
+		internal IView View => Content?.VirtualView;
 
 		public ItemContentView(Context context) : base(context)
 		{
@@ -26,7 +25,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void RealizeContent(View view, ItemsView itemsView)
 		{
 			Content = CreateHandler(view, itemsView);
-			AddView(Content.NativeView);
+			var platformView = Content.ContainerView ?? Content.PlatformView;
+			//make sure we don't belong to a previous Holder
+			platformView.RemoveFromParent();
+			AddView(platformView);
 
 			//TODO: RUI IS THIS THE BEST WAY TO CAST? 
 			(View as VisualElement).MeasureInvalidated += ElementMeasureInvalidated;
@@ -39,9 +41,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				(View as VisualElement).MeasureInvalidated -= ElementMeasureInvalidated;
 			}
 
-			if (Content?.NativeView != null)
+			var platformView = Content?.ContainerView ?? Content?.PlatformView;
+
+			if (platformView != null)
 			{
-				RemoveView(Content.NativeView);
+				RemoveView(platformView);
 			}
 
 			Content = null;
@@ -61,17 +65,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var size = Context.FromPixels(r - l, b - t);
+			var size = this.FromPixels(r - l, b - t);
 
 			//TODO: RUI Is this the best way?
 			//View.Arrange(new Rectangle(Point.Zero, size));
 			//Arrange doesn't seem to work as expected
 
-			var mauiControlsView = View as View;
-			if (mauiControlsView == null)
+			if (View?.Handler is not IPlatformViewHandler handler)
 				return;
 
-			mauiControlsView.Layout(new Rectangle(Point.Zero, size));
+			handler.LayoutVirtualView(l, t, r, b);
 
 			UpdateContentLayout();
 		}
@@ -96,22 +99,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var width = MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified
 				? double.PositiveInfinity
-				: Context.FromPixels(pixelWidth);
+				: this.FromPixels(pixelWidth);
 
 			var height = MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified
 				? double.PositiveInfinity
-				: Context.FromPixels(pixelHeight);
+				: this.FromPixels(pixelHeight);
 
-			SizeRequest measure = (View as VisualElement).Measure(width, height, MeasureFlags.IncludeMargins);
+
+			var measure = View.Measure(width, height);
 
 			if (pixelWidth == 0)
 			{
-				pixelWidth = (int)Context.ToPixels(measure.Request.Width);
+				pixelWidth = (int)this.ToPixels(measure.Width);
 			}
 
 			if (pixelHeight == 0)
 			{
-				pixelHeight = (int)Context.ToPixels(measure.Request.Height);
+				pixelHeight = (int)this.ToPixels(measure.Height);
 			}
 
 			_reportMeasure?.Invoke(new Size(pixelWidth, pixelHeight));
@@ -134,18 +138,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateContentLayout()
 		{
-			VisualElement mauiControlsView = (View as VisualElement);
-			AView aview = Content.NativeView;
+			VisualElement mauiControlsView = View as VisualElement;
+			AView aview = Content.ToPlatform();
 
 			if (mauiControlsView == null || aview == null)
 				return;
 
-			var x = (int)Context.ToPixels(mauiControlsView.X);
-			var y = (int)Context.ToPixels(mauiControlsView.Y);
-			var width = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Width));
-			var height = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Height));
+			var x = (int)this.ToPixels(mauiControlsView.X);
+			var y = (int)this.ToPixels(mauiControlsView.Y);
+			var width = Math.Max(0, (int)this.ToPixels(mauiControlsView.Width));
+			var height = Math.Max(0, (int)this.ToPixels(mauiControlsView.Height));
 
-			Content.NativeView.Layout(x, y, width, height);
+			aview.Layout(x, y, width, height);
 
 			if ((aview is LayoutViewGroup || aview is ContentViewGroup || aview is CoordinatorLayout || aview is FragmentContainerView) && width == 0 && height == 0)
 			{
@@ -158,7 +162,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		static INativeViewHandler CreateHandler(View view, ItemsView itemsView) =>
+		static IPlatformViewHandler CreateHandler(View view, ItemsView itemsView) =>
 			TemplateHelpers.GetHandler(view, itemsView.FindMauiContext());
 	}
 }

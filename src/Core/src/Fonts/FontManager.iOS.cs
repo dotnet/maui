@@ -26,14 +26,14 @@ namespace Microsoft.Maui
 
 		readonly ConcurrentDictionary<Font, UIFont> _fonts = new();
 		readonly IFontRegistrar _fontRegistrar;
-		readonly ILogger<FontManager>? _logger;
+		readonly IServiceProvider? _serviceProvider;
 
 		UIFont? _defaultFont;
 
-		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
+		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{
 			_fontRegistrar = fontRegistrar;
-			_logger = logger;
+			_serviceProvider = serviceProvider;
 		}
 
 		public UIFont DefaultFont =>
@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			GetFont(font, defaultFontSize, CreateFont);
 
 		double GetFontSize(Font font, double defaultFontSize = 0) =>
-			font.Size <= 0
+			font.Size <= 0 || double.IsNaN(font.Size)
 				? (defaultFontSize > 0 ? (float)defaultFontSize : DefaultFont.PointSize)
 				: (nfloat)font.Size;
 
@@ -151,7 +151,7 @@ namespace Microsoft.Maui
 				}
 				catch (Exception ex)
 				{
-					_logger?.LogWarning(ex, "Unable to load font '{Font}'.", family);
+					_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable to load font '{Font}'.", family);
 				}
 			}
 
@@ -166,7 +166,7 @@ namespace Microsoft.Maui
 
 			UIFont ApplyScaling(Font font, UIFont uiFont)
 			{
-				if (font.AutoScalingEnabled)
+				if (font.AutoScalingEnabled && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 					return UIFontMetrics.DefaultMetrics.GetScaledFont(uiFont);
 
 				return uiFont;

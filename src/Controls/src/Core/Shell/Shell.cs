@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,9 +8,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -50,7 +53,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='NavBarHasShadowProperty']/Docs" />
 		public static readonly BindableProperty NavBarHasShadowProperty =
 			BindableProperty.CreateAttached("NavBarHasShadow", typeof(bool), typeof(Shell), default(bool),
-				defaultValueCreator: (b) => Device.RuntimePlatform == Device.Android);
+				defaultValueCreator: (b) => DeviceInfo.Platform == DevicePlatform.Android);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SearchHandlerProperty']/Docs" />
 		public static readonly BindableProperty SearchHandlerProperty =
@@ -385,7 +388,9 @@ namespace Microsoft.Maui.Controls
 		void IShellController.AddAppearanceObserver(IAppearanceObserver observer, Element pivot)
 		{
 			_appearanceObservers.Add((observer, pivot));
-			observer.OnAppearanceChanged(GetAppearanceForPivot(pivot));
+			var appearance = GetAppearanceForPivot(pivot);
+			UpdateToolbarAppearanceFeatures(pivot, appearance);
+			observer.OnAppearanceChanged(appearance);
 		}
 
 		void IShellController.AddFlyoutBehaviorObserver(IFlyoutBehaviorObserver observer)
@@ -398,6 +403,42 @@ namespace Microsoft.Maui.Controls
 				observer.OnFlyoutBehaviorChanged(GetEffectiveFlyoutBehavior());
 		}
 
+		void UpdateToolbarAppearanceFeatures(Element pivot, ShellAppearance appearance)
+		{
+			// Android sets these inside its renderer
+			// once we convert Android to be all handlers we can adjust
+			if (pivot is ShellContent || pivot is ShellSection || pivot is ContentPage)
+			{
+				appearance = appearance ?? GetAppearanceForPivot(pivot);
+				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
+				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
+			}
+		}
+
+#if ANDROID
+		static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
+		static readonly Color DefaultForegroundColor = Colors.White;
+		static readonly Color DefaultTitleColor = Colors.White;
+
+		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
+
+		static Color ResolveThemeColor(Color light, Color dark)
+		{
+			if (IsDarkTheme)
+			{
+				return dark;
+			}
+
+			return light;
+		}
+#else
+		static Color DefaultBackgroundColor => null;
+		static readonly Color DefaultForegroundColor = null;
+		static readonly Color DefaultTitleColor = null;
+#endif
+
+
 		void IShellController.AppearanceChanged(Element source, bool appearanceSet)
 		{
 			if (!appearanceSet)
@@ -406,6 +447,8 @@ namespace Microsoft.Maui.Controls
 				// So its also quite useful for checking the FlyoutBehavior conditions
 				NotifyFlyoutBehaviorObservers();
 			}
+
+			UpdateToolbarAppearanceFeatures(source, null);
 
 			// here we wish to notify every element whose "pivot line" contains the source
 			// To do that we first need to find the leaf node in the line, and then walk up
@@ -437,7 +480,9 @@ namespace Microsoft.Maui.Controls
 				{
 					if (leaf == target)
 					{
-						observer.OnAppearanceChanged(GetAppearanceForPivot(pivot));
+						var appearance = GetAppearanceForPivot(pivot);
+						UpdateToolbarAppearanceFeatures(pivot, appearance);
+						observer.OnAppearanceChanged(appearance);
 						break;
 					}
 
@@ -449,12 +494,16 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationState IShellController.GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, bool includeStack)
 			=> ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, includeStack ? shellSection.Stack.ToList() : null, includeStack ? shellSection.Navigation.ModalStack.ToList() : null);
 
-		async void IShellController.OnFlyoutItemSelected(Element element)
-		{
-			await (this as IShellController).OnFlyoutItemSelectedAsync(element);
-		}
+		void OnFlyoutItemSelected(Element element, bool platformInitiated) =>
+			OnFlyoutItemSelectedAsync(element, platformInitiated).FireAndForget();
 
-		async Task IShellController.OnFlyoutItemSelectedAsync(Element element)
+		void IShellController.OnFlyoutItemSelected(Element element) =>
+			OnFlyoutItemSelected(element, true);
+
+		Task IShellController.OnFlyoutItemSelectedAsync(Element element) =>
+			OnFlyoutItemSelectedAsync(element, true);
+
+		Task OnFlyoutItemSelectedAsync(Element element, bool platformInitiated)
 		{
 			ShellItem shellItem = null;
 			ShellSection shellSection = null;
@@ -483,14 +532,12 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (shellItem == null || !shellItem.IsEnabled)
-				return;
+				return Task.CompletedTask;
 
 			shellSection = shellSection ?? shellItem.CurrentItem;
 			shellContent = shellContent ?? shellSection?.CurrentItem;
 
-			var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, null, null);
-
-			if (FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
 				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
 
 			if (shellSection == null)
@@ -498,7 +545,51 @@ namespace Microsoft.Maui.Controls
 			else if (shellContent == null)
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
 			else
-				await GoToAsync(state).ConfigureAwait(false);
+			{
+				if (this.CurrentItem == null)
+				{
+					var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
+					var requestBuilder = new RouteRequestBuilder(new List<string>()
+					{
+						shellItem.Route,
+						shellSection.Route,
+						shellContent.Route
+					});
+
+					var node = new ShellUriHandler.NodeLocation();
+					node.SetNode(shellContent);
+					requestBuilder.AddMatch(node);
+
+					var navRequest =
+						new ShellNavigationRequest(
+							new RequestDefinition(requestBuilder, this),
+							 ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt,
+							 String.Empty,
+							 String.Empty);
+
+					var navParameters = new ShellNavigationParameters()
+					{
+						TargetState = state,
+						Animated = false,
+						EnableRelativeShellRoutes = false,
+						DeferredArgs = null,
+						Parameters = null
+					};
+
+					return _navigationManager
+						.GoToAsync(navParameters, navRequest);
+
+				}
+				else
+				{
+					var navParameters = ShellNavigationManager.GetNavigationParameters(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
+
+					return _navigationManager
+						.GoToAsync(navParameters);
+				}
+			}
+
+			return Task.CompletedTask;
 		}
 
 		void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -507,9 +598,9 @@ namespace Microsoft.Maui.Controls
 			{
 				(sender as BindableObject).PropertyChanged -= OnShellItemPropertyChanged;
 				if (sender is ShellItem item)
-					((IShellController)this).OnFlyoutItemSelected(item);
+					OnFlyoutItemSelected(item, false);
 				else if (sender is ShellSection section)
-					((IShellController)this).OnFlyoutItemSelected(section.Parent);
+					OnFlyoutItemSelected(section.Parent, false);
 			}
 		}
 
@@ -551,8 +642,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
-			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
+		ReadOnlyCollection<ShellItem> IShellController.GetItems() => ((ShellItemCollection)Items).VisibleItemsReadOnly;
 
 		event NotifyCollectionChangedEventHandler IShellController.ItemsCollectionChanged
 		{
@@ -561,29 +651,46 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Current']/Docs" />
-		public static Shell Current => Application.Current?.MainPage as Shell;
+		public static Shell Current
+		{
+			get
+			{
+				if (Application.Current == null)
+					return null;
+
+				foreach (var window in Application.Current.Windows)
+					if (window is Window && window.IsActivated && window.Page is Shell shell)
+						return shell;
+
+				return Application.Current?.MainPage as Shell;
+			}
+		}
 
 		internal ShellNavigationManager NavigationManager => _navigationManager;
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
 		public Task GoToAsync(ShellNavigationState state)
 		{
 			return _navigationManager.GoToAsync(state, null, false);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs" />
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
 			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
@@ -746,16 +853,18 @@ namespace Microsoft.Maui.Controls
 		void Initialize()
 		{
 			if (CurrentItem != null)
-				SetCurrentItem();
+				SetCurrentItem()
+					.FireAndForget();
 
-			((ShellElementCollection)Items).VisibleItemsChangedInternal += (s, e) =>
+			((ShellElementCollection)Items).VisibleItemsChangedInternal += async (s, e) =>
 			{
-				SetCurrentItem();
+				await SetCurrentItem();
+
 				SendStructureChanged();
 				SendFlyoutItemsChanged();
 			};
 
-			async void SetCurrentItem()
+			async Task SetCurrentItem()
 			{
 				var shellItems = ShellController.GetItems();
 
@@ -816,7 +925,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (shellItem != null)
-					ShellController.OnFlyoutItemSelected(shellItem);
+					await OnFlyoutItemSelectedAsync(shellItem, false).ConfigureAwait(false);
 			}
 		}
 
@@ -1018,6 +1127,21 @@ namespace Microsoft.Maui.Controls
 
 		protected override bool OnBackButtonPressed()
 		{
+#if WINDOWS || !PLATFORM
+			var backButtonBehavior = GetBackButtonBehavior(GetVisiblePage());
+			if (backButtonBehavior != null)
+			{
+				var command = backButtonBehavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
+				var commandParameter = backButtonBehavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
+
+				if (command != null)
+				{
+					command.Execute(commandParameter);
+					return true;
+				}
+			}
+#endif
+
 			if (GetVisiblePage() is Page page && page.SendBackButtonPressed())
 				return true;
 
@@ -1052,9 +1176,27 @@ namespace Microsoft.Maui.Controls
 			Navigated?.Invoke(this, args);
 			OnNavigated(args);
 
+			if (_previousPage != null)
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+
 			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
 			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
 			_previousPage = null;
+
+			if (CurrentPage != null)
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
 
 		void SendNavigating(ShellNavigatingEventArgs args)
@@ -1094,6 +1236,9 @@ namespace Microsoft.Maui.Controls
 
 			shell.ShellController.AppearanceChanged(shell, false);
 			shell.ShellController.UpdateCurrentState(ShellNavigationSource.ShellItemChanged);
+
+			if (shell.CurrentItem?.CurrentItem != null)
+				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);
 		}
 
 		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)
@@ -1206,25 +1351,48 @@ namespace Microsoft.Maui.Controls
 						return FlyoutBehavior.Flyout;
 					else if (rootItem is TabBar)
 						return FlyoutBehavior.Disabled;
+					// This means the user hasn't specified
+					// a ShellItem so we don't want the flyout to show up
+					// if there is only one ShellItem.
+					//
+					// This will happen if the user only specifies a
+					// single ContentPage
+					else if (rootItem != null && Routing.IsImplicit(rootItem))
+					{
+						if (Items.Count <= 1)
+							return FlyoutBehavior.Disabled;
+					}
 
 					return FlyoutBehavior;
 				},
 				(o) => rootItem = rootItem ?? o as ShellItem);
 		}
 
-		internal T GetEffectiveValue<T>(BindableProperty property, T defaultValue)
+		internal T GetEffectiveValue<T>(BindableProperty property, T defaultValue, bool ignoreImplicit = false)
 		{
-			return GetEffectiveValue<T>(property, () => defaultValue, null);
+			return GetEffectiveValue<T>(property, () => defaultValue, null, ignoreImplicit: ignoreImplicit);
 		}
 
-		internal T GetEffectiveValue<T>(BindableProperty property, Func<T> defaultValue, Action<Element> observer, Element element = null)
+		internal T GetEffectiveValue<T>(
+			BindableProperty property,
+			Func<T> defaultValue,
+			Action<Element> observer,
+			Element element = null,
+			bool ignoreImplicit = false)
 		{
-			element = element ?? GetVisiblePage() ?? CurrentContent;
+			element = element ?? GetCurrentShellPage() ?? CurrentContent;
 			while (element != this && element != null)
 			{
 				observer?.Invoke(element);
 
-				if (element.IsSet(property))
+				if (ignoreImplicit && Routing.IsImplicit(element))
+				{
+					// If this is an implicitly created route.
+					// A route that the user doesn't have inside their Shell file.
+					// Then we don't want to consider it as a value to use.
+					// So we let the code just go to the next parent.
+				}
+				else if (element.IsSet(property))
 					return (T)element.GetValue(property);
 
 				element = element.Parent;
@@ -1297,9 +1465,11 @@ namespace Microsoft.Maui.Controls
 			if (CurrentItem == null || GetVisiblePage() == null)
 				return;
 
-			var behavior = GetEffectiveFlyoutBehavior();
+			var behavior = (this as IFlyoutView).FlyoutBehavior;
 			for (int i = 0; i < _flyoutBehaviorObservers.Count; i++)
 				_flyoutBehaviorObservers[i].OnFlyoutBehaviorChanged(behavior);
+
+			Handler?.UpdateValue(nameof(IFlyoutView.FlyoutBehavior));
 		}
 
 		void OnFlyoutHeaderChanged(object oldVal, object newVal)
@@ -1350,6 +1520,22 @@ namespace Microsoft.Maui.Controls
 				return scc.PresentedPage;
 
 			return null;
+		}
+
+		// This returns the current shell page that's visible
+		// without including the modal stack
+		internal Element GetCurrentShellPage()
+		{
+			var navStack = CurrentSection?.Navigation?.NavigationStack;
+			Page currentPage = null;
+
+			if (navStack != null)
+			{
+				currentPage = navStack[navStack.Count - 1] ??
+					((IShellContentController)CurrentContent)?.Page;
+			}
+
+			return currentPage;
 		}
 
 		Element WalkToPage(Element element)
@@ -1478,6 +1664,13 @@ namespace Microsoft.Maui.Controls
 
 			protected override async Task<Page> OnPopModal(bool animated)
 			{
+				if (!_shell.NavigationManager.AccumulateNavigatedEvents)
+				{
+					var page = _shell.CurrentPage;
+					await _shell.GoToAsync("..", animated);
+					return page;
+				}
+
 				if (ModalStack.Count > 0)
 					ModalStack[ModalStack.Count - 1].SendDisappearing();
 
@@ -1498,6 +1691,14 @@ namespace Microsoft.Maui.Controls
 
 			protected override async Task OnPushModal(Page modal, bool animated)
 			{
+				if (!_shell.NavigationManager.AccumulateNavigatedEvents)
+				{
+					// This will route the modal push through the shell section which is setup
+					// to update the shell state after a modal push
+					await _shell.CurrentItem.CurrentItem.Navigation.PushModalAsync(modal, animated);
+					return;
+				}
+
 				if (ModalStack.Count == 0)
 					_shell.CurrentItem.SendDisappearing();
 

@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("MainThread")]
 	public class MainThread_Tests
 	{
 		[Fact]

@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 			var pointsCount = 13;
 			if (sH != null)
 			{
-				var path = sH.PathForBounds(new Rectangle(0, 0, 6, 6));
+				var path = sH.PathForBounds(new Rect(0, 0, 6, 6));
 				pointsCount = path.Count;
 			}
 

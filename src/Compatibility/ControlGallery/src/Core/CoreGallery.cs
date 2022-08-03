@@ -638,9 +638,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Content = new AbsoluteLayout
 			{
 				Children = {
-					{ CoreRootView, new Rectangle(0, 0.0, 1, 0.35), AbsoluteLayoutFlags.All },
-					{ stackLayout, new Rectangle(0, 0.5, 1, 0.30), AbsoluteLayoutFlags.All },
-					{ corePageView, new Rectangle(0, 1.0, 1.0, 0.35), AbsoluteLayoutFlags.All },
+					{ CoreRootView, new Rect(0, 0.0, 1, 0.35), AbsoluteLayoutFlags.All },
+					{ stackLayout, new Rect(0, 0.5, 1, 0.30), AbsoluteLayoutFlags.All },
+					{ corePageView, new Rect(0, 1.0, 1.0, 0.35), AbsoluteLayoutFlags.All },
 				}
 			};
 		}

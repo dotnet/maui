@@ -1,10 +1,13 @@
 using System;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
+#pragma warning disable CS0618 // Type or member is obsolete
 using static Microsoft.Maui.Controls.Compatibility.Platform.Android.CarouselViewRenderer;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CarouselViewAdapter<TItemsView, TItemsViewSource> : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsView : ItemsView
 		where TItemsViewSource : IItemsViewSource

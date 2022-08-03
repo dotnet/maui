@@ -15,6 +15,8 @@ namespace Maui.Controls.Sample.Controls
 		Android.Graphics.Color backgroundColor;
 #elif __IOS__
 		UIKit.UIColor backgroundColor;
+#elif TIZEN
+		ElmSharp.Color backgroundColor;
 #endif
 
 		public FocusPlatformEffect()
@@ -33,6 +35,8 @@ namespace Maui.Controls.Sample.Controls
 				Control.SetBackgroundColor(backgroundColor);
 #elif __IOS__
 				Control.BackgroundColor = backgroundColor = UIKit.UIColor.FromRGB(204, 153, 255);
+#elif TIZEN
+				(Control as ElmSharp.Widget).BackgroundColor = backgroundColor = ElmSharp.Color.FromRgb(204, 153, 255);
 #endif
 			}
 			catch (Exception ex)
@@ -73,6 +77,21 @@ namespace Maui.Controls.Sample.Controls
 					else
 					{
 						Control.BackgroundColor = backgroundColor;
+					}
+				}
+#elif TIZEN
+				if (args.PropertyName == "IsFocused")
+				{
+					if (Control is ElmSharp.Widget widget)
+					{
+						if (widget.BackgroundColor == backgroundColor)
+						{
+							widget.BackgroundColor = ElmSharp.Color.White;
+						}
+						else
+						{
+							widget.BackgroundColor = backgroundColor;
+						}
 					}
 				}
 #endif

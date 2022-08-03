@@ -52,10 +52,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetPlainText">
-      <MemberSignature Language="C#" Value="public static void SetPlainText (Microsoft.Maui.Controls.InputView inputView, string nativeText);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetPlainText(class Microsoft.Maui.Controls.InputView inputView, string nativeText) cil managed" />
+      <MemberSignature Language="C#" Value="public static void SetPlainText (Microsoft.Maui.Controls.InputView inputView, string platformText);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetPlainText(class Microsoft.Maui.Controls.InputView inputView, string platformText) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Internals.TextTransformUtilites.SetPlainText(Microsoft.Maui.Controls.InputView,System.String)" />
-      <MemberSignature Language="F#" Value="static member SetPlainText : Microsoft.Maui.Controls.InputView * string -&gt; unit" Usage="Microsoft.Maui.Controls.Internals.TextTransformUtilites.SetPlainText (inputView, nativeText)" />
+      <MemberSignature Language="F#" Value="static member SetPlainText : Microsoft.Maui.Controls.InputView * string -&gt; unit" Usage="Microsoft.Maui.Controls.Internals.TextTransformUtilites.SetPlainText (inputView, platformText)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -71,11 +71,11 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="inputView" Type="Microsoft.Maui.Controls.InputView" />
-        <Parameter Name="nativeText" Type="System.String" />
+        <Parameter Name="platformText" Type="System.String" />
       </Parameters>
       <Docs>
         <param name="inputView">To be added.</param>
-        <param name="nativeText">To be added.</param>
+        <param name="platformText">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -10,6 +10,7 @@ using NCollectionView = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Nat
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class TVNavigationView : Background, INavigationView
 	{
 		static EColor s_defaultBackgroundColor = EColor.Black;
@@ -349,7 +350,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnHeaderSizeChanged(object sender, EventArgs e)
 		{
-			Device.BeginInvokeOnMainThread(OnLayout);
+			Application.Current.Dispatcher.Dispatch(OnLayout);
 		}
 
 		void OnLayout()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Microsoft.Maui.Controls
@@ -12,5 +13,29 @@ namespace Microsoft.Maui.Controls
 		bool IFlyoutView.IsPresented { get => FlyoutIsPresented; set => FlyoutIsPresented = value; }
 
 		bool IFlyoutView.IsGestureEnabled => false;
+
+		FlyoutBehavior IFlyoutView.FlyoutBehavior
+		{
+			get
+			{
+				return GetEffectiveFlyoutBehavior();
+			}
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
+		}
+
+#if ANDROID
+		protected override void OnHandlerChanging(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChanging(args);
+			args.OldHandler?.DisconnectHandler();
+		}
+
+#endif
 	}
 }

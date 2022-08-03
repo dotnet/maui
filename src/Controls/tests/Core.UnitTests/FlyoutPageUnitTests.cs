@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
@@ -176,9 +176,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Detail = new ContentPage { Content = new View() }
 			};
 
-			((IFlyoutPageController)page).FlyoutBounds = new Rectangle(0, 0, 100, 100);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Flyout.Bounds);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), ((IFlyoutPageController)page).FlyoutBounds);
+			((IFlyoutPageController)page).FlyoutBounds = new Rect(0, 0, 100, 100);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), page.Flyout.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), ((IFlyoutPageController)page).FlyoutBounds);
 		}
 
 		[Test]
@@ -190,9 +190,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Detail = new ContentPage { Content = new View() }
 			};
 
-			((IFlyoutPageController)page).DetailBounds = new Rectangle(0, 0, 100, 100);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Detail.Bounds);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), ((IFlyoutPageController)page).DetailBounds);
+			((IFlyoutPageController)page).DetailBounds = new Rect(0, 0, 100, 100);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), page.Detail.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), ((IFlyoutPageController)page).DetailBounds);
 		}
 
 		[Test]
@@ -205,16 +205,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			((IFlyoutPageController)page).FlyoutBounds = new Rectangle(0, 0, 100, 200);
-			((IFlyoutPageController)page).DetailBounds = new Rectangle(0, 0, 100, 100);
+			((IFlyoutPageController)page).FlyoutBounds = new Rect(0, 0, 100, 200);
+			((IFlyoutPageController)page).DetailBounds = new Rect(0, 0, 100, 100);
 
-			page.Flyout.Layout(new Rectangle(0, 0, 1, 1));
-			page.Detail.Layout(new Rectangle(0, 0, 1, 1));
+			page.Flyout.Layout(new Rect(0, 0, 1, 1));
+			page.Detail.Layout(new Rect(0, 0, 1, 1));
 
-			page.Layout(new Rectangle(0, 0, 200, 200));
+			page.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 200), page.Flyout.Bounds);
-			Assert.AreEqual(new Rectangle(0, 0, 100, 100), page.Detail.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 200), page.Flyout.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 100, 100), page.Detail.Bounds);
 		}
 
 		[Test]
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rectangle(0, 0, 200, 200)));
+			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rect(0, 0, 200, 200)));
 		}
 
 		[Test]
@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rectangle(0, 0, 200, 200)));
+			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rect(0, 0, 200, 200)));
 		}
 
 		[Test]
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).DetailBounds = new Rectangle(0, 0, 200, 200));
+			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).DetailBounds = new Rect(0, 0, 200, 200));
 		}
 
 		[Test]
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).FlyoutBounds = new Rectangle(0, 0, 200, 200));
+			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).FlyoutBounds = new Rect(0, 0, 200, 200));
 		}
 
 		[Test]
@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void ThorwsInSetIsPresentOnSplitPortraitModeOnTablet()
+		public void ThrowsInSetIsPresentOnSplitPortraitModeOnTablet()
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Portrait);
@@ -290,7 +290,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
 				Detail = new ContentPage { Content = new View(), IsPlatformEnabled = true },
-				IsPlatformEnabled = true,
 				FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnPortrait
 			};
 
@@ -400,6 +399,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mdp = new FlyoutPage();
 			Assert.Throws<InvalidOperationException>(() => mdp.Flyout = Flyout);
+		}
+
+		[Test]
+		public void FlyoutPageAppearingAndDisappearingPropagatesToFlyout()
+		{
+			int disappearing = 0;
+			int appearing = 0;
+
+			var flyout = new ContentPage() { Title = "flyout" };
+			var flyoutPage = new FlyoutPage()
+			{
+				Flyout = flyout,
+				Detail = new ContentPage() { Title = "detail" }
+			};
+
+			_ = new TestWindow(flyoutPage);
+			flyout.Appearing += (_, __) => appearing++;
+			flyout.Disappearing += (_, __) => disappearing++;
+
+			Assert.AreEqual(0, disappearing);
+			Assert.AreEqual(0, appearing);
+
+			flyoutPage.SendDisappearing();
+
+			Assert.AreEqual(1, disappearing);
+			Assert.AreEqual(0, appearing);
+
+			flyoutPage.SendAppearing();
+
+			Assert.AreEqual(1, disappearing);
+			Assert.AreEqual(1, appearing);
+		}
+
+		[Test]
+		public void FlyoutPageAppearingAndDisappearingPropagatesToDetail()
+		{
+			int disappearing = 0;
+			int appearing = 0;
+
+			var detail = new ContentPage() { Title = "detail" };
+			var flyoutPage = new FlyoutPage()
+			{
+				Flyout = new ContentPage() { Title = "flyout" },
+				Detail = detail
+			};
+
+			_ = new TestWindow(flyoutPage);
+
+			detail.Appearing += (_, __) => appearing++;
+			detail.Disappearing += (_, __) => disappearing++;
+
+			Assert.AreEqual(0, disappearing);
+			Assert.AreEqual(0, appearing);
+
+			flyoutPage.SendDisappearing();
+
+			Assert.AreEqual(1, disappearing);
+			Assert.AreEqual(0, appearing);
+
+			flyoutPage.SendAppearing();
+
+			Assert.AreEqual(1, disappearing);
+			Assert.AreEqual(1, appearing);
 		}
 	}
 

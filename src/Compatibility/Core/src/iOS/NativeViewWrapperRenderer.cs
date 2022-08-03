@@ -11,7 +11,9 @@ using UIView = AppKit.NSView;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, UIView>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public NativeViewWrapperRenderer()

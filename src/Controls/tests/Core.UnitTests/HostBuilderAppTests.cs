@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Compatibility.Hosting;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using NUnit.Framework;
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			using var app = builder.Build();
 
 			// Make sure we don't lose "MemoryConfigurationProvider" from GetDebugView() when wrapping the provider.
-			Assert.True(((IConfigurationRoot)app.Configuration).GetDebugView().Contains("foo=bar (MemoryConfigurationProvider)"));
+			Assert.True(((IConfigurationRoot)app.Configuration).GetDebugView().Contains("foo=bar (MemoryConfigurationProvider)", StringComparison.Ordinal));
 		}
 
 		[Test]
@@ -128,6 +129,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var app = builder.Build();
 
 			Assert.That(((IConfigurationRoot)app.Configuration).Providers.OfType<TrackingConfigurationProvider>(), Has.One.Items);
+		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public void CompatibilityExtensionsWorkUseCompatibility(bool useCompatibility)
+		{
+			MauiAppBuilderExtensions.ResetCompatibilityCheck();
+			bool handlersCalled = false;
+			var builder = MauiApp.CreateBuilder().UseMauiApp<ApplicationStub>();
+
+			if (useCompatibility)
+				builder = builder.UseMauiCompatibility();
+
+			var mauiApp =
+				builder.ConfigureMauiHandlers(collection =>
+				{
+					handlersCalled = true;
+
+					if (useCompatibility)
+					{
+						collection.AddCompatibilityRenderer(typeof(Object), typeof(Object));
+					}
+					else
+					{
+						Assert.Throws<InvalidOperationException>(() =>
+							collection.AddCompatibilityRenderer(typeof(Object), typeof(Object))
+						);
+					}
+				})
+				.Build();
+
+			_ = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			Assert.True(handlersCalled);
 		}
 
 		public class TrackingConfigurationSource : IConfigurationSource

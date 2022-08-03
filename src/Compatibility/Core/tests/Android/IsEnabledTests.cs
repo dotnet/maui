@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		[Description("VisualElement enabled should match renderer enabled")]
 		public async Task EnabledConsistent(VisualElement element)
 		{
-			await Device.InvokeOnMainThreadAsync(() =>
+			await element.Dispatcher.DispatchAsync(() =>
 			{
 				using (var renderer = GetRenderer(element))
 				{

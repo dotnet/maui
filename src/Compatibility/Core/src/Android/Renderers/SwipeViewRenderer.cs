@@ -24,6 +24,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SwipeViewRenderer : ViewRenderer<SwipeView, AView>
 	{
 		const float OpenSwipeThresholdPercentage = 0.6f; // 60%
@@ -863,7 +864,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var swipeItemSize = GetSwipeItemSize(swipeItemView);
 
-			swipeItemView.Layout(new Rectangle(0, 0, swipeItemSize.Width, swipeItemSize.Height));
+			swipeItemView.Layout(new Rect(0, 0, swipeItemSize.Width, swipeItemSize.Height));
 		}
 
 		void UpdateIsSwipeEnabled()

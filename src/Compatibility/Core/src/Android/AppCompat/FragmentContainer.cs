@@ -10,6 +10,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
+	[System.Obsolete]
 	internal class FragmentContainer : Fragment
 	{
 		readonly WeakReference _pageRenderer;

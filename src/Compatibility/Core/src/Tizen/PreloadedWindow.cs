@@ -1,10 +1,11 @@
 using ElmSharp;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using ELayout = ElmSharp.Layout;
+using EWindow = ElmSharp.Window;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	public class PreloadedWindow : Window
+	public class PreloadedWindow : EWindow
 	{
 		static PreloadedWindow s_precreated;
 

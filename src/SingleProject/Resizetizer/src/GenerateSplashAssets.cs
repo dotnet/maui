@@ -20,20 +20,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var splash = MauiSplashScreen[0];
 
-			var colorMetadata = splash.GetMetadata("Color");
-			var color = Utils.ParseColorString(colorMetadata);
-			if (color == null && !string.IsNullOrEmpty(colorMetadata))
-				Log.LogWarning($"Unable to parse color value '{colorMetadata}' for '{splash.ItemSpec}'.");
-
-			var fileInfo = new FileInfo(splash.GetMetadata("FullPath"));
-			if (!fileInfo.Exists)
-				throw new FileNotFoundException("Unable to find background file: " + fileInfo.FullName, fileInfo.FullName);
-
-			var img = new ResizeImageInfo
-			{
-				Filename = fileInfo.FullName,
-				Color = color ?? SKColors.Transparent,
-			};
+			var img = ResizeImageInfo.Parse(splash);
 
 			Directory.CreateDirectory(IntermediateOutputPath);
 

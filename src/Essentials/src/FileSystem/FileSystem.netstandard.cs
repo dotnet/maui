@@ -1,19 +1,23 @@
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs" />
-	public static partial class FileSystem
+	partial class FileSystemImplementation : IFileSystem
 	{
-		static string PlatformCacheDirectory
+		string PlatformCacheDirectory
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static string PlatformAppDataDirectory
+		string PlatformAppDataDirectory
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
-			 => throw ExceptionUtils.NotSupportedOrImplementedException;
+		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		Task<bool> PlatformAppPackageFileExistsAsync(string filename)
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs" />
@@ -22,10 +26,13 @@ namespace Microsoft.Maui.Essentials
 		static string PlatformGetContentType(string extension) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		internal void PlatformInit(FileBase file) =>
+		internal void Init(FileBase file) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		internal virtual Task<Stream> PlatformOpenReadAsync()
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		void PlatformInit(FileBase file)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

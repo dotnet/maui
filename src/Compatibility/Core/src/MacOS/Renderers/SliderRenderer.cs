@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public Color ThumbColor { get; set; }
 
 		public override void DrawBar(CGRect aRect, bool flipped)
-		{ 
+		{
 			// Mimick the dimensions of the original slider
 			var originalHeight = aRect.Height;
 			aRect.Height = 2.7f;

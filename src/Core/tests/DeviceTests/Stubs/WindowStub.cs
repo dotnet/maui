@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -30,6 +29,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool IsDestroyed { get; set; }
 		public bool IsResumed { get; set; }
 		public bool IsStopped { get; set; }
+		public FlowDirection FlowDirection { get; set; }
 
 		public void Activated()
 		{
@@ -105,5 +105,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public IReadOnlyList<IVisualTreeElement> GetVisualChildren() => _visualChildren.AsReadOnly();
 
 		public IVisualTreeElement GetVisualParent() => this.Parent as IVisualTreeElement;
+
+		public float RequestDisplayDensity() => 1.0f;
+
+		public virtual void DisplayDensityChanged(float displayDensity) { }
 	}
 }

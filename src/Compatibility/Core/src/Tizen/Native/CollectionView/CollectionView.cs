@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using ElmSharp.Wearable;
 using EBox = ElmSharp.Box;
@@ -332,7 +333,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			if (holder.State == ViewHolderState.Focused && FocusedItemScrollPosition != ScrollToPosition.MakeVisible)
 			{
 
-				Device.BeginInvokeOnMainThread(() =>
+				Application.Current.Dispatcher.Dispatch(() =>
 				{
 					if (holder.State == ViewHolderState.Focused && _viewHolderIndexTable.TryGetValue(holder, out int itemIndex))
 					{
@@ -385,7 +386,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 		protected virtual EScroller CreateScroller(EvasObject parent)
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				return new CircleScroller(parent, Forms.CircleSurface);
 			}
@@ -613,7 +614,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 				Scroller.HorizontalStepSize = _layoutManager.GetScrollBlockSize();
 				Scroller.VerticalStepSize = _layoutManager.GetScrollBlockSize();
 				UpdateSnapPointsType(SnapPointsType);
-				Device.BeginInvokeOnMainThread(SendScrolledEvent);
+				Application.Current.Dispatcher.Dispatch(SendScrolledEvent);
 			}
 		}
 
@@ -625,7 +626,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			if (!_requestLayoutItems)
 			{
 				_requestLayoutItems = true;
-				Device.BeginInvokeOnMainThread(() =>
+				Application.Current.Dispatcher.Dispatch(() =>
 				{
 					_requestLayoutItems = false;
 					if (_adaptor != null && _layoutManager != null)

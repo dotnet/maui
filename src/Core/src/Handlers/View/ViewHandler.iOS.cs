@@ -1,4 +1,4 @@
-﻿using NativeView = UIKit.UIView;
+﻿using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -63,6 +63,14 @@ namespace Microsoft.Maui.Handlers
 		internal static void UpdateTransformation(IViewHandler handler, IView view)
 		{
 			handler.ToPlatform().UpdateTransformation(view);
+		}
+
+		public virtual bool NeedsContainer
+		{
+			get
+			{
+				return VirtualView?.Clip != null || VirtualView?.Shadow != null || (VirtualView as IBorder)?.Border != null;
+			}
 		}
 	}
 }

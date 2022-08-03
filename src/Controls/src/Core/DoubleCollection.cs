@@ -7,11 +7,11 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(DoubleCollectionConverter))]
 	public sealed class DoubleCollection : ObservableCollection<double>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/DoubleCollection.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/DoubleCollection.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public DoubleCollection()
 		{ }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DoubleCollection.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/DoubleCollection.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public DoubleCollection(double[] values)
 			: base(values)
 		{

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			var contentPage = new ContentPage { Title = "Embedded Page" };
 			contentPage.Parent = Application.Current;
-			await Device.InvokeOnMainThreadAsync(() =>
+			await contentPage.Dispatcher.DispatchAsync(() =>
 			{
 				Fragment fragment = contentPage.CreateSupportFragment(Context);
 			});

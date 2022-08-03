@@ -7,18 +7,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class Issue1497
 	{
-		[SetUp]
-		public void Setup()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void BPCollectionsWithSingleElement()
 		{

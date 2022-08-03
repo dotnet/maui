@@ -4,6 +4,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public abstract class GestureHandler : IGestureController, INotifyPropertyChanged, IRegisterable
 	{
 		public IGestureRecognizer Recognizer { get; private set; }

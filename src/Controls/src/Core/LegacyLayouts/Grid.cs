@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public Grid()
 		{
+			Hosting.CompatibilityCheck.CheckForCompatibility();
 			_children = new GridElementCollection(InternalChildren, this) { Parent = this };
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Grid>>(() =>
 				new PlatformConfigurationRegistry<Grid>(this));

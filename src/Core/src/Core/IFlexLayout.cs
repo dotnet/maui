@@ -75,7 +75,7 @@ namespace Microsoft.Maui
 		/// <returns>The value that describes this element's relative or absolute basis length.</returns>
 		FlexBasis GetBasis(IView view);
 
-		Rectangle GetFlexFrame(IView view);
+		Rect GetFlexFrame(IView view);
 
 		void Layout(double width, double height);
 	}

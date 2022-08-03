@@ -1,29 +1,70 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, RadioButton>
 	{
-		protected override RadioButton CreateNativeView() => new RadioButton();
+		protected override RadioButton CreatePlatformView() => new RadioButton();
 
-		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
+		protected override void ConnectHandler(RadioButton platformView)
 		{
-			handler.NativeView?.UpdateIsChecked(radioButton);
+			platformView.Checked += OnCheckedOrUnchecked;
+			platformView.Unchecked += OnCheckedOrUnchecked;
+
+			base.ConnectHandler(platformView);
 		}
 
-		public static void MapTextColor(RadioButtonHandler handler, ITextStyle textStyle) =>
-			handler.NativeView?.UpdateTextColor(textStyle);
+		protected override void DisconnectHandler(RadioButton platformView)
+		{
+			platformView.Checked -= OnCheckedOrUnchecked;
+			platformView.Unchecked -= OnCheckedOrUnchecked;
 
-		public static void MapCharacterSpacing(RadioButtonHandler handler, ITextStyle textStyle) =>
-			handler.NativeView?.UpdateCharacterSpacing(textStyle);
+			base.DisconnectHandler(platformView);
+		}
 
-		public static void MapContent(RadioButtonHandler handler, IRadioButton radioButton) =>
-			handler.NativeView?.UpdateContent(radioButton);
+		public static void MapBackground(IRadioButtonHandler handler, IRadioButton radioButton)
+		{
+			handler.PlatformView?.UpdateBackground(radioButton);
+		}
 
-		public static void MapFont(RadioButtonHandler handler, ITextStyle button)
+		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton)
+		{
+			handler.PlatformView?.UpdateIsChecked(radioButton);
+		}
+
+		public static void MapTextColor(IRadioButtonHandler handler, ITextStyle textStyle) =>
+			handler.PlatformView?.UpdateTextColor(textStyle);
+
+		public static void MapCharacterSpacing(IRadioButtonHandler handler, ITextStyle textStyle) =>
+			handler.PlatformView?.UpdateCharacterSpacing(textStyle);
+
+		public static void MapContent(IRadioButtonHandler handler, IRadioButton radioButton) =>
+			handler.PlatformView?.UpdateContent(radioButton);
+
+		public static void MapFont(IRadioButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.NativeView?.UpdateFont(button, fontManager);
+			handler.PlatformView?.UpdateFont(button, fontManager);
+		}
+
+		public static void MapStrokeColor(IRadioButtonHandler handler, IRadioButton radioButton) =>
+			handler.PlatformView?.UpdateStrokeColor(radioButton);
+
+		public static void MapStrokeThickness(IRadioButtonHandler handler, IRadioButton radioButton) =>
+			handler.PlatformView?.UpdateStrokeThickness(radioButton);
+
+		public static void MapCornerRadius(IRadioButtonHandler handler, IRadioButton radioButton) =>
+			handler.PlatformView?.UpdateCornerRadius(radioButton);
+
+		void OnCheckedOrUnchecked(object? sender, RoutedEventArgs e)
+		{
+			if (VirtualView == null || PlatformView == null)
+			{
+				return;
+			}
+
+			VirtualView.IsChecked = PlatformView.IsChecked == true;
 		}
 	}
 }

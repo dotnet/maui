@@ -1,10 +1,12 @@
 using System;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using EButton = ElmSharp.Button;
 using ERect = ElmSharp.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageButtonRenderer : ViewRenderer<ImageButton, Box>
 	{
 		public ImageButtonRenderer()
@@ -138,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				if (!IsDisposed && success)
 				{
-					(Element as IVisualElementController)?.NativeSizeChanged();
+					(Element as IVisualElementController)?.PlatformSizeChanged();
 					UpdateAfterLoading();
 				}
 			}

@@ -20,6 +20,5 @@ namespace Microsoft.Maui.Controls.Internals
 		void OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue);
 		double FontSizeDefaultValueCreator();
 		void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue);
-		void OnFontChanged(Font oldValue, Font newValue);
 	}
 }

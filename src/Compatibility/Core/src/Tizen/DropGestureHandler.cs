@@ -6,6 +6,7 @@ using EGestureType = ElmSharp.GestureLayer.GestureType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class DropGestureHandler : GestureHandler
 	{
 		bool _isApi4;
@@ -103,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (currentStateData.DataPackage == null || currentStateData.AcceptedOperation == DataPackageOperation.None)
 				return false;
 
-			Device.BeginInvokeOnMainThread(async () =>
+			Application.Current?.Dispatcher.Dispatch(async () =>
 			{
 				if (Recognizer is DropGestureRecognizer dropRecognizer && dropRecognizer.AllowDrop)
 					await dropRecognizer.SendDrop(new DropEventArgs(currentStateData.DataPackage.View));

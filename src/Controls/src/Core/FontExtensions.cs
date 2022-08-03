@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls
 			var italic = (attributes & FontAttributes.Italic) != 0;
 			return font.WithWeight(bold ? FontWeight.Bold : FontWeight.Regular, italic ? FontSlant.Italic : FontSlant.Default);
 		}
+
 		public static FontAttributes GetFontAttributes(this Font font)
 		{
 			FontAttributes attributes = font.Weight == FontWeight.Bold ? FontAttributes.Bold : FontAttributes.None;
@@ -26,7 +27,13 @@ namespace Microsoft.Maui.Controls
 			return attributes;
 		}
 
-		public static Font ToFont(this IFontElement element) =>
-			Font.OfSize(element.FontFamily, element.FontSize, enableScaling: element.FontAutoScalingEnabled).WithAttributes(element.FontAttributes);
+		public static Font ToFont(this IFontElement element, double? defaultSize = null)
+		{
+			var size = element.FontSize;
+			if (defaultSize.HasValue && (size <= 0 || double.IsNaN(size)))
+				size = defaultSize.Value;
+
+			return Font.OfSize(element.FontFamily, size, enableScaling: element.FontAutoScalingEnabled).WithAttributes(element.FontAttributes);
+		}
 	}
 }

@@ -10,6 +10,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		}
 
-		protected override object CreateNativeElement() => new Object();
+		protected override object CreatePlatformElement() => new Object();
 	}
 }

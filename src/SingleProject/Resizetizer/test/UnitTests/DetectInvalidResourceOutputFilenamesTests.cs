@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 			protected string GetInvalidFilename(DetectInvalidResourceOutputFilenamesTask task, string path) =>
-				task.InvalidItems.Single(c => c.Replace("\\", "/").EndsWith(path));
+				task.InvalidItems.Single(c => c.Replace('\\', '/').EndsWith(path, StringComparison.Ordinal));
 
 			protected void AssertValidFilename(DetectInvalidResourceOutputFilenamesTask task, ITaskItem item)
 				=> Assert.DoesNotContain(task.InvalidItems ?? Enumerable.Empty<string>(), c => c == item.ItemSpec);
@@ -91,6 +91,31 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertInvalidFilename(task, i);
 				Assert.False(success);
+			}
+
+			[Fact]
+			public void SingleInvalidFileFailsWithCorrectErrorMessage()
+			{
+				var i = new TaskItem("images/appiconfg-red-512.svg");
+				var task = GetNewTask(i);
+
+				var success = task.Execute();
+				Assert.False(success);
+
+				Assert.Equal("Invalid Filenames: appiconfg-red-512", LogErrorEvents[0].Message);
+			}
+
+			[Fact]
+			public void MultipleInvalidFileFailsWithCorrectErrorMessage()
+			{
+				var i = new TaskItem("images/appiconfg-red-512.svg");
+				var j = new TaskItem("images/appiconfg-red-512.svg");
+				var task = GetNewTask(i, j);
+
+				var success = task.Execute();
+				Assert.False(success);
+
+				Assert.Equal("Invalid Filenames: appiconfg-red-512, appiconfg-red-512", LogErrorEvents[0].Message);
 			}
 		}
 	}

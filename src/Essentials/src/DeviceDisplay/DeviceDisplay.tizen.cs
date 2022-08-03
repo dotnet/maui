@@ -1,10 +1,11 @@
-#nullable enable
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.Maui.ApplicationModel;
+using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceDisplayImplementation : IDeviceDisplay
+	partial class DeviceDisplayImplementation
 	{
 		[DllImport("libcapi-system-device.so.0", EntryPoint = "device_power_request_lock")]
 		static extern void RequestKeepScreenOn(int type = 1, int timeout = 0);
@@ -12,72 +13,91 @@ namespace Microsoft.Maui.Essentials.Implementations
 		[DllImport("libcapi-system-device.so.0", EntryPoint = "device_power_release_lock")]
 		static extern void ReleaseKeepScreenOn(int type = 1);
 
+		static CoreUIApplication CoreUIApplication => Application.Current as CoreUIApplication;
+		static int displayWidth = PlatformUtils.GetFeatureInfo<int>("screen.width");
+		static int displayHeight = PlatformUtils.GetFeatureInfo<int>("screen.height");
+		static int displayDpi = DeviceInfo.Idiom == DeviceIdiom.TV ? 72 : PlatformUtils.GetFeatureInfo<int>("screen.dpi");
+		DisplayOrientation displayOrientation;
+		DisplayRotation displayRotation = DisplayRotation.Rotation0;
+
 		bool keepScreenOn = false;
 
-		public event EventHandler<DisplayInfoChangedEventArgs>? MainDisplayInfoChanged;
+		protected override bool GetKeepScreenOn() => keepScreenOn;
 
-		public bool KeepScreenOn
+		protected override void SetKeepScreenOn(bool keepScreenOn)
 		{
-			get => keepScreenOn;
-			set
+			if (keepScreenOn)
+				RequestKeepScreenOn();
+			else
+				ReleaseKeepScreenOn();
+			this.keepScreenOn = keepScreenOn;
+		}
+
+		protected override DisplayInfo GetMainDisplayInfo()
+		{
+			return new DisplayInfo(
+				width: displayWidth,
+				height: displayHeight,
+				density: displayDpi / DeviceDisplay.BaseLogicalDpi,
+				orientation: GetNaturalDisplayOrientation(),
+				rotation: displayRotation
+				);
+		}
+
+		protected override void StartScreenMetricsListeners()
+		{
+			if (CoreUIApplication != null)
 			{
-				if (value)
-					RequestKeepScreenOn();
-				else
-					ReleaseKeepScreenOn();
-				keepScreenOn = value;
+				CoreUIApplication.DeviceOrientationChanged += OnRotationChanged;
 			}
 		}
 
-		public DisplayInfo GetMainDisplayInfo()
+		protected override void StopScreenMetricsListeners()
 		{
-			var display = Platform.MainWindow;
-			return new DisplayInfo(
-				width: display.ScreenSize.Width,
-				height: display.ScreenSize.Height,
-				density: display.ScreenDpi.X / (DeviceInfo.Idiom == DeviceIdiom.TV ? 72.0 : 160.0),
-				orientation: GetOrientation(),
-				rotation: GetRotation());
-		}
-
-		static DisplayOrientation GetOrientation()
-		{
-			return Platform.MainWindow.Rotation switch
+			if (CoreUIApplication != null)
 			{
-				0 => DisplayOrientation.Portrait,
-				90 => DisplayOrientation.Landscape,
-				180 => DisplayOrientation.Portrait,
-				270 => DisplayOrientation.Landscape,
-				_ => DisplayOrientation.Unknown,
-			};
+				CoreUIApplication.DeviceOrientationChanged -= OnRotationChanged;
+			}
 		}
 
-		static DisplayRotation GetRotation()
+		DisplayOrientation GetNaturalDisplayOrientation()
 		{
-			return Platform.MainWindow.Rotation switch
+			if (displayHeight >= displayWidth)
 			{
-				0 => DisplayRotation.Rotation0,
-				90 => DisplayRotation.Rotation90,
-				180 => DisplayRotation.Rotation180,
-				270 => DisplayRotation.Rotation270,
-				_ => DisplayRotation.Unknown,
-			};
+				return DisplayOrientation.Portrait;
+			}
+			else
+			{
+				return DisplayOrientation.Landscape;
+			}
 		}
 
-		public void StartScreenMetricsListeners()
+		void OnRotationChanged(object s, DeviceOrientationEventArgs e)
 		{
-			Platform.MainWindow.RotationChanged += OnRotationChanged;
-		}
-
-		public void StopScreenMetricsListeners()
-		{
-			Platform.MainWindow.RotationChanged -= OnRotationChanged;
-		}
-
-		void OnRotationChanged(object s, EventArgs e)
-		{
-			var metrics = GetMainDisplayInfo();
-			MainDisplayInfoChanged?.Invoke(this, new DisplayInfoChangedEventArgs(metrics));
+			switch (e.DeviceOrientation)
+			{
+				case DeviceOrientation.Orientation_0:
+					displayRotation = DisplayRotation.Rotation0;
+					displayOrientation = GetNaturalDisplayOrientation();
+					break;
+				case DeviceOrientation.Orientation_90:
+					displayRotation = DisplayRotation.Rotation90;
+					displayOrientation = GetNaturalDisplayOrientation() == DisplayOrientation.Portrait ? DisplayOrientation.Landscape : DisplayOrientation.Portrait;
+					break;
+				case DeviceOrientation.Orientation_180:
+					displayRotation = DisplayRotation.Rotation180;
+					displayOrientation = GetNaturalDisplayOrientation();
+					break;
+				case DeviceOrientation.Orientation_270:
+					displayRotation = DisplayRotation.Rotation270;
+					displayOrientation = GetNaturalDisplayOrientation() == DisplayOrientation.Portrait ? DisplayOrientation.Landscape : DisplayOrientation.Portrait;
+					break;
+				default:
+					displayRotation = DisplayRotation.Unknown;
+					displayOrientation = DisplayOrientation.Unknown;
+					break;
+			}
+			OnMainDisplayInfoChanged();
 		}
 	}
 }

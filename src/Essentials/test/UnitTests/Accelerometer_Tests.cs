@@ -1,5 +1,6 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 
 namespace Tests
@@ -104,6 +105,9 @@ namespace Tests
 		}
 
 		long GetShakeTime(DateTime now, double seconds) =>
-			now.AddSeconds(seconds).Nanoseconds();
+			Nanoseconds(now.AddSeconds(seconds));
+
+		static long Nanoseconds(DateTime time) =>
+				(time.Ticks / TimeSpan.TicksPerMillisecond) * 1_000_000;
 	}
 }

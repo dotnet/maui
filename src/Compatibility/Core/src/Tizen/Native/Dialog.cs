@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		/// </summary>
 		public static Dialog CreateDialog(EvasObject parent, bool hasAcceptButton = false)
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				return new Watch.WatchDialog(Forms.NativeParent, hasAcceptButton);
 			}
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		/// <summary>
 		/// Occurs whenever the dialog is first displayed.
 		/// </summary>
-		public event EventHandler Shown;
+		public event EventHandler DialogShown;
 
 		/// <summary>
 		/// Gets or sets the title of the dialog
@@ -194,7 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		public new void Show()
 		{
 			base.Show();
-			Shown?.Invoke(this, EventArgs.Empty);
+			DialogShown?.Invoke(this, EventArgs.Empty);
 		}
 
 		/// <summary>
@@ -301,7 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 			// Adds a handler for the Shown event.
 			// In effect, registers this instance to be affected by the hardware back key presses.
-			Shown += (s, e) =>
+			DialogShown += (s, e) =>
 			{
 				OnShown();
 			};

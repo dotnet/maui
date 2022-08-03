@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
 			ApplicationExtensions.CreateAndSetMockApplication();
 		}
 
@@ -983,6 +982,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			await Task.WhenAll(tasks);
+		}
+
+		[Test]
+		//https://github.com/dotnet/maui/issues/4617
+		public void ClearValueShouldntUnapplyStyles()
+		{
+			var button = new Button();
+			var layout = new StackLayout
+			{
+				Resources = new ResourceDictionary {
+					{ "Pinker", Colors.HotPink},
+					new Style (typeof(Button)){ Setters = {
+						new Setter{ Property=Button.BackgroundColorProperty, Value = new DynamicResource("Pinker")}
+						}
+					}
+				},
+				Children = { button },
+			};
+
+			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.HotPink));
+			button.ClearValue(Button.BackgroundColorProperty);
+			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.HotPink));
+			button.BackgroundColor = Colors.Red;
+			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.Red));
+			button.ClearValue(Button.BackgroundColorProperty);
+			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.HotPink));
 		}
 	}
 }

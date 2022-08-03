@@ -9,31 +9,18 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub> : HandlerTestBase
-		where THandler : IViewHandler, new()
+		where THandler : class, IViewHandler, new()
 		where TStub : StubBase, IView, new()
 	{
-		static readonly Random rnd = new Random();
-
-
-		public static async Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000)
-		{
-			while ((timeout -= 100) > 0)
-			{
-				if (!exitCondition.Invoke())
-					await Task.Delay(rnd.Next(100, 200));
-				else
-					break;
-			}
-
-			return exitCondition.Invoke();
-		}
+		public static Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
+			AssertionExtensions.Wait(exitCondition, timeout);
 
 		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
 			CreateHandler<THandler>(view, mauiContext);
 
-		protected async Task<THandler> CreateHandlerAsync(IView view)
+		protected Task<THandler> CreateHandlerAsync(IView view)
 		{
-			return await InvokeOnMainThreadAsync(() =>
+			return InvokeOnMainThreadAsync(() =>
 			{
 				return CreateHandler(view);
 			});
@@ -48,19 +35,24 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task SetValueAsync<TValue>(IView view, TValue value, Action<THandler, TValue> func)
+		protected Task<TValue> GetValueAsync<TValue>(IView view, Func<THandler, Task<TValue>> func)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler(view);
-				func(handler, value);
+				return func(handler);
 			});
+		}
+
+		protected Task SetValueAsync<TValue>(IView view, TValue value, Action<THandler, TValue> func)
+		{
+			return SetValueAsync<TValue, THandler>(view, value, func);
 		}
 
 		async protected Task ValidatePropertyInitValue<TValue>(
 			IView view,
 			Func<TValue> GetValue,
-			Func<THandler, TValue> GetNativeValue,
+			Func<THandler, TValue> GetPlatformValue,
 			TValue expectedValue)
 		{
 			var values = await GetValueAsync(view, (handler) =>
@@ -68,18 +60,18 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = GetValue(),
-					NativeViewValue = GetNativeValue(handler)
+					PlatformViewValue = GetPlatformValue(handler)
 				};
 			});
 
 			Assert.Equal(expectedValue, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		async protected Task ValidatePropertyUpdatesValue<TValue>(
 			IView view,
 			string property,
-			Func<THandler, TValue> GetNativeValue,
+			Func<THandler, TValue> GetPlatformValue,
 			TValue expectedSetValue,
 			TValue expectedUnsetValue)
 		{
@@ -92,20 +84,33 @@ namespace Microsoft.Maui.DeviceTests
 			var (handler, viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler(view);
-				return (handler, (TValue)propInfo.GetValue(view), GetNativeValue(handler));
+				return (handler, (TValue)propInfo.GetValue(view), GetPlatformValue(handler));
 			});
 
 			Assert.Equal(expectedSetValue, viewVal);
 			Assert.Equal(expectedSetValue, nativeVal);
 
+			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue>(
+			THandler handler,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+		{
+			var view = handler.VirtualView;
+			var propInfo = handler.VirtualView.GetType().GetProperty(property);
+
 			// confirm can update
 
-			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			var (viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
 			{
 				propInfo.SetValue(view, expectedUnsetValue);
 				handler.UpdateValue(property);
 
-				return ((TValue)propInfo.GetValue(view), GetNativeValue(handler));
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
 			});
 
 			Assert.Equal(expectedUnsetValue, viewVal);
@@ -118,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 				propInfo.SetValue(view, expectedSetValue);
 				handler.UpdateValue(property);
 
-				return ((TValue)propInfo.GetValue(view), GetNativeValue(handler));
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
 			});
 
 			Assert.Equal(expectedSetValue, viewVal);
@@ -127,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		async protected Task ValidateUnrelatedPropertyUnaffected<TValue>(
 			IView view,
-			Func<THandler, TValue> GetNativeValue,
+			Func<THandler, TValue> GetPlatformValue,
 			string property,
 			Action SetUnrelatedProperty)
 		{
@@ -136,7 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 			var (handler, initialNativeVal) = await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler(view);
-				return (handler, GetNativeValue(handler));
+				return (handler, GetPlatformValue(handler));
 			});
 
 			// run update
@@ -146,7 +151,7 @@ namespace Microsoft.Maui.DeviceTests
 				SetUnrelatedProperty();
 				handler.UpdateValue(property);
 
-				return GetNativeValue(handler);
+				return GetPlatformValue(handler);
 			});
 
 			// ensure unchanged

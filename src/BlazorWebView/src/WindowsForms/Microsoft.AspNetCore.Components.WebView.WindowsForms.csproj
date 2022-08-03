@@ -9,7 +9,8 @@
     <Description>Build Windows Forms applications with Blazor and WebView2.</Description>
     <DefineConstants>$(DefineConstants);WEBVIEW2_WINFORMS</DefineConstants>
     <UseWindowsForms>true</UseWindowsForms>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

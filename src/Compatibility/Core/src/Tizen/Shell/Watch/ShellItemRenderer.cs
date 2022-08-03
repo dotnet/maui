@@ -4,6 +4,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShellItemRenderer : IShellItemRenderer
 	{
 		Box _mainLayout;

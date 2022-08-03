@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Controls.Platform
 		object _previousDataContext;
 		FrameworkElement FrameworkElement { get; set; }
 		Shell _shell;
+		ShellView ShellView => _shell.Handler?.PlatformView as ShellView;
+
 		public ShellFlyoutItemView()
 		{
 			this.DataContextChanged += OnDataContextChanged;
@@ -84,12 +86,20 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (e.Is(BaseShellItem.IsCheckedProperty))
 				UpdateVisualState();
-
 		}
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
-			if (this.ActualWidth > 0 && _content is IView view)
+			if (ShellView == null)
+				return base.MeasureOverride(availableSize);
+
+			if (!ShellView.IsPaneOpen)
+				return base.MeasureOverride(availableSize);
+
+			if (ShellView.OpenPaneLength < availableSize.Width)
+				return base.MeasureOverride(availableSize);
+
+			if (_content is IView view)
 			{
 				if (Parent is FrameworkElement fe)
 				{
@@ -103,10 +113,9 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
-				var request = view.Handler.GetDesiredSizeFromHandler(availableSize.Width, availableSize.Height);
-				view.Frame = new Rectangle(0, 0, request.Width, request.Height);
+				var request = view.Measure(availableSize.Width, availableSize.Height);
 				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
-				return request.ToNative();
+				return request.ToPlatform();
 			}
 
 			return base.MeasureOverride(availableSize);
@@ -116,7 +125,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (this.ActualWidth > 0 && _content is IView view)
 			{
-				view.Handler.NativeArrangeHandler(new Rectangle(0, 0, finalSize.Width, finalSize.Height));
+				view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 				return finalSize;
 			}
 

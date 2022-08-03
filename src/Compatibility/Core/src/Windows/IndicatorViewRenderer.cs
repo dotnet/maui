@@ -13,6 +13,7 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	class IndicatorViewRenderer : ViewRenderer<IndicatorView, FrameworkElement>
 	{
 		const int DefaultPadding = 4;
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (!(Control is ItemsControl))
 				return;
-			
+
 			_fillColor = new WSolidColorBrush(Element.IndicatorColor.ToWindowsColor());
 			_selectedColor = new WSolidColorBrush(Element.SelectedIndicatorColor.ToWindowsColor());
 			var position = Element.Position;

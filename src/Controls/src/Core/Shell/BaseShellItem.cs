@@ -6,13 +6,14 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.BaseShellItem']/Docs" />
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
-	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController
+	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, IWindowController
 	{
 		public event EventHandler Appearing;
 		public event EventHandler Disappearing;
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='TitleProperty']/Docs" />
 		public static readonly BindableProperty TitleProperty =
-			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime);
+			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime, propertyChanged: OnTitlePropertyChanged);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IsVisibleProperty']/Docs" />
 		public static readonly BindableProperty IsVisibleProperty =
@@ -189,6 +190,14 @@ namespace Microsoft.Maui.Controls
 		}
 		IVisual IVisualController.Visual => Microsoft.Maui.Controls.VisualMarker.MatchParent;
 
+
+		static void OnTitlePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var shellItem = (BaseShellItem)bindable;
+			if (shellItem.FindParentOfType<Shell>()?.Toolbar is ShellToolbar st)
+				st.UpdateTitle();
+		}
+
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (newValue == null || bindable.IsSet(FlyoutIconProperty))
@@ -256,6 +265,19 @@ namespace Microsoft.Maui.Controls
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 		double IFlowDirectionController.Width => (Parent as VisualElement)?.Width ?? 0;
 
+		static readonly BindablePropertyKey WindowPropertyKey = BindableProperty.CreateReadOnly(
+			nameof(Window), typeof(Window), typeof(BaseShellItem), null);
+
+		public static readonly BindableProperty WindowProperty = WindowPropertyKey.BindableProperty;
+
+		public Window Window => (Window)GetValue(WindowProperty);
+
+		Window IWindowController.Window
+		{
+			get => (Window)GetValue(WindowProperty);
+			set => SetValue(WindowPropertyKey, value);
+		}
+
 		internal virtual void ApplyQueryAttributes(ShellRouteParameters query)
 		{
 		}
@@ -303,7 +325,7 @@ namespace Microsoft.Maui.Controls
 			return new DataTemplate(() =>
 			{
 				var grid = new Grid();
-				if (Device.RuntimePlatform == Device.UWP)
+				if (DeviceInfo.Platform == DevicePlatform.WinUI)
 					grid.ColumnSpacing = grid.RowSpacing = 0;
 
 				grid.Resources = new ResourceDictionary();
@@ -329,7 +351,6 @@ namespace Microsoft.Maui.Controls
 					Class = DefaultFlyoutItemLayoutStyle,
 				};
 
-
 				var groups = new VisualStateGroupList();
 
 				var commonGroup = new VisualStateGroup();
@@ -343,30 +364,26 @@ namespace Microsoft.Maui.Controls
 				var selectedState = new VisualState();
 				selectedState.Name = "Selected";
 
-				if (Device.RuntimePlatform != Device.UWP)
+				if (DeviceInfo.Platform != DevicePlatform.WinUI)
 				{
 					selectedState.Setters.Add(new Setter
 					{
 						Property = VisualElement.BackgroundColorProperty,
-						Value = new Color(0.95f)
-
+						Value = new AppThemeBinding() { Light = Colors.Black.MultiplyAlpha(0.1f), Dark = Colors.White.MultiplyAlpha(0.1f) }
 					});
 				}
 
-				if (Device.RuntimePlatform == Device.UWP)
+				normalState.Setters.Add(new Setter
 				{
-					normalState.Setters.Add(new Setter
-					{
-						Property = VisualElement.BackgroundColorProperty,
-						Value = Colors.Transparent
-					});
-				}
+					Property = VisualElement.BackgroundColorProperty,
+					Value = Colors.Transparent
+				});
 
 				commonGroup.States.Add(selectedState);
 
 				defaultGridClass.Setters.Add(new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = groups });
 
-				if (Device.RuntimePlatform == Device.Android)
+				if (DeviceInfo.Platform == DevicePlatform.Android)
 					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 50 });
 				else
 					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 44 });
@@ -374,11 +391,13 @@ namespace Microsoft.Maui.Controls
 
 				ColumnDefinitionCollection columnDefinitions = new ColumnDefinitionCollection();
 
-				if (Device.RuntimePlatform == Device.Android)
+				if (DeviceInfo.Platform == DevicePlatform.Android)
 					columnDefinitions.Add(new ColumnDefinition { Width = 54 });
-				else if (Device.RuntimePlatform == Device.iOS)
+				else if (DeviceInfo.Platform == DevicePlatform.iOS)
 					columnDefinitions.Add(new ColumnDefinition { Width = 50 });
-				else if (Device.RuntimePlatform == Device.UWP)
+				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
@@ -387,12 +406,14 @@ namespace Microsoft.Maui.Controls
 				var image = new Image();
 
 				double sizeRequest = -1;
-				if (Device.RuntimePlatform == Device.Android)
+				if (DeviceInfo.Platform == DevicePlatform.Android)
 					sizeRequest = 24;
-				else if (Device.RuntimePlatform == Device.iOS)
+				else if (DeviceInfo.Platform == DevicePlatform.iOS)
 					sizeRequest = 22;
-				else if (Device.RuntimePlatform == Device.UWP)
+				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
 					sizeRequest = 16;
+				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
+					sizeRequest = 25;
 
 				if (sizeRequest > 0)
 				{
@@ -400,7 +421,7 @@ namespace Microsoft.Maui.Controls
 					defaultImageClass.Setters.Add(new Setter() { Property = Image.WidthRequestProperty, Value = sizeRequest });
 				}
 
-				if (Device.RuntimePlatform == Device.UWP)
+				if (DeviceInfo.Platform == DevicePlatform.WinUI)
 				{
 					defaultImageClass.Setters.Add(new Setter { Property = Image.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });
@@ -417,7 +438,7 @@ namespace Microsoft.Maui.Controls
 
 				grid.Add(label, 1, 0);
 
-				if (Device.RuntimePlatform == Device.Android)
+				if (DeviceInfo.Platform == DevicePlatform.Android)
 				{
 					object textColor;
 
@@ -435,12 +456,17 @@ namespace Microsoft.Maui.Controls
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 				}
-				else if (Device.RuntimePlatform == Device.iOS)
+				else if (DeviceInfo.Platform == DevicePlatform.iOS)
 				{
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = Device.GetNamedSize(NamedSize.Small, label) });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontAttributesProperty, Value = FontAttributes.Bold });
 				}
-				else if (Device.RuntimePlatform == Device.UWP)
+				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				{
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });
+				}
+				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
 				{
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });

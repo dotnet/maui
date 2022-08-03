@@ -2,6 +2,7 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Devices;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public void UpdateToolbarPlacement()
 		{
 			if (_commandBar == null || _getToolbarPlacement == null || _bottomCommandBarArea == null ||
-			    _topCommandBarArea == null)
+				_topCommandBarArea == null)
 			{
 				// Template hasn't been applied yet, so we're not ready to update the toolbar placement
 				return;
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 					break;
 				case ToolbarPlacement.Default:
 				default:
-					target = Device.Idiom == TargetIdiom.Phone ? bottomCommandBarArea : topCommandBarArea;
+					target = DeviceInfo.Idiom == DeviceIdiom.Phone ? bottomCommandBarArea : topCommandBarArea;
 					break;
 			}
 

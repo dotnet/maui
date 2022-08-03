@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty RadioButtonGroupControllerProperty =
 			BindableProperty.CreateAttached("RadioButtonGroupController", typeof(RadioButtonGroupController), typeof(Maui.ILayout), default(RadioButtonGroupController),
-			defaultValueCreator: (b) => new RadioButtonGroupController((Maui.ILayout)b),
+			defaultValueCreator: (b) => new RadioButtonGroupController(b as Maui.ILayout),
 			propertyChanged: (b, o, n) => OnControllerChanged(b, (RadioButtonGroupController)o, (RadioButtonGroupController)n));
 
 		static RadioButtonGroupController GetRadioButtonGroupController(BindableObject b)

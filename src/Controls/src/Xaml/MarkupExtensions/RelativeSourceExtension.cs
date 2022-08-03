@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					// Also, we assume FindAncestor is meant if the ancestor type is a visual 
 					// Element, otherwise assume FindAncestorBindingContext is intended. (The
 					// mode can also be explicitly set in XAML)
-					actualMode = typeof(Element).GetTypeInfo().IsAssignableFrom(AncestorType.GetTypeInfo())
+					actualMode = typeof(Element).IsAssignableFrom(AncestorType)
 						? RelativeBindingSourceMode.FindAncestor
 						: RelativeBindingSourceMode.FindAncestorBindingContext;
 				}

@@ -3,29 +3,25 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
 	class MauiFactory : IMauiFactory
 	{
-		static readonly Type ServiceProviderType = typeof(IServiceProvider);
 		static readonly Type EnumerableType = typeof(IEnumerable<>);
 		static readonly Type ListType = typeof(List<>);
 
 		readonly IMauiServiceCollection _collection;
-		readonly bool _constructorInjection;
 
 		protected IMauiServiceCollection InternalCollection => _collection;
 
 		// TODO: do this properly and support scopes
 		readonly IDictionary<ServiceDescriptor, object?> _singletons;
 
-		public MauiFactory(IMauiServiceCollection collection, bool constructorInjection)
+		public MauiFactory(IMauiServiceCollection collection)
 		{
 			_collection = collection ?? throw new ArgumentNullException(nameof(collection));
-			_constructorInjection = constructorInjection;
 			_singletons = new ConcurrentDictionary<ServiceDescriptor, object?>();
 
 			// to make things easier, just add the provider
@@ -163,10 +159,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		{
 			if (item.ImplementationType != null)
 			{
-				if (_constructorInjection)
-					return CreateInstance(item.ImplementationType);
-				else
-					return Activator.CreateInstance(item.ImplementationType);
+				return Activator.CreateInstance(item.ImplementationType);
 			}
 
 			if (item.ImplementationInstance != null)
@@ -176,81 +169,6 @@ namespace Microsoft.Maui.Hosting.Internal
 				return item.ImplementationFactory(this);
 
 			throw new InvalidOperationException($"You need to provide an {nameof(item.ImplementationType)}, an {nameof(item.ImplementationFactory)} or an {nameof(item.ImplementationInstance)}.");
-		}
-
-		object? CreateInstance(Type implementationType)
-		{
-			// get constructors ordered by parameter count
-			var constructors = implementationType.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-			var matches = new (ConstructorInfo? Constructor, ParameterInfo[]? Parameters)[constructors.Length];
-			var matchesCounts = new int[constructors.Length];
-			var found = false;
-			for (var i = 0; i < constructors.Length; i++)
-			{
-				var ctor = constructors[i];
-				if (!ctor.IsFamily && !ctor.IsPrivate)
-				{
-					var parameters = ctor.GetParameters();
-					matchesCounts[i] = parameters.Length;
-					matches[i] = (ctor, parameters);
-					found = true;
-				}
-			}
-			Array.Sort(matchesCounts, matches);
-
-			if (!found)
-				throw new InvalidOperationException($"The type '{implementationType.Name}' did not have any public or internal constructors.");
-
-			// go through in reverse order
-			for (var m = matches.Length - 1; m >= 0; m--)
-			{
-				var (constructor, parameters) = matches[m];
-				if (constructor != null && parameters != null)
-				{
-					var paramCount = parameters.Length;
-
-					// we are at a ctor that has no params, so just use that
-					if (paramCount == 0)
-						return constructor.Invoke(null);
-
-					// try find a ctor that matches what we have in the service collection
-					var validConstructor = true;
-					var paramDescriptors = new (Type ServiceType, ServiceDescriptor? Single, IEnumerable<ServiceDescriptor>? Enumerable, object? Value)[paramCount];
-					for (var i = 0; i < paramCount; i++)
-					{
-						var param = parameters[i];
-						var paramType = param.ParameterType;
-
-						var isValid = TryGetServiceDescriptors(ref paramType, out var single, out var enumerable);
-						if (isValid)
-							paramDescriptors[i] = (paramType, single, enumerable, null);
-						else if (param.HasDefaultValue)
-							paramDescriptors[i] = (paramType, null, null, param.DefaultValue);
-						else
-						{
-							validConstructor = false;
-							break;
-						}
-					}
-
-					// we found something, so now inflate
-					if (validConstructor)
-					{
-						var paramValues = new object?[paramCount];
-						for (var i = 0; i < paramCount; i++)
-						{
-							var descriptor = paramDescriptors[i];
-							if (descriptor.Single != null || descriptor.Enumerable != null)
-								paramValues[i] = GetService(descriptor.ServiceType, descriptor.Single, descriptor.Enumerable);
-							else
-								paramValues[i] = descriptor.Value;
-						}
-						return constructor.Invoke(paramValues);
-					}
-				}
-			}
-
-			throw new InvalidOperationException($"Could not match any constructors for '{implementationType.Name}'.");
 		}
 	}
 }

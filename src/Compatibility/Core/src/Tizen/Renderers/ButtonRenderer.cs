@@ -1,10 +1,15 @@
 using System;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Devices;
+using NIButton = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IButton;
 using EButton = ElmSharp.Button;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.VisualElement;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ButtonRenderer : ViewRenderer<Button, EButton>
 	{
 		public ButtonRenderer()
@@ -35,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual EButton CreateNativeControl()
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				return new Native.Watch.WatchButton(Forms.NativeParent);
 			else
 				return new Native.Button(Forms.NativeParent);
@@ -61,8 +66,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var style = Specific.GetStyle(Element);
 			if (!string.IsNullOrEmpty(style))
 			{
-				(Control as IButton)?.UpdateStyle(style);
-				((IVisualElementController)Element).NativeSizeChanged();
+				(Control as NIButton)?.UpdateStyle(style);
+				((IVisualElementController)Element).PlatformSizeChanged();
 				UpdateBackgroundColor(false);
 			}
 		}
@@ -98,12 +103,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateText()
 		{
-			(Control as IButton).Text = Element.Text ?? "";
+			(Control as NIButton).Text = Element.Text ?? "";
 		}
 
 		void UpdateFontSize()
 		{
-			if (Control is IButton ib)
+			if (Control is NIButton ib)
 			{
 				ib.FontSize = Element.FontSize;
 			}
@@ -111,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontAttributes()
 		{
-			if (Control is IButton ib)
+			if (Control is NIButton ib)
 			{
 				ib.FontAttributes = Element.FontAttributes;
 			}
@@ -119,23 +124,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontFamily()
 		{
-			if (Control is IButton ib)
+			if (Control is NIButton ib)
 			{
-				ib.FontFamily = Element.FontFamily.ToNativeFontFamily();
+				ib.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
 			}
 		}
 
 		void UpdateTextColor()
 		{
-			if (Control is IButton ib)
+			if (Control is NIButton ib)
 			{
-				ib.TextColor = Element.TextColor.ToNative();
+				ib.TextColor = Element.TextColor.ToPlatformEFL();
 			}
 		}
 
 		void UpdateBitmap()
 		{
-			if (Control is IButton ib)
+			if (Control is NIButton ib)
 			{
 				if (Element.ImageSource != null)
 				{

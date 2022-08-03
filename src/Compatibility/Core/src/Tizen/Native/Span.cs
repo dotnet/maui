@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 using EColor = ElmSharp.Color;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
@@ -257,10 +257,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 		string ConvertTags(string text)
 		{
-			return text.Replace("&", "&amp;")
-					   .Replace("<", "&lt;")
-					   .Replace(">", "&gt;")
-					   .Replace(Environment.NewLine, "<br>");
+			return text.Replace("&", "&amp;", StringComparison.Ordinal)
+					   .Replace("<", "&lt;", StringComparison.Ordinal)
+					   .Replace(">", "&gt;", StringComparison.Ordinal)
+					   .Replace(Environment.NewLine, "<br>", StringComparison.Ordinal);
 		}
 
 		public string GetStyle()

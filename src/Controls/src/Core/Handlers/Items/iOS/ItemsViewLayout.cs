@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			Initialize(scrollDirection);
 
-			if (NativeVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 			{
 				// `ContentInset` is actually the default value, but I'm leaving this here as a note to
 				// future maintainers; it's likely that someone will want a Platform Specific to change this behavior
@@ -122,10 +122,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
-					return new UIEdgeInsets(0, 0, 0, new ObjCRuntime.nfloat(gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section)));
+					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section)));
 				}
 
-				return new UIEdgeInsets(0, 0, new ObjCRuntime.nfloat(gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section)), 0);
+				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section)), 0);
 			}
 
 			return UIEdgeInsets.Zero;
@@ -172,6 +172,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool ShouldInvalidateLayout(UICollectionViewLayoutAttributes preferredAttributes, UICollectionViewLayoutAttributes originalAttributes)
 		{
+			// This is currently causing an infinite layout loop on iOS 15 https://github.com/dotnet/maui/issues/6566
+			if (preferredAttributes.RepresentedElementKind == "UICollectionElementKindSectionHeader" && OperatingSystem.IsIOSVersionAtLeast(15))
+				return base.ShouldInvalidateLayout(preferredAttributes, originalAttributes);
+
 			if (ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
 			{
 				if (preferredAttributes.Bounds != originalAttributes.Bounds)
@@ -372,7 +376,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Header
 				&& preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Footer)
 			{
-				if (NativeVersion.IsAtLeast(12))
+				if (OperatingSystem.IsIOSVersionAtLeast(12) || OperatingSystem.IsTvOSVersionAtLeast(12))
 				{
 					return base.GetInvalidationContext(preferredAttributes, originalAttributes);
 				}
@@ -386,7 +390,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var defaultContext = base.GetInvalidationContext(preferredAttributes, originalAttributes);
 					return defaultContext;
 				}
-				catch (MonoTouchException ex) when (ex.Name == "NSRangeException")
+				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSRangeException")
 				{
 					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
 				}
@@ -559,7 +563,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
 
-			if (NativeVersion.IsAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 			{
 				UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
 			}

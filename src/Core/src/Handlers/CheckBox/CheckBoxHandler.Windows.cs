@@ -1,42 +1,80 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : ViewHandler<ICheckBox, MauiCheckBox>
+	public partial class CheckBoxHandler : ViewHandler<ICheckBox, CheckBox>
 	{
-		protected override MauiCheckBox CreateNativeView() => new MauiCheckBox();
-
-		protected override void ConnectHandler(MauiCheckBox nativeView)
+		protected override CheckBox CreatePlatformView()
 		{
-			base.ConnectHandler(nativeView);
+			var checkBox = new CheckBox();
 
-			nativeView.Checked += OnChecked;
-			nativeView.Unchecked += OnChecked;
+			AdjustCheckBoxForNoText(checkBox);
+
+			return checkBox;
 		}
 
-		protected override void DisconnectHandler(MauiCheckBox nativeView)
+		static void AdjustCheckBoxForNoText(CheckBox checkBox)
 		{
-			base.DisconnectHandler(nativeView);
+			checkBox.MinWidth = 0;
+			checkBox.MinHeight = 0;
+			checkBox.Padding = new UI.Xaml.Thickness(0);
 
-			nativeView.Checked -= OnChecked;
-			nativeView.Unchecked -= OnChecked;
+			checkBox.Loaded += OnCheckBoxLoaded;
+
+			static void OnCheckBoxLoaded(object sender, RoutedEventArgs e)
+			{
+				if (sender is not CheckBox checkBox)
+					return;
+
+				checkBox.Loaded -= OnCheckBoxLoaded;
+
+				if (VisualTreeHelper.GetChildrenCount(checkBox) <= 0)
+					return;
+
+				var root = VisualTreeHelper.GetChild(checkBox, 0);
+				if (root is not Grid rootGrid)
+					return;
+
+				var checkBoxHeight = Application.Current.Resources.TryGet<double>("CheckBoxHeight");
+				var checkBoxSize = Application.Current.Resources.TryGet<double>("CheckBoxSize");
+				var margin = (checkBoxHeight - checkBoxSize) / 2.0;
+
+				rootGrid.Margin = new UI.Xaml.Thickness(margin);
+			}
 		}
 
-		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
+		protected override void ConnectHandler(CheckBox platformView)
 		{
-			handler.NativeView?.UpdateIsChecked(check);
+			base.ConnectHandler(platformView);
+
+			platformView.Checked += OnChecked;
+			platformView.Unchecked += OnChecked;
 		}
 
-		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		protected override void DisconnectHandler(CheckBox platformView)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			base.DisconnectHandler(platformView);
+
+			platformView.Checked -= OnChecked;
+			platformView.Unchecked -= OnChecked;
+		}
+
+		public static void MapIsChecked(ICheckBoxHandler handler, ICheckBox check)
+		{
+			handler.PlatformView?.UpdateIsChecked(check);
+		}
+
+		public static void MapForeground(ICheckBoxHandler handler, ICheckBox check)
+		{
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
 		void OnChecked(object sender, RoutedEventArgs e)
 		{
-			if (sender is CheckBox nativeView && VirtualView != null)
-				VirtualView.IsChecked = nativeView.IsChecked == true;
+			if (sender is CheckBox platformView && VirtualView != null)
+				VirtualView.IsChecked = platformView.IsChecked == true;
 		}
 	}
 }

@@ -1,8 +1,9 @@
 using ElmSharp;
+using EToolbar = ElmSharp.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	public class ShellTabs : Toolbar, IShellTabs
+	public class ShellTabs : EToolbar, IShellTabs
 	{
 
 		ShellTabsType _type;

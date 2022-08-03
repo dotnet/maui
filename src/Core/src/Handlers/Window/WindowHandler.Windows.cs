@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -7,69 +8,76 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UI.Xaml.Window>
 	{
-		RootPanel? _rootPanel = null;
-
-		protected override void ConnectHandler(UI.Xaml.Window nativeView)
+		protected override void ConnectHandler(UI.Xaml.Window platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			if (_rootPanel == null)
+			if (platformView.Content is null)
+				platformView.Content = new WindowRootViewContainer();
+
+			// update the platform window with the user size
+			platformView.UpdateSize(VirtualView);
+
+			var appWindow = platformView.GetAppWindow();
+			if (appWindow is not null)
 			{
-				// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
-				MauiWinUIApplication.Current.Resources.TryGetValue("MauiRootContainerStyle", out object? style);
+				// then pass the actual size back to the user
+				UpdateVirtualViewFrame(appWindow);
 
-				_rootPanel = new RootPanel
-				{
-					Style = style as UI.Xaml.Style
-				};
+				// THEN attach the event to reduce churn
+				appWindow.Changed += OnWindowChanged;
 			}
-
-			nativeView.Content = _rootPanel;
-
-			var b = nativeView.Bounds;
-			VirtualView.Frame = new Rectangle(b.Left, b.Top, b.Width, b.Height);
-
-			nativeView.SizeChanged += OnWindowSizeChanged;
 		}
 
-		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
+		protected override void DisconnectHandler(UI.Xaml.Window platformView)
 		{
 			MauiContext
 				?.GetNavigationRootManager()
 				?.Disconnect();
 
-			_rootPanel?.Children?.Clear();
-			nativeView.Content = null;
-			nativeView.SizeChanged -= OnWindowSizeChanged;
+			if (platformView.Content is WindowRootViewContainer container)
+			{
+				container.Children.Clear();
+				platformView.Content = null;
+			}
 
-			base.DisconnectHandler(nativeView);
+			var appWindow = platformView.GetAppWindow();
+			if (appWindow is not null)
+				appWindow.Changed -= OnWindowChanged;
+
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
-			handler.NativeView?.UpdateTitle(window);
+			handler.PlatformView?.UpdateTitle(window);
 
 		public static void MapContent(IWindowHandler handler, IWindow window)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
-			windowManager.Connect(handler.VirtualView.Content);
-			var rootPanel = handler.NativeView.Content as Panel;
+			var previousRootView = windowManager.RootView;
 
-			if (rootPanel == null)
-				return;
+			windowManager.Disconnect();
+			windowManager.Connect(handler.VirtualView.Content.ToPlatform(handler.MauiContext));
 
-			rootPanel.Children.Clear();
-			rootPanel.Children.Add(windowManager.RootView);
+			if (handler.PlatformView.Content is WindowRootViewContainer container)
+			{
+				if (previousRootView != null && previousRootView != windowManager.RootView)
+					container.RemovePage(previousRootView);
+
+				container.AddPage(windowManager.RootView);
+			}
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();
 		}
 
 		public static void MapWidth(IWindowHandler handler, IWindow view) =>
-			handler.NativeView?.UpdateWidth(view);
+			handler.PlatformView?.UpdateWidth(view);
 
 		public static void MapHeight(IWindowHandler handler, IWindow view) =>
-			handler.NativeView?.UpdateHeight(view);
+			handler.PlatformView?.UpdateHeight(view);
 
 		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{
@@ -77,11 +85,56 @@ namespace Microsoft.Maui.Handlers
 				ViewHandler.MapToolbar(handler, tb);
 		}
 
-		void OnWindowSizeChanged(object sender, WindowSizeChangedEventArgs e)
+		public static void MapMenuBar(IWindowHandler handler, IWindow view)
 		{
-			System.Diagnostics.Debug.WriteLine($"OnWindowSizeChanged: {NativeView.Bounds} {e.Size}");
+			if (view is IMenuBarElement mb)
+			{
+				_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+				var windowManager = handler.MauiContext.GetNavigationRootManager();
+				windowManager.SetMenuBar(mb.MenuBar?.ToPlatform(handler.MauiContext!) as MenuBar);
+			}
+		}
 
-			VirtualView.Frame = new Rectangle(0, 0, e.Size.Width, e.Size.Height);
+		public static void MapFlowDirection(IWindowHandler handler, IWindow view)
+		{
+			var WindowHandle = handler.PlatformView.GetWindowHandle();
+
+			// Retrieve current extended style
+			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
+			long updated_style;
+			if (view.FlowDirection == FlowDirection.RightToLeft)
+				updated_style = extended_style | (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
+			else
+				updated_style = extended_style & ~((long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL);
+
+			if (updated_style != extended_style)
+				PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, updated_style);
+		}
+
+		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
+		{
+			if (args is DisplayDensityRequest request)
+				request.SetResult(handler.PlatformView.GetDisplayDensity());
+		}
+
+		void OnWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
+		{
+			if (!args.DidSizeChange && !args.DidPositionChange)
+				return;
+
+			UpdateVirtualViewFrame(sender);
+		}
+
+		void UpdateVirtualViewFrame(AppWindow appWindow)
+		{
+			var size = appWindow.Size;
+			var pos = appWindow.Position;
+
+			var density = PlatformView.GetDisplayDensity();
+
+			VirtualView.Frame = new Rect(
+				pos.X / density, pos.Y / density,
+				size.Width / density, size.Height / density);
 		}
 	}
 }

@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 						endAngle += 360;
 					}
 
-					var sweep = Graphics.Geometry.GetSweep(startAngle, endAngle, clockwise);
+					var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 					var absSweep = Math.Abs(sweep);
 
 					var rectX = topLeft.X * scale;
@@ -74,8 +74,8 @@ namespace Microsoft.Maui.Platform
 					var rectWidth = bottomRight.X * scale - topLeft.X * scale;
 					var rectHeight = bottomRight.Y * scale - topLeft.Y * scale;
 
-					var startPoint = Graphics.Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
-					var endPoint = Graphics.Geometry.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
+					var startPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
+					var endPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
 
 					if (figure == null)
 					{

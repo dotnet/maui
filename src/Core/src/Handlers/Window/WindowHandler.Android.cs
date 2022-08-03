@@ -13,10 +13,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var rootManager = handler.MauiContext.GetNavigationRootManager();
-			rootManager.Connect(window.Content);
-			handler.NativeView.SetContentView(rootManager.RootView);
-			if (window.VisualDiagnosticsOverlay != null && rootManager.RootView is ViewGroup group)
+			var rootView = CreateRootViewFromContent(handler, window);
+			handler.PlatformView.SetContentView(rootView);
+			if (window.VisualDiagnosticsOverlay != null && rootView is ViewGroup group)
 				window.VisualDiagnosticsOverlay.Initialize();
 		}
 
@@ -24,6 +23,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (view is IToolbarElement tb)
 				ViewHandler.MapToolbar(handler, tb);
+		}
+
+		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
+		{
+			if (args is DisplayDensityRequest request)
+				request.SetResult(handler.PlatformView.GetDisplayDensity());
+		}
+
+		internal static View? CreateRootViewFromContent(IWindowHandler handler, IWindow window)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var rootManager = handler.MauiContext.GetNavigationRootManager();
+			rootManager.Connect(window.Content);
+			return rootManager.RootView;
 		}
 	}
 }

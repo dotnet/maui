@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Dispatching;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 {
@@ -20,9 +21,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			Task.Run(async () =>
 			{
 				await Task.Delay(1000);
-				Device.BeginInvokeOnMainThread(() => CollectionView.ItemsSource = new List<object>());
+				Dispatcher.Dispatch(() => CollectionView.ItemsSource = new List<object>());
 				await Task.Delay(1000);
-				Device.BeginInvokeOnMainThread(() => CollectionView.ItemsSource = _demoFilteredItemSource.Items);
+				Dispatcher.Dispatch(() => CollectionView.ItemsSource = _demoFilteredItemSource.Items);
 			});
 		}
 	}

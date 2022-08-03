@@ -2,6 +2,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete]
 	public class SwipeGestureHandler : GestureHandler
 	{
 		public SwipeGestureHandler(IGestureRecognizer recognizer) : base(recognizer)

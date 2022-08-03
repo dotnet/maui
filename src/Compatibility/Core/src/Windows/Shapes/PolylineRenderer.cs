@@ -16,6 +16,7 @@ using WPolyline = System.Windows.Shapes.Polyline;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PolylineRenderer : ShapeRenderer<Polyline, WPolyline>
 	{
 		PointCollection _points;

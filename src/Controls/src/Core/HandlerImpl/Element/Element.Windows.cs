@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, Element element)
 		{
 			Platform.AccessibilityExtensions.SetAutomationPropertiesAccessibilityView(
-				handler.NativeView as Microsoft.UI.Xaml.FrameworkElement, element);
+				handler.PlatformView as Microsoft.UI.Xaml.FrameworkElement, element);
 		}
 
 		public static void MapAutomationPropertiesLabeledBy(IElementHandler handler, Element element)

@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ElmSharp;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EntryCellRenderer : ViewCellRenderer
 	{
 		readonly Dictionary<EvasObject, VisualElement> _cacheCandidate = new Dictionary<EvasObject, VisualElement>();
@@ -33,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				var entry = new Entry()
 				{
-					HorizontalOptions = LayoutOptions.FillAndExpand,
+					HorizontalOptions = LayoutOptions.Fill,
 					VerticalOptions = LayoutOptions.Center,
 					FontSize = -1,
 				};
@@ -42,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				entry.SetBinding(InputView.KeyboardProperty, new Binding(EntryCell.KeyboardProperty.PropertyName));
 				entry.SetBinding(Entry.HorizontalTextAlignmentProperty, new Binding(EntryCell.HorizontalTextAlignmentProperty.PropertyName));
 
-				var layout = new StackLayout()
+				var layout = new XStackLayout()
 				{
 					Orientation = StackOrientation.Horizontal,
 					Children = {
@@ -95,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				return ((Color)value).IsDefault ? ThemeConstants.EntryCell.ColorClass.DefaultLabelColor : value;
+				return (value == null || ((Color)value).IsDefault) ? ThemeConstants.EntryCell.ColorClass.DefaultLabelColor : value;
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

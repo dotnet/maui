@@ -1,17 +1,20 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Vibration.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Vibration']/Docs" />
-	public static partial class Vibration
+	partial class VibrationImplementation : IVibration
 	{
-		internal static bool IsSupported
+		public bool IsSupported
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformVibrate(TimeSpan duration)
+		void PlatformVibrate()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformCancel()
+		void PlatformVibrate(TimeSpan duration)
+			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		void PlatformCancel()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

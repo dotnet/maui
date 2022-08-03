@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 using ELayout = ElmSharp.Layout;
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			// Or add the height of the EditField to the TextBlock
 			if (textBlockSize.Height < _editfieldLayout.MinimumHeight)
 			{
-				if (Device.Idiom == TargetIdiom.TV || Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.TV || DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					textBlockSize.Height = _editfieldLayout.MinimumHeight;
 				}

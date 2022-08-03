@@ -9,22 +9,22 @@ namespace Microsoft.Maui.Handlers
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, RootNavigationView>
 	{
 		NavigationRootManager? _navigationRootManager;
-		protected override RootNavigationView CreateNativeView()
+		protected override RootNavigationView CreatePlatformView()
 		{
 			var navigationView = new RootNavigationView();
 
 			return navigationView;
 		}
 
-		protected override void ConnectHandler(RootNavigationView nativeView)
+		protected override void ConnectHandler(RootNavigationView platformView)
 		{
 			_navigationRootManager = MauiContext?.GetNavigationRootManager();
-			nativeView.PaneOpened += OnPaneOepened;
+			platformView.PaneOpened += OnPaneOepened;
 		}
 
-		protected override void DisconnectHandler(RootNavigationView nativeView)
+		protected override void DisconnectHandler(RootNavigationView platformView)
 		{
-			nativeView.PaneOpened -= OnPaneOepened;
+			platformView.PaneOpened -= OnPaneOepened;
 		}
 
 		void OnPaneOepened(NavigationView sender, object args)
@@ -32,54 +32,57 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.IsPresented = sender.IsPaneOpen;
 		}
 
-		void UpdateDetail()
+		static void UpdateDetail(IFlyoutViewHandler handler)
 		{
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = VirtualView.Detail.ToPlatform(MauiContext);
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = handler.VirtualView.Detail.ToPlatform(handler.MauiContext);
 
-			NativeView.Content = VirtualView.Detail.ToPlatform();
+			handler.PlatformView.Content = handler.VirtualView.Detail.ToPlatform();
 		}
 
-		void UpdateFlyout()
+		static void UpdateFlyout(IFlyoutViewHandler handler)
 		{
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = VirtualView.Flyout.ToPlatform(MauiContext);
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = handler.VirtualView.Flyout.ToPlatform(handler.MauiContext);
 
-			NativeView.ReplacePaneMenuItemsWithCustomContent(VirtualView.Flyout);
+			if (handler.PlatformView is RootNavigationView rnv)
+				rnv.FlyoutView = handler.VirtualView.Flyout;
+
+			handler.PlatformView.FlyoutCustomContent = handler.VirtualView.Flyout?.ToPlatform(handler.MauiContext);
 		}
 
-		public static void MapDetail(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.UpdateDetail();
+			UpdateDetail(handler);
 		}
 
-		public static void MapFlyout(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapFlyout(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.UpdateFlyout();
+			UpdateFlyout(handler);
 		}
 
-		public static void MapIsPresented(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapIsPresented(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.NativeView.IsPaneOpen = flyoutView.IsPresented;
+			handler.PlatformView.IsPaneOpen = flyoutView.IsPresented;
 		}
 
-		public static void MapFlyoutWidth(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapFlyoutWidth(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			if (flyoutView.Width >= 0)
-				handler.NativeView.OpenPaneLength = flyoutView.Width;
+				handler.PlatformView.OpenPaneLength = flyoutView.Width;
 			else
-				handler.NativeView.OpenPaneLength = 320;
+				handler.PlatformView.OpenPaneLength = 320;
 			// At some point this Template Setting is going to show up with a bump to winui
-			//handler.NativeView.OpenPaneLength = handler.NativeView.TemplateSettings.OpenPaneWidth;
+			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 
 		}
 
-		public static void MapFlyoutBehavior(FlyoutViewHandler handler, IFlyoutView flyoutView)
+		public static void MapFlyoutBehavior(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
-			handler.NativeView.UpdateFlyoutBehavior(flyoutView);
+			handler.PlatformView.UpdateFlyoutBehavior(flyoutView);
 		}
 
-		public static void MapIsGestureEnabled(FlyoutViewHandler handler, IFlyoutView view)
+		public static void MapIsGestureEnabled(IFlyoutViewHandler handler, IFlyoutView view)
 		{
 		}
 	}

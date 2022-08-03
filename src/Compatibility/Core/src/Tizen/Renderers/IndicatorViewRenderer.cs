@@ -1,5 +1,8 @@
+using Microsoft.Maui.Controls.Platform;
+
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class IndicatorViewRenderer : ViewRenderer<IndicatorView, Native.IndicatorView>
 	{
 		public IndicatorViewRenderer()

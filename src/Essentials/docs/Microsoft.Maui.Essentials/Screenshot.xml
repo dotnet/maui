@@ -16,8 +16,8 @@
   </Docs>
   <Members>
     <Member MemberName="CaptureAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.ScreenshotResult&gt; CaptureAsync ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Microsoft.Maui.Essentials.ScreenshotResult&gt; CaptureAsync() cil managed" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.IScreenshotResult&gt; CaptureAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Microsoft.Maui.Essentials.IScreenshotResult&gt; CaptureAsync() cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.Screenshot.CaptureAsync" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -25,7 +25,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.ScreenshotResult&gt;</ReturnType>
+        <ReturnType>System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.IScreenshotResult&gt;</ReturnType>
       </ReturnValue>
       <Parameters />
       <Docs>

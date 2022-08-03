@@ -1,22 +1,24 @@
 using System;
 #if IOS || MACCATALYST
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 #elif MONOANDROID
-using NativeView = Android.Views.View;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#elif TIZEN
+using PlatformView = ElmSharp.EvasObject;
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler, IViewHandler
+	public abstract partial class ViewHandler<TVirtualView, TPlatformView> : ViewHandler, IViewHandler
 		where TVirtualView : class, IView
-#if !NETSTANDARD || IOS || ANDROID || WINDOWS
-		where TNativeView : NativeView
+#if !(NETSTANDARD || !PLATFORM) || IOS || ANDROID || WINDOWS || TIZEN
+		where TPlatformView : PlatformView
 #else
-		where TNativeView : class
+		where TPlatformView : class
 #endif
 	{
 		[HotReload.OnHotReload]
@@ -29,10 +31,10 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public new TNativeView NativeView
+		public new TPlatformView PlatformView
 		{
-			get => (TNativeView?)base.NativeView ?? throw new InvalidOperationException($"NativeView cannot be null here");
-			private protected set => base.NativeView = value;
+			get => (TPlatformView?)base.PlatformView ?? throw new InvalidOperationException($"PlatformView cannot be null here");
+			private protected set => base.PlatformView = value;
 		}
 
 		public new TVirtualView VirtualView
@@ -45,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 
 		IElement? IElementHandler.VirtualView => base.VirtualView;
 
-		object? IElementHandler.NativeView => base.NativeView;
+		object? IElementHandler.PlatformView => base.PlatformView;
 
 		public virtual void SetVirtualView(IView view) =>
 			base.SetVirtualView(view);
@@ -53,27 +55,27 @@ namespace Microsoft.Maui.Handlers
 		public sealed override void SetVirtualView(IElement view) =>
 			SetVirtualView((IView)view);
 
-		public static Func<ViewHandler<TVirtualView, TNativeView>, TNativeView>? NativeViewFactory { get; set; }
+		public static Func<ViewHandler<TVirtualView, TPlatformView>, TPlatformView>? PlatformViewFactory { get; set; }
 
-		protected abstract TNativeView CreateNativeView();
+		protected abstract TPlatformView CreatePlatformView();
 
-		protected virtual void ConnectHandler(TNativeView nativeView)
+		protected virtual void ConnectHandler(TPlatformView platformView)
 		{
 		}
 
-		protected virtual void DisconnectHandler(TNativeView nativeView)
+		protected virtual void DisconnectHandler(TPlatformView platformView)
 		{
 		}
 
-		private protected override NativeView OnCreateNativeView()
+		private protected override PlatformView OnCreatePlatformView()
 		{
-			return NativeViewFactory?.Invoke(this) ?? CreateNativeView();
+			return PlatformViewFactory?.Invoke(this) ?? CreatePlatformView();
 		}
 
-		private protected override void OnConnectHandler(NativeView nativeView) =>
-			ConnectHandler((TNativeView)nativeView);
+		private protected override void OnConnectHandler(PlatformView platformView) =>
+			ConnectHandler((TPlatformView)platformView);
 
-		private protected override void OnDisconnectHandler(NativeView nativeView) =>
-			DisconnectHandler((TNativeView)nativeView);
+		private protected override void OnDisconnectHandler(PlatformView platformView) =>
+			DisconnectHandler((TPlatformView)platformView);
 	}
 }

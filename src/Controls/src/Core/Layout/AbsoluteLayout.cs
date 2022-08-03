@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='LayoutBoundsProperty']/Docs" />
 		public static readonly BindableProperty LayoutBoundsProperty = BindableProperty.CreateAttached("LayoutBounds",
-			typeof(Rectangle), typeof(AbsoluteLayout), new Rectangle(0, 0, AutoSize, AutoSize), propertyChanged: LayoutBoundsPropertyChanged);
+			typeof(Rect), typeof(AbsoluteLayout), new Rect(0, 0, AutoSize, AutoSize), propertyChanged: LayoutBoundsPropertyChanged);
 
 		static void LayoutBoundsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -36,34 +36,34 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutFlags']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutFlags'][1]/Docs" />
 		public static AbsoluteLayoutFlags GetLayoutFlags(BindableObject bindable)
 		{
 			return (AbsoluteLayoutFlags)bindable.GetValue(LayoutFlagsProperty);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutBounds']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutBounds'][1]/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(BoundsTypeConverter))]
-		public static Rectangle GetLayoutBounds(BindableObject bindable)
+		public static Rect GetLayoutBounds(BindableObject bindable)
 		{
-			return (Rectangle)bindable.GetValue(LayoutBoundsProperty);
+			return (Rect)bindable.GetValue(LayoutBoundsProperty);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='SetLayoutFlags']/Docs" />
-		public static void SetLayoutFlags(BindableObject bindable, AbsoluteLayoutFlags value)
+		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='SetLayoutFlags'][1]/Docs" />
+		public static void SetLayoutFlags(BindableObject bindable, AbsoluteLayoutFlags flags)
 		{
-			bindable.SetValue(LayoutFlagsProperty, value);
+			bindable.SetValue(LayoutFlagsProperty, flags);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='SetLayoutBounds']/Docs" />
-		public static void SetLayoutBounds(BindableObject bindable, Rectangle value)
+		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='SetLayoutBounds'][1]/Docs" />
+		public static void SetLayoutBounds(BindableObject bindable, Rect bounds)
 		{
-			bindable.SetValue(LayoutBoundsProperty, value);
+			bindable.SetValue(LayoutBoundsProperty, bounds);
 		}
 
 		#endregion
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutFlags']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutFlags'][2]/Docs" />
 		public AbsoluteLayoutFlags GetLayoutFlags(IView view)
 		{
 			return view switch
@@ -73,17 +73,16 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutBounds']/Docs" />
-		public Rectangle GetLayoutBounds(IView view)
+		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutBounds'][2]/Docs" />
+		public Rect GetLayoutBounds(IView view)
 		{
 			return view switch
 			{
-				BindableObject bo => (Rectangle)bo.GetValue(LayoutBoundsProperty),
+				BindableObject bo => (Rect)bo.GetValue(LayoutBoundsProperty),
 				_ => _viewInfo[view].LayoutBounds,
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='SetLayoutFlags']/Docs" />
 		public void SetLayoutFlags(IView view, AbsoluteLayoutFlags flags)
 		{
 			switch (view)
@@ -97,8 +96,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='SetLayoutBounds']/Docs" />
-		public void SetLayoutBounds(IView view, Rectangle bounds)
+		public void SetLayoutBounds(IView view, Rect bounds)
 		{
 			switch (view)
 			{
@@ -158,7 +156,7 @@ namespace Microsoft.Maui.Controls
 		class AbsoluteLayoutInfo
 		{
 			public AbsoluteLayoutFlags LayoutFlags { get; set; }
-			public Rectangle LayoutBounds { get; set; }
+			public Rect LayoutBounds { get; set; }
 		}
 	}
 }

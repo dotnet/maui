@@ -24,36 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<LabelHandler>(label);
-				Assert.True(handler.NativeView.UserInteractionEnabled);
-			});
-		}
-
-		[Fact]
-		public async Task UserInteractionEnabledSetAfterAddingGestureRecognizer()
-		{
-			var label = new Label();
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<LabelHandler>(label);
-				Assert.False(handler.NativeView.UserInteractionEnabled);
-				label.GestureRecognizers.Add(new TapGestureRecognizer() { NumberOfTapsRequired = 1 });
-				Assert.True(handler.NativeView.UserInteractionEnabled);
-			});
-		}
-
-		[Fact]
-		public async Task UserInteractionEnabledUnsetAfterRemovingGestureRecognizer()
-		{
-			var label = new Label();
-			label.GestureRecognizers.Add(new TapGestureRecognizer() { NumberOfTapsRequired = 1 });
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<LabelHandler>(label);
-				Assert.True(handler.NativeView.UserInteractionEnabled);
-				label.GestureRecognizers.Clear();
-				Assert.False(handler.NativeView.UserInteractionEnabled);
+				Assert.True(handler.PlatformView.UserInteractionEnabled);
 			});
 		}
 	}

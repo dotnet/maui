@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			foreach (var child in ((IElementController)this).LogicalChildren.Cast<View>())
 			{
-				var result = new Rectangle(x, y, 0, 0);
+				var result = new Rect(x, y, 0, 0);
 				var request = child.Measure(double.PositiveInfinity, double.PositiveInfinity);
 				result.Width = request.Request.Width;
 				result.Height = request.Request.Height;
@@ -261,9 +261,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			group.Layout(new Rectangle(0, 0, 400, 400));
+			group.Layout(new Rect(0, 0, 400, 400));
 
-			Assert.AreEqual(new Rectangle(0, 0, 50, 20), view.Bounds);
+			Assert.AreEqual(new Rect(0, 0, 50, 20), view.Bounds);
 		}
 
 		[Test]

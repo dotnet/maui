@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			this = CreateTranslation(offsetX, offsetY) * this;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][1]/Docs" />
 		public Point Transform(Point point)
 		{
 			Point newPoint = point;
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return new Point(x, y);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][2]/Docs" />
 		public void Transform(Point[] points)
 		{
 			if (points != null)
@@ -222,37 +222,6 @@ namespace Microsoft.Maui.Controls.Shapes
 					MultiplyPoint(ref x, ref y);
 
 					points[i] = new Point(x, y);
-				}
-			}
-		}
-
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][2]/Docs" />
-		public Vector2 Transform(Vector2 vector)
-		{
-			Vector2 newVector = vector;
-
-			double x = newVector.X;
-			double y = newVector.Y;
-
-			MultiplyVector(ref x, ref y);
-
-			return new Vector2(x, y);
-		}
-
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][3]/Docs" />
-		public void Transform(Vector2[] vectors)
-		{
-			if (vectors != null)
-			{
-				for (int i = 0; i < vectors.Length; i++)
-				{
-					var vector = vectors[i];
-					double x = vector.X;
-					double y = vector.Y;
-
-					MultiplyVector(ref x, ref y);
-
-					vectors[i] = new Vector2(x, y);
 				}
 			}
 		}
@@ -705,7 +674,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 	internal static class MatrixUtil
 	{
-		internal static void TransformRect(ref Microsoft.Maui.Graphics.Rectangle rect, ref Matrix matrix)
+		internal static void TransformRect(ref Microsoft.Maui.Graphics.Rect rect, ref Matrix matrix)
 		{
 			if (rect.IsEmpty)
 			{

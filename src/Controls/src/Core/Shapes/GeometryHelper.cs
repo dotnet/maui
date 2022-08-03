@@ -7,9 +7,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.GeometryHelper']/Docs" />
 	public static class GeometryHelper
 	{
-		static readonly List<Point> Points = new List<Point>();
-
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][1]/Docs" />
 		public static PathGeometry FlattenGeometry(Geometry geoSrc, double tolerance)
 		{
 			// Return empty PathGeometry if Geometry is null
@@ -22,9 +20,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			return pathGeoDst;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][2]/Docs" />
 		public static void FlattenGeometry(PathGeometry pathGeoDst, Geometry geoSrc, double tolerance, Matrix matxPrevious)
 		{
+			var points = new List<Point>();
+
 			Matrix matx = matxPrevious;
 
 			if (geoSrc is GeometryGroup)
@@ -129,13 +129,13 @@ namespace Microsoft.Maui.Controls.Shapes
 							Point pt2 = matx.Transform(bezSeg.Point2);
 							Point pt3 = matx.Transform(bezSeg.Point3);
 
-							Points.Clear();
-							FlattenCubicBezier(Points, pt0, pt1, pt2, pt3, tolerance);
+							points.Clear();
+							FlattenCubicBezier(points, pt0, pt1, pt2, pt3, tolerance);
 
-							for (int i = 1; i < Points.Count; i++)
-								segDst.Points.Add(Points[i]);
+							for (int i = 1; i < points.Count; i++)
+								segDst.Points.Add(points[i]);
 
-							ptLast = Points[Points.Count - 1];
+							ptLast = points[points.Count - 1];
 						}
 						else if (segSrc is PolyBezierSegment)
 						{
@@ -151,13 +151,13 @@ namespace Microsoft.Maui.Controls.Shapes
 								Point pt2 = matx.Transform(polyBezSeg.Points[bez + 1]);
 								Point pt3 = matx.Transform(polyBezSeg.Points[bez + 2]);
 
-								Points.Clear();
-								FlattenCubicBezier(Points, pt0, pt1, pt2, pt3, tolerance);
+								points.Clear();
+								FlattenCubicBezier(points, pt0, pt1, pt2, pt3, tolerance);
 
-								for (int i = 1; i < Points.Count; i++)
-									segDst.Points.Add(Points[i]);
+								for (int i = 1; i < points.Count; i++)
+									segDst.Points.Add(points[i]);
 
-								ptLast = Points[Points.Count - 1];
+								ptLast = points[points.Count - 1];
 							}
 						}
 						else if (segSrc is QuadraticBezierSegment)
@@ -167,13 +167,13 @@ namespace Microsoft.Maui.Controls.Shapes
 							Point pt1 = matx.Transform(quadBezSeg.Point1);
 							Point pt2 = matx.Transform(quadBezSeg.Point2);
 
-							Points.Clear();
-							FlattenQuadraticBezier(Points, pt0, pt1, pt2, tolerance);
+							points.Clear();
+							FlattenQuadraticBezier(points, pt0, pt1, pt2, tolerance);
 
-							for (int i = 1; i < Points.Count; i++)
-								segDst.Points.Add(Points[i]);
+							for (int i = 1; i < points.Count; i++)
+								segDst.Points.Add(points[i]);
 
-							ptLast = Points[Points.Count - 1];
+							ptLast = points[points.Count - 1];
 						}
 						else if (segSrc is PolyQuadraticBezierSegment)
 						{
@@ -188,23 +188,23 @@ namespace Microsoft.Maui.Controls.Shapes
 								Point pt1 = matx.Transform(polyQuadBezSeg.Points[bez]);
 								Point pt2 = matx.Transform(polyQuadBezSeg.Points[bez + 1]);
 
-								Points.Clear();
-								FlattenQuadraticBezier(Points, pt0, pt1, pt2, tolerance);
+								points.Clear();
+								FlattenQuadraticBezier(points, pt0, pt1, pt2, tolerance);
 
-								for (int i = 1; i < Points.Count; i++)
-									segDst.Points.Add(Points[i]);
+								for (int i = 1; i < points.Count; i++)
+									segDst.Points.Add(points[i]);
 
-								ptLast = Points[Points.Count - 1];
+								ptLast = points[points.Count - 1];
 							}
 						}
 						else if (segSrc is ArcSegment)
 						{
 							ArcSegment arcSeg = segSrc as ArcSegment;
 
-							Points.Clear();
+							points.Clear();
 
 							FlattenArc(
-								Points,
+								points,
 								ptLast,
 								arcSeg.Point,
 								arcSeg.Size.Width,
@@ -215,8 +215,8 @@ namespace Microsoft.Maui.Controls.Shapes
 								tolerance);
 
 							// Set ptLast while transferring points
-							for (int i = 1; i < Points.Count; i++)
-								segDst.Points.Add(ptLast = Points[i]);
+							for (int i = 1; i < points.Count; i++)
+								segDst.Points.Add(ptLast = points[i]);
 						}
 
 						figDst.Segments.Add(segDst);
@@ -285,24 +285,31 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			// Get info about chord that connects both points
 			Point midPoint = new Point((pt1.X + pt2.X) / 2, (pt1.Y + pt2.Y) / 2);
-			Vector2 vect = new Vector2(pt2.X - pt1.X, pt2.Y - pt1.Y);
-			double halfChord = vect.Length / 2;
+			Point vect = new Point(pt2.X - pt1.X, pt2.Y - pt1.Y);
+			double vectLength = Math.Sqrt(vect.X * vect.X + vect.Y * vect.Y);
+			double halfChord = vectLength / 2;
 
 			// Get vector from chord to center
-			Vector2 vectRotated;
-
+			Point vectRotated;
 			if (isLargeArc == isCounterclockwise)
-				vectRotated = new Vector2(-vect.Y, vect.X);
+				vectRotated = new Point(-vect.Y, vect.X);
 			else
-				vectRotated = new Vector2(vect.Y, -vect.X);
+				vectRotated = new Point(vect.Y, -vect.X);
 
-			vectRotated = vectRotated.Normalized;
+			// Normalize vectRotated
+			double vectRotatedLength = Math.Sqrt(vectRotated.X * vectRotated.X + vectRotated.Y * vectRotated.Y);
+			if (vectRotatedLength != 0)
+				vectRotated = new Point(vectRotated.X / vectRotatedLength, vectRotated.Y / vectRotatedLength);
+			else
+				vectRotated = new Point();
 
 			// Distance from chord to center
 			double centerDistance = Math.Sqrt(Math.Abs((radiusY * radiusY) - (halfChord * halfChord)));
 
 			// Calculate center point
-			Point center = midPoint + centerDistance * vectRotated;
+			Point center = new Point(
+				(centerDistance * vectRotated.X) + midPoint.X,
+				(centerDistance * vectRotated.Y) + midPoint.Y);
 
 			// Get angles from center to the two points
 			double angle1 = Math.Atan2(pt1.Y - center.Y, pt1.X - center.X);

@@ -27,9 +27,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, };
 			layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 100, 10)));
 		}
 
 		[Test]
@@ -45,9 +45,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, HeightRequest = 10 };
 			layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(45, 0, 10, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(45, 0, 10, 10)));
 		}
 
 		[Test]
@@ -63,9 +63,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, HeightRequest = 10 };
 			layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 10, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 10, 10)));
 		}
 
 		[Test]
@@ -81,9 +81,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, HeightRequest = 10 };
 			layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(90, 0, 10, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(90, 0, 10, 10)));
 		}
 	}
 }

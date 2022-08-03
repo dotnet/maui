@@ -1,11 +1,13 @@
 ﻿#if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIScrollView;
+using PlatformView = UIKit.UIScrollView;
 #elif MONOANDROID
-using NativeView = Microsoft.Maui.Platform.MauiScrollView;
+using PlatformView = Microsoft.Maui.Platform.MauiScrollView;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.Controls.ScrollViewer;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
+using PlatformView = Microsoft.UI.Xaml.Controls.ScrollViewer;
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.ElmSharp.ScrollView;
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+using PlatformView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -13,6 +15,6 @@ namespace Microsoft.Maui.Handlers
 	public partial interface IScrollViewHandler : IViewHandler
 	{
 		new IScrollView VirtualView { get; }
-		new NativeView NativeView { get; }
+		new PlatformView PlatformView { get; }
 	}
 }

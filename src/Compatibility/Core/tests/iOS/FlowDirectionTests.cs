@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using ObjCRuntime;
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				contentPage.FlowDirection = flowDirection;
 			}
 
-			var nativeAlignment = await Device.InvokeOnMainThreadAsync(() =>
+			var nativeAlignment = await contentPage.Dispatcher.DispatchAsync(() =>
 			{
 				if (!isExplicit)
 				{
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				contentPage.FlowDirection = flowDirection;
 			}
 
-			var nativeAlignment = await Device.InvokeOnMainThreadAsync(() =>
+			var nativeAlignment = await contentPage.Dispatcher.DispatchAsync(() =>
 			{
 				if (!isExplicit)
 				{

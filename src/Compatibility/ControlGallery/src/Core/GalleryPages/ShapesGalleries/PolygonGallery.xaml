@@ -9,7 +9,7 @@
 
             <Style x:Key="EvenOddPolygon" TargetType="Polygon">
                 <Setter Property="Points"
-                        Value="0 48, 0 150, 96 150, 96 0, 200 0, 200 100, 48 96, 48 192, 144 192 144 48" />
+                        Value="10,100 50,0 90,100 0,35 100,35" />
                 <Setter Property="Fill"
                         Value="Blue" />
                 <Setter Property="Stroke"
@@ -20,7 +20,7 @@
 
             <Style x:Key="NonzeroPolygon" TargetType="Polygon">
                 <Setter Property="Points"
-                    Value="0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200 144 48" />
+                    Value="10,100 50,0 90,100 0,35 100,35" />
                 <Setter Property="Fill"
                         Value="Black" />
                 <Setter Property="Stroke"
@@ -58,15 +58,15 @@
                 <Label
                     Text="EvenOdd Polygon"/>
                 <Polygon
-                    HeightRequest="200"
-                    WidthRequest="200"
+                    HeightRequest="100"
+                    WidthRequest="100"
                     Style="{StaticResource EvenOddPolygon}"
                     FillRule="EvenOdd" />
                 <Label
                     Text="NonZero Polygon"/>
                 <Polygon
-                    HeightRequest="200"
-                    WidthRequest="200"
+                    HeightRequest="100"
+                    WidthRequest="100"
                     Style="{StaticResource NonzeroPolygon}"
                     FillRule="Nonzero" />
             </StackLayout>

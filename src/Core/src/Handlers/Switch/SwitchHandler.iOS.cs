@@ -7,58 +7,46 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, UISwitch>
 	{
-		static UIColor? DefaultOnTrackColor;
-		static UIColor? DefaultOffTrackColor;
-		static UIColor? DefaultThumbColor;
-
-		protected override UISwitch CreateNativeView()
+		protected override UISwitch CreatePlatformView()
 		{
 			return new UISwitch(RectangleF.Empty);
 		}
 
-		protected override void ConnectHandler(UISwitch nativeView)
+		protected override void ConnectHandler(UISwitch platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.ValueChanged += OnControlValueChanged;
+			platformView.ValueChanged += OnControlValueChanged;
 		}
 
-		protected override void DisconnectHandler(UISwitch nativeView)
+		protected override void DisconnectHandler(UISwitch platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 
-			nativeView.ValueChanged -= OnControlValueChanged;
+			platformView.ValueChanged -= OnControlValueChanged;
 		}
 
-		void SetupDefaults(UISwitch nativeView)
+		public static void MapIsOn(ISwitchHandler handler, ISwitch view)
 		{
-			DefaultOnTrackColor = UISwitch.Appearance.OnTintColor;
-			DefaultOffTrackColor = nativeView.GetOffTrackColor();
-			DefaultThumbColor = UISwitch.Appearance.ThumbTintColor;
+			handler.PlatformView?.UpdateIsOn(view);
 		}
 
-		public static void MapIsOn(SwitchHandler handler, ISwitch view)
+		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsOn(view);
+			handler.PlatformView?.UpdateTrackColor(view);
 		}
 
-		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
+		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateTrackColor(view, DefaultOnTrackColor, DefaultOffTrackColor);
-		}
-
-		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
-		{
-			handler.NativeView?.UpdateThumbColor(view, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(view);
 		}
 
 		void OnControlValueChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView == null)
+			if (VirtualView is null || PlatformView is null || VirtualView.IsOn == PlatformView.On)
 				return;
 
-			if (NativeView != null)
-				VirtualView.IsOn = NativeView.On;
+			VirtualView.IsOn = PlatformView.On;
 		}
 	}
 }

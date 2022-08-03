@@ -1,8 +1,10 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchBarRenderer : ViewRenderer<SearchBar, Native.SearchBar>
 	{
 
@@ -64,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			base.OnElementChanged(e);
 		}
 
-		protected override Size MinimumSize()
+		protected override Graphics.Size MinimumSize()
 		{
 			return Control.Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 		}
@@ -75,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void CancelButtonColorPropertyHandler(bool initialize)
 		{
-			if (initialize && Element.CancelButtonColor.IsDefault)
+			if (initialize && Element.CancelButtonColor.IsDefault())
 				return;
 
 			Control.SetClearButtonColor(Element.CancelButtonColor.ToNative());
@@ -97,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void FontFamilyPropertyHandler()
 		{
-			Control.FontFamily = Element.FontFamily.ToNativeFontFamily();
+			Control.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
 		}
 
 		/// <summary>
@@ -126,7 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void PlaceholderColorPropertyHandler(bool initialize)
 		{
-			if (initialize && Element.TextColor.IsDefault)
+			if (initialize && Element.TextColor.IsDefault())
 				return;
 
 			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
@@ -145,6 +147,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// Rewrites current underlying Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.SearchBar's Text contents to its Xamarin counterpart.
 		/// </summary>
 		/// <param name="sender">Sender.</param>
+		/// <param name="e">Event arguments.</param>
 		void OnTextChanged(object sender, EventArgs e)
 		{
 			Element.SetValueFromRenderer(SearchBar.TextProperty, Control.Text);
@@ -168,7 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void TextColorPropertyHandler(bool initialize)
 		{
-			if (initialize && Element.TextColor.IsDefault)
+			if (initialize && Element.TextColor.IsDefault())
 				return;
 
 			Control.TextColor = Element.TextColor.ToNative();

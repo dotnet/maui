@@ -11,7 +11,7 @@ using ObjCRuntime;
 using UIKit;
 using NativeGestureRecognizer = UIKit.UIGestureRecognizer;
 using NativeGestureRecognizerState = UIKit.UIGestureRecognizerState;
-using NativeView = UIKit.UIView;
+using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -21,29 +21,27 @@ namespace Microsoft.Maui.Controls.Platform
 
 		readonly Dictionary<IGestureRecognizer, NativeGestureRecognizer> _gestureRecognizers = new Dictionary<IGestureRecognizer, NativeGestureRecognizer>();
 
-		readonly INativeViewHandler _handler;
+		readonly IPlatformViewHandler _handler;
 
 		bool _disposed;
-		NativeView? _nativeView;
+		PlatformView? _platformView;
 		UIAccessibilityTrait _addedFlags;
 		bool? _defaultAccessibilityRespondsToUserInteraction;
 
 		double _previousScale = 1.0;
-#if __MOBILE__
 		UITouchEventArgs? _shouldReceiveTouch;
 		DragAndDropDelegate? _dragAndDropDelegate;
-#endif
 
 		public GestureManager(IViewHandler handler)
 		{
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
 
-			_handler = (INativeViewHandler)handler;
-			_nativeView = _handler.NativeView;
+			_handler = (IPlatformViewHandler)handler;
+			_platformView = _handler.PlatformView;
 
-			if (_nativeView == null)
-				throw new ArgumentNullException(nameof(handler.NativeView));
+			if (_platformView == null)
+				throw new ArgumentNullException(nameof(handler.PlatformView));
 
 			_collectionChangedHandler = GestureRecognizersOnCollectionChanged;
 
@@ -81,11 +79,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (var kvp in _gestureRecognizers)
 			{
-				if (_nativeView != null)
-					_nativeView.RemoveGestureRecognizer(kvp.Value);
-#if __MOBILE__
+				if (_platformView != null)
+					_platformView.RemoveGestureRecognizer(kvp.Value);
 				kvp.Value.ShouldReceiveTouch = null;
-#endif
 				kvp.Value.Dispose();
 			}
 
@@ -93,7 +89,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			Disconnect();
 
-			_nativeView = null;
+			_platformView = null;
 		}
 
 		static IList<GestureElement>? GetChildGestures(
@@ -106,90 +102,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (eventTracker == null || eventTracker._disposed || view == null)
 				return null;
 
-			var originPoint = sender.LocationInView(eventTracker._handler.NativeView);
+			var originPoint = sender.LocationInView(eventTracker._handler.PlatformView);
 			var childGestures = view.GetChildElements(new Point(originPoint.X, originPoint.Y));
 			return childGestures;
 		}
-
-#if !__MOBILE__
-		Action<NSClickGestureRecognizer> CreateRecognizerHandler(WeakReference weakEventTracker, WeakReference weakRecognizer, ClickGestureRecognizer clickRecognizer)
-		{
-			return new Action<NSClickGestureRecognizer>((sender) =>
-			{
-				var eventTracker = weakEventTracker.Target as EventTracker;
-				var view = eventTracker?._handler?.Element as View;
-				var childGestures = GetChildGestures(sender, weakEventTracker, weakRecognizer, eventTracker, view);
-
-				if (childGestures?.GetChildGesturesFor<TapGestureRecognizer>(x => x.NumberOfTapsRequired == (int)sender.NumberOfClicksRequired).Count() > 0)
-					return;
-
-				if (weakRecognizer.Target is ClickGestureRecognizer clickGestureRecognizer && view != null)
-					clickGestureRecognizer.SendClicked(view, clickRecognizer.Buttons);
-			});
-		}
-
-		NSGestureProbe CreateTapRecognizerHandler(WeakReference weakEventTracker, WeakReference weakRecognizer)
-		{
-			return new NSGestureProbe((gesturerecognizer) =>
-			{
-				var tapGestureRecognizer = weakRecognizer.Target as TapGestureRecognizer;
-				var eventTracker = weakEventTracker.Target as EventTracker;
-				var view = eventTracker?._handler?.Element as View;
-
-				var handled = false;
-				if (tapGestureRecognizer != null && view != null)
-				{
-					tapGestureRecognizer.SendTapped(view);
-					handled = true;
-				}
-
-				return handled;
-			});
-		}
-
-		Action<NSClickGestureRecognizer> CreateChildRecognizerHandler(WeakReference weakEventTracker, WeakReference weakRecognizer)
-		{
-			return new Action<NSClickGestureRecognizer>((sender) =>
-			{
-				var eventTracker = weakEventTracker.Target as EventTracker;
-				var view = eventTracker?._handler?.Element as View;
-				var childGestures = GetChildGestures(sender, weakEventTracker, weakRecognizer, eventTracker, view);
-
-				var clickGestureRecognizer = ((ChildGestureRecognizer)weakRecognizer.Target).GestureRecognizer as ClickGestureRecognizer;
-				var recognizers = childGestures?.GetChildGesturesFor<ClickGestureRecognizer>(x => x.NumberOfClicksRequired == (int)sender.NumberOfClicksRequired);
-
-				foreach (var item in recognizers)
-					if (item == clickGestureRecognizer && view != null)
-						clickGestureRecognizer.SendClicked(view, clickGestureRecognizer.Buttons);
-			});
-		}
-
-		NSGestureProbe CreateChildTapRecognizerHandler(WeakReference weakEventTracker, WeakReference weakRecognizer)
-		{
-			return new NSGestureProbe((gesturerecognizer) =>
-			{
-				var eventTracker = weakEventTracker.Target as EventTracker;
-				var view = eventTracker?._handler?.Element as View;
-				var childGestures = GetChildGestures(gesturerecognizer, weakEventTracker, weakRecognizer, eventTracker, view);
-
-				var tapGestureRecognizer = ((ChildGestureRecognizer)weakRecognizer.Target).GestureRecognizer as TapGestureRecognizer;
-				var nativeRecognizer = gesturerecognizer as NSClickGestureRecognizer;
-				var recognizers = childGestures?.GetChildGesturesFor<TapGestureRecognizer>(x => x.NumberOfTapsRequired == (int)nativeRecognizer.NumberOfClicksRequired);
-
-				var handled = false;
-				foreach (var item in recognizers)
-				{
-					if (item == tapGestureRecognizer && view != null)
-					{
-						tapGestureRecognizer.SendTapped(view);
-						handled = true;
-					}
-				}
-
-				return handled;
-			});
-		}
-#else
 
 		Action<UITapGestureRecognizer> CreateRecognizerHandler(WeakReference weakEventTracker, WeakReference weakRecognizer, TapGestureRecognizer clickRecognizer)
 		{
@@ -228,9 +144,8 @@ namespace Microsoft.Maui.Controls.Platform
 						tapGestureRecognizer.SendTapped(view);
 			});
 		}
-#endif
 
-		protected virtual NativeGestureRecognizer? GetNativeRecognizer(IGestureRecognizer recognizer)
+		protected virtual NativeGestureRecognizer? GetPlatformRecognizer(IGestureRecognizer recognizer)
 		{
 			if (recognizer == null)
 				return null;
@@ -240,21 +155,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var tapRecognizer = recognizer as TapGestureRecognizer;
 
-#if !__MOBILE__
-			if (recognizer is ClickGestureRecognizer clickRecognizer)
-			{
-				var returnAction = CreateRecognizerHandler(weakEventTracker, weakRecognizer, clickRecognizer);
-				var uiRecognizer = CreateClickRecognizer((int)clickRecognizer.Buttons, clickRecognizer.NumberOfClicksRequired, returnAction);
-				return uiRecognizer;
-			}
-
-			if (tapRecognizer != null)
-			{
-				var returnAction = CreateTapRecognizerHandler(weakEventTracker, weakRecognizer);
-				var uiRecognizer = CreateTapRecognizer(tapRecognizer.NumberOfTapsRequired, returnAction);
-				return uiRecognizer;
-			}
-#else
 			if (tapRecognizer != null)
 			{
 				var returnAction = CreateRecognizerHandler(weakEventTracker, weakRecognizer, tapRecognizer);
@@ -278,32 +178,15 @@ namespace Microsoft.Maui.Controls.Platform
 				var uiRecognizer = CreateSwipeRecognizer(swipeRecognizer.Direction, returnAction, 1);
 				return uiRecognizer;
 			}
-#endif
 
 			if (recognizer is ChildGestureRecognizer childRecognizer)
 			{
-#if !__MOBILE__
-				if (childRecognizer.GestureRecognizer is ClickGestureRecognizer clickChildRecognizer)
-				{
-					var returnAction = CreateChildRecognizerHandler(weakEventTracker, weakRecognizer);
-					var uiRecognizer = CreateClickRecognizer((int)clickChildRecognizer.Buttons, clickChildRecognizer.NumberOfClicksRequired, returnAction);
-					return uiRecognizer;
-				}
-
-				if (childRecognizer.GestureRecognizer is TapGestureRecognizer tapChildRecognizer)
-				{
-					var returnAction = CreateChildTapRecognizerHandler(weakEventTracker, weakRecognizer);
-					var uiRecognizer = CreateTapRecognizer(tapChildRecognizer.NumberOfTapsRequired, returnAction);
-					return uiRecognizer;
-				}
-#else
 				if (childRecognizer.GestureRecognizer is TapGestureRecognizer tapChildRecognizer)
 				{
 					var returnAction = CreateChildRecognizerHandler(weakEventTracker, weakRecognizer);
 					var uiRecognizer = CreateTapRecognizer(tapChildRecognizer.NumberOfTapsRequired, returnAction);
 					return uiRecognizer;
 				}
-#endif
 			}
 
 			var pinchRecognizer = recognizer as IPinchGestureController;
@@ -319,25 +202,20 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);
-#if __MOBILE__
-						originPoint = window.ConvertPointToView(originPoint, eventTracker._nativeView);
-#else
-						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._handler.NativeView);
-#endif
+						originPoint = window.ConvertPointToView(originPoint, eventTracker._platformView);
+
 						var scaledPoint = new Point(originPoint.X / view.Width, originPoint.Y / view.Height);
 
 						switch (r.State)
 						{
 							case NativeGestureRecognizerState.Began:
-#if __MOBILE__
 								if (r.NumberOfTouches < 2)
 									return;
-#endif
+
 								pinchGestureRecognizer.SendPinchStarted(view, scaledPoint);
 								startingScale = view.Scale;
 								break;
 							case NativeGestureRecognizerState.Changed:
-#if __MOBILE__
 								if (r.NumberOfTouches < 2 && pinchGestureRecognizer.IsPinching)
 								{
 									r.State = NativeGestureRecognizerState.Ended;
@@ -345,9 +223,6 @@ namespace Microsoft.Maui.Controls.Platform
 									return;
 								}
 								var scale = r.Scale;
-#else
-								var scale = r.Magnification;
-#endif
 								var delta = 1.0;
 								var dif = Math.Abs(scale - oldScale) * startingScale;
 								if (oldScale < scale)
@@ -388,14 +263,11 @@ namespace Microsoft.Maui.Controls.Platform
 						switch (r.State)
 						{
 							case NativeGestureRecognizerState.Began:
-#if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 									return;
-#endif
 								panGestureRecognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case NativeGestureRecognizerState.Changed:
-#if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
 									r.State = NativeGestureRecognizerState.Ended;
@@ -403,8 +275,7 @@ namespace Microsoft.Maui.Controls.Platform
 									PanGestureRecognizer.CurrentId.Increment();
 									return;
 								}
-#endif
-								var translationInView = r.TranslationInView(_nativeView);
+								var translationInView = r.TranslationInView(_platformView);
 								panGestureRecognizer.SendPan(view, translationInView.X, translationInView.Y, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case NativeGestureRecognizerState.Cancelled:
@@ -413,16 +284,11 @@ namespace Microsoft.Maui.Controls.Platform
 								PanGestureRecognizer.CurrentId.Increment();
 								break;
 							case NativeGestureRecognizerState.Ended:
-#if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
 									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
 									PanGestureRecognizer.CurrentId.Increment();
 								}
-#else
-								panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
-								PanGestureRecognizer.CurrentId.Increment();
-#endif
 								break;
 						}
 					}
@@ -433,7 +299,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return null;
 		}
 
-#if __MOBILE__
 		UIPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<UIPanGestureRecognizer> action)
 		{
 			var result = new UIPanGestureRecognizer(action);
@@ -471,39 +336,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return result;
 		}
-#else
-		NativeGestureRecognizer CreateClickRecognizer(int buttonMask, int numberOfClicksRequired, Action<NSClickGestureRecognizer> returnAction)
-		{
-			var result = new NSClickGestureRecognizer(returnAction);
-			result.ButtonMask = (nuint)buttonMask;
-			result.NumberOfClicksRequired = numberOfClicksRequired;
-			return result;
-		}
-
-		NSPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<NSPanGestureRecognizer> action)
-		{
-			var result = new NSPanGestureRecognizer(action);
-			return result;
-		}
-
-		NSMagnificationGestureRecognizer CreatePinchRecognizer(Action<NSMagnificationGestureRecognizer> action)
-		{
-			var result = new NSMagnificationGestureRecognizer(action);
-			return result;
-		}
-
-		NSClickGestureRecognizer CreateTapRecognizer(int numTaps, NSGestureProbe action)
-		{
-			var result = new NSClickGestureRecognizer();
-
-			result.NumberOfClicksRequired = numTaps;
-			result.ShouldBegin = action;
-			result.ShouldRecognizeSimultaneously = ShouldRecognizeTapsTogether;
-
-			return result;
-		}
-
-#endif
 
 		static bool ShouldRecognizeTapsTogether(NativeGestureRecognizer gesture, NativeGestureRecognizer other)
 		{
@@ -511,21 +343,13 @@ namespace Microsoft.Maui.Controls.Platform
 			// added to the XF Element), we want to allow them to fire simultaneously if they have the same number
 			// of taps and touches
 
-#if __MOBILE__
 			var tap = gesture as UITapGestureRecognizer;
-#else
-			var tap = gesture as NSClickGestureRecognizer;
-#endif
 			if (tap == null)
 			{
 				return false;
 			}
 
-#if __MOBILE__
 			var otherTap = other as UITapGestureRecognizer;
-#else
-			var otherTap = other as NSClickGestureRecognizer;
-#endif
 			if (otherTap == null)
 			{
 				return false;
@@ -536,11 +360,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return false;
 			}
 
-#if __MOBILE__
 			if (tap.NumberOfTapsRequired != otherTap.NumberOfTapsRequired)
-#else
-			if (tap.NumberOfClicksRequired != otherTap.NumberOfClicksRequired)
-#endif
 			{
 				return false;
 			}
@@ -553,80 +373,50 @@ namespace Microsoft.Maui.Controls.Platform
 			return true;
 		}
 
-		// This logic should all be replaced once we implement the "InputTransparent" property
-		// https://github.com/dotnet/maui/issues/1190		
-		bool? _previousUserInteractionEnabled;
-		void CalculateUserInteractionEnabled()
-		{
-			if (ElementGestureRecognizers == null || _nativeView == null || _handler?.VirtualView == null)
-				return;
-
-			bool hasGestureRecognizers = ElementGestureRecognizers.Count > 0;
-
-			// If no gestures have ever been added then don't do anything
-			if (!hasGestureRecognizers && _previousUserInteractionEnabled == null)
-				return;
-
-			_previousUserInteractionEnabled ??= _nativeView.UserInteractionEnabled;
-
-			if (hasGestureRecognizers)
-			{
-				_nativeView.UserInteractionEnabled = true;
-			}
-			else
-			{
-				_nativeView.UserInteractionEnabled = _previousUserInteractionEnabled.Value;
-
-				// These are the known places where UserInteractionEnabled is modified inside Maui.Core
-				// Once we implement "InputTransparent" all of this should just get managed the "InputTransparent" mapper property
-				if (_handler.VirtualView is ITextInput)
-					_handler.UpdateValue(nameof(ITextInput.IsReadOnly));
-
-				_handler.UpdateValue(nameof(IView.IsEnabled));
-				_previousUserInteractionEnabled = null;
-			}
-		}
-
 		void LoadRecognizers()
 		{
 			if (ElementGestureRecognizers == null)
 				return;
 
-#if __MOBILE__
 			if (_shouldReceiveTouch == null)
 			{
 				// Cache this so we don't create a new UITouchEventArgs instance for every recognizer
 				_shouldReceiveTouch = ShouldReceiveTouch;
 			}
 
-			CalculateUserInteractionEnabled();
 			UIDragInteraction? uIDragInteraction = null;
 			UIDropInteraction? uIDropInteraction = null;
 
-			if (_dragAndDropDelegate != null && _nativeView != null)
+			if (_dragAndDropDelegate != null && _platformView != null)
 			{
-				foreach (var interaction in _nativeView.Interactions)
+				if (OperatingSystem.IsIOSVersionAtLeast(11))
 				{
-					if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
-						uIDragInteraction = uIDrag;
+					foreach (var interaction in _platformView.Interactions)
+					{
+						if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
+							uIDragInteraction = uIDrag;
 
-					if (interaction is UIDropInteraction uiDrop && uiDrop.Delegate == _dragAndDropDelegate)
-						uIDropInteraction = uiDrop;
+						if (interaction is UIDropInteraction uiDrop && uiDrop.Delegate == _dragAndDropDelegate)
+							uIDropInteraction = uiDrop;
+					}
 				}
 			}
 
 			bool dragFound = false;
 			bool dropFound = false;
-#endif
-			if (_nativeView != null &&
+
+			if (_platformView != null &&
 				_handler.VirtualView is View v &&
 				v.TapGestureRecognizerNeedsDelegate() &&
-				(_nativeView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
+				(_platformView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
 			{
-				_nativeView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+				_platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 				_addedFlags |= UIAccessibilityTrait.Button;
-				_defaultAccessibilityRespondsToUserInteraction = _nativeView.AccessibilityRespondsToUserInteraction;
-				_nativeView.AccessibilityRespondsToUserInteraction = true;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+				{
+					_defaultAccessibilityRespondsToUserInteraction = _platformView.AccessibilityRespondsToUserInteraction;
+					_platformView.AccessibilityRespondsToUserInteraction = true;
+				}
 			}
 
 			for (int i = 0; i < ElementGestureRecognizers.Count; i++)
@@ -636,51 +426,47 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_gestureRecognizers.ContainsKey(recognizer))
 					continue;
 
-				var nativeRecognizer = GetNativeRecognizer(recognizer);
+				var nativeRecognizer = GetPlatformRecognizer(recognizer);
 
-				if (nativeRecognizer != null && _nativeView != null)
+				if (nativeRecognizer != null && _platformView != null)
 				{
-#if __MOBILE__
 					nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
-#endif
-					_nativeView.AddGestureRecognizer(nativeRecognizer);
+					_platformView.AddGestureRecognizer(nativeRecognizer);
 
 					_gestureRecognizers[recognizer] = nativeRecognizer;
 				}
 
-#if __MOBILE__
-				if (NativeVersion.IsAtLeast(11) && recognizer is DragGestureRecognizer)
+				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DragGestureRecognizer)
 				{
 					dragFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDragInteraction == null && _handler.NativeView != null)
+					if (uIDragInteraction == null && _handler.PlatformView != null)
 					{
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
 						interaction.Enabled = true;
-						_handler.NativeView.AddInteraction(interaction);
+						_handler.PlatformView.AddInteraction(interaction);
 					}
 				}
 
-				if (NativeVersion.IsAtLeast(11) && recognizer is DropGestureRecognizer)
+				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DropGestureRecognizer)
 				{
 					dropFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDropInteraction == null && _handler.NativeView != null)
+					if (uIDropInteraction == null && _handler.PlatformView != null)
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);
-						_handler.NativeView.AddInteraction(interaction);
+						_handler.PlatformView.AddInteraction(interaction);
 					}
 				}
-#endif
 			}
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				if (!dragFound && uIDragInteraction != null && _handler.PlatformView != null)
+					_handler.PlatformView.RemoveInteraction(uIDragInteraction);
 
-#if __MOBILE__
-			if (!dragFound && uIDragInteraction != null && _handler.NativeView != null)
-				_handler.NativeView.RemoveInteraction(uIDragInteraction);
-
-			if (!dropFound && uIDropInteraction != null && _handler.NativeView != null)
-				_handler.NativeView.RemoveInteraction(uIDropInteraction);
-#endif
+				if (!dropFound && uIDropInteraction != null && _handler.PlatformView != null)
+					_handler.PlatformView.RemoveInteraction(uIDropInteraction);
+			}
 
 			var toRemove = new List<IGestureRecognizer>();
 
@@ -696,17 +482,29 @@ namespace Microsoft.Maui.Controls.Platform
 				var uiRecognizer = _gestureRecognizers[gestureRecognizer];
 				_gestureRecognizers.Remove(gestureRecognizer);
 
-				if (_nativeView != null)
-					_nativeView.RemoveGestureRecognizer(uiRecognizer);
+				if (_platformView != null)
+					_platformView.RemoveGestureRecognizer(uiRecognizer);
 
 				uiRecognizer.Dispose();
 			}
 		}
 
-#if __MOBILE__
 		bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
-			if (touch.View == _handler.NativeView)
+			var platformView = _handler?.PlatformView;
+			var virtualView = _handler?.VirtualView;
+
+			if (virtualView == null || platformView == null)
+			{
+				return false;
+			}
+
+			if (virtualView.InputTransparent)
+			{
+				return false;
+			}
+
+			if (touch.View == platformView)
 			{
 				return true;
 			}
@@ -714,29 +512,27 @@ namespace Microsoft.Maui.Controls.Platform
 			// If the touch is coming from the UIView our handler is wrapping (e.g., if it's  
 			// wrapping a UIView which already has a gesture recognizer), then we should let it through
 			// (This goes for children of that control as well)
-			if (_handler?.NativeView == null)
-			{
-				return false;
-			}
 
-			if (touch.View.IsDescendantOfView(_handler.NativeView) &&
-				(touch.View.GestureRecognizers?.Length > 0 || _handler.NativeView.GestureRecognizers?.Length > 0))
+			if (touch.View.IsDescendantOfView(platformView) &&
+				(touch.View.GestureRecognizers?.Length > 0 || platformView.GestureRecognizers?.Length > 0))
 			{
 				return true;
 			}
 
 			return false;
 		}
-#endif
 
 		void GestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
-			if (_nativeView != null)
+			if (_platformView != null)
 			{
-				_nativeView.AccessibilityTraits &= ~_addedFlags;
+				_platformView.AccessibilityTraits &= ~_addedFlags;
 
-				if (_defaultAccessibilityRespondsToUserInteraction != null)
-					_nativeView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+				{
+					if (_defaultAccessibilityRespondsToUserInteraction != null)
+						_platformView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;
+				}
 			}
 
 			_addedFlags = UIAccessibilityTrait.None;

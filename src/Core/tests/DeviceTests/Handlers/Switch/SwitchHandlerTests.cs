@@ -21,9 +21,29 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(switchStub, () => switchStub.IsOn, GetNativeIsOn, switchStub.IsOn);
 		}
 
-		[Theory(DisplayName = "Track Color Initializes Correctly", Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/1275")]
+		[Fact(DisplayName = "Is Toggled Does Not Set Same Value")]
+		public async Task IsToggledDoesNotSetSameValue()
+		{
+			var fireCount = 0;
+
+			var switchStub = new SwitchStub()
+			{
+				IsOn = true,
+				IsOnDelegate = () => fireCount++
+			};
+
+			await InvokeOnMainThreadAsync(() => CreateHandler(switchStub));
+
+			Assert.Equal(0, fireCount);
+		}
+
+		[Theory(DisplayName = "Track Color Initializes Correctly"
+#if WINDOWS
+			, Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/9113"
+#endif
+			)]
 		[InlineData(true)]
-		[InlineData(false)]
+		//[InlineData(false)] // Track color is not always visible when off
 		public async Task TrackColorInitializesCorrectly(bool isToggled)
 		{
 			var switchStub = new SwitchStub()
@@ -35,7 +55,11 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateTrackColor(switchStub, Colors.Red);
 		}
 
-		[Fact(DisplayName = "Track Color Updates Correctly")]
+		[Fact(DisplayName = "Track Color Updates Correctly"
+#if WINDOWS
+			, Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/9113"
+#endif
+			)]
 		public async Task TrackColorUpdatesCorrectly()
 		{
 			var switchStub = new SwitchStub()
@@ -71,7 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(switchStub);
 		}
 
-		[Fact(DisplayName = "Track Color Updates Correctly")]
+		[Fact(DisplayName = "Thumb Color Updates Correctly")]
 		public async Task ThumbColorUpdatesCorrectly()
 		{
 			var switchStub = new SwitchStub()
@@ -84,7 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact(DisplayName = "Updating Native Is On property updates Virtual View"
 #if __IOS__
-			  ,Skip = "iOS doesn't throw ValueChanged events when changing property via code."
+			  , Skip = "iOS doesn't throw ValueChanged events when changing property via code."
 #endif
 			)]
 		public async Task NativeIsOnPropagatesToVirtual()

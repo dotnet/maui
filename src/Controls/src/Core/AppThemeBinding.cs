@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -6,8 +7,6 @@ namespace Microsoft.Maui.Controls
 	{
 		WeakReference<BindableObject> _weakTarget;
 		BindableProperty _targetProperty;
-
-		public AppThemeBinding() => Application.Current.RequestedThemeChanged += (o, e) => Device.BeginInvokeOnMainThread(() => ApplyCore());
 
 		internal override BindingBase Clone() => new AppThemeBinding
 		{
@@ -22,6 +21,8 @@ namespace Microsoft.Maui.Controls
 		{
 			base.Apply(fromTarget);
 			ApplyCore();
+
+			AttachEvents();
 		}
 
 		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
@@ -30,21 +31,36 @@ namespace Microsoft.Maui.Controls
 			_targetProperty = targetProperty;
 			base.Apply(context, bindObj, targetProperty, fromBindingContextChanged);
 			ApplyCore();
+
+			AttachEvents();
 		}
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
+			DetachEvents();
+
 			base.Unapply(fromBindingContextChanged);
 			_weakTarget = null;
 			_targetProperty = null;
 		}
 
-		void ApplyCore()
+		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+			=> ApplyCore(true);
+
+		void ApplyCore(bool dispatch = false)
 		{
 			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var target))
+			{
+				DetachEvents();
 				return;
+			}
 
-			target?.SetValueCore(_targetProperty, GetValue());
+			if (dispatch)
+				target.Dispatcher.DispatchIfRequired(Set);
+			else
+				Set();
+
+			void Set() => target.SetValueCore(_targetProperty, GetValue());
 		}
 
 		object _light;
@@ -74,16 +90,51 @@ namespace Microsoft.Maui.Controls
 
 		public object Default { get; set; }
 
+		// Ideally this will get reworked to not use `Application.Current` at all
+		// https://github.com/dotnet/maui/issues/8713
+		// But I'm going with a simple nudge for now so that we can get our 
+		// device tests back to a working state and address issues
+		// of the more crashing variety
 		object GetValue()
 		{
-			switch (Application.Current.RequestedTheme)
+			Application app;
+
+			if (_weakTarget?.TryGetTarget(out var target) == true &&
+				target is VisualElement ve &&
+				ve?.Window?.Parent is Application a)
 			{
-				default:
-				case OSAppTheme.Light:
-					return _isLightSet ? Light : Default;
-				case OSAppTheme.Dark:
-					return _isDarkSet ? Dark : Default;
+				app = a;
 			}
+			else
+			{
+				app = Application.Current;
+			}
+
+			AppTheme appTheme;
+			if (app == null)
+				appTheme = AppInfo.RequestedTheme;
+			else
+				appTheme = app.RequestedTheme;
+
+			return appTheme switch
+			{
+				AppTheme.Dark => _isDarkSet ? Dark : Default,
+				_ => _isLightSet ? Light : Default,
+			};
+		}
+
+		void AttachEvents()
+		{
+			DetachEvents();
+
+			if (Application.Current != null)
+				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		void DetachEvents()
+		{
+			if (Application.Current != null)
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
 		}
 	}
 }

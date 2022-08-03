@@ -2,36 +2,50 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 using MobileCoreServices;
-using ObjCRuntime;
 using Photos;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
-	public static partial class MediaPicker
+	partial class MediaPickerImplementation : IMediaPicker
 	{
 		static UIImagePickerController picker;
 
-		static bool PlatformIsCaptureSupported
+		public bool IsCaptureSupported
 			=> UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
 
-		static Task<FileResult> PlatformPickPhotoAsync(MediaPickerOptions options)
+		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, true, true);
 
-		static Task<FileResult> PlatformCapturePhotoAsync(MediaPickerOptions options)
-			=> PhotoAsync(options, true, false);
+		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
+		{
+			if (!IsCaptureSupported)
+				throw new FeatureNotSupportedException();
 
-		static Task<FileResult> PlatformPickVideoAsync(MediaPickerOptions options)
+			return PhotoAsync(options, true, false);
+		}
+
+		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PhotoAsync(options, false, true);
 
-		static Task<FileResult> PlatformCaptureVideoAsync(MediaPickerOptions options)
-			=> PhotoAsync(options, false, false);
-
-		static async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
+		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
 		{
+			if (!IsCaptureSupported)
+				throw new FeatureNotSupportedException();
+
+			return PhotoAsync(options, false, false);
+		}
+
+		public async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
+		{
+#pragma warning disable CA1416 // TODO: UIImagePickerControllerSourceType.PhotoLibrary, UTType.Image, UTType.Movie is supported on ios version 14 and above
 			var sourceType = pickExisting ? UIImagePickerControllerSourceType.PhotoLibrary : UIImagePickerControllerSourceType.Camera;
 			var mediaType = photo ? UTType.Image : UTType.Movie;
+#pragma warning restore CA1416
 
 			if (!UIImagePickerController.IsSourceTypeAvailable(sourceType))
 				throw new FeatureNotSupportedException();
@@ -42,13 +56,15 @@ namespace Microsoft.Maui.Essentials
 				await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
 
 			// Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
-			if (pickExisting && !Platform.HasOSVersion(11, 0))
+			if (pickExisting && !OperatingSystem.IsIOSVersionAtLeast(11, 0))
+#pragma warning disable CA1416 // TODO: Permissions.Photos is supported on ios version 14 and above
 				await Permissions.EnsureGrantedAsync<Permissions.Photos>();
+#pragma warning restore CA1416
 
 			if (!pickExisting)
 				await Permissions.EnsureGrantedAsync<Permissions.Camera>();
 
-			var vc = Platform.GetCurrentViewController(true);
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			picker = new UIImagePickerController();
 			picker.SourceType = sourceType;
@@ -60,7 +76,7 @@ namespace Microsoft.Maui.Essentials
 			if (!string.IsNullOrWhiteSpace(options?.Title))
 				picker.Title = options.Title;
 
-			if (DeviceInfo.Idiom == DeviceIdiom.Tablet && picker.PopoverPresentationController != null && vc.View != null)
+			if (DeviceInfo.Current.Idiom == DeviceIdiom.Tablet && picker.PopoverPresentationController != null && vc.View != null)
 				picker.PopoverPresentationController.SourceRect = vc.View.Bounds;
 
 			var tcs = new TaskCompletionSource<FileResult>(picker);
@@ -76,7 +92,7 @@ namespace Microsoft.Maui.Essentials
 			if (picker.PresentationController != null)
 			{
 				picker.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => GetFileResult(null, tcs));
+					new UIPresentationControllerDelegate(() => GetFileResult(null, tcs));
 			}
 
 			await vc.PresentViewControllerAsync(picker, true);
@@ -109,7 +125,7 @@ namespace Microsoft.Maui.Essentials
 			PHAsset phAsset = null;
 			NSUrl assetUrl = null;
 
-			if (Platform.HasOSVersion(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
 			{
 				assetUrl = info[UIImagePickerController.ImageUrl] as NSUrl;
 
@@ -119,14 +135,16 @@ namespace Microsoft.Maui.Essentials
 
 				if (assetUrl != null)
 				{
-					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.InvariantCultureIgnoreCase))
+					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.OrdinalIgnoreCase))
 						return new UIDocumentFileResult(assetUrl);
-
+#pragma warning disable CA1416 // TODO: 'UIImagePickerController.PHAsset' is only supported on: 'ios' from version 11.0 to 14.0
 					phAsset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;
+#pragma warning restore CA1416
 				}
 			}
 
 #if !MACCATALYST
+#pragma warning disable CA1416 // TODO: 'UIImagePickerController.ReferenceUrl' is unsupported on 'ios' 11.0 and later
 			if (phAsset == null)
 			{
 				assetUrl = info[UIImagePickerController.ReferenceUrl] as NSUrl;
@@ -134,6 +152,7 @@ namespace Microsoft.Maui.Essentials
 				if (assetUrl != null)
 					phAsset = PHAsset.FetchAssets(new NSUrl[] { assetUrl }, null)?.LastObject as PHAsset;
 			}
+#pragma warning restore CA1416 // 'PHAsset.FetchAssets(NSUrl[], PHFetchOptions?)' is unsupported on 'ios' 11.0 and later
 #endif
 
 			if (phAsset == null || assetUrl == null)
@@ -146,14 +165,9 @@ namespace Microsoft.Maui.Essentials
 
 			if (phAsset == null || assetUrl == null)
 				return null;
-
-			string originalFilename;
-
-			if (Platform.HasOSVersion(9, 0))
-				originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
-			else
-				originalFilename = phAsset.ValueForKey(new NSString("filename")) as NSString;
-
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
+			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
+#pragma warning restore CA1416
 			return new PHAssetFileResult(assetUrl, phAsset, originalFilename);
 		}
 

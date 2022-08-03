@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	public static class TextAlignmentExtensions
@@ -16,9 +18,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					return Native.TextAlignment.End;
 
 				default:
-					Log.Warn("Warning: unrecognized HorizontalTextAlignment value {0}. " +
+					Application.Current?.FindMauiContext()?.CreateLogger<TextAlignment>()?.LogWarning("Warning: unrecognized HorizontalTextAlignment value {0}. " +
 						"Expected: {Start|Center|End}.", alignment);
-					Log.Debug("Falling back to platform's default settings.");
+					Application.Current?.FindMauiContext()?.CreateLogger<TextAlignment>()?.LogDebug("Falling back to platform's default settings.");
 					return Native.TextAlignment.Auto;
 			}
 		}

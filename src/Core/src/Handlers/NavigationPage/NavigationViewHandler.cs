@@ -1,28 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Handlers;
+﻿#if __IOS__ || MACCATALYST
+using PlatformView = UIKit.UIView;
+#elif MONOANDROID
+using PlatformView = Android.Views.View;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.Controls.Frame;
+#elif TIZEN
+using PlatformView = ElmSharp.Naviframe;
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+using PlatformView = System.Object;
+#endif
 
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class NavigationViewHandler
+	public partial class NavigationViewHandler : INavigationViewHandler
 	{
-		public static PropertyMapper<IStackNavigationView, NavigationViewHandler> NavigationViewMapper
-			   = new PropertyMapper<IStackNavigationView, NavigationViewHandler>(ViewHandler.ViewMapper);
+		public static IPropertyMapper<IStackNavigationView, INavigationViewHandler> Mapper = new PropertyMapper<IStackNavigationView, INavigationViewHandler>(ViewMapper)
+		{
+		};
 
-		public static CommandMapper<IStackNavigationView, NavigationViewHandler> NavigationViewCommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IStackNavigationView, INavigationViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
 			[nameof(IStackNavigation.RequestNavigation)] = RequestNavigation
 		};
 
-		public NavigationViewHandler() : base(NavigationViewMapper, NavigationViewCommandMapper)
+		public NavigationViewHandler() : base(Mapper, CommandMapper)
 		{
 		}
 
-		public NavigationViewHandler(PropertyMapper? mapper = null) : base(mapper ?? NavigationViewMapper, NavigationViewCommandMapper)
+		public NavigationViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper, CommandMapper)
 		{
-
 		}
+
+		IStackNavigationView INavigationViewHandler.VirtualView => VirtualView;
+
+		PlatformView INavigationViewHandler.PlatformView => PlatformView;
 	}
 }

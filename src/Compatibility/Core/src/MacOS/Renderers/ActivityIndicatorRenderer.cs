@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var newColor = Element.Color.ToNSColor();
 			if (Equals(s_currentColor, newColor))
 			{
-				if(Control.ContentFilters?.FirstOrDefault() != s_currentColorFilter)
+				if (Control.ContentFilters?.FirstOrDefault() != s_currentColorFilter)
 				{
 					Control.ContentFilters = new CIFilter[] { s_currentColorFilter };
 				}

@@ -20,16 +20,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			[SetUp] public void Setup() => Device.PlatformServices = new MockPlatformServices();
-
-			[TearDown] public void TearDown() => Device.PlatformServices = null;
-
 			[Test]
 			public void RectBoundsDoesntThrow([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new Gh11551(useCompiledXaml);
 				var bounds = AbsoluteLayout.GetLayoutBounds(layout.label);
-				Assert.That(bounds, Is.EqualTo(new Rectangle(1, .5, -1, 22)));
+				Assert.That(bounds, Is.EqualTo(new Rect(1, .5, -1, 22)));
 			}
 		}
 	}

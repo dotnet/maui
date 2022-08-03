@@ -21,12 +21,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
 			[TestCase(false)]
 			public void ThrowMeaningfulExceptionOnDuplicateXName(bool useCompiledXaml)
 			{

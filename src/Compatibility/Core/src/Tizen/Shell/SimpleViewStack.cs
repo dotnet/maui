@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				UpdateTopView();
 				// if Pop was called by removed page,
 				// Unrealize cause deletation of NativeCallback, it could be a cause of crash
-				Device.BeginInvokeOnMainThread(() =>
+				Application.Current.Dispatcher.Dispatch(() =>
 				{
 					tobeRemoved.Unrealize();
 				});
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			InternalStack.Remove(view);
 			UnPack(view);
 			UpdateTopView();
-			Device.BeginInvokeOnMainThread(() =>
+			Application.Current.Dispatcher.Dispatch(() =>
 			{
 				view?.Unrealize();
 			});

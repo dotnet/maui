@@ -18,9 +18,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					life.AddAndroid(android =>
 					{
 						android.OnCreate((activity, bundle) =>
-							Platform.Init(activity, bundle));
+							ApplicationModel.Platform.Init(activity, bundle));
 						android.OnRequestPermissionsResult((activity, requestCode, permissions, grantResults) =>
-							Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults));
+							ApplicationModel.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults));
 					});
 #endif
 				})

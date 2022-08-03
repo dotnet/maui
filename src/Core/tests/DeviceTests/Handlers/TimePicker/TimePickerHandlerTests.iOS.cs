@@ -28,16 +28,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = timePicker.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
 		MauiTimePicker GetNativeTimePicker(TimePickerHandler timePickerHandler) =>
-			(MauiTimePicker)timePickerHandler.NativeView;
+			(MauiTimePicker)timePickerHandler.PlatformView;
 
 		Color GetNativeTextColor(TimePickerHandler timePickerHandler) =>
 			GetNativeTimePicker(timePickerHandler).TextColor.ToColor();

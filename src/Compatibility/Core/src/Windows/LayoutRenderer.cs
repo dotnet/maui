@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LayoutRenderer : ViewRenderer<Layout, FrameworkElement>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Layout> e)

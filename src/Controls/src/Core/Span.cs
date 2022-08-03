@@ -159,13 +159,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
-			this.GetDefaultFontSize();
+			double.NaN;
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
-		{
-		}
-
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
 		{
 		}
 

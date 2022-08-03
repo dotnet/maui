@@ -8,6 +8,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	internal class PageContainer : ViewGroup
 	{
 		bool _disposed;

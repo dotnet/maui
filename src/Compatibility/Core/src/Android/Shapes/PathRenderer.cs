@@ -7,6 +7,7 @@ using Path = Microsoft.Maui.Controls.Shapes.Path;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PathRenderer : ShapeRenderer<Path, PathView>
 	{
 		public PathRenderer(Context context) : base(context)

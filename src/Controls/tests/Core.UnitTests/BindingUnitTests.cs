@@ -17,21 +17,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class BindingUnitTests
 		: BindingBaseUnitTests
 	{
-
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
 		protected override BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null)
 		{
 			return new Binding("Text", mode, stringFormat: stringFormat);
@@ -1879,21 +1864,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 #if !WINDOWS_PHONE
-		[TestCase("en-US"), TestCase("pt-PT")]
-		public void ConvertIsCultureInvariant(string culture)
+		[TestCase("en-US", "0.5", 0.5, 0.9, "0.9")]
+		[TestCase("pt-PT", "0,5", 0.5, 0.9, "0,9")]
+		public void ConvertIsCultureAware(string culture, string sliderSetStringValue, double sliderExpectedDoubleValue, double sliderSetDoubleValue, string sliderExpectedStringValue)
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
 
 			var slider = new Slider();
-			var vm = new MockViewModel { Text = "0.5" };
+			var vm = new MockViewModel { Text = sliderSetStringValue };
 			slider.BindingContext = vm;
 			slider.SetBinding(Slider.ValueProperty, "Text", BindingMode.TwoWay);
 
-			Assert.That(slider.Value, Is.EqualTo(0.5));
+			Assert.That(slider.Value, Is.EqualTo(sliderExpectedDoubleValue));
 
-			slider.Value = 0.9;
+			slider.Value = sliderSetDoubleValue;
 
-			Assert.That(vm.Text, Is.EqualTo("0.9"));
+			Assert.That(vm.Text, Is.EqualTo(sliderExpectedStringValue));
 		}
 #endif
 
@@ -2224,7 +2210,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3467
+		//https://github.com/xamarin/Xamarin.Forms/issues/3467
 		public void TargetNullValueIgnoredWhenBindingIsResolved()
 		{
 			var bindable = new MockBindable();
@@ -2247,7 +2233,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3994
+		//https://github.com/xamarin/Xamarin.Forms/issues/3994
 		public void INPCOnBindingWithSource()
 		{
 			var page = new ContentPage { Title = "Foo" };
@@ -2263,7 +2249,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/10405
+		//https://github.com/xamarin/Xamarin.Forms/issues/10405
 		public void TypeConversionExceptionIsCaughtAndLogged()
 		{
 			var label = new Label();
@@ -2271,6 +2257,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.DoesNotThrow(() => label.BindingContext = new { color = "" });
 			Assert.That(MockApplication.MockLogger.Messages.Count, Is.EqualTo(1), "No error logged");
+		}
+
+		[Test]
+		//https://github.com/dotnet/maui/issues/7977
+		public void NullRefWithDefaultCtor()
+		{
+			var label = new Label();
+			label.SetBinding(Label.TextColorProperty, new Binding());
 		}
 	}
 }

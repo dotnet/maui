@@ -1,12 +1,14 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Security.ExchangeActiveSyncProvisioning;
 using Windows.System.Profile;
 using Windows.UI.ViewManagement;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class DeviceInfoImplementation : IDeviceInfo
+	class DeviceInfoImplementation : IDeviceInfo
 	{
 		readonly EasClientDeviceInformation deviceInfo;
 		DeviceIdiom currentIdiom;
@@ -54,7 +56,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public Version Version => Utils.ParseVersion(VersionString);
 
-		public DevicePlatform Platform => DevicePlatform.UWP;
+		public DevicePlatform Platform => DevicePlatform.WinUI;
 
 		public DeviceIdiom Idiom
 		{
@@ -67,19 +69,9 @@ namespace Microsoft.Maui.Essentials.Implementations
 						break;
 					case "Windows.Universal":
 					case "Windows.Desktop":
-						{
-							try
-							{
-								var currentHandle = Essentials.Platform.CurrentWindowHandle;
-								var settings = UIViewSettingsInterop.GetForWindow(currentHandle);
-								var uiMode = settings.UserInteractionMode;
-								currentIdiom = uiMode == UserInteractionMode.Mouse ? DeviceIdiom.Desktop : DeviceIdiom.Tablet;
-							}
-							catch (Exception ex)
-							{
-								Debug.WriteLine($"Unable to get device . {ex.Message}");
-							}
-						}
+						currentIdiom = GetIsInTabletMode()
+							? DeviceIdiom.Tablet
+							: DeviceIdiom.Desktop;
 						break;
 					case "Windows.Xbox":
 					case "Windows.Team":
@@ -107,7 +99,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 					if (string.IsNullOrWhiteSpace(systemProductName))
 						systemProductName = deviceInfo.SystemProductName;
 
-					var isVirtual = systemProductName.Contains("Virtual") || systemProductName == "HMV domU";
+					var isVirtual = systemProductName.Contains("Virtual", StringComparison.Ordinal) || systemProductName == "HMV domU";
 
 					currentType = isVirtual ? DeviceType.Virtual : DeviceType.Physical;
 				}
@@ -117,6 +109,19 @@ namespace Microsoft.Maui.Essentials.Implementations
 				}
 				return currentType;
 			}
+		}
+
+		static readonly int SM_CONVERTIBLESLATEMODE = 0x2003;
+		static readonly int SM_TABLETPC = 0x56;
+
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		static extern int GetSystemMetrics(int nIndex);
+
+		static bool GetIsInTabletMode()
+		{
+			var supportsTablet = GetSystemMetrics(SM_TABLETPC) != 0;
+			var inTabletMode = GetSystemMetrics(SM_CONVERTIBLESLATEMODE) != 0;
+			return inTabletMode && supportsTablet;
 		}
 	}
 }

@@ -57,13 +57,13 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public event EventHandler<EventArg<object>> ItemSelected;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowLongPressed'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowLongPressed'][2]/Docs" />
 		public void RowLongPressed(int section, int row)
 		{
 			RowLongPressed(GetItem(section, row));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowLongPressed'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowLongPressed'][1]/Docs" />
 		public void RowLongPressed(object item)
 		{
 			if (ItemLongPressed != null)
@@ -72,13 +72,13 @@ namespace Microsoft.Maui.Controls.Internals
 			OnRowLongPressed(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowSelected'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowSelected'][2]/Docs" />
 		public void RowSelected(int section, int row)
 		{
 			RowSelected(GetItem(section, row));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowSelected'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowSelected'][1]/Docs" />
 		public void RowSelected(object item)
 		{
 			if (ItemSelected != null)

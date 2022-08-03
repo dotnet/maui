@@ -1,9 +1,0 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Target Name="ValidateTargetFrameworkVersionForMaterial" BeforeTargets="CoreCompile" Condition="'$(XFDisableTargetFrameworkValidation)' != 'True'">
-        <PropertyGroup>
-            <MinTargetFrameworkVersionForMaterial>9.0</MinTargetFrameworkVersionForMaterial>
-            <TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</TargetFrameworkVersionWithoutV>
-        </PropertyGroup> 
-        <Error Code="XFVM001"  Condition="$(TargetFrameworkVersionWithoutV) &lt; $(MinTargetFrameworkVersionForMaterial)"  Text="Target Framework Version is currently $(TargetFrameworkVersion) and must be greater than or equal to v$(MinTargetFrameworkVersionForMaterial) in order to use Material on Android."   />  
-    </Target>
-</Project>

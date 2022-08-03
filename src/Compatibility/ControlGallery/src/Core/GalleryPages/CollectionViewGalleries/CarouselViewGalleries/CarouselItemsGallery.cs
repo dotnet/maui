@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 			carouselView.SetBinding(CarouselView.PositionProperty, nameof(_viewModel.CarouselPosition));
 
 			var absolute = new AbsoluteLayout();
-			absolute.Children.Add(carouselView, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
+			absolute.Children.Add(carouselView, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All);
 
 			var indicators = new IndicatorView
 			{
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 
 			carouselView.IndicatorView = indicators;
 
-			absolute.Children.Add(indicators, new Rectangle(.5, 1, -1, -1), AbsoluteLayoutFlags.PositionProportional);
+			absolute.Children.Add(indicators, new Rect(.5, 1, -1, -1), AbsoluteLayoutFlags.PositionProportional);
 
 			grid.Children.Add(absolute, 0, 0);
 

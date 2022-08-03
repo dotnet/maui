@@ -1,14 +1,27 @@
+using System;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Media;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
+		[Fact]
+		public async Task DisconnectHandlerDoesntCrash()
+		{
+			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.DisconnectHandler();
+			});
+		}
+
 		[Fact(DisplayName = "Automation Id is set correctly")]
-		[InlineData()]
 		public async Task SetAutomationId()
 		{
 			var view = new TStub
@@ -28,8 +41,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				FlowDirection = flowDirection
 			};
+
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
-			Assert.Equal(view.FlowDirection, id);
+			Assert.Equal(flowDirection, id);
 		}
 
 		[Theory(DisplayName = "Opacity is set correctly")]
@@ -143,11 +157,15 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(handler.ContainerView);
 		}
 
-		[Theory(DisplayName = "Native View Bounds are not empty")]
+		[Theory(DisplayName = "Native View Bounds are not empty"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/9054"
+#endif
+		)]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
-		public async Task ReturnsNonEmptyNativeViewBounds(int size)
+		public async Task ReturnsNonEmptyPlatformViewBounds(int size)
 		{
 			var view = new TStub()
 			{
@@ -155,11 +173,15 @@ namespace Microsoft.Maui.DeviceTests
 				Width = size,
 			};
 
-			var nativeViewBounds = await GetValueAsync(view, handler => GetNativeViewBounds(handler));
-			Assert.NotEqual(nativeViewBounds, new Graphics.Rectangle());
+			var platformViewBounds = await GetValueAsync(view, handler => GetPlatformViewBounds(handler));
+			Assert.NotEqual(platformViewBounds, new Graphics.Rect());
 		}
 
-		[Theory(DisplayName = "Native View Bounding Box are not empty")]
+		[Theory(DisplayName = "Native View Bounding Box are not empty"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/9054"
+#endif
+		)]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -172,19 +194,47 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var nativeBoundingBox = await GetValueAsync(view, handler => GetBoundingBox(handler));
-			Assert.NotEqual(nativeBoundingBox, new Graphics.Rectangle());
+			Assert.NotEqual(nativeBoundingBox, new Graphics.Rect());
+
+
+			// Currently there's an issue with label/progress where they don't set the frame size to
+			// the explicit Width and Height values set
+			// https://github.com/dotnet/maui/issues/7935
+			if (view is ILabel)
+			{
+				// TODO:
+			}
+			else if (view is IBorderView)
+			{
+				// TODO:
+			}
+			else if (view is IProgress)
+			{
+				if (!CloseEnough(size, nativeBoundingBox.Size.Width))
+					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+			}
+			else
+			{
+				if (!CloseEnough(size, nativeBoundingBox.Size.Height) || !CloseEnough(size, nativeBoundingBox.Size.Width))
+					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+			}
+
+			bool CloseEnough(double value1, double value2)
+			{
+				return System.Math.Abs(value2 - value1) < 0.2;
+			}
 		}
 
 
 		[Theory(DisplayName = "Native View Transforms are not empty"
 #if __IOS__
-			, Skip = "https://github.com/dotnet/maui/issues/3600"
+					, Skip = "https://github.com/dotnet/maui/issues/3600"
 #endif
 			)]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
-		public async Task ReturnsNonEmptyNativeViewTransforms(int size)
+		public async Task ReturnsNonEmptyPlatformViewTransforms(int size)
 		{
 			var view = new TStub()
 			{
@@ -194,8 +244,31 @@ namespace Microsoft.Maui.DeviceTests
 				Rotation = size,
 			};
 
-			var nativeViewTransform = await GetValueAsync(view, handler => GetViewTransform(handler));
-			Assert.NotEqual(nativeViewTransform, new System.Numerics.Matrix4x4());
+			var platformViewTransform = await GetValueAsync(view, handler => GetViewTransform(handler));
+			Assert.NotEqual(platformViewTransform, new System.Numerics.Matrix4x4());
+		}
+
+		[Theory(DisplayName = "View Renders To Image"
+#if !__ANDROID__
+			, Skip = "iOS and Windows can't render elements to images from test runner. It's missing the required root windows."
+#endif
+			)]
+		[InlineData(ScreenshotFormat.Jpeg)]
+		[InlineData(ScreenshotFormat.Png)]
+		public async Task RendersAsImage(ScreenshotFormat type)
+		{
+			var view = new TStub()
+			{
+				Height = 100,
+				Width = 100,
+			};
+
+			var result = await GetValueAsync(view, handler => handler.VirtualView.CaptureAsync());
+			Assert.NotNull(result);
+
+			using var stream = await result.OpenReadAsync(type);
+
+			Assert.True(stream.Length > 0);
 		}
 	}
 }

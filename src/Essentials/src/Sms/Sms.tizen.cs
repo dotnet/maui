@@ -1,14 +1,15 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public static partial class Sms
+	partial class SmsImplementation : ISms
 	{
-		internal static bool IsComposeSupported
-			=> Platform.GetFeatureInfo<bool>("network.telephony.sms");
+		public bool IsComposeSupported
+			=> PlatformUtils.GetFeatureInfo<bool>("network.telephony.sms");
 
-		static Task PlatformComposeAsync(SmsMessage message)
+		Task PlatformComposeAsync(SmsMessage message)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class LightweightPlatform : ITizenPlatform, INavigation, IDisposable
 	{
 		NavigationModel _navModel = new NavigationModel();
@@ -19,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public LightweightPlatform(EvasObject parent)
 		{
 			Forms.NativeParent = parent;
-			_defaultPlatformColor = Device.Idiom == TargetIdiom.Phone ? EColor.White : EColor.Transparent;
+			_defaultPlatformColor = DeviceInfo.Idiom == DeviceIdiom.Phone ? EColor.White : EColor.Transparent;
 			_viewStack = new Native.Canvas(parent)
 			{
 				BackgroundColor = _defaultPlatformColor,

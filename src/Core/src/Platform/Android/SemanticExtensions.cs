@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SemanticExtensions
 	{
-		public static void UpdateSemanticNodeInfo(this View nativeView, IView virtualView, AccessibilityNodeInfoCompat? info)
+		public static void UpdateSemanticNodeInfo(this View platformView, IView virtualView, AccessibilityNodeInfoCompat? info)
 		{
 			if (info == null || virtualView == null)
 				return;
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Platform
 			if (!string.IsNullOrEmpty(desc))
 			{
 				// Edit Text fields won't read anything for the content description
-				if (nativeView is EditText et)
+				if (platformView is EditText et)
 				{
 					if (!string.IsNullOrEmpty(et.Text))
 						newText = $"{desc}, {et.Text}";
@@ -36,21 +37,21 @@ namespace Microsoft.Maui.Platform
 			if (!string.IsNullOrEmpty(hint))
 			{
 				// info HintText won't read anything back when using TalkBack pre API 26
-				if (NativeVersion.IsAtLeast(26))
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
 				{
 					info.HintText = hint;
 
-					if (nativeView is EditText)
+					if (platformView is EditText)
 						info.ShowingHintText = false;
 				}
 				else
 				{
-					if (nativeView is EditText et)
+					if (platformView is EditText et)
 					{
 						newText = newText ?? et.Text;
 						newText = $"{newText}, {hint}";
 					}
-					else if (nativeView is TextView tv)
+					else if (platformView is TextView tv)
 					{
 						if (newContentDescription != null)
 						{
@@ -88,21 +89,29 @@ namespace Microsoft.Maui.Platform
 
 			if (!string.IsNullOrWhiteSpace(newText))
 				info.Text = newText;
+
+			if (!string.IsNullOrWhiteSpace(virtualView.AutomationId) &&
+				platformView?.Context != null)
+			{
+				// This is used by Appium and other automation testing frameworks
+				// to locate views
+				info.ViewIdResourceName = $"{platformView.Context.PackageName}:id/{virtualView.AutomationId}";
+			}
 		}
 
-		public static void UpdateSemantics(this View nativeView, IView view)
+		public static void UpdateSemantics(this View platformView, IView view)
 		{
 			var semantics = view.Semantics;
 
 			if (semantics == null)
 				return;
 
-			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
+			ViewCompat.SetAccessibilityHeading(platformView, semantics.IsHeading);
 		}
 
-		internal static View GetSemanticNativeElement(this View nativeView)
+		internal static View GetSemanticPlatformElement(this View platformView)
 		{
-			return ViewHelper.GetSemanticNativeElement(nativeView)!;
+			return PlatformInterop.GetSemanticPlatformElement(platformView)!;
 		}
 	}
 }

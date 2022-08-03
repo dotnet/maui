@@ -2,6 +2,7 @@ using ElmSharp.Accessible;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete]
 	public static class AccessibilityExtensions
 	{
 		public static string SetAccessibilityName(this IAccessibleObject Control, Element Element, string _defaultAccessibilityName = null)

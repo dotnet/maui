@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -89,7 +90,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static void Register(Type visual, Dictionary<string, IVisual> mappings)
+		static void Register(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type visual,
+			Dictionary<string, IVisual> mappings)
 		{
 			IVisual registeredVisual = CreateVisual(visual);
 			if (registeredVisual == null)
@@ -110,7 +113,8 @@ namespace Microsoft.Maui.Controls
 			mappings[$"{fullName}Visual"] = registeredVisual;
 		}
 
-		static IVisual CreateVisual(Type visualType)
+		static IVisual CreateVisual(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type visualType)
 		{
 			try
 			{
@@ -169,6 +173,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="//Member[@MemberName='GetStandardValues']/Docs" />
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-			=> new(new[] { "Default", "Material" });
+			=> new(new[] {
+				nameof(VisualMarker.Default), 
+				// nameof(VisualMarker.Material)
+			});
 	}
 }

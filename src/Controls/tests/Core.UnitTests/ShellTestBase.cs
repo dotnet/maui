@@ -5,7 +5,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -17,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup();
-
+			AppInfo.SetCurrent(new MockAppInfo());
 		}
 
 		[TearDown]
@@ -322,7 +324,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public TestShell()
 			{
-				_ = new Window() { Page = this };
+				_ = new TestWindow() { Page = this };
 				Routing.RegisterRoute(nameof(TestPage1), typeof(TestPage1));
 				Routing.RegisterRoute(nameof(TestPage2), typeof(TestPage2));
 				Routing.RegisterRoute(nameof(TestPage3), typeof(TestPage3));
@@ -333,7 +335,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public TestShell(params ShellItem[] shellItems) : this()
 			{
-				_ = new Window() { Page = this };
 				shellItems.ForEach(x => Items.Add(x));
 			}
 

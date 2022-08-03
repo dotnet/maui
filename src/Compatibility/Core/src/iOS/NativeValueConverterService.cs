@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 	{
 		public bool ConvertTo(object value, Type toType, out object nativeValue)
 		{
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			nativeValue = null;
 			if (typeof(UIView).IsInstanceOfType(value) && toType.IsAssignableFrom(typeof(View)))
 			{

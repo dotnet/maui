@@ -4,9 +4,9 @@ using System.Linq;
 using CoreLocation;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class LocationExtensions
+	static partial class LocationExtensions
 	{
 		[System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
 		static extern CLAuthorizationStatus CLAuthorizationStatus_objc_msgSend(IntPtr receiver, IntPtr selector);
@@ -18,13 +18,14 @@ namespace Microsoft.Maui.Essentials
 				Longitude = placemark.Location.Coordinate.Longitude,
 				Altitude = placemark.Location.Altitude,
 				AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid,
-				Timestamp = DateTimeOffset.UtcNow
+				Timestamp = DateTimeOffset.UtcNow,
+				ReducedAccuracy = false,
 			};
 
 		internal static IEnumerable<Location> ToLocations(this IEnumerable<CLPlacemark> placemarks) =>
 			placemarks?.Select(a => a.ToLocation());
 
-		internal static Location ToLocation(this CLLocation location) =>
+		internal static Location ToLocation(this CLLocation location, bool reducedAccuracy) =>
 			new Location
 			{
 				Latitude = location.Coordinate.Latitude,
@@ -32,10 +33,13 @@ namespace Microsoft.Maui.Essentials
 				Altitude = location.VerticalAccuracy < 0 ? default(double?) : location.Altitude,
 				Accuracy = location.HorizontalAccuracy,
 				VerticalAccuracy = location.VerticalAccuracy,
+				ReducedAccuracy = reducedAccuracy,
 				Timestamp = location.Timestamp.ToDateTime(),
 #if __IOS__ || __WATCHOS__
-                Course = location.Course < 0 ? default(double?) : location.Course,
-                Speed = location.Speed < 0 ? default(double?) : location.Speed,
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
+				Course = location.Course < 0 ? default(double?) : location.Course,
+				Speed = location.Speed < 0 ? default(double?) : location.Speed,
+#pragma warning restore CA1416
 #endif
 				IsFromMockProvider = DeviceInfo.DeviceType == DeviceType.Virtual,
 				AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid
@@ -55,13 +59,10 @@ namespace Microsoft.Maui.Essentials
 
 		internal static CLAuthorizationStatus GetAuthorizationStatus(this CLLocationManager locationManager)
 		{
-#if __MACOS__
-            if (DeviceInfo.Version >= new Version(11, 0))
-#elif __WATCHOS__
-            if (Platform.HasOSVersion(7, 0))
-#else
-			if (Platform.HasOSVersion(14, 0))
-#endif
+			if (OperatingSystem.IsIOSVersionAtLeast(14, 0) ||
+				OperatingSystem.IsMacOSVersionAtLeast(11, 0) ||
+				OperatingSystem.IsWatchOSVersionAtLeast(7, 0) ||
+				OperatingSystem.IsTvOSVersionAtLeast(14, 0))
 			{
 				// return locationManager.AuthorizationStatus;
 

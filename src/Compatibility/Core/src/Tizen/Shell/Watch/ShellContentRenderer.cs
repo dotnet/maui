@@ -2,6 +2,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShellContentRenderer : IShellItemRenderer
 	{
 		public ShellContentRenderer(ShellContent content)

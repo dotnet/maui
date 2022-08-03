@@ -1,8 +1,10 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	[Obsolete]
 	public static class PageExtensions
 	{
 		public static EvasObject CreateEvasObject(this Page page, EvasObject parent, bool hasAlpha = false)
@@ -33,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public static class PageExtensions
 	{
 		public static EvasObject CreateEvasObject(this ContentPage page, EvasObject parent, bool hasAlpha = false)
@@ -40,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return Microsoft.Maui.Controls.Compatibility.PageExtensions.CreateEvasObject(page, parent, hasAlpha);
 		}
 
-		public static void UpdateFocusTreePolicy<T>(this MultiPage<T> multiPage) where T : Page
+		public static void UpdateFocusTreePolicy<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] T>(this MultiPage<T> multiPage) where T : Page
 		{
 			foreach (var pageItem in multiPage.Children)
 			{

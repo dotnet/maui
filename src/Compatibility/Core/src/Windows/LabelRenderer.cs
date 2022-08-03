@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.TextColor.IsNotDefault())
-				run.Foreground = span.TextColor.ToNative();
+				run.Foreground = span.TextColor.ToPlatform();
 
 			var font = span.ToFont();
 			if (!font.IsDefault)
@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LabelRenderer : ViewRenderer<Label, TextBlock>
 	{
 		bool _fontApplied;
@@ -237,8 +238,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (label == null)
 				return;
 
-			textBlock.TextAlignment = label.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
-			textBlock.VerticalAlignment = label.VerticalTextAlignment.ToNativeVerticalAlignment();
+			textBlock.TextAlignment = label.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			textBlock.VerticalAlignment = label.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		void UpdateColor(TextBlock textBlock)
@@ -249,7 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Label label = Element;
 			if (label != null && label.TextColor.IsNotDefault())
 			{
-				textBlock.Foreground = label.TextColor.ToNative();
+				textBlock.Foreground = label.TextColor.ToPlatform();
 			}
 			else
 			{
@@ -274,7 +275,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			if (isLabelDefault && _isInitiallyDefault)
+#pragma warning disable CS0612 // Type or member is obsolete
 				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)), Element.RequireFontManager());
+#pragma warning restore CS0612 // Type or member is obsolete
 			else
 				textBlock.ApplyFont(label.ToFont(), Element.RequireFontManager());
 
@@ -350,7 +353,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					{
 						var span = formatted.Spans[i];
 
-						var run = span.ToRun(fontManager);
+						var run = span.ToRunAndColorsTuple(fontManager).Item1;
 						heights.Add(Control.FindDefaultLineHeight(run));
 						textBlock.Inlines.Add(run);
 					}

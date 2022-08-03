@@ -112,9 +112,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (Device.IsInvokeRequired)
+			if (!ApplicationModel.MainThread.IsMainThread)
 			{
-				Device.BeginInvokeOnMainThread(() => CollectionChanged(args));
+				ApplicationModel.MainThread.BeginInvokeOnMainThread(() => CollectionChanged(args));
 			}
 			else
 			{
@@ -125,7 +125,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			// Force UICollectionView to get the internal accounting straight
-			CollectionView.NumberOfItemsInSection(_section);
+			if (!CollectionView.Hidden)
+				CollectionView.NumberOfItemsInSection(_section);
 
 			switch (args.Action)
 			{
@@ -298,10 +299,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionViewUpdated(NotifyCollectionChangedEventArgs args)
 		{
-			Device.BeginInvokeOnMainThread(() =>
+			if (!ApplicationModel.MainThread.IsMainThread)
+			{
+				ApplicationModel.MainThread.BeginInvokeOnMainThread(() => CollectionViewUpdated?.Invoke(this, args));
+			}
+			else
 			{
 				CollectionViewUpdated?.Invoke(this, args);
-			});
+			}
 		}
 	}
 }

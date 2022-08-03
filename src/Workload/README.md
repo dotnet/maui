@@ -26,7 +26,6 @@ The idea, is a project to be able to set `$(UseMaui)`:
 * `Microsoft.Maui.Dependencies`
 * `Microsoft.Maui.Essentials.Ref.[platform]`
 * `Microsoft.Maui.Essentials.Runtime.[platform]`
-* `Microsoft.Maui.Extensions`
 * `Microsoft.Maui.Templates`
 
 BlazorWebView is an addition to MAUI, project can currently opt into
@@ -93,6 +92,7 @@ installed:
 * `maui-maccatalyst`
 * `maui-macos`
 * `maui-windows`
+* `maui-tizen`
 
 `maui-android` simply extends the `android` workload, adding the
 Android-specific platform implementation for MAUI.

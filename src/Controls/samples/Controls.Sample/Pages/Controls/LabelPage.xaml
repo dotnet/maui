@@ -5,73 +5,179 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Label">
     <views:BasePage.Content>
-        <VerticalStackLayout
-            Margin="12">
-            <Label
-                Text="Default"
-                Style="{StaticResource Headline}"/>
-            <Label
-                Text="Label"/>
-            <Label
-                Text="TextColor"
-                Style="{StaticResource Headline}"/>
-            <Label
-                TextColor="Red"
-                Text="TextColor"/>
+        <ScrollView>
+            <VerticalStackLayout
+                Margin="12">
+                <Label
+                    Text="Default"
+                    Style="{StaticResource Headline}"/>
+                <Label
+                    Text="Label"/>
+                <Label
+                    Text="TextColor"
+                    Style="{StaticResource Headline}"/>
+                <Label
+                    TextColor="Red"
+                    Text="TextColor"/>
+                <Label
+                    Text="BackgroundColor"
+                    Style="{StaticResource Headline}"/>
+                <Label
+                    BackgroundColor="Blue"
+                    Text="Button"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Label 
+                    Text="Background">
+                    <Label.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"  
+                                          Offset="0.1" />
+                            <GradientStop Color="Green"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Label.Background>
+                </Label>
+                <Label
+                    Text="Html text"
+                    Style="{StaticResource Headline}"/>
+                <Label
+                    TextType="Html">
+                    <x:String>
+                        <![CDATA[
+                        <h1>Hello World!</h1><br/>Second Line<br/><b>Bold Line</b>
+                    ]]>
+                    </x:String>
+                </Label>
+                <Label
+                    Text="HorizontalTextAlignment"
+                    Style="{StaticResource Headline}" />
+                <Label 
+                    BackgroundColor="LightGray"
+                    HorizontalTextAlignment="Start"
+                    Text="This should be at the start of the line" />
+                <Label 
+                    BackgroundColor="LightGray"
+                    HorizontalTextAlignment="Center"
+                    Text="This should be at the center of the line" />
+                <Label 
+                    HorizontalTextAlignment="End"
+                    Text="This should be at the end of the line" />
+                <Label
+                    BackgroundColor="LightGray"
+                    Text="VerticalTextAlignment"
+                    Style="{StaticResource Headline}" />    
+                <Label  
+                    BackgroundColor="LightGray"
+                    VerticalTextAlignment="Start"
+                    Text="This should be at the start"
+                    HeightRequest="100"/>
+                <Label 
+                    BackgroundColor="LightGray"
+                    VerticalTextAlignment="Center"
+                    Text="This should be at the center"
+                    HeightRequest="100"/>
+                <Label 
+                    BackgroundColor="LightGray"
+                    VerticalTextAlignment="End"
+                    Text="This should be at the bottom"
+                    HeightRequest="100"/>
+                <Label
+                    >
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Plain old Text" />
+                            <Span Text=" " />
+                            <Span Text="Colors" BackgroundColor="Cyan" TextColor="Navy" />
+                            <Span Text=" " />
+                            <Span Text="Strikethrough" TextDecorations="Strikethrough" />
+                            <Span Text=" " />
+                            <Span Text="Should be uppercase" TextTransform="Uppercase" />
+                            <Span Text=" " />
+                            <Span Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
+                                <Span.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="ClickGestureRecognizer_Clicked" />
+                                </Span.GestureRecognizers>
+                            </Span>
+                            <Span Text=" " />
+                            <Span Text="Big Font" FontSize="20" />
+                            <Span Text=" " />
+                            <Span Text="Different Font" FontFamily="Dokdo" FontSize="18" />
+                            <Span Text=" " />
+                            <Span Text="Plain old Text" />
+                        </FormattedString>
+                    </Label.FormattedText>
 
-            <Label
-                Text="Html text"
-                Style="{StaticResource Headline}"/>
-            <Label
-                TextType="Html">
-                <x:String>
-                    <![CDATA[
-                    <h1>Hello World!</h1><br/>Second Line<br/><b>Bold Line</b>
-                ]]>
-                </x:String>
-            </Label>
-            <Label
-                Text="HorizontalTextAlignment"
-                Style="{StaticResource Headline}" />
-            <Label 
-                HorizontalTextAlignment="End"
-                Text="This should be at the end of the line"
-                />
-            <Label
-                Text="VerticalTextAlignment"
-                Style="{StaticResource Headline}" />
-            <Label 
-                BackgroundColor="Pink"
-                VerticalTextAlignment="End"
-                Text="This should be at the bottom"
-                HeightRequest="100"/>
-            <Label
-                >
-                <Label.FormattedText>
-                    <FormattedString>
-                        <Span Text="Plain old Text" />
-                        <Span Text=" " />
-                        <Span Text="Colors" BackgroundColor="Cyan" TextColor="Navy" />
-                        <Span Text=" " />
-                        <Span Text="Strikethrough" TextDecorations="Strikethrough" />
-                        <Span Text=" " />
-                        <Span Text="Should be uppercase" TextTransform="Uppercase" />
-                        <Span Text=" " />
-                        <Span Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
-                            <Span.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="ClickGestureRecognizer_Clicked" />
-                            </Span.GestureRecognizers>
-                        </Span>
-                        <Span Text=" " />
-                        <Span Text="Big Font" FontSize="20" />
-                        <Span Text=" " />
-                        <Span Text="Different Font" FontFamily="Dokdo" FontSize="18" />
-                        <Span Text=" " />
-                        <Span Text="Plain old Text" />
-                    </FormattedString>
-                </Label.FormattedText>
+                </Label>
+                <Label
+                    Text="Html text"
+                    Style="{StaticResource Headline}"/>
+                <Label
+                    TextType="Html">
+                    <x:String>
+                        <![CDATA[
+                        <h1>Hello World!</h1><br/>Second Line<br/><b>Bold Line</b>
+                    ]]>
+                    </x:String>
+                </Label>
+                <Label
+                    Text="HorizontalTextAlignment"
+                    Style="{StaticResource Headline}" />
+                <Label 
+                    HorizontalTextAlignment="End"
+                    Text="This should be at the end of the line"
+                    />
+                <Label
+                    Text="VerticalTextAlignment"
+                    Style="{StaticResource Headline}" />
+                <Label 
+                    BackgroundColor="Pink"
+                    VerticalTextAlignment="End"
+                    Text="This should be at the bottom"
+                    HeightRequest="100"/>
+                <Label
+                    Text="MaxLines(2)"
+                    Style="{StaticResource Headline}" />
+                <Label
+                    MaxLines="2"
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+                <Label
+                    Text="LineBreakMode (TailTruncation)"
+                    Style="{StaticResource Headline}" />
+                <Label  
+                    MaxLines="2"
+                    LineBreakMode ="TailTruncation"
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+                <Label x:Name="labelFormattedString"
+                    >
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Plain old Text" />
+                            <Span Text=" " />
+                            <Span Text="Colors" BackgroundColor="Cyan" TextColor="Navy" />
+                            <Span Text=" " />
+                            <Span Text="Strikethrough" TextDecorations="Strikethrough" />
+                            <Span Text=" " />
+                            <Span Text="Should be uppercase" TextTransform="Uppercase" />
+                            <Span Text=" " />
+                            <Span Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
+                                <Span.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="ClickGestureRecognizer_Clicked" />
+                                </Span.GestureRecognizers>
+                            </Span>
+                            <Span Text=" " />
+                            <Span Text="Big Font" FontSize="20" />
+                            <Span Text=" " />
+                            <Span Text="Different Font" FontFamily="Dokdo" FontSize="18" />
+                            <Span Text=" " />
+                            <Span Text="Plain old Text" />
+                        </FormattedString>
+                    </Label.FormattedText>
 
-            </Label>
-        </VerticalStackLayout>
+                </Label>
+                <Button Text="Change Formatted String" Clicked="ChangeFormattedString_Clicked" />
+            </VerticalStackLayout>
+        </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>

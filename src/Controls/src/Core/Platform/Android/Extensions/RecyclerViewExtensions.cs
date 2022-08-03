@@ -11,9 +11,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateSelection(this RecyclerView recyclerView, SelectableItemsView selectableItemsView)
 		{
 			var mode = selectableItemsView.SelectionMode;
-
-			var adapter = (recyclerView.GetAdapter() as SelectableItemsViewAdapter<SelectableItemsView, IItemsViewSource>);
-			adapter?.ClearNativeSelection();
+			//TODO: on NET7 implement a ISelectableItemsViewAdapter interface on the adapter
+			var adapter = recyclerView.GetAdapter() as ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource>;
+			adapter?.ClearPlatformSelection();
 
 			switch (mode)
 			{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				case SelectionMode.Single:
 					var selectedItem = selectableItemsView.SelectedItem;
-					adapter.MarkNativeSelection(selectedItem);
+					adapter.MarkPlatformSelection(selectedItem);
 					return;
 
 				case SelectionMode.Multiple:
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					foreach (var item in selectedItems)
 					{
-						adapter.MarkNativeSelection(item);
+						adapter.MarkPlatformSelection(item);
 					}
 					return;
 			}

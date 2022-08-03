@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				var backgroundColor = solidColorBrush.Color;
-				paint.Color = backgroundColor.ToNative();
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+				paint.Color = backgroundColor.ToPlatform();
+#pragma warning restore CA1416
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
@@ -119,7 +121,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				Color bgColor = solidColorBrush.Color;
-				gradientDrawable.SetColor(bgColor?.ToNative() ?? Colors.Transparent.ToNative());
+				gradientDrawable.SetColor(bgColor?.ToPlatform() ?? Colors.Transparent.ToPlatform());
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
@@ -175,7 +177,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static bool UseGradients(this GradientDrawable gradientDrawable)
 		{
-			if (!NativeVersion.IsAtLeast(24))
+			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
 				return false;
 
 			var colors = gradientDrawable.GetColors();
@@ -197,11 +199,11 @@ namespace Microsoft.Maui.Controls.Platform
 				Shape = new RectShape()
 			};
 
-			gradientStrokeDrawable.SetStroke(0, Colors.Transparent.ToNative());
+			gradientStrokeDrawable.SetStroke(0, Colors.Transparent.ToPlatform());
 
 			if (brush is SolidColorBrush solidColorBrush)
 			{
-				var color = solidColorBrush.Color?.ToNative() ?? Colors.Transparent.ToNative();
+				var color = solidColorBrush.Color?.ToPlatform() ?? Colors.Transparent.ToPlatform();
 				gradientStrokeDrawable.SetColor(color);
 			}
 			else
@@ -256,7 +258,7 @@ namespace Microsoft.Maui.Controls.Platform
 			int count = 0;
 			foreach (var orderStop in orderStops)
 			{
-				colors[count] = orderStop.Color.ToNative().ToArgb();
+				colors[count] = orderStop.Color.ToPlatform().ToArgb();
 				offsets[count] = orderStop.Offset;
 				count++;
 			}

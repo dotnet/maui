@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 			switch (alignment)
 			{
 				case Microsoft.UI.Xaml.TextAlignment.Center:
-					return HorizontalAlignment.Center; 
+					return HorizontalAlignment.Center;
 				case Microsoft.UI.Xaml.TextAlignment.Left:
 					return HorizontalAlignment.Left;
 				case Microsoft.UI.Xaml.TextAlignment.Right:

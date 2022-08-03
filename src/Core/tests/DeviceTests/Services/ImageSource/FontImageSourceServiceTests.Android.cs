@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, Platform.DefaultContext));
+			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext));
 		}
 
 		[Theory]
@@ -47,13 +47,13 @@ namespace Microsoft.Maui.DeviceTests
 				Color = expectedColor,
 			};
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			bitmap.AssertContainsColor(expectedColor.ToNative());
+			bitmap.AssertContainsColor(expectedColor.ToPlatform());
 		}
 
 		[Fact]
@@ -77,13 +77,13 @@ namespace Microsoft.Maui.DeviceTests
 				Color = Colors.Red,
 			};
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			bitmap.AssertContainsColor(Colors.Red.ToNative());
+			bitmap.AssertContainsColor(Colors.Red.ToPlatform());
 		}
 	}
 }

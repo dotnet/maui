@@ -4,22 +4,22 @@ using System.Threading.Tasks;
 using MessageUI;
 #endif
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class SmsImplementation : ISms
+	partial class SmsImplementation : ISms
 	{
-		internal static bool IsComposeSupported
+		public bool IsComposeSupported
 #if !(MACCATALYST || MACOS)
 			=> MFMessageComposeViewController.CanSendText;
 #else
 			=> false;
 #endif
 
-		public Task ComposeAsync(SmsMessage message)
+		Task PlatformComposeAsync(SmsMessage message)
 		{
 #if !(MACCATALYST || MACOS)
 			// do this first so we can throw as early as possible
-			var controller = Platform.GetCurrentViewController();
+			var controller = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			// create the controller
 			var messageController = new MFMessageComposeViewController();
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			if (controller.PresentationController != null)
 			{
 				controller.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => tcs.TrySetResult(false));
+					new UIPresentationControllerDelegate(() => tcs.TrySetResult(false));
 			}
 
 			controller.PresentViewController(messageController, true, null);

@@ -1,45 +1,75 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	public interface IGeocoding
 	{
 		Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude);
+
 		Task<IEnumerable<Location>> GetLocationsAsync(string address);
 	}
+
+	public interface IPlatformGeocoding : IGeocoding
+	{
+#if WINDOWS || TIZEN
+		string? MapServiceToken { get; set; }
+#endif
+	}
+
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Geocoding']/Docs" />
 	public static class Geocoding
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetPlacemarksAsync'][0]/Docs" />
-		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(Location location)
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetPlacemarksAsync'][1]/Docs" />
+		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(Location location) =>
+			Current.GetPlacemarksAsync(location);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetPlacemarksAsync'][2]/Docs" />
+		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude) =>
+			Current.GetPlacemarksAsync(latitude, longitude);
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetLocationsAsync']/Docs" />
+		public static Task<IEnumerable<Location>> GetLocationsAsync(string address) =>
+			Current.GetLocationsAsync(address);
+
+		static IGeocoding Current => Devices.Sensors.Geocoding.Default;
+
+		static IGeocoding? defaultImplementation;
+
+		public static IGeocoding Default =>
+			defaultImplementation ??= new GeocodingImplementation();
+
+		internal static void SetCurrent(IGeocoding? implementation) =>
+			defaultImplementation = implementation;
+	}
+
+	public static class GeocodingExtensions
+	{
+		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(this IGeocoding geocoding, Location location)
 		{
 			if (location == null)
 				throw new ArgumentNullException(nameof(location));
 
-			return GetPlacemarksAsync(location.Latitude, location.Longitude);
+			return geocoding.GetPlacemarksAsync(location.Latitude, location.Longitude);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetPlacemarksAsync'][1]/Docs" />
-		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
-			=> Current.GetPlacemarksAsync(latitude, longitude);
+#if WINDOWS || TIZEN
+		public static string? GetMapServiceToken(this IGeocoding geocoding)
+		{
+			if (geocoding is not IPlatformGeocoding platform)
+				throw new PlatformNotSupportedException("This implementation of IGeocoding does not implement IPlatformGeocoding.");
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Geocoding.xml" path="//Member[@MemberName='GetLocationsAsync']/Docs" />
-		public static Task<IEnumerable<Location>> GetLocationsAsync(string address)
-			=> Current.GetLocationsAsync(address);
+			return platform.MapServiceToken;
+		}
+		public static void SetMapServiceToken(this IGeocoding geocoding, string? mapServiceToken)
+		{
+			if (geocoding is not IPlatformGeocoding platform)
+				throw new PlatformNotSupportedException("This implementation of IGeocoding does not implement IPlatformGeocoding.");
 
-		static IGeocoding? currentImplementation;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IGeocoding Current =>
-			currentImplementation ??= new GeocodingImplementation();
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IGeocoding? implementation) =>
-			currentImplementation = implementation;
+			platform.MapServiceToken = mapServiceToken;
+		}
+#endif
 	}
 }

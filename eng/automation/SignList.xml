@@ -29,13 +29,14 @@
 
   <ItemGroup>
     <ThirdParty Include="Svg.*.dll" />
+    <ThirdParty Include="ShimSkiaSharp.dll" />
     <ThirdParty Include="Fizzler.dll" />
     <ThirdParty Include="Newtonsoft.Json.dll;" />
-    <ThirdParty Include="Svg2VectorDrawable.Net.dll" />
   </ItemGroup>
 
   <ItemGroup>
     <ThirdPartyScript Include="OpenSans-Regular.ttf" />
+    <ThirdPartyScript Include="OpenSans-Semibold.ttf" />
     <ThirdPartyScript Include="open-iconic.ttf" />
   </ItemGroup>
 
@@ -43,12 +44,14 @@
     <Skip Include="NuGet.*.dll" />
     <Skip Include="Mono.*.dll" />
     <Skip Include="Microsoft.Build.*.dll" />
+    <Skip Include="Microsoft.Bcl.AsyncInterfaces.dll" />
     <Skip Include="System.Buffers.dll" />
     <Skip Include="System.IO.UnmanagedMemoryStream.dll" />
     <Skip Include="System.Memory.dll" />
     <Skip Include="System.Numerics.Vectors.dll" />
     <Skip Include="System.ObjectModel.dll" />
     <Skip Include="System.Runtime.CompilerServices.Unsafe.dll" />
+    <Skip Include="System.Text.Json.dll" />
   </ItemGroup>
 
 </Project>

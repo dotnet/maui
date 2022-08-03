@@ -16,7 +16,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public string Title { get => _title; set => this.SetProperty(ref _title, value); }
 
-		public Size CrossPlatformArrange(Rectangle bounds)
+		public Size CrossPlatformArrange(Rect bounds)
 		{
 			return bounds.Size;
 		}

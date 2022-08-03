@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class LabelRenderer : ViewRenderer<Label, NativeLabel>
 	{
 		SizeRequest _perfectSize;
@@ -93,6 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return result;
 		}
 
+		[PortHandler]
 #if __MOBILE__
 		public override void LayoutSubviews()
 		{
@@ -325,7 +327,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (color == null)
 				BackgroundColor = UIColor.Clear;
 			else
-				BackgroundColor = color.ToUIColor();
+				BackgroundColor = color.ToPlatform();
 #else
 			if (color == null)
 				Layer.BackgroundColor = NSColor.Clear.CGColor;
@@ -353,9 +355,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateHorizontalTextAlignment()
 		{
 #if __MOBILE__
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 #else
-			Control.Alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.Alignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 #endif
 		}
 
@@ -591,11 +593,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				return;
 			}
 
-			// default value of color documented to be black in iOS docs
 #if __MOBILE__
-			Control.TextColor = textColor.ToUIColor(ColorExtensions.LabelColor);
+			Control.TextColor = textColor.ToPlatform(Maui.Platform.ColorExtensions.LabelColor);
 #else
-			var alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			var alignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 			var textWithColor = new NSAttributedString(Element.Text ?? "", font: Element.ToNSFont(), foregroundColor: textColor.ToNSColor(ColorExtensions.TextColor), paragraphStyle: new NSMutableParagraphStyle() { Alignment = alignment });
 			textWithColor = textWithColor.AddCharacterSpacing(Element.Text ?? string.Empty, Element.CharacterSpacing);
 			Control.AttributedStringValue = textWithColor;

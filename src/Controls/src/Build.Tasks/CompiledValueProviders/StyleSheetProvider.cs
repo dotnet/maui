@@ -64,8 +64,7 @@ namespace Microsoft.Maui.Controls.XamlC
 
 				yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
-				yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true)); //assembly
+				yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System", "Type"), propertyName: "Assembly", flatten: true)); //assembly
 
 				foreach (var instruction in node.PushXmlLineInfo(context))
 					yield return instruction; //lineinfo

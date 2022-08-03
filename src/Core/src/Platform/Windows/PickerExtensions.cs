@@ -1,55 +1,92 @@
 ﻿#nullable enable
 using Microsoft.Maui.Graphics;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class PickerExtensions
 	{
-		public static void UpdateTitle(this MauiComboBox nativeComboBox, IPicker picker)
+		public static void UpdateTitle(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.Header = null;
 
-			nativeComboBox.HeaderTemplate = string.IsNullOrEmpty(picker.Title) ? null : 
+			nativeComboBox.HeaderTemplate = string.IsNullOrEmpty(picker.Title) ? null :
 				(UI.Xaml.DataTemplate)UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
 
 			nativeComboBox.DataContext = picker;
 		}
-		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker)
+
+		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.UpdateTextColor(picker, null);
+			var platformBrush = picker.Background?.ToPlatform();
+
+			if (platformBrush == null)
+			{
+				nativeComboBox.Resources.RemoveKeys(BackgroundColorResourceKeys);
+			}
+			else
+			{
+				nativeComboBox.Resources.SetValueForAllKey(BackgroundColorResourceKeys, platformBrush);
+			}
 		}
 
-		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker, WBrush? defaultForeground)
+		static readonly string[] BackgroundColorResourceKeys =
 		{
-			Color color = picker.TextColor;
-			if (color.IsDefault() && defaultForeground == null)
-				return;
+			"ComboBoxBackground",
+			"ComboBoxBackgroundPointerOver",
+			"ComboBoxBackgroundPressed",
+			"ComboBoxBackgroundDisabled",
+			"ComboBoxBackgroundUnfocused",
+		};
 
-			nativeComboBox.Foreground = color.IsDefault() ? (defaultForeground ?? color.ToNative()) : color.ToNative();
+
+		public static void UpdateTextColor(this ComboBox nativeComboBox, IPicker picker)
+		{
+			var platformBrush = picker.TextColor?.ToPlatform();
+
+			if (platformBrush == null)
+			{
+				nativeComboBox.Resources.RemoveKeys(TextColorResourceKeys);
+				nativeComboBox.ClearValue(ComboBox.ForegroundProperty);
+			}
+			else
+			{
+				nativeComboBox.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
+				nativeComboBox.Foreground = platformBrush;
+			}
 		}
 
-		public static void UpdateSelectedIndex(this MauiComboBox nativeComboBox, IPicker picker)
+		// ResourceKeys controlling the foreground color of the ComboBox.
+		// https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.combobox?view=windows-app-sdk-1.1
+		static readonly string[] TextColorResourceKeys =
+		{
+			"ComboBoxForeground",
+			"ComboBoxForegroundDisabled",
+			"ComboBoxForegroundFocused",
+			"ComboBoxForegroundFocusedPressed",
+		};
+
+		public static void UpdateSelectedIndex(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.SelectedIndex = picker.SelectedIndex;
 		}
 
-		public static void UpdateCharacterSpacing(this MauiComboBox nativeComboBox, IPicker picker)
+		public static void UpdateCharacterSpacing(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.CharacterSpacing = picker.CharacterSpacing.ToEm();
 		}
 
-		public static void UpdateFont(this MauiComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
-			nativeComboBox.UpdateFont(picker.Font, fontManager); 
-		
-		public static void UpdateHorizontalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
+		public static void UpdateFont(this ComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
+			nativeComboBox.UpdateFont(picker.Font, fontManager);
+
+		public static void UpdateHorizontalTextAlignment(this ComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToNativeHorizontalAlignment();
+			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToPlatformHorizontalAlignment();
 		}
 
-		public static void UpdateVerticalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
+		public static void UpdateVerticalTextAlignment(this ComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToNativeVerticalAlignment();
+			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 	}
 }

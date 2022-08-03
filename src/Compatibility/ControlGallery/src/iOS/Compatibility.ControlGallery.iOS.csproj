@@ -9,7 +9,7 @@
     <Nullable>disable</Nullable>
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
     <!--<MtouchLink Condition="'$(CI)' == 'true'">Full</MtouchLink>-->
-    <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
+    <NoWarn>0612</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -18,8 +18,8 @@
 
   <ItemGroup>
     <!--<PackageReference Include="AdvancedColorPicker" Version="2.0.1" />-->
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NUnit" Version="3.13.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
     <!--<PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />-->
     <!--<PackageReference Include="Xamarin.TestCloud.Agent" Version="0.22.1" />-->
   </ItemGroup>
@@ -51,5 +51,7 @@
     <BundleResource Include="Resources\**" />
     <ImageAsset Include="Assets.xcassets\**" Visible="False" />
   </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

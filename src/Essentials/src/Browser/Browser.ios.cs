@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
 using Foundation;
@@ -6,40 +7,47 @@ using ObjCRuntime;
 using SafariServices;
 using UIKit;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Browser
+	partial class BrowserImplementation : IBrowser
 	{
-		static async Task<bool> PlatformOpenAsync(Uri uri, BrowserLaunchOptions options)
+		public async Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options)
 		{
 			switch (options.LaunchMode)
 			{
 				case BrowserLaunchMode.SystemPreferred:
-					var nativeUrl = new NSUrl(uri.AbsoluteUri);
-					var sfViewController = new SFSafariViewController(nativeUrl, false);
-					var vc = Platform.GetCurrentViewController();
-
-					if (options.PreferredToolbarColor != null)
-						sfViewController.PreferredBarTintColor = options.PreferredToolbarColor.AsUIColor();
-
-					if (options.PreferredControlColor != null)
-						sfViewController.PreferredControlTintColor = options.PreferredControlColor.AsUIColor();
-
-					if (sfViewController.PopoverPresentationController != null)
-						sfViewController.PopoverPresentationController.SourceView = vc.View;
-
-					if (options.HasFlag(BrowserLaunchFlags.PresentAsFormSheet))
-						sfViewController.ModalPresentationStyle = UIModalPresentationStyle.FormSheet;
-					else if (options.HasFlag(BrowserLaunchFlags.PresentAsPageSheet))
-						sfViewController.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
-
-					await vc.PresentViewControllerAsync(sfViewController, true);
+					await LaunchSafariViewController(uri, options);
 					break;
 				case BrowserLaunchMode.External:
-					return await Launcher.PlatformOpenAsync(uri);
+					return await Launcher.Default.OpenAsync(uri);
 			}
 
 			return true;
+		}
+
+		private static async Task LaunchSafariViewController(Uri uri, BrowserLaunchOptions options)
+		{
+			var nativeUrl = new NSUrl(uri.AbsoluteUri);
+#pragma warning disable CA1416 // TODO: 'SFSafariViewController(NSUrl, bool)' is unsupported on: 'ios' 11.0 and later, there is an overload SFSafariViewController(NSUrl, SFSafariViewControllerConfiguration) supported from ios 11.0+
+			var sfViewController = new SFSafariViewController(nativeUrl, false);
+#pragma warning restore CA1416 // probably need to call the overloads depending on OS version
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true)!;
+
+			if (options.PreferredToolbarColor != null)
+				sfViewController.PreferredBarTintColor = options.PreferredToolbarColor.AsUIColor();
+
+			if (options.PreferredControlColor != null)
+				sfViewController.PreferredControlTintColor = options.PreferredControlColor.AsUIColor();
+
+			if (sfViewController.PopoverPresentationController != null)
+				sfViewController.PopoverPresentationController.SourceView = vc.View!;
+
+			if (options.HasFlag(BrowserLaunchFlags.PresentAsFormSheet))
+				sfViewController.ModalPresentationStyle = UIModalPresentationStyle.FormSheet;
+			else if (options.HasFlag(BrowserLaunchFlags.PresentAsPageSheet))
+				sfViewController.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
+
+			await vc.PresentViewControllerAsync(sfViewController, true);
 		}
 	}
 }

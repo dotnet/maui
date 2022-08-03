@@ -12,6 +12,7 @@ using EWidget = ElmSharp.Widget;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 {
+	[Obsolete]
 	public class NavigationDrawer : ELayout, IAnimatable
 	{
 		static readonly int TouchWidth = ThemeConstants.Shell.Resources.Watch.DefaultDrawerTouchWidth;

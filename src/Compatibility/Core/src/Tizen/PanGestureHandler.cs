@@ -4,6 +4,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class PanGestureHandler : GestureHandler
 	{
 		int _currentPanGestureId;

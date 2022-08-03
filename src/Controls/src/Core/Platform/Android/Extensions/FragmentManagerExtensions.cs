@@ -36,6 +36,11 @@ namespace Microsoft.Maui.Controls.Platform
 			return fragmentTransaction.SetTransition(transit);
 		}
 
+		public static FragmentTransaction SetReorderingAllowedEx(this FragmentTransaction fragmentTransaction, bool reorderingAllowed)
+		{
+			return fragmentTransaction.SetReorderingAllowed(reorderingAllowed);
+		}
+
 		public static int CommitAllowingStateLossEx(this FragmentTransaction fragmentTransaction)
 		{
 			return fragmentTransaction.CommitAllowingStateLoss();

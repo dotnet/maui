@@ -1,12 +1,17 @@
 using System;
 using System.Globalization;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Graphics;
 using EEntry = ElmSharp.Entry;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Application;
+using NIEntry = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
 using WatchDateTimePickerDialog = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch.WatchDateTimePickerDialog;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TimePickerRenderer : ViewRenderer<TimePicker, EEntry>
 	{
 		//TODO need to add internationalization support
@@ -29,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual IDateTimeDialog CreateDialog()
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				return new WatchDateTimePickerDialog(Forms.NativeParent);
 			}
@@ -47,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				entry.SetVerticalTextAlignment(0.5);
 				SetNativeControl(entry);
 
-				if (entry is IEntry ie)
+				if (entry is NIEntry ie)
 				{
 					ie.TextBlockFocused += OnTextBlockFocused;
 					ie.EntryLayoutFocused += OnFocused;
@@ -85,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				if (Control != null)
 				{
-					if (Control is IEntry ie)
+					if (Control is NIEntry ie)
 					{
 						ie.TextBlockFocused -= OnTextBlockFocused;
 						ie.EntryLayoutFocused -= OnFocused;
@@ -128,7 +133,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				// You need to call Show() after ui thread occupation because of EFL problem.
 				// Otherwise, the content of the popup will not receive focus.
-				Device.BeginInvokeOnMainThread(() => dialog.Show());
+				Application.Current.Dispatcher.Dispatch(() => dialog.Show());
 			}
 		}
 
@@ -144,9 +149,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 		protected virtual void UpdateTextColor()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
-				ie.TextColor = Element.TextColor.ToNative();
+				ie.TextColor = Element.TextColor.ToPlatformEFL();
 			}
 		}
 
@@ -158,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontSize()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontSize = Element.FontSize;
 			}
@@ -166,7 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontFamily()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontFamily = Element.FontFamily;
 			}
@@ -174,7 +179,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontAttributes()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontAttributes = Element.FontAttributes;
 			}

@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Converters;
@@ -17,6 +16,8 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(BindablePropertyConverter))]
 	public sealed class BindableProperty
 	{
+		internal const DynamicallyAccessedMemberTypes DeclaringTypeMembers = DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods;
+
 		public delegate void BindingPropertyChangedDelegate(BindableObject bindable, object oldValue, object newValue);
 
 		public delegate void BindingPropertyChangedDelegate<in TPropertyType>(BindableObject bindable, TPropertyType oldValue, TPropertyType newValue);
@@ -40,8 +41,6 @@ namespace Microsoft.Maui.Controls
 		static readonly Dictionary<Type, TypeConverter> KnownTypeConverters = new Dictionary<Type, TypeConverter>
 		{
 			{ typeof(Uri), new UriTypeConverter() },
-			{ typeof(Color), new ColorTypeConverter() },
-			{ typeof(Easing), new EasingTypeConverter() },
 		};
 
 		static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>
@@ -68,7 +67,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='UnsetValue']/Docs" />
 		public static readonly object UnsetValue = new object();
 
-		BindableProperty(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
+		BindableProperty(string propertyName, Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
 								 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 								 CoerceValueDelegate coerceValue = null, BindablePropertyBindingChanging bindingChanging = null, bool isReadOnly = false, CreateDefaultValueDelegate defaultValueCreator = null)
 		{
@@ -83,7 +82,7 @@ namespace Microsoft.Maui.Controls
 			if (defaultBindingMode != BindingMode.Default && defaultBindingMode != BindingMode.OneWay && defaultBindingMode != BindingMode.OneWayToSource && defaultBindingMode != BindingMode.TwoWay && defaultBindingMode != BindingMode.OneTime)
 				throw new ArgumentException($"Not a valid type of BindingMode. Property: {returnType} {declaringType.Name}.{propertyName}. Default binding mode: {defaultBindingMode}", nameof(defaultBindingMode));
 
-			if (defaultValue == null && Nullable.GetUnderlyingType(returnType) == null && returnType.GetTypeInfo().IsValueType)
+			if (defaultValue == null && Nullable.GetUnderlyingType(returnType) == null && returnType.IsValueType)
 				defaultValue = Activator.CreateInstance(returnType);
 
 			if (defaultValue != null && !returnType.IsInstanceOfType(defaultValue))
@@ -94,7 +93,6 @@ namespace Microsoft.Maui.Controls
 
 			PropertyName = propertyName;
 			ReturnType = returnType;
-			ReturnTypeInfo = returnType.GetTypeInfo();
 			DeclaringType = declaringType;
 			DefaultValue = defaultValue;
 			DefaultBindingMode = defaultBindingMode;
@@ -108,6 +106,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='DeclaringType']/Docs" />
+		[DynamicallyAccessedMembers(DeclaringTypeMembers)]
 		public Type DeclaringType { get; private set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='DefaultBindingMode']/Docs" />
@@ -135,12 +134,10 @@ namespace Microsoft.Maui.Controls
 
 		internal BindingPropertyChangingDelegate PropertyChanging { get; private set; }
 
-		internal TypeInfo ReturnTypeInfo { get; }
-
 		internal ValidateValueDelegate ValidateValue { get; private set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='Create']/Docs" />
-		public static BindableProperty Create(string propertyName, Type returnType, Type declaringType, object defaultValue = null, BindingMode defaultBindingMode = BindingMode.OneWay,
+		public static BindableProperty Create(string propertyName, Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue = null, BindingMode defaultBindingMode = BindingMode.OneWay,
 											  ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 											  CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
 		{
@@ -149,7 +146,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateAttached']/Docs" />
-		public static BindableProperty CreateAttached(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
+		public static BindableProperty CreateAttached(string propertyName, Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
 													  ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 													  CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
 		{
@@ -157,7 +154,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateAttachedReadOnly']/Docs" />
-		public static BindablePropertyKey CreateAttachedReadOnly(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
+		public static BindablePropertyKey CreateAttachedReadOnly(string propertyName, Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
 																 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 																 CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
 		{
@@ -167,7 +164,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateReadOnly']/Docs" />
-		public static BindablePropertyKey CreateReadOnly(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
+		public static BindablePropertyKey CreateReadOnly(string propertyName, Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWayToSource,
 														 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 														 CoerceValueDelegate coerceValue = null, CreateDefaultValueDelegate defaultValueCreator = null)
 		{
@@ -176,7 +173,7 @@ namespace Microsoft.Maui.Controls
 					isReadOnly: true, defaultValueCreator: defaultValueCreator));
 		}
 
-		internal static BindableProperty Create(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode, ValidateValueDelegate validateValue,
+		internal static BindableProperty Create(string propertyName, Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode, ValidateValueDelegate validateValue,
 												BindingPropertyChangedDelegate propertyChanged, BindingPropertyChangingDelegate propertyChanging, CoerceValueDelegate coerceValue, BindablePropertyBindingChanging bindingChanging,
 												CreateDefaultValueDelegate defaultValueCreator = null)
 		{
@@ -184,7 +181,7 @@ namespace Microsoft.Maui.Controls
 				defaultValueCreator: defaultValueCreator);
 		}
 
-		internal static BindableProperty CreateAttached(string propertyName, Type returnType, Type declaringType, object defaultValue, BindingMode defaultBindingMode, ValidateValueDelegate validateValue,
+		internal static BindableProperty CreateAttached(string propertyName, Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode, ValidateValueDelegate validateValue,
 														BindingPropertyChangedDelegate propertyChanged, BindingPropertyChangingDelegate propertyChanging, CoerceValueDelegate coerceValue, BindablePropertyBindingChanging bindingChanging,
 														bool isReadOnly, CreateDefaultValueDelegate defaultValueCreator = null)
 		{
@@ -202,35 +199,40 @@ namespace Microsoft.Maui.Controls
 
 		internal bool TryConvert(ref object value)
 		{
+			Type returnType = ReturnType;
+
 			if (value == null)
-				return !ReturnTypeInfo.IsValueType || ReturnTypeInfo.IsGenericType && ReturnTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
 
 			Type valueType = value.GetType();
-			Type type = ReturnType;
+
+			// already the same type, no need to convert
+			if (returnType == valueType)
+				return true;
 
 			// Dont support arbitrary IConvertible by limiting which types can use this
-			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, type) != -1)
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
 			{
-				value = Convert.ChangeType(value, type);
+				value = Convert.ChangeType(value, returnType);
 				return true;
 			}
-			if (KnownTypeConverters.TryGetValue(type, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
 			{
 				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
 				return true;
 			}
-			if (ReturnTypeInfo.IsAssignableFrom(valueType.GetTypeInfo()))
+			if (returnType.IsAssignableFrom(valueType))
 				return true;
 
-			var cast = type.GetImplicitConversionOperator(fromType: valueType, toType: type) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: type);
+			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
 			if (cast != null)
 			{
 				value = cast.Invoke(null, new[] { value });
 				return true;
 			}
-			if (KnownIValueConverters.TryGetValue(type, out IValueConverter valueConverter))
+			if (KnownIValueConverters.TryGetValue(returnType, out IValueConverter valueConverter))
 			{
-				value = valueConverter.Convert(value, type, null, CultureInfo.CurrentUICulture);
+				value = valueConverter.Convert(value, returnType, null, CultureInfo.CurrentUICulture);
 				return true;
 			}
 

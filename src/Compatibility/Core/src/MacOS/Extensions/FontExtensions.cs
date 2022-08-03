@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 						var cleansedFont = CleanseFontName(family);
 						font = NSFont.FromFontName(cleansedFont, size);
 					}
-						
+
 				}
 				catch
 				{
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				font = defaultFont;
 				descriptor = defaultFont.FontDescriptor;
 			}
-		
+
 			if (descriptor == null)
 				descriptor = defaultFont.FontDescriptor;
 
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 				font = NSFont.FromDescription(fontDescriptorWithTraits, size);
 			}
-			
+
 			return font.ScreenFontWithRenderingMode(NSFontRenderingMode.AntialiasedIntegerAdvancements);
 		}
 

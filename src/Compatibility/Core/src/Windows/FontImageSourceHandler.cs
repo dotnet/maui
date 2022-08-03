@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				FontFamily = GetFontSource(fontsource),
 				FontSize = (float)fontsource.Size,
-				HorizontalAlignment = CanvasHorizontalAlignment.Center,
+				HorizontalAlignment = CanvasHorizontalAlignment.Left,
 				VerticalAlignment = CanvasVerticalAlignment.Center,
 				Options = CanvasDrawTextOptions.Default
 			};
@@ -51,9 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					var iconcolor = (fontsource.Color != null ? fontsource.Color : Colors.White).ToWindowsColor();
 
 					// offset by 1 as we added a 1 inset
-					var x = (float)layout.DrawBounds.X * -1;
-
-					ds.DrawTextLayout(layout, x, 1f, iconcolor);
+					ds.DrawTextLayout(layout, 1f, 1f, iconcolor);
 				}
 
 				return Task.FromResult((UI.Xaml.Media.ImageSource)imageSource);
@@ -70,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Glyph = fontImageSource.Glyph,
 					FontSize = fontImageSource.Size,
-					Foreground = fontImageSource.Color.ToNative()
+					Foreground = fontImageSource.Color.ToPlatform()
 				};
 
 				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily(fontImageSource.RequireFontManager());
@@ -92,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Glyph = fontImageSource.Glyph,
 					FontSize = fontImageSource.Size,
-					Foreground = fontImageSource.Color.ToNative()
+					Foreground = fontImageSource.Color.ToPlatform()
 				};
 
 				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily(fontImageSource.RequireFontManager());
@@ -116,15 +114,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var allFamilies = fontFamily.Source.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
 			if (allFamilies.Length > 1)
-			{       
+			{
 				// There's really no perfect solution to handle font families with fallbacks (comma-separated)	
 				// So if the font family has fallbacks, only one is taken, because CanvasTextFormat	
 				// only supports one font family
 				string source = fontImageSource.FontFamily;
 
-				foreach(var family in allFamilies)
+				foreach (var family in allFamilies)
 				{
-					if(family.Contains(source))
+					if (family.Contains(source, StringComparison.Ordinal))
 					{
 						fontSource = family;
 						break;

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
+namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.Cell;
@@ -13,7 +13,7 @@
 		public static Color GetDefaultBackgroundColor(BindableObject element)
 			=> (Color)element.GetValue(DefaultBackgroundColorProperty);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="//Member[@MemberName='SetDefaultBackgroundColor'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="//Member[@MemberName='SetDefaultBackgroundColor'][1]/Docs" />
 		public static void SetDefaultBackgroundColor(BindableObject element, Color value)
 			=> element.SetValue(DefaultBackgroundColorProperty, value);
 
@@ -21,7 +21,7 @@
 		public static Color DefaultBackgroundColor(this IPlatformElementConfiguration<iOS, FormsElement> config)
 			=> GetDefaultBackgroundColor(config.Element);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="//Member[@MemberName='SetDefaultBackgroundColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="//Member[@MemberName='SetDefaultBackgroundColor'][2]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetDefaultBackgroundColor(this IPlatformElementConfiguration<iOS, FormsElement> config, Color value)
 		{
 			SetDefaultBackgroundColor(config.Element, value);

@@ -4,6 +4,7 @@ using Android.Content;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class GroupableItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource> : SelectableItemsViewRenderer<TItemsView, TAdapter, TItemsViewSource>
 		where TItemsView : GroupableItemsView
 		where TAdapter : GroupableItemsViewAdapter<TItemsView, TItemsViewSource>

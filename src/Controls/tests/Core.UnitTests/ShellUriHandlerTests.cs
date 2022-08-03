@@ -307,7 +307,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				if (!uri.IsAbsoluteUri)
 				{
-					var reverse = new Uri(uri.OriginalString.Replace("/", "\\"), UriKind.Relative);
+					var reverse = new Uri(uri.OriginalString.Replace('/', '\\'), UriKind.Relative);
 					Assert.AreEqual(new Uri("app://shell/IMPL_shell/path"), ShellUriHandler.ConvertToStandardFormat(shell, reverse));
 				}
 

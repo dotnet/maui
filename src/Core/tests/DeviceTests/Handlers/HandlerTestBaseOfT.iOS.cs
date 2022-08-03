@@ -107,6 +107,29 @@ namespace Microsoft.Maui.DeviceTests
 			expected.AssertEqual(transform);
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task InputTransparencyInitializesCorrectly(bool inputTransparent)
+		{
+			if (typeof(TStub) == typeof(LayoutStub))
+			{
+				// The platform type for Layouts (LayoutView) always has UserInteractionEnabled
+				// to allow for its children to be interacted with
+				return;
+			}
+
+			var view = new TStub()
+			{
+				InputTransparent = inputTransparent
+			};
+
+			var uie = await GetValueAsync(view, handler => GetUserInteractionEnabled(handler));
+
+			// UserInteractionEnabled should be the opposite value of InputTransparent 
+			Assert.NotEqual(inputTransparent, uie);
+		}
+
 		// TODO: this is all kinds of wrong
 		protected Task<CATransform3D> GetLayerTransformAsync(TStub view)
 		{
@@ -115,67 +138,77 @@ namespace Microsoft.Maui.DeviceTests
 			window.Content = view;
 			view.Parent = window;
 
-			view.Frame = new Rectangle(0, 0, 100, 100);
+			view.Frame = new Rect(0, 0, 100, 100);
 
 			return GetValueAsync(view, handler => GetLayerTransform(handler));
 		}
 
 		protected CATransform3D GetLayerTransform(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).Layer.Transform;
+			((UIView)viewHandler.PlatformView).Layer.Transform;
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).AccessibilityIdentifier;
+			((UIView)viewHandler.PlatformView).AccessibilityIdentifier;
 
 		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
 		{
-			var nativeView = (UIView)viewHandler.NativeView;
+			var platformView = (UIView)viewHandler.PlatformView;
 
-			if (nativeView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
+			if (platformView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
 				return FlowDirection.RightToLeft;
 
 			return FlowDirection.LeftToRight;
 		}
 
+		protected UIView GetAccessiblePlatformView(IViewHandler viewHandler)
+		{
+			var platformView = ((UIView)viewHandler.PlatformView);
+
+			if (platformView is UISearchBar searchBar)
+				platformView = searchBar.GetSearchTextField();
+
+			return platformView;
+		}
+
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
 		{
-			var nativeView = ((UIView)viewHandler.NativeView);
+			var platformView = GetAccessiblePlatformView(viewHandler);
 
 			// UIControl elements when instantiated have IsAccessibilityElement set to false.
 			// Once they are added to the visual tree then iOS transitions IsAccessibilityElement
 			// to true. In code we only set non UIControl elements ourselves to true.
-			if (nativeView is UIControl)
+			if (platformView is UIControl)
 				return true;
 
-			return nativeView.IsAccessibilityElement;
+			return platformView.IsAccessibilityElement;
 		}
 
-		protected Maui.Graphics.Rectangle GetNativeViewBounds(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).GetNativeViewBounds();
+		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>
+			viewHandler.VirtualView.ToPlatform().GetPlatformViewBounds();
 
-		protected Maui.Graphics.Rectangle GetBoundingBox(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).GetBoundingBox();
+		protected Maui.Graphics.Rect GetBoundingBox(IViewHandler viewHandler) =>
+			viewHandler.VirtualView.ToPlatform().GetBoundingBox();
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).GetViewTransform();
+			((UIView)viewHandler.PlatformView).GetViewTransform();
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).AccessibilityLabel;
+			GetAccessiblePlatformView(viewHandler).AccessibilityLabel;
 
 		protected string GetSemanticHint(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).AccessibilityHint;
+			GetAccessiblePlatformView(viewHandler).AccessibilityHint;
 
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
+			GetAccessiblePlatformView(viewHandler).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
 				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
 		protected nfloat GetOpacity(IViewHandler viewHandler) =>
-			((UIView)viewHandler.NativeView).Alpha;
+			((UIView)viewHandler.PlatformView).Alpha;
 
 		protected Visibility GetVisibility(IViewHandler viewHandler)
 		{
-			var nativeView = (UIView)viewHandler.NativeView;
+			var platformView = (UIView)viewHandler.PlatformView;
 
-			foreach (var constraint in nativeView.Constraints)
+			foreach (var constraint in platformView.Constraints)
 			{
 				if (constraint is CollapseConstraint collapseConstraint)
 				{
@@ -187,12 +220,18 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			if (nativeView.Hidden)
+			if (platformView.Hidden)
 			{
 				return Visibility.Hidden;
 			}
 
 			return Visibility.Visible;
+		}
+
+		protected bool GetUserInteractionEnabled(IViewHandler viewHandler)
+		{
+			var platformView = (UIView)viewHandler.PlatformView;
+			return platformView.UserInteractionEnabled;
 		}
 	}
 }

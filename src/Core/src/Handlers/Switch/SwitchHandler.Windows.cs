@@ -6,49 +6,43 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ToggleSwitch>
 	{
-		WResourceDictionary? _originalResources;
+		protected override ToggleSwitch CreatePlatformView() => new ToggleSwitch();
 
-		protected override ToggleSwitch CreateNativeView() => new ToggleSwitch();
-
-		void SetupDefaults(ToggleSwitch nativeView)
+		public static void MapIsOn(ISwitchHandler handler, ISwitch view)
 		{
-			_originalResources = nativeView?.CloneResources();
+			handler.PlatformView?.UpdateIsToggled(view);
 		}
 
-		public static void MapIsOn(SwitchHandler handler, ISwitch view)
+		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsToggled(view);
+			if (handler is SwitchHandler platformHandler)
+				handler.PlatformView?.UpdateTrackColor(view);
 		}
 
-		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
+		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateTrackColor(view, handler._originalResources);
+			if (handler is SwitchHandler platformHandler)
+				handler.PlatformView?.UpdateThumbColor(view);
 		}
 
-		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
+		protected override void DisconnectHandler(ToggleSwitch platformView)
 		{
-			handler.NativeView?.UpdateThumbColor(view, handler._originalResources);
+			base.DisconnectHandler(platformView);
+			platformView.Toggled -= OnToggled;
 		}
 
-		protected override void DisconnectHandler(ToggleSwitch nativeView)
+		protected override void ConnectHandler(ToggleSwitch platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.Toggled -= OnToggled;
-		}
-
-		protected override void ConnectHandler(ToggleSwitch nativeView)
-		{
-			base.ConnectHandler(nativeView);
-			SetupDefaults(nativeView);
-			nativeView.Toggled += OnToggled;
+			base.ConnectHandler(platformView);
+			platformView.Toggled += OnToggled;
 		}
 
 		void OnToggled(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView is null || PlatformView is null || VirtualView.IsOn == PlatformView.IsOn)
 				return;
 
-			VirtualView.IsOn = NativeView.IsOn;
+			VirtualView.IsOn = PlatformView.IsOn;
 		}
 	}
 }

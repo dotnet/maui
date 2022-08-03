@@ -4,7 +4,9 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, FrameworkElement>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{

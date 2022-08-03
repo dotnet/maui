@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class DatePickerRenderer : DatePickerRendererBase<UITextField>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -43,6 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class DatePickerRendererBase<TControl> : ViewRenderer<DatePicker, TControl>
 		where TControl : UITextField
 	{
@@ -150,6 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void HandleValueChanged(object sender, EventArgs e)
 		{
 			if (Element.OnThisPlatform().UpdateMode() == UpdateMode.Immediately)
@@ -170,18 +173,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
+		[PortHandler]
 		void UpdateDateFromModel(bool animate)
 		{
 			if (_picker.Date.ToDateTime().Date != Element.Date.Date)
 				_picker.SetDate(Element.Date.ToNSDate(), animate);
 
 			// Can't use Element.Format because it won't display the correct format if the region and language are set differently
-			if (string.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d") || Element.Format.Equals("D"))
+			if (string.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d", StringComparison.OrdinalIgnoreCase))
 			{
 				NSDateFormatter dateFormatter = new NSDateFormatter();
 				dateFormatter.TimeZone = NSTimeZone.FromGMT(0);
 
-				if (Element.Format?.Equals("D") == true)
+				if (Element.Format?.Equals("D", StringComparison.Ordinal) == true)
 				{
 					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
 					var strDate = dateFormatter.StringFor(_picker.Date);
@@ -194,7 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					Control.Text = strDate;
 				}
 			}
-			else if (Element.Format.Contains("/"))
+			else if (Element.Format.Contains('/', StringComparison.Ordinal))
 			{
 				Control.Text = Element.Date.ToString(Element.Format, CultureInfo.InvariantCulture);
 			}
@@ -204,6 +208,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdateElementDate()
 		{
 			ElementController.SetValueFromRenderer(DatePicker.DateProperty, _picker.Date.ToDateTime().Date);
@@ -241,6 +246,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_picker.MinimumDate = Element.MinimumDate.ToNSDate();
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateTextColor()
 		{
 			var textColor = Element.TextColor;
@@ -248,7 +254,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (textColor == null || (!Element.IsEnabled && _useLegacyColorManagement))
 				Control.TextColor = _defaultTextColor;
 			else
-				Control.TextColor = textColor.ToUIColor();
+				Control.TextColor = textColor.ToPlatform();
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			Control.Text = Control.Text;

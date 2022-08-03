@@ -3,16 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 using EColor = ElmSharp.Color;
 using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
-	/// <summary>
-	/// Type alias which identifies list of cells whose data model was transformed by Xamarin.
-	/// </summary>
+	// Type alias which identifies list of cells whose data model was transformed by Xamarin.
 	using GroupList = TemplatedItemsList<ItemsView<Cell>, Cell>;
 
 	/// <summary>
@@ -25,6 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 	/// Whenever element disappears from visible space its content is destroyed for time being.
 	/// This is carried out by so called Cell Handlers.
 	/// </remarks>
+	[Obsolete]
 	public class ListView : GenList
 	{
 		/// <summary>

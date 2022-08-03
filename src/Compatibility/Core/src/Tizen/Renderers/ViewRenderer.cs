@@ -5,13 +5,15 @@ using System.Diagnostics;
 using System.Linq;
 using ElmSharp;
 using ElmSharp.Wearable;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Application;
+using Microsoft.Maui.Controls.Platform;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	/// <summary>
 	/// Base class for view renderers.
 	/// </summary>
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer instead")]
 	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>
 		where TView : View
 		where TNativeView : EvasObject

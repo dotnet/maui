@@ -1,30 +1,48 @@
 ﻿#nullable enable
 using System;
+using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-using WDoubleCollection = Microsoft.UI.Xaml.Media.DoubleCollection;
-using WPenLineCap = Microsoft.UI.Xaml.Media.PenLineCap;
-using WPenLineJoin = Microsoft.UI.Xaml.Media.PenLineJoin;
 
 namespace Microsoft.Maui.Platform
 {
 	public class ContentPanel : Panel
 	{
+		readonly Path? _borderPath;
+		IShape? _borderShape;
+		FrameworkElement? _content;
+
+		internal Path? BorderPath => _borderPath;
+
+		internal FrameworkElement? Content
+		{
+			get => _content;
+			set
+			{
+				_content = value;
+				AddContent(_content);
+			}
+		}
+
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Graphics.Rectangle, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Graphics.Rect, Size>? CrossPlatformArrange { get; set; }
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
-			if (CrossPlatformMeasure == null)
+			if (CrossPlatformMeasure == null || (availableSize.Width * availableSize.Height == 0))
 			{
 				return base.MeasureOverride(availableSize);
 			}
 
 			var measure = CrossPlatformMeasure(availableSize.Width, availableSize.Height);
 
-			return measure.ToNative();
+			return measure.ToPlatform();
 		}
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
@@ -37,25 +55,32 @@ namespace Microsoft.Maui.Platform
 			var width = finalSize.Width;
 			var height = finalSize.Height;
 
-			var actual = CrossPlatformArrange(new Graphics.Rectangle(0, 0, width, height));
+			var actual = CrossPlatformArrange(new Graphics.Rect(0, 0, width, height));
 
-			return new global::Windows.Foundation.Size(actual.Width, actual.Height);
+			_borderPath?.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
+
+			return new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
 		}
 
-		public ContentPanel() 
+		public ContentPanel()
 		{
 			_borderPath = new Path();
 			EnsureBorderPath();
-			
+
 			SizeChanged += ContentPanelSizeChanged;
 		}
 
-		private void ContentPanelSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
+		void ContentPanelSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
 		{
-			UpdatePath();
+			if (_borderPath == null)
+				return;
+
+			_borderPath.UpdatePath(_borderShape, ActualWidth, ActualHeight);
+			UpdateContent();
+			UpdateClip(_borderShape);
 		}
 
-		internal void EnsureBorderPath() 
+		internal void EnsureBorderPath()
 		{
 			if (!Children.Contains(_borderPath))
 			{
@@ -63,146 +88,74 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		readonly Path? _borderPath;
-		IShape? _borderShape;
-
 		public void UpdateBackground(Paint? background)
 		{
 			if (_borderPath == null)
 				return;
 
-			_borderPath.Fill = background?.ToNative();
-		}
-
-		public void UpdateStroke(Paint borderBrush)
-		{
-			if (_borderPath == null)
-				return;
-
-			_borderPath.Stroke = borderBrush.ToNative();
-		}
-
-		public void UpdateStrokeThickness(double borderWidth)
-		{
-			if (_borderPath == null)
-				return;
-
-			_borderPath.StrokeThickness = borderWidth;
-		}
-
-		public void UpdateStrokeDashPattern(float[]? borderDashArray)
-		{
-			if (_borderPath == null)
-				return;
-
-			if (_borderPath.StrokeDashArray != null)
-				_borderPath.StrokeDashArray.Clear();
-
-			if (borderDashArray != null && borderDashArray.Length > 0)
-			{
-				if (_borderPath.StrokeDashArray == null)
-					_borderPath.StrokeDashArray = new WDoubleCollection();
-
-				double[] array = new double[borderDashArray.Length];
-				borderDashArray.CopyTo(array, 0);
-
-				foreach (double value in array)
-				{
-					_borderPath.StrokeDashArray.Add(value);
-				}
-			}
+			_borderPath.UpdateBackground(background);
 		}
 
 		public void UpdateBorderShape(IShape borderShape)
 		{
 			_borderShape = borderShape;
-			UpdatePath();
-		}
 
-		public void UpdateBorderDashOffset(double borderDashOffset)
-		{
 			if (_borderPath == null)
 				return;
 
-			_borderPath.StrokeDashOffset = borderDashOffset;
+			_borderPath.UpdateBorderShape(_borderShape, ActualWidth, ActualHeight);
+			UpdateContent();
+			UpdateClip(_borderShape);
 		}
 
-		public void UpdateStrokeMiterLimit(double strokeMiterLimit)
+		void AddContent(FrameworkElement? content)
 		{
-			if (_borderPath == null)
+			if (content == null)
 				return;
 
-			_borderPath.StrokeMiterLimit = strokeMiterLimit;
+			if (!Children.Contains(_content))
+				Children.Add(_content);
 		}
 
-		public void UpdateStrokeLineCap(LineCap strokeLineCap)
+		void UpdateContent()
 		{
-			if (_borderPath == null)
+			if (Content == null || _borderPath == null)
 				return;
 
-			WPenLineCap wLineCap = WPenLineCap.Flat;
+			var strokeThickness = _borderPath.StrokeThickness;
 
-			switch (strokeLineCap)
-			{
-				case LineCap.Butt:
-					wLineCap = WPenLineCap.Flat;
-					break;
-				case LineCap.Square:
-					wLineCap = WPenLineCap.Square;
-					break;
-				case LineCap.Round:
-					wLineCap = WPenLineCap.Round;
-					break;
-			}
-
-			_borderPath.StrokeStartLineCap = _borderPath.StrokeEndLineCap = wLineCap;
+			Content.RenderTransform = new TranslateTransform() { X = -strokeThickness, Y = -strokeThickness };
 		}
 
-		public void UpdateStrokeLineJoin(LineJoin strokeLineJoin)
+		void UpdateClip(IShape? borderShape)
 		{
-			if (_borderPath == null)
+			if (Content == null)
 				return;
 
-			WPenLineJoin wLineJoin = WPenLineJoin.Miter;
+			var clipGeometry = borderShape;
 
-			switch (strokeLineJoin)
-			{
-				case LineJoin.Miter:
-					wLineJoin = WPenLineJoin.Miter;
-					break;
-				case LineJoin.Bevel:
-					wLineJoin = WPenLineJoin.Bevel;
-					break;
-				case LineJoin.Round:
-					wLineJoin = WPenLineJoin.Round;
-					break;
-			}
-
-			_borderPath.StrokeLineJoin = wLineJoin;
-		}
-
-		void UpdatePath()
-		{
-			if (_borderShape == null)
+			if (clipGeometry == null)
 				return;
 
-			var strokeThickness = _borderPath?.StrokeThickness ?? 0;
+			double width = Content.ActualWidth;
+			double height = Content.ActualHeight;
 
-			var width = ActualWidth;
-			var height = ActualHeight;
-
-			if (width <= 0 || height <= 0)
+			if (height <= 0 && width <= 0)
 				return;
 
-			var pathSize = new Graphics.Rectangle(0, 0, width + strokeThickness, height + strokeThickness);
-			var shapePath = _borderShape.PathForBounds(pathSize);
-			var geometry = shapePath.AsPathGeometry();
+			var visual = ElementCompositionPreview.GetElementVisual(Content);
+			var compositor = visual.Compositor;
 
-			if (_borderPath != null)
-			{
-				_borderPath.Data = geometry;
-				_borderPath.RenderTransform = new TranslateTransform() { X = -(strokeThickness/2), Y = -(strokeThickness/2) };
-			}
+			var pathSize = new Graphics.Rect(0, 0, width, height);
+			var clipPath = clipGeometry.PathForBounds(pathSize);
+			var device = CanvasDevice.GetSharedDevice();
+			var geometry = clipPath.AsPath(device);
+
+			var path = new CompositionPath(geometry);
+			var pathGeometry = compositor.CreatePathGeometry(path);
+			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
+
+			visual.Clip = geometricClip;
 		}
 	}
 }

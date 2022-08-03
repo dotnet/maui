@@ -1,55 +1,70 @@
-﻿using Microsoft.Maui.Graphics;
-
-namespace Microsoft.Maui.Handlers
+﻿namespace Microsoft.Maui.Handlers
 {
 	public partial class ShapeViewHandler : ViewHandler<IShapeView, MauiShapeView>
 	{
-		protected override MauiShapeView CreateNativeView() =>
-			new MauiShapeView(Context);
+		protected override MauiShapeView CreatePlatformView()
+			=> new MauiShapeView(Context);
 
-		public static void MapShape(ShapeViewHandler handler, IShapeView shapeView)
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
+
+		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.UpdateShape(shapeView);
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.ToPlatform().UpdateBackground(shapeView);
+
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
-		public static void MapAspect(ShapeViewHandler handler, IShapeView shapeView)
+		public static void MapShape(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.UpdateShape(shapeView);
 		}
 
-		public static void MapFill(ShapeViewHandler handler, IShapeView shapeView)
+		public static void MapAspect(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
-		public static void MapStroke(ShapeViewHandler handler, IShapeView shapeView)
+		public static void MapFill(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
-		public static void MapStrokeThickness(ShapeViewHandler handler, IShapeView shapeView)
+		public static void MapStroke(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
-		public static void MapStrokeDashPattern(ShapeViewHandler handler, IShapeView shapeView)
+		public static void MapStrokeThickness(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
-		public static void MapStrokeLineCap(ShapeViewHandler handler, IShapeView shapeView)
+		public static void MapStrokeDashPattern(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
-		public static void MapStrokeLineJoin(ShapeViewHandler handler, IShapeView shapeView)
+		public static void MapStrokeDashOffset(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
-		public static void MapStrokeMiterLimit(ShapeViewHandler handler, IShapeView shapeView)
+		public static void MapStrokeLineCap(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.NativeView?.InvalidateShape(shapeView);
+			handler.PlatformView?.InvalidateShape(shapeView);
+		}
+
+		public static void MapStrokeLineJoin(IShapeViewHandler handler, IShapeView shapeView)
+		{
+			handler.PlatformView?.InvalidateShape(shapeView);
+		}
+
+		public static void MapStrokeMiterLimit(IShapeViewHandler handler, IShapeView shapeView)
+		{
+			handler.PlatformView?.InvalidateShape(shapeView);
 		}
 	}
 }

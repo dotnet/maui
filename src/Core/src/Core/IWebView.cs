@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
@@ -11,6 +12,11 @@ namespace Microsoft.Maui
 		/// Provide the data for a WebView.
 		/// </summary>
 		IWebViewSource Source { get; }
+
+		/// <summary>
+		/// When set this will act as a sync for cookies.
+		/// </summary>
+		CookieContainer Cookies { get; }
 
 		/// <summary>
 		/// Gets a value that indicates whether the user can navigate to previous pages.
@@ -43,6 +49,23 @@ namespace Microsoft.Maui
 		/// <param name="script">A script to evaluate.</param>
 		void Eval(string script);
 
+		/// <summary>
+		/// On platforms that support JavaScript evaluation, evaluates script.
+		/// </summary>
+		/// <param name="script">The script to evaluate.</param>
+		/// <returns>A task that contains the result of the evaluation as a string.</returns>
 		Task<string> EvaluateJavaScriptAsync(string script);
+
+		/// <summary>
+		/// For internal use by the .NET MAUI platform.
+		/// Raised after web navigation begins.
+		/// </summary>
+		bool Navigating(WebNavigationEvent evnt, string url);
+
+		/// <summary>
+		/// For internal use by the .NET MAUI platform.
+		/// Raised after web navigation completes.
+		/// </summary>
+		void Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result);
 	}
 }

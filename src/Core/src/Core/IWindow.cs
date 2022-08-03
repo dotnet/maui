@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the bounds of the IWindow within its monitor.
 		/// </summary>
-		Rectangle Frame { get; set; }
+		Rect Frame { get; set; }
 
 		/// <summary>
 		/// Gets the specified width of the IWindow.
@@ -92,5 +92,11 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <returns>Whether or not the back navigation was handled.</returns>
 		bool BackButtonClicked();
+
+		FlowDirection FlowDirection { get; }
+
+		void DisplayDensityChanged(float displayDensity);
+
+		float RequestDisplayDensity();
 	}
 }

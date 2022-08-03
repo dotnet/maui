@@ -7,12 +7,12 @@ using Microsoft.Maui.Controls.Shapes;
 //using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='NavigationProperty']/Docs" />
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
@@ -174,10 +174,10 @@ namespace Microsoft.Maui.Controls
 			var transforms = ((string)newValue).Split(' ');
 			foreach (var transform in transforms)
 			{
-				if (string.IsNullOrEmpty(transform) || transform.IndexOf('(') < 0 || transform.IndexOf(')') < 0)
+				if (string.IsNullOrEmpty(transform) || transform.IndexOf("(", StringComparison.Ordinal) < 0 || transform.IndexOf(")", StringComparison.Ordinal) < 0)
 					throw new FormatException("Format for transform is 'none | transform(value) [transform(value) ]*'");
-				var transformName = transform.Substring(0, transform.IndexOf('('));
-				var value = transform.Substring(transform.IndexOf('(') + 1, transform.IndexOf(')') - transform.IndexOf('(') - 1);
+				var transformName = transform.Substring(0, transform.IndexOf("(", StringComparison.Ordinal));
+				var value = transform.Substring(transform.IndexOf("(", StringComparison.Ordinal) + 1, transform.IndexOf(")", StringComparison.Ordinal) - transform.IndexOf("(", StringComparison.Ordinal) - 1);
 				double translationX, translationY, scaleX, scaleY, rotateX, rotateY, rotate;
 				if (transformName.StartsWith("translateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationX))
 					bindable.SetValue(TranslationXProperty, translationX);
@@ -361,6 +361,21 @@ namespace Microsoft.Maui.Controls
 
 		EffectiveFlowDirection IVisualElementController.EffectiveFlowDirection => FlowController.EffectiveFlowDirection;
 
+
+		static readonly BindablePropertyKey WindowPropertyKey = BindableProperty.CreateReadOnly(
+			nameof(Window), typeof(Window), typeof(VisualElement), null, propertyChanged: OnWindowChanged);
+
+		public static readonly BindableProperty WindowProperty = WindowPropertyKey.BindableProperty;
+
+		public Window Window => (Window)GetValue(WindowProperty);
+
+		Window IWindowController.Window
+		{
+			get => (Window)GetValue(WindowProperty);
+			set => SetValue(WindowPropertyKey, value);
+		}
+
+
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
 
 
@@ -368,9 +383,9 @@ namespace Microsoft.Maui.Controls
 		int _batched;
 		LayoutConstraint _computedConstraint;
 
-		bool _isInNativeLayout;
+		bool _isInPlatformLayout;
 
-		bool _isNativeStateConsistent = true;
+		bool _isPlatformStateConsistent = true;
 
 		bool _isPlatformEnabled;
 
@@ -424,18 +439,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Bounds']/Docs" />
-		public Rectangle Bounds
+		public Rect Bounds
 		{
-			get { return new Rectangle(X, Y, Width, Height); }
+			get { return IsMocked() ? new Rect(_mockX, _mockY, _mockWidth, _mockHeight) : _frame; }
 			private set
 			{
-				if (value.X == X && value.Y == Y && value.Height == Height && value.Width == Width)
-					return;
-				BatchBegin();
-				X = value.X;
-				Y = value.Y;
-				SetSize(value.Width, value.Height);
-				BatchCommit();
+				Frame = value;
 			}
 		}
 
@@ -634,38 +643,38 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool DisableLayout { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsInNativeLayout']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsInPlatformLayout']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool IsInNativeLayout
+		public bool IsInPlatformLayout
 		{
 			get
 			{
-				if (_isInNativeLayout)
+				if (_isInPlatformLayout)
 					return true;
 
 				Element parent = RealParent;
 				if (parent != null)
 				{
 					var visualElement = parent as VisualElement;
-					if (visualElement != null && visualElement.IsInNativeLayout)
+					if (visualElement != null && visualElement.IsInPlatformLayout)
 						return true;
 				}
 
 				return false;
 			}
-			set { _isInNativeLayout = value; }
+			set { _isInPlatformLayout = value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsNativeStateConsistent']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsPlatformStateConsistent']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool IsNativeStateConsistent
+		public bool IsPlatformStateConsistent
 		{
-			get { return _isNativeStateConsistent; }
+			get { return _isPlatformStateConsistent; }
 			set
 			{
-				if (_isNativeStateConsistent == value)
+				if (_isPlatformStateConsistent == value)
 					return;
-				_isNativeStateConsistent = value;
+				_isPlatformStateConsistent = value;
 				if (value && IsPlatformEnabled)
 					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 			}
@@ -685,7 +694,7 @@ namespace Microsoft.Maui.Controls
 					return;
 
 				_isPlatformEnabled = value;
-				if (value && IsNativeStateConsistent)
+				if (value && IsPlatformStateConsistent)
 					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 
 				InvalidateStateTriggers(IsPlatformEnabled);
@@ -723,7 +732,6 @@ namespace Microsoft.Maui.Controls
 			if (!Batched)
 			{
 				BatchCommitted?.Invoke(this, new EventArg<VisualElement>(this));
-				DependencyService.Get<IPlatformInvalidate>()?.Invalidate(this);
 			}
 		}
 
@@ -756,9 +764,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='NativeSizeChanged']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='PlatformSizeChanged']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void NativeSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		public void PlatformSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		public event EventHandler ChildrenReordered;
 
@@ -769,7 +777,13 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			if (FocusChangeRequested == null)
-				return false;
+			{
+				FocusRequest focusRequest = new FocusRequest(false);
+
+				Handler?.Invoke(nameof(IView.Focus), focusRequest);
+
+				return focusRequest.IsFocused;
+			}
 
 			var arg = new FocusRequestArgs { Focus = true };
 			FocusChangeRequested(this, arg);
@@ -796,14 +810,14 @@ namespace Microsoft.Maui.Controls
 			Size request = result.Request;
 			Size minimum = result.Minimum;
 
-			if (heightRequest != -1)
+			if (heightRequest != -1 && !double.IsNaN(heightRequest))
 			{
 				request.Height = heightRequest;
 				if (!hasMinimum)
 					minimum.Height = heightRequest;
 			}
 
-			if (widthRequest != -1)
+			if (widthRequest != -1 && !double.IsNaN(widthRequest))
 			{
 				request.Width = widthRequest;
 				if (!hasMinimum)
@@ -864,6 +878,7 @@ namespace Microsoft.Maui.Controls
 			if (!IsFocused)
 				return;
 
+			Handler?.Invoke(nameof(IView.Unfocus));
 			FocusChangeRequested?.Invoke(this, new FocusRequestArgs());
 		}
 
@@ -874,7 +889,7 @@ namespace Microsoft.Maui.Controls
 		protected override void OnBindingContextChanged()
 		{
 			PropagateBindingContextToStateTriggers();
-
+			PropagateBindingContextToBrush();
 			PropagateBindingContextToShadow();
 
 			base.OnBindingContextChanged();
@@ -883,7 +898,9 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
+
 			var view = child as View;
+
 			if (view != null)
 				ComputeConstraintForView(view);
 		}
@@ -891,6 +908,7 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
+
 			if (child is View view)
 				view.ComputedConstraint = LayoutConstraint.None;
 		}
@@ -898,13 +916,18 @@ namespace Microsoft.Maui.Controls
 		protected void OnChildrenReordered()
 			=> ChildrenReordered?.Invoke(this, EventArgs.Empty);
 
+		IPlatformSizeService _platformSizeService;
+
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
-
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
-			return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
+			if (Handler != null)
+				return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
+
+			_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
+			return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)
@@ -940,7 +963,22 @@ namespace Microsoft.Maui.Controls
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
-			(this as IView)?.InvalidateMeasure();
+
+			// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
+			// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
+
+			switch (trigger)
+			{
+				case InvalidationTrigger.MarginChanged:
+				case InvalidationTrigger.HorizontalOptionsChanged:
+				case InvalidationTrigger.VerticalOptionsChanged:
+					ParentView?.InvalidateMeasure();
+					break;
+				default:
+					(this as IView)?.InvalidateMeasure();
+					break;
+			}
+
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
 		}
 
@@ -967,9 +1005,9 @@ namespace Microsoft.Maui.Controls
 					}
 		}
 
-		internal void MockBounds(Rectangle bounds)
+		internal void MockBounds(Rect bounds)
 		{
-#if NETSTANDARD2_0 || NET6_0
+#if NETSTANDARD2_0 || NET6_0_OR_GREATER
 			(_mockX, _mockY, _mockWidth, _mockHeight) = bounds;
 #else
 			_mockX = bounds.X;
@@ -977,6 +1015,11 @@ namespace Microsoft.Maui.Controls
 			_mockWidth = bounds.Width;
 			_mockHeight = bounds.Height;
 #endif
+		}
+
+		bool IsMocked()
+		{
+			return _mockX != -1 || _mockY != -1 || _mockWidth != -1 || _mockHeight != -1;
 		}
 
 		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint) => ComputeConstrainsForChildren();
@@ -1154,19 +1197,24 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
-		void SetSize(double width, double height)
+		void UpdateBoundsComponents(Rect bounds)
 		{
-			if (Width == width && Height == height)
-				return;
+			_frame = bounds;
 
-			Width = width;
-			Height = height;
+			BatchBegin();
 
-			SizeAllocated(width, height);
+			X = bounds.X;
+			Y = bounds.Y;
+			Width = bounds.Width;
+			Height = bounds.Height;
+
+			SizeAllocated(Width, Height);
 			SizeChanged?.Invoke(this, EventArgs.Empty);
+
+			BatchCommit();
 		}
 
 		public class FocusRequestArgs : EventArgs

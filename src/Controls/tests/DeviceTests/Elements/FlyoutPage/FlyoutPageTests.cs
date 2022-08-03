@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -33,6 +34,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #if !IOS
+
+		[Fact(DisplayName = "FlyoutPage With Toolbar")]
+		public async Task FlyoutPageWithToolbar()
+		{
+			SetupBuilder();
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = new NavigationPage(new ContentPage() { Title = "Detail" }),
+				Flyout = new ContentPage() { Title = "Flyout" }
+			};
+
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
+			{
+				// validate that nothing crashes
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Details View Updates w/NavigationPage")]
+		public async Task DetailsViewUpdatesWithNavigationPage()
+		{
+			SetupBuilder();
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = new NavigationPage(new ContentPage() { Title = "Detail" }),
+				Flyout = new ContentPage() { Title = "Flyout" }
+			};
+
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			{
+				var details2 = new NavigationPage(new ContentPage() { Title = "Detail" });
+
+				flyoutPage.Detail = details2;
+				await OnLoadedAsync(details2.CurrentPage);
+				var detailView2 = (details2.CurrentPage.Handler as IPlatformViewHandler)?.PlatformView;
+				Assert.NotNull(detailView2);
+			});
+		}
+
 		[Fact(DisplayName = "Details View Updates")]
 		public async Task DetailsViewUpdates()
 		{
@@ -52,11 +93,12 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(flyoutView, dl);
 
 				flyoutPage.Detail = details2;
-				var detailView2 = details2.ToPlatform();
 
-				await detailView2.OnLoadedAsync();
-				dl = FindPlatformFlyoutView(detailView);
+				await OnLoadedAsync(details2);
+				await detailView.OnUnloadedAsync();
+				dl = FindPlatformFlyoutView(details2.ToPlatform());
 				Assert.Equal(flyoutView, dl);
+				Assert.Null(FindPlatformFlyoutView(detailView));
 			});
 		}
 #endif

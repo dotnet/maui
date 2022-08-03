@@ -1,7 +1,7 @@
 using System;
 using Android.OS;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class MainThread
 	{
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			get
 			{
-				if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+				if (OperatingSystem.IsAndroidVersionAtLeast(23))
 					return Looper.MainLooper.IsCurrentThread;
 
 				return Looper.MyLooper() == Looper.MainLooper;

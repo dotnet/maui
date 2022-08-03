@@ -1,15 +1,16 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Storage;
 using Tizen.Applications;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Launcher
+	partial class LauncherImplementation
 	{
-		static Task<bool> PlatformCanOpenAsync(Uri uri)
+		Task<bool> PlatformCanOpenAsync(Uri uri)
 			=> Task.FromResult(uri.IsWellFormedOriginalString());
 
-		static Task PlatformOpenAsync(Uri uri)
+		Task<bool> PlatformOpenAsync(Uri uri)
 		{
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
@@ -32,10 +33,10 @@ namespace Microsoft.Maui.Essentials
 
 			AppControl.SendLaunchRequest(appControl);
 
-			return Task.CompletedTask;
+			return Task.FromResult(true);
 		}
 
-		static Task PlatformOpenAsync(OpenFileRequest request)
+		Task<bool> PlatformOpenAsync(OpenFileRequest request)
 		{
 			if (string.IsNullOrEmpty(request.File.FullPath))
 				throw new ArgumentNullException(nameof(request.File.FullPath));
@@ -45,16 +46,16 @@ namespace Microsoft.Maui.Essentials
 			var appControl = new AppControl
 			{
 				Operation = AppControlOperations.View,
-				Mime = FileSystem.MimeTypes.All,
+				Mime = FileMimeTypes.All,
 				Uri = "file://" + request.File.FullPath,
 			};
 
 			AppControl.SendLaunchRequest(appControl);
 
-			return Task.CompletedTask;
+			return Task.FromResult(true);
 		}
 
-		static async Task<bool> PlatformTryOpenAsync(Uri uri)
+		async Task<bool> PlatformTryOpenAsync(Uri uri)
 		{
 			var canOpen = await PlatformCanOpenAsync(uri);
 

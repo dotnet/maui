@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch;
+using Microsoft.Maui.Devices;
 using EEntry = ElmSharp.Entry;
+using NIEntry = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PickerRenderer : ViewRenderer<Picker, EEntry>
 	{
 		List _list;
@@ -31,12 +35,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				if (Control != null)
 				{
-					if (Control is IEntry ie)
+					if (Control is NIEntry ie)
 					{
 						ie.TextBlockFocused -= OnTextBlockFocused;
 						ie.EntryLayoutFocused -= OnFocused;
 						ie.EntryLayoutUnfocused -= OnUnfocused;
-						if (Device.Idiom == TargetIdiom.TV)
+						if (DeviceInfo.Idiom == DeviceIdiom.TV)
 						{
 							ie.EntryLayoutFocused -= OnLayoutFocused;
 							ie.EntryLayoutUnfocused -= OnLayoutUnfocused;
@@ -54,13 +58,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				var entry = CreateNativeControl();
 				entry.SetVerticalTextAlignment(0.5);
-				if (entry is IEntry ie)
+				if (entry is NIEntry ie)
 				{
 					ie.TextBlockFocused += OnTextBlockFocused;
 					ie.EntryLayoutFocused += OnFocused;
 					ie.EntryLayoutUnfocused += OnUnfocused;
 
-					if (Device.Idiom == TargetIdiom.TV)
+					if (DeviceInfo.Idiom == DeviceIdiom.TV)
 					{
 						ie.EntryLayoutFocused += OnLayoutFocused;
 						ie.EntryLayoutUnfocused += OnLayoutUnfocused;
@@ -90,23 +94,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateTitleColor()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
-				ie.PlaceholderColor = Element.TitleColor.ToNative();
+				ie.PlaceholderColor = Element.TitleColor.ToPlatformEFL();
 			}
 		}
 
 		protected virtual void UpdateTextColor()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
-				ie.TextColor = Element.TextColor.ToNative();
+				ie.TextColor = Element.TextColor.ToPlatformEFL();
 			}
 		}
 
 		void UpdateFontSize()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontSize = Element.FontSize;
 			}
@@ -114,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontFamily()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontFamily = Element.FontFamily;
 			}
@@ -122,7 +126,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontAttributes()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontAttributes = Element.FontAttributes;
 			}
@@ -130,7 +134,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateTitle()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.Placeholder = Element.Title;
 			}
@@ -138,7 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateHorizontalTextAlignment()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
 			}
@@ -146,7 +150,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnLayoutFocused(object sender, EventArgs e)
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontSize = ie.FontSize * 1.5;
 			}
@@ -154,7 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnLayoutUnfocused(object sender, EventArgs e)
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontSize = ie.FontSize / 1.5;
 			}
@@ -167,7 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (Element.IsEnabled)
 			{
 				int i = 0;
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					_dialog = new WatchDialog(Forms.NativeParent, false);
 				}
@@ -178,7 +182,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				_dialog.AlignmentX = -1;
 				_dialog.AlignmentY = -1;
 				_dialog.Title = Element.Title;
-				_dialog.TitleColor = Element.TitleColor.ToNative();
+				_dialog.TitleColor = Element.TitleColor.ToPlatformEFL();
 				_dialog.Dismissed += OnDialogDismissed;
 				_dialog.BackButtonPressed += (object senders, EventArgs es) =>
 				{
@@ -197,7 +201,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				// You need to call Show() after ui thread occupation because of EFL problem.
 				// Otherwise, the content of the popup will not receive focus.
-				Device.BeginInvokeOnMainThread(() =>
+				Application.Current.Dispatcher.Dispatch(() =>
 				{
 					_dialog.Show();
 					_list.Show();

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Tizen
 
 		void UpdateBorderColor()
 		{
-			Control.BorderColor = Element.BorderColor.ToNative();
+			Control.BorderColor = Element.BorderColor.ToPlatform();
 		}
 
 		void UpdateShadowVisibility()

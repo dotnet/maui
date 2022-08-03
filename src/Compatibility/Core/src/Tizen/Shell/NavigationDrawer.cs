@@ -7,6 +7,7 @@ using ERect = ElmSharp.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public class NavigationDrawer : EBox, INavigationDrawer, IAnimatable
 	{
 		EvasObject _navigationView;

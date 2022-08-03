@@ -1,6 +1,7 @@
+using Microsoft.Maui.Storage;
+
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
-#pragma warning disable CS0618 // Type or member is obsolete
 	public class MainPageLifeCycleTests : ContentPage
 	{
 		readonly StackLayout _numTimesStartedLayout;
@@ -9,28 +10,23 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		public MainPageLifeCycleTests()
 		{
-			object timesStarted;
-			if (!Application.Current.Properties.TryGetValue("TimesStarted", out timesStarted))
+			if (!Preferences.ContainsKey("TimesStarted"))
 			{
-				Application.Current.Properties["TimesStarted"] = 0;
+				Preferences.Set("TimesStarted", 0);
 			}
-			var numTimesStarted = (int)Application.Current.Properties["TimesStarted"];
+			var numTimesStarted = Preferences.Get("TimesStarted", 0);
 
-
-			object timesSlept;
-			if (!Application.Current.Properties.TryGetValue("TimesSlept", out timesSlept))
+			if (!Preferences.ContainsKey("TimesSlept"))
 			{
-				Application.Current.Properties["TimesSlept"] = 0;
+				Preferences.Set("TimesSlept", 0);
 			}
-			var numTimesSlept = (int)Application.Current.Properties["TimesSlept"];
+			var numTimesSlept = Preferences.Get("TimesSlept", 0);
 
-
-			object timesResumed;
-			if (!Application.Current.Properties.TryGetValue("TimesResumed", out timesResumed))
+			if (!Preferences.ContainsKey("TimesResumed"))
 			{
-				Application.Current.Properties["TimesResumed"] = 0;
+				Preferences.Set("TimesResumed", 0);
 			}
-			var numTimesResumed = (int)Application.Current.Properties["TimesResumed"];
+			var numTimesResumed = Preferences.Get("TimesResumed", 0);
 
 			_numTimesStartedLayout = BuildLabelLayout("TimesStarted", numTimesStarted);
 			_numTimesSleptLayout = BuildLabelLayout("TimesSlept", numTimesSlept);
@@ -71,10 +67,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		public void UpdateLabels()
 		{
-			((Label)_numTimesStartedLayout.Children[1]).Text = ((int)Application.Current.Properties["TimesStarted"]).ToString();
-			((Label)_numTimesSleptLayout.Children[1]).Text = ((int)Application.Current.Properties["TimesSlept"]).ToString();
-			((Label)_numTimesResumedLayout.Children[1]).Text = ((int)Application.Current.Properties["TimesResumed"]).ToString();
+			((Label)_numTimesStartedLayout.Children[1]).Text = Preferences.Get("TimesStarted", 0).ToString();
+			((Label)_numTimesSleptLayout.Children[1]).Text = Preferences.Get("TimesSlept", 0).ToString();
+			((Label)_numTimesResumedLayout.Children[1]).Text = Preferences.Get("TimesResumed", 0).ToString();
 		}
 	}
-#pragma warning restore CS0618 // Type or member is obsolete
 }

@@ -15,24 +15,24 @@ using WWindow = Microsoft.UI.Xaml.Window;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.FlyoutPage)]
 	public partial class FlyoutPageTests : HandlerTestBase
 	{
-		[Fact(DisplayName = "FlyoutPage Initializes with PaneFooter Set")]
-		public async Task FlyoutPageInitializesWithPaneFooterSet()
+		[Fact(DisplayName = "FlyoutPage Initializes with FlyoutCustomContent Set")]
+		public async Task FlyoutPageInitializesWithFlyoutCustomContentSet()
 		{
 			SetupBuilder();
 			var flyoutPage = CreateBasicFlyoutPage();
-			await InvokeOnMainThreadAsync(async () =>
+
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
 			{
-				await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
-				{
-					Assert.NotNull(handler.NativeView.PaneFooter);
-					return Task.CompletedTask;
-				});
+				Assert.NotNull(handler.PlatformView.FlyoutCustomContent);
+				Assert.NotNull(handler.PlatformView.PaneCustomContent);
+				return Task.CompletedTask;
 			});
 		}
 
@@ -43,16 +43,42 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var flyoutPage = CreateBasicFlyoutPage();
 
-			await InvokeOnMainThreadAsync(async () =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), (handler) =>
 			{
-				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), (handler) =>
-				{
-					var navView = GetMauiNavigationView(handler.MauiContext);
-					Assert.NotNull(navView.Header);
-					return Task.CompletedTask;
-				});
+				var navView = GetMauiNavigationView(handler.MauiContext);
+				Assert.NotNull(navView.Header);
+				return Task.CompletedTask;
 			});
 		}
+
+		[Fact(DisplayName = "Flyout Locked Offset")]
+		public async Task FlyoutLockedOffset()
+		{
+			SetupBuilder();
+			var flyout = CreateBasicFlyoutPage();
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyout, (handler) =>
+			{
+				flyout.FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
+				var distance = DistanceYFromTheBottomOfTheAppTitleBar(flyout.Flyout);
+				Assert.True(Math.Abs(distance) < 1);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Flyout Locked Offset from App Title Bar With Pushed Page")]
+		public async Task FlyoutLockedOffsetFromAppTitleBarWithPushedPage()
+		{
+			SetupBuilder();
+			var flyout = CreateBasicFlyoutPage();
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyout, async (handler) =>
+			{
+				flyout.FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
+				await flyout.Detail.Navigation.PushAsync(new ContentPage());
+				var distance = DistanceYFromTheBottomOfTheAppTitleBar(flyout.Flyout);
+				Assert.True(Math.Abs(distance) < 1);
+			});
+		}
+
 		NavigationView FindPlatformFlyoutView(WFrameworkElement aView) =>
 			aView.GetParentOfType<NavigationView>();
 

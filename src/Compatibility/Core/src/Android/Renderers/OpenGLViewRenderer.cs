@@ -11,7 +11,9 @@ using Object = Java.Lang.Object;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	//public class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLSurfaceView>
+#pragma warning disable CS0618 // Type or member is obsolete
 	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLSurfaceView>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		bool _disposed;
 
@@ -83,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		class Renderer : Object, GLSurfaceView.IRenderer
 		{
 			readonly OpenGLView _model;
-			Rectangle _rect;
+			Rect _rect;
 
 			public Renderer(OpenGLView model)
 			{
@@ -92,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			public void OnDrawFrame(IGL10 gl)
 			{
-				Action<Rectangle> onDisplay = _model.OnDisplay;
+				Action<Rect> onDisplay = _model.OnDisplay;
 				if (onDisplay == null)
 					return;
 				onDisplay(_rect);
@@ -100,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			public void OnSurfaceChanged(IGL10 gl, int width, int height)
 			{
-				_rect = new Rectangle(0.0, 0.0, width, height);
+				_rect = new Rect(0.0, 0.0, width, height);
 			}
 
 			public void OnSurfaceCreated(IGL10 gl, EGLConfig config)

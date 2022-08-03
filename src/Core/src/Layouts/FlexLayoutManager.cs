@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Layouts
 			FlexLayout = flexLayout;
 		}
 
-		public Size ArrangeChildren(Rectangle bounds)
+		public Size ArrangeChildren(Rect bounds)
 		{
 			FlexLayout.Layout(bounds.Width, bounds.Height);
 
@@ -34,23 +34,27 @@ namespace Microsoft.Maui.Layouts
 
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
-			double width = 0;
-			double height = 0;
+			double measuredHeight = 0;
+			double measuredWidth = 0;
 
-			if (!double.IsInfinity(widthConstraint))
+			FlexLayout.Layout(widthConstraint, heightConstraint);
+
+			foreach (var child in FlexLayout)
 			{
-				width = widthConstraint;
+				if (child.Visibility == Visibility.Collapsed)
+				{
+					continue;
+				}
+
+				var frame = FlexLayout.GetFlexFrame(child);
+				measuredHeight = Math.Max(measuredHeight, frame.Bottom);
+				measuredWidth = Math.Max(measuredWidth, frame.Right);
 			}
 
-			if (!double.IsInfinity(heightConstraint))
-			{
-				height = heightConstraint;
-			}
+			var finalHeight = LayoutManager.ResolveConstraints(heightConstraint, FlexLayout.Height, measuredHeight, FlexLayout.MinimumHeight, FlexLayout.MaximumHeight);
+			var finalWidth = LayoutManager.ResolveConstraints(widthConstraint, FlexLayout.Width, measuredWidth, FlexLayout.MinimumWidth, FlexLayout.MaximumWidth);
 
-			height = LayoutManager.ResolveConstraints(height, FlexLayout.Height, height, FlexLayout.MinimumHeight, FlexLayout.MaximumHeight);
-			width = LayoutManager.ResolveConstraints(width, FlexLayout.Width, width, FlexLayout.MinimumWidth, FlexLayout.MaximumWidth);
-
-			return new Size(width, height);
+			return new Size(finalWidth, finalHeight);
 		}
 	}
 }

@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete]
 	internal static class DisposeHelpers
 	{
 		internal static void DisposeModalAndChildRenderers(this Element view)

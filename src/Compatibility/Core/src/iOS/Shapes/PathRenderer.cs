@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PathRenderer : ShapeRenderer<Path, PathView>
 	{
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

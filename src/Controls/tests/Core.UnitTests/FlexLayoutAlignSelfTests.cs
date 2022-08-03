@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			FlexLayout.SetAlignSelf(view0, FlexAlignSelf.Center);
 			layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(45, 0, 10, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(45, 0, 10, 10)));
 		}
 
 		[Test]
@@ -40,9 +40,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			FlexLayout.SetAlignSelf(view0, FlexAlignSelf.End);
 			layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(90, 0, 10, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(90, 0, 10, 10)));
 		}
 
 		[Test]
@@ -58,9 +58,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			FlexLayout.SetAlignSelf(view0, FlexAlignSelf.Start);
 			layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 10, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 10, 10)));
 		}
 
 		[Test]
@@ -77,9 +77,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			FlexLayout.SetAlignSelf(view0, FlexAlignSelf.End);
 			layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(90, 0, 10, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
+			Assert.That(view0.Bounds, Is.EqualTo(new Rect(90, 0, 10, 10)));
 		}
 	}
 }

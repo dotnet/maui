@@ -1,0 +1,42 @@
+parameters:
+  poolName: Azure Pipelines
+  vmImage: windows-latest 
+
+stages:
+  - template: vs-insertion/stage/v1.yml@xamarin-templates
+    parameters:
+      dependsOn: nuget_signing
+      approvalTimeoutInMinutes: 1
+      symbolArtifactName: nuget
+      symbolArtifactPatterns: |
+        **/signed/*.nupkg
+        **/*.snupkg
+        **/additional-assets.zip
+      pushToShippingFeed: true
+      nupkgArtifactName: nuget
+      nupkgArtifactPatterns: |
+        **/signed/*.nupkg
+      msiNupkgArtifactName: vs-msi-nugets
+
+  - stage: sdk_insertion
+    displayName: 'SDK Insertion'
+    dependsOn: nuget_signing
+    condition: and(succeeded(), eq(variables.signingCondition, true))
+    jobs:
+    - template: sdk-insertion.yml
+      parameters:
+        poolName: ${{ parameters.poolName }}
+        vmImage: ${{ parameters.vmImage }}
+
+  - stage: sbom
+    displayName: 'Software Bill of Materials'
+    dependsOn: nuget_signing
+    condition: and(succeeded(), eq(variables.signingCondition, true))
+    jobs:
+    - template: compliance/sbom/job.v1.yml@xamarin-templates
+      parameters:
+        artifactNames: [ nuget, vs-msi-nugets, vsdrop-signed ]
+        artifactMap: [ nuget/signed ]                           # Use artifacts that match the filter from the signed directory and not the top-level directory for the nuget artifact
+        packageName: 'Microsoft Maui'
+        packageFilter: '*.msi;*.nupkg'
+        condition: and(succeeded(), eq(variables.signingCondition, true))

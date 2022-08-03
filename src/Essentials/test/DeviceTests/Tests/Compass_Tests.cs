@@ -1,11 +1,12 @@
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - these tests require a compass to be present
+	[Category("Compass")]
 	public class Compass_Tests
 	{
 		[Fact]

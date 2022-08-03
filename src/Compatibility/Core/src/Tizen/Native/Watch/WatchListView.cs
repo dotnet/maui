@@ -5,6 +5,7 @@ using ElmSharp.Wearable;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch
 {
+	[Obsolete]
 	public class WatchListView : Native.ListView, IRotaryActionWidget, IRotaryInteraction
 	{
 		CircleGenList _circleGenList;

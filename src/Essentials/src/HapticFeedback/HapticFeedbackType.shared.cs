@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/HapticFeedbackType.xml" path="Type[@FullName='Microsoft.Maui.Essentials.HapticFeedbackType']/Docs" />
 	public enum HapticFeedbackType

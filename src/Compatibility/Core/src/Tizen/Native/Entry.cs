@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 	public class Entry : EEntry, IMeasurable, IBatchable, IEntry
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.MaterialEntry"/> class.
+		/// Initializes a new instance of the <see cref="Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Entry"/> class.
 		/// </summary>
 		/// <param name="parent">Parent evas object.</param>
 		public Entry(EvasObject parent) : base(parent)
@@ -105,11 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 					var old = _span.Text;
 					_span.Text = value;
 					ApplyTextAndStyle();
-					Device.StartTimer(TimeSpan.FromTicks(1), () =>
-					{
-						OnTextChanged(old, value);
-						return false;
-					});
+					Application.Current.Dispatcher.DispatchDelayed(TimeSpan.FromTicks(1), () => OnTextChanged(old, value));
 				}
 			}
 		}

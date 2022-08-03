@@ -2,12 +2,13 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Lights;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.Devices
 {
-	public class FlashlightImplementation:IFlashlight
+	class FlashlightImplementation : IFlashlight
 	{
 		static readonly object locker = new object();
 		bool hasLoadedLamp;

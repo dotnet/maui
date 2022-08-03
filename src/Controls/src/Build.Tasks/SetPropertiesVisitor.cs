@@ -145,6 +145,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					Context.IL.Append(parentVar.LoadAs(Module.GetTypeDefinition(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary")), Module));
 					Context.IL.Append(AddToResourceDictionary(parentVar, node, node, Context));
 				}
+				else if ((contentProperty = GetContentProperty(parentVar.VariableType)) != null)
+				{
+					var name = new XmlName(node.NamespaceURI, contentProperty);
+					if (skips.Contains(name))
+						return;
+					if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
+						return;
+					Context.IL.Append(SetPropertyValue(Context.Variables[(IElementNode)parentNode], name, node, Context, node));
+				}
 				// Collection element, implicit content, or implicit collection element.
 				else if (parentVar.VariableType.ImplementsInterface(Module.ImportReference(("mscorlib", "System.Collections", "IEnumerable")))
 						 && parentVar.VariableType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any())
@@ -160,15 +169,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					if (adderRef.ReturnType.FullName != "System.Void")
 						Context.IL.Emit(Pop);
 				}
-				else if ((contentProperty = GetContentProperty(parentVar.VariableType)) != null)
-				{
-					var name = new XmlName(node.NamespaceURI, contentProperty);
-					if (skips.Contains(name))
-						return;
-					if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
-						return;
-					Context.IL.Append(SetPropertyValue(Context.Variables[(IElementNode)parentNode], name, node, Context, node));
-				}
+
 				else
 					throw new BuildException(BuildExceptionCode.ContentPropertyAttributeMissing, node, null, ((IElementNode)parentNode).XmlType.Name);
 			}
@@ -977,14 +978,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var bpOwnerType = parent.VariableType;
 			attached = GetNameAndTypeRef(ref bpOwnerType, namespaceURI, ref localName, context, iXmlLineInfo);
 			var name = $"{localName}Property";
-			FieldReference bpRef = bpOwnerType.GetField(fd => fd.Name == name &&
+			FieldDefinition bpDef = bpOwnerType.GetField(fd => fd.Name == name &&
 														fd.IsStatic &&
 														(fd.IsPublic || fd.IsAssembly), out declaringTypeReference);
-			if (bpRef != null)
-			{
-				bpRef = module.ImportReference(bpRef.ResolveGenericParameters(declaringTypeReference));
-				bpRef.FieldType = module.ImportReference(bpRef.FieldType);
-			}
+			if (bpDef == null)
+				return null;
+			var bpRef = module.ImportReference(bpDef.ResolveGenericParameters(declaringTypeReference));
+			bpRef.FieldType = module.ImportReference(bpRef.FieldType);
+
+			var isObsolete = bpDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
+			if (isObsolete)
+				context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"BindableProperty {localName} is deprecated.", null);
+
 			return bpRef;
 		}
 
@@ -1318,7 +1323,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var module = context.Body.Method.Module;
 			TypeReference declaringTypeReference;
 			var property = parent.VariableType.GetProperty(pd => pd.Name == localName, out declaringTypeReference);
+			var propertyIsObsolete = property.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
+			if (propertyIsObsolete)
+				context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property {localName} is deprecated.", null);
+
 			var propertySetter = property.SetMethod;
+			var propertySetterIsObsolete = propertySetter.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
+			if (propertySetterIsObsolete)
+				context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property setter for {localName} is deprecated.", null);
 
 			//			IL_0007:  ldloc.0
 			//			IL_0008:  ldstr "foo"
@@ -1576,7 +1588,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var templateContext = new ILContext(templateIl, loadTemplate.Body, module, parentValues)
 			{
 				Root = root,
-				DefineDebug = parentContext.DefineDebug,
 				XamlFilePath = parentContext.XamlFilePath,
 			};
 			node.Accept(new CreateObjectVisitor(templateContext), null);

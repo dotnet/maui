@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
@@ -8,6 +9,11 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface IPicker : IView, ITextStyle, ITextAlignment, IItemDelegate<string>
 	{
+		/// <summary>
+		/// Gets the list of choices.
+		/// </summary>
+		IList<string> Items { get; }
+
 		/// <summary>
 		/// Gets the title for the Picker.
 		/// </summary>

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(ShouldDelayContentTouchesProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ScrollView.xml" path="//Member[@MemberName='SetShouldDelayContentTouches'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ScrollView.xml" path="//Member[@MemberName='SetShouldDelayContentTouches'][1]/Docs" />
 		public static void SetShouldDelayContentTouches(BindableObject element, bool value)
 		{
 			element.SetValue(ShouldDelayContentTouchesProperty, value);
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetShouldDelayContentTouches(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ScrollView.xml" path="//Member[@MemberName='SetShouldDelayContentTouches']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ScrollView.xml" path="//Member[@MemberName='SetShouldDelayContentTouches'][2]/Docs" />
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetShouldDelayContentTouches(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetShouldDelayContentTouches(config.Element, value);

@@ -1,5 +1,5 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
   - name: .NET MAUI Community Support
-    url: https://techcommunity.microsoft.com/t5/app-development/bd-p/app-dev
+    url: https://docs.microsoft.com/answers/topics/dotnet-maui.html
     about: Please ask and answer questions here.

@@ -28,11 +28,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var top = new ScrollView { Content = new Label { FontSize = 12, TextColor = Colors.Red, Text = text.ToString() } };
 			AbsoluteLayout.SetLayoutFlags(top, AbsoluteLayoutFlags.All);
-			AbsoluteLayout.SetLayoutBounds(top, new Rectangle(0, 0, 1, 0.5));
+			AbsoluteLayout.SetLayoutBounds(top, new Rect(0, 0, 1, 0.5));
 
 			var bottom = new Label { FontSize = 12, TextColor = Colors.Red, Text = text.ToString() };
 			AbsoluteLayout.SetLayoutFlags(bottom, AbsoluteLayoutFlags.All);
-			AbsoluteLayout.SetLayoutBounds(bottom, new Rectangle(0, 1, 1, 0.5));
+			AbsoluteLayout.SetLayoutBounds(bottom, new Rect(0, 1, 1, 0.5));
 
 			var layout = new AbsoluteLayout { Children = { top, bottom } };
 

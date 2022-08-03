@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected override void OnBindingContextChanged()
 		{
-			NativeElement.SetBindingContext(BindingContext,  nv =>  nv.GetChildren<FrameworkElement>());
+			NativeElement.SetBindingContext(BindingContext, nv => nv.GetChildren<FrameworkElement>());
 			base.OnBindingContextChanged();
 		}
 	}

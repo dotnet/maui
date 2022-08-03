@@ -1,3 +1,4 @@
+using Microsoft.Maui.Devices;
 using ElmSharp;
 using EColor = ElmSharp.Color;
 
@@ -7,8 +8,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch
 	{
 		public FormsWatchLayout(EvasObject parent) : base(parent)
 		{
-			if (Device.Idiom != TargetIdiom.Watch)
-				Log.Error($"{0} is only supported on TargetIdiom.Watch : {1}", this, Device.Idiom);
+			if (DeviceInfo.Idiom != DeviceIdiom.Watch)
+				Log.Error($"{0} is only supported on TargetIdiom.Watch : {1}", this, DeviceInfo.Idiom);
 		}
 	}
 

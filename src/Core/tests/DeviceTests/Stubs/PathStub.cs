@@ -1,6 +1,4 @@
 ﻿#nullable enable
-using Microsoft.Maui.Graphics;
-
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class GeometryStub
@@ -11,16 +9,34 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 	}
 
-	public class PathStub : StubBase, IShape
+	public class PathStub : ShapeViewStub, IShapeView
 	{
 		public PathStub()
 		{
 
 		}
 
+		public PathStub(GeometryStub data)
+		{
+			Shape = new PathShapeStub(data);
+		}
+	}
+
+	public class PathShapeStub : StubBase, IShape
+	{
+		public PathShapeStub()
+		{
+
+		}
+
+		public PathShapeStub(GeometryStub data)
+		{
+			Data = data;
+		}
+
 		public GeometryStub? Data { get; set; }
 
-		public PathF PathForBounds(Rectangle rect)
+		public PathF PathForBounds(Rect rect)
 		{
 			var path = new PathF();
 

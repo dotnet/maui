@@ -7,20 +7,23 @@ using ElmSharp;
 using ElmSharp.Wearable;
 using Tizen.Applications;
 using Tizen.Common;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using DeviceOrientation = Microsoft.Maui.Controls.Compatibility.Internals.DeviceOrientation;
+using Microsoft.Maui.Devices;
+using EWindow = ElmSharp.Window;
 using ELayout = ElmSharp.Layout;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Application;
+using EDisplayRotation = ElmSharp.DisplayRotation;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 
+	[Obsolete]
 	public class FormsApplication : CoreUIApplication
 	{
 		ITizenPlatform _platform;
 		Application _application;
-		Window _window;
+		EWindow _window;
 		bool _useBezelInteration;
 
 		protected FormsApplication()
@@ -31,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// Gets the main window or <c>null</c> if it's not set.
 		/// </summary>
 		/// <value>The main window or <c>null</c>.</value>
-		public Window MainWindow
+		public EWindow MainWindow
 		{
 			get
 			{
@@ -67,20 +70,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				Environment.SetEnvironmentVariable("XDG_DATA_HOME", Current.DirectoryInfo.Data);
 			}
 
-			var type = typeof(Window);
+			var type = typeof(EWindow);
 			// Use reflection to avoid breaking compatibility. ElmSharp.Window.CreateWindow() is has been added since API6.
 			var methodInfo = type.GetMethod("CreateWindow", BindingFlags.NonPublic | BindingFlags.Static);
-			Window window = null;
+			EWindow window = null;
 			if (methodInfo != null)
 			{
-				window = (Window)methodInfo.Invoke(null, new object[] { "FormsWindow" });
+				window = (EWindow)methodInfo.Invoke(null, new object[] { "FormsWindow" });
 				BaseLayout = (ELayout)window.GetType().GetProperty("BaseLayout")?.GetValue(window);
 				BaseCircleSurface = (CircleSurface)window.GetType().GetProperty("BaseCircleSurface")?.GetValue(window);
 				Forms.CircleSurface = BaseCircleSurface;
 			}
 			else // in case of Xamarin Preload
 			{
-				window = PreloadedWindow.GetInstance() ?? new Window("FormsWindow");
+				window = PreloadedWindow.GetInstance() ?? new EWindow("FormsWindow");
 				if (window is PreloadedWindow precreated)
 				{
 					BaseLayout = precreated.BaseLayout;
@@ -128,7 +131,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			if (null == MainWindow)
 			{
-				throw new InvalidOperationException("MainWindow is not prepared. This method should be called in OnCreated().");
+				throw new InvalidOperationException("MainEWindow is not prepared. This method should be called in OnCreated().");
 			}
 
 			if (null == application)
@@ -140,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			application.SendStart();
 			application.PropertyChanged += new PropertyChangedEventHandler(this.AppOnPropertyChanged);
 			SetPage(_application.MainPage);
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				_useBezelInteration = Specific.GetUseBezelInteraction(_application);
 				UpdateOverlayContent();
@@ -153,7 +156,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				SetPage(_application.MainPage);
 			}
-			else if (Device.Idiom == TargetIdiom.Watch)
+			else if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				if (Specific.UseBezelInteractionProperty.PropertyName == args.PropertyName)
 				{
@@ -192,7 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void InitializeWindow()
 		{
-			Debug.Assert(MainWindow != null, "Window cannot be null");
+			Debug.Assert(MainWindow != null, "EWindow cannot be null");
 
 			MainWindow.Active();
 			MainWindow.Show();
@@ -209,7 +212,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				BaseLayout = layout;
 
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					BaseCircleSurface = new CircleSurface(conformant);
 					Forms.CircleSurface = BaseCircleSurface;
@@ -217,18 +220,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				conformant.SetContent(BaseLayout);
 			}
 
-			MainWindow.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_90 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270;
+			MainWindow.AvailableRotations = EDisplayRotation.Degree_0 | EDisplayRotation.Degree_90 | EDisplayRotation.Degree_180 | EDisplayRotation.Degree_270;
 
 			MainWindow.Deleted += (s, e) =>
 			{
 				Exit();
-			};
-
-			Device.Info.CurrentOrientation = MainWindow.GetDeviceOrientation();
-
-			MainWindow.RotationChanged += (sender, e) =>
-			{
-				Device.Info.CurrentOrientation = MainWindow.GetDeviceOrientation();
 			};
 
 			MainWindow.BackButtonPressed += (sender, e) =>
@@ -273,27 +269,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 
 			base.Exit();
-		}
-	}
-	static class WindowExtension
-	{
-		public static DeviceOrientation GetDeviceOrientation(this Window window)
-		{
-			DeviceOrientation orientation = DeviceOrientation.Other;
-			var isPortraitDevice = Forms.NaturalOrientation.IsPortrait();
-			switch (window.Rotation)
-			{
-				case 0:
-				case 180:
-					orientation = isPortraitDevice ? DeviceOrientation.Portrait : DeviceOrientation.Landscape;
-					break;
-
-				case 90:
-				case 270:
-					orientation = isPortraitDevice ? DeviceOrientation.Landscape : DeviceOrientation.Portrait;
-					break;
-			}
-			return orientation;
 		}
 	}
 }

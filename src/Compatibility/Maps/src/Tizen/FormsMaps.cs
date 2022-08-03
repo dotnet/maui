@@ -1,9 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Tizen.Maps;
 using Microsoft.Maui.Controls.Compatibility.Maps.Tizen;
-using Microsoft.Maui.Controls.Platform.Tizen;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using Tizen.Maps;
 
 namespace Microsoft.Maui.Controls
 {
@@ -28,13 +28,14 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_mapService = new MapService(provider, authenticationToken);
-
+#pragma warning disable CS0612 // Type or member is obsolete
 			FormsApplication.RequestingUserConsentFunc = new Func<Task>(() =>
 			{
 				TaskCompletionSource<bool> userConsentWaiter = new TaskCompletionSource<bool>();
 				UserConsentAction(userConsentWaiter);
 				return userConsentWaiter.Task;
 			});
+#pragma warning disable CS0612 // Type or member is obsolete
 		}
 
 		static async void UserConsentAction(TaskCompletionSource<bool> tcs)

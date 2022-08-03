@@ -2,15 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Database;
 using Android.Provider;
 using CommonDataKinds = Android.Provider.ContactsContract.CommonDataKinds;
 using StructuredName = Android.Provider.ContactsContract.CommonDataKinds.StructuredName;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public class ContactsImplementation : IContacts
+	class ContactsImplementation : IContacts
 	{
 		const string idCol = ContactsContract.Contacts.InterfaceConsts.Id;
 		const string displayNameCol = ContactsContract.Contacts.InterfaceConsts.DisplayName;
@@ -21,11 +22,11 @@ namespace Microsoft.Maui.Essentials.Implementations
 		public async Task<Contact> PickContactAsync()
 		{
 			var intent = new Intent(Intent.ActionPick, ContactsContract.Contacts.ContentUri);
-			var result = await IntermediateActivity.StartAsync(intent, Platform.requestCodePickContact).ConfigureAwait(false);
+			var result = await IntermediateActivity.StartAsync(intent, PlatformUtils.requestCodePickContact).ConfigureAwait(false);
 			if (result?.Data == null)
 				return null;
 
-			using var cursor = Platform.ContentResolver.Query(result?.Data, null, null, null, null);
+			using var cursor = Application.Context.ContentResolver.Query(result?.Data, null, null, null, null);
 			if (cursor?.MoveToFirst() != true)
 				return null;
 
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 
 		public Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken)
 		{
-			var cursor = Platform.ContentResolver.Query(ContactsContract.Contacts.ContentUri, null, null, null, null);
+			var cursor = Application.Context.ContentResolver.Query(ContactsContract.Contacts.ContentUri, null, null, null, null);
 			return Task.FromResult(GetEnumerable());
 
 			IEnumerable<Contact> GetEnumerable()
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				.AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1")
 				.Build();
 
-			var cursor = Platform.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
+			var cursor = Application.Context.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
 
 			return ReadCursorItems(cursor, CommonDataKinds.Phone.Number);
 		}
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 				.AppendQueryParameter(ContactsContract.RemoveDuplicateEntries, "1")
 				.Build();
 
-			var cursor = Platform.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
+			var cursor = Application.Context.ContentResolver.Query(uri, null, $"{contactIdCol}=?", new[] { id }, null);
 
 			return ReadCursorItems(cursor, CommonDataKinds.Email.Address);
 		}
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			var selection = $"{mimetypeCol}=? AND {contactIdCol}=?";
 			var selectionArgs = new string[] { StructuredName.ContentItemType, id };
 
-			using var cursor = Platform.ContentResolver.Query(
+			using var cursor = Application.Context.ContentResolver.Query(
 				ContactsContract.Data.ContentUri,
 				null,
 				selection,

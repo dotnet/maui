@@ -15,9 +15,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpRef.Name);
 			var bpName = bpRef.Name.Substring(0, bpRef.Name.Length - 8);
 			var owner = bpRef.DeclaringType;
-			TypeReference declaringTypeRef = null;
 
-			var getter = owner.GetProperty(pd => pd.Name == bpName, out declaringTypeRef)?.GetMethod;
+			var getter = owner.GetProperty(pd => pd.Name == bpName, out TypeReference declaringTypeRef)?.GetMethod;
 			if (getter == null || getter.IsStatic || !getter.IsPublic)
 				getter = null;
 			getter = getter ?? owner.GetMethods(md => md.Name == $"Get{bpName}" &&
@@ -57,11 +56,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return typeConverter;
 
 			propertyType = propertyType ?? staticGetter?.ReturnType;
-			foreach (var (t, tc) in TypeConverterAttribute.KnownConverters)
-			{
-				if (TypeRefComparer.Default.Equals(module.ImportReference(t), propertyType))
-					return module.ImportReference(tc);
-			}
 			return null;
 		}
 	}

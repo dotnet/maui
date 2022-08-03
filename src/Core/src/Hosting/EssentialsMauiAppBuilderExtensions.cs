@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Hosting
 {
 	public interface IEssentialsBuilder
 	{
@@ -26,53 +27,55 @@ namespace Microsoft.Maui.Essentials
 			builder.ConfigureLifecycleEvents(life =>
 			{
 #if __ANDROID__
-				Platform.Init(MauiApplication.Current);
+				ApplicationModel.Platform.Init(MauiApplication.Current);
 
 				life.AddAndroid(android => android
 					.OnCreate((activity, savedInstanceState) =>
 					{
-						Platform.Init(activity, savedInstanceState);
+						ApplicationModel.Platform.Init(activity, savedInstanceState);
 					})
 					.OnRequestPermissionsResult((activity, requestCode, permissions, grantResults) =>
 					{
-						Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+						ApplicationModel.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 					})
 					.OnNewIntent((activity, intent) =>
 					{
-						Platform.OnNewIntent(intent);
+						ApplicationModel.Platform.OnNewIntent(intent);
 					})
 					.OnResume((activity) =>
 					{
-						Platform.OnResume();
+						ApplicationModel.Platform.OnResume();
 					}));
 #elif __IOS__
 				life.AddiOS(ios => ios
 					.ContinueUserActivity((application, userActivity, completionHandler) =>
 					{
-						return Platform.ContinueUserActivity(application, userActivity, completionHandler);
+						return ApplicationModel.Platform.ContinueUserActivity(application, userActivity, completionHandler);
 					})
 					.OpenUrl((application, url, options) =>
 					{
-						return Platform.OpenUrl(application, url, options);
+						return ApplicationModel.Platform.OpenUrl(application, url, options);
 					})
 					.PerformActionForShortcutItem((application, shortcutItem, completionHandler) =>
 					{
-						Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
+						ApplicationModel.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
 					}));
 #elif WINDOWS
 				life.AddWindows(windows => windows
-					.OnNativeMessage((window, args) =>
+					.OnPlatformMessage((window, args) =>
 					{
-						Platform.NewWindowProc(args.Hwnd, args.MessageId, args.WParam, args.LParam);
+						ApplicationModel.Platform.OnWindowMessage(args.Hwnd, args.MessageId, args.WParam, args.LParam);
 					})
 					.OnActivated((window, args) =>
 					{
-						Platform.OnActivated(window, args);
+						ApplicationModel.Platform.OnActivated(window, args);
 					})
 					.OnLaunched((application, args) =>
 					{
-						Platform.OnLaunched(args);
+						ApplicationModel.Platform.OnLaunched(args);
 					}));
+#elif TIZEN
+
 #endif
 			});
 
@@ -118,7 +121,7 @@ namespace Microsoft.Maui.Essentials
 				_essentialsRegistrations = essentialsRegistrations;
 			}
 
-			public async void Initialize(IServiceProvider services)
+			public void Initialize(IServiceProvider services)
 			{
 				_essentialsBuilder = new EssentialsBuilder();
 				if (_essentialsRegistrations != null)
@@ -130,14 +133,27 @@ namespace Microsoft.Maui.Essentials
 				}
 
 #if WINDOWS
-				Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
+				ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
 #endif
 
+#if !TIZEN
 				AppActions.OnAppAction += HandleOnAppAction;
 
+				if (_essentialsBuilder.AppActions is not null)
+				{
+					SetAppActions(services, _essentialsBuilder.AppActions);
+				}
+#endif
+
+				if (_essentialsBuilder.TrackVersions)
+					VersionTracking.Track();
+			}
+
+			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)
+			{
 				try
 				{
-					await AppActions.SetAsync(_essentialsBuilder.AppActions);
+					await AppActions.SetAsync(appActions);
 				}
 				catch (FeatureNotSupportedException ex)
 				{
@@ -145,9 +161,6 @@ namespace Microsoft.Maui.Essentials
 						.CreateLogger<IEssentialsBuilder>()?
 						.LogError(ex, "App Actions are not supported on this platform.");
 				}
-
-				if (_essentialsBuilder.TrackVersions)
-					VersionTracking.Track();
 			}
 
 			void HandleOnAppAction(object? sender, AppActionEventArgs e)
@@ -158,9 +171,11 @@ namespace Microsoft.Maui.Essentials
 
 		class EssentialsBuilder : IEssentialsBuilder
 		{
-			internal readonly List<AppAction> AppActions = new List<AppAction>();
+			List<AppAction>? _appActions;
 			internal Action<AppAction>? AppActionHandlers;
 			internal bool TrackVersions;
+
+			internal List<AppAction>? AppActions => _appActions;
 
 #pragma warning disable CS0414 // Remove unread private members
 			internal string? MapServiceToken;
@@ -174,7 +189,8 @@ namespace Microsoft.Maui.Essentials
 
 			public IEssentialsBuilder AddAppAction(AppAction appAction)
 			{
-				AppActions.Add(appAction);
+				_appActions ??= new List<AppAction>();
+				_appActions.Add(appAction);
 				return this;
 			}
 

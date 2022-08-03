@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					return null;
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
 				var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(Source, rootTargetPath);
-				var assembly = rootObjectType.GetTypeInfo().Assembly;
+				var assembly = rootObjectType.Assembly;
 
 				return StyleSheet.FromResource(resourcePath, assembly, lineInfo);
 			}

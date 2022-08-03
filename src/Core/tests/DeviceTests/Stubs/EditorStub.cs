@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
-		public Keyboard Keyboard { get; set; }
+		public Keyboard Keyboard { get; set; } = Keyboard.Default;
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
 

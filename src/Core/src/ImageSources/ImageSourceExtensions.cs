@@ -4,54 +4,59 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-#if __IOS__ || MACCATALYST
-using NativeImage = UIKit.UIImage;
+#if IOS || MACCATALYST
+using PlatformImage = UIKit.UIImage;
 #elif MONOANDROID
-using NativeImage = Android.Graphics.Drawables.Drawable;
+using PlatformImage = Android.Graphics.Drawables.Drawable;
 #elif WINDOWS
-using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeImage = System.Object;
+using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
+#elif TIZEN
+using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+using PlatformImage = System.Object;
 #endif
 
 namespace Microsoft.Maui
 {
-	public static class ImageSourceExtensions
+	public static partial class ImageSourceExtensions
 	{
-		public static void LoadImage(this IImageSource? source, IMauiContext mauiContext, Action<IImageSourceServiceResult<NativeImage>?>? finished = null)
+		public static void LoadImage(this IImageSource? source, IMauiContext mauiContext, Action<IImageSourceServiceResult<PlatformImage>?>? finished = null)
 		{
-			LoadImageResult(source.GetNativeImageAsync(mauiContext), finished)
+			LoadImageResult(source.GetPlatformImageAsync(mauiContext), finished)
 						.FireAndForget(mauiContext.Services.CreateLogger<IImageSource>(), nameof(LoadImage));
 		}
 
-		static async Task LoadImageResult(Task<IImageSourceServiceResult<NativeImage>?> task, Action<IImageSourceServiceResult<NativeImage>?>? finished = null)
+		static async Task LoadImageResult(Task<IImageSourceServiceResult<PlatformImage>?> task, Action<IImageSourceServiceResult<PlatformImage>?>? finished = null)
 		{
 			var result = await task;
 			finished?.Invoke(result);
 		}
 
-		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImageAsync(this IImageSource? imageSource, IMauiContext mauiContext)
+		public static Task<IImageSourceServiceResult<PlatformImage>?> GetPlatformImageAsync(this IImageSource? imageSource, IMauiContext mauiContext)
 		{
 			if (imageSource == null)
-				return Task.FromResult<IImageSourceServiceResult<NativeImage>?>(null);
+				return Task.FromResult<IImageSourceServiceResult<PlatformImage>?>(null);
 
 			var services = mauiContext.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 			var imageSourceService = provider.GetRequiredImageSourceService(imageSource);
-			return imageSourceService.GetNativeImageAsync(imageSource, mauiContext);
+			return imageSourceService.GetPlatformImageAsync(imageSource, mauiContext);
 		}
 
-		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImageAsync(this IImageSourceService imageSourceService, IImageSource? imageSource, IMauiContext mauiContext)
+		public static Task<IImageSourceServiceResult<PlatformImage>?> GetPlatformImageAsync(this IImageSourceService imageSourceService, IImageSource? imageSource, IMauiContext mauiContext)
 		{
 			if (imageSource == null)
-				return Task.FromResult<IImageSourceServiceResult<NativeImage>?>(null);
+				return Task.FromResult<IImageSourceServiceResult<PlatformImage>?>(null);
 
-#if __IOS__ || MACCATALYST
+#if IOS || MACCATALYST
 			return imageSourceService.GetImageAsync(imageSource);
-#elif MONOANDROID
+#elif ANDROID
 			return imageSourceService.GetDrawableAsync(imageSource, mauiContext.Context!);
 #elif WINDOWS
 			return imageSourceService.GetImageSourceAsync(imageSource);
+#elif TIZEN
+			var platformImage = new PlatformImage(mauiContext.GetPlatformParent());
+			return imageSourceService.GetImageAsync(imageSource, platformImage);
 #else
 			throw new NotImplementedException();
 #endif

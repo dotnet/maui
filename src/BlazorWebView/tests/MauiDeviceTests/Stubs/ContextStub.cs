@@ -36,7 +36,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return UIKit.UIApplication.SharedApplication.KeyWindow;
 #elif WINDOWS
 			if (serviceType == typeof(NavigationRootManager))
-				return _windowManager ??= new NavigationRootManager(this);
+				return _windowManager ??= new NavigationRootManager(MauiProgram.DefaultWindow);
+
+			if (serviceType == typeof(UI.Xaml.Window))
+				return MauiProgram.DefaultWindow;
 #endif
 
 			return _services.GetService(serviceType);

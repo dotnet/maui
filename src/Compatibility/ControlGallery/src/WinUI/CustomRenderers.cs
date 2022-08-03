@@ -14,14 +14,17 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Bugzilla42602.TextBoxView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.TextBoxViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue3273.SortableListView), typeof(SortableListViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue2172OldEntry), typeof(Issue2172OldEntryRenderer))]
 [assembly: ExportRenderer(typeof(Issue2172OldEditor), typeof(Issue2172OldEditorRenderer))]
+#pragma warning restore CS0612 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
+	[System.Obsolete]
 	public class EntryRendererKeyboardFlags : EntryRenderer
 	{
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -33,6 +36,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 		}
 	}
+
+	[System.Obsolete]
 	public class EditorRendererKeyboardFlags : EditorRenderer
 	{
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -129,6 +134,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 	}
 
 
+	[System.Obsolete]
 	public class TextBoxViewRenderer : BoxViewBorderRenderer
 	{
 		Canvas m_Canvas;
@@ -178,6 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		}
 	}
 
+	[System.Obsolete]
 	public class Issue2172OldEntryRenderer : EntryRenderer
 	{
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -195,6 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		}
 	}
 
+	[System.Obsolete]
 	public class Issue2172OldEditorRenderer : EditorRenderer
 	{
 		static FormsTextBox _copyOfTextBox;

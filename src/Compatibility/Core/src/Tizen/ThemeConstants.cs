@@ -1,5 +1,7 @@
+using Microsoft.Maui.Devices;
 using Tizen.Common;
 using EColor = ElmSharp.Color;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -384,7 +386,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			public class ColorClass
 			{
-				public static readonly EColor DefaultBorderColor = Device.Idiom == TargetIdiom.TV || Device.Idiom == TargetIdiom.Watch ? EColor.Gray : EColor.Black;
+				public static readonly EColor DefaultBorderColor = DeviceInfo.Idiom == DeviceIdiom.TV || DeviceInfo.Idiom == DeviceIdiom.Watch ? EColor.Gray : EColor.Black;
 				public static readonly EColor DefaultShadowColor = EColor.FromRgba(80, 80, 80, 50);
 			}
 		}
@@ -516,7 +518,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			public class Resources
 			{
 				public const int IconSize = 48;
-				public const string IconPath = "Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Resource.refresh_48dp.png";
+				public const string IconPath = "Microsoft.Maui.Controls.Compatibility.Tizen.Resources.refresh_48dp.png";
 			}
 
 			public class ColorClass
@@ -565,16 +567,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			public class Resources
 			{
 				// The source of icon resources is https://materialdesignicons.com/
-				public const string MenuIcon = "Resource.menu.png";
-				public const string BackIcon = "Resource.arrow_left.png";
-				public const string DotsIcon = "Resource.dots_horizontal.png";
+				public const string MenuIcon = "Resources.menu.png";
+				public const string BackIcon = "Resources.arrow_left.png";
+				public const string DotsIcon = "Resources.dots_horizontal.png";
 
 				public class Watch
 				{
 					public const int DefaultNavigationViewIconSize = 60;
 					public const int DefaultDrawerTouchWidth = 50;
 					public const int DefaultDrawerIconSize = 40;
-					public const string DefaultDrawerIcon = "Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Resource.wc_visual_cue.png";
+					public const string DefaultDrawerIcon = "Microsoft.Maui.Controls.Compatibility.Tizen.Resources.wc_visual_cue.png";
 				}
 
 				public class TV
@@ -588,8 +590,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			public class ColorClass
 			{
 				public static readonly Color DefaultBackgroundColor = Color.FromRgb(33, 150, 243);
-				public static readonly Color DefaultForegroundColor = Color.White;
-				public static readonly Color DefaultTitleColor = Color.White;
+				public static readonly Color DefaultForegroundColor = Color.FromRgb(255, 255, 255);
+				public static readonly Color DefaultTitleColor = Color.FromRgb(0, 0, 0);
 				public static readonly EColor DefaultNavigationViewBackgroundColor = EColor.White;
 				public static readonly EColor DefaultDrawerDimBackgroundColor = new EColor(0, 0, 0, 82);
 
@@ -618,8 +620,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			public class Resources
 			{
-				public const string PlayImagePath = "Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Resource.img_button_play.png";
-				public const string PauseImagePath = "Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Resource.img_button_pause.png";
+				public const string PlayImagePath = "Microsoft.Maui.Controls.Compatibility.Tizen.Resources.img_button_play.png";
+				public const string PauseImagePath = "Microsoft.Maui.Controls.Compatibility.Tizen.Resources.img_button_pause.png";
 			}
 
 			public class ColorClass

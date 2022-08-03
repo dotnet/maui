@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>
 	{
 		VisualElement _currentView;
@@ -32,11 +33,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null || Control == null)
 				return finalSize;
 
-			Element.IsInNativeLayout = true;
+			Element.IsInPlatformLayout = true;
 
 			Control?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 
-			Element.IsInNativeLayout = false;
+			Element.IsInPlatformLayout = false;
 
 			return finalSize;
 		}
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var result = new global::Windows.Foundation.Size(width, height);
 
 			Control?.Measure(result);
-			
+
 			return result;
 		}
 
@@ -166,7 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// values. The ScrollViewRenderer for Android does something similar by waiting up
 			// to 10ms for layout to occur.
 			int cycle = 0;
-			while (Element != null && !Element.IsInNativeLayout)
+			while (Element != null && !Element.IsInPlatformLayout)
 			{
 				await Task.Delay(TimeSpan.FromMilliseconds(1));
 				cycle++;
@@ -198,7 +199,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void SetInitialRtlPosition(object sender, object e)
 		{
-			if (Control == null) return;
+			if (Control == null)
+				return;
 
 			if (Control.ActualWidth <= 0 || _checkedForRtlScroll || Control.Content == null)
 				return;

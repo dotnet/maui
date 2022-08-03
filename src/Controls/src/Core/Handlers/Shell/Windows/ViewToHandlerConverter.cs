@@ -3,7 +3,8 @@ using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WRect = Windows.Foundation.Rect; 
+using WRect = Windows.Foundation.Rect;
+using WSize = global::Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			readonly View _view;
 			IView View => _view;
-			INativeViewHandler? Handler => View.Handler as INativeViewHandler;
+			IPlatformViewHandler? Handler => View.Handler as IPlatformViewHandler;
 
 			FrameworkElement FrameworkElement { get; }
 
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_view?.Cleanup();
 
-				if(_view != null)
+				if (_view != null)
 					_view.MeasureInvalidated -= OnMeasureInvalidated;
 			}
 
@@ -57,13 +58,13 @@ namespace Microsoft.Maui.Controls.Platform
 				Children.Add(FrameworkElement);
 
 				// make sure we re-measure once the template is applied
-				
+
 				FrameworkElement.Loaded += (sender, args) =>
 				{
 					// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
 					// with all the controls in a consistent native state (i.e., loaded) so they'll actually
 					// have Bounds set
-					Handler?.NativeView?.InvalidateMeasure(View);
+					Handler?.PlatformView?.InvalidateMeasure(View);
 					InvalidateMeasure();
 				};
 			}
@@ -73,11 +74,10 @@ namespace Microsoft.Maui.Controls.Platform
 				InvalidateMeasure();
 			}
 
-			protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+			protected override WSize ArrangeOverride(WSize finalSize)
 			{
-				_view.IsInNativeLayout = true;
-				_view.Frame = new Rectangle(0, 0, finalSize.Width, finalSize.Height);
-				FrameworkElement?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
+				_view.IsInPlatformLayout = true;
+				(_view.Handler as IPlatformViewHandler)?.LayoutVirtualView(finalSize);
 
 				if (_view.Width <= 0 || _view.Height <= 0)
 				{
@@ -90,26 +90,24 @@ namespace Microsoft.Maui.Controls.Platform
 					Opacity = 1;
 				}
 
-				_view.IsInNativeLayout = false;
+				_view.IsInPlatformLayout = false;
 
 				return finalSize;
 			}
 
-			protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+			protected override WSize MeasureOverride(WSize availableSize)
 			{
-				FrameworkElement.Measure(availableSize);
-
-				var request = FrameworkElement.DesiredSize;
+				var request = (_view.Handler as IPlatformViewHandler)?.MeasureVirtualView(availableSize) ?? WSize.Empty;
 
 				if (request.Height < 0)
 				{
 					request.Height = availableSize.Height;
 				}
 
-				global::Windows.Foundation.Size result;
+				WSize result;
 				if (_view.HorizontalOptions.Alignment == LayoutAlignment.Fill && !double.IsInfinity(availableSize.Width) && availableSize.Width != 0)
 				{
-					result = new global::Windows.Foundation.Size(availableSize.Width, request.Height);
+					result = new WSize(availableSize.Width, request.Height);
 				}
 				else
 				{

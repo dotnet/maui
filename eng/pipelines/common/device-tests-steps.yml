@@ -3,6 +3,7 @@ parameters:
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
+  provisionatorChannel: 'latest'
 
 steps:
   - template: agent-cleanser/v1.yml@xamarin-templates
@@ -15,6 +16,7 @@ steps:
     parameters:
       platform: macos
       skipXcode: ${{ eq(parameters.platform, 'android') }}
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'

@@ -1,13 +1,22 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
-using ElmSharp;
+using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
+using Rect = Microsoft.Maui.Graphics.Rect;
 using ERect = ElmSharp.Rect;
+using EvasObject = ElmSharp.EvasObject;
+using GestureLayer = ElmSharp.GestureLayer;
+using Scroller = ElmSharp.Scroller;
 using TWebView = Tizen.WebView.WebView;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	class RefreshIcon : ContentView
+	[Obsolete]
+	class RefreshIcon : AbsoluteLayout
 	{
 		public const int IconSize = ThemeConstants.RefreshView.Resources.IconSize;
 		static readonly Color DefaultColor = ThemeConstants.RefreshView.ColorClass.DefaultColor;
@@ -20,25 +29,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			HeightRequest = IconSize;
 			WidthRequest = IconSize;
-			var layout = new AbsoluteLayout()
-			{
-				HeightRequest = IconSize,
-				WidthRequest = IconSize,
-			};
 
-			layout.Children.Add(new BoxView
+			Children.Add(new BoxView
 			{
-				Color = Color.White,
+				Color = Color.FromRgb(200, 200, 200),
 				CornerRadius = new CornerRadius(IconSize),
-			}, new Rectangle(0.5, 0.5, IconSize, IconSize), AbsoluteLayoutFlags.PositionProportional);
+			}, new Rect(0.5, 0.5, IconSize, IconSize), AbsoluteLayoutFlags.PositionProportional);
 
 			_icon = new Image
 			{
 				Source = ImageSource.FromResource(IconPath, typeof(ShellItemRenderer).Assembly),
 			};
 
-			layout.Children.Add(_icon, new Rectangle(0.5, 0.5, IconSize - 8, IconSize - 8), AbsoluteLayoutFlags.PositionProportional);
-			Content = layout;
+			Children.Add(_icon, new Rect(0.5, 0.5, IconSize - 8, IconSize - 8), AbsoluteLayoutFlags.PositionProportional);
 
 			IconColor = DefaultColor;
 		}
@@ -51,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			set
 			{
-				PlatformConfiguration.TizenSpecific.Image.SetBlendColor(_icon, value == Color.Default ? DefaultColor : value);
+				PlatformConfiguration.TizenSpecific.Image.SetBlendColor(_icon, value == null ? DefaultColor : value);
 			}
 		}
 
@@ -88,14 +91,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 	}
 
-	class RefreshLayout : StackLayout
+	[Obsolete]
+	class RefreshLayout : XStackLayout
 	{
 		static readonly int MaximumDistance = 100;
 
 		public RefreshLayout()
 		{
 			HeightRequest = 200;
-			HorizontalOptions = LayoutOptions.FillAndExpand;
+			HorizontalOptions = LayoutOptions.Fill;
 
 			RefreshIcon = new RefreshIcon
 			{
@@ -105,6 +109,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				Opacity = 0.5,
 			};
 			Children.Add(RefreshIcon);
+			Children.Add(new BoxView
+			{
+				HeightRequest = 200
+			});
 		}
 
 		RefreshIcon RefreshIcon { get; set; }
@@ -161,9 +169,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		Loading,
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RefreshViewRenderer : LayoutRenderer
 	{
-		GestureLayer _gestureLayer;
+		ElmSharp.GestureLayer _gestureLayer;
 
 		RefreshLayout _refreshLayout;
 		IVisualElementRenderer _refreshLayoutRenderer;
@@ -198,6 +207,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		void UpdateRefreshLayout()
 		{
 			_refreshLayout = new RefreshLayout();
+			_refreshLayout.Parent = Element;
 			_refreshLayout.RefreshIconColor = RefreshView.RefreshColor;
 			_refreshLayoutRenderer = Platform.GetOrCreateRenderer(_refreshLayout);
 			(_refreshLayoutRenderer as ILayoutRenderer).RegisterOnLayoutUpdated();
@@ -272,6 +282,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return false;
 		}
 
+		//TODO: the following method is not trimming safe
+		[UnconditionalSuppressMessage("Trimming", "IL2026")]
+		[UnconditionalSuppressMessage("Trimming", "IL2075")]
+		[UnconditionalSuppressMessage("Trimming", "IL2091")]
 		int GetScrollYOnGenList(IntPtr handle)
 		{
 			var interop = typeof(EvasObject).Assembly.GetType("Interop");

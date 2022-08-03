@@ -1,41 +1,89 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using WSize = global::Windows.Foundation.Size;
 
 namespace Microsoft.Maui
 {
-	public static partial class ViewHandlerExtensions
+	internal static partial class ViewHandlerExtensions
 	{
+
+		// TODO: Possibly reconcile this code with LayoutPanel.ArrangeOverride
+		// If you make changes here please review if those changes should also
+		// apply to LayoutPanel.ArrangeOverride
+		internal static WSize? LayoutVirtualView(
+			this IPlatformViewHandler viewHandler,
+			WSize availableSize)
+		{
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.PlatformView;
+
+			if (virtualView == null || platformView == null)
+			{
+				return null;
+			}
+
+			virtualView.Arrange(new Rect(0, 0, availableSize.Width, availableSize.Height));
+			return availableSize;
+		}
+
+		// TODO: Possibly reconcile this code with LayoutPanel.MeasureOverride
+		// If you make changes here please review if those changes should also
+		// apply to LayoutPanel.MeasureOverride
+		internal static WSize? MeasureVirtualView(
+			this IPlatformViewHandler viewHandler,
+			WSize availableSize)
+		{
+
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.PlatformView;
+
+			if (virtualView == null || platformView == null)
+			{
+				return null;
+			}
+
+			var width = availableSize.Width;
+			var height = availableSize.Height;
+
+			var crossPlatformSize = virtualView.Measure(width, height);
+
+			width = crossPlatformSize.Width;
+			height = crossPlatformSize.Height;
+
+			return new WSize(width, height);
+		}
+
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{
-			var nativeView = viewHandler.ToPlatform();
+			var platformView = viewHandler.ToPlatform();
 
-			if (nativeView == null)
+			if (platformView == null)
 				return Size.Zero;
 
 			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;
 
-			widthConstraint = AdjustForExplicitSize(widthConstraint, nativeView.Width);
-			heightConstraint = AdjustForExplicitSize(heightConstraint, nativeView.Height);
+			widthConstraint = AdjustForExplicitSize(widthConstraint, platformView.Width);
+			heightConstraint = AdjustForExplicitSize(heightConstraint, platformView.Height);
 
 			var measureConstraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
-			nativeView.Measure(measureConstraint);
+			platformView.Measure(measureConstraint);
 
-			return new Size(nativeView.DesiredSize.Width, nativeView.DesiredSize.Height);
+			return new Size(platformView.DesiredSize.Width, platformView.DesiredSize.Height);
 		}
 
-		internal static void NativeArrangeHandler(this IViewHandler viewHandler, Rectangle rect)
+		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rect rect)
 		{
-			var nativeView = viewHandler.ToPlatform();
+			var platformView = viewHandler.ToPlatform();
 
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
 			if (rect.Width < 0 || rect.Height < 0)
 				return;
 
-			nativeView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
+			platformView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 
 			viewHandler.Invoke(nameof(IView.Frame), rect);
 		}

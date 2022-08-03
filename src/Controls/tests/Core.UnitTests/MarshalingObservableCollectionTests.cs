@@ -310,6 +310,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					_todo.Enqueue(action);
 					return true;
 				}
+
+				public bool DispatchDelayed(TimeSpan delay, Action action) =>
+					throw new NotImplementedException();
+
+				public IDispatcherTimer CreateTimer() =>
+					throw new NotImplementedException();
 			}
 		}
 	}

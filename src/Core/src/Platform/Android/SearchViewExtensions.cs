@@ -32,10 +32,9 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = placeholderTextColor.ToNative();
-				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
+				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
 				{
-					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+					editText.SetHintTextColor(c);
 				}
 			}
 		}
@@ -89,6 +88,15 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static void UpdateIsReadOnly(this EditText editText, ISearchBar searchBar)
+		{
+			bool isReadOnly = !searchBar.IsReadOnly;
+
+			editText.FocusableInTouchMode = isReadOnly;
+			editText.Focusable = isReadOnly;
+			editText.SetCursorVisible(isReadOnly);
+		}
+
 		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
 		{
 			if (searchView.Resources == null)
@@ -121,6 +129,19 @@ namespace Microsoft.Maui.Platform
 				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
 			else
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+		}
+
+		public static void UpdateIsEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
+		{
+			editText ??= searchView.GetFirstChildOfType<EditText>();
+
+			if (editText == null)
+				return;
+
+			if (editText != null)
+			{
+				editText.Enabled = searchBar.IsEnabled;
+			}
 		}
 	}
 }

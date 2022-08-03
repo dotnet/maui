@@ -25,6 +25,7 @@
 
 	<ItemGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(MauiUseDefaultAotProfile)' != 'false'">
 		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui.aotprofile" />
+		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui-blazor.aotprofile" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->
@@ -151,8 +152,9 @@
 			OptimizeIL = "true"
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"
-      DefaultCompile = "true"
+			DefaultCompile = "true"
 			ValidateOnly = "$(_MauiXamlCValidateOnly)"
+			TargetFramework = "$(TargetFramework)"
 			KeepXamlResources = "$(MauiKeepXamlResources)" />
 		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
 		<ItemGroup>

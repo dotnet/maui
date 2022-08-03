@@ -2,7 +2,7 @@ using System.IO;
 using System.Windows.Input;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
 
 namespace Samples.ViewModel
 {
@@ -58,6 +58,9 @@ namespace Samples.ViewModel
 
 		void DoSaveFile()
 		{
+			var dir = Path.GetDirectoryName(localPath);
+			Directory.CreateDirectory(dir);
+
 			File.WriteAllText(localPath, CurrentContents);
 		}
 

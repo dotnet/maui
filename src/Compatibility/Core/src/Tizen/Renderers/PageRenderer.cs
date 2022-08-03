@@ -2,7 +2,9 @@ using System;
 using System.Collections.Specialized;
 using ElmSharp.Wearable;
 using SkiaSharp.Views.Tizen;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch;
+using Microsoft.Maui.Devices;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
@@ -10,6 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	/// <summary>
 	/// Renderer of ContentPage.
 	/// </summary>
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PageRenderer : VisualElementRenderer<Page>, SkiaSharp.IBackgroundCanvas
 	{
 		Native.Page _page;
@@ -50,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void OnElementReady()
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 			{
 				_moreOption = new Lazy<MoreOption>(CreateMoreOption);
 				if (Element.ToolbarItems is INotifyCollectionChanged items)
@@ -73,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					_page.LayoutUpdated -= OnLayoutUpdated;
 				}
 
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				{
 					if (Element.ToolbarItems is INotifyCollectionChanged items)
 					{
@@ -102,11 +105,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor.IsDefault)
+			if (initialize && Element.BackgroundColor.IsDefault())
 				return;
 
 			// base.UpdateBackgroundColor() is not called on purpose, we don't want the regular background setting
-			if (Element.BackgroundColor.IsDefault || Element.BackgroundColor.A == 0)
+			if (Element.BackgroundColor.IsDefault() || Element.BackgroundColor.Alpha == 0)
 				_page.Color = EColor.Transparent;
 			else
 				_page.Color = Element.BackgroundColor.ToNative();

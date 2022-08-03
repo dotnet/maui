@@ -1,0 +1,5 @@
+<Project>
+  <Import Project="$(_MauiBuildTasksLocation)AutoImport.InTree.props"/>
+  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props"/>
+  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.props"/>
+</Project>

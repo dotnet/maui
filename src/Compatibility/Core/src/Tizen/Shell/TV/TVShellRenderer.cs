@@ -2,6 +2,7 @@
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.TV
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TVShellRenderer : ShellRenderer
 	{
 		protected override INavigationDrawer CreateNavigationDrawer()

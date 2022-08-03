@@ -1,11 +1,12 @@
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - these tests require a gyroscope to be present
+	[Category("Gyroscope")]
 	public class Gyroscope_Tests
 	{
 		[Fact]

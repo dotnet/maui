@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 		{
 			if (target != null && clipper.ClippingRequired)
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				var nativeView = Platform.GetOrCreateRenderer(target)?.NativeView;
+#pragma warning disable CS0612 // Type or member is obsolete
 				var realHandle = elm_object_part_content_get(clipper, "elm.swallow.content");
 
 				nativeView?.SetClip(null); // To restore original image
