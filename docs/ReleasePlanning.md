@@ -1,4 +1,4 @@
-Throughout the year we add issues to the `Backlog` milestone as is pointed out in our [Triage Process](https://github.com/dotnet/maui/blob/main/.github/TriageProcess.md).
+Throughout the year we add issues to the `Backlog` milestone as is pointed out in our [Triage Process](TriageProcess.md).
 We review all the issues in that milestone once a year, after the work on an upcoming major release is complete.
 Given the large number of issues, it takes multiple sessions for teams to review and identify candidates for consideration for the next major release.
 This document details the process we use for identifying candidate issues for the next release.
@@ -20,7 +20,7 @@ The issues which engineers think are good candidates and fit in the above listed
 ### Rough costing
 At this phase engineers apply rough cost estimates to the final list of issues that they have moved to the `.NET V Planning` milestone, by applying one of the `Cost: X` labels below, where `X` is the size:
 
-| **null**     | **Description**                                   |
+| **Label**    | **Description**                                   |
 |--------------|---------------------------------------------------|
 | **Cost: S**  | Work that requires one engineer up to 1 week      |
 | **Cost: M**  | Work that requires one engineer up to 2 weeks     |

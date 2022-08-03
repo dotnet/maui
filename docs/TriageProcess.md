@@ -68,7 +68,7 @@ For some feature requests and bug reports, depending on the user involvement, we
 Once we approach to the end of the release cycle (.NET Core 3, .NET 5) we will look through the accumulated issues in the `Backlog` milestone. This is a long process as the amount of issues accumulated in this milestone is quite large.
 
 We will try to prioritize issues with most community requests / upvotes assuming these are aligned with our goals.
-Issues, which we will think are candidates for the upcoming release, will be moved to the `.NET V Planning` (where V is the .NET version we're planning this for) milestone. This process is documented in more details in the [Release Planning](https://github.com/dotnet/maui/blob/main/.github/ReleasePlanning.md) document.
+Issues, which we will think are candidates for the upcoming release, will be moved to the `.NET V Planning` (where V is the .NET version we're planning this for) milestone. This process is documented in more details in the [Release Planning](ReleasePlanning.md) document.
 
 ## Cleanup
 As we go through all the issues in the Backlog milestone as part of our release planning process, we will also cleanup the milestone by closing low priority issues, which have stayed in the backlog for more than 2 releases. While some of these issues may seem reasonable, the fact that those haven't been addressed for such prolonged period of time indicate that they're not as important for the product as they may seem to be.
@@ -94,4 +94,4 @@ graph TD
 
 ## References
 
-We rely on some automation to help us with this process. You can learn more about some of these by reading our [Issue Management Policies](https://github.com/dotnet/maui/blob/main/.github/IssueManagementPolicies.md) document.
+We rely on some automation to help us with this process. You can learn more about some of these by reading our [Issue Management Policies](IssueManagementPolicies.md) document.
