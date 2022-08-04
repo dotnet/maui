@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiSearchBar platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			platformView.Entry.TextChanged -= OnTextChanged;
 			platformView.SearchButtonPressed -= OnSearchButtonPressed;
 			base.DisconnectHandler(platformView);

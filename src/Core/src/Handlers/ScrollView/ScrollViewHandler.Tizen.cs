@@ -23,6 +23,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ScrollView platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			base.DisconnectHandler(platformView);
 			platformView.Scrolling -= OnScrolled;
 			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;

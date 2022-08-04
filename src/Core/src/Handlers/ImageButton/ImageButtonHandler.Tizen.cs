@@ -24,6 +24,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiImageButton platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			platformView.Clicked -= OnClicked;
 			platformView.Pressed -= OnPressed;
 			platformView.Released -= OnReleased;

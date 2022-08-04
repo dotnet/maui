@@ -56,6 +56,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(Entry platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			platformView.KeyEvent -= OnKeyEvent;
 			platformView.CursorPositionChanged -= OnCursorPositionChanged;
 			platformView.SelectionChanged -= OnSelectionChanged;

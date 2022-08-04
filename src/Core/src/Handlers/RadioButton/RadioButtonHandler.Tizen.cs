@@ -30,6 +30,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ContentViewGroup platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			platformView.KeyEvent -= OnKeyEvent;
 			base.DisconnectHandler(platformView);
 		}

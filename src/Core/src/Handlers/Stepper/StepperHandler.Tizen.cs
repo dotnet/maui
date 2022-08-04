@@ -13,6 +13,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiStepper platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			platformView!.ValueChanged -= OnValueChanged;
 		}
 

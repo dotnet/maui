@@ -12,11 +12,11 @@ namespace Microsoft.Maui.Handlers
 			Focusable = true,
 		};
 
-		protected override void ConnectHandler(Slider nativeView)
+		protected override void ConnectHandler(Slider platformView)
 		{
-			nativeView!.ValueChanged += OnControlValueChanged;
-			nativeView.SlidingStarted += OnSlidingStarted;
-			nativeView.SlidingFinished += OnSlidingFinished;
+			platformView.ValueChanged += OnControlValueChanged;
+			platformView.SlidingStarted += OnSlidingStarted;
+			platformView.SlidingFinished += OnSlidingFinished;
 		}
 
 		void OnSlidingStarted(object? sender, SliderSlidingStartedEventArgs e)
@@ -29,11 +29,14 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.DragCompleted();
 		}
 
-		protected override void DisconnectHandler(Slider nativeView)
+		protected override void DisconnectHandler(Slider platformView)
 		{
-			nativeView!.ValueChanged -= OnControlValueChanged;
-			nativeView.SlidingStarted -= OnSlidingStarted;
-			nativeView.SlidingFinished -= OnSlidingFinished;
+			if (!platformView.HasBody())
+				return;
+
+			platformView.ValueChanged -= OnControlValueChanged;
+			platformView.SlidingStarted -= OnSlidingStarted;
+			platformView.SlidingFinished -= OnSlidingFinished;
 		}
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)

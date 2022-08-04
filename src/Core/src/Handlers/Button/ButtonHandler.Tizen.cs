@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(Button platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			platformView.TouchEvent -= OnTouch;
 			platformView.Clicked -= OnButtonClicked;
 			base.DisconnectHandler(platformView);

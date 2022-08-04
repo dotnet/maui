@@ -11,16 +11,19 @@ namespace Microsoft.Maui.Handlers
 			Focusable = true,
 		};
 
-		protected override void ConnectHandler(Switch nativeView)
+		protected override void ConnectHandler(Switch platformView)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.Toggled += OnStateChanged;
+			base.ConnectHandler(platformView);
+			platformView.Toggled += OnStateChanged;
 		}
 
-		protected override void DisconnectHandler(Switch nativeView)
+		protected override void DisconnectHandler(Switch platformView)
 		{
-			base.DisconnectHandler(nativeView);
-			nativeView.Toggled -= OnStateChanged;
+			if (!platformView.HasBody())
+				return;
+
+			base.DisconnectHandler(platformView);
+			platformView.Toggled -= OnStateChanged;
 		}
 
 		public static void MapIsOn(ISwitchHandler handler, ISwitch view)

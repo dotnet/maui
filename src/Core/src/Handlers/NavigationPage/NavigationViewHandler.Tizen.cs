@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(StackNavigationManager platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			base.DisconnectHandler(platformView);
 			platformView.Disconnect();
 		}

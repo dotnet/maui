@@ -17,6 +17,9 @@
 
 		protected override void DisconnectHandler(MauiWebView platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			base.DisconnectHandler(platformView);
 			platformView.PageLoadFinished -= OnPageLoadFinished;
 		}

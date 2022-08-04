@@ -1874,9 +1874,9 @@ override Microsoft.Maui.Handlers.ContentViewHandler.CreatePlatformView() -> Micr
 override Microsoft.Maui.Handlers.ContentViewHandler.Dispose(bool disposing) -> void
 override Microsoft.Maui.Handlers.ContentViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 
-override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Tizen.UIExtensions.NUI.Editor! nativeView) -> void
+override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Tizen.UIExtensions.NUI.Editor! platformView) -> void
 override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Editor!
-override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Editor! nativeView) -> void
+override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Editor! platformView) -> void
 override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
 override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Entry!
 override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
@@ -1922,9 +1922,9 @@ override Microsoft.Maui.Handlers.SearchBarHandler.CreatePlatformView() -> Micros
 override Microsoft.Maui.Handlers.SearchBarHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiSearchBar! platformView) -> void
 override Microsoft.Maui.Handlers.ShapeViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiShapeView!
 override Microsoft.Maui.Handlers.ShapeViewHandler.SetupContainer() -> void
-override Microsoft.Maui.Handlers.SliderHandler.ConnectHandler(Tizen.NUI.Components.Slider! nativeView) -> void
+override Microsoft.Maui.Handlers.SliderHandler.ConnectHandler(Tizen.NUI.Components.Slider! platformView) -> void
 override Microsoft.Maui.Handlers.SliderHandler.CreatePlatformView() -> Tizen.NUI.Components.Slider!
-override Microsoft.Maui.Handlers.SliderHandler.DisconnectHandler(Tizen.NUI.Components.Slider! nativeView) -> void
+override Microsoft.Maui.Handlers.SliderHandler.DisconnectHandler(Tizen.NUI.Components.Slider! platformView) -> void
 override Microsoft.Maui.Handlers.StepperHandler.ConnectHandler(Microsoft.Maui.Platform.MauiStepper! platformView) -> void
 override Microsoft.Maui.Handlers.StepperHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiStepper!
 override Microsoft.Maui.Handlers.StepperHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiStepper! platformView) -> void
@@ -1934,9 +1934,9 @@ override Microsoft.Maui.Handlers.SwipeItemViewHandler.Dispose(bool disposing) ->
 override Microsoft.Maui.Handlers.SwipeItemViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.SwipeViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiSwipeView!
 override Microsoft.Maui.Handlers.SwipeViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
-override Microsoft.Maui.Handlers.SwitchHandler.ConnectHandler(Tizen.UIExtensions.NUI.GraphicsView.Switch! nativeView) -> void
+override Microsoft.Maui.Handlers.SwitchHandler.ConnectHandler(Tizen.UIExtensions.NUI.GraphicsView.Switch! platformView) -> void
 override Microsoft.Maui.Handlers.SwitchHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.GraphicsView.Switch!
-override Microsoft.Maui.Handlers.SwitchHandler.DisconnectHandler(Tizen.UIExtensions.NUI.GraphicsView.Switch! nativeView) -> void
+override Microsoft.Maui.Handlers.SwitchHandler.DisconnectHandler(Tizen.UIExtensions.NUI.GraphicsView.Switch! platformView) -> void
 override Microsoft.Maui.Handlers.TabbedViewHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
 override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
 override Microsoft.Maui.Handlers.TimePickerHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Entry!

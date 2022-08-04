@@ -41,18 +41,21 @@ namespace Microsoft.Maui.Handlers
 			FocusableInTouch = true,
 		};
 
-		protected override void ConnectHandler(Editor nativeView)
+		protected override void ConnectHandler(Editor platformView)
 		{
-			nativeView.TextChanged += OnTextChanged;
-			nativeView.FocusLost += OnFocusLost;
-			base.ConnectHandler(nativeView);
+			platformView.TextChanged += OnTextChanged;
+			platformView.FocusLost += OnFocusLost;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Editor nativeView)
+		protected override void DisconnectHandler(Editor platformView)
 		{
-			nativeView.TextChanged -= OnTextChanged;
-			nativeView.FocusLost -= OnFocusLost;
-			base.DisconnectHandler(nativeView);
+			if (!platformView.HasBody())
+				return;
+
+			platformView.TextChanged -= OnTextChanged;
+			platformView.FocusLost -= OnFocusLost;
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor)
