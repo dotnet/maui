@@ -41,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\layout\Tabbar.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\layout\Toolbar.axml" />
 
     <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
