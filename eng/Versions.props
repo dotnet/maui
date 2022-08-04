@@ -58,7 +58,7 @@
     <MicrosoftDotNetXHarnessTestRunnersCommonVersion>1.0.0-prerelease.22401.2</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
     <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22401.2</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
     <MicrosoftDotNetXHarnessCLIVersion>1.0.0-prerelease.22401.2</MicrosoftDotNetXHarnessCLIVersion>
-    <TizenUIExtensionsVersion>0.8.1</TizenUIExtensionsVersion>
+    <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <SvgSkiaPackageVersion>0.5.13</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.2.0</FizzlerPackageVersion>
   </PropertyGroup>
