@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Platform
 			var margin2 = (ushort)10d.ToPixel();
 			var radius = 8d.ToPixel();
 
+			var isHorizontal = Window.Instance.WindowSize.Width > Window.Instance.WindowSize.Height;
 			var content = new NView
 			{
 				CornerRadius = radius,
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Platform
 					HorizontalAlignment = HorizontalAlignment.Center,
 					LinearOrientation = LinearLayout.Orientation.Vertical
 				},
-				SizeWidth = (float)Window.Instance.WindowSize.Width * 0.8f,
+				SizeWidth = Window.Instance.WindowSize.Width * (isHorizontal ? 0.5f : 0.8f),
 				BackgroundColor = Tizen.NUI.Color.White,
 			};
 
@@ -130,6 +131,12 @@ namespace Microsoft.Maui.Platform
 				SendSubmit(_dateTime);
 			};
 			hlayout.Add(okButton);
+
+			Relayout += (s, e) =>
+			{
+				var isHorizontal = Window.Instance.WindowSize.Width > Window.Instance.WindowSize.Height;
+				content.SizeWidth = Window.Instance.WindowSize.Width * (isHorizontal ? 0.5f : 0.8f);
+			};
 
 			return content;
 		}
