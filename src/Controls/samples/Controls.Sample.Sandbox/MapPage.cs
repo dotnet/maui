@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
@@ -12,6 +13,8 @@ namespace Maui.Controls.Sample
 		{
 			var grid = new Grid();
 			grid.RowDefinitions.Add(new RowDefinition());
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -71,14 +74,54 @@ namespace Maui.Controls.Sample
 				Command = new Command(() => map.MoveToRegion(new MapSpan(new Location(47.6434194, -122.1298166), 0.2, 0.2)))
 			};
 
-			var lblVisibleRegion = new Label();
-
-			lblVisibleRegion.SetBinding(Label.TextProperty, new Binding(nameof(map.VisibleRegion), source: map));
-			Grid.SetRow(buttonGoTo, 7);
-			Grid.SetRow(lblVisibleRegion, 7);
-			Grid.SetColumn(lblVisibleRegion, 1);
-			
+			Grid.SetRow(buttonGoTo, 6);
 			grid.Children.Add(buttonGoTo);
+
+			var hStack = new HorizontalStackLayout();
+
+			var centerPin = new Pin
+			{
+				Position = map.VisibleRegion?.Center,
+				Address = "THe map center",
+				Label = "Center",
+				Type = PinType.Place
+			};
+			var buttonAddPin = new Button
+			{
+				Text = "Add",
+				Command = new Command(() =>
+				{
+					centerPin.Position = map.VisibleRegion?.Center;
+					map.Pins.Add(centerPin);
+				})
+			};
+
+			var buttonRemovePin = new Button
+			{
+				Text = "Remove",
+				Command = new Command(() => map.Pins.Remove(centerPin))
+			};
+
+			var buttonClearPin = new Button
+			{
+				Text = "Clear",
+				Command = new Command(() => map.Pins.Clear())
+			};
+
+			hStack.Children.Add(buttonAddPin);
+			hStack.Children.Add(buttonRemovePin);
+			hStack.Children.Add(buttonClearPin);
+
+			Grid.SetRow(hStack, 6);
+			Grid.SetColumn(hStack, 1);
+			grid.Children.Add(hStack);
+
+			var lblVisibleRegion = new Label();
+			lblVisibleRegion.SetBinding(Label.TextProperty, new Binding(nameof(map.VisibleRegion), source: map));
+			Grid.SetRow(lblVisibleRegion, 7);
+			Grid.SetColumnSpan(lblVisibleRegion, 2);
+
+
 			grid.Children.Add(lblVisibleRegion);
 			Content = grid;
 		}
