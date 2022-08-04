@@ -1,14 +1,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 {
-	[TestFixture]
+	
 	public class MenuBarTrackerTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void Constructor()
 		{
 			var tracker = new MenuBarTracker();
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 			Assert.False(tracker.ToolbarItems.Any());
 		}
 
-		[Test]
+		[Fact]
 		public void SimpleTrackEmpty()
 		{
 			var tracker = new MenuBarTracker();
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 			Assert.False(tracker.ToolbarItems.Any());
 		}
 
-		[Test]
+		[Fact]
 		public void SimpleTrackWithItems()
 		{
 			var tracker = new MenuBarTracker();
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 			Assert.True(tracker.ToolbarItems.Contains(page.MenuBarItems[1]));
 		}
 
-		[Test]
+		[Fact]
 		public void TrackPreConstructedTabbedPage()
 		{
 			var tracker = new MenuBarTracker();
@@ -88,10 +88,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 			Assert.True(tracker.ToolbarItems.Count() == 2);
 			Assert.True(tracker.ToolbarItems.First() == subPage2.MenuBarItems[0]);
 			Assert.True(tracker.ToolbarItems.Last() == subPage2.MenuBarItems[1]);
-			Assert.IsTrue(changed);
+			Assert.True(changed);
 		}
 
-		[Test]
+		[Fact]
 		public void AdditionalTargets()
 		{
 			var tracker = new MenuBarTracker();
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 			Assert.True(tracker.ToolbarItems.Contains(menubarItem2));
 		}
 
-		[Test]
+		[Fact]
 		public async Task PushAfterTrackingStarted()
 		{
 			var tracker = new MenuBarTracker();
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 			Assert.True(tracker.ToolbarItems.Contains(menubarItem2));
 		}
 
-		[Test]
+		[Fact]
 		public async Task PopAfterTrackingStarted()
 		{
 			var tracker = new MenuBarTracker();
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 			Assert.False(tracker.ToolbarItems.Contains(menubarItem2));
 		}
 
-		[Test]
+		[Fact]
 		public void UnsetTarget()
 		{
 			var tracker = new MenuBarTracker();
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 			Assert.False(tracker.ToolbarItems.Any());
 		}
 
-		[Test]
+		[Fact]
 		public void AddingMenuBarItemsFireCollectionChanged()
 		{
 			var tracker = new MenuBarTracker();
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 			tracker.CollectionChanged += (sender, args) => changed = true;
 
 			subPage1.MenuBarItems.Add(menubarItem2);
-			Assert.IsTrue(changed);
+			Assert.True(changed);
 		}
 	}
 }
