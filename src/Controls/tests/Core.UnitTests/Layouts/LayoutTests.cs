@@ -3,14 +3,14 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
 using NSubstitute;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
-	[TestFixture, Category("Layout")]
+	[Category("Layout")]
 	public class LayoutTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void UsingIndexUpdatesParent()
 		{
 			var layout = new VerticalStackLayout();
@@ -23,16 +23,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			layout.Add(child0);
 
-			Assert.AreEqual(layout, child0.Parent);
+			Assert.Equal(layout, child0.Parent);
 			Assert.Null(child1.Parent);
 
 			layout[0] = child1;
 
 			Assert.Null(child0.Parent);
-			Assert.AreEqual(layout, child1.Parent);
+			Assert.Equal(layout, child1.Parent);
 		}
 
-		[Test]
+		[Fact]
 		public void ClearUpdatesParent()
 		{
 			var layout = new VerticalStackLayout();
@@ -43,8 +43,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			layout.Add(child0);
 			layout.Add(child1);
 
-			Assert.AreEqual(layout, child0.Parent);
-			Assert.AreEqual(layout, child1.Parent);
+			Assert.Equal(layout, child0.Parent);
+			Assert.Equal(layout, child1.Parent);
 
 			layout.Clear();
 
@@ -52,10 +52,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Null(child1.Parent);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void AddCallsCorrectHandlerMethod(Type TLayout)
 		{
 			var layout = CreateLayout(TLayout);
@@ -71,10 +72,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			handler.Received().Invoke(command, args);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void RemoveCallsCorrectHandlerMethod(Type TLayout)
 		{
 			var layout = CreateLayout(TLayout);
@@ -91,10 +93,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			handler.Received().Invoke(command, args);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void InsertCallsCorrectHandlerMethod(Type TLayout)
 		{
 			var events = new List<(string Name, LayoutHandlerUpdate? Args)>();
@@ -123,7 +126,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			return layout;
 		}
 
-		[Test]
+		[Fact]
 		public void AddRespectsCascadeInputTransparent()
 		{
 			var layout = new VerticalStackLayout()
@@ -141,7 +144,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			handler.Received().UpdateValue(Arg.Is(nameof(Layout.CascadeInputTransparent)));
 		}
 
-		[Test]
+		[Fact]
 		public void InsertRespectsCascadeInputTransparent()
 		{
 			var layout = new VerticalStackLayout()
@@ -159,7 +162,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			handler.Received().UpdateValue(Arg.Is(nameof(Layout.CascadeInputTransparent)));
 		}
 
-		[Test]
+		[Fact]
 		public void UpdateRespectsCascadeInputTransparent()
 		{
 			var layout = new VerticalStackLayout()
