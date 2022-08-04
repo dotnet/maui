@@ -44,7 +44,7 @@
     <TizenTargetFrameworkVersion>6.5</TizenTargetFrameworkVersion>
   </PropertyGroup>
 
-  <Import Project="SpecificTarget.Build.props"></Import>
+  <Import Condition="Exists('Directory.Build.Override.props')" Project="Directory.Build.Override.props" />
 
   <PropertyGroup>
 
