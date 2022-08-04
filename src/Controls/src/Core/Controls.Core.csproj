@@ -31,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <AndroidResource Include="Compatibility\Android\Resources\Layout\flyoutcontent.axml" />
-    <AndroidResource Include="Compatibility\Android\Resources\Layout\shellcontent.axml" />
+    <AndroidResource Include="Compatibility\Android\Resources\layout\flyoutcontent.axml" />
+    <AndroidResource Include="Compatibility\Android\Resources\layout\shellcontent.axml" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
