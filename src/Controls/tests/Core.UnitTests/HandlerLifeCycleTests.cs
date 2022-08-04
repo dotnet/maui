@@ -4,15 +4,15 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
-using NUnit.Framework.Constraints;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+	
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void ChangingAndChangedBothFireInitially()
 		{
 			LifeCycleButton button = new LifeCycleButton();
@@ -23,47 +23,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			button.HandlerChanged += (_, __) =>
 			{
 				if (!changing)
-					Assert.Fail("Attached fired before changing");
+					throw new XunitException("Attached fired before changing");
 
 				changed = true;
 			};
 
-			Assert.AreEqual(0, button.changing);
-			Assert.AreEqual(0, button.changed);
-			Assert.IsFalse(changing);
-			Assert.IsFalse(changed);
+			Assert.Equal(0, button.changing);
+			Assert.Equal(0, button.changed);
+			Assert.False(changing);
+			Assert.False(changed);
 
 			button.Handler = new HandlerStub();
 
-			Assert.IsTrue(changing);
-			Assert.IsTrue(changed);
-			Assert.AreEqual(1, button.changing);
-			Assert.AreEqual(1, button.changed);
+			Assert.True(changing);
+			Assert.True(changed);
+			Assert.Equal(1, button.changing);
+			Assert.Equal(1, button.changed);
 		}
 
-		[Test]
+		[Fact]
 		public void ChangingArgsAreSetCorrectly()
 		{
 			LifeCycleButton button = new LifeCycleButton();
 
-			Assert.IsNull(button.Handler);
+			Assert.Null(button.Handler);
 			var firstHandler = new HandlerStub();
 			button.Handler = firstHandler;
 
-			Assert.AreEqual(button.LastHandlerChangingEventArgs.NewHandler, firstHandler);
-			Assert.IsNull(button.LastHandlerChangingEventArgs.OldHandler);
+			Assert.Equal(button.LastHandlerChangingEventArgs.NewHandler, firstHandler);
+			Assert.Null(button.LastHandlerChangingEventArgs.OldHandler);
 
 			var secondHandler = new HandlerStub();
 			button.Handler = secondHandler;
-			Assert.AreEqual(button.LastHandlerChangingEventArgs.OldHandler, firstHandler);
-			Assert.AreEqual(button.LastHandlerChangingEventArgs.NewHandler, secondHandler);
+			Assert.Equal(button.LastHandlerChangingEventArgs.OldHandler, firstHandler);
+			Assert.Equal(button.LastHandlerChangingEventArgs.NewHandler, secondHandler);
 
 			button.Handler = null;
-			Assert.AreEqual(button.LastHandlerChangingEventArgs.OldHandler, secondHandler);
-			Assert.AreEqual(button.LastHandlerChangingEventArgs.NewHandler, null);
+			Assert.Equal(button.LastHandlerChangingEventArgs.OldHandler, secondHandler);
+			Assert.Null(button.LastHandlerChangingEventArgs.NewHandler);
 
-			Assert.AreEqual(3, button.changing);
-			Assert.AreEqual(3, button.changed);
+			Assert.Equal(3, button.changing);
+			Assert.Equal(3, button.changed);
 		}
 
 		public class LifeCycleButton : Button
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				base.OnHandlerChanged();
 
 				if (changed != changing)
-					Assert.Fail("Attaching/Attached fire mismatch");
+					throw new XunitException("Attaching/Attached fire mismatch");
 			}
 		}
 	}
