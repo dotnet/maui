@@ -54,7 +54,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				emptyView.BindingContext = (Element as ItemsView)?.EmptyView;
 
 			var header = CreateHeaderView();
+			if (header != null)
+			{
+				if (header.Handler is IPlatformViewHandler nativeHandler)
+					nativeHandler.Dispose();
+				header.Handler = null;
+			}
+
 			var footer = CreateFooterView();
+			if (footer != null)
+			{
+				if (footer.Handler is IPlatformViewHandler nativeHandler)
+					nativeHandler.Dispose();
+				footer.Handler = null;
+			}
 
 			bool isHorizontal = false;
 
@@ -70,21 +83,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (isHorizontal)
 			{
-				layout.RowDefinitions.Add(new RowDefinition
-				{
-					Height = GridLength.Auto,
-				});
-				layout.RowDefinitions.Add(new RowDefinition
-				{
-					Height = GridLength.Star,
-				});
-				layout.RowDefinitions.Add(new RowDefinition
-				{
-					Height = GridLength.Auto,
-				});
-			}
-			else
-			{
 				layout.ColumnDefinitions.Add(new ColumnDefinition
 				{
 					Width = GridLength.Auto,
@@ -96,6 +94,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				layout.ColumnDefinitions.Add(new ColumnDefinition
 				{
 					Width = GridLength.Auto,
+				});
+			}
+			else
+			{
+				layout.RowDefinitions.Add(new RowDefinition
+				{
+					Height = GridLength.Auto,
+				});
+				layout.RowDefinitions.Add(new RowDefinition
+				{
+					Height = GridLength.Star,
+				});
+				layout.RowDefinitions.Add(new RowDefinition
+				{
+					Height = GridLength.Auto,
 				});
 			}
 
@@ -112,9 +125,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (footer != null)
 			{
 				if (isHorizontal)
-					layout.Add(emptyView, 2, 0);
+					layout.Add(footer, 2, 0);
 				else
-					layout.Add(emptyView, 0, 2);
+					layout.Add(footer, 0, 2);
 			}
 
 			layout.Parent = Element;
