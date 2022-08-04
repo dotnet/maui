@@ -1,5 +1,4 @@
-﻿﻿using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.NUI;
+﻿using Tizen.UIExtensions.NUI;
 using TColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Handlers
@@ -27,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 		protected override ContentViewGroup CreatePlatformView()
 		{
 			var view = base.CreatePlatformView();
-			view.UpdateBackgroundColor((DeviceInfo.DeviceType == DeviceType.TV) ? TColor.Transparent : TColor.White);
+			view.UpdateBackgroundColor(TColor.White);
 
 			return view;
 		}
