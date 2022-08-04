@@ -1,8 +1,11 @@
 <Project>
   <PropertyGroup>
+    <!-- Setting any of these to true will cause all the other platforms to get excluded.
+        Cake writes out to these properties when you've used a specific target switch
+    -->
     <_IncludeWindows></_IncludeWindows>
     <_IncludeTizen></_IncludeTizen> 
-    <_IncludeAndroid>true</_IncludeAndroid> 
+    <_IncludeAndroid></_IncludeAndroid> 
     <_IncludeIos></_IncludeIos> 
     <_IncludeMacCatalyst></_IncludeMacCatalyst> 
   </PropertyGroup>
