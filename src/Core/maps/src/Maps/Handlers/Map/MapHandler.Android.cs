@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
 using Android;
 using Android.Content.PM;
 using Android.Gms.Maps;
@@ -17,6 +22,7 @@ namespace Microsoft.Maui.Maps.Handlers
 	{
 		MapHandler _handler;
 		GoogleMap? _googleMap;
+
 		public MapCallbackHandler(MapHandler mapHandler)
 		{
 			_handler = mapHandler;
@@ -42,6 +48,12 @@ namespace Microsoft.Maui.Maps.Handlers
 		bool _init = true;
 
 		MapCallbackHandler? _mapReady;
+		MapSpan? _lastMoveToRegion;
+		List<Marker>? _markers;
+		//List<APolyline> _polylines;
+		//List<APolygon> _polygons;
+		//List<ACircle> _circles;
+
 
 		public GoogleMap? Map { get; set; }
 
@@ -58,6 +70,8 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapReady = new MapCallbackHandler(this);
 			platformView.GetMapAsync(_mapReady);
 			platformView.LayoutChange += MapViewLayoutChange;
+			((INotifyCollectionChanged)VirtualView.Pins).CollectionChanged += OnPinCollectionChanged;
+		//	((INotifyCollectionChanged)VirtualView.MapElements).CollectionChanged += OnMapElementCollectionChanged;
 		}
 
 		protected override void DisconnectHandler(MapView platformView)
@@ -71,7 +85,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				Map.InfoWindowClick -= OnInfoWindowClick;
 				Map.MapClick -= OnMapClick;
 			}
-				
+
 			_mapReady = null;
 		}
 
@@ -201,7 +215,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			if ((_init || VirtualView.MoveToLastRegionOnLayoutChange) && _lastMoveToRegion != null)
 			{
 				MoveToRegion(_lastMoveToRegion, false);
-
+				OnPinCollectionChanged(VirtualView.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 				_init = false;
 			}
 
@@ -211,14 +225,14 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
-		MapSpan? _lastMoveToRegion;
+		
 
 		void MoveToRegion(MapSpan span, bool animate)
 		{
 			_lastMoveToRegion = span;
 			if (Map == null)
 				return;
-		
+
 			var ne = new LatLng(span.Center.Latitude + span.LatitudeDegrees / 2,
 				span.Center.Longitude + span.LongitudeDegrees / 2);
 			var sw = new LatLng(span.Center.Latitude - span.LatitudeDegrees / 2,
@@ -298,5 +312,124 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			return targetPin;
 		}
+
+		void OnPinCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+		{
+			PlatformView.Post(() => PinCollectionChanged(e));
+		}
+
+		void PinCollectionChanged(NotifyCollectionChangedEventArgs e)
+		{
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					if(e.NewItems != null)
+						AddPins(e.NewItems);
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					if (e.OldItems != null)
+						RemovePins(e.OldItems);
+					break;
+				case NotifyCollectionChangedAction.Replace:
+					if (e.OldItems != null)
+						RemovePins(e.OldItems);
+					if (e.NewItems != null)
+						AddPins(e.NewItems);
+					break;
+				case NotifyCollectionChangedAction.Reset:
+					if (_markers != null)
+					{
+						for (int i = 0; i < _markers.Count; i++)
+							_markers[i].Remove();
+
+						_markers = null;
+					}
+
+					AddPins((IList)VirtualView.Pins);
+					break;
+				case NotifyCollectionChangedAction.Move:
+					//do nothing
+					break;
+			}
+		}
+		void AddPins(IList pins)
+		{
+			if (Map == null)
+			{
+				return;
+			}
+
+			if (_markers == null)
+			{
+				_markers = new List<Marker>();
+			}
+
+			_markers.AddRange(pins.Cast<IMapPin>().Select(p =>
+			{
+				IMapPin pin = p;
+				var opts = CreateMarker(pin);
+				var marker = Map.AddMarker(opts);
+
+				// associate pin with marker for later lookup in event handlers
+				pin.MarkerId = marker.Id;
+				return marker;
+			}));
+		}
+
+		void RemovePins(IList pins)
+		{
+			if (Map == null)
+			{
+				return;
+			}
+			if (_markers == null)
+			{
+				return;
+			}
+
+			foreach (IMapPin p in pins)
+			{
+				var marker = GetMarkerForPin(p);
+
+				if (marker == null)
+				{
+					continue;
+				}
+				marker.Remove();
+				_markers.Remove(marker);
+			}
+		}
+
+
+		protected Marker? GetMarkerForPin(IMapPin pin)
+		{
+			Marker? targetMarker = null;
+
+			if (_markers != null)
+			{
+				for (int i = 0; i < _markers.Count; i++)
+				{
+					var marker = _markers[i];
+					if (marker.Id == (string)pin.MarkerId)
+					{
+						targetMarker = marker;
+						break;
+					}
+				}
+			}
+
+			return targetMarker;
+		}
+
+		protected virtual MarkerOptions CreateMarker(IMapPin pin)
+		{
+			var opts = new MarkerOptions();
+			opts.SetPosition(new LatLng(pin.Position.Latitude, pin.Position.Longitude));
+			opts.SetTitle(pin.Label);
+			opts.SetSnippet(pin.Address);
+
+			return opts;
+		}
+
 	}
 }
