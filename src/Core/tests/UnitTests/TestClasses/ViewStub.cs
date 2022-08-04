@@ -87,6 +87,8 @@ namespace Microsoft.Maui.UnitTests
 
 		public bool InputTransparent { get; set; }
 
+		public string TooltipText { get; set; }
+
 		public Size Arrange(Rect bounds) => Size.Zero;
 
 		public void InvalidateArrange() { }
