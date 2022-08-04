@@ -87,6 +87,16 @@ namespace Microsoft.Maui.DeviceTests
 		async Task AssertTooltipTextApplied<TElement>(string expected)
 			where TElement : StubBase
 		{
+#if ANDROID
+			// Tooltips are only supported in the Android API as of 26+
+			// Prior to this, the TooltipCompat.SetToolTipText emulates the behavior
+			// however there is no TooltipCompat.GetToolTipText equivalent, so there's
+			// no way to actually 'get' the text that's currently set
+			// For now there's no valid way to test these cases, so we'll skip
+			if (!OperatingSystem.IsAndroidVersionAtLeast(26))
+				return;
+#endif
+
 			var control = (TElement)Activator.CreateInstance(typeof(TElement));
 			control.TooltipText = expected;
 
