@@ -14,35 +14,11 @@ using Java.Lang;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Math = System.Math;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
-	{
-		MapHandler _handler;
-		GoogleMap? _googleMap;
-
-		public MapCallbackHandler(MapHandler mapHandler)
-		{
-			_handler = mapHandler;
-		}
-
-		public void OnMapReady(GoogleMap googleMap)
-		{
-			_googleMap = googleMap;
-			_handler.OnMapReady(googleMap);
-		}
-
-		void GoogleMap.IOnCameraMoveListener.OnCameraMove()
-		{
-			if (_googleMap == null)
-				return;
-
-			_handler.UpdateVisibleRegion(_googleMap.CameraPosition.Target);
-		}
-	}
-
 	public partial class MapHandler : ViewHandler<IMap, MapView>
 	{
 		bool _init = true;
@@ -53,7 +29,6 @@ namespace Microsoft.Maui.Maps.Handlers
 		//List<APolyline> _polylines;
 		//List<APolygon> _polygons;
 		//List<ACircle> _circles;
-
 
 		public GoogleMap? Map { get; set; }
 
@@ -71,13 +46,14 @@ namespace Microsoft.Maui.Maps.Handlers
 			platformView.GetMapAsync(_mapReady);
 			platformView.LayoutChange += MapViewLayoutChange;
 			((INotifyCollectionChanged)VirtualView.Pins).CollectionChanged += OnPinCollectionChanged;
-		//	((INotifyCollectionChanged)VirtualView.MapElements).CollectionChanged += OnMapElementCollectionChanged;
+			//	((INotifyCollectionChanged)VirtualView.MapElements).CollectionChanged += OnMapElementCollectionChanged;
 		}
 
 		protected override void DisconnectHandler(MapView platformView)
 		{
 			base.DisconnectHandler(platformView);
 			platformView.LayoutChange -= MapViewLayoutChange;
+			((INotifyCollectionChanged)VirtualView.Pins).CollectionChanged -= OnPinCollectionChanged;
 			if (Map != null)
 			{
 				Map.SetOnCameraMoveListener(null);
@@ -195,9 +171,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		internal void UpdateVisibleRegion(LatLng pos)
 		{
 			if (Map == null)
-			{
 				return;
-			}
+			
 			Projection projection = Map.Projection;
 			int width = PlatformView.Width;
 			int height = PlatformView.Height;
@@ -224,8 +199,6 @@ namespace Microsoft.Maui.Maps.Handlers
 				UpdateVisibleRegion(Map.CameraPosition.Target);
 			}
 		}
-
-		
 
 		void MoveToRegion(MapSpan span, bool animate)
 		{
@@ -291,27 +264,8 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
-		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e)
-		{
+		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e) =>
 			VirtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
-		}
-
-		protected IMapPin? GetPinForMarker(Marker marker)
-		{
-			IMapPin? targetPin = null;
-
-			for (int i = 0; i < VirtualView.Pins.Count; i++)
-			{
-				var pin = (IMapPin)VirtualView.Pins[i];
-				if ((string)pin.MarkerId == marker.Id)
-				{
-					targetPin = pin;
-					break;
-				}
-			}
-
-			return targetPin;
-		}
 
 		void OnPinCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -323,7 +277,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					if(e.NewItems != null)
+					if (e.NewItems != null)
 						AddPins(e.NewItems);
 					break;
 				case NotifyCollectionChangedAction.Remove:
@@ -354,38 +308,33 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 		void AddPins(IList pins)
 		{
-			if (Map == null)
-			{
+			if (Map == null || MauiContext == null)
 				return;
-			}
-
+		
 			if (_markers == null)
-			{
 				_markers = new List<Marker>();
-			}
-
-			_markers.AddRange(pins.Cast<IMapPin>().Select(p =>
+			
+			foreach (var p in pins)
 			{
-				IMapPin pin = p;
-				var opts = CreateMarker(pin);
-				var marker = Map.AddMarker(opts);
+				IMapPin pin = (IMapPin)p;
+				Marker marker;
 
-				// associate pin with marker for later lookup in event handlers
-				pin.MarkerId = marker.Id;
-				return marker;
-			}));
+				var pinHandler = pin.ToHandler(MauiContext);
+				if (pinHandler is IMapPinHandler iMapPinHandler)
+				{
+					marker = Map.AddMarker(iMapPinHandler.PlatformView);
+					// associate pin with marker for later lookup in event handlers
+					pin.MarkerId = marker.Id;
+					_markers.Add(marker);
+				}
+
+			}
 		}
 
 		void RemovePins(IList pins)
 		{
-			if (Map == null)
-			{
+			if (Map == null || _markers == null)
 				return;
-			}
-			if (_markers == null)
-			{
-				return;
-			}
 
 			foreach (IMapPin p in pins)
 			{
@@ -399,7 +348,6 @@ namespace Microsoft.Maui.Maps.Handlers
 				_markers.Remove(marker);
 			}
 		}
-
 
 		protected Marker? GetMarkerForPin(IMapPin pin)
 		{
@@ -421,15 +369,47 @@ namespace Microsoft.Maui.Maps.Handlers
 			return targetMarker;
 		}
 
-		protected virtual MarkerOptions CreateMarker(IMapPin pin)
+		protected IMapPin? GetPinForMarker(Marker marker)
 		{
-			var opts = new MarkerOptions();
-			opts.SetPosition(new LatLng(pin.Position.Latitude, pin.Position.Longitude));
-			opts.SetTitle(pin.Label);
-			opts.SetSnippet(pin.Address);
+			IMapPin? targetPin = null;
 
-			return opts;
+			for (int i = 0; i < VirtualView.Pins.Count; i++)
+			{
+				var pin = VirtualView.Pins[i];
+				if ((string)pin.MarkerId == marker.Id)
+				{
+					targetPin = pin;
+					break;
+				}
+			}
+
+			return targetPin;
+		}
+	}
+
+	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
+	{
+		MapHandler _handler;
+		GoogleMap? _googleMap;
+
+		public MapCallbackHandler(MapHandler mapHandler)
+		{
+			_handler = mapHandler;
 		}
 
+		public void OnMapReady(GoogleMap googleMap)
+		{
+			_googleMap = googleMap;
+			_handler.OnMapReady(googleMap);
+		}
+
+		void GoogleMap.IOnCameraMoveListener.OnCameraMove()
+		{
+			if (_googleMap == null)
+				return;
+
+			_handler.UpdateVisibleRegion(_googleMap.CameraPosition.Target);
+		}
 	}
+
 }

@@ -10,10 +10,13 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
+#if __ANDROID__ || __IOS__
 		public static IMauiHandlersCollection AddMauiMapsControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
 			handlersCollection.AddHandler<Map, MapHandler>();
+			handlersCollection.AddHandler<Pin, MapPinHandler>();
 			return handlersCollection;
 		}
+#endif
 	}
 }

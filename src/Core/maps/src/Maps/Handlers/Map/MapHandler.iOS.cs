@@ -12,10 +12,11 @@ using UIKit;
 using Microsoft.Maui.Handlers;
 using System.Drawing;
 using Microsoft.Maui.Maps.Platform;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	public class CustomMKMapView : MKMapView
+	public class MauiMKMapView : MKMapView
 	{
 		internal event EventHandler<EventArgs>? LayoutSubviewsFired;
 		public override void LayoutSubviews()
@@ -29,14 +30,12 @@ namespace Microsoft.Maui.Maps.Handlers
 	{
 		CLLocationManager? _locationManager;
 		object? _lastTouchedView;
-	
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
-
 
 		protected override MKMapView CreatePlatformView()
 		{
 			// See if we've got an MKMapView available in the pool; if so, use it
-			var mapView = MapPool.Get() ?? new CustomMKMapView();
+			var mapView = MapPool.Get() ?? new MauiMKMapView();
 
 			return mapView;
 		}
@@ -48,7 +47,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			PlatformView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
 
-			if (platformView is CustomMKMapView customMKMapView)
+			if (platformView is MauiMKMapView customMKMapView)
 				customMKMapView.LayoutSubviewsFired += CustomMKMapViewLayoutSubviewsFired;
 
 			PlatformView.DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
@@ -72,7 +71,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				_mapClickedGestureRecognizer = null;
 			}
 
-			if (platformView is CustomMKMapView customMKMapView)
+			if (platformView is MauiMKMapView customMKMapView)
 				customMKMapView.LayoutSubviewsFired -= CustomMKMapViewLayoutSubviewsFired;
 
 
@@ -84,14 +83,60 @@ namespace Microsoft.Maui.Maps.Handlers
 			var mapsPinsItemsSource = (ObservableCollection<IMapPin>)VirtualView.Pins;
 			mapsPinsItemsSource.CollectionChanged -= OnPinCollectionChanged;
 
-			foreach (IMapPin pin in mapsPinsItemsSource)
-			{
-				pin.PropertyChanged -= PinOnPropertyChanged;
-			}
-
 			// This handler is done with the MKMapView; we can put it in the pool
 			// for other rendererers to use in the future
 			MapPool.Add(platformView);
+		}
+
+		public static void MapMapType(IMapHandler handler, IMap map)
+		{
+			switch (map.MapType)
+			{
+				case MapType.Street:
+					handler.PlatformView.MapType = MKMapType.Standard;
+					break;
+				case MapType.Satellite:
+					handler.PlatformView.MapType = MKMapType.Satellite;
+					break;
+				case MapType.Hybrid:
+					handler.PlatformView.MapType = MKMapType.Hybrid;
+					break;
+			}
+		}
+
+		public static void MapIsShowingUser(IMapHandler handler, IMap map)
+		{
+
+#if !MACCATALYST
+			if (map.IsShowingUser)
+			{
+				MapHandler? mapHandler = handler as MapHandler;
+				mapHandler?._locationManager?.RequestWhenInUseAuthorization();
+			}
+#endif
+			handler.PlatformView.ShowsUserLocation = map.IsShowingUser;
+		}
+
+		public static void MapHasScrollEnabled(IMapHandler handler, IMap map)
+		{
+			handler.PlatformView.ScrollEnabled = map.HasScrollEnabled;
+		}
+
+		public static void MapHasTrafficEnabled(IMapHandler handler, IMap map)
+		{
+			handler.PlatformView.ShowsTraffic = map.HasTrafficEnabled;
+		}
+
+		public static void MapHasZoomEnabled(IMapHandler handler, IMap map)
+		{
+			handler.PlatformView.ZoomEnabled = map.HasZoomEnabled;
+		}
+
+		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
+		{
+			MapSpan? newRegion = arg as MapSpan;
+			if (newRegion != null)
+				(handler as MapHandler)?.MoveToRegion(newRegion, true);
 		}
 
 		//protected virtual MKOverlayRenderer GetViewForOverlay(MKMapView mapview, IMKOverlay overlay)
@@ -286,15 +331,19 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
+
 		void AddPins(IList pins)
 		{
+			if (MauiContext == null)
+				return;
+
 			foreach (IMapPin pin in pins)
 			{
-				pin.PropertyChanged += PinOnPropertyChanged;
-
-				var annotation = CreateAnnotation(pin);
-				pin.MarkerId = annotation;
-				PlatformView.AddAnnotation(annotation);
+				if (pin.ToHandler(MauiContext).PlatformView is IMKAnnotation annotation)
+				{
+					pin.MarkerId = annotation;
+					PlatformView.AddAnnotation(annotation);
+				}
 			}
 		}
 
@@ -302,94 +351,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			foreach (IMapPin pin in pins)
 			{
-				pin.PropertyChanged -= PinOnPropertyChanged;
 				PlatformView.RemoveAnnotation((IMKAnnotation)pin.MarkerId);
 			}
-		}
-
-		IMKAnnotation CreateAnnotation(IMapPin pin)
-		{
-			return new MKPointAnnotation
-			{
-				Title = pin.Label,
-				Subtitle = pin.Address ?? "",
-				Coordinate = new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude),
-			};
-		}
-
-		void PinOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			IMapPin pin = sender as IMapPin ?? throw new ArgumentNullException(nameof(sender), $"Argument cannot be null for {nameof(PinCollectionChanged)}");
-			var annotation = pin.MarkerId as MKPointAnnotation;
-
-			if (annotation == null)
-			{
-				return;
-			}
-
-			if (e.PropertyName == nameof(IMapPin.Label))
-			{
-				annotation.Title = pin.Label;
-			}
-			else if (e.PropertyName == nameof(IMapPin.Address))
-			{
-				annotation.Subtitle = pin.Address;
-			}
-			else if (e.PropertyName == nameof(IMapPin.Position))
-			{
-				annotation.Coordinate = new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude);
-			}
-		}
-
-		public static void MapMapType(IMapHandler handler, IMap map)
-		{
-			switch (map.MapType)
-			{
-				case MapType.Street:
-					handler.PlatformView.MapType = MKMapType.Standard;
-					break;
-				case MapType.Satellite:
-					handler.PlatformView.MapType = MKMapType.Satellite;
-					break;
-				case MapType.Hybrid:
-					handler.PlatformView.MapType = MKMapType.Hybrid;
-					break;
-			}
-		}
-
-		public static void MapIsShowingUser(IMapHandler handler, IMap map)
-		{
-
-#if !MACCATALYST
-			if (map.IsShowingUser)
-			{
-				MapHandler? mapHandler = handler as MapHandler;
-				mapHandler?._locationManager?.RequestWhenInUseAuthorization();
-			}
-#endif
-			handler.PlatformView.ShowsUserLocation = map.IsShowingUser;
-		}
-
-		public static void MapHasScrollEnabled(IMapHandler handler, IMap map)
-		{
-			handler.PlatformView.ScrollEnabled = map.HasScrollEnabled;
-		}
-
-		public static void MapHasTrafficEnabled(IMapHandler handler, IMap map)
-		{
-			handler.PlatformView.ShowsTraffic = map.HasTrafficEnabled;
-		}
-
-		public static void MapHasZoomEnabled(IMapHandler handler, IMap map)
-		{
-			handler.PlatformView.ZoomEnabled = map.HasZoomEnabled;
-		}
-
-		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
-		{
-			MapSpan? newRegion = arg as MapSpan;
-			if (newRegion != null)
-				(handler as MapHandler)?.MoveToRegion(newRegion, true);
 		}
 	}
 }

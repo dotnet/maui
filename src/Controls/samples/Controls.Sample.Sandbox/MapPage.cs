@@ -24,7 +24,29 @@ namespace Maui.Controls.Sample
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 
-			var map = new Microsoft.Maui.Controls.Maps.Map(new MapSpan(new Location(41.0116556, -8.642892), 0.2, 0.2));
+			var myhouse = new Location(41.0116556, -8.642892);
+
+			var map = new Microsoft.Maui.Controls.Maps.Map(new MapSpan(myhouse, 0.1, 0.1));
+			map.Pins.Add(new Pin
+			{
+				Position = myhouse,
+				Label = "Casa"
+			});
+			map.Pins.Add(new Pin
+			{
+				Position = new Location(40.9930868, -8.6376671),
+				Label = "Bairro"
+			});
+			map.Pins.Add(new Pin
+			{
+				Position = new Location(40.9846363, -8.6412593),
+				Label = "Golfe"
+			});
+			map.Pins.Add(new Pin
+			{
+				Position = new Location(41.0000939, -8.6228158),
+				Label = "Nave"
+			});
 			map.MapClicked += async (s, e) => { await DisplayAlert("Map Clicked", $"Clicked on Position:{e.Position}", "ok"); };
 
 			Grid.SetColumnSpan(map, 2);
