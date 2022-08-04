@@ -96,7 +96,6 @@ Task("Build")
 			},
 			ArgumentCustomization = args => args
 				.Append("/p:BuildIpa=true")
-				.Append("/p:TrimMode=partial")
 				.Append("/bl:" + binlog),
 			ToolPath = DOTNET_PATH,
 		});
@@ -112,7 +111,6 @@ Task("Build")
 			c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
 			if (!string.IsNullOrEmpty(TARGET_FRAMEWORK))
 				c.Properties["TargetFramework"] = new List<string> { TARGET_FRAMEWORK };
-			c.Properties["TrimMode"] = new List<string> { "partial" };
 			c.Targets.Clear();
 			c.Targets.Add("Build");
 			c.BinaryLogger = new MSBuildBinaryLogSettings {
