@@ -89,6 +89,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool InputTransparent { get; set; }
 
+		public string TooltipText { get; set; }
+
 		public Size Arrange(Rect bounds)
 		{
 			Frame = bounds;
