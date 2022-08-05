@@ -229,18 +229,19 @@ namespace Microsoft.Maui.Controls.Maps
 
 		void RemovePin(object itemToRemove)
 		{
-			// TODO
-			throw new NotImplementedException();
 			//// Instead of just removing by item (i.e. _pins.Remove(pinToRemove))
 			////  we need to remove by index because of how Pin.Equals() works
-			//for (int i = 0; i < _pins.Count; ++i)
-			//{
-			//	IMapPin pin = _pins[i];
-			//	if (pin.BindingContext?.Equals(itemToRemove) == true)
-			//	{
-			//		_pins.RemoveAt(i);
-			//	}
-			//}
+			for (int i = 0; i < _pins.Count; ++i)
+			{
+				Pin pin = _pins[i] as Pin;
+				if (pin != null)
+				{
+					if (pin.BindingContext?.Equals(itemToRemove) == true)
+					{
+						_pins.RemoveAt(i);
+					}
+				}
+			}
 		}
 	}
 }
