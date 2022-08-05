@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				case SelectionMode.Single:
 					var selectedItem = selectableItemsView.SelectedItem;
-					adapter.MarkPlatformSelection(selectedItem);
+					adapter?.MarkPlatformSelection(selectedItem);
 					return;
 
 				case SelectionMode.Multiple:
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					foreach (var item in selectedItems)
 					{
-						adapter.MarkPlatformSelection(item);
+						adapter?.MarkPlatformSelection(item);
 					}
 					return;
 			}
