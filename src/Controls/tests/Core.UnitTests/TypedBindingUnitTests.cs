@@ -13,13 +13,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	
+
 	public class TypedBindingUnitTests : BindingBaseUnitTests
 	{
-		
+
 		public TypedBindingUnitTests()
 		{
-			
+
 			ApplicationExtensions.CreateAndSetMockApplication();
 		}
 
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			base.Dispose(disposing);
 		}
 
-		
+
 
 		protected override BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null)
 		{

@@ -9,7 +9,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
 		[Fact]

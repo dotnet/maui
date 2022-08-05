@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class TemplatedItemsListTests : BaseTestFixture
 	{
 		class MockItemsView
@@ -88,10 +88,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		
+
 		public TemplatedItemsListTests()
 		{
-			
+
 			bindable = new MockItemsView();
 		}
 
@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(leftOver, expectedLeftOver);
 		}
 
-		
+
 
 		[Theory]
 		[InlineData(0, 0)]
@@ -1071,7 +1071,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, ucount);
 		}
 
-		[Fact( "If the cell exists and has an index, we still need to check if it's in the group asked for")]
+		[Fact("If the cell exists and has an index, we still need to check if it's in the group asked for")]
 		public void IndexOfFailsForCellInAnotherGroup()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {

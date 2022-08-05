@@ -7,7 +7,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class NavigationPageLifecycleTests : BaseTestFixture
 	{
 		[Theory]

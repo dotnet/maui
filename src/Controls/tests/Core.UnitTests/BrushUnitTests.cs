@@ -3,11 +3,11 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class BrushUnitTests : BaseTestFixture
 	{
 		BrushTypeConverter _converter;
-		
+
 		public BrushUnitTests()
 		{
 			_converter = new BrushTypeConverter();

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	
+
 	public class BindingUnitTests
 		: BindingBaseUnitTests
 	{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return new Binding("Text", mode, stringFormat: stringFormat);
 		}
 
-		static void AssertNoErrorsLogged() 
+		static void AssertNoErrorsLogged()
 		{
 			Assert.True(MockApplication.MockLogger.Messages.Count == 0,
 					"An error was logged: " + MockApplication.MockLogger.Messages.FirstOrDefault());
@@ -260,7 +260,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			AssertNoErrorsLogged();
 		}
 
-		static void AssertSourceAndTarget(string value, string vmValue, BindableObject bindable, BindableProperty property) 
+		static void AssertSourceAndTarget(string value, string vmValue, BindableObject bindable, BindableProperty property)
 		{
 			Assert.True(value == vmValue,
 				"BindingContext property changed");
@@ -893,7 +893,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.SetBinding(property, new Binding("Model.Model.Text", bindingMode));
 
 			viewmodel.Model.Model.Text = newvalue;
-			
+
 			Assert.True(newvalue == (string)bindable.GetValue(property),
 				"Target property did not update change");
 			Assert.True(newvalue == viewmodel.Model.Model.Text,

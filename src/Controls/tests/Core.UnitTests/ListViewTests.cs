@@ -12,14 +12,14 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class ListViewTests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
-		
+
 		public ListViewTests()
 		{
-			
+
 			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
@@ -287,15 +287,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			listView.NotifyRowTapped(0);
 
-			Assert.Equal(1, cellTapped); 
-			Assert.Equal(1, itemTapped); 
-			Assert.Equal(1, itemSelected); 
+			Assert.Equal(1, cellTapped);
+			Assert.Equal(1, itemTapped);
+			Assert.Equal(1, itemSelected);
 
 			listView.NotifyRowTapped(0);
 
-			Assert.Equal(2, cellTapped); 
-			Assert.Equal(2, itemTapped);  
-			Assert.Equal(1, itemSelected); 
+			Assert.Equal(2, cellTapped);
+			Assert.Equal(2, itemTapped);
+			Assert.Equal(1, itemSelected);
 		}
 
 		[Fact]
@@ -775,7 +775,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(changing);
 			Assert.True(changed);
-		   
+
 			IListViewController controller = lv;
 			Assert.NotNull(controller.HeaderElement);
 			Assert.IsType<Entry>(controller.HeaderElement);

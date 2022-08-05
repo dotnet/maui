@@ -12,13 +12,13 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class RefreshViewTests : BaseTestFixture
 	{
-		
+
 		public RefreshViewTests()
 		{
-			
+
 			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 		}
 

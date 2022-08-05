@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class BindingExpressionTests : BaseTestFixture
 	{
 		[Fact]
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"FormatException did not contain an explanation");
 		}
 
-		public static IEnumerable<object[]> ValidPathsData() 
+		public static IEnumerable<object[]> ValidPathsData()
 		{
 			var paths = new List<string> { ".", "[1]", "[1 ]", ".[1]", ". [1]",
 				"Foo", "Foo.Bar", "Foo. Bar", "Foo.Bar[1]",
@@ -67,9 +67,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			foreach (var path in paths)
 			{
-				yield return new object[] { path, true, true } ;
-				yield return new object[] { path, true, false};
-				yield return new object[] { path, false, true};
+				yield return new object[] { path, true, true };
+				yield return new object[] { path, true, false };
+				yield return new object[] { path, false, true };
 				yield return new object[] { path, false, false };
 			}
 		}
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new object[]{ "-0", new CultureInfo("de"), "-0" },
 		};
 
-		public static IEnumerable<object[]> TryConvertWithNumbersAndCulturesCasesData() 
+		public static IEnumerable<object[]> TryConvertWithNumbersAndCulturesCasesData()
 		{
 			foreach (var testCase in TryConvertWithNumbersAndCulturesCases)
 			{

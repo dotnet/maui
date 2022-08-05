@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
-	
+
 	public class GridExtensionTests
 	{
 		[Fact]

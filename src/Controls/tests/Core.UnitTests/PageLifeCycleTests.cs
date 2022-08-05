@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class PageLifeCycleTests : BaseTestFixture
 	{
 		[Theory]

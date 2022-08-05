@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class TickerSystemEnabledTests : IDisposable
 	{
 		public TickerSystemEnabledTests()
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		public void Dispose() 
+		public void Dispose()
 		{
 			GC.SuppressFinalize(this);
 			DispatcherProvider.SetCurrent(null);

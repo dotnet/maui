@@ -4,7 +4,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class MessagingCenterTests : BaseTestFixture
 	{
 		TestSubcriber _subscriber;
@@ -376,7 +376,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Fact( "This is a demonstration of what a test with a fake/mock/substitute IMessagingCenter might look like")]
+		[Fact("This is a demonstration of what a test with a fake/mock/substitute IMessagingCenter might look like")]
 		public void TestMessagingCenterSubstitute()
 		{
 			var mc = new FakeMessagingCenter();

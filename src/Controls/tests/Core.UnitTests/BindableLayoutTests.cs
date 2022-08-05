@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	
+
 	public class BindableLayoutTests : BaseTestFixture
 	{
 		[Fact]

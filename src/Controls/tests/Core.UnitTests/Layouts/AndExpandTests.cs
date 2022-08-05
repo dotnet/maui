@@ -144,10 +144,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 		static IEnumerable<object[]> ExpansionXCases()
 		{
-				yield return new object[] { LayoutOptions.StartAndExpand, 0 };
-				yield return new object[] { LayoutOptions.EndAndExpand, (TestAreaWidth / 2) - TestViewWidth };
-				yield return new object[] { LayoutOptions.CenterAndExpand, (TestAreaWidth / 4) - (TestViewWidth / 2) };
-				yield return new object[] { LayoutOptions.FillAndExpand, 0 };
+			yield return new object[] { LayoutOptions.StartAndExpand, 0 };
+			yield return new object[] { LayoutOptions.EndAndExpand, (TestAreaWidth / 2) - TestViewWidth };
+			yield return new object[] { LayoutOptions.CenterAndExpand, (TestAreaWidth / 4) - (TestViewWidth / 2) };
+			yield return new object[] { LayoutOptions.FillAndExpand, 0 };
 		}
 
 		[Theory, MemberData(nameof(ExpansionYCases))]

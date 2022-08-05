@@ -63,13 +63,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	internal class ButtonLowerPriorityTarget : IRegisterable { }
 	internal class ButtonHigherPriorityTarget : IRegisterable { }
 
-	
+
 	public class PriorityRegistrarTests : BaseTestFixture
 	{
-		
+
 		public PriorityRegistrarTests()
 		{
-			
+
 			Internals.Registrar.RegisterAll(new[] {
 				typeof (TestHandlerAttribute),
 				typeof (TestHandlerLowerPriority)
@@ -85,13 +85,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	
+
 	public class VisualRegistrarTests : BaseTestFixture
 	{
-		
+
 		public VisualRegistrarTests()
 		{
-			
+
 			Internals.Registrar.RegisterAll(new[] {
 				typeof (TestHandlerAttribute)
 			});
@@ -178,13 +178,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	
+
 	public class RegistrarTests : BaseTestFixture
 	{
-		
+
 		public RegistrarTests()
 		{
-			
+
 			Internals.Registrar.RegisterAll(new[] { typeof(TestHandlerAttribute) });
 		}
 
@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	
+
 	public class SimpleRegistrarUnitTests
 	{
 		class MockRenderer { }
@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		
+
 		public SimpleRegistrarUnitTests()
 		{
 			VisualElement.SetDefaultVisual(VisualMarker.Default);

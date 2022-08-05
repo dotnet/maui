@@ -105,13 +105,13 @@ namespace Microsoft.Maui.UnitTests
 
 		public IDispatcher? GetForCurrentThread()
 		{
-			var x = 	s_dispatcherInstance.Value;
+			var x = s_dispatcherInstance.Value;
 
 			if (x == null)
 			{
 				System.Diagnostics.Debug.WriteLine("WTH");
 			}
-			
+
 			return x;
 		}
 	}

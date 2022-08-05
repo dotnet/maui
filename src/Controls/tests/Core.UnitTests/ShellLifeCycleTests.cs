@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class ShellLifeCycleTests : ShellTestBase
 	{
 		const string ContentRoute = "content";
@@ -560,7 +560,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public ShellLifeCycleTests()
 		{
-			
+
 			Routing.RegisterRoute("LifeCyclePage", typeof(LifeCyclePage));
 		}
 

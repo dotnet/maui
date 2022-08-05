@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		CultureInfo _defaultCulture;
 		CultureInfo _defaultUICulture;
 
-		public BaseTestFixture() 
+		public BaseTestFixture()
 		{
 			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		bool _disposed;
 
-		protected virtual void Dispose(bool disposing) 
+		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
 			{

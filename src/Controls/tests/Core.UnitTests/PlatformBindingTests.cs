@@ -191,10 +191,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public event PropertyChangedEventHandler PropertyChanged;
 	}
 
-	
+
 	public class PlatformBindingTests : IDisposable
 	{
-		
+
 		public PlatformBindingTests()
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
