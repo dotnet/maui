@@ -684,8 +684,6 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectory
 
 void ProcessTFMSwitches()
 {
-    CopyFile("Directory.Build.Override.props.in", "Directory.Build.Override.props");
-
     List<string> replaceTarget = new List<String>();
 
     if(HasArgument("android"))
@@ -703,8 +701,12 @@ void ProcessTFMSwitches()
     if(HasArgument("tizen"))
         replaceTarget.Add("_IncludeTizen");
 
-    foreach(var replaceWith in replaceTarget)
+    if (replaceTarget.Count > 0)
     {
-        ReplaceTextInFiles("Directory.Build.Override.props", $"<{replaceWith}></{replaceWith}>", $"<{replaceWith}>true</{replaceWith}>");
+        CopyFile("Directory.Build.Override.props.in", "Directory.Build.Override.props");
+        foreach(var replaceWith in replaceTarget)
+        {
+            ReplaceTextInFiles("Directory.Build.Override.props", $"<{replaceWith}></{replaceWith}>", $"<{replaceWith}>true</{replaceWith}>");
+        }
     }
 }
