@@ -11,7 +11,7 @@ using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class WebViewUnitTests : BaseTestFixture
 	{
 		[Fact]

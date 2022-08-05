@@ -9,10 +9,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class MarginTests : BaseTestFixture
 	{
-		
+
 		public MarginTests()
 		{
-			
+
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (b, d, e) => new SizeRequest(new Size(100, 50));
 		}
 

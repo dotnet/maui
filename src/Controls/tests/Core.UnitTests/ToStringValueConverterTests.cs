@@ -4,16 +4,16 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class ToStringValueConverterTests : BaseTestFixture
 	{
 		static readonly CultureInfo _enUsCulture = CultureInfo.GetCultureInfo("en-US");
 		static readonly CultureInfo _skSkCulture = CultureInfo.GetCultureInfo("sk-SK");
 
-		
+
 		public ToStringValueConverterTests()
 		{
-			
+
 			System.Threading.Thread.CurrentThread.CurrentCulture = _enUsCulture;
 		}
 

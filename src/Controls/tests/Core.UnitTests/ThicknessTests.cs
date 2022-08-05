@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class ThicknessTests : BaseTestFixture
 	{
 		[Fact]
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory, MemberData(nameof(TestDataHelpers.Range), 3, 4, 8, MemberType = typeof(TestDataHelpers))]
-		public void HashCode(double l1, double t1,  double r1, double b1,
+		public void HashCode(double l1, double t1, double r1, double b1,
 							  double l2, double t2, double r2, double b2)
 		{
 			bool result = new Thickness(l1, t1, r1, b1).GetHashCode() == new Thickness(l2, t2, r2, b2).GetHashCode();

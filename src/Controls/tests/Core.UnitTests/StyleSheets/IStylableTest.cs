@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 {
-	
+
 	public class IStylableTest
 	{
 		[Fact]

@@ -5,12 +5,12 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class ItemsViewTests : BaseTestFixture
 	{
 		public ItemsViewTests()
 		{
-			
+
 			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 		}
 

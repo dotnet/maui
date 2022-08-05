@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class EasingTests : BaseTestFixture
 	{
 		[Theory, MemberData(nameof(TestDataHelpers.Range), 0, 10, 1, MemberType = typeof(TestDataHelpers))]

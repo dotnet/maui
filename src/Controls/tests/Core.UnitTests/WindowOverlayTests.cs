@@ -7,7 +7,7 @@ using static Microsoft.Maui.Controls.Core.UnitTests.WindowsTests;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class WindowOverlayTests : BaseTestFixture
 	{
 		[Fact]

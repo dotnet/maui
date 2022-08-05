@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using FlexLayout = Microsoft.Maui.Controls.Compatibility.FlexLayout;
 
-	
+
 	public class FlexLayoutFlexDirectionTests : BaseTestFixture
 	{
 		[Fact]

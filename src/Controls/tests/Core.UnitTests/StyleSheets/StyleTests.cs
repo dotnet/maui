@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	
+
 	public class StyleTests : BaseTestFixture
 	{
 		public StyleTests()

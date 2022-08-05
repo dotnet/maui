@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class NavigationUnitTest : BaseTestFixture
 	{
 		[InlineData(true)]

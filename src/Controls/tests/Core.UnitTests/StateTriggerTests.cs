@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class StateTriggerTests
 	{
 		const string NormalStateName = "Normal";

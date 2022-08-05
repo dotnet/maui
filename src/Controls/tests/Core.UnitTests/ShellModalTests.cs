@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class ShellModalTests : ShellTestBase
 	{
 		[Fact]
@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public ShellModalTests()
 		{
-			
+
 			Routing.RegisterRoute("ModalTestPage", typeof(ModalTestPage));
 			Routing.RegisterRoute("ModalTestPage2", typeof(ModalTestPage2));
 			Routing.RegisterRoute("SomeCustomPage", typeof(SomeCustomPage));

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class DataTemplateSelectorTests : BaseTestFixture
 	{
 		class TemplateOne : DataTemplate
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	
+
 	public class DataTemplateRecycleTests : BaseTestFixture
 	{
 		public DataTemplateRecycleTests()

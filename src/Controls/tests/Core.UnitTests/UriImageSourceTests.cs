@@ -7,13 +7,13 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class UriImageSourceTests : BaseTestFixture
 	{
-		
+
 		public UriImageSourceTests()
 		{
-			
+
 			networkcalls = 0;
 		}
 

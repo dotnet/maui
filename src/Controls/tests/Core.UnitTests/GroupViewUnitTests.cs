@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	
+
 	public class LayoutUnitTests : BaseTestFixture
 	{
 		[Fact]

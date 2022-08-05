@@ -7,7 +7,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class ResourceDictionaryTests : BaseTestFixture
 	{
 		[Fact]
@@ -342,7 +342,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Assert.Equal("A resource with the key 'foo' is already present in the ResourceDictionary.", ae.Message);
 			}
-			catch(Exception ex) 
+			catch (Exception ex)
 			{
 				throw new XunitException(ex.ToString());
 			}

@@ -8,13 +8,13 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class StyleTests : BaseTestFixture
 	{
-		
+
 		public StyleTests()
 		{
-			
+
 			ApplicationExtensions.CreateAndSetMockApplication();
 		}
 

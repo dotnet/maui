@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class DatePickerUnitTest : BaseTestFixture
 	{
 		[Fact]
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new object[] { new DateTime (2006, 12, 20), new DateTime (2100, 12, 31) } // Maximum Date
 		};
 
-		public static IEnumerable<object[]> DateTimesData() 
+		public static IEnumerable<object[]> DateTimesData()
 		{
 			foreach (var o in DateTimes)
 			{
