@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				_tabLayoutFragment = new ViewFragment(TabLayout);
 				var layoutContent = rootManager.RootView.FindViewById(Resource.Id.navigationlayout_content);
-				if (layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+				if (layoutContent?.LayoutParameters is ViewGroup.MarginLayoutParams cl)
 				{
 					cl.BottomMargin = 0;
 				}
