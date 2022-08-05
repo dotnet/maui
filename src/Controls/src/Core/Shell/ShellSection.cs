@@ -707,9 +707,6 @@ namespace Microsoft.Maui.Controls
 			UpdateDisplayedPage();
 		}
 
-		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => Items;
-
-
 		void InvokeNavigationRequest(NavigationRequestedEventArgs args)
 		{
 			_navigationRequested?.Invoke(this, args);

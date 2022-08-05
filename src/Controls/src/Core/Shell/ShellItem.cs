@@ -339,7 +339,5 @@ namespace Microsoft.Maui.Controls
 			if (this.IsVisibleItem && CurrentItem != null)
 				((IShellController)Parent)?.AppearanceChanged(CurrentItem, false);
 		}
-
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList();
 	}
 }
