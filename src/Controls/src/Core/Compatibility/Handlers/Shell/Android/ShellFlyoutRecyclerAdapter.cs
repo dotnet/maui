@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						return;
 
 					if (View.Parent is BaseShellItem bsi)
-						bsi.RemoveLogicalChild(_content);
+						bsi.RemoveLogicalChild(View);
 					else
 						_shell.RemoveLogicalChild(View);
 
@@ -284,8 +284,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (_element != null)
 					{
-						if (View is BaseShellItem bsi)
-							bsi.AddLogicalChild(_content);
+						if (value is BaseShellItem bsiNew)
+							bsiNew.AddLogicalChild(View);
 						else
 							_shell.AddLogicalChild(View);
 

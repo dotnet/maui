@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			BindingContext = context;
 
-			if (View is BaseShellItem bsi)
+			if (BindingContext is BaseShellItem bsi)
 				bsi.AddLogicalChild(View);
 			else if (shell != null)
 				shell.AddLogicalChild(View);
@@ -63,15 +63,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 				baseShell.PropertyChanged -= OnElementPropertyChanged;
 
+			if (View.Parent is BaseShellItem bsi)
+				bsi.RemoveLogicalChild(View);
+			else if (shell != null)
+				shell.RemoveLogicalChild(View);
+
 			_bindingContext = null;
 
 			if (!keepRenderer)
 				View.Handler = null;
 
-			if (View is BaseShellItem bsi)
-				bsi.RemoveLogicalChild(View);
-			else if (shell != null)
-				shell.RemoveLogicalChild(View);
 
 			View = null;
 			TableView = null;
