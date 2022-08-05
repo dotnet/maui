@@ -133,13 +133,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			var uie = await GetValueAsync(view, handler => GetHitTestVisible(handler));
 
-			// HitTestVisible should be the opposite value of InputTransparent 
-			if(view is LayoutStub && inputTransparent)
+			if(view is LayoutStub)
 			{
-				//https://github.com/dotnet/maui/issues/9112
+				// InputTransparent doesn't actually affect hit test visibility for LayoutPanel. 
+				// The panel itself needs to always be hit test visible so it can relay input to non-transparent children.
+				Assert.True(uie);
 				return;
 			}
 
+			// HitTestVisible should be the opposite value of InputTransparent 
 			Assert.NotEqual(inputTransparent, uie);
 		}
 
