@@ -2408,6 +2408,12 @@
                   }
                 }
               ]
+            },
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
             }
           ]
         },
