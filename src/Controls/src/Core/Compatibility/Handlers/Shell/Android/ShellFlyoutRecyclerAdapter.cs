@@ -268,8 +268,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_shell.RemoveLogicalChild(View);
 					if (_element != null && _element is BaseShellItem)
 					{
-						// TODO MAUI I don't think this is relevant
-						//_element.ClearValue(AppCompat.Platform.RendererProperty);
 						_element.PropertyChanged -= OnElementPropertyChanged;
 					}
 
@@ -281,10 +279,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_element != null)
 					{
 						_shell.AddLogicalChild(View);
-						AutomationPropertiesProvider.AccessibilitySettingsChanged(_itemView, value);
-						//_element.SetValue(AppCompat.Platform.RendererProperty, _itemView);
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();
+
+						if (value is VisualElement ve)
+						{
+							SemanticProperties.SetDescription(ve, "Hello there");
+						}
 					}
 				}
 			}

@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,18 +16,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		View _content;
 		object _previousDataContext;
-		FrameworkElement FrameworkElement { get; set; }
 		Shell _shell;
 		ShellView ShellView => _shell.Handler?.PlatformView as ShellView;
 
 		public ShellFlyoutItemView()
 		{
 			this.DataContextChanged += OnDataContextChanged;
-		}
-
-		protected override void OnContentChanged(object oldContent, object newContent)
-		{
-			base.OnContentChanged(oldContent, newContent);
 		}
 
 		public bool IsSelected
@@ -70,14 +59,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (dataTemplate != null)
 			{
 				_content = (View)dataTemplate.CreateContent();
-				_content.BindingContext = bo;
 				_shell.AddLogicalChild(_content);
+				BindableObject.SetInheritedBindingContext(_content, bo);
 
-				var renderer = _content.ToPlatform(_shell.Handler.MauiContext);
+				var platformView = _content.ToPlatform(_shell.Handler.MauiContext);
 
-				Content = renderer;
-				FrameworkElement = renderer;
-
+				Content = platformView;
 				UpdateVisualState();
 			}
 		}

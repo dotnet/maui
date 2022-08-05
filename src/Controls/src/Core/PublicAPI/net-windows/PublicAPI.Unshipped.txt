@@ -1,4 +1,7 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.Platform.ShellNavigationViewItem
+Microsoft.Maui.Controls.Platform.ShellNavigationViewItem.ShellNavigationViewItem() -> void
+Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer
 Microsoft.Maui.Controls.MenuFlyoutSeparator
 Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
@@ -12,4 +15,8 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 *REMOVED*override Microsoft.Maui.Controls.RadioButton.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.RadioButton.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.FlexLayout.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*override Microsoft.Maui.Controls.Platform.ShellFlyoutItemView.OnContentChanged(object oldContent, object newContent) -> void
+~Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.ShellNavigationViewItemAutomationPeer(Microsoft.Maui.Controls.Platform.ShellNavigationViewItem owner) -> void
+~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItem.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
+~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.GetLabeledByCore() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
