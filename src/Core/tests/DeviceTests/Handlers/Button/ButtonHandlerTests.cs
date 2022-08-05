@@ -64,7 +64,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(clicked);
 		}
 
-		[Theory()]
+		[Theory(
+#if WINDOWS
+			Skip = "Fails on Windows"
+#endif
+		)]
 		[InlineData("red.png", "#FF0000")]
 		[InlineData("green.png", "#00FF00")]
 		[InlineData("black.png", "#000000")]

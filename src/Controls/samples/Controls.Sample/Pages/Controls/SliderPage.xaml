@@ -5,7 +5,8 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Slider">
     <views:BasePage.Content>
-        <VerticalStackLayout Margin="12">
+        <ScrollView>
+        <VerticalStackLayout Margin="12" Spacing="6">
             <Label Text="Default" Style="{StaticResource Headline}"/>
             <Slider/>
             <Label
@@ -69,5 +70,6 @@
                     Clicked="OnUpdateMaximumButtonClicked" /> 
             </HorizontalStackLayout>
         </VerticalStackLayout>
+        </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>

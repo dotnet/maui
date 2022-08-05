@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using Microsoft.UI.Xaml.Controls;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
@@ -11,40 +12,52 @@ namespace Microsoft.Maui.Handlers
 		protected override ComboBox CreatePlatformView()
 		{
 			var platformPicker = new ComboBox();
-
-			if (VirtualView != null)
-				platformPicker.ItemsSource = new ItemDelegateList<string>(VirtualView);
-
-			platformPicker.DropDownOpened += OnMauiComboBoxDropDownOpened;
-			platformPicker.SelectionChanged += OnMauiComboBoxSelectionChanged;
-
 			return platformPicker;
 		}
 
 		protected override void ConnectHandler(ComboBox platformView)
 		{
 			platformView.SelectionChanged += OnControlSelectionChanged;
-
-			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged += OnRowsCollectionChanged;
+			platformView.DropDownOpened += OnMauiComboBoxDropDownOpened;
 		}
 
 		protected override void DisconnectHandler(ComboBox platformView)
 		{
 			platformView.SelectionChanged -= OnControlSelectionChanged;
+			platformView.DropDownOpened -= OnMauiComboBoxDropDownOpened;
+		}
 
-			if (VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged -= OnRowsCollectionChanged;
+		// Updating ItemSource Resets the SelectedIndex.
+		// Which propagates that change to the virtualview
+		// We don't want the virtual views selected index to change
+		// when updating the itmmsource.
+		// The ItemSource should probably be reworked to just be an OC that's
+		// kept in sync
+		internal bool UpdatingItemSource { get; set; }
+
+		internal void SetUpdatingItemSource(bool updatingItemSource)
+		{
+			UpdatingItemSource = updatingItemSource;
+
+			if (!updatingItemSource)
+				UpdateValue(nameof(IPicker.SelectedIndex));
 		}
 
 		static void Reload(IPickerHandler handler)
 		{
-			if (handler.VirtualView == null || handler.PlatformView == null)
-				return;
-			handler.PlatformView.ItemsSource = new ItemDelegateList<string>(handler.VirtualView!);
+			if (handler is PickerHandler ph1)
+				ph1.SetUpdatingItemSource(true);
+
+			handler.PlatformView.ItemsSource = new ItemDelegateList<string>(handler.VirtualView);
+
+			if (handler is PickerHandler ph2)
+				ph2.SetUpdatingItemSource(false);
 		}
 
+		// Uncomment me on NET7 [Obsolete]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
+
+		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
 
 		public static void MapTitle(IPickerHandler handler, IPicker picker)
 		{
@@ -81,10 +94,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
-			if (handler is PickerHandler platformHandler)
-			{
-				platformHandler.PlatformView?.UpdateTextColor(picker);
-			}
+			handler.PlatformView.UpdateTextColor(picker);
 		}
 
 		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
@@ -99,13 +109,13 @@ namespace Microsoft.Maui.Handlers
 
 		void OnControlSelectionChanged(object? sender, WSelectionChangedEventArgs e)
 		{
-			if (VirtualView != null && PlatformView != null)
-				VirtualView.SelectedIndex = PlatformView.SelectedIndex;
-		}
+			if (PlatformView == null)
+				return;
 
-		void OnRowsCollectionChanged(object? sender, EventArgs e)
-		{
-			Reload(this);
+			if (VirtualView != null && !UpdatingItemSource)
+				VirtualView.SelectedIndex = PlatformView.SelectedIndex;
+
+			PlatformView.MinWidth = 0;
 		}
 
 		static void OnMauiComboBoxDropDownOpened(object? sender, object e)
@@ -114,14 +124,6 @@ namespace Microsoft.Maui.Handlers
 			if (comboBox == null)
 				return;
 			comboBox.MinWidth = comboBox.ActualWidth;
-		}
-
-		static void OnMauiComboBoxSelectionChanged(object? sender, SelectionChangedEventArgs e)
-		{
-			ComboBox? comboBox = sender as ComboBox;
-			if (comboBox == null)
-				return;
-			comboBox.MinWidth = 0;
 		}
 	}
 }

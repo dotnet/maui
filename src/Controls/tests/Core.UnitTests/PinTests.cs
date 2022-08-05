@@ -1,12 +1,12 @@
 using Microsoft.Maui.Controls.Maps;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class PinTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void Constructor()
 		{
 			Pin pin = new Pin
@@ -17,14 +17,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Address = "123 Hello World Street"
 			};
 
-			Assert.AreEqual(pin.Type, PinType.SavedPin);
-			Assert.AreEqual(pin.Position.Latitude, -90);
-			Assert.AreEqual(pin.Label, "My Desktop");
-			Assert.AreEqual(pin.Address, "123 Hello World Street");
+			Assert.Equal(PinType.SavedPin, pin.Type);
+			Assert.Equal(pin.Position.Latitude, -90);
+			Assert.Equal("My Desktop", pin.Label);
+			Assert.Equal("123 Hello World Street", pin.Address);
 		}
 
-		[Test]
-		public void Equals()
+		[Fact]
+		public void EqualsTest()
 		{
 			Pin pin1 = new Pin();
 			Pin pin2 = new Pin();
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(pin1.Equals(pin3));
 		}
 
-		[Test]
+		[Fact]
 		public void EqualsOp()
 		{
 			var pin1 = new Pin
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(pin1 == pin2);
 		}
 
-		[Test]
+		[Fact]
 		public void InEqualsOp()
 		{
 			var pin1 = new Pin
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(pin1 != pin2);
 		}
 
-		[Test]
+		[Fact]
 		public void Label()
 		{
 			var pin = new Pin

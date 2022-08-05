@@ -1,21 +1,21 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ApplicationTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void NewApplicationHasNoWindowsNorPage()
 		{
 			var app = new Application();
 
 			Assert.Null(app.MainPage);
-			Assert.IsEmpty(app.Windows);
+			Assert.Empty(app.Windows);
 		}
 
-		[Test]
+		[Fact]
 		public void SettingMainPageSetsMainPageButNotWindow()
 		{
 			var app = new Application();
@@ -23,11 +23,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			app.MainPage = page;
 
-			Assert.AreEqual(page, app.MainPage);
-			Assert.IsEmpty(app.Windows);
+			Assert.Equal(page, app.MainPage);
+			Assert.Empty(app.Windows);
 		}
 
-		[Test]
+		[Fact]
 		public void CreateWindowUsesMainPage()
 		{
 			var app = new Application();
@@ -38,14 +38,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = iapp.CreateWindow(null);
 
-			Assert.AreEqual(page, app.MainPage);
-			Assert.IsNotEmpty(app.Windows);
-			Assert.AreEqual(1, app.Windows.Count);
-			Assert.AreEqual(window, app.Windows[0]);
-			Assert.AreEqual(page, app.Windows[0].Page);
+			Assert.Equal(page, app.MainPage);
+			Assert.NotEmpty(app.Windows);
+			Assert.Equal(1, app.Windows.Count);
+			Assert.Equal(window, app.Windows[0]);
+			Assert.Equal(page, app.Windows[0].Page);
 		}
 
-		[Test]
+		[Fact]
 		public void SettingMainPageUpdatesWindow()
 		{
 			var app = new Application();
@@ -58,14 +58,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page2 = new ContentPage();
 			app.MainPage = page2;
 
-			Assert.AreEqual(page2, app.MainPage);
-			Assert.IsNotEmpty(app.Windows);
-			Assert.AreEqual(1, app.Windows.Count);
-			Assert.AreEqual(window, app.Windows[0]);
-			Assert.AreEqual(page2, app.Windows[0].Page);
+			Assert.Equal(page2, app.MainPage);
+			Assert.NotEmpty(app.Windows);
+			Assert.Equal(1, app.Windows.Count);
+			Assert.Equal(window, app.Windows[0]);
+			Assert.Equal(page2, app.Windows[0].Page);
 		}
 
-		[Test]
+		[Fact]
 		public void NotSettingMainPageThrows()
 		{
 			var app = new Application();
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<NotImplementedException>(() => iapp.CreateWindow(null));
 		}
 
-		[Test]
+		[Fact]
 		public void SettingMainPageAndOverridingCreateWindowWithSamePageIsValid()
 		{
 			var page = new ContentPage();
@@ -85,12 +85,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var win = iapp.CreateWindow(null);
 
-			Assert.AreEqual(window, win);
-			Assert.AreEqual(window.Page, page);
-			Assert.AreEqual(app.MainPage, page);
+			Assert.Equal(window, win);
+			Assert.Equal(window.Page, page);
+			Assert.Equal(app.MainPage, page);
 		}
 
-		[Test]
+		[Fact]
 		public void SettingMainPageAndOverridingCreateWindowThrows()
 		{
 			var window = new Window(new ContentPage());
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => iapp.CreateWindow(null));
 		}
 
-		[Test]
+		[Fact]
 		public void CanUseExistingWindow()
 		{
 			var window = new Window();
@@ -111,11 +111,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var win = iapp.CreateWindow(null);
 
-			Assert.AreEqual(window, win);
+			Assert.Equal(window, win);
 			Assert.Null(app.MainPage);
 		}
 
-		[Test]
+		[Fact]
 		public void CanUseExistingWindowWithPage()
 		{
 			var window = new Window { Page = new ContentPage() };
@@ -125,11 +125,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var win = iapp.CreateWindow(null);
 
-			Assert.AreEqual(window, win);
-			Assert.AreEqual(window.Page, app.MainPage);
+			Assert.Equal(window, win);
+			Assert.Equal(window.Page, app.MainPage);
 		}
 
-		[Test]
+		[Fact]
 		public void SettingMainPageOverwritesExistingPage()
 		{
 			var window = new Window { Page = new ContentPage() };
@@ -142,12 +142,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page2 = new ContentPage();
 			app.MainPage = page2;
 
-			Assert.AreEqual(window, win);
-			Assert.AreEqual(page2, app.MainPage);
-			Assert.AreEqual(window.Page, app.MainPage);
+			Assert.Equal(window, win);
+			Assert.Equal(page2, app.MainPage);
+			Assert.Equal(window.Page, app.MainPage);
 		}
 
-		[Test]
+		[Fact]
 		public void SettingWindowPageOverwritesMainPage()
 		{
 			var window = new Window { Page = new ContentPage() };
@@ -160,12 +160,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page2 = new ContentPage();
 			window.Page = page2;
 
-			Assert.AreEqual(window, win);
-			Assert.AreEqual(page2, app.MainPage);
-			Assert.AreEqual(window.Page, app.MainPage);
+			Assert.Equal(window, win);
+			Assert.Equal(page2, app.MainPage);
+			Assert.Equal(window.Page, app.MainPage);
 		}
 
-		[Test]
+		[Fact]
 		public void OnStartFiresOnceFromWindowCreated()
 		{
 			var window = new Window { Page = new ContentPage() };
@@ -173,11 +173,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var iapp = app as IApplication;
 			var win = iapp.CreateWindow(null);
 
-			Assert.AreEqual(0, app.OnStartCount);
+			Assert.Equal(0, app.OnStartCount);
 			(window as IWindow).Created();
-			Assert.AreEqual(1, app.OnStartCount);
+			Assert.Equal(1, app.OnStartCount);
 			(window as IWindow).Created();
-			Assert.AreEqual(1, app.OnStartCount);
+			Assert.Equal(1, app.OnStartCount);
 
 		}
 

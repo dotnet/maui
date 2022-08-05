@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// position if the text was modified by a Converter.
 			var oldText = platformControl.Text ?? string.Empty;
 			var newText = TextTransformUtilites.GetTransformedText(
-				inputView?.Text, 
+				inputView?.Text,
 				isPassword ? TextTransform.None : textTransform
 				);
 

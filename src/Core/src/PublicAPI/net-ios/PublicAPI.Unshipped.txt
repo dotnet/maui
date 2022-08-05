@@ -27,3 +27,4 @@ Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.ApplicationSignificantTimeChange(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.get -> UIKit.UITextRange?
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.set -> void
+*REMOVED* override Microsoft.Maui.Handlers.PickerSource.Dispose(bool disposing) -> void

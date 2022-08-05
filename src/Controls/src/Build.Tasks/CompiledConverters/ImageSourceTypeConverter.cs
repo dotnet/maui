@@ -11,7 +11,7 @@ class ImageSourceTypeConverter : ICompiledTypeConverter
 	public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 	{
 		var module = context.Body.Method.Module;
-		if (!string.IsNullOrEmpty (value))
+		if (!string.IsNullOrEmpty(value))
 		{
 			value = value.Trim();
 

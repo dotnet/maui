@@ -1,11 +1,11 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class PickerTests : BaseTestFixture
 	{
 		class PickerTestsContextFixture
@@ -56,20 +56,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TestSetSelectedIndexOnNullRows()
 		{
 			var picker = new Picker();
 
-			Assert.IsEmpty(picker.Items);
-			Assert.AreEqual(-1, picker.SelectedIndex);
+			Assert.Empty(picker.Items);
+			Assert.Equal(-1, picker.SelectedIndex);
 
 			picker.SelectedIndex = 2;
 
-			Assert.AreEqual(-1, picker.SelectedIndex);
+			Assert.Equal(-1, picker.SelectedIndex);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSelectedIndexInRange()
 		{
 			var picker = new Picker
@@ -78,19 +78,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				SelectedIndex = 2
 			};
 
-			Assert.AreEqual(2, picker.SelectedIndex);
+			Assert.Equal(2, picker.SelectedIndex);
 
 			picker.SelectedIndex = 42;
-			Assert.AreEqual(3, picker.SelectedIndex);
+			Assert.Equal(3, picker.SelectedIndex);
 
 			picker.SelectedIndex = -1;
-			Assert.AreEqual(-1, picker.SelectedIndex);
+			Assert.Equal(-1, picker.SelectedIndex);
 
 			picker.SelectedIndex = -42;
-			Assert.AreEqual(-1, picker.SelectedIndex);
+			Assert.Equal(-1, picker.SelectedIndex);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSelectedIndexInRangeDefaultSelectedIndex()
 		{
 			var picker = new Picker
@@ -98,41 +98,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Items = { "John", "Paul", "George", "Ringo" }
 			};
 
-			Assert.AreEqual(-1, picker.SelectedIndex);
+			Assert.Equal(-1, picker.SelectedIndex);
 
 			picker.SelectedIndex = -5;
-			Assert.AreEqual(-1, picker.SelectedIndex);
+			Assert.Equal(-1, picker.SelectedIndex);
 
 			picker.SelectedIndex = 2;
-			Assert.AreEqual(2, picker.SelectedIndex);
+			Assert.Equal(2, picker.SelectedIndex);
 
 			picker.SelectedIndex = 42;
-			Assert.AreEqual(3, picker.SelectedIndex);
+			Assert.Equal(3, picker.SelectedIndex);
 
 			picker.SelectedIndex = -1;
-			Assert.AreEqual(-1, picker.SelectedIndex);
+			Assert.Equal(-1, picker.SelectedIndex);
 
 			picker.SelectedIndex = -42;
-			Assert.AreEqual(-1, picker.SelectedIndex);
+			Assert.Equal(-1, picker.SelectedIndex);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSelectedIndexChangedOnCollectionShrink()
 		{
 			var picker = new Picker { Items = { "John", "Paul", "George", "Ringo" }, SelectedIndex = 3 };
 
-			Assert.AreEqual(3, picker.SelectedIndex);
+			Assert.Equal(3, picker.SelectedIndex);
 
 			picker.Items.RemoveAt(3);
 			picker.Items.RemoveAt(2);
 
-			Assert.AreEqual(1, picker.SelectedIndex);
+			Assert.Equal(1, picker.SelectedIndex);
 
 			picker.Items.Clear();
-			Assert.AreEqual(-1, picker.SelectedIndex);
+			Assert.Equal(-1, picker.SelectedIndex);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSelectedIndexOutOfRangeUpdatesSelectedItem()
 		{
 			var picker = new Picker
@@ -145,14 +145,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				},
 				SelectedIndex = 0
 			};
-			Assert.AreEqual("Monkey", picker.SelectedItem);
+			Assert.Equal("Monkey", picker.SelectedItem);
 			picker.SelectedIndex = 42;
-			Assert.AreEqual("Lemon", picker.SelectedItem);
+			Assert.Equal("Lemon", picker.SelectedItem);
 			picker.SelectedIndex = -42;
-			Assert.IsNull(picker.SelectedItem);
+			Assert.Null(picker.SelectedItem);
 		}
 
-		[Test]
+		[Fact]
 		public void TestUnsubscribeINotifyCollectionChanged()
 		{
 			var list = new ObservableCollection<string>();
@@ -160,14 +160,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				ItemsSource = list
 			};
-			Assert.AreEqual(0, picker.Items.Count);
+			Assert.Equal(0, picker.Items.Count);
 			var newList = new ObservableCollection<string>();
 			picker.ItemsSource = newList;
 			list.Add("item");
-			Assert.AreEqual(0, picker.Items.Count);
+			Assert.Equal(0, picker.Items.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void TestEmptyCollectionResetItems()
 		{
 			var list = new ObservableCollection<string>
@@ -180,12 +180,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				ItemsSource = list
 			};
-			Assert.AreEqual(3, picker.Items.Count);
+			Assert.Equal(3, picker.Items.Count);
 			picker.ItemsSource = new ObservableCollection<string>();
-			Assert.AreEqual(0, picker.Items.Count);
+			Assert.Equal(0, picker.Items.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSetItemsSourceProperty()
 		{
 			var items = new ObservableCollection<object>
@@ -201,12 +201,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ItemDisplayBinding = new Binding("Name"),
 				ItemsSource = items
 			};
-			Assert.AreEqual(5, picker.Items.Count);
-			Assert.AreEqual("John", picker.Items[0]);
-			Assert.AreEqual(null, picker.Items[3]);
+			Assert.Equal(5, picker.Items.Count);
+			Assert.Equal("John", picker.Items[0]);
+			Assert.Null(picker.Items[3]);
 		}
 
-		[Test]
+		[Fact]
 		public void TestDisplayConverter()
 		{
 			var obj = new PickerTestsContextFixture("John", "John Doe");
@@ -219,11 +219,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					obj
 				}
 			};
-			Assert.IsTrue(converter.ConvertCalled);
-			Assert.AreEqual("John", picker.Items[0]);
+			Assert.True(converter.ConvertCalled);
+			Assert.Equal("John", picker.Items[0]);
 		}
 
-		[Test]
+		[Fact]
 		public void TestItemsSourceCollectionChangedAppend()
 		{
 			var items = new ObservableCollection<object>
@@ -238,14 +238,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ItemsSource = items,
 				SelectedIndex = 0
 			};
-			Assert.AreEqual(3, picker.Items.Count);
-			Assert.AreEqual("John", picker.Items[0]);
+			Assert.Equal(3, picker.Items.Count);
+			Assert.Equal("John", picker.Items[0]);
 			items.Add(new { Name = "George" });
-			Assert.AreEqual(4, picker.Items.Count);
-			Assert.AreEqual("George", picker.Items[picker.Items.Count - 1]);
+			Assert.Equal(4, picker.Items.Count);
+			Assert.Equal("George", picker.Items[picker.Items.Count - 1]);
 		}
 
-		[Test]
+		[Fact]
 		public void TestItemsSourceCollectionChangedClear()
 		{
 			var items = new ObservableCollection<object>
@@ -260,12 +260,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ItemsSource = items,
 				SelectedIndex = 0
 			};
-			Assert.AreEqual(3, picker.Items.Count);
+			Assert.Equal(3, picker.Items.Count);
 			items.Clear();
-			Assert.AreEqual(0, picker.Items.Count);
+			Assert.Equal(0, picker.Items.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void TestItemsSourceCollectionChangedInsert()
 		{
 			var items = new ObservableCollection<object>
@@ -280,14 +280,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ItemsSource = items,
 				SelectedIndex = 0
 			};
-			Assert.AreEqual(3, picker.Items.Count);
-			Assert.AreEqual("John", picker.Items[0]);
+			Assert.Equal(3, picker.Items.Count);
+			Assert.Equal("John", picker.Items[0]);
 			items.Insert(1, new { Name = "George" });
-			Assert.AreEqual(4, picker.Items.Count);
-			Assert.AreEqual("George", picker.Items[1]);
+			Assert.Equal(4, picker.Items.Count);
+			Assert.Equal("George", picker.Items[1]);
 		}
 
-		[Test]
+		[Fact]
 		public void TestItemsSourceCollectionChangedReAssign()
 		{
 			var items = new ObservableCollection<object>
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				BindingContext = bindingContext
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
-			Assert.AreEqual(3, picker.Items.Count);
+			Assert.Equal(3, picker.Items.Count);
 			items = new ObservableCollection<object>
 			{
 				"Peach",
@@ -311,11 +311,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.BindingContext = new { Items = items };
 			picker.ItemDisplayBinding = null;
-			Assert.AreEqual(2, picker.Items.Count);
-			Assert.AreEqual("Peach", picker.Items[0]);
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("Peach", picker.Items[0]);
 		}
 
-		[Test]
+		[Fact]
 		public void TestItemsSourceCollectionChangedRemove()
 		{
 			var items = new ObservableCollection<object>
@@ -330,14 +330,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ItemsSource = items,
 				SelectedIndex = 0
 			};
-			Assert.AreEqual(3, picker.Items.Count);
-			Assert.AreEqual("John", picker.Items[0]);
+			Assert.Equal(3, picker.Items.Count);
+			Assert.Equal("John", picker.Items[0]);
 			items.RemoveAt(1);
-			Assert.AreEqual(2, picker.Items.Count);
-			Assert.AreEqual("Ringo", picker.Items[1]);
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("Ringo", picker.Items[1]);
 		}
 
-		[Test]
+		[Fact]
 		public void TestItemsSourceCollectionOfStrings()
 		{
 			var items = new ObservableCollection<string>
@@ -351,11 +351,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ItemsSource = items,
 				SelectedIndex = 0
 			};
-			Assert.AreEqual(3, picker.Items.Count);
-			Assert.AreEqual("John", picker.Items[0]);
+			Assert.Equal(3, picker.Items.Count);
+			Assert.Equal("John", picker.Items[0]);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSelectedItemDefault()
 		{
 			var bindingContext = new PickerTestsBindingContext
@@ -371,12 +371,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.AreEqual(1, picker.Items.Count);
-			Assert.AreEqual(-1, picker.SelectedIndex);
-			Assert.AreEqual(bindingContext.SelectedItem, picker.SelectedItem);
+			Assert.Equal(1, picker.Items.Count);
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Equal(bindingContext.SelectedItem, picker.SelectedItem);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWhenModifyingItemsIfItemsSourceIsSet()
 		{
 			var picker = new Picker
@@ -386,7 +386,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => picker.Items.Add("foo"));
 		}
 
-		[Test]
+		[Fact]
 		public void TestNestedDisplayMemberPathExpression()
 		{
 			var obj = new PickerTestsContextFixture
@@ -405,10 +405,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				},
 				SelectedIndex = 0
 			};
-			Assert.AreEqual("NestedProperty", picker.Items[0]);
+			Assert.Equal("NestedProperty", picker.Items[0]);
 		}
 
-		[Test]
+		[Fact]
 		public void TestItemsSourceEnums()
 		{
 			var picker = new Picker
@@ -421,10 +421,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				},
 				SelectedIndex = 0
 			};
-			Assert.AreEqual("Start", picker.Items[0]);
+			Assert.Equal("Start", picker.Items[0]);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSelectedItemSet()
 		{
 			var obj = new PickerTestsContextFixture("John", "John");
@@ -443,12 +443,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.AreEqual(1, picker.Items.Count);
-			Assert.AreEqual(0, picker.SelectedIndex);
-			Assert.AreEqual(obj, picker.SelectedItem);
+			Assert.Equal(1, picker.Items.Count);
+			Assert.Equal(0, picker.SelectedIndex);
+			Assert.Equal(obj, picker.SelectedItem);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSelectedItemChangeSelectedIndex()
 		{
 			var obj = new PickerTestsContextFixture("John", "John");
@@ -466,15 +466,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.AreEqual(1, picker.Items.Count);
-			Assert.AreEqual(-1, picker.SelectedIndex);
-			Assert.AreEqual(null, picker.SelectedItem);
+			Assert.Equal(1, picker.Items.Count);
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
 			picker.SelectedItem = obj;
-			Assert.AreEqual(0, picker.SelectedIndex);
-			Assert.AreEqual(obj, picker.SelectedItem);
+			Assert.Equal(0, picker.SelectedIndex);
+			Assert.Equal(obj, picker.SelectedItem);
 			picker.SelectedIndex = -1;
-			Assert.AreEqual(-1, picker.SelectedIndex);
-			Assert.AreEqual(null, picker.SelectedItem);
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+		}
+
+		[Fact]
+		public void NullItemReturnsEmptyStringFromInterface()
+		{
+			var picker = new Picker
+			{
+				ItemsSource = new ObservableCollection<object>
+				{
+					(string)null, "John Doe"
+				}
+			};
+
+			var thing = (picker as IPicker).GetItem(0);
+			Assert.NotNull(thing);
 		}
 	}
 }
