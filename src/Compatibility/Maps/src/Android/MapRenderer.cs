@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			{
 				if (NativeMap != null)
 				{
-					MoveToRegion(Element.LastMoveToRegion, false);
+				//	MoveToRegion(Element.LastMoveToRegion, false);
 					OnPinCollectionChanged(Element.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 					OnMapElementCollectionChanged(Element.MapElements, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 					_init = false;
@@ -221,8 +221,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			}
 			else if (changed)
 			{
-				if (Element.MoveToLastRegionOnLayoutChange)
-					MoveToRegion(Element.LastMoveToRegion, false);
+				//if (Element.MoveToLastRegionOnLayoutChange)
+				//	MoveToRegion(Element.LastMoveToRegion, false);
 			}
 
 			if (NativeMap != null)

@@ -162,8 +162,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				}
 
 				MessagingCenter.Subscribe<Map, MapSpan>(this, MoveMessageName, (s, a) => MoveToRegion(a), mapModel);
-				if (mapModel.LastMoveToRegion != null)
-					MoveToRegion(mapModel.LastMoveToRegion, false);
+				//if (mapModel.LastMoveToRegion != null)
+				//	MoveToRegion(mapModel.LastMoveToRegion, false);
 
 				UpdateTrafficEnabled();
 				UpdateMapType();
@@ -193,8 +193,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				UpdateHasZoomEnabled();
 			else if (e.PropertyName == Map.HasTrafficEnabledProperty.PropertyName)
 				UpdateTrafficEnabled();
-			else if (e.PropertyName == VisualElement.HeightProperty.PropertyName && ((Map)Element).LastMoveToRegion != null)
-				_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange;
+			//else if (e.PropertyName == VisualElement.HeightProperty.PropertyName && ((Map)Element).LastMoveToRegion != null)
+			//	_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange;
 		}
 
 #if __MOBILE__
@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 			var tapPoint = recognizer.LocationInView(Control);
 			var tapGPS = ((MKMapView)Control).ConvertPoint(tapPoint, Control);
-			((Map)Element).Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+			((IMap)Element).Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
 		}
 #endif
 
@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 		{
 			if (_shouldUpdateRegion)
 			{
-				MoveToRegion(((Map)Element).LastMoveToRegion, false);
+			//	MoveToRegion(((Map)Element).LastMoveToRegion, false);
 				_shouldUpdateRegion = false;
 			}
 		}
