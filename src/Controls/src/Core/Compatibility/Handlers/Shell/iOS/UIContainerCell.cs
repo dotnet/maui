@@ -32,10 +32,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ContentView.ClipsToBounds = true;
 
 			BindingContext = context;
-			if (shell != null)
+
+			if (View is BaseShellItem bsi)
+				bsi.AddLogicalChild(View);
+			else if (shell != null)
 				shell.AddLogicalChild(View);
 		}
-
 
 		public UIContainerCell(string cellId, View view) : this(cellId, view, null, null)
 		{
@@ -66,8 +68,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!keepRenderer)
 				View.Handler = null;
 
-			if (shell != null)
-				shell.RemoveLogicalChild(shell);
+			if (View is BaseShellItem bsi)
+				bsi.RemoveLogicalChild(View);
+			else if (shell != null)
+				shell.RemoveLogicalChild(View);
 
 			View = null;
 			TableView = null;

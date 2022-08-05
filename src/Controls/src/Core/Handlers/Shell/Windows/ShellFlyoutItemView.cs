@@ -52,7 +52,11 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_content.BindingContext is INotifyPropertyChanged inpc)
 					inpc.PropertyChanged -= ShellElementPropertyChanged;
 
-				_shell?.RemoveLogicalChild(_content);
+				if (_content.Parent is BaseShellItem bsi)
+					bsi.RemoveLogicalChild(_content);
+				else
+					_shell?.RemoveLogicalChild(_content);
+
 				_content.Cleanup();
 				_content.BindingContext = null;
 				_content.Parent = null;
@@ -70,8 +74,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (dataTemplate != null)
 			{
 				_content = (View)dataTemplate.CreateContent();
+
+				// Set binding context before calling AddLogicalChild so parent binding context doesn't propagate to view
 				_content.BindingContext = bo;
-				_shell.AddLogicalChild(_content);
+
+				if (bo is BaseShellItem bsi)
+					bsi.AddLogicalChild(_content);
+				else
+					_shell.AddLogicalChild(_content);
+
 
 				var renderer = _content.ToPlatform(_shell.Handler.MauiContext);
 

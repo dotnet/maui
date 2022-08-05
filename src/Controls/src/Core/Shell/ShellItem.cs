@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 		#region PropertyKeys
 
 		static readonly BindablePropertyKey ItemsPropertyKey = BindableProperty.CreateReadOnly(nameof(Items), typeof(ShellSectionCollection), typeof(ShellItem), null,
-				defaultValueCreator: bo => new ShellSectionCollection { Inner = new ElementCollection<ShellSection>(((ShellItem)bo)._children) });
+				defaultValueCreator: bo => new ShellSectionCollection { Inner = new ElementCollection<ShellSection>(((ShellItem)bo).DeclaredChildren) });
 
 		#endregion PropertyKeys
 
@@ -139,9 +139,6 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='ItemsProperty']/Docs" />
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
-
-		readonly ObservableCollection<Element> _children = new ObservableCollection<Element>();
-		ReadOnlyCollection<Element> _logicalChildren;
 		Lazy<PlatformConfigurationRegistry<ShellItem>> _platformConfigurationRegistry;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='.ctor']/Docs" />
@@ -185,8 +182,6 @@ namespace Microsoft.Maui.Controls
 		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
 
 		internal bool IsVisibleItem => Parent is Shell shell && shell?.CurrentItem == this;
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(_children));
 
 		internal void SendStructureChanged()
 		{
