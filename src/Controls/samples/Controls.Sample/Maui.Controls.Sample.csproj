@@ -47,6 +47,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BlazorWebView\samples\MauiRazorClassLibrarySample\MauiRazorClassLibrarySample.csproj" />
+    <ProjectReference Include="..\..\..\Core\maps\src\Maps\Maps.csproj" />
     <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
     <!-- <ProjectReference Include="..\..\Foldable\src\Controls.Foldable.csproj" /> -->
   </ItemGroup>
