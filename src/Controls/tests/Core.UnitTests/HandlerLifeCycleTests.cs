@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void SettingHandlerToNullDisconnectsHandlerFromVirtualView()
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
@@ -25,10 +25,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			MauiContext mauiContext1 = new MauiContext(mauiApp1.Services);
 			var handler1 = button.ToHandler(mauiContext1);
 			button.Handler = null;
-			Assert.AreNotEqual(button, handler1.VirtualView);
+			Assert.NotEqual(button, handler1.VirtualView);
 		}
 
-		[Test]
+		[Fact]
 		public void SettingNewHandlerDisconnectsOldHandler()
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			List<HandlerChangingEventArgs> changingArgs = new List<HandlerChangingEventArgs>();
 			button.HandlerChanging += (s, a) =>
 			{
-				Assert.AreEqual(handler1, a.OldHandler);
+				Assert.Equal(handler1, a.OldHandler);
 				Assert.NotNull(a.NewHandler);
 
 				changingArgs.Add(a);
@@ -59,9 +59,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var handler2 = button.ToHandler(mauiContext2);
 
-			Assert.AreNotEqual(button, handler1.VirtualView);
-			Assert.AreEqual(button, handler2.VirtualView);
-			Assert.AreEqual(1, changingArgs.Count);
+			Assert.NotEqual(button, handler1.VirtualView);
+			Assert.Equal(button, handler2.VirtualView);
+			Assert.Single(changingArgs);
 		}
 
 		[Fact]
