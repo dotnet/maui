@@ -14,7 +14,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Lifecycle.LiveData"
-        Version="2.5.0"
+        Version="2.5.1"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.UI"
