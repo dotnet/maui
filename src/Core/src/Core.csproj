@@ -31,9 +31,6 @@
     <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
-    <PackageReference Include="Xamarin.GooglePlayServices.Maps">
-      <Version>117.0.0</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
