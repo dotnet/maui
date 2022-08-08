@@ -2,21 +2,25 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ShellUriHandlerTests : ShellTestBase
 	{
-		[TearDown]
-		public override void TearDown()
+
+		protected override void Dispose(bool disposing)
 		{
-			base.TearDown();
-			Routing.Clear();
+			if (disposing)
+			{
+				Routing.Clear();
+			}
+
+			base.Dispose(disposing);
 		}
 
-		[Test]
+		[Fact]
 		public void NodeWalkingBasic()
 		{
 			var shell = new TestShell(
@@ -28,14 +32,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			nodeLocation.SetNode(shell);
 
 			nodeLocation = nodeLocation.WalkToNextNode();
-			Assert.AreEqual(nodeLocation.Content, shell.Items[0].Items[0].Items[0]);
+			Assert.Equal(nodeLocation.Content, shell.Items[0].Items[0].Items[0]);
 
 			nodeLocation = nodeLocation.WalkToNextNode();
-			Assert.AreEqual(nodeLocation.Content, shell.Items[1].Items[0].Items[0]);
+			Assert.Equal(nodeLocation.Content, shell.Items[1].Items[0].Items[0]);
 		}
 
 
-		[Test]
+		[Fact]
 		public void NodeWalkingMultipleContent()
 		{
 			var shell = new TestShell(
@@ -56,27 +60,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			nodeLocation.SetNode(content);
 
 			nodeLocation = nodeLocation.WalkToNextNode();
-			Assert.AreEqual(shell.Items[2].Items[0].Items[0], nodeLocation.Content);
+			Assert.Equal(shell.Items[2].Items[0].Items[0], nodeLocation.Content);
 
 			nodeLocation = nodeLocation.WalkToNextNode();
-			Assert.AreEqual(shell.Items[2].Items[0].Items[1], nodeLocation.Content);
+			Assert.Equal(shell.Items[2].Items[0].Items[1], nodeLocation.Content);
 
 			nodeLocation = nodeLocation.WalkToNextNode();
-			Assert.AreEqual(shell.Items[3].Items[0].Items[0], nodeLocation.Content);
+			Assert.Equal(shell.Items[3].Items[0].Items[0], nodeLocation.Content);
 		}
 
-		[Test]
+		[Fact]
 		public async Task GlobalRegisterAbsoluteMatching()
 		{
 			var shell = new Shell();
 			Routing.RegisterRoute("/seg1/seg2/seg3", typeof(object));
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("/seg1/seg2/seg3"));
 
-			Assert.AreEqual("app://shell/IMPL_shell/seg1/seg2/seg3", request.Request.FullUri.ToString());
+			Assert.Equal("app://shell/IMPL_shell/seg1/seg2/seg3", request.Request.FullUri.ToString());
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task ShellRelativeGlobalRegistration()
 		{
 			var shell = new Shell();
@@ -92,11 +96,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//item1/section1/rootlevelcontent1");
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("section1/edit"), true);
 
-			Assert.AreEqual(1, request.Request.GlobalRoutes.Count);
-			Assert.AreEqual("item1/section1/edit", request.Request.GlobalRoutes.First());
+			Assert.Single(request.Request.GlobalRoutes);
+			Assert.Equal("item1/section1/edit", request.Request.GlobalRoutes.First());
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShellSectionWithRelativeEditUpOneLevelMultiple()
 		{
 			var shell = new Shell();
@@ -109,13 +113,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("//rootlevelcontent1/add/edit"));
 
-			Assert.AreEqual(2, request.Request.GlobalRoutes.Count);
-			Assert.AreEqual("section1/add", request.Request.GlobalRoutes.First());
-			Assert.AreEqual("section1/edit", request.Request.GlobalRoutes.Skip(1).First());
+			Assert.Equal(2, request.Request.GlobalRoutes.Count);
+			Assert.Equal("section1/add", request.Request.GlobalRoutes.First());
+			Assert.Equal("section1/edit", request.Request.GlobalRoutes.Skip(1).First());
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task ShellSectionWithGlobalRouteRelative()
 		{
 			var shell = new Shell();
@@ -128,11 +132,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//rootlevelcontent1");
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("edit"));
 
-			Assert.AreEqual(1, request.Request.GlobalRoutes.Count);
-			Assert.AreEqual("edit", request.Request.GlobalRoutes.First());
+			Assert.Single(request.Request.GlobalRoutes);
+			Assert.Equal("edit", request.Request.GlobalRoutes.First());
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShellSectionWithRelativeEditUpOneLevel()
 		{
 			var shell = new Shell();
@@ -145,12 +149,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//rootlevelcontent1");
 			var request = ShellUriHandler.GetNavigationRequest(shell, CreateUri("edit"), true);
 
-			Assert.AreEqual("section1/edit", request.Request.GlobalRoutes.First());
+			Assert.Equal("section1/edit", request.Request.GlobalRoutes.First());
 		}
 
 
 
-		[Test]
+		[Fact]
 		public async Task ShellContentOnly()
 		{
 			var shell = new Shell();
@@ -163,16 +167,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var builders = ShellUriHandler.GenerateRoutePaths(shell, CreateUri("//rootlevelcontent1"));
 
-			Assert.AreEqual(1, builders.Count);
-			Assert.AreEqual("//rootlevelcontent1", builders.First().PathNoImplicit);
+			Assert.Single(builders);
+			Assert.Equal("//rootlevelcontent1", builders.First().PathNoImplicit);
 
 			builders = ShellUriHandler.GenerateRoutePaths(shell, CreateUri("//rootlevelcontent2"));
-			Assert.AreEqual(1, builders.Count);
-			Assert.AreEqual("//rootlevelcontent2", builders.First().PathNoImplicit);
+			Assert.Single(builders);
+			Assert.Equal("//rootlevelcontent2", builders.First().PathNoImplicit);
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task ShellSectionAndContentOnly()
 		{
 			var shell = new Shell();
@@ -185,15 +189,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var builders = ShellUriHandler.GenerateRoutePaths(shell, CreateUri("//section1/rootlevelcontent")).Select(x => x.PathNoImplicit).ToArray();
 
-			Assert.AreEqual(1, builders.Length);
-			Assert.IsTrue(builders.Contains("//section1/rootlevelcontent"));
+			Assert.Single(builders);
+			Assert.Contains("//section1/rootlevelcontent", builders);
 
 			builders = ShellUriHandler.GenerateRoutePaths(shell, CreateUri("//section2/rootlevelcontent")).Select(x => x.PathNoImplicit).ToArray();
-			Assert.AreEqual(1, builders.Length);
-			Assert.IsTrue(builders.Contains("//section2/rootlevelcontent"));
+			Assert.Single(builders);
+			Assert.Contains("//section2/rootlevelcontent", builders);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShellItemAndContentOnly()
 		{
 			var shell = new Shell();
@@ -206,16 +210,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var builders = ShellUriHandler.GenerateRoutePaths(shell, CreateUri("//item1/rootlevelcontent")).Select(x => x.PathNoImplicit).ToArray();
 
-			Assert.AreEqual(1, builders.Length);
-			Assert.IsTrue(builders.Contains("//item1/rootlevelcontent"));
+			Assert.Single(builders);
+			Assert.Contains("//item1/rootlevelcontent", builders);
 
 			builders = ShellUriHandler.GenerateRoutePaths(shell, CreateUri("//item2/rootlevelcontent")).Select(x => x.PathNoImplicit).ToArray();
-			Assert.AreEqual(1, builders.Length);
-			Assert.IsTrue(builders.Contains("//item2/rootlevelcontent"));
+			Assert.Single(builders);
+			Assert.Contains("//item2/rootlevelcontent", builders);
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task AbsoluteNavigationToRelativeWithGlobal()
 		{
 			var shell = new Shell();
@@ -229,13 +233,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.RegisterRoute("catdetails", typeof(ContentPage));
 			await shell.GoToAsync($"//animals/domestic/cats/catdetails?name=domestic");
 
-			Assert.AreEqual(
+			Assert.Equal(
 				"//animals/domestic/cats/catdetails",
 				shell.CurrentState.FullLocation.ToString()
 				);
 		}
 
-		[Test]
+		[Fact]
 		public async Task RelativeNavigationToShellElementThrows()
 		{
 			var shell = new Shell();
@@ -246,11 +250,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item1);
 			shell.Items.Add(item2);
 
-			Assert.That(async () => await shell.GoToAsync($"domestic"), Throws.Exception);
+			Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"domestic"));
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task RelativeNavigationWithRoute()
 		{
 			var shell = new Shell();
@@ -262,18 +266,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item2);
 
 			Routing.RegisterRoute("catdetails", typeof(ContentPage));
-			Assert.That(async () => await shell.GoToAsync($"cats/catdetails?name=domestic"), Throws.Exception);
+			Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"cats/catdetails?name=domestic"));
 
 			// once relative routing with a stack is fixed then we can remove the above exception check and add below back in
 			// await shell.GoToAsync($"cats/catdetails?name=domestic")
-			//Assert.AreEqual(
+			//Assert.Equal(
 			//	"//animals/domestic/cats/catdetails",
 			//	shell.CurrentState.Location.ToString()
 			//	);
 
 		}
 
-		[Test]
+		[Fact]
 		public async Task ConvertToStandardFormat()
 		{
 			var shell = new Shell();
@@ -303,12 +307,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			foreach (var uri in TestUris)
 			{
-				Assert.AreEqual(new Uri("app://shell/IMPL_shell/path"), ShellUriHandler.ConvertToStandardFormat(shell, uri), $"{uri}");
+				Assert.Equal(new Uri("app://shell/IMPL_shell/path"), ShellUriHandler.ConvertToStandardFormat(shell, uri));
 
 				if (!uri.IsAbsoluteUri)
 				{
 					var reverse = new Uri(uri.OriginalString.Replace('/', '\\'), UriKind.Relative);
-					Assert.AreEqual(new Uri("app://shell/IMPL_shell/path"), ShellUriHandler.ConvertToStandardFormat(shell, reverse));
+					Assert.Equal(new Uri("app://shell/IMPL_shell/path"), ShellUriHandler.ConvertToStandardFormat(shell, reverse));
 				}
 
 			}

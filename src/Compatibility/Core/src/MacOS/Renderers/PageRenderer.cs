@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateTabOrder()
 		{
 			var tabOrderElements = ((Page)Element).OnThisPlatform().GetTabOrder();
-			if(tabOrderElements != null && tabOrderElements.Length > 0)
+			if (tabOrderElements != null && tabOrderElements.Length > 0)
 			{
 				var count = tabOrderElements.Length;
 

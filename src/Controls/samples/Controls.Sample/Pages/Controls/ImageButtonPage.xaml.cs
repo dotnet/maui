@@ -21,6 +21,12 @@ namespace Maui.Controls.Sample.Pages
 			_clickTotal += 1;
 			InfoLabel.Text = $"{_clickTotal} ImageButton click{(_clickTotal == 1 ? "" : "s")}";
 		}
+
+		void OnResizeImageButtonClicked(object sender, EventArgs e)
+		{
+			ResizeImageButton.HeightRequest = 100;
+			ResizeImageButton.WidthRequest = 100;
+		}
 	}
 
 	public class ImageButtonPageViewModel : BindableObject

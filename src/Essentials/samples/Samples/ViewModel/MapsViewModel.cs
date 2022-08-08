@@ -104,9 +104,9 @@ namespace Samples.ViewModel
 			});
 
 			if (!canOpen)
-            {
-                await DisplayAlertAsync("Unable to open map, possibly due to the fact that there is no default maps app installed.");
-            }
+			{
+				await DisplayAlertAsync("Unable to open map, possibly due to the fact that there is no default maps app installed.");
+			}
 		}
 
 		async void OpenPlacemark()
@@ -119,7 +119,7 @@ namespace Samples.ViewModel
 				Thoroughfare = Thoroughfare,
 				PostalCode = ZipCode
 			};
-			
+
 			var canOpen = await Map.TryOpenAsync(placemark, new MapLaunchOptions
 			{
 				Name = Name,
@@ -127,9 +127,9 @@ namespace Samples.ViewModel
 			});
 
 			if (!canOpen)
-            {
-                await DisplayAlertAsync("Unable to open map, possibly due to the fact that there is no default maps app installed.");
-            }
+			{
+				await DisplayAlertAsync("Unable to open map, possibly due to the fact that there is no default maps app installed.");
+			}
 		}
 	}
 }

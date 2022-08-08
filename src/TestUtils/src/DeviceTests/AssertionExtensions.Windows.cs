@@ -50,6 +50,13 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.FromResult(true);
 			});
 
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action) =>
+			view.AttachAndRun(() =>
+			{
+				var result = action();
+				return Task.FromResult(result);
+			});
+
 		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
 			view.AttachAndRun(async () =>
 			{
@@ -62,40 +69,61 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
+			TaskCompletionSource? tcs = null;
+			TaskCompletionSource? unloadedTcs = null;
+			Window? window = null;
+
 			if (view.Parent == null)
 			{
+				// prepare to wait for element to be in the UI
+				tcs = new TaskCompletionSource();
+				unloadedTcs = new TaskCompletionSource();
+
+				view.Loaded += OnViewLoaded;
+
+				// attach to the UI
 				Grid grid;
-				var window = new Window
+				window = new Window
 				{
 					Content = new Grid
 					{
 						HorizontalAlignment = HorizontalAlignment.Center,
 						VerticalAlignment = VerticalAlignment.Center,
 						Children =
-					{
-						(grid = new Grid
 						{
-							Width = view.Width,
-							Height = view.Height,
-							Children =
+							(grid = new Grid
 							{
-								view
-							}
-						})
-					}
+								Width = view.Width,
+								Height = view.Height,
+								Children =
+								{
+									view
+								}
+							})
+						}
 					}
 				};
 				window.Activate();
 
+				// wait for element to be loaded
+				await tcs.Task;
+				view.Unloaded += OnViewUnloaded;
+
+				// continue with the run
+				T result;
 				try
 				{
-					return await Run(action);
+					result = await Run(action);
+					grid.Children.Clear();
 				}
 				finally
 				{
-					grid.Children.Clear();
+					await unloadedTcs.Task;
+					await Task.Delay(10);
 					window.Close();
 				}
+
+				return result;
 			}
 			else
 			{
@@ -105,6 +133,18 @@ namespace Microsoft.Maui.DeviceTests
 			static async Task<T> Run(Func<Task<T>> action)
 			{
 				return await action();
+			}
+
+			void OnViewLoaded(object sender, RoutedEventArgs e)
+			{
+				view.Loaded -= OnViewLoaded;
+				tcs?.SetResult();
+			}
+
+			void OnViewUnloaded(object sender, RoutedEventArgs e)
+			{
+				view.Unloaded -= OnViewUnloaded;
+				unloadedTcs?.SetResult();
 			}
 		}
 

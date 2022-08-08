@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			Shape = new PolygonShapeStub(points);
 		}
 	}
-		
+
 	public class PolygonShapeStub : StubBase, IShape
 	{
 		public PolygonShapeStub()

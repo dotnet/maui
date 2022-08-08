@@ -112,6 +112,13 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task InputTransparencyInitializesCorrectly(bool inputTransparent)
 		{
+			if (typeof(TStub) == typeof(LayoutStub))
+			{
+				// The platform type for Layouts (LayoutView) always has UserInteractionEnabled
+				// to allow for its children to be interacted with
+				return;
+			}
+
 			var view = new TStub()
 			{
 				InputTransparent = inputTransparent
@@ -152,9 +159,19 @@ namespace Microsoft.Maui.DeviceTests
 			return FlowDirection.LeftToRight;
 		}
 
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
+		protected UIView GetAccessiblePlatformView(IViewHandler viewHandler)
 		{
 			var platformView = ((UIView)viewHandler.PlatformView);
+
+			if (platformView is UISearchBar searchBar)
+				platformView = searchBar.GetSearchTextField();
+
+			return platformView;
+		}
+
+		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
+		{
+			var platformView = GetAccessiblePlatformView(viewHandler);
 
 			// UIControl elements when instantiated have IsAccessibilityElement set to false.
 			// Once they are added to the visual tree then iOS transitions IsAccessibilityElement
@@ -166,22 +183,22 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).GetPlatformViewBounds();
+			viewHandler.VirtualView.ToPlatform().GetPlatformViewBounds();
 
 		protected Maui.Graphics.Rect GetBoundingBox(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).GetBoundingBox();
+			viewHandler.VirtualView.ToPlatform().GetBoundingBox();
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
 			((UIView)viewHandler.PlatformView).GetViewTransform();
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).AccessibilityLabel;
+			GetAccessiblePlatformView(viewHandler).AccessibilityLabel;
 
 		protected string GetSemanticHint(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).AccessibilityHint;
+			GetAccessiblePlatformView(viewHandler).AccessibilityHint;
 
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
+			GetAccessiblePlatformView(viewHandler).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
 				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
 		protected nfloat GetOpacity(IViewHandler viewHandler) =>

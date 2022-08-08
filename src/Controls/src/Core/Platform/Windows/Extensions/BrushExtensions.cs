@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (brush == null)
 				return null;
-			
+
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				if (solidColorBrush.Color == null)

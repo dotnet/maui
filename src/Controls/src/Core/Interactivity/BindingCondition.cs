@@ -79,8 +79,12 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			object converted = null;
+
 			if (s_valueConverter != null)
-				converted = s_valueConverter.Convert(Value, other != null ? other.GetType() : typeof(object), null, null);
+				converted = s_valueConverter.Convert(Value,
+					other != null ? other.GetType() : typeof(object),
+					other != null ? other.GetType().GetTypeConverter : null,
+					null);
 			else
 				return false;
 

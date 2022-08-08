@@ -28,10 +28,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (platformView is MauiNavigationView mauiNavigationView)
 				mauiNavigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 
+			platformView.Loaded += OnLoaded;
 			platformView.PaneOpened += OnPaneOpened;
 			platformView.PaneOpening += OnPaneOpening;
 			platformView.PaneClosing += OnPaneClosing;
 			platformView.ItemInvoked += OnMenuItemInvoked;
+		}
+
+		private void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			UpdateValue(nameof(Shell.FlyoutBackground));
 		}
 
 		protected override void DisconnectHandler(ShellView platformView)
@@ -41,6 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (platformView is MauiNavigationView mauiNavigationView)
 				mauiNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
 
+			platformView.Loaded -= OnLoaded;
 			platformView.PaneOpened -= OnPaneOpened;
 			platformView.PaneOpening -= OnPaneOpening;
 			platformView.PaneClosing -= OnPaneClosing;
@@ -124,7 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				rnv.FlyoutView = flyoutView.Flyout;
 
 			handler.PlatformView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
-			
+
 		}
 
 		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)

@@ -53,71 +53,28 @@ namespace Microsoft.Maui.Controls.Xaml
 			var valueProvider = serviceProvider?.GetService<IProvideValueTarget>() ?? throw new ArgumentException();
 
 			BindableProperty bp;
-			PropertyInfo pi = null;
 			Type propertyType = null;
 
 			if (valueProvider.TargetObject is Setter setter)
 				bp = setter.Property;
 			else
-			{
 				bp = valueProvider.TargetProperty as BindableProperty;
-				pi = valueProvider.TargetProperty as PropertyInfo;
-			}
-			propertyType = bp?.ReturnType
-							  ?? pi?.PropertyType
-							  ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
-
-			var converterProvider = serviceProvider?.GetService<IValueConverterProvider>();
-
-			MemberInfo minforetriever()
-			{
-				if (pi != null)
-					return pi;
-
-				MemberInfo minfo = null;
-				try
-				{
-					minfo = bp.DeclaringType.GetRuntimeProperty(bp.PropertyName);
-				}
-				catch (AmbiguousMatchException e)
-				{
-					throw new XamlParseException($"Multiple properties with name '{bp.DeclaringType}.{bp.PropertyName}' found.", serviceProvider, innerException: e);
-				}
-				if (minfo != null)
-					return minfo;
-				try
-				{
-					return bp.DeclaringType.GetRuntimeMethod("Get" + bp.PropertyName, new[] { typeof(BindableObject) });
-				}
-				catch (AmbiguousMatchException e)
-				{
-					throw new XamlParseException($"Multiple methods with name '{bp.DeclaringType}.Get{bp.PropertyName}' found.", serviceProvider, innerException: e);
-				}
-			}
 
 			var binding = new AppThemeBinding();
-			if (converterProvider != null)
-			{
-				if (_haslight)
-					binding.Light = converterProvider.Convert(Light, propertyType, minforetriever, serviceProvider);
-				if (_hasdark)
-					binding.Dark = converterProvider.Convert(Dark, propertyType, minforetriever, serviceProvider);
-				if (_hasdefault)
-					binding.Default = converterProvider.Convert(Default, propertyType, minforetriever, serviceProvider);
-				return binding;
-			}
 
 			Exception converterException = null;
-
-			if (converterException != null && _haslight)
-				binding.Light = Light.ConvertTo(propertyType, minforetriever, serviceProvider, out converterException);
-			if (converterException != null && _hasdark)
-				binding.Dark = Dark.ConvertTo(propertyType, minforetriever, serviceProvider, out converterException);
-			if (converterException != null && _hasdefault)
-				binding.Default = Default.ConvertTo(propertyType, minforetriever, serviceProvider, out converterException);
+			if (converterException == null && _haslight)
+				binding.Light = Light.ConvertTo(propertyType, bp.GetBindablePropertyTypeConverter, serviceProvider, out converterException);
+			if (converterException == null && _hasdark)
+				binding.Dark = Dark.ConvertTo(propertyType, bp.GetBindablePropertyTypeConverter, serviceProvider, out converterException);
+			if (converterException == null && _hasdefault)
+				binding.Default = Default.ConvertTo(propertyType, bp.GetBindablePropertyTypeConverter, serviceProvider, out converterException);
 
 			if (converterException != null)
-				throw converterException;
+			{
+				var lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
+				throw new XamlParseException(converterException.Message, serviceProvider, converterException);
+			}
 
 			return binding;
 		}

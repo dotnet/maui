@@ -10,8 +10,8 @@ namespace Microsoft.Maui.ApplicationModel
 	public static partial class Permissions
 	{
 		[SupportedOSPlatform("tvos14.0")]
-		//[SupportedOSPlatform("macos11.0")] this is causing warning within #if def below
-		[SupportedOSPlatform("ios14.0")] // The enum PHAccessLevel has these attributes
+		[SupportedOSPlatform("macos11.0")]
+		[SupportedOSPlatform("ios14.0")]
 		public partial class Photos : BasePlatformPermission
 		{
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
@@ -33,15 +33,13 @@ namespace Microsoft.Maui.ApplicationModel
 				{
 					return status;
 				}
-#if __IOS__
-				else if (status == PermissionStatus.Limited)
+				else if (OperatingSystem.IsIOSVersionAtLeast(14) && status == PermissionStatus.Limited)
 				{
 					PhotosUI.PHPhotoLibrary_PhotosUISupport.PresentLimitedLibraryPicker(
 						PHPhotoLibrary.SharedPhotoLibrary,
 						WindowStateManager.Default.GetCurrentUIViewController());
 					return status;
 				}
-#endif
 
 				EnsureMainThread();
 

@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			get => (Thickness)GetValue(ItemSpacingProperty);
 			set => SetValue(ItemSpacingProperty, value);
 		}
-				
+
 		protected override void OnContentChanged(object oldContent, object newContent)
 		{
 			base.OnContentChanged(oldContent, newContent);
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			itemsView?.AddLogicalChild(_visualElement);
 		}
 
-		void SetNativeStateConsistent(VisualElement visualElement) 
+		void SetNativeStateConsistent(VisualElement visualElement)
 		{
 			visualElement.IsPlatformStateConsistent = true;
 

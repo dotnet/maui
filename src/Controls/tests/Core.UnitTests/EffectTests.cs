@@ -1,29 +1,29 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class EffectTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void ResolveSetsId()
 		{
 			string id = "Unknown";
 			var effect = Effect.Resolve(id);
-			Assert.AreEqual(id, effect.ResolveId);
+			Assert.Equal(id, effect.ResolveId);
 		}
 
-		[Test]
+		[Fact]
 		public void UnknownIdReturnsNullEffect()
 		{
 			var effect = Effect.Resolve("Foo");
-			Assert.IsInstanceOf<NullEffect>(effect);
+			Assert.IsType<NullEffect>(effect);
 		}
 
-		[Test]
+		[Fact]
 		public void SendAttachedSetsFlag()
 		{
 			var effect = Effect.Resolve("Foo");
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(effect.IsAttached);
 		}
 
-		[Test]
+		[Fact]
 		public void SendDetachedUnsetsFlag()
 		{
 			var effect = Effect.Resolve("Foo");
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(effect.IsAttached);
 		}
 
-		[Test]
+		[Fact]
 		public void EffectLifecyclePreProvider()
 		{
 			var effect = new CustomEffect();
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(effect.OnDetachedCalled);
 		}
 
-		[Test]
+		[Fact]
 		public void EffectLifecyclePostProvider()
 		{
 			var effect = new CustomEffect();
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(effect.OnDetachedCalled);
 		}
 
-		[Test]
+		[Fact]
 		public void EffectsClearDetachesEffect()
 		{
 			var effect = new CustomEffect();

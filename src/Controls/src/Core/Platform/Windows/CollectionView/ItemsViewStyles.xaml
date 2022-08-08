@@ -136,8 +136,7 @@
                 <ControlTemplate TargetType="local:FormsGridView">
                     <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid>
-                            <ContentControl x:Name="EmptyViewContentControl" 
-                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                          
                             <ScrollViewer x:Name="ScrollViewer"
                             TabNavigation="{TemplateBinding TabNavigation}"
                             HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
@@ -160,6 +159,8 @@
                                 FooterTransitions="{TemplateBinding FooterTransitions}"
                                 Padding="{TemplateBinding Padding}" />
                             </ScrollViewer>
+                            <ContentControl x:Name="EmptyViewContentControl" 
+                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                         </Grid>
                     </Border>
                 </ControlTemplate>

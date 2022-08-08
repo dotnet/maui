@@ -467,6 +467,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Platform.SettingNewPage();
 		}
 
+		[PortHandler]
 		void SetSoftInputMode()
 		{
 			var adjust = SoftInput.AdjustPan;

@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 		Task INavigation.PushModalAsync(Page modal, bool animated)
-		{			
+		{
 			return _modalTracker.PushAsync(modal, _animateModals && animated);
 		}
 

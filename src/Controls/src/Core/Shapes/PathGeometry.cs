@@ -1,5 +1,8 @@
-using Microsoft.Maui.Devices;
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -29,11 +32,17 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='FiguresProperty']/Docs" />
 		public static readonly BindableProperty FiguresProperty =
-			BindableProperty.Create(nameof(Figures), typeof(PathFigureCollection), typeof(PathGeometry), null);
+			BindableProperty.Create(nameof(Figures), typeof(PathFigureCollection), typeof(PathGeometry), null,
+				propertyChanged: OnPathFigureCollectionChanged);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='FillRuleProperty']/Docs" />
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(PathGeometry), FillRule.EvenOdd);
+
+		static void OnPathFigureCollectionChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			(bindable as PathGeometry)?.UpdatePathFigureCollection(oldValue as PathFigureCollection, newValue as PathFigureCollection);
+		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='Figures']/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(PathFigureCollectionConverter))]
@@ -50,37 +59,34 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (FillRule)GetValue(FillRuleProperty); }
 		}
 
+		internal event EventHandler InvalidatePathGeometryRequested;
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs" />
 		public override void AppendPath(PathF path)
 		{
-			double density = 1.0d;
-#if ANDROID
-			density = DeviceDisplay.MainDisplayInfo.Density;
-#endif
-
 			foreach (var figure in Figures)
 			{
-				float startPointX = (float)(density * figure.StartPoint.X);
-				float startPointY = (float)(density * figure.StartPoint.Y);
+				float startPointX = (float)figure.StartPoint.X;
+				float startPointY = (float)figure.StartPoint.Y;
 
 				path.MoveTo(startPointX, startPointY);
 
 				foreach (var segment in figure.Segments)
 				{
 					if (segment is ArcSegment arcSegment)
-						AddArc(path, arcSegment, density);
+						AddArc(path, arcSegment);
 					else if (segment is BezierSegment bezierSegment)
-						AddBezier(path, bezierSegment, density);
+						AddBezier(path, bezierSegment);
 					else if (segment is LineSegment lineSegment)
-						AddLine(path, lineSegment, density);
+						AddLine(path, lineSegment);
 					else if (segment is PolyBezierSegment polyBezierSegment)
-						AddPolyBezier(path, polyBezierSegment, density);
+						AddPolyBezier(path, polyBezierSegment);
 					else if (segment is PolyLineSegment polyLineSegment)
-						AddPolyLine(path, polyLineSegment, density);
+						AddPolyLine(path, polyLineSegment);
 					else if (segment is PolyQuadraticBezierSegment polyQuadraticBezierSegment)
-						AddPolyQuad(path, polyQuadraticBezierSegment, density);
+						AddPolyQuad(path, polyQuadraticBezierSegment);
 					else if (segment is QuadraticBezierSegment quadraticBezierSegment)
-						AddQuad(path, quadraticBezierSegment, density);
+						AddQuad(path, quadraticBezierSegment);
 				}
 
 				if (figure.IsClosed)
@@ -88,7 +94,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		void AddArc(PathF path, ArcSegment arcSegment, double density)
+		void AddArc(PathF path, ArcSegment arcSegment)
 		{
 			List<Point> points = new List<Point>();
 
@@ -106,57 +112,57 @@ namespace Microsoft.Maui.Controls.Shapes
 			for (int i = 0; i < points.Count; i++)
 			{
 				path.LineTo(
-					(float)points[i].X, 
+					(float)points[i].X,
 					(float)points[i].Y);
 			}
 		}
 
-		void AddLine(PathF path, LineSegment lineSegment, double density)
+		void AddLine(PathF path, LineSegment lineSegment)
 		{
 			path.LineTo(
-				(float)(density * lineSegment.Point.X),
-				(float)(density * lineSegment.Point.Y));
+				(float)(lineSegment.Point.X),
+				(float)(lineSegment.Point.Y));
 		}
 
-		void AddPolyLine(PathF path, PolyLineSegment polyLineSegment, double density)
+		void AddPolyLine(PathF path, PolyLineSegment polyLineSegment)
 		{
 			foreach (var p in polyLineSegment.Points)
 				path.LineTo(
-					(float)(density * p.X),
-					(float)(density * p.Y));
+					(float)(p.X),
+					(float)(p.Y));
 		}
 
-		void AddBezier(PathF path, BezierSegment bezierSegment, double density)
+		void AddBezier(PathF path, BezierSegment bezierSegment)
 		{
 			path.CurveTo(
-				(float)(density * bezierSegment.Point1.X), (float)(density * bezierSegment.Point1.Y),
-				(float)(density * bezierSegment.Point2.X), (float)(density * bezierSegment.Point2.Y),
-				(float)(density * bezierSegment.Point3.X), (float)(density * bezierSegment.Point3.Y));
+				(float)(bezierSegment.Point1.X), (float)(bezierSegment.Point1.Y),
+				(float)(bezierSegment.Point2.X), (float)(bezierSegment.Point2.Y),
+				(float)(bezierSegment.Point3.X), (float)(bezierSegment.Point3.Y));
 		}
 
-		void AddPolyBezier(PathF path, PolyBezierSegment polyBezierSegment, double density)
+		void AddPolyBezier(PathF path, PolyBezierSegment polyBezierSegment)
 		{
 			for (int bez = 0; bez < polyBezierSegment.Points.Count; bez += 3)
 			{
 				if (bez + 2 > polyBezierSegment.Points.Count - 1)
 					break;
 
-				var pt1 = new PointF((float)(density * polyBezierSegment.Points[bez].X), (float)(density * polyBezierSegment.Points[bez].Y));
-				var pt2 = new PointF((float)(density * polyBezierSegment.Points[bez + 1].X), (float)(density * polyBezierSegment.Points[bez + 1].Y));
-				var pt3 = new PointF((float)(density * polyBezierSegment.Points[bez + 2].X), (float)(density * polyBezierSegment.Points[bez + 2].Y));
+				var pt1 = new PointF((float)(polyBezierSegment.Points[bez].X), (float)(polyBezierSegment.Points[bez].Y));
+				var pt2 = new PointF((float)(polyBezierSegment.Points[bez + 1].X), (float)(polyBezierSegment.Points[bez + 1].Y));
+				var pt3 = new PointF((float)(polyBezierSegment.Points[bez + 2].X), (float)(polyBezierSegment.Points[bez + 2].Y));
 
 				path.CurveTo(pt1, pt2, pt3);
 			}
 		}
 
-		void AddQuad(PathF path, QuadraticBezierSegment quadraticBezierSegment, double density)
+		void AddQuad(PathF path, QuadraticBezierSegment quadraticBezierSegment)
 		{
 			path.QuadTo(
-				(float)(density * quadraticBezierSegment.Point1.X), (float)(density * quadraticBezierSegment.Point1.Y),
-				(float)(density * quadraticBezierSegment.Point2.X), (float)(density * quadraticBezierSegment.Point2.Y));
+				(float)(quadraticBezierSegment.Point1.X), (float)(quadraticBezierSegment.Point1.Y),
+				(float)(quadraticBezierSegment.Point2.X), (float)(quadraticBezierSegment.Point2.Y));
 		}
 
-		void AddPolyQuad(PathF path, PolyQuadraticBezierSegment polyQuadraticBezierSegment, double density)
+		void AddPolyQuad(PathF path, PolyQuadraticBezierSegment polyQuadraticBezierSegment)
 		{
 			var points = polyQuadraticBezierSegment.Points;
 
@@ -167,12 +173,81 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (i + 1 > polyQuadraticBezierSegment.Points.Count - 1)
 						break;
 
-					var pt1 = new PointF((float)(density * points[i].X), (float)(density * points[i].Y));
-					var pt2 = new PointF((float)(density * points[i + 1].X), (float)(density * points[i + 1].Y));
+					var pt1 = new PointF((float)(points[i].X), (float)(points[i].Y));
+					var pt2 = new PointF((float)(points[i + 1].X), (float)(points[i + 1].Y));
 
 					path.QuadTo(pt1, pt2);
 				}
 			}
+		}
+
+		void UpdatePathFigureCollection(PathFigureCollection oldCollection, PathFigureCollection newCollection)
+		{
+			if (oldCollection != null)
+			{
+				oldCollection.CollectionChanged -= OnPathFigureCollectionChanged;
+
+				foreach (var oldPathFigure in oldCollection)
+				{
+					oldPathFigure.PropertyChanged -= OnPathFigurePropertyChanged;
+					oldPathFigure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+				}
+			}
+
+			if (newCollection == null)
+				return;
+
+			newCollection.CollectionChanged += OnPathFigureCollectionChanged;
+
+			foreach (var newPathFigure in newCollection)
+			{
+				newPathFigure.PropertyChanged += OnPathFigurePropertyChanged;
+				newPathFigure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
+			}
+		}
+
+		void OnPathFigureCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.OldItems != null)
+			{
+				foreach (var oldItem in e.OldItems)
+				{
+					if (!(oldItem is PathFigure oldPathFigure))
+						continue;
+
+					oldPathFigure.PropertyChanged -= OnPathFigurePropertyChanged;
+					oldPathFigure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+				}
+			}
+
+			if (e.NewItems != null)
+			{
+				foreach (var newItem in e.NewItems)
+				{
+					if (!(newItem is PathFigure newPathFigure))
+						continue;
+
+					newPathFigure.PropertyChanged += OnPathFigurePropertyChanged;
+					newPathFigure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
+				}
+			}
+
+			Invalidate();
+		}
+
+		void OnPathFigurePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			Invalidate();
+		}
+
+		void OnInvalidatePathSegmentRequested(object sender, EventArgs e)
+		{
+			Invalidate();
+		}
+
+		void Invalidate()
+		{
+			InvalidatePathGeometryRequested?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

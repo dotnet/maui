@@ -286,7 +286,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				var span = new TSpan
 				{
-					Text = page.Title??string.Empty,
+					Text = page.Title ?? string.Empty,
 					HorizontalTextAlignment = TTextAlignment.Center,
 					//ForegroundColor = VirtualView.BarTextColor.ToNative()
 				};

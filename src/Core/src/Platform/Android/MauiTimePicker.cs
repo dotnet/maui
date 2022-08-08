@@ -12,17 +12,17 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTimePicker : AppCompatEditText, IOnClickListener
 	{
-		public MauiTimePicker(Context? context) : base(context)
+		public MauiTimePicker(Context context) : base(context)
 		{
 			Initialize();
 		}
 
-		public MauiTimePicker(Context? context, IAttributeSet attrs) : base(context, attrs)
+		public MauiTimePicker(Context context, IAttributeSet? attrs) : base(context, attrs)
 		{
 			Initialize();
 		}
 
-		public MauiTimePicker(Context? context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+		public MauiTimePicker(Context context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 			Initialize();
 		}
@@ -39,22 +39,13 @@ namespace Microsoft.Maui.Platform
 			ShowPicker?.Invoke();
 		}
 
-		protected override void OnFocusChanged(bool gainFocus, [GeneratedEnum] FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect)
-		{
-			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
-
-			if (gainFocus)
-			{
-				if (Clickable)
-					CallOnClick();
-			}
-		}
-
 		void Initialize()
 		{
-			DrawableCompat.Wrap(Background);
+			if (Background != null)
+				DrawableCompat.Wrap(Background);
 
 			Focusable = true;
+			FocusableInTouchMode = false;
 			Clickable = true;
 			InputType = InputTypes.Null;
 

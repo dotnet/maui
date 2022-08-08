@@ -410,7 +410,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Brush.IsNullOrEmpty(barBackground))
 				return;
-						
+
 			var brush = barBackground.ToBrush();
 
 			if (brush == controlToolbarBackground)

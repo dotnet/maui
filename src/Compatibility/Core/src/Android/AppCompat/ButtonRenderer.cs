@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				UpdateTextColor();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateEnabled();
-			else if (   e.PropertyName == FontElement.FontAttributesProperty.PropertyName
+			else if (e.PropertyName == FontElement.FontAttributesProperty.PropertyName
 					 || e.PropertyName == FontElement.FontAutoScalingEnabledProperty.PropertyName
 					 || e.PropertyName == FontElement.FontFamilyProperty.PropertyName
 					 || e.PropertyName == FontElement.FontSizeProperty.PropertyName)

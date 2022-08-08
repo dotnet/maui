@@ -4,7 +4,7 @@
 		<AssemblyName>Microsoft.Maui.Controls.DesignTools</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
 		<IsPackable>False</IsPackable>
-		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
+		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
 		<Reference Include="System.Xaml" />
@@ -24,7 +24,7 @@
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="FontSizeDesignTypeConverter.cs" />
 		<Compile Include="FlexEnumDesignTypeConverters.cs" />
-		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.1.32210.191" />
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.2.32505.113" />
 	</ItemGroup>
 
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
@@ -39,10 +39,10 @@
 	<!-- using a defined format. That format is "{platform}.{imagename}". We will look up images using   -->
 	<!-- exact-match logic so there's no guessework to figure out which image we need to load.           -->
 	<PropertyGroup>
-		<AssignTargetPathsDependsOn>
-			$(AssignTargetPathsDependsOn);
+		<PrepareResourcesDependsOn>
 			IncludeToolboxImages
-		</AssignTargetPathsDependsOn>
+			$(PrepareResourcesDependsOn);
+		</PrepareResourcesDependsOn>
 	</PropertyGroup>
 	<Target Name="IncludeToolboxImages">
 		<!-- Be explicit about the prefix rather than relying on the directory name being exactly what we need -->

@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, ListViewBase>  where TItemsView : ItemsView
+	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, ListViewBase> where TItemsView : ItemsView
 	{
 		protected CollectionViewSource CollectionViewSource;
 		ScrollViewer _scrollViewer;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView) 
+		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateItemsSource();
 		}
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			
+
 		}
 
 		protected abstract ListViewBase SelectListViewBase();

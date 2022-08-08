@@ -1,6 +1,7 @@
 ﻿<views:BasePage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sys="clr-namespace:System;assembly=netstandard"
     x:Class="Maui.Controls.Sample.Pages.MainPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
@@ -35,7 +36,7 @@
                 <Setter Property="Stroke" Value="{StaticResource SectionItemBorderColor}" />
                 <Setter Property="HeightRequest" Value="120" />
                 <Setter Property="Padding" Value="12" />
-                <Setter Property="Margin" Value="0, 0, 12, 12" />
+                <Setter Property="Margin" Value="0" />
                 <Setter Property="FlexLayout.Basis" Value="50%"/>
                 <Setter Property="FlexLayout.Grow" Value="0"/>
             </Style>
@@ -127,7 +128,7 @@
             <!-- FOOTER -->
             <Label
                 Grid.Row="2"
-                Text="Microsoft Corporation © 2021"
+                Text="{Binding Path=Year, Source={x:Static sys:DateTime.Now}, StringFormat='Microsoft Corporation © {0}'}"
                 Style="{StaticResource FooterStyle}" />
         </Grid>
     </ScrollView>

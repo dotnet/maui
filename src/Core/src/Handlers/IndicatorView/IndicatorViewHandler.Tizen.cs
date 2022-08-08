@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator) { }
-		
+
 		[MissingMapper]
 		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator) { }
 

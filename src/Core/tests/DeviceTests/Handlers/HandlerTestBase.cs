@@ -1,9 +1,12 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -43,6 +46,9 @@ namespace Microsoft.Maui.DeviceTests
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 
+			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+
 			_mauiApp = appBuilder.Build();
 			_servicesProvider = _mauiApp.Services;
 
@@ -51,6 +57,15 @@ namespace Microsoft.Maui.DeviceTests
 			_context = new ContextStub(_servicesProvider);
 		}
 
+		protected Task SetValueAsync<TValue, THandler>(IView view, TValue value, Action<THandler, TValue> func)
+			where THandler : IElementHandler, new()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				func(handler, value);
+			});
+		}
 
 		protected THandler CreateHandler<THandler>(IElement view, IMauiContext mauiContext = null)
 			where THandler : IElementHandler, new()
@@ -80,6 +95,15 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = new TCustomHandler();
 			InitializeViewHandler(view, handler, mauiContext);
 			return handler;
+		}
+
+
+		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType)
+		{
+			var handler = (IPlatformViewHandler)Activator.CreateInstance(handlerType);
+			InitializeViewHandler(view, handler, MauiContext);
+			return handler;
+
 		}
 
 		public void Dispose()

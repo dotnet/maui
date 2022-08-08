@@ -172,6 +172,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool ShouldInvalidateLayout(UICollectionViewLayoutAttributes preferredAttributes, UICollectionViewLayoutAttributes originalAttributes)
 		{
+			// This is currently causing an infinite layout loop on iOS 15 https://github.com/dotnet/maui/issues/6566
+			if (preferredAttributes.RepresentedElementKind == "UICollectionElementKindSectionHeader" && OperatingSystem.IsIOSVersionAtLeast(15))
+				return base.ShouldInvalidateLayout(preferredAttributes, originalAttributes);
+
 			if (ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
 			{
 				if (preferredAttributes.Bounds != originalAttributes.Bounds)

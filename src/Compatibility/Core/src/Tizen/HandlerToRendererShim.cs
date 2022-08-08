@@ -121,6 +121,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 
 			VisualElement RealParent { get; }
+
+			public bool ForceContainer { get; set; }
+
 			IVisualElementRenderer Renderer => RealParent != null ? Platform.GetRenderer(RealParent) : null;
 			public EvasObject PlatformView => Renderer.NativeView;
 

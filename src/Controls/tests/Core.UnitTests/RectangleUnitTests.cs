@@ -1,70 +1,70 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class RectangleUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestRectConstruction()
 		{
 			var rect = new Rect();
-			Assert.AreEqual(0, rect.X);
-			Assert.AreEqual(0, rect.Y);
-			Assert.AreEqual(0, rect.Width);
-			Assert.AreEqual(0, rect.Height);
+			Assert.Equal(0, rect.X);
+			Assert.Equal(0, rect.Y);
+			Assert.Equal(0, rect.Width);
+			Assert.Equal(0, rect.Height);
 
 			rect = new Rect(2, 3, 4, 5);
-			Assert.AreEqual(2, rect.X);
-			Assert.AreEqual(3, rect.Y);
-			Assert.AreEqual(4, rect.Width);
-			Assert.AreEqual(5, rect.Height);
+			Assert.Equal(2, rect.X);
+			Assert.Equal(3, rect.Y);
+			Assert.Equal(4, rect.Width);
+			Assert.Equal(5, rect.Height);
 
 			rect = new Rect(new Point(2, 3), new Size(4, 5));
-			Assert.AreEqual(2, rect.X);
-			Assert.AreEqual(3, rect.Y);
-			Assert.AreEqual(4, rect.Width);
-			Assert.AreEqual(5, rect.Height);
+			Assert.Equal(2, rect.X);
+			Assert.Equal(3, rect.Y);
+			Assert.Equal(4, rect.Width);
+			Assert.Equal(5, rect.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestRectFromLTRB()
 		{
 			var rect = Rect.FromLTRB(10, 10, 30, 40);
 
-			Assert.AreEqual(new Rect(10, 10, 20, 30), rect);
+			Assert.Equal(new Rect(10, 10, 20, 30), rect);
 		}
 
-		[Test]
+		[Fact]
 		public void TestRectCalculatedPoints()
 		{
 			var rect = new Rect(2, 3, 4, 5);
-			Assert.AreEqual(2, rect.Left);
-			Assert.AreEqual(3, rect.Top);
-			Assert.AreEqual(6, rect.Right);
-			Assert.AreEqual(8, rect.Bottom);
+			Assert.Equal(2, rect.Left);
+			Assert.Equal(3, rect.Top);
+			Assert.Equal(6, rect.Right);
+			Assert.Equal(8, rect.Bottom);
 
-			Assert.AreEqual(new Size(4, 5), rect.Size);
-			Assert.AreEqual(new Point(2, 3), rect.Location);
+			Assert.Equal(new Size(4, 5), rect.Size);
+			Assert.Equal(new Point(2, 3), rect.Location);
 
-			Assert.AreEqual(new Point(4, 5.5), rect.Center);
+			Assert.Equal(new Point(4, 5.5), rect.Center);
 
 			rect.Left = 1;
-			Assert.AreEqual(1, rect.X);
+			Assert.Equal(1, rect.X);
 
 			rect.Right = 3;
-			Assert.AreEqual(2, rect.Width);
+			Assert.Equal(2, rect.Width);
 
 			rect.Top = 1;
-			Assert.AreEqual(1, rect.Y);
+			Assert.Equal(1, rect.Y);
 
 			rect.Bottom = 2;
-			Assert.AreEqual(1, rect.Height);
+			Assert.Equal(1, rect.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestRectContains()
 		{
 			var rect = new Rect(0, 0, 10, 10);
@@ -76,41 +76,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(rect.Contains(10, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestRectInflate()
 		{
 			var rect = new Rect(0, 0, 10, 10);
 			rect = rect.Inflate(5, 5);
 
-			Assert.AreEqual(new Rect(-5, -5, 20, 20), rect);
+			Assert.Equal(new Rect(-5, -5, 20, 20), rect);
 
 			rect = rect.Inflate(new Size(-5, -5));
 
-			Assert.AreEqual(new Rect(0, 0, 10, 10), rect);
+			Assert.Equal(new Rect(0, 0, 10, 10), rect);
 		}
 
-		[Test]
+		[Fact]
 		public void TestRectOffset()
 		{
 			var rect = new Rect(0, 0, 10, 10);
 			rect = rect.Offset(10, 10);
 
-			Assert.AreEqual(new Rect(10, 10, 10, 10), rect);
+			Assert.Equal(new Rect(10, 10, 10, 10), rect);
 
 			rect = rect.Offset(new Point(-10, -10));
 
-			Assert.AreEqual(new Rect(0, 0, 10, 10), rect);
+			Assert.Equal(new Rect(0, 0, 10, 10), rect);
 		}
 
-		[Test]
+		[Fact]
 		public void TestRectRound()
 		{
 			var rect = new Rect(0.2, 0.3, 0.6, 0.7);
 
-			Assert.AreEqual(new Rect(0, 0, 1, 1), rect.Round());
+			Assert.Equal(new Rect(0, 0, 1, 1), rect.Round());
 		}
 
-		[Test]
+		[Fact]
 		public void TestRectIntersect()
 		{
 			var rect1 = new Rect(0, 0, 10, 10);
@@ -119,71 +119,71 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var intersection = rect1.Intersect(rect2);
 
-			Assert.AreEqual(rect2, intersection);
+			Assert.Equal(rect2, intersection);
 
 			rect2 = new Rect(2, 2, 12, 12);
 			intersection = rect1.Intersect(rect2);
 
-			Assert.AreEqual(new Rect(2, 2, 8, 8), intersection);
+			Assert.Equal(new Rect(2, 2, 8, 8), intersection);
 
 			rect2 = new Rect(20, 20, 2, 2);
 			intersection = rect1.Intersect(rect2);
 
-			Assert.AreEqual(Rect.Zero, intersection);
+			Assert.Equal(Rect.Zero, intersection);
 		}
 
-		[Test]
-		[TestCase(0, 0, ExpectedResult = true)]
-		[TestCase(0, 5, ExpectedResult = true)]
-		[TestCase(5, 0, ExpectedResult = true)]
-		[TestCase(2, 3, ExpectedResult = false)]
-		public bool TestIsEmpty(int w, int h)
+		[Theory]
+		[InlineData(0, 0, true)]
+		[InlineData(0, 5, true)]
+		[InlineData(5, 0, true)]
+		[InlineData(2, 3, false)]
+		public void TestIsEmpty(int w, int h, bool isEmpty)
 		{
-			return new Rect(0, 0, w, h).IsEmpty;
+			Assert.Equal(isEmpty, new Rect(0, 0, w, h).IsEmpty);
 		}
 
-		[Test]
-		[TestCase(0, 0, 8, 8, 0, 0, 5, 5, ExpectedResult = true)]
-		[TestCase(0, 0, 5, 5, 5, 5, 5, 5, ExpectedResult = false)]
-		[TestCase(0, 0, 2, 2, 3, 0, 5, 5, ExpectedResult = false)]
-		public bool TestIntersectsWith(double x1, double y1, double w1, double h1, double x2, double y2, double w2, double h2)
+		[Theory]
+		[InlineData(0, 0, 8, 8, 0, 0, 5, 5, true)]
+		[InlineData(0, 0, 5, 5, 5, 5, 5, 5, false)]
+		[InlineData(0, 0, 2, 2, 3, 0, 5, 5, false)]
+		public void TestIntersectsWith(double x1, double y1, double w1, double h1, double x2, double y2, double w2, double h2, bool expected)
 		{
-			return new Rect(x1, y1, w1, h1).IntersectsWith(new Rect(x2, y2, w2, h2));
+			Assert.Equal(expected, new Rect(x1, y1, w1, h1).IntersectsWith(new Rect(x2, y2, w2, h2)));
 		}
 
-		[Test]
+		[Fact]
 		public void TestSetSize()
 		{
 			var rect = new Rect();
 			rect.Size = new Size(10, 20);
 
-			Assert.AreEqual(new Rect(0, 0, 10, 20), rect);
+			Assert.Equal(new Rect(0, 0, 10, 20), rect);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSetLocation()
 		{
 			var rect = new Rect();
 			rect.Location = new Point(10, 20);
 
-			Assert.AreEqual(new Rect(10, 20, 0, 0), rect);
+			Assert.Equal(new Rect(10, 20, 0, 0), rect);
 		}
 
-		[Test]
+		[Fact]
 		public void TestUnion()
 		{
-			Assert.AreEqual(new Rect(0, 3, 13, 10), new Rect(3, 3, 10, 10).Union(new Rect(0, 5, 2, 2)));
+			Assert.Equal(new Rect(0, 3, 13, 10), new Rect(3, 3, 10, 10).Union(new Rect(0, 5, 2, 2)));
 		}
 
-		[Test]
-		[TestCase(0, 0, 2, 2, ExpectedResult = "{X=0 Y=0 Width=2 Height=2}")]
-		[TestCase(1, 0, 3, 2, ExpectedResult = "{X=1 Y=0 Width=3 Height=2}")]
-		public string TestRectToString(double x, double y, double w, double h)
+		[Theory]
+		[InlineData(0, 0, 2, 2, "{X=0 Y=0 Width=2 Height=2}")]
+		[InlineData(1, 0, 3, 2, "{X=1 Y=0 Width=3 Height=2}")]
+		public void TestRectToString(double x, double y, double w, double h, string expected)
 		{
-			return new Rect(x, y, w, h).ToString();
+			Assert.Equal(expected, new Rect(x, y, w, h).ToString());
 		}
 
-		[Test]
+		[Fact]
 		public void TestRectEquals()
 		{
 			Assert.True(new Rect(0, 0, 10, 10).Equals(new Rect(0, 0, 10, 10)));
@@ -194,9 +194,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(new Rect(0, 0, 10, 10) != new Rect(0, 0, 10, 5));
 		}
 
-		[Test]
-		public void TestRectGetHashCode([Range(3, 4)] double x1, [Range(3, 4)] double y1, [Range(3, 4)] double w1, [Range(3, 4)] double h1,
-											  [Range(3, 4)] double x2, [Range(3, 4)] double y2, [Range(3, 4)] double w2, [Range(3, 4)] double h2)
+		[Theory, MemberData(nameof(TestDataHelpers.Range), 3, 4, 8, MemberType = typeof(TestDataHelpers))]
+		public void TestRectGetHashCode(double x1, double y1, double w1, double h1,
+											   double x2, double y2, double w2, double h2)
 		{
 			bool result = new Rect(x1, y1, w1, h1).GetHashCode() == new Rect(x2, y2, w2, h2).GetHashCode();
 

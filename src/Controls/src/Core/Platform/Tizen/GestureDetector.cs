@@ -204,7 +204,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var cache = _handlerCache;
 			var handler = LookupHandler(recognizer);
-			if (handler == null) return;
+			if (handler == null)
+				return;
 
 			var gestureType = cache.FirstOrDefault(x => x.Value.Contains(handler)).Key;
 

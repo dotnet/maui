@@ -296,6 +296,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return LocalizedDigitsKeyListener.Create(inputTypes);
 		}
 
+		[PortHandler]
 		protected virtual void UpdateImeOptions()
 		{
 			if (Element == null || Control == null)

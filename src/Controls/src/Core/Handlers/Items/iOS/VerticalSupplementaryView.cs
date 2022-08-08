@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal sealed class VerticalSupplementaryView : WidthConstrainedTemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.Compatibility.Platform.iOS.VerticalSupplementaryView");
+		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.VerticalSupplementaryView");
 
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

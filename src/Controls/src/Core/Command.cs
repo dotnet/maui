@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][4]/Docs" />
 		public Command(Action<T> execute, Func<T, bool> canExecute)
 			: base(o =>
 			{

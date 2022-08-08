@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI ContentPage(XAML)(미리 보기)",
+  "name": ".NET MAUI ContentPage(XAML)",
   "postActions/openInEditor/description": "편집기에서 NewPage1.xaml을 엽니다.",
   "symbols/namespace/description": "생성된 코드의 네임스페이스"
 }

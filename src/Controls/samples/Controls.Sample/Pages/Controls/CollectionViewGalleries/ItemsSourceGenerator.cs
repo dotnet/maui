@@ -165,7 +165,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
 				{
 					//this test a issue with events firing out of order on IOS Obs Source
-					if(resetBeforeAddItems)
+					if (resetBeforeAddItems)
 					{
 						items.Clear();
 					}

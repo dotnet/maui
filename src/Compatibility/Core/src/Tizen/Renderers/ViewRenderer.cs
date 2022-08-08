@@ -10,10 +10,10 @@ using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.App
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer instead")]
 	/// <summary>
 	/// Base class for view renderers.
 	/// </summary>
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer instead")]
 	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>
 		where TView : View
 		where TNativeView : EvasObject

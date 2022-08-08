@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				UpdateFlowDirection();
 			}
-			else if(e.PropertyName == CheckBox.ColorProperty.PropertyName)
+			else if (e.PropertyName == CheckBox.ColorProperty.PropertyName)
 			{
 				UpdateTintColor();
 			}
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			BrushHelpers.UpdateColor(Element.Color, ref _tintDefaultBrush,
 				() => Control.TintBrush, brush => Control.TintBrush = brush);
-			
+
 		}
 	}
 }

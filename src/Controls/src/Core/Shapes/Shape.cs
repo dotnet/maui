@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var path = GetPath();
 
-#if !NETSTANDARD
+#if !(NETSTANDARD || !PLATFORM)
 
 			// TODO: not using this.GetPath().Bounds.Size;
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves

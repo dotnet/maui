@@ -20,8 +20,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private readonly BlazorWebViewHandler? _webViewHandler;
 
-		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler!!)
+		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler)
 		{
+			ArgumentNullException.ThrowIfNull(webViewHandler);
 			_webViewHandler = webViewHandler;
 		}
 
@@ -188,8 +189,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			private readonly Action<Java.Lang.Object?> _callback;
 
-			public JavaScriptValueCallback(Action<Java.Lang.Object?> callback!!)
+			public JavaScriptValueCallback(Action<Java.Lang.Object?> callback)
 			{
+				ArgumentNullException.ThrowIfNull(callback);
 				_callback = callback;
 			}
 

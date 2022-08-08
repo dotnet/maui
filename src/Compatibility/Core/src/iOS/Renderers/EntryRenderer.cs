@@ -286,6 +286,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdateAdjustsFontSizeToFitWidth()
 		{
 			Control.AdjustsFontSizeToFitWidth = Element.OnThisPlatform().AdjustsFontSizeToFitWidth();
@@ -511,6 +512,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return start;
 		}
 
+		[PortHandler]
 		void UpdateCursorColor()
 		{
 			var control = Control;

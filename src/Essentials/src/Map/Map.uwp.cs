@@ -35,7 +35,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 			return await TryLaunchUri(uri);
 		}
-		
+
 		Uri GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)

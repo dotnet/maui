@@ -1,8 +1,5 @@
 ﻿#nullable enable
-using System;
 using CoreGraphics;
-using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 using PlatformView = UIKit.UIView;
 
@@ -21,8 +18,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		TPlatformView? _nativeView;
 
-		public TPlatformView? Control => ((IElementHandler)this).PlatformView as TPlatformView ?? _nativeView;
-		object? IElementHandler.PlatformView => _nativeView;
+		public TPlatformView? Control
+		{
+			get
+			{
+				var value = ((IElementHandler)this).PlatformView as TPlatformView;
+				if (value != this && value != null)
+					return value;
+
+				return _nativeView;
+			}
+		}
+
+		object? IElementHandler.PlatformView => (_nativeView as object) ?? this;
 
 		public ViewRenderer() : this(VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{

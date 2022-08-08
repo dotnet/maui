@@ -12,5 +12,6 @@
   <remove-node path="//package[@name='com.microsoft.maui.glide']" />
   <remove-node path="//package[@name='com.microsoft.maui.glide.font']" />
   <remove-node path="//package[@name='com.microsoft.maui.glide.stream']" />
+  <remove-node path="//package[@name='com.microsoft.maui.glide.fallback']" />
   
 </metadata>

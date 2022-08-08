@@ -29,11 +29,8 @@
       <_CopyItems Include="$(TargetDir)**\*.dll" Exclude="$(TargetDir)System.*.dll" />
       <_CopyItems Include="$(TargetDir)**\*.so" />
       <_CopyItems Include="$(TargetDir)**\*.dylib" />
-      <_CopyItems Include="$(_AdjustmentsPath)Svg.Skia.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(MauiNuSpecDirectory)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
-
-  <Import Project="$(MauiRootDirectory)src\Workload\Shared\Svg.Skia.targets" />
 
 </Project>

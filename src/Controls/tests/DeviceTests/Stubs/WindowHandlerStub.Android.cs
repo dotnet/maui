@@ -1,11 +1,14 @@
 ﻿using System;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using static Microsoft.Maui.DeviceTests.HandlerTestBase;
 using AActivity = Android.App.Activity;
+using AView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
 
-namespace Microsoft.Maui.DeviceTests
+namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WindowHandlerStub : ElementHandler<IWindow, AActivity>, IWindowHandler
 	{
@@ -14,22 +17,23 @@ namespace Microsoft.Maui.DeviceTests
 			[nameof(IWindow.Content)] = MapContent
 		};
 
+		public AView PlatformViewUnderTest { get; private set; }
+
 		void UpdateContent()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			
-			var rootManager = MauiContext.GetNavigationRootManager();
-
-			var previousRootView = rootManager.RootView;
-			rootManager.Connect(VirtualView.Content);
+			AView platformView = WindowHandler.CreateRootViewFromContent(this, VirtualView);
 
 			// This is used for cases where we are testing swapping out the page set on window
-			if (previousRootView?.Parent is FakeActivityRootView farw)
+			if (PlatformViewUnderTest?.Parent is FakeActivityRootView farw)
 			{
-				previousRootView.RemoveFromParent();
-				rootManager.RootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(500, 500);
-				farw.AddView(rootManager.RootView);
+				var decorView = MauiContext.Context.GetActivity().Window.DecorView;
+				PlatformViewUnderTest.RemoveFromParent();
+				platformView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
+				farw.AddView(platformView);
 			}
+
+			PlatformViewUnderTest = platformView;
 		}
 
 		public static void MapContent(WindowHandlerStub handler, IWindow window)

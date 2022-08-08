@@ -2,61 +2,64 @@
 using System.IO;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	[TestFixture]
-	public class StyleTests
+
+	public class StyleTests : BaseTestFixture
 	{
-		[SetUp]
-		public void SetUp()
+		public StyleTests()
 		{
 			ApplicationExtensions.CreateAndSetMockApplication();
 		}
 
-		[TearDown]
-		public void TearDown()
+		protected override void Dispose(bool disposing)
 		{
-			Application.ClearCurrent();
+			if (disposing)
+			{
+				Application.ClearCurrent();
+			}
+
+			base.Dispose(disposing);
 		}
 
-		[Test]
+		[Fact]
 		public void PropertiesAreApplied()
 		{
 			var styleString = @"background-color: #ff0000;";
 			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
-			Assume.That(style, Is.Not.Null);
+			Assert.NotNull(style);
 
 			var ve = new VisualElement();
-			Assume.That(ve.BackgroundColor, Is.EqualTo(null));
+			Assert.Null(ve.BackgroundColor);
 			style.Apply(ve);
-			Assert.That(ve.BackgroundColor, Is.EqualTo(Colors.Red));
+			Assert.Equal(ve.BackgroundColor, Colors.Red);
 		}
 
-		[Test]
+		[Fact]
 		public void PropertiesSetByStyleDoesNotOverrideManualOne()
 		{
 			var styleString = @"background-color: #ff0000;";
 			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
-			Assume.That(style, Is.Not.Null);
+			Assert.NotNull(style);
 
 			var ve = new VisualElement() { BackgroundColor = Colors.Pink };
-			Assume.That(ve.BackgroundColor, Is.EqualTo(Colors.Pink));
+			Assert.Equal(ve.BackgroundColor, Colors.Pink);
 
 			style.Apply(ve);
-			Assert.That(ve.BackgroundColor, Is.EqualTo(Colors.Pink));
+			Assert.Equal(ve.BackgroundColor, Colors.Pink);
 		}
 
-		[Test]
+		[Fact]
 		public void StylesAreCascading()
 		{
 			//color should cascade, background-color should not
 			var styleString = @"background-color: #ff0000; color: #00ff00;";
 			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
-			Assume.That(style, Is.Not.Null);
+			Assert.NotNull(style);
 
 			var label = new Label();
 			var layout = new StackLayout
@@ -66,28 +69,28 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 				}
 			};
 
-			Assume.That(layout.BackgroundColor, Is.EqualTo(null));
-			Assume.That(label.BackgroundColor, Is.EqualTo(null));
-			Assume.That(label.TextColor, Is.EqualTo(null));
+			Assert.Null(layout.BackgroundColor);
+			Assert.Null(label.BackgroundColor);
+			Assert.Null(label.TextColor);
 
 			style.Apply(layout);
-			Assert.That(layout.BackgroundColor, Is.EqualTo(Colors.Red));
-			Assert.That(label.BackgroundColor, Is.EqualTo(null));
-			Assert.That(label.TextColor, Is.EqualTo(Colors.Lime));
+			Assert.Equal(layout.BackgroundColor, Colors.Red);
+			Assert.Null(label.BackgroundColor);
+			Assert.Equal(label.TextColor, Colors.Lime);
 		}
 
-		[Test]
+		[Fact]
 		public void PropertiesAreOnlySetOnMatchingElements()
 		{
 			var styleString = @"background-color: #ff0000; color: #00ff00;";
 			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
-			Assume.That(style, Is.Not.Null);
+			Assert.NotNull(style);
 
 			var layout = new StackLayout();
-			Assert.That(layout.GetValue(TextElement.TextColorProperty), Is.EqualTo(null));
+			Assert.Null(layout.GetValue(TextElement.TextColorProperty));
 		}
 
-		[Test]
+		[Fact]
 		public void StyleSheetsOnAppAreApplied()
 		{
 			var app = new MockApplication();
@@ -97,10 +100,10 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 				Content = new Label()
 			};
 			app.LoadPage(page);
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Red));
+			Assert.Equal((page.Content as Label).TextColor, Colors.Red);
 		}
 
-		[Test]
+		[Fact]
 		public void StyleSheetsOnAppAreAppliedBeforePageStyleSheet()
 		{
 			var app = new MockApplication();
@@ -111,11 +114,11 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			};
 			page.Resources.Add(StyleSheet.FromString("label{ color: red; }"));
 			app.LoadPage(page);
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Red));
-			Assert.That((page.Content as Label).BackgroundColor, Is.EqualTo(Colors.Blue));
+			Assert.Equal((page.Content as Label).TextColor, Colors.Red);
+			Assert.Equal((page.Content as Label).BackgroundColor, Colors.Blue);
 		}
 
-		[Test]
+		[Fact]
 		public void StyleSheetsOnChildAreReAppliedWhenParentStyleSheetAdded()
 		{
 			var app = new MockApplication();
@@ -125,14 +128,14 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			};
 			page.Resources.Add(StyleSheet.FromString("label{ color: red; }"));
 			app.LoadPage(page);
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Red));
+			Assert.Equal((page.Content as Label).TextColor, Colors.Red);
 
 			app.Resources.Add(StyleSheet.FromString("label{ color: white; background-color: blue; }"));
-			Assert.That((page.Content as Label).BackgroundColor, Is.EqualTo(Colors.Blue));
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Red));
+			Assert.Equal((page.Content as Label).BackgroundColor, Colors.Blue);
+			Assert.Equal((page.Content as Label).TextColor, Colors.Red);
 		}
 
-		[Test]
+		[Fact]
 		public void StyleSheetsOnSubviewAreAppliedBeforePageStyleSheet()
 		{
 			var app = new MockApplication();
@@ -146,7 +149,7 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			};
 			page.Resources.Add(StyleSheet.FromString("label{ color: red; }"));
 			app.LoadPage(page);
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Yellow));
+			Assert.Equal((page.Content as Label).TextColor, Colors.Yellow);
 		}
 
 	}

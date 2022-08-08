@@ -21,7 +21,7 @@ using Microsoft.Maui.Controls.Platform;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class NavigationPageRenderer : IVisualElementRenderer, ITitleProvider, ITitleIconProvider, 
+	public class NavigationPageRenderer : IVisualElementRenderer, ITitleProvider, ITitleIconProvider,
 		ITitleViewProvider, IToolbarProvider, IToolBarForegroundBinder
 	{
 		PageControl _container;
@@ -516,7 +516,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (isAnimated && transition == null)
 			{
-				transition  = new EntranceThemeTransition();
+				transition = new EntranceThemeTransition();
 				_transition = (EntranceThemeTransition)transition;
 				_container.ContentTransitions = new TransitionCollection();
 			}
@@ -656,7 +656,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			_container.ToolbarDynamicOverflowEnabled = Element.OnThisPlatform().GetToolbarDynamicOverflowEnabled();
 		}
-		
+
 
 		void UpdateShowTitle()
 		{

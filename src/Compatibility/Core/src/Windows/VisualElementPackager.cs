@@ -85,7 +85,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			for (var i = 0; i < children.Count; i++)
 			{
 				var view = children[i] as VisualElement;
-				if (view == null) continue;
+				if (view == null)
+					continue;
 
 				SetupVisualElement(view);
 			}

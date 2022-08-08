@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -29,5 +30,8 @@ namespace Microsoft.Maui.Platform
 
 		public static float GetDisplayDensity(this UIWindow uiWindow) =>
 			(float)(uiWindow.Screen?.Scale ?? new nfloat(1.0f));
+
+		internal static DisplayOrientation GetOrientation(this IWindow? window) =>
+			DeviceDisplay.Current.MainDisplayInfo.Orientation;
 	}
 }

@@ -66,8 +66,6 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform()?.UpdateTransformation(view);
 		}
 
-		public static void MapBackgroundImageSource(IViewHandler handler, IView view) { }
-
 		protected virtual void OnPlatformViewDeleted()
 		{
 		}
@@ -117,7 +115,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			get
 			{
-				if(VirtualView is IBorderView border)
+				if (VirtualView is IBorderView border)
 					return border?.Shape != null || border?.Stroke != null;
 
 				return false;

@@ -32,26 +32,58 @@ namespace Microsoft.Maui.Platform
 		{
 			Color textColor = timePicker.TextColor;
 
-			UI.Xaml.Media.Brush? brush = textColor?.ToPlatform();
+			UI.Xaml.Media.Brush? platformBrush = textColor?.ToPlatform();
 
-			if (brush is null)
+			if (platformBrush == null)
 			{
-				platformTimePicker.Resources.Remove("TimePickerButtonForeground");
-				platformTimePicker.Resources.Remove("TimePickerButtonForegroundPointerOver");
-				platformTimePicker.Resources.Remove("TimePickerButtonForegroundPressed");
-				platformTimePicker.Resources.Remove("TimePickerButtonForegroundDisabled");
-
+				platformTimePicker.Resources.RemoveKeys(TextColorResourceKeys);
 				platformTimePicker.ClearValue(TimePicker.ForegroundProperty);
 			}
 			else
 			{
-				platformTimePicker.Resources["TimePickerButtonForeground"] = brush;
-				platformTimePicker.Resources["TimePickerButtonForegroundPointerOver"] = brush;
-				platformTimePicker.Resources["TimePickerButtonForegroundPressed"] = brush;
-				platformTimePicker.Resources["TimePickerButtonForegroundDisabled"] = brush;
-
-				platformTimePicker.Foreground = brush;
+				platformTimePicker.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
+				platformTimePicker.Foreground = platformBrush;
 			}
+
+			platformTimePicker.RefreshThemeResources();
 		}
+
+		// ResourceKeys controlling the foreground color of the TimePicker.
+		// https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.timepicker?view=windows-app-sdk-1.1
+		static readonly string[] TextColorResourceKeys =
+		{
+			"TimePickerButtonForeground",
+			"TimePickerButtonForegroundPointerOver",
+			"TimePickerButtonForegroundPressed",
+			"TimePickerButtonForegroundDisabled"
+		};
+
+		// TODO NET7 add to public API
+		internal static void UpdateBackground(this TimePicker platformTimePicker, ITimePicker timePicker)
+		{
+			var brush = timePicker?.Background?.ToPlatform();
+
+			if (brush is null)
+			{
+				platformTimePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
+				platformTimePicker.ClearValue(TimePicker.BackgroundProperty);
+			}
+			else
+			{
+				platformTimePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
+				platformTimePicker.Background = brush;
+			}
+
+			platformTimePicker.RefreshThemeResources();
+		}
+
+		static readonly string[] BackgroundColorResourceKeys =
+		{
+			"TimePickerButtonBackground",
+			"TimePickerButtonBackgroundPointerOver",
+			"TimePickerButtonBackgroundPressed",
+			"TimePickerButtonBackgroundDisabled",
+			"TimePickerButtonBackgroundFocused",
+		};
 	}
 }

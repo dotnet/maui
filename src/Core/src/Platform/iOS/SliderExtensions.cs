@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ObjCRuntime;
 using UIKit;
 
@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateMinimum(this UISlider uiSlider, ISlider slider)
 		{
-			uiSlider.MaxValue = (float)slider.Maximum;
+			uiSlider.MinValue = (float)slider.Minimum;
 		}
 
 		public static void UpdateMaximum(this UISlider uiSlider, ISlider slider)
 		{
-			uiSlider.MinValue = (float)slider.Minimum;
+			uiSlider.MaxValue = (float)slider.Maximum;
 		}
 
 		public static void UpdateValue(this UISlider uiSlider, ISlider slider)
@@ -31,7 +31,10 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMaximumTrackColor(this UISlider uiSlider, ISlider slider)
 		{
 			if (slider.MaximumTrackColor != null)
-				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
+			{
+				if (uiSlider.TraitCollection.UserInterfaceIdiom != UIUserInterfaceIdiom.Mac)
+					uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
+			}
 		}
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)

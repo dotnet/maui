@@ -10,12 +10,14 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Xunit;
 using ALayoutInflater = Android.Views.LayoutInflater;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
-using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -37,15 +39,15 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static Drawable _decorDrawable;
-		Task RunWindowTest<THandler>(IWindow window, Func<THandler, Task> action)
+		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
+			mauiContext ??= MauiContext;
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				AViewGroup rootView = MauiContext.Context.GetActivity().Window.DecorView as AViewGroup;
 				_decorDrawable ??= rootView.Background;
 				var linearLayoutCompat = new LinearLayoutCompat(MauiContext.Context);
-
 				var fragmentManager = MauiContext.GetFragmentManager();
 				var viewFragment = new WindowTestFragment(MauiContext, window);
 
@@ -60,18 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 						.Commit();
 
 					await viewFragment.FinishedLoading;
-
-					if (window.Content is Shell shell)
-						await OnLoadedAsync(shell.CurrentPage);
-
-					if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
-						await action((THandler)window.Handler);
-					else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
-						await action((THandler)window.Content.Handler);
-					else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
-						await action((THandler)cp.Content.Handler);
-					else
-						throw new Exception($"I can't work with {typeof(THandler)}");
+					await runTests.Invoke();
 				}
 				finally
 				{
@@ -124,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return true;
 		}
-    
+
 		protected AView GetTitleView(IElementHandler handler)
 		{
 			var toolbar = GetPlatformToolbar(handler);
@@ -138,6 +129,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)
 		{
+			if (handler is IWindowHandler wh)
+			{
+				handler = wh.VirtualView.Content.Handler;
+			}
+
 			if (handler is Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer sr)
 			{
 				var shell = handler.VirtualView as Shell;
@@ -207,15 +203,14 @@ namespace Microsoft.Maui.DeviceTests
 			public override AView OnCreateView(ALayoutInflater inflater, AViewGroup container, Bundle savedInstanceState)
 			{
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
-				_ = _window.ToHandler(ScopedMauiContext);
-        
-				var rootView = ScopedMauiContext.GetNavigationRootManager().RootView;
+				var handler = (WindowHandlerStub)_window.ToHandler(ScopedMauiContext);
+
 				var decorView = RequireActivity().Window.DecorView;
-				rootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
+				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
-				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(decorView.MeasuredWidth, decorView.MeasuredHeight);
-				FakeActivityRootView.AddView(rootView);
+				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
+				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
 
 				return FakeActivityRootView;
 			}
@@ -233,7 +228,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public class FakeActivityRootView : LinearLayoutCompat
+		public class FakeActivityRootView : FitWindowsFrameLayout
 		{
 			public FakeActivityRootView(Context context) : base(context)
 			{

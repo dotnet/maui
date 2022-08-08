@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.iOS
 				SetBorderWidth(borderColor.IsDefault ? 0f : 1f, UIControlState.Normal);
 			}
 		}
-				
+
 		void UpdateBackground()
 		{
 			if (_cardScheme.ColorScheme is SemanticColorScheme colorScheme)

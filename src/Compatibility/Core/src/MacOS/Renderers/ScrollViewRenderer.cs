@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			HasHorizontalScroller = (ScrollView.HorizontalScrollBarVisibility == ScrollBarVisibility.Always);
 		}
 
-		private bool ResetNativeNonScroll( )
+		private bool ResetNativeNonScroll()
 		{
 			if (ContentView == null || ScrollView == null || ScrollView.Content == null)
 				return false;

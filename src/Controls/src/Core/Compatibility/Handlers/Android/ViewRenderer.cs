@@ -20,8 +20,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		TPlatformView? _platformView;
 		AViewGroup? _container;
 
-		public TPlatformView? Control => ((IElementHandler)this).PlatformView as TPlatformView ?? _platformView;
-		object? IElementHandler.PlatformView => _platformView;
+		public TPlatformView? Control
+		{
+			get
+			{
+				var value = ((IElementHandler)this).PlatformView as TPlatformView;
+				if (value != this && value != null)
+					return value;
+
+				return _platformView;
+			}
+		}
+
+		object? IElementHandler.PlatformView => (_platformView as object) ?? this;
 
 		public ViewRenderer(Context context) : this(context, VisualElementRendererMapper, VisualElementRendererCommandMapper)
 		{

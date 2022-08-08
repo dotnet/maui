@@ -37,6 +37,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			NativePropertyListener source = (NativePropertyListener)sender;
 			source?.PropertyChanged?.Invoke(source._target, new PropertyChangedEventArgs(source._targetProperty));
-		}		
+		}
 	}
 }

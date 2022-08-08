@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (!(Control is ItemsControl))
 				return;
-			
+
 			_fillColor = new WSolidColorBrush(Element.IndicatorColor.ToWindowsColor());
 			_selectedColor = new WSolidColorBrush(Element.SelectedIndicatorColor.ToWindowsColor());
 			var position = Element.Position;

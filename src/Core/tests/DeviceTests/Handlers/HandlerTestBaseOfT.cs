@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub> : HandlerTestBase
-		where THandler : IViewHandler, new()
+		where THandler : class, IViewHandler, new()
 		where TStub : StubBase, IView, new()
 	{
 		public static Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
@@ -18,9 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
 			CreateHandler<THandler>(view, mauiContext);
 
-		protected async Task<THandler> CreateHandlerAsync(IView view)
+		protected Task<THandler> CreateHandlerAsync(IView view)
 		{
-			return await InvokeOnMainThreadAsync(() =>
+			return InvokeOnMainThreadAsync(() =>
 			{
 				return CreateHandler(view);
 			});
@@ -37,20 +37,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task<TValue> GetValueAsync<TValue>(IView view, Func<THandler, Task<TValue>> func)
 		{
-			return InvokeOnMainThreadAsync(async () =>
+			return InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler(view);
-				return await func(handler);
+				return func(handler);
 			});
 		}
 
 		protected Task SetValueAsync<TValue>(IView view, TValue value, Action<THandler, TValue> func)
 		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler(view);
-				func(handler, value);
-			});
+			return SetValueAsync<TValue, THandler>(view, value, func);
 		}
 
 		async protected Task ValidatePropertyInitValue<TValue>(
@@ -94,9 +90,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedSetValue, viewVal);
 			Assert.Equal(expectedSetValue, nativeVal);
 
+			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue>(
+			THandler handler,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+		{
+			var view = handler.VirtualView;
+			var propInfo = handler.VirtualView.GetType().GetProperty(property);
+
 			// confirm can update
 
-			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			var (viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
 			{
 				propInfo.SetValue(view, expectedUnsetValue);
 				handler.UpdateValue(property);

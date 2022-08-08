@@ -1,24 +1,23 @@
 ﻿#nullable enable
 
 using System;
-using System.Reflection;
 using ElmSharp;
 using Microsoft.Maui.Devices;
-using Microsoft.Extensions.DependencyInjection;
+using Tizen.UIExtensions.Common.GraphicsView;
 using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.ElmSharp.GraphicsView;
 using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using TButton = Tizen.UIExtensions.ElmSharp.Button;
-using TImage = Tizen.UIExtensions.ElmSharp.Image;
+using TDPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 using TLabel = Tizen.UIExtensions.ElmSharp.Label;
 using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
-using TDPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellNavBar : EBox, IFlyoutBehaviorObserver, IDisposable
 	{
-		TImage? _menuIcon;
+		MaterialIcon _menuIcon;
 		TButton _menuButton;
 		TLabel _title;
 		ShellSearchView? _searchView = null;
@@ -30,17 +29,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		FlyoutBehavior _flyoutBehavior = FlyoutBehavior.Flyout;
 
-		EColor _backgroudColor = ShellView.DefaultBackgroundColor;
-		EColor _foregroudColor = ShellView.DefaultForegroundColor;
-		EColor _titleColor = ShellView.DefaultTitleColor;
-
-		// The source of icon resources is https://materialdesignicons.com/
-		const string _menuIconRes = TThemeConstants.Shell.Resources.MenuIcon;
-		const string _backIconRes = TThemeConstants.Shell.Resources.BackIcon;
+		EColor _backgroudColor = TThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
+		EColor _foregroundColor = TThemeConstants.Shell.ColorClass.DefaultForegroundColor;
+		EColor _titleColor = TThemeConstants.Shell.ColorClass.DefaultTitleColor;
 
 		bool _hasBackButton = false;
-		private bool disposedValue;
+		bool _disposedValue;
 		bool _isTV = DeviceInfo.Idiom == DeviceIdiom.TV;
+
+		bool IsMenuIconVisible => _flyoutBehavior == FlyoutBehavior.Flyout || HasBackButton;
 
 		public ShellNavBar(IMauiContext context) : base(context?.GetPlatformParent())
 		{
@@ -50,8 +47,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_menuButton = new TButton(PlatformParent);
 			_menuButton.Clicked += OnMenuClicked;
-
-			_menuIcon = new TImage(PlatformParent);
+			_menuIcon = new MaterialIcon(PlatformParent)
+			{
+				Color = _foregroundColor.ToCommon()
+			};
 			UpdateMenuIcon();
 
 			_title = new TLabel(PlatformParent)
@@ -164,11 +163,11 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				return _foregroudColor;
+				return _foregroundColor;
 			}
 			set
 			{
-				_foregroudColor = value;
+				_foregroundColor = value;
 			}
 		}
 
@@ -194,84 +193,46 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SetPage(Page page)
 		{
 			_page = page;
-			Title = page.Title;
+			Title = string.IsNullOrEmpty(page.Title) ? Shell.Current.CurrentContent.Title : page.Title;
 			SearchHandler = Shell.GetSearchHandler(page);
 			TitleView = Shell.GetTitleView(page);
+
 			UpdateMenuIcon();
 		}
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposedValue)
+			if (!_disposedValue)
 			{
 				if (disposing)
 				{
 					Unrealize();
 				}
-				disposedValue = true;
+				_disposedValue = true;
 			}
 		}
 
-		async void UpdateMenuIcon()
+		void UpdateMenuIcon()
 		{
-			ImageSource? source = null;
-			if (HasBackButton)
-			{
-				if (_isTV)
-				{
-					_menuButton.Style = TThemeConstants.Button.Styles.Default;
-					_menuButton.Text = TThemeConstants.Shell.Resources.TV.BackIconCode;
-					_menuIcon = null;
-				}
-				else
-				{
-					var assembly = typeof(ShellNavBar).GetTypeInfo().Assembly;
-					var assemblyName = assembly.GetName().Name;
-					source = ImageSource.FromResource(assemblyName + "." + _backIconRes, assembly);
-				}
-			}
-			else if (_flyoutBehavior != FlyoutBehavior.Flyout)
+			if (!IsMenuIconVisible)
 			{
 				_menuButton.Hide();
 			}
-			else if (ShellController.FlyoutIcon != null)
-			{
-				if (_isTV)
-				{
-					_menuButton.Style = TThemeConstants.Button.Styles.Circle;
-					_menuIcon = new TImage(PlatformParent);
-				}
-				source = Shell.Current.FlyoutIcon;
-			}
 			else
 			{
+				_menuIcon.IconType = HasBackButton ? MaterialIcons.ArrowBack : MaterialIcons.Menu;
+
 				if (_isTV)
 				{
 					_menuButton.Style = TThemeConstants.Button.Styles.Default;
-					_menuButton.Text = TThemeConstants.Shell.Resources.TV.MenuIconCode;
-					_menuIcon = null;
 				}
-				else
-				{
-					var assembly = typeof(ShellNavBar).GetTypeInfo().Assembly;
-					var assemblyName = assembly.GetName().Name;
-					source = ImageSource.FromResource(assemblyName + "." + _menuIconRes, assembly);
 
-				}
+				_menuIcon?.Show();
+				_menuButton.SetIconPart(_menuIcon);
+				_menuButton.Show();
 			}
 
-			if (source != null && _menuIcon != null)
-			{
-				_menuIcon.Show();
-				var provider = MauiContext?.Services.GetRequiredService<IImageSourceServiceProvider>();
-				var service = provider?.GetRequiredImageSourceService(source);
-				if (service != null)
-				{
-					await service.GetImageAsync(source, _menuIcon);
-				}
-			}
-			_menuButton.SetIconPart(_menuIcon);
-			_menuButton.Show();
+			OnLayout();
 		}
 
 		void OnMenuClicked(object? sender, EventArgs e)
@@ -356,14 +317,17 @@ namespace Microsoft.Maui.Controls.Platform
 			int titleVMargin = TDPExtensions.ConvertToScaledPixel(this.GetDefaultTitleVMargin());
 
 			var bound = Geometry;
+			var menuBound = new Rect(bound.X, bound.Y, 0, 0);
 
-			var menuBound = bound;
-			menuBound.X += menuMargin;
-			menuBound.Y += (menuBound.Height - menuSize) / 2;
-			menuBound.Width = menuSize;
-			menuBound.Height = menuSize;
+			if (IsMenuIconVisible)
+			{
+				menuBound.X += menuMargin;
+				menuBound.Y += (bound.Height - menuSize) / 2;
+				menuBound.Width = menuSize;
+				menuBound.Height = menuSize;
 
-			_menuButton.Geometry = menuBound;
+				_menuButton.Geometry = menuBound;
+			}
 
 			var contentBound = Geometry;
 			contentBound.X = menuBound.Right + titleHMargin;

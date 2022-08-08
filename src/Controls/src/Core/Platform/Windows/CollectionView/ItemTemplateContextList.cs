@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (_itemTemplateContexts[index] == null)
 				{
-					_itemTemplateContexts[index] = new ItemTemplateContext(_itemTemplate, _itemsSource[index], 
+					_itemTemplateContexts[index] = new ItemTemplateContext(_itemTemplate, _itemsSource[index],
 						_container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext);
 				}
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 			int _currentIndex = -1;
 			private ItemTemplateContextList _itemTemplateContextList;
 
-			public ItemTemplateContextListEnumerator(ItemTemplateContextList observableItemTemplateCollection) => 
+			public ItemTemplateContextListEnumerator(ItemTemplateContextList observableItemTemplateCollection) =>
 				_itemTemplateContextList = observableItemTemplateCollection;
 
 			public void Dispose()

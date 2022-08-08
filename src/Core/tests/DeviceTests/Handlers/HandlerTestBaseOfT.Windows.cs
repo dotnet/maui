@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -133,17 +134,29 @@ namespace Microsoft.Maui.DeviceTests
 			var uie = await GetValueAsync(view, handler => GetHitTestVisible(handler));
 
 			// HitTestVisible should be the opposite value of InputTransparent 
+			if (view is LayoutStub && inputTransparent)
+			{
+				//https://github.com/dotnet/maui/issues/9112
+				return;
+			}
+
 			Assert.NotEqual(inputTransparent, uie);
 		}
 
-		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>
-			((FrameworkElement)viewHandler.PlatformView).GetPlatformViewBounds();
+		protected Task<Maui.Graphics.Rect> GetPlatformViewBounds(IViewHandler viewHandler)
+		{
+			var fe = viewHandler.VirtualView.ToPlatform();
+			return fe.AttachAndRun(() => fe.GetPlatformViewBounds());
+		}
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
 			((FrameworkElement)viewHandler.PlatformView).GetViewTransform();
 
-		protected Maui.Graphics.Rect GetBoundingBox(IViewHandler viewHandler) =>
-			((FrameworkElement)viewHandler.PlatformView).GetBoundingBox();
+		protected Task<Maui.Graphics.Rect> GetBoundingBox(IViewHandler viewHandler)
+		{
+			var fe = viewHandler.VirtualView.ToPlatform();
+			return fe.AttachAndRun(() => fe.GetBoundingBox());
+		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			AutomationProperties.GetAutomationId((FrameworkElement)viewHandler.PlatformView);

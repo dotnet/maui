@@ -10,6 +10,7 @@ using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
+using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -31,8 +32,8 @@ namespace Microsoft.Maui.Controls.Platform
 		Dictionary<EToolbarItem, ShellContent> _itemToContent = new Dictionary<EToolbarItem, ShellContent>();
 		List<EToolbarItem> _tabsItems = new List<EToolbarItem>();
 
-		EColor _backgroundColor = ShellView.DefaultBackgroundColor;
-		EColor _foregroundColor = ShellView.DefaultForegroundColor;
+		EColor _backgroundColor = TThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
+		EColor _foregroundColor = TThemeConstants.Shell.ColorClass.DefaultForegroundColor;
 
 		bool _disposed = false;
 
@@ -142,8 +143,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var foregroundColor = appearance?.ForegroundColor;
 
-			ToolbarBackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : (backgroundColor?.ToPlatformEFL()).GetValueOrDefault();
-			ToolbarForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : (foregroundColor?.ToPlatformEFL()).GetValueOrDefault();
+			ToolbarBackgroundColor = backgroundColor.IsDefault() ? TThemeConstants.Shell.ColorClass.DefaultBackgroundColor : (backgroundColor?.ToPlatformEFL()).GetValueOrDefault();
+			ToolbarForegroundColor = foregroundColor.IsDefault() ? TThemeConstants.Shell.ColorClass.DefaultForegroundColor : (foregroundColor?.ToPlatformEFL()).GetValueOrDefault();
 		}
 
 		void UpdateDisplayedPage(Page page)
@@ -284,8 +285,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				InsertTabsItem(content);
 			}
-			
-			if(_tabs !=null)
+
+			if (_tabs != null)
 				_tabs.Scrollable = ShellSection.Items.Count > 3 ? TabsType.Scrollable : TabsType.Fixed;
 		}
 

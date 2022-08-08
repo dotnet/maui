@@ -12,10 +12,10 @@ using Index = ElmSharp.Index;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	/// <summary>
 	/// Renderer of a CarouselPage widget.
 	/// </summary>
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	internal class CarouselPageRenderer : VisualElementRenderer<CarouselPage>
 	{
 		const int ItemMaxCount = 20;

@@ -167,6 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateCancelButton();
 		}
 
+		[PortHandler]
 		protected override void SetBackground(Brush brush)
 		{
 			base.SetBackground(brush);
@@ -440,6 +441,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return accessoryView;
 		}
 
+		[PortHandler]
 		void UpdateSearchBarStyle()
 		{
 			Control.SearchBarStyle = Element.OnThisPlatform().GetSearchBarStyle().ToPlatformSearchBarStyle();

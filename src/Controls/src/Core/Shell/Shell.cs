@@ -10,11 +10,11 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -546,10 +546,9 @@ namespace Microsoft.Maui.Controls
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
 			else
 			{
-				var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
-
 				if (this.CurrentItem == null)
 				{
+					var state = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
 					var requestBuilder = new RouteRequestBuilder(new List<string>()
 					{
 						shellItem.Route,
@@ -583,7 +582,10 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					return GoToAsync(state);
+					var navParameters = ShellNavigationManager.GetNavigationParameters(shellItem, shellSection, shellContent, shellSection.Navigation.NavigationStack, null);
+
+					return _navigationManager
+						.GoToAsync(navParameters);
 				}
 			}
 
@@ -678,13 +680,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
@@ -850,10 +856,9 @@ namespace Microsoft.Maui.Controls
 				SetCurrentItem()
 					.FireAndForget();
 
-			((ShellElementCollection)Items).VisibleItemsChangedInternal += (s, e) =>
+			((ShellElementCollection)Items).VisibleItemsChangedInternal += async (s, e) =>
 			{
-				SetCurrentItem()
-					.FireAndForget();
+				await SetCurrentItem();
 
 				SendStructureChanged();
 				SendFlyoutItemsChanged();

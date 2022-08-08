@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Networking
 
 			remoteHostReachability.SetNotification(OnChange);
 			remoteHostReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
-			
+
 #if !(MACCATALYST || MACOS)
 #pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 			ConnectivityImplementation.CellularData.RestrictionDidUpdateNotifier = new Action<CTCellularDataRestrictedState>(OnRestrictedStateChanged);

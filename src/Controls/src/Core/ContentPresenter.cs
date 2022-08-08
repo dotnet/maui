@@ -99,9 +99,22 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
+			return DesiredSize;
+		}
+
 		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return this.MeasureContent(widthConstraint, heightConstraint);
+		}
+
+		protected override Size ArrangeOverride(Rect bounds)
+		{
+			Frame = this.ComputeFrame(bounds);
+			Handler?.PlatformArrange(Frame);
+			return Frame.Size;
 		}
 
 		Size IContentView.CrossPlatformArrange(Rect bounds)

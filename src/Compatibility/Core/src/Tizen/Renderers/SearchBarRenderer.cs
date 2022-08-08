@@ -147,6 +147,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// Rewrites current underlying Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.SearchBar's Text contents to its Xamarin counterpart.
 		/// </summary>
 		/// <param name="sender">Sender.</param>
+		/// <param name="e">Event arguments.</param>
 		void OnTextChanged(object sender, EventArgs e)
 		{
 			Element.SetValueFromRenderer(SearchBar.TextProperty, Control.Text);

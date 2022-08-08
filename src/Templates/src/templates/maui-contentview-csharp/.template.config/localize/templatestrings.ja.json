@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI コンテンツ ビュー (C#) (プレビュー)",
+  "name": ".NET MAUI コンテンツ ビュー (C#)",
   "postActions/openInEditor/description": "エディターで NewContent1.cs を開きます。",
   "symbols/namespace/description": "生成されたコードの名前空間。"
 }

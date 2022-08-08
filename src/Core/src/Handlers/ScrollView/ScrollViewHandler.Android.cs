@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 					Resource.Attribute.scrollViewStyle);
 
 			scrollView.ClipToOutline = true;
+			scrollView.FillViewport = true;
 
 			return scrollView;
 		}
@@ -34,14 +35,57 @@ namespace Microsoft.Maui.Handlers
 			platformView.CrossPlatformArrange = null;
 		}
 
-		public override void PlatformArrange(Rect frame)
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			base.PlatformArrange(frame);
+			var Context = MauiContext?.Context;
+			var platformView = PlatformView;
+			var virtualView = VirtualView;
 
-			if (FindInsetPanel(this) is ContentViewGroup paddingLayer)
+			if (platformView == null || virtualView == null || Context == null)
 			{
-				paddingLayer.Layout(0, 0, paddingLayer.MeasuredWidth, paddingLayer.MeasuredHeight);
+				return Size.Zero;
 			}
+
+			// Create a spec to handle the native measure
+			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MaximumWidth);
+			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MaximumHeight);
+
+			if (platformView.FillViewport)
+			{
+				/*	With FillViewport active, the Android ScrollView will measure the content at least once; if it is 
+					smaller than the ScrollView's viewport, it measure a second time at the size of the viewport
+					so that the content can properly vill the whole viewport. But it will only do this if the measurespec
+					is set to Exactly. So if we want our ScrollView to Fill the space in the scroll direction, we need to
+					adjust the MeasureSpec accordingly. If the ScrollView is not set to Fill, we can just leave the spec
+					alone and the ScrollView will size to its content as usual. */
+
+				var orientation = virtualView.Orientation;
+
+				if (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Vertical)
+				{
+					heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
+				}
+
+				if (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Horizontal)
+				{
+					widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
+				}
+			}
+
+			platformView.Measure(widthSpec, heightSpec);
+
+			// Convert back to xplat sizes for the return value
+			return Context.FromPixels(platformView.MeasuredWidth, platformView.MeasuredHeight);
+		}
+
+		static int AdjustSpecForAlignment(int measureSpec, Primitives.LayoutAlignment alignment)
+		{
+			if (alignment == Primitives.LayoutAlignment.Fill && measureSpec.GetMode() == MeasureSpecMode.AtMost)
+			{
+				return MeasureSpecMode.Exactly.MakeMeasureSpec(measureSpec.GetSize());
+			}
+
+			return measureSpec;
 		}
 
 		void ScrollChange(object? sender, AndroidX.Core.Widget.NestedScrollView.ScrollChangeEventArgs e)
@@ -62,14 +106,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView == null || handler.MauiContext == null)
 				return;
 
-			if (NeedsInsetView(scrollView))
-			{
-				UpdateInsetView(scrollView, handler);
-			}
-			else
-			{
-				handler.PlatformView.UpdateContent(scrollView.PresentedContent, handler.MauiContext);
-			}
+			UpdateInsetView(scrollView, handler);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
@@ -116,34 +153,12 @@ namespace Microsoft.Maui.Handlers
 			making native Measure calls. The internal content size values recorded by the native ScrollView will 
 			not account for the margin, and the control won't scroll all the way to the bottom of the content. 
 
-			To handle both issues, we detect whether the content has a Margin or the cross-platform ScrollView has a Padding;
-			if so, we insert a container ContentViewGroup which always lays out at the origin but provides both the Padding
-			and the Margin for the content. The extra layer is only inserted if necessary, and is removed if the Padding
-			and Margin are set to zero. The extra layer uses the native ContentViewGroup control (the same one we already 
-			use as the backing for ContentView, Page, etc.). 
+			To handle both issues, we insert a container ContentViewGroup which always lays out at the origin but provides 
+			both the Padding and the Margin for the content. The extra layer also provides cross-platform measurement and layout.
+			The extra layer uses the native ContentViewGroup control (the same one we already use as the backing for ContentView, Page, etc.). 
 
 			The methods below exist to support inserting/updating the extra padding/margin layer.
 		*/
-
-		static bool NeedsInsetView(IScrollView scrollView)
-		{
-			if (scrollView.PresentedContent == null)
-			{
-				return false;
-			}
-
-			if (scrollView.Padding != Thickness.Zero)
-			{
-				return true;
-			}
-
-			if (scrollView.PresentedContent.Margin != Thickness.Zero)
-			{
-				return true;
-			}
-
-			return false;
-		}
 
 		static ContentViewGroup? FindInsetPanel(IScrollViewHandler handler)
 		{
@@ -182,7 +197,7 @@ namespace Microsoft.Maui.Handlers
 
 			var paddingShim = new ContentViewGroup(handler.MauiContext.Context)
 			{
-				CrossPlatformMeasure = IncludeScrollViewInsets(scrollView.CrossPlatformMeasure, scrollView),
+				CrossPlatformMeasure = IncludeScrollViewInsets(scrollView.PresentedContent.Measure, scrollView),
 				Tag = InsetPanelTag
 			};
 

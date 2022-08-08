@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 {
-	[TestFixture, Category("MenuBar")]
+	[Category("MenuBar")]
 	public class MenuBarTests :
 		MenuBarTestBase<MenuBar, IMenuBarItem, MenuBarItem, MenuBarHandlerUpdate>
 	{

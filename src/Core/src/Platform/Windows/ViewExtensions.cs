@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ContentPanel platformView, IBorderStroke border)
 		{
-			var hasBorder = border.Shape != null && border.Stroke != null;
+			var hasBorder = border.Shape != null;
 
 			if (hasBorder)
 			{
@@ -139,10 +139,14 @@ namespace Microsoft.Maui.Platform
 		{
 			var semantics = view.Semantics;
 
+			if (view is IPicker picker && string.IsNullOrEmpty(semantics?.Description))
+				AutomationProperties.SetName(platformView, picker.Title);
+			else if (semantics != null)
+				AutomationProperties.SetName(platformView, semantics.Description);
+
 			if (semantics == null)
 				return;
 
-			AutomationProperties.SetName(platformView, semantics.Description);
 			AutomationProperties.SetHelpText(platformView, semantics.Hint);
 			AutomationProperties.SetHeadingLevel(platformView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
 		}
@@ -218,9 +222,8 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
 		{
-
-			if (border is IView v)
-				(platformView as ContentPanel)?.UpdateBackground(v.Background);
+			if (border is IView view)
+				(platformView as ContentPanel)?.UpdateBackground(view.Background);
 
 			if (platformView is Control control)
 				control.UpdateBackground((Paint?)null);
@@ -268,9 +271,7 @@ namespace Microsoft.Maui.Platform
 		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
 		{
 			var root = element?.XamlRoot;
-			if (root == null)
-				return new Matrix4x4();
-			var offset = element?.TransformToVisual(root.Content) as MatrixTransform;
+			var offset = element?.TransformToVisual(root?.Content ?? element) as MatrixTransform;
 			if (offset == null)
 				return new Matrix4x4();
 			Matrix matrix = offset.Matrix;

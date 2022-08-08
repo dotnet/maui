@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				{
 					FontSize = this.GetFlyoutItemFontSize(),
 					VerticalTextAlignment = TextAlignment.Center,
-					TextColor = Graphics.Color.FromRgb(0,0,0).MultiplyAlpha(0.87f),
+					TextColor = Graphics.Color.FromRgb(0, 0, 0).MultiplyAlpha(0.87f),
 					Margin = new Thickness(this.GetFlyoutMargin(), 0, 0, 0),
 				};
 				label.SetBinding(Label.TextProperty, new Binding(textBinding));

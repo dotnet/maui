@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -15,6 +16,8 @@ namespace Microsoft.Maui.Platform
 		IView? _currentPage;
 		IMauiContext _mauiContext;
 		Frame? _navigationFrame;
+		Action? _pendingNavigationFinished;
+
 		protected NavigationRootManager WindowManager => _mauiContext.GetNavigationRootManager();
 		internal IStackNavigation? NavigationView { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; set; } = new List<IView>();
@@ -34,6 +37,8 @@ namespace Microsoft.Maui.Platform
 			if (_navigationFrame != null)
 				_navigationFrame.Navigated -= OnNavigated;
 
+			FirePendingNavigationFinished();
+
 			navigationFrame.Navigated += OnNavigated;
 			_navigationFrame = navigationFrame;
 			NavigationView = (IStackNavigation)navigationView;
@@ -47,6 +52,7 @@ namespace Microsoft.Maui.Platform
 			if (_navigationFrame != null)
 				_navigationFrame.Navigated -= OnNavigated;
 
+			FirePendingNavigationFinished();
 			_navigationFrame = null;
 			NavigationView = null;
 		}
@@ -146,7 +152,7 @@ namespace Microsoft.Maui.Platform
 			if (e.Content is not Page page)
 				return;
 
-
+			var nv = NavigationView;
 			ContentPresenter? presenter;
 
 			if (page.Content == null)
@@ -179,7 +185,7 @@ namespace Microsoft.Maui.Platform
 				throw;
 			}
 
-			fe.OnLoaded(() =>
+			_pendingNavigationFinished = () =>
 			{
 				if (presenter?.Content is not FrameworkElement pc)
 				{
@@ -194,12 +200,20 @@ namespace Microsoft.Maui.Platform
 				{
 					view.Arrange(fe);
 				}
-			});
+			};
+
+			fe.OnLoaded(FirePendingNavigationFinished);
 		}
 
 		void FireNavigationFinished()
 		{
+			_pendingNavigationFinished = null;
 			NavigationView?.NavigationFinished(NavigationStack);
+		}
+
+		void FirePendingNavigationFinished()
+		{
+			Interlocked.Exchange(ref _pendingNavigationFinished, null)?.Invoke();
 		}
 	}
 }

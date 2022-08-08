@@ -95,7 +95,9 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView == null)
 				return;
 
-			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.PlatformView as View) as MauiAccessibilityDelegateCompat;
+			AccessibilityDelegateCompat? accessibilityDelegate = null;
+			if (handler.PlatformView is View viewPlatform)
+				accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(viewPlatform) as MauiAccessibilityDelegateCompat;
 
 			if (handler.PlatformView is not PlatformView platformView)
 				return;

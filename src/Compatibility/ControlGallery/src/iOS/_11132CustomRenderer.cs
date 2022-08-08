@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				layer.Mask = clipShapeLayer;
 				layer.Mask.Name = null;
 
-				Debug.WriteLine($"_11132CustomRenderer Layer Name { layer.Mask.Name}");
+				Debug.WriteLine($"_11132CustomRenderer Layer Name {layer.Mask.Name}");
 			}
 		}
 	}

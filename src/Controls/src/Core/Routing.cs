@@ -146,7 +146,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='GetOrCreateContent']/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public static Element GetOrCreateContent(string route, IServiceProvider services = null)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			Element result = null;
 

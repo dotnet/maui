@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -9,8 +11,17 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
+		[Fact]
+		public async Task DisconnectHandlerDoesntCrash()
+		{
+			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				handler.DisconnectHandler();
+			});
+		}
+
 		[Fact(DisplayName = "Automation Id is set correctly")]
-		[InlineData()]
 		public async Task SetAutomationId()
 		{
 			var view = new TStub
@@ -31,21 +42,8 @@ namespace Microsoft.Maui.DeviceTests
 				FlowDirection = flowDirection
 			};
 
-			var expectedFlowDirection = flowDirection;
-
-#if WINDOWS
-			if (view is LayoutStub)
-			{
-				// On Windows, we deliberately _do not_ set the platform FlowDirection
-				// for Layouts, because the cross-platform layout code is already taking
-				// flow direction into account. The result of setting the cross-platform
-				// flow direction will always be Microsoft.UI.Xaml.FlowDirection.LeftToRight
-				expectedFlowDirection = FlowDirection.LeftToRight;
-			}
-#endif
-
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
-			Assert.Equal(expectedFlowDirection, id);
+			Assert.Equal(flowDirection, id);
 		}
 
 		[Theory(DisplayName = "Opacity is set correctly")]
@@ -159,7 +157,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(handler.ContainerView);
 		}
 
-		[Theory(DisplayName = "Native View Bounds are not empty")]
+		[Theory(DisplayName = "Native View Bounds are not empty"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/9054"
+#endif
+		)]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -175,7 +177,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEqual(platformViewBounds, new Graphics.Rect());
 		}
 
-		[Theory(DisplayName = "Native View Bounding Box are not empty")]
+		[Theory(DisplayName = "Native View Bounding Box are not empty"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/9054"
+#endif
+		)]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -189,12 +195,40 @@ namespace Microsoft.Maui.DeviceTests
 
 			var nativeBoundingBox = await GetValueAsync(view, handler => GetBoundingBox(handler));
 			Assert.NotEqual(nativeBoundingBox, new Graphics.Rect());
+
+
+			// Currently there's an issue with label/progress where they don't set the frame size to
+			// the explicit Width and Height values set
+			// https://github.com/dotnet/maui/issues/7935
+			if (view is ILabel)
+			{
+				// TODO:
+			}
+			else if (view is IBorderView)
+			{
+				// TODO:
+			}
+			else if (view is IProgress)
+			{
+				if (!CloseEnough(size, nativeBoundingBox.Size.Width))
+					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+			}
+			else
+			{
+				if (!CloseEnough(size, nativeBoundingBox.Size.Height) || !CloseEnough(size, nativeBoundingBox.Size.Width))
+					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+			}
+
+			bool CloseEnough(double value1, double value2)
+			{
+				return System.Math.Abs(value2 - value1) < 0.2;
+			}
 		}
 
 
 		[Theory(DisplayName = "Native View Transforms are not empty"
 #if __IOS__
-			, Skip = "https://github.com/dotnet/maui/issues/3600"
+					, Skip = "https://github.com/dotnet/maui/issues/3600"
 #endif
 			)]
 		[InlineData(1)]

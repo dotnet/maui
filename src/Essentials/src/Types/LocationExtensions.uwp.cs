@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				Altitude = location.Coordinate.Point.Position.Altitude,
 				Accuracy = location.Coordinate.Accuracy,
 				VerticalAccuracy = location.Coordinate.AltitudeAccuracy,
+				ReducedAccuracy = false,
 				Speed = (!location.Coordinate.Speed.HasValue || double.IsNaN(location.Coordinate.Speed.Value)) ? default : location.Coordinate.Speed,
 				Course = (!location.Coordinate.Heading.HasValue || double.IsNaN(location.Coordinate.Heading.Value)) ? default : location.Coordinate.Heading,
 				IsFromMockProvider = false,
@@ -49,6 +50,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				Altitude = coordinate.Point.Position.Altitude,
 				Accuracy = coordinate.Accuracy,
 				VerticalAccuracy = coordinate.AltitudeAccuracy,
+				ReducedAccuracy = false,
 				Speed = (!coordinate.Speed.HasValue || double.IsNaN(coordinate.Speed.Value)) ? default : coordinate.Speed,
 				Course = (!coordinate.Heading.HasValue || double.IsNaN(coordinate.Heading.Value)) ? default : coordinate.Heading,
 				AltitudeReferenceSystem = coordinate.Point.AltitudeReferenceSystem.ToEssentials()

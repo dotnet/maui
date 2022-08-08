@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Dispatching
 		{
 			if (!IsRunning)
 				return;
-			
+
 			IsRunning = false;
 
 			_timer.Change(Timeout.Infinite, Timeout.Infinite);

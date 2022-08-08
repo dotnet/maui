@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5680, "[Enhancement] Add method to force value coercion")]
 	public partial class Issue5680 : TestContentPage
-    {
-		
+	{
+
 		public Issue5680()
-        {
-            InitializeComponent();
-        }
+		{
+			InitializeComponent();
+		}
 
 		protected override void Init()
 		{

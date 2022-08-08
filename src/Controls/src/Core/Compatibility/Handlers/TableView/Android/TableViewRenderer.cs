@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			new CommandMapper<TableView, TableViewRenderer>(VisualElementRendererCommandMapper);
 
 		TableViewModelRenderer _adapter;
+		bool _reattached;
 		bool _disposed;
 
 		public TableViewRenderer(Context context) : base(context, Mapper, CommandMapper)
@@ -59,12 +60,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_adapter = GetModelRenderer(listView, view);
 			listView.Adapter = _adapter;
 		}
+
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
 
 			if (Control != null)
 				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
+
+			// There might be a better way to go about doing this but from what I can tell 
+			// once you detach and then reattach a ListView the cells become unselectable 
+			// and the Android.ListView in general is left in an odd state.
+			// We didn't have to do this in XF because in XF there's an extra measure call that happens
+			// when the listview is reattached that essentially does the exact same thing.
+			// You can see this by adding back the legacy renderers and setting a breakpoint on the 
+			// adapter.GetView call. In MAUI this never gets called when navigating back vs XF it does
+			if (!_reattached)
+			{
+				_reattached = true;
+			}
+			else
+			{
+				Control?.InvalidateViews();
+			}
 		}
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)

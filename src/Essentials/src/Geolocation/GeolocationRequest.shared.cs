@@ -70,6 +70,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='DesiredAccuracy']/Docs" />
 		public GeolocationAccuracy DesiredAccuracy { get; set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='RequestFullAccuracy']/Docs" />
+		public bool RequestFullAccuracy { get; set; }
+
 		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='ToString']/Docs" />
 		public override string ToString() =>
 			$"{nameof(DesiredAccuracy)}: {DesiredAccuracy}, {nameof(Timeout)}: {Timeout}";

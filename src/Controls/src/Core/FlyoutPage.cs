@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls
 					return false;
 
 				FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
-				var orientation = DeviceDisplay.MainDisplayInfo.Orientation;
+				var orientation = Window.GetOrientation();
 
 				bool isSplitOnLandscape = (behavior == FlyoutLayoutBehavior.SplitOnLandscape || behavior == FlyoutLayoutBehavior.Default) && orientation.IsLandscape();
 				bool isSplitOnPortrait = behavior == FlyoutLayoutBehavior.SplitOnPortrait && orientation.IsPortrait();
@@ -209,6 +209,14 @@ namespace Microsoft.Maui.Controls
 			FlyoutPageController.CanChangeIsPresented = true;
 			UpdateFlyoutLayoutBehavior(this);
 			base.OnAppearing();
+		}
+
+		protected override void OnDisappearing()
+		{
+			Flyout?.SendDisappearing();
+			Detail?.SendDisappearing();
+
+			base.OnDisappearing();
 		}
 
 		protected override bool OnBackButtonPressed()

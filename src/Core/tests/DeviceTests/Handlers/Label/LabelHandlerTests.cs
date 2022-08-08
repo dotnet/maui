@@ -58,6 +58,8 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(label);
 		}
 
+#if !WINDOWS
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -128,6 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 				nameof(ILabel.Text),
 				() => label.Text = newText);
 		}
+#endif
 
 		[Theory(DisplayName = "Updating Font Does Not Affect HorizontalTextAlignment")]
 		[InlineData(10, 20)]
@@ -147,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 				nameof(ILabel.Font),
 				() => label.Font = Font.SystemFontOfSize(newSize));
 		}
-
+#if !WINDOWS
 		[Theory(DisplayName = "Font Family and Weight Initializes Correctly")]
 		[InlineData(null, FontWeight.Regular, FontSlant.Default)]
 		[InlineData(null, FontWeight.Regular, FontSlant.Italic)]
@@ -157,20 +160,22 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Lobster Two", FontWeight.Regular, FontSlant.Italic)]
 		[InlineData("Lobster Two", FontWeight.Bold, FontSlant.Default)]
 		[InlineData("Lobster Two", FontWeight.Bold, FontSlant.Italic)]
-#if !__IOS__
+#endif
+#if !__IOS__ && !WINDOWS
 		// iOS cannot force a font to be bold like all other OS
 		[InlineData("Dokdo", FontWeight.Regular, FontSlant.Default)]
 		[InlineData("Dokdo", FontWeight.Regular, FontSlant.Italic)]
 		[InlineData("Dokdo", FontWeight.Bold, FontSlant.Default)]
 		[InlineData("Dokdo", FontWeight.Bold, FontSlant.Italic)]
 #endif
-#if __ANDROID__
+#if __ANDROID__ && !WINDOWS
 		// "monospace" is a special font name on Android
 		[InlineData("monospace", FontWeight.Regular, FontSlant.Default)]
 		[InlineData("monospace", FontWeight.Regular, FontSlant.Italic)]
 		[InlineData("monospace", FontWeight.Bold, FontSlant.Default)]
 		[InlineData("monospace", FontWeight.Bold, FontSlant.Italic)]
 #endif
+#if !WINDOWS
 		public async Task FontFamilyAndAttributesInitializesCorrectly(string family, FontWeight weight, FontSlant slant)
 		{
 			var label = new LabelStub
@@ -190,7 +195,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(weight == FontWeight.Bold, isBold);
 			Assert.Equal(slant == FontSlant.Italic, isItalic);
 		}
-
+#endif
 		[Theory(DisplayName = "Updating Text Does Not Affect HorizontalTextAlignment")]
 		[InlineData("Short", "Longer Text")]
 		[InlineData("Long thext here", "Short")]
@@ -247,6 +252,8 @@ namespace Microsoft.Maui.DeviceTests
 				nameof(ILabel.TextDecorations),
 				() => label.TextDecorations = newDecorations);
 		}
+
+#if !WINDOWS
 
 		[Fact]
 		[Category(TestCategory.TextFormatting)]
@@ -334,5 +341,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatLineHeight, values.ViewValue);
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
+#endif
 	}
 }

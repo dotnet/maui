@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				base.Toolbar = value;
-        
+
 				if (value != null)
 				{
 					value.NavigationViewBackButton = NavigationViewBackButton;

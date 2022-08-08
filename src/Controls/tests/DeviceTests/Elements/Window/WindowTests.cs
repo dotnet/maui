@@ -11,6 +11,7 @@ using Xunit;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 #if ANDROID || IOS
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
@@ -64,15 +65,15 @@ namespace Microsoft.Maui.DeviceTests
 				var contentPage = new ContentPage()
 				{
 					ToolbarItems =
-				{
-					toolbarItem
-				}
+					{
+						toolbarItem
+					}
 				};
 
 				var shell = new Shell() { CurrentItem = contentPage };
 				window.Page = shell;
 
-				
+
 				await OnLoadedAsync(shell);
 				await OnLoadedAsync(shell.CurrentPage);
 

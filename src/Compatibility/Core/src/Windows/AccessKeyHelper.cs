@@ -9,7 +9,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	static class AccessKeyHelper
 	{
 
-		public static void UpdateAccessKey(FrameworkElement control, VisualElement element) {
+		public static void UpdateAccessKey(FrameworkElement control, VisualElement element)
+		{
 
 			if (control != null && element is IElementConfiguration<VisualElement> elementConfig)
 			{

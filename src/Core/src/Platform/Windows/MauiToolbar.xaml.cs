@@ -1,8 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui.Platform
 {
@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform
 				new PropertyMetadata(true));
 
 		MenuBar? _menuBar;
+		WBrush? _menuBarForeground;
 		private Button? _navigationViewBackButton;
 		private Button? _togglePaneButton;
 		private Graphics.Color? _iconColor;
@@ -83,10 +84,15 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal WBrush? TitleColor
+		internal void SetBarTextColor(WBrush? brush)
 		{
-			get => title.Foreground;
-			set => title.Foreground = value;
+			if (brush != null)
+			{
+				title.Foreground = brush;
+			}
+
+			_menuBarForeground = brush;
+			UpdateMenuBarForeground();
 		}
 
 		internal CommandBar CommandBar => commandBar;
@@ -179,20 +185,40 @@ namespace Microsoft.Maui.Platform
 		internal void SetMenuBar(MenuBar? menuBar)
 		{
 			_menuBar = menuBar;
-			UpdateMenuBar();
-		}
-
-		void UpdateMenuBar()
-		{
-			if (menuContent == null)
-				return;
 
 			menuContent.Content = _menuBar;
+			UpdateMenuBarForeground();
 
 			if (_menuBar == null || _menuBar.Items.Count == 0)
 				menuContent.Visibility = UI.Xaml.Visibility.Collapsed;
 			else
 				menuContent.Visibility = UI.Xaml.Visibility.Visible;
+		}
+
+		void UpdateMenuBarForeground()
+		{
+			if (_menuBar is null)
+				return;
+
+			// MenuBarItems currently don't respect the Foreground property due to https://github.com/microsoft/microsoft-ui-xaml/issues/7070
+			// Work around this by setting the Button's colors in the MenuBar's ResourceDictionary
+
+			ResourceDictionary dictionary = _menuBar.Resources;
+			WBrush? menuForegroundBrush = _menuBarForeground;
+			if (menuForegroundBrush is null)
+			{
+				dictionary.Remove("ButtonForeground");
+				dictionary.Remove("ButtonForegroundPointerOver");
+				dictionary.Remove("ButtonForegroundPressed");
+				dictionary.Remove("ButtonForegroundDisabled");
+			}
+			else
+			{
+				dictionary["ButtonForeground"] = menuForegroundBrush;
+				dictionary["ButtonForegroundPointerOver"] = menuForegroundBrush;
+				dictionary["ButtonForegroundPressed"] = menuForegroundBrush;
+				dictionary["ButtonForegroundDisabled"] = menuForegroundBrush;
+			}
 		}
 	}
 }

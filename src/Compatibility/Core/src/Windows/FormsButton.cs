@@ -79,10 +79,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var radius = BorderRadius == -1 ? 0 : BorderRadius;
 			var cornerRadius = WinUIHelpers.CreateCornerRadius(radius);
-			if (_contentPresenter != null)						
-				_contentPresenter.CornerRadius = cornerRadius;				
-			
-			if(_rootGrid != null)
+			if (_contentPresenter != null)
+				_contentPresenter.CornerRadius = cornerRadius;
+
+			if (_rootGrid != null)
 				_rootGrid.CornerRadius = cornerRadius;
 		}
 
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_contentPresenter.CharacterSpacing = CharacterSpacing;
 
 			var textBlock = GetTextBlock(Content);
-			
+
 			if (textBlock != null)
 				textBlock.CharacterSpacing = CharacterSpacing;
 

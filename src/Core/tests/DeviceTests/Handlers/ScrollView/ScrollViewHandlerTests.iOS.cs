@@ -34,9 +34,16 @@ namespace Microsoft.Maui.DeviceTests
 
 				foreach (var platformView in scrollViewHandler.PlatformView.Subviews)
 				{
-					if (platformView is MauiTextField)
+					// ScrollView on iOS uses an intermediate ContentView to handle conetent measurement/arrangement
+					if (platformView is ContentView contentView)
 					{
-						return true;
+						foreach (var content in contentView.Subviews)
+						{
+							if (content is MauiTextField)
+							{
+								return true;
+							}
+						}
 					}
 				}
 

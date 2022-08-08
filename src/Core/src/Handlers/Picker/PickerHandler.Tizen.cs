@@ -19,12 +19,12 @@ namespace Microsoft.Maui.Handlers
 		protected override TEntry CreatePlatformView()
 		{
 			return new EditfieldEntry(PlatformParent)
-			   {
-				   IsSingleLine = true,
-				   InputPanelShowByOnDemand = true,
-				   IsEditable = false,
-				   HorizontalTextAlignment = TTextAlignment.Center
-			   };
+			{
+				IsSingleLine = true,
+				InputPanelShowByOnDemand = true,
+				IsEditable = false,
+				HorizontalTextAlignment = TTextAlignment.Center
+			};
 		}
 
 		protected override void ConnectHandler(TEntry platformView)
@@ -66,7 +66,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 
+		// Uncomment me on NET7 [Obsolete]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
+
+		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
 
 		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{

@@ -44,6 +44,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="horizontalOffset">Represents the horizontal offset.</param>
 		/// <param name="verticalOffset">Represents the vertical offset.</param>
+		/// <param name="instant"></param>
 		void RequestScrollTo(double horizontalOffset, double verticalOffset, bool instant);
 	}
 }

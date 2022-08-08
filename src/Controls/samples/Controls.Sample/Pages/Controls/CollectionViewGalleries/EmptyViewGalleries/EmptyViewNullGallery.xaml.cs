@@ -17,13 +17,16 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			InitializeComponent();
 			string emptyViewText = "Nothing to display.";
 			CollectionView.EmptyView = useOnlyText ? emptyViewText :
-													 new Grid { Children = { new Label
+													 new Grid
+													 {
+														 Children = { new Label
 													 {
 														 Text = emptyViewText,
 														 HorizontalOptions = LayoutOptions.Center,
 														 VerticalOptions = LayoutOptions.Center,
 														 FontAttributes = FontAttributes.Bold
-													 } } };
+													 } }
+													 };
 		}
 	}
 }

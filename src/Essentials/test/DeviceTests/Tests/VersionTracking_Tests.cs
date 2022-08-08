@@ -6,13 +6,17 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("VersionTracking")]
 	public class VersionTracking_Tests
 	{
-		/// <summary>
-		/// We cannot mock the app version but it should be constant value
-		/// </summary>
-		const string currentVersion = "1.0.1.0";
+		// We cannot mock the app version but it should be constant value
+#if WINDOWS_UWP || WINDOWS
+		const string currentVersion = "1.0.0.1";
 		const string currentBuild = "1";
+#else
+		const string currentVersion = "1.0";
+		const string currentBuild = "1";
+#endif
 
 		const string versionsKey = "VersionTracking.Versions";
 		const string buildsKey = "VersionTracking.Builds";

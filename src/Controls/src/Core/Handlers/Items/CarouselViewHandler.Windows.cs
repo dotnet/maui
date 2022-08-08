@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ItemsView.Scrolled -= CarouselScrolled;
 			ListViewBase.SizeChanged += InitialSetup;
-			
+
 			UpdateScrollBarVisibilityForLoop();
 
 			base.ConnectHandler(platformView);
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.UpdatePeekAreaInsets();
 		}
 
-		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView) 
+		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			handler.UpdateLoop();
 		}

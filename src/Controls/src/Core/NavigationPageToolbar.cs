@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 
 			BarBackground = navigationPage.BarBackground;
-			if (Brush.IsNullOrEmpty(navigationPage.BarBackground) &&
+			if (Brush.IsNullOrEmpty(BarBackground) &&
 				navigationPage.BarBackgroundColor != null)
 			{
 				BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);

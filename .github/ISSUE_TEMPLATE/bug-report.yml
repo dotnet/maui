@@ -1,6 +1,6 @@
 name: Bug Report
 description: File a bug report
-labels: ["t/bug", "s/needs-verification"]
+labels: ["t/bug"]
 assignees: []
 body:
   - type: markdown
@@ -21,24 +21,30 @@ body:
     id: repro-steps
     attributes:
       label: Steps to Reproduce
-      description: Describe all the steps we need to take to show the behavior that you have observed.
+      description: Describe all the steps we need to take to show the behavior that you have observed. Also, include what you expected to happen and what did actually happen.
       placeholder: | 
         1. Create a File > New .NET MAUI App
         2. Add a `Button` like so: `<Button Text="this is a bug" />`
         3. Click the added button and observe the bug 🐞
+        
+        Expected outcome: a bug was added
+        Actual outcome: a ladybug appeared
     validations:
       required: true
   - type: dropdown
     id: version-with-bug
     attributes:
       label: Version with bug
-      description: In what version do you see this issue?
+      description: In what version do you see this issue? Run `dotnet --version` to find your version.
       options:
-        - Preview 13
-        - Preview 14
-        - Release Candidate 1
-        - Release Candidate 2 (current)
-        - Release Candidate 3
+        - 6.0 Release Candidate 2 or older
+        - 6.0 Release Candidate 3
+        - 6.0.312
+        - 6.0.400
+        - 6.0.408
+        - 6.0.419
+        - 6.0.424
+        - 6.0.486 (current)
         - Unknown/Other (please specify)
     validations:
       required: true
@@ -46,14 +52,15 @@ body:
     id: version-that-worked
     attributes:
       label: Last version that worked well
-      description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown/Other`.
+      description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown/Other`.  Run `dotnet --version` to find your version.
       options:
-        - Preview 12
-        - Preview 13
-        - Preview 14
-        - Release Candidate 1
-        - Release Candidate 2 (current)
-        - Release Candidate 3
+        - 6.0 Release Candidate 2 or older
+        - 6.0 Release Candidate 3
+        - 6.0.312
+        - 6.0.400
+        - 6.0.408
+        - 6.0.419
+        - 6.0.424
         - Unknown/Other
     validations:
       required: true

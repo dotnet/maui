@@ -9,6 +9,23 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarHandlerTests : HandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
+		[Theory(DisplayName = "Background Initializes Correctly")]
+		[InlineData(0xFF0000)]
+		[InlineData(0x00FF00)]
+		[InlineData(0x0000FF)]
+		public async Task BackgroundInitializesCorrectly(uint color)
+		{
+			var expected = Color.FromUint(color);
+
+			var searchBar = new SearchBarStub
+			{
+				Background = new SolidPaintStub(expected),
+				Text = "Background"
+			};
+
+			await ValidateHasColor(searchBar, expected);
+		}
+
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
 		{
@@ -121,6 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(searchBar);
 		}
 
+#if !WINDOWS
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -153,5 +171,6 @@ namespace Microsoft.Maui.DeviceTests
 				SearchBarHandlerTests.UpdateCursorStartPosition(searchBarHandler, position);
 			}
 		}
+#endif
 	}
 }

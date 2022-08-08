@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using ElmSharp;
+using Microsoft.Maui.ApplicationModel;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
 using ELayout = ElmSharp.Layout;
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Platform
 			platformWindow.Active();
 			platformWindow.Show();
 			platformWindow.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_90 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270;
-			
+
 			platformWindow.RotationChanged += (sender, e) =>
 			{
 				// TODO : should update later
@@ -110,5 +111,20 @@ namespace Microsoft.Maui.Platform
 				s_windowCloseRequestHandler[window].Invoke();
 		}
 
+		internal static Devices.DisplayOrientation GetOrientation(this IWindow? window)
+		{
+			if (window == null)
+				return Devices.DeviceDisplay.Current.MainDisplayInfo.Orientation;
+
+			bool isTV = Elementary.GetProfile() == "tv";
+			return window.Handler?.MauiContext?.GetPlatformWindow()?.Rotation switch
+			{
+				0 => isTV ? Devices.DisplayOrientation.Landscape : Devices.DisplayOrientation.Portrait,
+				90 => isTV ? Devices.DisplayOrientation.Portrait : Devices.DisplayOrientation.Landscape,
+				180 => isTV ? Devices.DisplayOrientation.Landscape : Devices.DisplayOrientation.Portrait,
+				270 => isTV ? Devices.DisplayOrientation.Portrait : Devices.DisplayOrientation.Landscape,
+				_ => Devices.DisplayOrientation.Unknown
+			};
+		}
 	}
 }

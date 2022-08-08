@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 				for (int i = 0; i < indicatorCount; i++)
 				{
 					var shape = CreateIndicator(i, position);
-					
+
 					if (shape != null)
 					{
 						indicators.Add(shape);
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Platform
 				};
 			}
 			shape.Tag = i;
-			shape.PointerPressed += (s,e) =>
+			shape.PointerPressed += (s, e) =>
 			{
 				if (_indicatorView == null)
 					return;
