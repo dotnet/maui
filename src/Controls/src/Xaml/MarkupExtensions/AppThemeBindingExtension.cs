@@ -60,6 +60,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			else
 				bp = valueProvider.TargetProperty as BindableProperty;
 
+			propertyType = bp?.ReturnType ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
+
 			var binding = new AppThemeBinding();
 
 			Exception converterException = null;
