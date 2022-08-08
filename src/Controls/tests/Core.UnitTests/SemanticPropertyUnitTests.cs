@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
 	public class SemanticPropertyUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void FakeBindSemanticProperties_PropertiesPropagate()
 		{
 			Grid source = new Grid();
@@ -19,10 +18,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			SemanticProperties.SetDescription(source, "test");
 
 			var destDescription = SemanticProperties.GetDescription(dest);
-			Assert.AreEqual("test", destDescription);
+			Assert.Equal("test", destDescription);
 		}
 
-		[Test]
+		[Fact]
 		public void FakeBindSemanticProperties_PropertiesStopPropagating()
 		{
 			Grid source = new Grid();
@@ -33,10 +32,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			SemanticProperties.SetDescription(source, "second");
 			var destDescription = SemanticProperties.GetDescription(dest);
-			Assert.AreEqual("test", destDescription);
+			Assert.Equal("test", destDescription);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemTitlePropagatesToTemplatesSemanticProperties()
 		{
 			Shell shell = new Shell();
@@ -47,14 +46,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			content.BindingContext = flyoutItem;
 
 			var destDescription = SemanticProperties.GetDescription(content);
-			Assert.AreEqual("title", destDescription);
+			Assert.Equal("title", destDescription);
 
 			flyoutItem.Title = "new title";
 			destDescription = SemanticProperties.GetDescription(content);
-			Assert.AreEqual("new title", destDescription);
+			Assert.Equal("new title", destDescription);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemSemanticPropertiesPropagateOverTitle()
 		{
 			Shell shell = new Shell();
@@ -67,11 +66,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			content.BindingContext = flyoutItem;
 
 			var destDescription = SemanticProperties.GetDescription(content);
-			Assert.AreEqual("semantic title", destDescription);
+			Assert.Equal("semantic title", destDescription);
 
 			flyoutItem.Title = "new title";
 			destDescription = SemanticProperties.GetDescription(content);
-			Assert.AreEqual("semantic title", destDescription);
+			Assert.Equal("semantic title", destDescription);
 		}
 	}
 }
