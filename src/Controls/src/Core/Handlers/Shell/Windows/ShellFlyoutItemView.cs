@@ -59,8 +59,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (dataTemplate != null)
 			{
 				_content = (View)dataTemplate.CreateContent();
+				_content.BindingContext = bo;
 				_shell.AddLogicalChild(_content);
-				BindableObject.SetInheritedBindingContext(_content, bo);
 
 				var platformView = _content.ToPlatform(_shell.Handler.MauiContext);
 
