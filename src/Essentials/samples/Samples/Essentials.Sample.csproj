@@ -47,7 +47,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
-    <ProjectReference Include="..\..\..\Core\maps\src\Maps\Maps.csproj" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
