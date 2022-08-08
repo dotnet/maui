@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
-			if (   Default == null
+			if (Default == null
 				&& Light == null
 				&& Dark == null)
 				throw new XamlParseException("AppThemeBindingExtension requires a non-null value to be specified for at least one theme or Default.", serviceProvider);
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			if (valueProvider.TargetObject is Setter setter)
 				bp = setter.Property;
-			else			
+			else
 				bp = valueProvider.TargetProperty as BindableProperty;
 
 			var binding = new AppThemeBinding();
