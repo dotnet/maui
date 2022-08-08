@@ -457,7 +457,7 @@ Microsoft.Maui.Handlers.IRadioButtonHandler
 Microsoft.Maui.Handlers.IRadioButtonHandler.PlatformView.get -> Microsoft.Maui.Platform.ContentViewGroup!
 Microsoft.Maui.Handlers.IRadioButtonHandler.VirtualView.get -> Microsoft.Maui.IRadioButton!
 Microsoft.Maui.Handlers.IRefreshViewHandler
-Microsoft.Maui.Handlers.IRefreshViewHandler.PlatformView.get -> Tizen.NUI.BaseComponents.View!
+Microsoft.Maui.Handlers.IRefreshViewHandler.PlatformView.get -> Microsoft.Maui.Platform.MauiRefreshLayout!
 Microsoft.Maui.Handlers.IRefreshViewHandler.VirtualView.get -> Microsoft.Maui.IRefreshView!
 Microsoft.Maui.Handlers.IScrollViewHandler
 Microsoft.Maui.Handlers.IScrollViewHandler.PlatformView.get -> Tizen.UIExtensions.NUI.ScrollView!
@@ -582,6 +582,7 @@ Microsoft.Maui.Handlers.RadioButtonHandler.RadioButtonHandler(Microsoft.Maui.IPr
 Microsoft.Maui.Handlers.RefreshViewHandler
 Microsoft.Maui.Handlers.RefreshViewHandler.RefreshViewHandler() -> void
 Microsoft.Maui.Handlers.RefreshViewHandler.RefreshViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+static Microsoft.Maui.Handlers.RefreshViewHandler.MapBackground(Microsoft.Maui.Handlers.IRefreshViewHandler! handler, Microsoft.Maui.IRefreshView! view) -> void
 Microsoft.Maui.Handlers.ScrollViewHandler
 Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewHandler() -> void
 Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
@@ -1503,6 +1504,12 @@ Microsoft.Maui.Platform.MauiPageControl.UpdatePosition() -> void
 Microsoft.Maui.Platform.MauiScrollView
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView(Microsoft.Maui.IScrollView! virtualView) -> void
 Microsoft.Maui.Platform.MauiScrollView.Measure(double availableWidth, double availableHeight) -> Tizen.UIExtensions.Common.Size
+Microsoft.Maui.Platform.MauiRefreshLayout
+Microsoft.Maui.Platform.MauiRefreshLayout.MauiRefreshLayout() -> void
+Microsoft.Maui.Platform.MauiRefreshLayout.UpdateBackground(Microsoft.Maui.IRefreshView! view) -> void
+Microsoft.Maui.Platform.MauiRefreshLayout.UpdateContent(Microsoft.Maui.IView? content, Microsoft.Maui.IMauiContext? mauiContext) -> void
+Microsoft.Maui.Platform.MauiRefreshLayout.UpdateIsRefreshing(Microsoft.Maui.IRefreshView! view) -> void
+Microsoft.Maui.Platform.MauiRefreshLayout.UpdateRefreshColor(Microsoft.Maui.IRefreshView! view) -> void
 Microsoft.Maui.Platform.MauiSearchBar
 Microsoft.Maui.Platform.MauiSearchBar.Entry.get -> Tizen.UIExtensions.NUI.Entry!
 Microsoft.Maui.Platform.MauiSearchBar.MauiSearchBar() -> void
@@ -1913,7 +1920,9 @@ override Microsoft.Maui.Handlers.ProgressBarHandler.CreatePlatformView() -> Tize
 override Microsoft.Maui.Handlers.RadioButtonHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentViewGroup!
 override Microsoft.Maui.Handlers.RadioButtonHandler.ConnectHandler(Microsoft.Maui.Platform.ContentViewGroup! platformView) -> void
 override Microsoft.Maui.Handlers.RadioButtonHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentViewGroup! platformView) -> void
-override Microsoft.Maui.Handlers.RefreshViewHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
+override Microsoft.Maui.Handlers.RefreshViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiRefreshLayout!
+override Microsoft.Maui.Handlers.RefreshViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiRefreshLayout! platformView) -> void
+override Microsoft.Maui.Handlers.RefreshViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiRefreshLayout! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.ConnectHandler(Tizen.UIExtensions.NUI.ScrollView! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.ScrollView!
 override Microsoft.Maui.Handlers.ScrollViewHandler.DisconnectHandler(Tizen.UIExtensions.NUI.ScrollView! platformView) -> void
@@ -2244,7 +2253,6 @@ static Microsoft.Maui.Handlers.RefreshViewHandler.MapContent(Microsoft.Maui.Hand
 static Microsoft.Maui.Handlers.RefreshViewHandler.MapIsRefreshing(Microsoft.Maui.Handlers.IRefreshViewHandler! handler, Microsoft.Maui.IRefreshView! refreshView) -> void
 static Microsoft.Maui.Handlers.RefreshViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IRefreshView!, Microsoft.Maui.Handlers.IRefreshViewHandler!>!
 static Microsoft.Maui.Handlers.RefreshViewHandler.MapRefreshColor(Microsoft.Maui.Handlers.IRefreshViewHandler! handler, Microsoft.Maui.IRefreshView! refreshView) -> void
-static Microsoft.Maui.Handlers.RefreshViewHandler.MapRefreshViewBackground(Microsoft.Maui.Handlers.IRefreshViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ScrollViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IScrollView!, Microsoft.Maui.Handlers.IScrollViewHandler!>!
 static Microsoft.Maui.Handlers.ScrollViewHandler.MapContent(Microsoft.Maui.Handlers.IScrollViewHandler! handler, Microsoft.Maui.IScrollView! scrollView) -> void
 static Microsoft.Maui.Handlers.ScrollViewHandler.MapHorizontalScrollBarVisibility(Microsoft.Maui.Handlers.IScrollViewHandler! handler, Microsoft.Maui.IScrollView! scrollView) -> void
