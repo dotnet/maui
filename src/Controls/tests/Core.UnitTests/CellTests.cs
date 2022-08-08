@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class CellTests : BaseTestFixture
 	{
 		internal class TestCell : Cell

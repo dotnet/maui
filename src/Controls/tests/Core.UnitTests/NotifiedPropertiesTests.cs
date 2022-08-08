@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	
+
 	public class NotifiedPropertiesTests : BaseTestFixture
 	{
 		public abstract class PropertyTestCase
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Editor, bool> ("IsReadOnly", v => v.IsReadOnly, (v, o) => v.IsReadOnly = o, () => false, true)
 		};
 
-		public static IEnumerable<object[]> PropertyTestCases() 
+		public static IEnumerable<object[]> PropertyTestCases()
 		{
 			foreach (var ptc in Properties)
 			{

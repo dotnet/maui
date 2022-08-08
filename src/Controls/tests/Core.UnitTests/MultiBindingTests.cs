@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
 
-	
+
 	public class MultiBindingTests : BaseTestFixture
 	{
 		const string c_Fallback = "First Middle Last";

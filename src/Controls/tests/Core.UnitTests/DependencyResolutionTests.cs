@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class DependencyResolutionTests : BaseTestFixture
 	{
 		class MockElement { }
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		MockContainer _container;
 
-		
+
 		public DependencyResolutionTests()
 		{
 			_container = new MockContainer();

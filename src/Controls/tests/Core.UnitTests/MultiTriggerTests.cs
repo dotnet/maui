@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class MultiTriggerTests : BaseTestFixture
 	{
 		class MockElement : VisualElement

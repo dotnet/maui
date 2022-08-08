@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var bindable2 = new MockBindable();
 			bindable2.BindingContext = new MockViewModel();
-			Assert.Throws<InvalidOperationException>(() => bindable2.SetBinding(property, binding)); 
+			Assert.Throws<InvalidOperationException>(() => bindable2.SetBinding(property, binding));
 
 			GC.KeepAlive(bindable);
 		}
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(value == (string)bindable.GetValue(property),
 				"Target property did not change");
 			var messages = MockApplication.MockLogger.Messages;
-			Assert.True(messages.Count == 0, "An error was logged: " + messages.FirstOrDefault());  
+			Assert.True(messages.Count == 0, "An error was logged: " + messages.FirstOrDefault());
 		}
 
 		[Theory, Category("[Binding] Set Value")]
@@ -688,7 +688,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		});
 	}
 
-	
+
 	public class BindingBaseTests : BaseTestFixture
 	{
 		[Fact]
@@ -697,7 +697,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<ArgumentNullException>(() => BindingBase.EnableCollectionSynchronization(null, new object(),
 			   (collection, context, method, access) => { }));
 			Assert.Throws<ArgumentNullException>(() => BindingBase.EnableCollectionSynchronization(new string[0], new object(), null));
-			
+
 			BindingBase.EnableCollectionSynchronization(new string[0], null, (collection, context, method, access) => { });
 		}
 
@@ -817,6 +817,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		
+
 	}
 }

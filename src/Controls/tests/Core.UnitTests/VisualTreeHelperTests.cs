@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class VisualTreeHelperTests : BaseTestFixture, IDisposable
 	{
 		readonly List<(Element? Parent, VisualTreeChangeEventArgs Args)> _treeEvents = new();

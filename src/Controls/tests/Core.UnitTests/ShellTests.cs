@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	
+
 	public class ShellTests : ShellTestBase
 	{
 
@@ -303,15 +303,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.ThrowsAny<ArgumentException>(() => Routing.RegisterRoute("app://IMPL_tab21", typeof(ShellItem)));
 
 			Assert.ThrowsAny<ArgumentException>(() => Routing.RegisterRoute(@"app:\\IMPL_tab21", typeof(ShellItem)));
-							
+
 			Assert.ThrowsAny<ArgumentException>(() => Routing.RegisterRoute(string.Empty, typeof(ShellItem)));
-							
+
 			Assert.ThrowsAny<ArgumentNullException>(() => Routing.RegisterRoute(null, typeof(ShellItem)));
-							
+
 			Assert.ThrowsAny<ArgumentException>(() => Routing.RegisterRoute("tab1/IMPL_tab11", typeof(ShellItem)));
-							
+
 			Assert.ThrowsAny<ArgumentException>(() => Routing.RegisterRoute("IMPL_shell", typeof(ShellItem)));
-							
+
 			Assert.ThrowsAny<ArgumentException>(() => Routing.RegisterRoute("app://tab2/IMPL_tab21", typeof(ShellItem)));
 		}
 

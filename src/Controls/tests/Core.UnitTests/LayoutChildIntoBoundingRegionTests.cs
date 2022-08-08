@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class LayoutChildIntoBoundingRegionTests : BaseTestFixture
 	{
 		const int Layout_Width = 100;
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Expected_Width_Start_End, target.Width);
 			Assert.Equal(Expected_Height_Fill_Less_Thickness(thickness), target.Height);
 		}
-		
+
 		[Theory]
 		[InlineData(Margin_None)]
 		[InlineData(Margin_Small)]

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class AcceleratorUnitTests : BaseTestFixture
 	{
 
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			get { return new string[] { "ctrl", "cmd", "alt", "shift", "fn", "win" }.Select(str => new TestShortcut(str)); }
 		}
 
-		public static IEnumerable<object[]> ShortcutTestData() 
+		public static IEnumerable<object[]> ShortcutTestData()
 		{
 			foreach (var sc in GenerateTests)
 			{

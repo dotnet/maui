@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class PageTests : BaseTestFixture
 	{
 		protected override void Dispose(bool disposing)

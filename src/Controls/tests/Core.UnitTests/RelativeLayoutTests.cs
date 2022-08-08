@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class RelativeLayoutTests : BaseTestFixture
 	{
 		public RelativeLayoutTests()
@@ -57,11 +57,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		
-		
 
-		
-		
+
+
+
+
 
 		[Fact]
 		public void SimpleLayout()

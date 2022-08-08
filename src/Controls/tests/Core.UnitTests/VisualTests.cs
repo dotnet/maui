@@ -7,13 +7,13 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class VisualTests : BaseTestFixture
 	{
-		
+
 		public VisualTests()
 		{
-			
+
 			var mockDeviceInfo = new MockDeviceDisplay();
 			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 		}

@@ -83,15 +83,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers)
 				&& statusCode != 404)
 			{
-				// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams.
-				// See issue https://github.com/microsoft/CsWinRT/issues/670
-				var memStream = new MemoryStream();
-				content.CopyTo(memStream);
-				var ms = new InMemoryRandomAccessStream();
-				await ms.WriteAsync(memStream.GetWindowsRuntimeBuffer());
-
 				var headerString = GetHeaderString(headers);
-				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(ms, statusCode, statusMessage, headerString);
+				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 			}
 			else if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{

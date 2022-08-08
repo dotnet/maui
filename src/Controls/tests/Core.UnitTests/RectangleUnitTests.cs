@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class RectangleUnitTests : BaseTestFixture
 	{
 		[Fact]
@@ -195,8 +195,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory, MemberData(nameof(TestDataHelpers.Range), 3, 4, 8, MemberType = typeof(TestDataHelpers))]
-		public void TestRectGetHashCode( double x1,  double y1,  double w1,  double h1,
-											   double x2,  double y2,  double w2,  double h2)
+		public void TestRectGetHashCode(double x1, double y1, double w1, double h1,
+											   double x2, double y2, double w2, double h2)
 		{
 			bool result = new Rect(x1, y1, w1, h1).GetHashCode() == new Rect(x2, y2, w2, h2).GetHashCode();
 

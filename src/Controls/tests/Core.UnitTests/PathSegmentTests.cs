@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class PathSegmentTests : BaseTestFixture
 	{
 		PointCollectionConverter _pointCollectionConverter;
-		
+
 		public PathSegmentTests()
 		{
 			_pointCollectionConverter = new PointCollectionConverter();

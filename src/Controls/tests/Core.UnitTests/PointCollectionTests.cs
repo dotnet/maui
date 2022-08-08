@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Shapes.UnitTests
 	{
 		PointCollectionConverter _pointCollectionConverter;
 
-		
+
 		public PointCollectionTests()
 		{
 			_pointCollectionConverter = new PointCollectionConverter();

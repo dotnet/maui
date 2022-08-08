@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.StyleSheets
 {
-	
+
 	public class BaseClassSelectorTests
 	{
 		IStyleSelectable Page;
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.StyleSheets
 		IStyleSelectable CustomLabel1 => AbsoluteLayout0.Children.Skip(1).First();
 		IStyleSelectable AbsoluteLayout0 => StackLayout.Children.Skip(2).First();
 
-		
+
 		public BaseClassSelectorTests()
 		{
 			Page = new MockStylable

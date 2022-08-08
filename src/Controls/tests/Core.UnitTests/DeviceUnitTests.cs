@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	// Run all these tests on a new thread/task in order to control the dispatcher creation.
-	
+
 	public class DeviceUnitTests : BaseTestFixture
 	{
 		// just a check to make sure the test dispatcher is working
@@ -99,9 +99,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bool invoked = false;
 			async Task<bool> boom()
-			{ 
-				invoked = true; 
-				throw new ApplicationException(); 
+			{
+				invoked = true;
+				throw new ApplicationException();
 			}
 			var task = Device.InvokeOnMainThreadAsync(boom);
 			Assert.True(calledFromMainThread, "Action not invoked from main thread.");

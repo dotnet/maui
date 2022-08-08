@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class SizeTests : BaseTestFixture
 	{
 		[Fact]
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory, MemberData(nameof(TestDataHelpers.Range), 3, 5, 4, MemberType = typeof(TestDataHelpers))]
-		public void HashCodeTest( double w1,  double h1,  double w2, double h2)
+		public void HashCodeTest(double w1, double h1, double w2, double h2)
 		{
 			bool result = new Size(w1, h1).GetHashCode() == new Size(w2, h2).GetHashCode();
 

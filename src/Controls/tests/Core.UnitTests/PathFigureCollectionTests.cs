@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class PathFigureCollectionTests
 	{
 		PathFigureCollectionConverter _pathFigureCollectionConverter;
-		
+
 		public PathFigureCollectionTests()
 		{
 			_pathFigureCollectionConverter = new PathFigureCollectionConverter();

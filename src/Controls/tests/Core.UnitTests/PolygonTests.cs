@@ -7,10 +7,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		PointCollectionConverter _pointCollectionConverter;
 
-		
+
 		public PolygonTests()
 		{
-			
+
 
 			_pointCollectionConverter = new PointCollectionConverter();
 		}

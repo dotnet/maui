@@ -26,30 +26,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	
+
 	public class ButtonFontElementUnitTests : FontElementUnitTests<Button> { }
 
-	
+
 	public class DatePickerFontElementUnitTests : FontElementUnitTests<DatePicker> { }
 
-	
+
 	public class EditorFontElementUnitTests : FontElementUnitTests<Editor> { }
 
-	
+
 	public class EntryFontElementUnitTests : FontElementUnitTests<Entry> { }
 
-	
+
 	public class LabelFontElementUnitTests : FontElementUnitTests<Label> { }
 
-	
+
 	public class PickerFontElementUnitTests : FontElementUnitTests<Picker> { }
 
-	
+
 	public class RadioButtonFontElementUnitTests : FontElementUnitTests<RadioButton> { }
 
-	
+
 	public class SearchBarFontElementUnitTests : FontElementUnitTests<SearchBar> { }
 
-	
+
 	public class TimePickerFontElementUnitTests : FontElementUnitTests<TimePicker> { }
 }
