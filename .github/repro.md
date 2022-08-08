@@ -56,7 +56,7 @@ While we've never had problems with this, it is still a potential attack vector 
 
 Also, by putting it in a GitHub repo it's easier to potentially collaborate. We (and our amazing community!) can comment on a piece of code right then and there and help you further. It can even serve as a nice example for other people!
 
-If you don't like to have a lot of repos, you could opt for a repo where on the `main` branch you put a File > New .NET MAUI App. And from there createa branches for different issues.
+If you don't like to have a lot of repos, you could opt for a repo where on the `main` branch you put a File > New .NET MAUI App. And from there create branches for different issues.
 
 ## Big don'ts!
 - Never put any sensitive information in your code. No API keys, credentials, personal information, etc.
