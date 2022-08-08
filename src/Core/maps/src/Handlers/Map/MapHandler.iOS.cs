@@ -1,23 +1,13 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
+﻿using System.Collections;
 using CoreLocation;
 using MapKit;
-using Microsoft.Maui.Dispatching;
-using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Handlers;
-using System.Drawing;
 using Microsoft.Maui.Maps.Platform;
-using Microsoft.Maui.Platform;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	
+
 	public partial class MapHandler : ViewHandler<IMap, MKMapView>
 	{
 		CLLocationManager? _locationManager;
@@ -34,11 +24,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			_locationManager = new CLLocationManager();
 
 			PlatformView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
-
-			if (platformView is MauiMKMapView customMKMapView)
-				customMKMapView.LayoutSubviewsFired += CustomMKMapViewLayoutSubviewsFired;
-
-			PlatformView.RegionChanged += MkMapViewOnRegionChanged;
 			//PlatformView.OverlayRenderer = GetViewForOverlay;
 		}
 
@@ -53,10 +38,6 @@ namespace Microsoft.Maui.Maps.Handlers
 				_mapClickedGestureRecognizer = null;
 			}
 
-			if (platformView is MauiMKMapView customMKMapView)
-				customMKMapView.LayoutSubviewsFired -= CustomMKMapViewLayoutSubviewsFired;
-
-			platformView.RegionChanged -= MkMapViewOnRegionChanged;
 			//platformView.OverlayRenderer = null;
 
 			// This handler is done with the MKMapView; we can put it in the pool
@@ -82,7 +63,6 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapIsShowingUser(IMapHandler handler, IMap map)
 		{
-
 #if !MACCATALYST
 			if (map.IsShowingUser)
 			{
@@ -135,21 +115,11 @@ namespace Microsoft.Maui.Maps.Handlers
 		//	return null;
 		//}
 
-		void CustomMKMapViewLayoutSubviewsFired(object? sender, EventArgs e)
-		{
-			//MoveToRegion(VirtualView.LastMoveToRegion, false);
-		}
-
 		void OnMapClicked(UITapGestureRecognizer recognizer)
 		{
 			var tapPoint = recognizer.LocationInView(PlatformView);
 			var tapGPS = PlatformView.ConvertPoint(tapPoint, PlatformView);
 			VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
-		}
-
-		void MkMapViewOnRegionChanged(object? sender, MKMapViewChangeEventArgs e)
-		{
-			VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(PlatformView.Region.Center.Latitude, PlatformView.Region.Center.Longitude), PlatformView.Region.Span.LatitudeDelta, PlatformView.Region.Span.LongitudeDelta);
 		}
 
 		void MoveToRegion(MapSpan mapSpan, bool animated = true)

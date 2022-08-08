@@ -16,27 +16,40 @@ namespace Microsoft.Maui.Maps.Platform
 		IMapHandler? _handler;
 		object? _lastTouchedView;
 
-		internal event EventHandler<EventArgs>? LayoutSubviewsFired;
-
 		public MauiMKMapView(IMapHandler handler)
 		{
-			DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
-			GetViewForAnnotation = GetViewForAnnotation2;
 			_handler = handler;
-		}
-
-		public override void LayoutSubviews()
-		{
-			LayoutSubviewsFired?.Invoke(this, new EventArgs());
-			base.LayoutSubviews();
 		}
 
 		protected override void Dispose(bool disposing)
 		{
-			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
-			GetViewForAnnotation = null;
 			_handler = null;
 			base.Dispose(disposing);
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			if (Window != null)
+				Startup();
+			else
+				Cleanup();
+		}
+
+		void Startup()
+		{
+			RegionChanged += MkMapViewOnRegionChanged;
+			DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
+		}
+
+		void Cleanup()
+		{
+			if (_handler == null)
+				return;
+
+			RegionChanged -= MkMapViewOnRegionChanged;
+			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
+			_handler = null;
 		}
 
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
@@ -54,6 +67,12 @@ namespace Microsoft.Maui.Maps.Platform
 					DeselectAnnotation(annotation, false);
 				}
 			}
+		}
+
+		void MkMapViewOnRegionChanged(object? sender, MKMapViewChangeEventArgs e)
+		{
+			if (_handler?.VirtualView != null)
+				_handler.VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(Region.Center.Latitude, Region.Center.Longitude), Region.Span.LatitudeDelta, Region.Span.LongitudeDelta);
 		}
 
 		IMapPin GetPinForAnnotation(IMKAnnotation annotation)
@@ -74,7 +93,9 @@ namespace Microsoft.Maui.Maps.Platform
 			return targetPin;
 		}
 
-		MKAnnotationView GetViewForAnnotation2(MKMapView mapView, IMKAnnotation annotation)
+#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
+		MKAnnotationView GetViewForAnnotation(MKMapView mapView, IMKAnnotation annotation)
+#pragma warning restore CS0108 // Member hides inherited member; missing new keyword
 		{
 			MKAnnotationView? mapPin;
 
@@ -136,7 +157,6 @@ namespace Microsoft.Maui.Maps.Platform
 
 			mapPin.AddGestureRecognizer(recognizer);
 		}
-
 
 		void OnCalloutClicked(IMKAnnotation annotation)
 		{
