@@ -44,12 +44,17 @@ namespace Microsoft.Maui.DeviceTests
 
 			await RunShellTest(shell =>
 			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
 				shell.Items.Add(flyoutItem);
 				shell.Items.Add(shellSection);
 				shell.Items.Add(shellContent);
 			},
-			(shell, handler) =>
+			async (shell, handler) =>
 			{
+				await OnLoadedAsync(flyoutItemGrid);
+				await OnLoadedAsync(shellSectionGrid);
+				await OnLoadedAsync(shellContentGrid);
+
 				Assert.Equal(flyoutItemGrid.Parent, flyoutItem);
 				Assert.Equal(shellSectionGrid.Parent, shellSection);
 				Assert.Equal(shellContentGrid.Parent, shellContent);
@@ -57,8 +62,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Contains(flyoutItemGrid, (flyoutItem as IVisualTreeElement).GetVisualChildren());
 				Assert.Contains(shellSectionGrid, (shellSection as IVisualTreeElement).GetVisualChildren());
 				Assert.Contains(shellContentGrid, (shellContent as IVisualTreeElement).GetVisualChildren());
-
-				return Task.CompletedTask;
 			});
 		}
 
