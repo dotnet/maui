@@ -26,12 +26,14 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 
 				case SelectionMode.Multiple:
-					var selectedItems = selectableItemsView.SelectedItems;
-
-					foreach (var item in selectedItems)
+					if (adapter is not null)
 					{
-						adapter?.MarkPlatformSelection(item);
-					}
+						var selectedItems = selectableItemsView.SelectedItems;
+						foreach (var item in selectedItems)
+						{
+							adapter?.MarkPlatformSelection(item);
+						}
+					}					
 					return;
 			}
 		}
