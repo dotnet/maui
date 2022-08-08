@@ -3,6 +3,7 @@ trigger:
     include:
     - main
     - release/*
+    - net7.0
     - loc
   tags:
     include:
@@ -26,6 +27,7 @@ pr:
     include:
     - main
     - release/*
+    - net7.0
   paths:
     include:
     - '*'
@@ -104,6 +106,8 @@ parameters:
         tfm: default
       - name: net6
         tfm: net6.0
+      - name: net7
+        tfm: net7.0
 
 resources:
   repositories:
@@ -154,6 +158,7 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
+                  provisioning: true
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
@@ -236,6 +241,7 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
+                  provisioning: true
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
@@ -294,6 +300,7 @@ stages:
                   parameters:
                     platform: ${{ BuildPlatform.name }}
                     poolName: ${{ BuildPlatform.poolName }}
+                    provisioning: true
                     provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 - task: DownloadBuildArtifacts@0
                   displayName: 'Download Packages'

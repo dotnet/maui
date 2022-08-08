@@ -4477,7 +4477,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~Microsoft.Maui.Controls.Platform.DragGestureHandler.CustomDragStateData.DataPackage.get -> Microsoft.Maui.Controls.DataPackage
 ~Microsoft.Maui.Controls.Platform.DragGestureHandler.CustomDragStateData.DataPackage.set -> void
 ~Microsoft.Maui.Controls.Platform.DragGestureHandler.CustomWindow.CustomWindow(ElmSharp.EvasObject handle) -> void
-~Microsoft.Maui.Controls.Platform.DragGestureHandler.CustomWindow.CustomWindow(ElmSharp.EvasObject parent, System.IntPtr handle) -> void
+~Microsoft.Maui.Controls.Platform.DragGestureHandler.CustomWindow.CustomWindow(ElmSharp.EvasObject parent, nint handle) -> void
 ~Microsoft.Maui.Controls.Platform.DragGestureHandler.DragGestureHandler(Microsoft.Maui.Controls.IGestureRecognizer recognizer, Microsoft.Maui.IViewHandler handler) -> void
 ~Microsoft.Maui.Controls.Platform.DragGestureHandler.Handler.get -> Microsoft.Maui.IViewHandler
 ~Microsoft.Maui.Controls.Platform.DropGestureHandler.DropGestureHandler(Microsoft.Maui.Controls.IGestureRecognizer recognizer, Microsoft.Maui.IViewHandler handler) -> void
@@ -5199,7 +5199,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~override Microsoft.Maui.Controls.ListView.ValidateItemTemplate(Microsoft.Maui.Controls.DataTemplate template) -> bool
 ~override Microsoft.Maui.Controls.MultiPage<T>.OnChildAdded(Microsoft.Maui.Controls.Element child) -> void
 ~override Microsoft.Maui.Controls.MultiPage<T>.OnPropertyChanged(string propertyName = null) -> void
-~override Microsoft.Maui.Controls.Platform.DragGestureHandler.CustomWindow.CreateHandle(ElmSharp.EvasObject parent) -> System.IntPtr
+~override Microsoft.Maui.Controls.Platform.DragGestureHandler.CustomWindow.CreateHandle(ElmSharp.EvasObject parent) -> nint
 ~override Microsoft.Maui.Controls.Platform.DragGestureHandler.OnCanceled(Microsoft.Maui.Controls.View sender, object data) -> void
 ~override Microsoft.Maui.Controls.Platform.DragGestureHandler.OnCompleted(Microsoft.Maui.Controls.View sender, object data) -> void
 ~override Microsoft.Maui.Controls.Platform.DragGestureHandler.OnMoved(Microsoft.Maui.Controls.View sender, object data) -> void

@@ -32,7 +32,7 @@ steps:
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Additional Software'
-      condition: and(eq(variables['provisioning'], 'true'),ne('${{ parameters.poolName }}', 'Azure Pipelines'))
+      condition: and(eq('${{ parameters.provisioning }}', 'true'),ne('${{ parameters.poolName }}', 'Azure Pipelines'))
       inputs:
         provisioning_script: $(provisionator.path)
         provisioning_extra_args: $(provisionator.extraArguments)
@@ -100,17 +100,22 @@ steps:
         provisioning_script: $(provisionator.vs)
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+    # Provision Additional Software
+    - task: xamops.azdevex.provisionator-task.provisionator@1
+      displayName: 'Provision Additional Software'
+      condition: and(eq('${{ parameters.provisioning }}', 'true'),ne('${{ parameters.poolName }}', 'Azure Pipelines'))
+      inputs:
+        provisioning_script: $(provisionator.path)
+        provisioning_extra_args: $(provisionator.extraArguments)
+      env:
+        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
     - pwsh: |
         $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
-
-  # Prepare Both
-  - pwsh: ./build.ps1 --target provision
-    displayName: 'Cake Provision'
-    condition: eq(variables['provisioningCake'], 'true')
 
   - task: PowerShell@2
     condition: eq(variables['PrivateBuild'], 'true')
