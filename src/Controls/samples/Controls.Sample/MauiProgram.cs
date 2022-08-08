@@ -43,11 +43,12 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
+#if __ANDROID__ || __IOS__
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{
 				handlers.AddMauiMapsControlsHandlers();
 			});
-
+#endif
 			appBuilder.UseMauiApp<XamlApp>();
 #if TIZEN
 			appBuilder.UseMauiCompatibility();
@@ -190,8 +191,7 @@ namespace Maui.Controls.Sample
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
 						.OnCreate((a, b) =>
 						{
-
-						Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
+							Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
 #pragma warning disable CS0618 // Type or member is obsolete
 						if (GooglePlayServicesUtil.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
 #pragma warning restore 618

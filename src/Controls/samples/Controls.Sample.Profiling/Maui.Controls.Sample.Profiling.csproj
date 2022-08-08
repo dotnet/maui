@@ -36,6 +36,10 @@
     <MauiFont Include="Resources\Fonts\*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
+  </ItemGroup>
+
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

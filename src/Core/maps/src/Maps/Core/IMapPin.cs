@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Maps
 	/// <summary>
 	/// Represents a Pin that displays a map.
 	/// </summary>
-	public interface IMapPin : IElement, INotifyPropertyChanged
+	public interface IMapPin : IElement
 	{
 		/// <summary>
 		/// The physical address that is associated with this pin.
