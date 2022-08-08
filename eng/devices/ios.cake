@@ -96,7 +96,6 @@ Task("Build")
 			},
 			ArgumentCustomization = args => args
 				.Append("/p:BuildIpa=true")
-				.Append("/p:TrimMode=partial")
 				.Append("/bl:" + binlog),
 			ToolPath = DOTNET_PATH,
 		});
