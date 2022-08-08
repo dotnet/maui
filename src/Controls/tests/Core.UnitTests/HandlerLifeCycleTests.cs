@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
 
@@ -12,6 +15,58 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
+		[Fact]
+		public void SettingHandlerToNullDisconnectsHandlerFromVirtualView()
+		{
+			var mauiApp1 = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.Build();
+
+			LifeCycleButton button = new LifeCycleButton();
+
+			MauiContext mauiContext1 = new MauiContext(mauiApp1.Services);
+			var handler1 = button.ToHandler(mauiContext1);
+			button.Handler = null;
+			Assert.NotEqual(button, handler1.VirtualView);
+		}
+
+		[Fact]
+		public void SettingNewHandlerDisconnectsOldHandler()
+		{
+			var mauiApp1 = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.Build();
+
+			LifeCycleButton button = new LifeCycleButton();
+
+			MauiContext mauiContext1 = new MauiContext(mauiApp1.Services);
+			var handler1 = button.ToHandler(mauiContext1);
+
+			var mauiApp2 = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<LifeCycleButton, HandlerStub>())
+				.Build();
+
+			MauiContext mauiContext2 = new MauiContext(mauiApp2.Services);
+
+			List<HandlerChangingEventArgs> changingArgs = new List<HandlerChangingEventArgs>();
+			button.HandlerChanging += (s, a) =>
+			{
+				Assert.Equal(handler1, a.OldHandler);
+				Assert.NotNull(a.NewHandler);
+
+				changingArgs.Add(a);
+			};
+
+			var handler2 = button.ToHandler(mauiContext2);
+
+			Assert.NotEqual(button, handler1.VirtualView);
+			Assert.Equal(button, handler2.VirtualView);
+			Assert.Single(changingArgs);
+		}
+
 		[Fact]
 		public void ChangingAndChangedBothFireInitially()
 		{
