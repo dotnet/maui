@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				try
 				{
-					UIGraphics.EndPDFContent();
+					UIGraphics.EndPDFContext();
 				}
 				catch (Exception exc)
 				{
