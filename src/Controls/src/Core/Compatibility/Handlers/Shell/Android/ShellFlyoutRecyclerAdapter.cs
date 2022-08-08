@@ -281,11 +281,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						_shell.AddLogicalChild(View);
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();
-
-						if (value is VisualElement ve)
-						{
-							SemanticProperties.SetDescription(ve, "Hello there");
-						}
 					}
 				}
 			}
