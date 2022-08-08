@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMap.HasScrollEnabled)] = MapHasScrollEnabled,
 			[nameof(IMap.HasTrafficEnabled)] = MapHasTrafficEnabled,
 			[nameof(IMap.HasZoomEnabled)] = MapHasZoomEnabled,
+			[nameof(IMap.Pins)] = MapPins,
 		};
 
 

@@ -40,10 +40,6 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			PlatformView.RegionChanged += MkMapViewOnRegionChanged;
 			//PlatformView.OverlayRenderer = GetViewForOverlay;
-
-			var mapsPinsItemsSource = (ObservableCollection<IMapPin>)VirtualView.Pins;
-			mapsPinsItemsSource.CollectionChanged += OnPinCollectionChanged;
-			OnPinCollectionChanged(mapsPinsItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 		}
 
 		protected override void DisconnectHandler(MKMapView platformView)
@@ -60,12 +56,8 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (platformView is MauiMKMapView customMKMapView)
 				customMKMapView.LayoutSubviewsFired -= CustomMKMapViewLayoutSubviewsFired;
 
-
 			platformView.RegionChanged -= MkMapViewOnRegionChanged;
 			//platformView.OverlayRenderer = null;
-
-			var mapsPinsItemsSource = (ObservableCollection<IMapPin>)VirtualView.Pins;
-			mapsPinsItemsSource.CollectionChanged -= OnPinCollectionChanged;
 
 			// This handler is done with the MKMapView; we can put it in the pool
 			// for other rendererers to use in the future
@@ -116,6 +108,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			handler.PlatformView.ZoomEnabled = map.HasZoomEnabled;
 		}
 
+		public static void MapPins(IMapHandler handler, IMap map)
+		{
+			(handler.PlatformView as MauiMKMapView)?.AddPins((IList)map.Pins);
+		}
+
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
 			MapSpan? newRegion = arg as MapSpan;
@@ -160,11 +157,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			var center = mapSpan.Center;
 			var mapRegion = new MKCoordinateRegion(new CLLocationCoordinate2D(center.Latitude, center.Longitude), new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
 			PlatformView.SetRegion(mapRegion, animated);
-		}
-
-		void OnPinCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-		{
-			Dispatcher.GetForCurrentThread()?.Dispatch(() => (PlatformView as MauiMKMapView)?.PinCollectionChanged(e));
 		}
 	}
 }

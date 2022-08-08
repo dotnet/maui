@@ -163,35 +163,13 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 		}
 
-		internal void PinCollectionChanged(NotifyCollectionChangedEventArgs e)
-		{
-			switch (e.Action)
-			{
-				case NotifyCollectionChangedAction.Add:
-					AddPins(e.NewItems ?? new List<IMapPin>());
-					break;
-				case NotifyCollectionChangedAction.Remove:
-					RemovePins(e.OldItems ?? new List<IMapPin>());
-					break;
-				case NotifyCollectionChangedAction.Replace:
-					RemovePins(e.OldItems ?? new List<IMapPin>());
-					AddPins(e.NewItems ?? new List<IMapPin>());
-					break;
-				case NotifyCollectionChangedAction.Reset:
-					if (Annotations?.Length > 0)
-						RemoveAnnotations(Annotations);
-					AddPins((IList)_handler?.VirtualView.Pins!);
-					break;
-				case NotifyCollectionChangedAction.Move:
-					//do nothing
-					break;
-			}
-		}
-
-		void AddPins(IList pins)
+		internal void AddPins(IList pins)
 		{
 			if (_handler?.MauiContext == null)
 				return;
+
+			if (Annotations?.Length > 0)
+				RemoveAnnotations(Annotations);
 
 			foreach (IMapPin pin in pins)
 			{
@@ -200,14 +178,6 @@ namespace Microsoft.Maui.Maps.Platform
 					pin.MarkerId = annotation;
 					AddAnnotation(annotation);
 				}
-			}
-		}
-
-		void RemovePins(IList pins)
-		{
-			foreach (IMapPin pin in pins)
-			{
-				RemoveAnnotation((IMKAnnotation)pin.MarkerId);
 			}
 		}
 	}

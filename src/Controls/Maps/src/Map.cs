@@ -155,6 +155,7 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			if (e.NewItems != null && e.NewItems.Cast<Pin>().Any(pin => pin.Label == null))
 				throw new ArgumentException("Pin must have a Label to be added to a map");
+			Handler?.UpdateValue(nameof(IMap.Pins));
 		}
 
 		void OnItemsSourcePropertyChanged(IEnumerable oldItemsSource, IEnumerable newItemsSource)
@@ -198,6 +199,7 @@ namespace Microsoft.Maui.Controls.Maps
 				insert: (item, _, __) => CreatePin(item),
 				removeAt: (item, _) => RemovePin(item),
 				reset: () => _pins.Clear());
+			Handler?.UpdateValue(nameof(IMap.Pins));
 		}
 
 		void CreatePinItems()
@@ -211,6 +213,8 @@ namespace Microsoft.Maui.Controls.Maps
 			{
 				CreatePin(item);
 			}
+
+			Handler?.UpdateValue(nameof(IMap.Pins));
 		}
 
 		void CreatePin(object newItem)
