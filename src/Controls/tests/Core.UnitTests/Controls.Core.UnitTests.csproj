@@ -33,7 +33,7 @@
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
-    <ProjectReference Include="..\..\..\Core\maps\src\Maps\Maps.csproj" />
+    <ProjectReference Include="..\..\..\Core\maps\src\Maps.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
