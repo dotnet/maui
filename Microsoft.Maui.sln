@@ -204,7 +204,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedSource", "SharedSourc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.Droid", "src\Core\tests\Benchmarks.Droid\Benchmarks.Droid.csproj", "{5B56A734-D53C-4635-A53E-F889FCFCDD66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maps", "src\Core\maps\src\Maps\Maps.csproj", "{E8728693-3537-4007-A4DB-9F9634548755}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maps", "src\Core\maps\src\Maps.csproj", "{E8728693-3537-4007-A4DB-9F9634548755}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Graphics", "Graphics", "{E4884871-4A1B-43BC-814F-E3D6E52B1673}"
 EndProject

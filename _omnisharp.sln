@@ -92,7 +92,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests", "src\Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Foldable", "src\Controls\Foldable\src\Controls.Foldable.csproj", "{F0A48792-ACD7-4B72-83EB-C56A70FA5A3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maps", "src\Core\maps\src\Maps\Maps.csproj", "{1C9F9D5A-2CF7-4ADB-A9F5-672ACC05B035}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maps", "src\Core\maps\src\Maps.csproj", "{1C9F9D5A-2CF7-4ADB-A9F5-672ACC05B035}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
