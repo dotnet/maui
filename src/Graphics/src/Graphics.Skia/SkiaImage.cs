@@ -126,9 +126,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			{
 				ImageFormat.Png => SKEncodedImageFormat.Png,
 				ImageFormat.Jpeg => SKEncodedImageFormat.Jpeg,
-				ImageFormat.Bmp => SKEncodedImageFormat.Bmp,
-				ImageFormat.Gif => SKEncodedImageFormat.Gif,
-				ImageFormat.Tiff => throw new PlatformNotSupportedException($"Do not support TIFF format in Skia"),
+				ImageFormat.Bmp or ImageFormat.Gif or ImageFormat.Tiff => throw new PlatformNotSupportedException($"Skia do not support {format} format."),
 				_ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
 			};
 
