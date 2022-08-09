@@ -15,6 +15,8 @@ Exception pendingException = null;
 var NuGetOnlyPackages = new string[] {
 };
 
+ProcessTFMSwitches();
+
 // Tasks for CI
 
 Task("dotnet")
@@ -678,4 +680,33 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectory
     FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
 
     return MakeAbsolute(dir);
+}
+
+void ProcessTFMSwitches()
+{
+    List<string> replaceTarget = new List<String>();
+
+    if(HasArgument("android"))
+        replaceTarget.Add("_IncludeAndroid");
+
+    if(HasArgument("windows"))
+        replaceTarget.Add("_IncludeWindows");
+
+    if(HasArgument("ios"))
+        replaceTarget.Add("_IncludeIos");
+
+    if(HasArgument("catalyst") || HasArgument("maccatalyst"))
+        replaceTarget.Add("_IncludeMacCatalyst");
+
+    if(HasArgument("tizen"))
+        replaceTarget.Add("_IncludeTizen");
+
+    if (replaceTarget.Count > 0)
+    {
+        CopyFile("Directory.Build.Override.props.in", "Directory.Build.Override.props");
+        foreach(var replaceWith in replaceTarget)
+        {
+            ReplaceTextInFiles("Directory.Build.Override.props", $"<{replaceWith}></{replaceWith}>", $"<{replaceWith}>true</{replaceWith}>");
+        }
+    }
 }
