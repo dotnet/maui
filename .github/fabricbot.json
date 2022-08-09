@@ -1351,7 +1351,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "We've moved this issue to the Backlog milestone. This means that it is not going to be worked on for the coming release. We will reassess the backlog following the current release and consider this item at that time. To learn more about our issue management process and to have better expectation regarding different types of issues you can read our [Triage Process](https://github.com/dotnet/maui/blob/main/.github/TriageProcess.md)."
+              "comment": "We've moved this issue to the Backlog milestone. This means that it is not going to be worked on for the coming release. We will reassess the backlog following the current release and consider this item at that time. To learn more about our issue management process and to have better expectation regarding different types of issues you can read our [Triage Process](https://github.com/dotnet/maui/blob/main/docs/TriageProcess.md)."
             }
           }
         ]
@@ -2585,7 +2585,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Hi @${issueAuthor}.\nIt seems you haven't touched this PR for the last two weeks. To avoid accumulating old PRs, we're marking it as `stale`.  As a result, it will be closed if no further activity occurs **within 4 days of this comment**. You can learn more about our Issue Management Policies [here](https://github.com/dotnet/maui/blob/main/.github/IssueManagementPolicies.md)."
+              "comment": "Hi @${issueAuthor}.\nIt seems you haven't touched this PR for the last two weeks. To avoid accumulating old PRs, we're marking it as `stale`.  As a result, it will be closed if no further activity occurs **within 4 days of this comment**. You can learn more about our Issue Management Policies [here](https://github.com/dotnet/maui/blob/main/docs/IssueManagementPolicies.md)."
             }
           },
           {
