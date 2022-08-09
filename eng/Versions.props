@@ -7,8 +7,8 @@
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>7.0.0-rc.1.22403.8</MicrosoftNETCoreAppRefPackageVersion>
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
-    <MicrosoftExtensionsPackageVersion>7.0.0-preview.7.22369.4</MicrosoftExtensionsPackageVersion>
-    <MicrosoftExtensionsServicingPackageVersion>7.0.0-preview.7.22369.4</MicrosoftExtensionsServicingPackageVersion>
+    <MicrosoftExtensionsPackageVersion>7.0.0-rc.1.22402.10</MicrosoftExtensionsPackageVersion>
+    <MicrosoftExtensionsServicingPackageVersion>7.0.0-rc.1.22402.10</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>33.0.0-rc.1.125</MicrosoftAndroidSdkWindowsPackageVersion>
@@ -28,6 +28,9 @@
     <MicrosoftGraphicsWin2DPackageVersion>1.0.3.1</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
     <MicrosoftAspNetCoreAuthorizationPackageVersion>7.0.0-rc.1.22408.3</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>7.0.0-rc.1.22408.3</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>7.0.0-rc.1.22408.3</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>7.0.0-rc.1.22408.3</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>7.0.0-rc.1.22408.3</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>7.0.0-rc.1.22408.3</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>7.0.0-rc.1.22408.3</MicrosoftAspNetCoreComponentsPackageVersion>
