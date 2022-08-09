@@ -1,4 +1,10 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.ContextFlyout
+Microsoft.Maui.Controls.ContextFlyout.Clear() -> void
+Microsoft.Maui.Controls.ContextFlyout.ContextFlyout() -> void
+Microsoft.Maui.Controls.ContextFlyout.Count.get -> int
+Microsoft.Maui.Controls.ContextFlyout.IsReadOnly.get -> bool
+Microsoft.Maui.Controls.ContextFlyout.RemoveAt(int index) -> void
 Microsoft.Maui.Controls.MenuFlyoutSeparator
 Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size

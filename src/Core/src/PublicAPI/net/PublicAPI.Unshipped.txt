@@ -1,11 +1,41 @@
 ﻿#nullable enable
+Microsoft.Maui.Handlers.ContextFlyoutHandler
+Microsoft.Maui.Handlers.ContextFlyoutHandler.Add(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.ContextFlyoutHandler.Clear() -> void
+Microsoft.Maui.Handlers.ContextFlyoutHandler.ContextFlyoutHandler() -> void
+Microsoft.Maui.Handlers.ContextFlyoutHandler.ContextFlyoutHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Handlers.ContextFlyoutHandler.Insert(int index, Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.ContextFlyoutHandler.Remove(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(int Index, Microsoft.Maui.IMenuElement! MenuElement) -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Index.get -> int
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Index.init -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.MenuElement.get -> Microsoft.Maui.IMenuElement!
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.MenuElement.init -> void
+Microsoft.Maui.Handlers.IContextFlyoutHandler
+Microsoft.Maui.Handlers.IContextFlyoutHandler.Add(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.IContextFlyoutHandler.Clear() -> void
+Microsoft.Maui.Handlers.IContextFlyoutHandler.Insert(int index, Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.IContextFlyoutHandler.PlatformView.get -> object!
+Microsoft.Maui.Handlers.IContextFlyoutHandler.Remove(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.IContextFlyoutHandler.VirtualView.get -> Microsoft.Maui.IContextFlyout!
 Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler
 Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler.PlatformView.get -> object!
 Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler.VirtualView.get -> Microsoft.Maui.IMenuFlyoutSeparator!
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler() -> void
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.IContextFlyout
+Microsoft.Maui.IContextFlyoutContainer
+Microsoft.Maui.IContextFlyoutContainer.ContextFlyout.get -> Microsoft.Maui.IContextFlyout?
 Microsoft.Maui.IMenuFlyoutSeparator
+override Microsoft.Maui.Handlers.ContextFlyoutHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> object!
+static Microsoft.Maui.Handlers.ContextFlyoutHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IContextFlyout!, Microsoft.Maui.Handlers.IContextFlyoutHandler!>!
+static Microsoft.Maui.Handlers.ContextFlyoutHandler.MapAdd(Microsoft.Maui.Handlers.IContextFlyoutHandler! handler, Microsoft.Maui.IContextFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.ContextFlyoutHandler.MapClear(Microsoft.Maui.Handlers.IContextFlyoutHandler! handler, Microsoft.Maui.IContextFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.ContextFlyoutHandler.MapInsert(Microsoft.Maui.Handlers.IContextFlyoutHandler! handler, Microsoft.Maui.IContextFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.ContextFlyoutHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IContextFlyout!, Microsoft.Maui.Handlers.IContextFlyoutHandler!>!
+static Microsoft.Maui.Handlers.ContextFlyoutHandler.MapRemove(Microsoft.Maui.Handlers.IContextFlyoutHandler! handler, Microsoft.Maui.IContextFlyout! menuElement, object? arg) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
