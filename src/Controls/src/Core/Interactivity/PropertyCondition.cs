@@ -6,7 +6,9 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="Type[@FullName='Microsoft.Maui.Controls.PropertyCondition']/Docs" />
-	public sealed class PropertyCondition : Condition
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.PassthroughValueProvider")]
+	[AcceptEmptyServiceProvider]
+	public sealed class PropertyCondition : Condition, IValueProvider
 	{
 		readonly BindableProperty _stateProperty;
 
@@ -22,7 +24,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='Property']/Docs" />
 		public BindableProperty Property
 		{
-			get => _property;
+			get { return _property; }
 			set
 			{
 				if (_property == value)
@@ -33,14 +35,27 @@ namespace Microsoft.Maui.Controls
 
 				//convert the value
 				if (_property != null && s_valueConverter != null)
-					_triggerValue = s_valueConverter.Convert(Value, _property.ReturnType, _property.GetBindablePropertyTypeConverter, null);
+				{
+					Func<MemberInfo> minforetriever = () =>
+					{
+						try
+						{
+							return Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
+						}
+						catch (AmbiguousMatchException e)
+						{
+							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XmlLineInfo(), innerException: e);
+						}
+					};
+					Value = s_valueConverter.Convert(Value, Property.ReturnType, minforetriever, null);
+				}
 			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='Value']/Docs" />
 		public object Value
 		{
-			get => _triggerValue;
+			get { return _triggerValue; }
 			set
 			{
 				if (_triggerValue == value)
@@ -50,10 +65,28 @@ namespace Microsoft.Maui.Controls
 
 				//convert the value
 				if (_property != null && s_valueConverter != null)
-					_triggerValue = s_valueConverter.Convert(value, _property.ReturnType, _property.GetBindablePropertyTypeConverter, null);
-				else
-					_triggerValue = value;
+				{
+					Func<MemberInfo> minforetriever = () =>
+					{
+						try
+						{
+							return Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
+						}
+						catch (AmbiguousMatchException e)
+						{
+							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XmlLineInfo(), innerException: e);
+						}
+					};
+					value = s_valueConverter.Convert(value, Property.ReturnType, minforetriever, null);
+				}
+				_triggerValue = value;
 			}
+		}
+
+		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
+		{
+			//This is no longer required
+			return this;
 		}
 
 		internal override bool GetState(BindableObject bindable)

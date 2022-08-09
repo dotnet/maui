@@ -92,10 +92,33 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static object Convert(object target, object value, BindableProperty property)
 		{
-			var ret = value.ConvertTo(property.ReturnType, property.GetBindablePropertyTypeConverter, new StyleSheetServiceProvider(target, property), out var exception);
+			var serviceProvider = new StyleSheetServiceProvider(target, property);
+			Func<MemberInfo> minforetriever =
+				() =>
+				{
+					MemberInfo minfo = null;
+					try
+					{
+						minfo = property.DeclaringType.GetRuntimeProperty(property.PropertyName);
+					}
+					catch (AmbiguousMatchException e)
+					{
+						throw new XamlParseException($"Multiple properties with name '{property.DeclaringType}.{property.PropertyName}' found.", serviceProvider, innerException: e);
+					}
+					if (minfo != null)
+						return minfo;
+					try
+					{
+						return property.DeclaringType.GetRuntimeMethod("Get" + property.PropertyName, new[] { typeof(BindableObject) });
+					}
+					catch (AmbiguousMatchException e)
+					{
+						throw new XamlParseException($"Multiple methods with name '{property.DeclaringType}.Get{property.PropertyName}' found.", serviceProvider, innerException: e);
+					}
+				};
+			var ret = value.ConvertTo(property.ReturnType, minforetriever, serviceProvider, out Exception exception);
 			if (exception != null)
 				throw exception;
-
 			return ret;
 		}
 

@@ -29,8 +29,31 @@ namespace Microsoft.Maui.Controls
 				throw new XamlParseException("Property not set", serviceProvider);
 			var valueconverter = serviceProvider.GetService(typeof(IValueConverterProvider)) as IValueConverterProvider;
 
-			Value = valueconverter.Convert(Value, Property.ReturnType, Property.GetBindablePropertyTypeConverter, serviceProvider);
+			MemberInfo minforetriever()
+			{
+				MemberInfo minfo = null;
+				try
+				{
+					minfo = Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
+				}
+				catch (AmbiguousMatchException e)
+				{
+					throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", serviceProvider, innerException: e);
+				}
+				if (minfo != null)
+					return minfo;
+				try
+				{
+					return Property.DeclaringType.GetRuntimeMethod("Get" + Property.PropertyName, new[] { typeof(BindableObject) });
+				}
+				catch (AmbiguousMatchException e)
+				{
+					throw new XamlParseException($"Multiple methods with name '{Property.DeclaringType}.Get{Property.PropertyName}' found.", serviceProvider, innerException: e);
+				}
+			}
 
+			object value = valueconverter.Convert(Value, Property.ReturnType, minforetriever, serviceProvider);
+			Value = value;
 			return this;
 		}
 
