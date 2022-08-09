@@ -77,12 +77,35 @@ namespace Microsoft.Maui.Controls.Xaml
 			var converterProvider = serviceProvider?.GetService<IValueConverterProvider>();
 			if (converterProvider != null)
 			{
+				MemberInfo minforetriever()
+				{
+					if (pi != null)
+						return pi;
 
-				if (pi != null)
-					return converterProvider.Convert(value, propertyType, pi.GetTypeConverter, serviceProvider);
-				return converterProvider.Convert(value, propertyType, bp.GetBindablePropertyTypeConverter, serviceProvider);
+					MemberInfo minfo = null;
+					try
+					{
+						minfo = bp.DeclaringType.GetRuntimeProperty(bp.PropertyName);
+					}
+					catch (AmbiguousMatchException e)
+					{
+						throw new XamlParseException($"Multiple properties with name '{bp.DeclaringType}.{bp.PropertyName}' found.", serviceProvider, innerException: e);
+					}
+					if (minfo != null)
+						return minfo;
+					try
+					{
+						return bp.DeclaringType.GetRuntimeMethod("Get" + bp.PropertyName, new[] { typeof(BindableObject) });
+					}
+					catch (AmbiguousMatchException e)
+					{
+						throw new XamlParseException($"Multiple methods with name '{bp.DeclaringType}.Get{bp.PropertyName}' found.", serviceProvider, innerException: e);
+					}
+				}
+
+				return converterProvider.Convert(value, propertyType, minforetriever, serviceProvider);
 			}
-			var ret = value.ConvertTo(propertyType, pi.GetTypeConverter, serviceProvider, out Exception exception);
+			var ret = value.ConvertTo(propertyType, () => pi, serviceProvider, out Exception exception);
 			if (exception != null)
 				throw exception;
 			return ret;

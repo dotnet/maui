@@ -565,7 +565,32 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (serviceProvider?.GetService<IProvideValueTarget>() is XamlValueTargetProvider valueTargetProvider)
 				valueTargetProvider.TargetProperty = property;
 
-			var convertedValue = value.ConvertTo(property.ReturnType, () => property.GetBindablePropertyTypeConverter(isAttached: attached), serviceProvider, out exception);
+			Func<MemberInfo> minforetriever;
+			if (attached)
+				minforetriever = () =>
+				{
+					try
+					{
+						return property.DeclaringType.GetRuntimeMethod("Get" + property.PropertyName, new[] { typeof(BindableObject) });
+					}
+					catch (AmbiguousMatchException e)
+					{
+						throw new XamlParseException($"Multiple methods with name '{property.DeclaringType}.Get{property.PropertyName}' found.", lineInfo, innerException: e);
+					}
+				};
+			else
+				minforetriever = () =>
+				{
+					try
+					{
+						return property.DeclaringType.GetRuntimeProperty(property.PropertyName);
+					}
+					catch (AmbiguousMatchException e)
+					{
+						throw new XamlParseException($"Multiple properties with name '{property.DeclaringType}.{property.PropertyName}' found.", lineInfo, innerException: e);
+					}
+				};
+			var convertedValue = value.ConvertTo(property.ReturnType, minforetriever, serviceProvider, out exception);
 			if (exception != null)
 				return false;
 

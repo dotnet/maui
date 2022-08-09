@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -241,45 +240,5 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal delegate void BindablePropertyBindingChanging(BindableObject bindable, BindingBase oldValue, BindingBase newValue);
-
-		static readonly ConcurrentDictionary<BindableProperty, TypeConverter> s_converterCache = new();
-
-		internal TypeConverter GetBindablePropertyTypeConverter()
-			=> GetBindablePropertyTypeConverter(isAttached: null);
-
-		internal TypeConverter GetBindablePropertyTypeConverter(bool? isAttached)
-		{
-			if (s_converterCache.TryGetValue(this, out var converter))
-				return converter;
-
-			Type converterType = null;
-			if (!isAttached.HasValue || !isAttached.Value)
-				try
-				{
-					converterType = ((MemberInfo)DeclaringType.GetRuntimeProperty(PropertyName))?.GetTypeConverterType();
-				}
-				catch (AmbiguousMatchException e) //GetRuntimeProperty can throw, we'd like to catch that and rephrase
-				{
-					throw new AmbiguousMatchException($"Multiple properties with name '{DeclaringType}.{PropertyName}' found.", e);
-				}
-
-			if ((!isAttached.HasValue && converterType == null) || (isAttached.HasValue && isAttached.Value))
-				try
-				{
-					converterType = (DeclaringType.GetRuntimeMethod("Get" + PropertyName, new[] { typeof(BindableObject) }))?.GetTypeConverterType();
-				}
-				catch (AmbiguousMatchException e) //GetRuntimeProperty can throw, we'd like to catch that and rephrase
-				{
-					throw new AmbiguousMatchException($"Multiple properties with name '{DeclaringType}.Get{PropertyName}' found.", e);
-				}
-
-			if (converterType == null)
-				converterType = ReturnType.GetTypeConverterType();
-
-			converter = converterType == null ? null : (TypeConverter)Activator.CreateInstance(converterType);
-
-			// cache the result, even if it is null
-			return (s_converterCache[this] = converter);
-		}
 	}
 }
