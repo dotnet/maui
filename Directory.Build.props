@@ -47,8 +47,6 @@
   <Import Condition="Exists('Directory.Build.Override.props')" Project="Directory.Build.Override.props" />
 
   <PropertyGroup>
-
-
     <!-- the real TFMs -->
     <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion);net$(_MauiDotNetVersion)-windows$(Windows2TargetFrameworkVersion)</WindowsMauiPlatforms>
 
