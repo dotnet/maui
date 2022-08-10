@@ -28,19 +28,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIMenuElement CreatePlatformElement()
 		{
-
-			// REVIEW: I don't like this code, but couldn't come up with anything better. It feels right to
-			// re-use this existing MenuFlyout type, but in the case of context menus it needs to create a
-			// different platform element. "Main menu" actions are plugged in through MacCat's global menu
-			// system that uses selectors, but "context menu" actions can go through the much simpler, and
-			// also unlimited system of context menus (though they _can_ also use the global system, but
-			// that seems way more complicated and unnecessary).
+			// https://github.com/dotnet/maui/issues/9332
+			// The menu code needs to be converted over to using `UIAction`
+			// so that all of this can be the same
 			if (IsInContextFlyout())
 			{
-				// REVIEW: It seems more straightforward to use the non-Selector UIAction because
-				// it's simpler to use and avoids the default limit of 50 selectors and dealing
-				// with other "global" things like the global menu system (which this doesn't seem
-				// to use).
 				UIImage? contextUiImage = VirtualView.Source.GetPlatformMenuImage(MauiContext!);
 
 				var uiAction = UIAction.Create(
