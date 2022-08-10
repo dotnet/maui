@@ -132,6 +132,12 @@ namespace Microsoft.Maui
 			Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
 		}
 
+		[Export("applicationSignificantTimeChange:")]
+		public virtual void ApplicationSignificantTimeChange(UIApplication application)
+		{
+			Services?.InvokeLifecycleEvents<iOSLifecycle.ApplicationSignificantTimeChange>(del => del(application));
+		}
+
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
 
 		[Export("window")]

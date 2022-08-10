@@ -10,14 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Compatibility.Hosting;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class HostBuilderAppTests
 	{
-		[Test]
+		[Fact]
 		public void UseMauiAppRegistersApp()
 		{
 			var mauiApp = MauiApp.CreateBuilder()
@@ -25,10 +25,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				.Build();
 
 			var app = (ApplicationStub)mauiApp.Services.GetRequiredService<IApplication>();
-			Assert.AreEqual("Default", app.Property);
+			Assert.Equal("Default", app.Property);
 		}
 
-		[Test]
+		[Fact]
 		public void UseMauiAppRegistersAppWithFactory()
 		{
 			var mauiApp = MauiApp.CreateBuilder()
@@ -36,10 +36,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				.Build();
 
 			var app = (ApplicationStub)mauiApp.Services.GetRequiredService<IApplication>();
-			Assert.AreEqual("Factory", app.Property);
+			Assert.Equal("Factory", app.Property);
 		}
 
-		[Test]
+		[Fact]
 		public void UseMauiAppRegistersSingleton()
 		{
 			var mauiApp = MauiApp.CreateBuilder()
@@ -49,10 +49,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var app1 = mauiApp.Services.GetRequiredService<IApplication>();
 			var app2 = mauiApp.Services.GetRequiredService<IApplication>();
 
-			Assert.AreEqual(app1, app2);
+			Assert.Equal(app1, app2);
 		}
 
-		[Test]
+		[Fact]
 		public void AddingMemoryStreamBackedConfigurationWorks()
 		{
 			var builder = MauiApp.CreateBuilder();
@@ -66,14 +66,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ms.Position = 0;
 			builder.Configuration.AddJsonStream(ms);
 
-			Assert.AreEqual("bar", builder.Configuration["foo"]);
+			Assert.Equal("bar", builder.Configuration["foo"]);
 
 			using var app = builder.Build();
 
-			Assert.AreEqual("bar", app.Configuration["foo"]);
+			Assert.Equal("bar", app.Configuration["foo"]);
 		}
 
-		[Test]
+		[Fact]
 		public void ConfigurationGetDebugViewWorks()
 		{
 			var builder = MauiApp.CreateBuilder();
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(((IConfigurationRoot)app.Configuration).GetDebugView().Contains("foo=bar (MemoryConfigurationProvider)", StringComparison.Ordinal));
 		}
 
-		[Test]
+		[Fact]
 		public void ConfigurationProvidersAreLoadedOnceAfterBuild()
 		{
 			var builder = MauiApp.CreateBuilder();
@@ -99,10 +99,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			using var app = builder.Build();
 
-			Assert.AreEqual(1, configSource.ProvidersLoaded);
+			Assert.Equal(1, configSource.ProvidersLoaded);
 		}
 
-		[Test]
+		[Fact]
 		public void ConfigurationProvidersAreDisposedWithMauiApp()
 		{
 			var builder = MauiApp.CreateBuilder();
@@ -113,13 +113,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				using var app = builder.Build();
 
-				Assert.AreEqual(0, configSource.ProvidersDisposed);
+				Assert.Equal(0, configSource.ProvidersDisposed);
 			}
 
-			Assert.AreEqual(1, configSource.ProvidersDisposed);
+			Assert.Equal(1, configSource.ProvidersDisposed);
 		}
 
-		[Test]
+		[Fact]
 		public void ConfigurationProviderTypesArePreserved()
 		{
 			var builder = MauiApp.CreateBuilder();
@@ -128,11 +128,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var app = builder.Build();
 
-			Assert.That(((IConfigurationRoot)app.Configuration).Providers.OfType<TrackingConfigurationProvider>(), Has.One.Items);
+			Assert.Single(((IConfigurationRoot)app.Configuration).Providers.OfType<TrackingConfigurationProvider>());
 		}
 
-		[TestCase(true)]
-		[TestCase(false)]
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
 		public void CompatibilityExtensionsWorkUseCompatibility(bool useCompatibility)
 		{
 			MauiAppBuilderExtensions.ResetCompatibilityCheck();
