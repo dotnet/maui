@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 				return textAlignment;
 			}
 
-			var flowDirection = view.GetEffectiveFlowDirection();
+			var flowDirection = view.EffectiveFlowDirection;
 
 			if (flowDirection == FlowDirection.RightToLeft)
 			{

@@ -23,6 +23,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			layout.MinimumWidth.Returns(Dimension.Minimum);
 			layout.MaximumHeight.Returns(Dimension.Maximum);
 			layout.MaximumWidth.Returns(Dimension.Maximum);
+			layout.EffectiveFlowDirection.Returns(FlowDirection.LeftToRight);
 
 			return layout;
 		}

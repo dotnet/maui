@@ -46,6 +46,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			grid.MinimumWidth.Returns(Dimension.Minimum);
 			grid.MaximumHeight.Returns(Dimension.Maximum);
 			grid.MaximumWidth.Returns(Dimension.Maximum);
+			grid.EffectiveFlowDirection.Returns(FlowDirection.LeftToRight);
 
 			grid.RowSpacing.Returns(rowSpacing);
 			grid.ColumnSpacing.Returns(colSpacing);

@@ -22,6 +22,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			public string AutomationId { get; }
 			public FlowDirection FlowDirection { get; }
+			public FlowDirection EffectiveFlowDirection { get; }
 			public LayoutAlignment HorizontalLayoutAlignment { get; }
 			public LayoutAlignment VerticalLayoutAlignment { get; }
 			public Semantics Semantics { get; }

@@ -145,7 +145,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
 			element.Width.Returns(Dimension.Unset);
 			element.Height.Returns(Dimension.Unset);
-			element.FlowDirection.Returns(FlowDirection.LeftToRight);
+			element.EffectiveFlowDirection.Returns(FlowDirection.LeftToRight);
 
 			var frame = element.ComputeFrame(new Rect(offset.X, offset.Y, widthConstraint, heightConstraint));
 

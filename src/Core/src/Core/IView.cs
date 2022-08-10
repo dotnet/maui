@@ -15,9 +15,17 @@ namespace Microsoft.Maui
 		string AutomationId { get; }
 
 		/// <summary>
-		/// Direction in which the UI elements are scanned by the eye
+		/// Specifies the intended direction in which the IView is to be scanned by the eye
 		/// </summary>
 		FlowDirection FlowDirection { get; }
+
+		/// <summary>
+		/// The direction (in the IView's current hierarchy) that the IView is
+		/// scanned by the eye
+		/// </summary>
+		/// <remarks>This property should not return a value of <cref>FlowDirection.MatchParent</cref>; 
+		/// if it does, the behavior is considered to be undefined.</remarks>
+		FlowDirection EffectiveFlowDirection { get; }
 
 		/// <summary>
 		/// Determines the horizontal aspect of this element's arrangement in a container

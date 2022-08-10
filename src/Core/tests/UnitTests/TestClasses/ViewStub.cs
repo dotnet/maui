@@ -55,6 +55,8 @@ namespace Microsoft.Maui.UnitTests
 
 		public FlowDirection FlowDirection { get; set; }
 
+		public FlowDirection EffectiveFlowDirection { get; set; }
+
 		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
 
 		public LayoutAlignment VerticalLayoutAlignment { get; set; }

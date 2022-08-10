@@ -19,6 +19,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			stack.MaximumHeight.Returns(Dimension.Maximum);
 			stack.MaximumWidth.Returns(Dimension.Maximum);
 			stack.Spacing.Returns(0);
+			stack.EffectiveFlowDirection.Returns(FlowDirection.LeftToRight);
 
 			return stack;
 		}

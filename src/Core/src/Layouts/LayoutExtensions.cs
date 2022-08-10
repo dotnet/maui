@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Layouts
 
 		public static bool ShouldArrangeLeftToRight(this IView view)
 		{
-			var viewFlowDirection = view.GetEffectiveFlowDirection();
+			var viewFlowDirection = view.EffectiveFlowDirection;
 
 			// The various platforms handle layout and flow direction in different ways; some platforms
 			// helpfully flip the coordinates of arrange calls when in RTL mode, others don't
