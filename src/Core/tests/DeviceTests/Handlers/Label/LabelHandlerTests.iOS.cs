@@ -161,7 +161,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Text = "This is TEXT!",
 				HorizontalTextAlignment = alignment,
-				FlowDirection = flowDirection
+				EffectiveFlowDirection = flowDirection
 			};
 
 
