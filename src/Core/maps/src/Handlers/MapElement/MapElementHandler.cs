@@ -1,7 +1,7 @@
 ﻿#if __IOS__ || MACCATALYST
 using PlatformView = MapKit.MKOverlayRenderer;
 #elif MONOANDROID
-using PlatformView = Android.Gms.Maps.Model.MarkerOptions;
+using PlatformView = Microsoft.Maui.Maps.Handlers.MapElementOptions;
 #elif WINDOWS
 using PlatformView = System.Object;
 #elif TIZEN

@@ -13,8 +13,13 @@ using AndroidX.Core.Content;
 using Java.Lang;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using ACircle = Android.Gms.Maps.Model.Circle;
+using APolygon = Android.Gms.Maps.Model.Polygon;
+using APolyline = Android.Gms.Maps.Model.Polyline;
 using Math = System.Math;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -27,9 +32,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		MapSpan? _lastMoveToRegion;
 		List<Marker>? _markers;
 		IList? _pins;
-		//List<APolyline> _polylines;
-		//List<APolygon> _polygons;
-		//List<ACircle> _circles;
+		IList? _elements;
+		List<APolyline>? _polylines;
+		List<APolygon>? _polygons;
+		List<ACircle>? _circles;
 
 		public GoogleMap? Map { get; set; }
 
@@ -46,14 +52,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapReady = new MapCallbackHandler(this);
 			platformView.GetMapAsync(_mapReady);
 			platformView.LayoutChange += MapViewLayoutChange;
-			//(INotifyCollectionChanged)VirtualView.MapElements).CollectionChanged += OnMapElementCollectionChanged;
 		}
 
 		protected override void DisconnectHandler(MapView platformView)
 		{
 			base.DisconnectHandler(platformView);
 			platformView.LayoutChange -= MapViewLayoutChange;
-			
+
 			if (Map != null)
 			{
 				Map.SetOnCameraMoveListener(null);
@@ -171,7 +176,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapElements(IMapHandler handler, IMap map)
 		{
-			
+			(handler as MapHandler)?.ClearMapElements();
+			(handler as MapHandler)?.AddMapElements((IList)map.Elements);
 		}
 
 		internal void OnMapReady(GoogleMap map)
@@ -213,6 +219,8 @@ namespace Microsoft.Maui.Maps.Handlers
 				MoveToRegion(_lastMoveToRegion, false);
 				if (_pins != null)
 					AddPins(_pins);
+				if (_elements != null)
+					AddMapElements(_elements);
 				_init = false;
 			}
 
@@ -289,8 +297,6 @@ namespace Microsoft.Maui.Maps.Handlers
 		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e) =>
 			VirtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
 
-	
-	
 		void AddPins(IList pins)
 		{
 			//Mapper could be called before we have a Map ready 
@@ -335,6 +341,178 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			return targetPin;
 		}
+
+		void ClearMapElements()
+		{
+			if (_polylines != null)
+			{
+				for (int i = 0; i < _polylines.Count; i++)
+					_polylines[i].Remove();
+
+				_polylines = null;
+			}
+
+			if (_polygons != null)
+			{
+				for (int i = 0; i < _polygons.Count; i++)
+					_polygons[i].Remove();
+
+				_polygons = null;
+			}
+
+			if (_circles != null)
+			{
+				for (int i = 0; i < _circles.Count; i++)
+					_circles[i].Remove();
+
+				_circles = null;
+			}
+		}
+
+		void AddMapElements(IList mapElements)
+		{
+			_elements = mapElements;
+
+			if (Map == null || MauiContext == null)
+				return;
+
+			foreach (var element in mapElements)
+			{
+				if (element is IGeoPathMapElement geoPath)
+				{
+					if (element is IFilledMapElement)
+					{
+						AddPolygon(geoPath);
+					}
+					else
+					{
+						AddPolyline(geoPath);
+					}
+				}
+				if (element is ICircleMapElement circle)
+				{
+					AddCircle(circle);
+				}
+			}
+			_elements = null;
+		}
+
+		void AddPolyline(IGeoPathMapElement polyline)
+		{
+			var map = Map;
+			if (map == null)
+				return;
+
+			if (_polylines == null)
+				_polylines = new List<APolyline>();
+
+			var options = CreatePolylineOptions(polyline);
+			var nativePolyline = map.AddPolyline(options);
+
+			polyline.MapElementId = nativePolyline.Id;
+
+			_polylines.Add(nativePolyline);
+		}
+
+		protected virtual PolylineOptions CreatePolylineOptions(IGeoPathMapElement polyline)
+		{
+			var opts = new PolylineOptions();
+
+			if (polyline.Stroke is SolidPaint solidPaint)
+				opts.InvokeColor(solidPaint.Color.AsColor());
+
+			opts.InvokeWidth((float)polyline.StrokeThickness);
+
+
+			foreach (var position in polyline.Geopath)
+				opts.Points.Add(new LatLng(position.Latitude, position.Longitude));
+
+			return opts;
+		}
+
+		void AddPolygon(IGeoPathMapElement polygon)
+		{
+			var map = Map;
+			if (map == null)
+				return;
+
+			if (_polygons == null)
+				_polygons = new List<APolygon>();
+
+			var options = CreatePolygonOptions(polygon);
+			var nativePolygon = map.AddPolygon(options);
+
+			polygon.MapElementId = nativePolygon.Id;
+
+			_polygons.Add(nativePolygon);
+		}
+
+		protected virtual PolygonOptions CreatePolygonOptions(IGeoPathMapElement polygon)
+		{
+			var opts = new PolygonOptions();
+
+			if (polygon.Stroke is SolidPaint solidPaint)
+				opts.InvokeStrokeColor(solidPaint.Color.AsColor());
+
+			if ((polygon as IFilledMapElement)?.Fill is SolidPaint solidPaintFill)
+				opts.InvokeFillColor(solidPaintFill.Color.AsColor());
+
+			opts.InvokeStrokeWidth((float)polygon.StrokeThickness);
+
+			// Will throw an exception when added to the map if Points is empty
+			if (polygon.Geopath.Count == 0)
+			{
+				opts.Points.Add(new LatLng(0, 0));
+			}
+			else
+			{
+				foreach (var position in polygon.Geopath)
+				{
+					opts.Points.Add(new LatLng(position.Latitude, position.Longitude));
+				}
+			}
+
+			return opts;
+		}
+
+		void AddCircle(ICircleMapElement circle)
+		{
+			var map = Map;
+			if (map == null)
+			{
+				return;
+			}
+
+			if (_circles == null)
+			{
+				_circles = new List<ACircle>();
+			}
+
+			var options = CreateCircleOptions(circle);
+			var nativeCircle = map.AddCircle(options);
+
+			circle.MapElementId = nativeCircle.Id;
+
+			_circles.Add(nativeCircle);
+		}
+
+		protected virtual CircleOptions CreateCircleOptions(ICircleMapElement circle)
+		{
+			var opts = new CircleOptions()
+				.InvokeCenter(new LatLng(circle.Center.Latitude, circle.Center.Longitude))
+				.InvokeRadius(circle.Radius.Meters)
+				.InvokeStrokeWidth((float)circle.StrokeThickness);
+
+
+			if (circle.Fill is SolidPaint solidPaintFill)
+				opts.InvokeFillColor(solidPaintFill.Color.AsColor());
+
+			if (circle.Stroke is SolidPaint solidPaintStroke)
+				opts.InvokeStrokeColor(solidPaintStroke.Color.AsColor());
+
+			return opts;
+		}
+
 	}
 
 	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
