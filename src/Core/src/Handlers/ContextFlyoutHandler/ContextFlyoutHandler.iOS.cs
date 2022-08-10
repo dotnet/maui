@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 			var platformMenu =
 				VirtualView
 					.ToPlatformMenu(MauiContext!);
+
 			return platformMenu;
 		}
 

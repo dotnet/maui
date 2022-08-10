@@ -5,7 +5,7 @@ using Microsoft.Maui.HotReload;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/View.xml" path="Type[@FullName='Microsoft.Maui.Controls.View']/Docs" />
-	public partial class View : IView, IPropertyMapperView, IHotReloadableView
+	public partial class View : IView, IPropertyMapperView, IHotReloadableView, IContextFlyoutContainer
 	{
 		Thickness IView.Margin => Margin;
 
@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls
 
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => HorizontalOptions.ToCore();
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => VerticalOptions.ToCore();
+		IContextFlyout IContextFlyoutContainer.ContextFlyout => ContextFlyout;
 
 		#region HotReload
 

@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="Type[@FullName='Microsoft.Maui.Controls.View']/Docs" />
-	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers, IContextFlyoutContainer
+	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers
 	{
 		protected internal IGestureController GestureController => this;
 
@@ -184,6 +184,10 @@ namespace Microsoft.Maui.Controls
 		protected override void OnBindingContextChanged()
 		{
 			this.PropagateBindingContext(GestureRecognizers);
+
+			if (this.IsSet(ContextFlyoutProperty))
+				SetInheritedBindingContext(ContextFlyout, BindingContext);
+
 			base.OnBindingContextChanged();
 		}
 
@@ -200,19 +204,17 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
 		}
 
-        private ContextFlyout _contextFlyout;
+		static readonly BindablePropertyKey ContextFlyoutPropertyKey = BindableProperty.CreateReadOnly(nameof(ContextFlyout), typeof(ContextFlyout), typeof(View), null,
+				defaultValueCreator: bo =>
+				{
+					var contextFlyout = new ContextFlyout();
+					VisualElement.SetInheritedBindingContext(contextFlyout, bo.BindingContext);
+					return contextFlyout;
+				});
+
+		public static readonly BindableProperty ContextFlyoutProperty = ContextFlyoutPropertyKey.BindableProperty;
 
 		/// <inheritdoc />
-		public virtual IContextFlyout ContextFlyout
-        {
-			get
-			{
-				if (_contextFlyout == null)
-				{
-					_contextFlyout = new ContextFlyout();
-				}
-				return _contextFlyout;
-			}
-		}
+		public ContextFlyout ContextFlyout => (ContextFlyout)GetValue(ContextFlyoutProperty);
 	}
 }

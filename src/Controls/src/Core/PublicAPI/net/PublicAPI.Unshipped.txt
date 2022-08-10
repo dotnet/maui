@@ -28,4 +28,6 @@ static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsof
 ~Microsoft.Maui.Controls.ContextFlyout.Remove(Microsoft.Maui.IMenuElement item) -> bool
 ~Microsoft.Maui.Controls.ContextFlyout.this[int index].get -> Microsoft.Maui.IMenuElement
 ~Microsoft.Maui.Controls.ContextFlyout.this[int index].set -> void
-~virtual Microsoft.Maui.Controls.View.ContextFlyout.get -> Microsoft.Maui.IContextFlyout
+~Microsoft.Maui.Controls.View.ContextFlyout.get -> Microsoft.Maui.Controls.ContextFlyout
+~static readonly Microsoft.Maui.Controls.View.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
+
