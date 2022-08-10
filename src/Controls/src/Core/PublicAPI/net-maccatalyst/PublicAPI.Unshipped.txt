@@ -10,7 +10,11 @@ Microsoft.Maui.Controls.Window.Width.get -> double
 Microsoft.Maui.Controls.Window.WidthRequest.get -> double
 Microsoft.Maui.Controls.Window.WidthRequest.set -> void
 Microsoft.Maui.Controls.Window.X.get -> double
+Microsoft.Maui.Controls.Window.XRequest.get -> double
+Microsoft.Maui.Controls.Window.XRequest.set -> void
 Microsoft.Maui.Controls.Window.Y.get -> double
+Microsoft.Maui.Controls.Window.YRequest.get -> double
+Microsoft.Maui.Controls.Window.YRequest.set -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ContentPresenter.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.FlyoutPage.OnDisappearing() -> void
@@ -29,4 +33,6 @@ static readonly Microsoft.Maui.Controls.Window.HeightRequestProperty -> Microsof
 static readonly Microsoft.Maui.Controls.Window.WidthProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.WidthRequestProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.XProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.XRequestProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.YProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.YRequestProperty -> Microsoft.Maui.Controls.BindableProperty!

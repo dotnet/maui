@@ -10,6 +10,8 @@ Microsoft.Maui.IWindow.Frame.get -> Microsoft.Maui.Graphics.Rect
 Microsoft.Maui.IWindow.Frame.set -> void
 Microsoft.Maui.IWindow.Height.get -> double
 Microsoft.Maui.IWindow.Width.get -> double
+Microsoft.Maui.IWindow.X.get -> double
+Microsoft.Maui.IWindow.Y.get -> double
 override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
 override Microsoft.Maui.Handlers.BorderHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void

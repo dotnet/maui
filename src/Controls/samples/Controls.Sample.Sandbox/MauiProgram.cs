@@ -17,6 +17,6 @@ namespace Maui.Controls.Sample
 	class App : Application
 	{
 		protected override Window CreateWindow(IActivationState activationState) =>
-			new Window(new MainPage()) { WidthRequest = 640, HeightRequest = 480 };
+			new Window(new MainPage()) { XRequest = 50, YRequest = 100, WidthRequest = 640, HeightRequest = 480 };
 	}
 }

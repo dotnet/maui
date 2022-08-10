@@ -29,6 +29,16 @@ namespace Microsoft.Maui
 		Rect Frame { get; set; }
 
 		/// <summary>
+		/// Gets the specified X coordinate of the IWindow.
+		/// </summary>
+		double X { get; }
+
+		/// <summary>
+		/// Gets the specified Y coordinate of the IWindow.
+		/// </summary>
+		double Y { get; }
+
+		/// <summary>
 		/// Gets the specified width of the IWindow.
 		/// </summary>
 		double Width { get; }

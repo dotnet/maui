@@ -16,6 +16,39 @@ namespace Microsoft.Maui.Platform
 				mauiWindow.UpdateTitleOnCustomTitleBar();
 		}
 
+		public static void UpdateX(this UI.Xaml.Window platformWindow, IWindow window) =>
+			platformWindow.UpdatePosition(window.X, window.Y);
+
+		public static void UpdateY(this UI.Xaml.Window platformWindow, IWindow window) =>
+			platformWindow.UpdatePosition(window.X, window.Y);
+
+		public static void UpdatePosition(this UI.Xaml.Window platformWindow, IWindow window) =>
+			platformWindow.UpdatePosition(window.X, window.Y);
+
+		internal static void UpdatePosition(this UI.Xaml.Window platformWindow, double x, double y)
+		{
+			var window = platformWindow.GetAppWindow();
+			if (window is null)
+				return;
+
+			var density = platformWindow.GetDisplayDensity();
+
+			var currPos = window.Position;
+			x = Primitives.Dimension.IsExplicitSet(x)
+				? Math.Round(x * density)
+				: currPos.X;
+			y = Primitives.Dimension.IsExplicitSet(y)
+				? Math.Round(y * density)
+				: currPos.Y;
+
+			var pos = new PointInt32(
+				(int)x,
+				(int)y);
+
+			if (pos != currPos)
+				window.Move(pos);
+		}
+
 		public static void UpdateWidth(this UI.Xaml.Window platformWindow, IWindow window) =>
 			platformWindow.UpdateSize(window.Width, window.Height);
 

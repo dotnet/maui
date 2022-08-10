@@ -10,6 +10,8 @@ Microsoft.Maui.IWindow.Frame.get -> Microsoft.Maui.Graphics.Rect
 Microsoft.Maui.IWindow.Frame.set -> void
 Microsoft.Maui.IWindow.Height.get -> double
 Microsoft.Maui.IWindow.Width.get -> double
+Microsoft.Maui.IWindow.X.get -> double
+Microsoft.Maui.IWindow.Y.get -> double
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.EntryHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
