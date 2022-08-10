@@ -406,28 +406,15 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polylines == null)
 				_polylines = new List<APolyline>();
 
-			var options = CreatePolylineOptions(polyline);
-			var nativePolyline = map.AddPolyline(options);
+			var options = polyline.ToHandler(MauiContext!)?.PlatformView as PolylineOptions;
+			if (options != null)
+			{
+				var nativePolyline = map.AddPolyline(options);
 
-			polyline.MapElementId = nativePolyline.Id;
+				polyline.MapElementId = nativePolyline.Id;
 
-			_polylines.Add(nativePolyline);
-		}
-
-		protected virtual PolylineOptions CreatePolylineOptions(IGeoPathMapElement polyline)
-		{
-			var opts = new PolylineOptions();
-
-			if (polyline.Stroke is SolidPaint solidPaint)
-				opts.InvokeColor(solidPaint.Color.AsColor());
-
-			opts.InvokeWidth((float)polyline.StrokeThickness);
-
-
-			foreach (var position in polyline.Geopath)
-				opts.Points.Add(new LatLng(position.Latitude, position.Longitude));
-
-			return opts;
+				_polylines.Add(nativePolyline);
+			}
 		}
 
 		void AddPolygon(IGeoPathMapElement polygon)
@@ -439,7 +426,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polygons == null)
 				_polygons = new List<APolygon>();
 
-			var options = CreatePolygonOptions(polygon);
+			var options = polygon.ToHandler(MauiContext!)?.PlatformView as PolygonOptions;
 			var nativePolygon = map.AddPolygon(options);
 
 			polygon.MapElementId = nativePolygon.Id;
@@ -447,70 +434,21 @@ namespace Microsoft.Maui.Maps.Handlers
 			_polygons.Add(nativePolygon);
 		}
 
-		protected virtual PolygonOptions CreatePolygonOptions(IGeoPathMapElement polygon)
-		{
-			var opts = new PolygonOptions();
-
-			if (polygon.Stroke is SolidPaint solidPaint)
-				opts.InvokeStrokeColor(solidPaint.Color.AsColor());
-
-			if ((polygon as IFilledMapElement)?.Fill is SolidPaint solidPaintFill)
-				opts.InvokeFillColor(solidPaintFill.Color.AsColor());
-
-			opts.InvokeStrokeWidth((float)polygon.StrokeThickness);
-
-			// Will throw an exception when added to the map if Points is empty
-			if (polygon.Geopath.Count == 0)
-			{
-				opts.Points.Add(new LatLng(0, 0));
-			}
-			else
-			{
-				foreach (var position in polygon.Geopath)
-				{
-					opts.Points.Add(new LatLng(position.Latitude, position.Longitude));
-				}
-			}
-
-			return opts;
-		}
-
 		void AddCircle(ICircleMapElement circle)
 		{
 			var map = Map;
 			if (map == null)
-			{
 				return;
-			}
-
+			
 			if (_circles == null)
-			{
 				_circles = new List<ACircle>();
-			}
-
-			var options = CreateCircleOptions(circle);
+			
+			var options = circle.ToHandler(MauiContext!)?.PlatformView as CircleOptions;
 			var nativeCircle = map.AddCircle(options);
 
 			circle.MapElementId = nativeCircle.Id;
 
 			_circles.Add(nativeCircle);
-		}
-
-		protected virtual CircleOptions CreateCircleOptions(ICircleMapElement circle)
-		{
-			var opts = new CircleOptions()
-				.InvokeCenter(new LatLng(circle.Center.Latitude, circle.Center.Longitude))
-				.InvokeRadius(circle.Radius.Meters)
-				.InvokeStrokeWidth((float)circle.StrokeThickness);
-
-
-			if (circle.Fill is SolidPaint solidPaintFill)
-				opts.InvokeFillColor(solidPaintFill.Color.AsColor());
-
-			if (circle.Stroke is SolidPaint solidPaintStroke)
-				opts.InvokeStrokeColor(solidPaintStroke.Color.AsColor());
-
-			return opts;
 		}
 
 	}

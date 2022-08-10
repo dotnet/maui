@@ -1,36 +1,121 @@
-﻿using Android.Gms.Common.Internal.SafeParcel;
-using Android.Gms.Maps;
+﻿using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	public partial class MapElementHandler : ElementHandler<IMapElement, MapElementOptions>
+	public partial class MapElementHandler : ElementHandler<IMapElement, Java.Lang.Object>
 	{
-		protected override MapElementOptions CreatePlatformElement()
+		protected override Java.Lang.Object CreatePlatformElement()
 		{
-			return new MapElementOptions();
+			if (VirtualView is IGeoPathMapElement geoPathMapElement)
+			{
+				if (geoPathMapElement is IFilledMapElement)
+				{
+					return new PolygonOptions();
+				}
+				else
+				{
+					return new PolylineOptions();
+				}
+			}
+
+			if (VirtualView is ICircleMapElement circleMapElement)
+				return new CircleOptions();
+
+			return null!;
 		}
 
-		public static void MapStroke(IMapElementHandler handler, IMapElement mapElement) => throw new System.NotImplementedException();
+		public static void MapStroke(IMapElementHandler handler, IMapElement mapElement)
+		{
+			if (mapElement.Stroke is not SolidPaint solidPaint)
+				return;
 
-		public static void MapStrokeThickness(IMapElementHandler handler, IMapElement mapElement) => throw new System.NotImplementedException();
+			var platformColor = solidPaint.Color.AsColor();
 
-		public static void MapFill(IMapElementHandler handler, IMapElement mapElement) => throw new System.NotImplementedException();
+			if (handler.PlatformView is PolygonOptions polygonOptions)
+				polygonOptions.InvokeStrokeColor(platformColor);
+			if (handler.PlatformView is PolylineOptions polyLineOptions)
+				polyLineOptions.InvokeColor(platformColor);
+			if (handler.PlatformView is CircleOptions circleOptions)
+				circleOptions.InvokeStrokeColor(platformColor);
+		}
 
-		//public static void MapPosition(IMapPinHandler handler, IMapPin mapPin)
-		//{
-		//	handler.PlatformView.SetPosition(new LatLng(mapPin.Position.Latitude, mapPin.Position.Longitude));
-		//}
+		public static void MapStrokeThickness(IMapElementHandler handler, IMapElement mapElement)
+		{
+			if (handler.PlatformView is PolygonOptions polygonOptions)
+				polygonOptions.InvokeStrokeWidth((float)mapElement.StrokeThickness);
+			if (handler.PlatformView is PolylineOptions polyLineOptions)
+				polyLineOptions.InvokeWidth((float)mapElement.StrokeThickness);
+			if (handler.PlatformView is CircleOptions circleOptions)
+				circleOptions.InvokeStrokeWidth((float)mapElement.StrokeThickness);
+		}
 
-		//public static void MapLabel(IMapPinHandler handler, IMapPin mapPin)
-		//{
-		//	handler.PlatformView.SetTitle(mapPin.Label);
-		//}
+		public static void MapFill(IMapElementHandler handler, IMapElement mapElement)
+		{
+			if (mapElement is not IFilledMapElement filledMapElement)
+				return;
 
-		//public static void MapAddress(IMapPinHandler handler, IMapPin mapPin)
-		//{
-		//	handler.PlatformView.SetSnippet(mapPin.Address);
-		//}
+			if (filledMapElement.Fill is not SolidPaint solidPaintFill)
+				return;
+
+			var platformColor = solidPaintFill.Color.AsColor();
+			if (handler.PlatformView is PolygonOptions polygonOptions)
+				polygonOptions.InvokeFillColor(platformColor);
+			if (handler.PlatformView is CircleOptions circleOptions)
+				circleOptions.InvokeFillColor(platformColor);
+		}
+
+		public static void MapGeopath(IMapElementHandler handler, IMapElement mapElement)
+		{
+			if (mapElement is not IGeoPathMapElement geoPathMapElement)
+				return;
+
+			if (handler.PlatformView is PolygonOptions polygonOptions)
+			{
+				// Will throw an exception when added to the map if Points is empty
+				if (geoPathMapElement.Geopath.Count == 0)
+				{
+					polygonOptions.Points.Add(new LatLng(0, 0));
+				}
+				else
+				{
+					foreach (var position in geoPathMapElement.Geopath)
+					{
+						polygonOptions.Points.Add(new LatLng(position.Latitude, position.Longitude));
+					}
+				}
+			}
+
+			if (handler.PlatformView is PolylineOptions polylineOptions)
+			{
+				// Will throw an exception when added to the map if Points is empty
+				if (geoPathMapElement.Geopath.Count == 0)
+				{
+					polylineOptions.Points.Add(new LatLng(0, 0));
+				}
+				else
+				{
+					foreach (var position in geoPathMapElement.Geopath)
+					{
+						polylineOptions.Points.Add(new LatLng(position.Latitude, position.Longitude));
+					}
+				}
+			}
+		}
+		public static void MapRadius(IMapElementHandler handler, IMapElement mapElement)
+		{
+			if (handler.PlatformView is CircleOptions circleOptions && mapElement is ICircleMapElement circleMapElement)
+				circleOptions.InvokeRadius(circleMapElement.Radius.Meters);
+
+		}
+		public static void MapCenter(IMapElementHandler handler, IMapElement mapElement)
+		{
+			if (handler.PlatformView is CircleOptions circleOptions && mapElement is ICircleMapElement circleMapElement)
+				circleOptions.InvokeCenter(new LatLng(circleMapElement.Center.Latitude, circleMapElement.Center.Longitude));
+
+		}
 	}
 }

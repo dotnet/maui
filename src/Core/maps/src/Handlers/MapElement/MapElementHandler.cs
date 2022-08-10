@@ -1,7 +1,7 @@
 ﻿#if __IOS__ || MACCATALYST
 using PlatformView = MapKit.MKOverlayRenderer;
 #elif MONOANDROID
-using PlatformView = Microsoft.Maui.Maps.Handlers.MapElementOptions;
+using PlatformView = Java.Lang.Object;
 #elif WINDOWS
 using PlatformView = System.Object;
 #elif TIZEN
@@ -20,6 +20,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMapElement.Stroke)] = MapStroke,
 			[nameof(IMapElement.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IFilledMapElement.Fill)] = MapFill,
+#if MONOANDROID
+			[nameof(IGeoPathMapElement.Geopath)] = MapGeopath,
+			[nameof(ICircleMapElement.Radius)] = MapRadius,
+			[nameof(ICircleMapElement.Center)] = MapCenter,
+#endif
 		};
 
 		public static CommandMapper<IMapElement, IMapElementHandler> CommandMapper =
