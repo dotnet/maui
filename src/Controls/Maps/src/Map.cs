@@ -12,7 +12,7 @@ using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {
-	public partial class Map : View, IEnumerable<IMapPin>
+	public partial class Map : View
 	{
 		public static readonly BindableProperty MapTypeProperty = BindableProperty.Create(nameof(MapType), typeof(MapType), typeof(Map), default(MapType));
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Maps
 		public static readonly BindableProperty MoveToLastRegionOnLayoutChangeProperty = BindableProperty.Create(nameof(MoveToLastRegionOnLayoutChange), typeof(bool), typeof(Map), defaultValue: true);
 
 		readonly ObservableCollection<IMapPin> _pins = new ();
-		readonly ObservableCollection<MapElement> _mapElements = new ();
+		readonly ObservableCollection<IMapElement> _mapElements = new ();
 		MapSpan _visibleRegion;
 		MapSpan _lastMoveToRegion;
 
@@ -48,7 +48,10 @@ namespace Microsoft.Maui.Controls.Maps
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			_pins.CollectionChanged += PinsOnCollectionChanged;
+			_mapElements.CollectionChanged += MapElementsCollectionChanged;
 		}
+
+		
 
 		// center on Rome by default
 		public Map() : this(new MapSpan(new Devices.Sensors.Location(41.890202, 12.492049), 0.1, 0.1))
@@ -114,7 +117,7 @@ namespace Microsoft.Maui.Controls.Maps
 			set { SetValue(MoveToLastRegionOnLayoutChangeProperty, value); }
 		}
 
-		public IList<MapElement> MapElements => _mapElements;
+		public IList<IMapElement> MapElements => _mapElements;
 
 		public event EventHandler<MapClickedEventArgs> MapClicked;
 
@@ -156,6 +159,11 @@ namespace Microsoft.Maui.Controls.Maps
 			if (e.NewItems != null && e.NewItems.Cast<Pin>().Any(pin => pin.Label == null))
 				throw new ArgumentException("Pin must have a Label to be added to a map");
 			Handler?.UpdateValue(nameof(IMap.Pins));
+		}
+
+		void MapElementsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			Handler?.UpdateValue(nameof(IMap.Elements));
 		}
 
 		void OnItemsSourcePropertyChanged(IEnumerable oldItemsSource, IEnumerable newItemsSource)

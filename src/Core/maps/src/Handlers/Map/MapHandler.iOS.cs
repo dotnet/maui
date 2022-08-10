@@ -4,6 +4,7 @@ using MapKit;
 using UIKit;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Platform;
+using System;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			_locationManager = new CLLocationManager();
 
 			PlatformView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
-			//PlatformView.OverlayRenderer = GetViewForOverlay;
+		//	PlatformView.OverlayRenderer = GetViewForOverlay;
 		}
 
 		protected override void DisconnectHandler(MKMapView platformView)
@@ -93,27 +94,17 @@ namespace Microsoft.Maui.Maps.Handlers
 			(handler.PlatformView as MauiMKMapView)?.AddPins((IList)map.Pins);
 		}
 
+		public static void MapElements(IMapHandler handler, IMap map)
+		{
+			(handler.PlatformView as MauiMKMapView)?.AddElements((IList)map.Elements);
+		}
+
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
 			MapSpan? newRegion = arg as MapSpan;
 			if (newRegion != null)
 				(handler as MapHandler)?.MoveToRegion(newRegion, true);
 		}
-
-		//protected virtual MKOverlayRenderer GetViewForOverlay(MKMapView mapview, IMKOverlay overlay)
-		//{
-		//	//switch (overlay)
-		//	//{
-		//	//	case MKPolyline polyline:
-		//	//		return GetViewForPolyline(polyline);
-		//	//	case MKPolygon polygon:
-		//	//		return GetViewForPolygon(polygon);
-		//	//	case MKCircle circle:
-		//	//		return GetViewForCircle(circle);
-		//	//}
-
-		//	return null;
-		//}
 
 		void OnMapClicked(UITapGestureRecognizer recognizer)
 		{

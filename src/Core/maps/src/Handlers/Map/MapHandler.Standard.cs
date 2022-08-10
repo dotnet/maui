@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg) => throw new NotImplementedException();
 
 		public static void MapPins(IMapHandler handler, IMap map) => throw new NotImplementedException();
+
+		public static void MapElements(IMapHandler handler, IMap map) => throw new NotImplementedException();
 	}
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

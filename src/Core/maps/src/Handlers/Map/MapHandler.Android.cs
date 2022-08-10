@@ -169,6 +169,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
+		public static void MapElements(IMapHandler handler, IMap map)
+		{
+			
+		}
+
 		internal void OnMapReady(GoogleMap map)
 		{
 			if (map == null)

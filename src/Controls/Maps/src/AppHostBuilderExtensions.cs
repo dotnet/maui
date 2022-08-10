@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			handlersCollection.AddHandler<Map, MapHandler>();
 			handlersCollection.AddHandler<Pin, MapPinHandler>();
+			handlersCollection.AddHandler<MapElement, MapElementHandler>();
 			return handlersCollection;
 		}
 #endif

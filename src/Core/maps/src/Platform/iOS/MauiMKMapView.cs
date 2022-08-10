@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Text;
+using System.Linq;
+using CoreLocation;
 using MapKit;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
@@ -17,8 +16,9 @@ namespace Microsoft.Maui.Maps.Platform
 		object? _lastTouchedView;
 
 		public MauiMKMapView(IMapHandler handler)
-		{
+		{ 
 			_handler = handler;
+			OverlayRenderer = GetViewForOverlay1;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -91,6 +91,71 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 
 			return targetPin;
+		}
+#pragma warning disable CS8603 // Possible null reference return.
+		protected virtual MKOverlayRenderer GetViewForOverlay1(MKMapView mapview, IMKOverlay overlay)
+		{
+			return overlay switch
+			{
+				MKPolyline polyline => GetViewForPolyline(polyline),
+				MKPolygon polygon => GetViewForPolygon(polygon),
+				MKCircle circle => GetViewForCircle(circle),
+				_ => null,
+			};
+		}
+#pragma warning restore CS8603 // Possible null reference return.
+		protected virtual MKPolylineRenderer? GetViewForPolyline(MKPolyline mkPolyline)
+		{
+			var map = _handler?.VirtualView;
+			IGeoPathMapElement? targetPolyline = null;
+
+			for (int i = 0; i < map?.Elements.Count; i++)
+			{
+				var element = map.Elements[i];
+				if (ReferenceEquals(element.MapElementId, mkPolyline))
+				{
+					targetPolyline = (IGeoPathMapElement)element;
+					break;
+				}
+			}
+
+			return targetPolyline?.ToHandler(_handler?.MauiContext!).PlatformView as MKPolylineRenderer;
+		}
+
+		protected virtual MKPolygonRenderer? GetViewForPolygon(MKPolygon mkPolygon)
+		{
+			var map = _handler?.VirtualView;
+			IGeoPathMapElement? targetPolygon = null;
+
+			for (int i = 0; i < map?.Elements.Count; i++)
+			{
+				var element = map.Elements[i];
+				if (ReferenceEquals(element.MapElementId, mkPolygon))
+				{
+					targetPolygon = (IGeoPathMapElement)element;
+					break;
+				}
+			}
+
+			return targetPolygon?.ToHandler(_handler?.MauiContext!).PlatformView as MKPolygonRenderer;
+		}
+
+		protected virtual MKCircleRenderer? GetViewForCircle(MKCircle mkCircle)
+		{
+			var map = _handler?.VirtualView;
+			ICircleMapElement? targetCircle = null;
+
+			for (int i = 0; i < map?.Elements.Count; i++)
+			{
+				var element = map.Elements[i];
+				if (ReferenceEquals(element.MapElementId, mkCircle))
+				{
+					targetCircle = (ICircleMapElement)element;
+					break;
+				}
+			}
+
+			return targetCircle?.ToHandler(_handler?.MauiContext!).PlatformView as MKCircleRenderer;
 		}
 
 #pragma warning disable CS0108 // Member hides inherited member; missing new keyword
@@ -200,5 +265,41 @@ namespace Microsoft.Maui.Maps.Platform
 				}
 			}
 		}
+
+		internal void AddElements(IList elements)
+		{
+			foreach (IMapElement element in elements)
+			{
+				//	element.PropertyChanged += MapElementPropertyChanged;
+
+				IMKOverlay? overlay = null;
+				switch (element)
+				{
+					case IGeoPathMapElement geoPathElement:
+						if (geoPathElement is IFilledMapElement)
+							overlay = MKPolygon.FromCoordinates(geoPathElement.Geopath
+							.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude))
+							.ToArray());
+						else
+							overlay = MKPolyline.FromCoordinates(geoPathElement.Geopath
+								.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude))
+								.ToArray());
+						break;
+					case ICircleMapElement circleElement:
+						overlay = MKCircle.Circle(
+							new CLLocationCoordinate2D(circleElement.Center.Latitude, circleElement.Center.Longitude),
+							circleElement.Radius.Meters);
+						break;
+				}
+
+				if (overlay != null)
+				{
+					element.MapElementId = overlay;
+					AddOverlay(overlay);
+				}
+			}
+		}
+
+
 	}
 }

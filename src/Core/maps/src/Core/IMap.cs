@@ -44,6 +44,11 @@ namespace Microsoft.Maui.Maps
 		IList<IMapPin> Pins { get; }
 
 		/// <summary>
+		/// The pins that are to be shown on this Map.
+		/// </summary>
+		IList<IMapElement> Elements { get; }
+
+		/// <summary>
 		/// Method called by the handler when user clicks on the Map.
 		/// </summary>
 		void Clicked(Location position);
