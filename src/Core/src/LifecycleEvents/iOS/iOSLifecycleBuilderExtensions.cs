@@ -12,6 +12,7 @@
 		public static IiOSLifecycleBuilder PerformActionForShortcutItem(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.PerformActionForShortcutItem del) => lifecycle.OnEvent(del);
 		public static IiOSLifecycleBuilder WillEnterForeground(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.WillEnterForeground del) => lifecycle.OnEvent(del);
 		public static IiOSLifecycleBuilder WillTerminate(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.WillTerminate del) => lifecycle.OnEvent(del);
+		public static IiOSLifecycleBuilder ApplicationSignificantTimeChange(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.ApplicationSignificantTimeChange del) => lifecycle.OnEvent(del);
 
 		public static IiOSLifecycleBuilder SceneWillConnect(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneWillConnect del) => lifecycle.OnEvent(del);
 		public static IiOSLifecycleBuilder SceneDidDisconnect(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneDidDisconnect del) => lifecycle.OnEvent(del);
