@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			new GeocoderBackend(activity).Register();
+			//new GeocoderBackend(activity).Register();
 		}
 	}
 }
