@@ -527,7 +527,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 						}
 					}
 
-					AddMapElements(((Map)Element).MapElements);
+					AddMapElements((IEnumerable<MapElement>)((Map)Element).MapElements);
 					break;
 			}
 		}
