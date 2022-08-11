@@ -1,7 +1,4 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
 

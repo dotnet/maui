@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.Maui.Controls.Maps</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Maps</RootNamespace>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

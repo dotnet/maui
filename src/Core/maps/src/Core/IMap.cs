@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Maps
 		/// <summary>
 		/// The currently visible MapSpan of this Map.
 		/// </summary>
-		MapSpan VisibleRegion { get; set;  }
+		MapSpan? VisibleRegion { get; set;  }
 
 		/// <summary>
 		/// Gets the display type of map that can be shown.

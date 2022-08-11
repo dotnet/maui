@@ -3,11 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
@@ -37,8 +34,8 @@ namespace Microsoft.Maui.Controls.Maps
 
 		readonly ObservableCollection<IMapPin> _pins = new ();
 		readonly ObservableCollection<IMapElement> _mapElements = new ();
-		MapSpan _visibleRegion;
-		MapSpan _lastMoveToRegion;
+		MapSpan? _visibleRegion;
+		MapSpan? _lastMoveToRegion;
 
 		public Map(MapSpan region)
 		{
@@ -50,7 +47,6 @@ namespace Microsoft.Maui.Controls.Maps
 			_pins.CollectionChanged += PinsOnCollectionChanged;
 			_mapElements.CollectionChanged += MapElementsCollectionChanged;
 		}
-
 		
 
 		// center on Rome by default
@@ -119,9 +115,9 @@ namespace Microsoft.Maui.Controls.Maps
 
 		public IList<IMapElement> MapElements => _mapElements;
 
-		public event EventHandler<MapClickedEventArgs> MapClicked;
+		public event EventHandler<MapClickedEventArgs>? MapClicked;
 
-		public MapSpan VisibleRegion
+		public MapSpan? VisibleRegion
 		{
 			get { return _visibleRegion; }
 			set
@@ -154,14 +150,14 @@ namespace Microsoft.Maui.Controls.Maps
 			Handler?.Invoke(nameof(IMap.MoveToRegion), _lastMoveToRegion);
 		}
 
-		void PinsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void PinsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.NewItems != null && e.NewItems.Cast<Pin>().Any(pin => pin.Label == null))
 				throw new ArgumentException("Pin must have a Label to be added to a map");
 			Handler?.UpdateValue(nameof(IMap.Pins));
 		}
 
-		void MapElementsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void MapElementsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			Handler?.UpdateValue(nameof(IMap.Elements));
 		}
@@ -201,7 +197,7 @@ namespace Microsoft.Maui.Controls.Maps
 			CreatePinItems();
 		}
 
-		void OnItemsSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void OnItemsSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			e.Apply(
 				insert: (item, _, __) => CreatePin(item),
@@ -227,7 +223,7 @@ namespace Microsoft.Maui.Controls.Maps
 
 		void CreatePin(object newItem)
 		{
-			DataTemplate itemTemplate = ItemTemplate;
+			DataTemplate? itemTemplate = ItemTemplate;
 			if (itemTemplate == null)
 				itemTemplate = ItemTemplateSelector?.SelectTemplate(newItem, this);
 
@@ -245,7 +241,7 @@ namespace Microsoft.Maui.Controls.Maps
 			////  we need to remove by index because of how Pin.Equals() works
 			for (int i = 0; i < _pins.Count; ++i)
 			{
-				Pin pin = _pins[i] as Pin;
+				Pin? pin = _pins[i] as Pin;
 				if (pin != null)
 				{
 					if (pin.BindingContext?.Equals(itemToRemove) == true)

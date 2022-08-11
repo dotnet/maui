@@ -9,15 +9,18 @@ namespace Microsoft.Maui.Maps.Handlers
 	{
 		protected override MKOverlayRenderer CreatePlatformElement()
 		{
-			if (VirtualView is IGeoPathMapElement)
+			if (VirtualView.MapElementId != null)
 			{
-				if (VirtualView is IFilledMapElement)
-					return new MKPolygonRenderer((MKPolygon)VirtualView.MapElementId);
-				else
-					return new MKPolylineRenderer((MKPolyline)VirtualView.MapElementId);
+				if (VirtualView is IGeoPathMapElement)
+				{
+					if (VirtualView is IFilledMapElement)
+						return new MKPolygonRenderer((MKPolygon)VirtualView.MapElementId);
+					else
+						return new MKPolylineRenderer((MKPolyline)VirtualView.MapElementId);
+				}
+				if (VirtualView is ICircleMapElement)
+					return new MKCircleRenderer((MKCircle)VirtualView.MapElementId);
 			}
-			if (VirtualView is ICircleMapElement)
-				return new MKCircleRenderer((MKCircle)VirtualView.MapElementId);
 
 			return new MKOverlayRenderer();
 		}

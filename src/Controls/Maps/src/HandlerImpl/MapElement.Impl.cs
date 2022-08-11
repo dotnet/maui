@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
 
@@ -10,8 +9,6 @@ namespace Microsoft.Maui.Controls.Maps
 		Paint? IStroke.Stroke => StrokeColor?.AsPaint();
 
 		double IStroke.StrokeThickness => StrokeWidth;
-
-		IElement IElement.Parent => throw new NotImplementedException();
 
 		LineCap IStroke.StrokeLineCap => throw new NotImplementedException();
 

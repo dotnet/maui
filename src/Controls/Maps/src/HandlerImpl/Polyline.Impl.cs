@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Maps;
+﻿using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {

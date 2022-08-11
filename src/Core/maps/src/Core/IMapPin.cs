@@ -18,12 +18,12 @@ namespace Microsoft.Maui.Maps
 		/// </summary>
 		string Label { get; }
 
-		object MarkerId { get; set; }
-
 		/// <summary>
 		/// The geographical location of this pin.
 		/// </summary>
 		Location Position { get; }
+
+		object? MarkerId { get; set; }
 
 		bool SendMarkerClick();
 

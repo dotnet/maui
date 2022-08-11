@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using Microsoft.Maui.Maps;
+﻿using Microsoft.Maui.Maps;
 using Microsoft.Maui.Devices.Sensors;
 using System.Collections.Generic;
 

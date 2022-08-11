@@ -75,25 +75,25 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 		void MapClicked(object sender, MapClickedEventArgs e)
 		{
-			//switch (_selectedType)
-			//{
-			//	case SelectedElementType.Polyline:
-			//		_polyline.Geopath.Add(e.Position);
-			//		break;
-			//	case SelectedElementType.Polygon:
-			//		_polygon.Geopath.Add(e.Position);
-			//		break;
-			//	case SelectedElementType.Circle:
-			//		if (_circle.Center == default(Position))
-			//		{
-			//			_circle.Center = e.Position;
-			//		}
-			//		else
-			//		{
-			//			_circle.Radius = Distance.BetweenPositions(_circle.Center, e.Position);
-			//		}
-			//		break;
-			//}
+			switch (_selectedType)
+			{
+				case SelectedElementType.Polyline:
+					_polyline.Geopath.Add(e.Position);
+					break;
+				case SelectedElementType.Polygon:
+					_polygon.Geopath.Add(e.Position);
+					break;
+				case SelectedElementType.Circle:
+					if (_circle.Center == default(Position))
+					{
+						_circle.Center = e.Position;
+					}
+					else
+					{
+						_circle.Radius = Distance.BetweenPositions(_circle.Center, e.Position);
+					}
+					break;
+			}
 		}
 
 		void PickerSelectionChanged(object sender, EventArgs e)

@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Maps.Platform
 			for (int i = 0; i < map.Pins.Count; i++)
 			{
 				var pin = map.Pins[i];
-				if ((IMKAnnotation)pin.MarkerId == annotation)
+				if ((pin?.MarkerId as IMKAnnotation) == annotation)
 				{
 					targetPin = pin;
 					break;

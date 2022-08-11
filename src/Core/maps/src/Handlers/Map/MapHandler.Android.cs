@@ -332,10 +332,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			for (int i = 0; i < VirtualView.Pins.Count; i++)
 			{
 				var pin = VirtualView.Pins[i];
-				if ((string)pin.MarkerId == marker.Id)
+				if (pin?.MarkerId is string markerId)
 				{
-					targetPin = pin;
-					break;
+					if (markerId == marker.Id)
+					{
+						targetPin = pin;
+						break;
+					}
 				}
 			}
 

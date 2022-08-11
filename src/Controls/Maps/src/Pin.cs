@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Maps
 		public static readonly BindableProperty AddressProperty = BindableProperty.Create(nameof(Address), typeof(string), typeof(Pin), default(string));
 
 		public static readonly BindableProperty LabelProperty = BindableProperty.Create(nameof(Label), typeof(string), typeof(Pin), default(string));
-		private object _markerId;
+		private object? _markerId;
 
 		public string Address
 		{
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public object MarkerId
+		public object? MarkerId
 		{
 			get => _markerId;
 			set
@@ -50,11 +50,11 @@ namespace Microsoft.Maui.Controls.Maps
 			}
 		}
 
-		public event EventHandler<PinClickedEventArgs> MarkerClicked;
+		public event EventHandler<PinClickedEventArgs>? MarkerClicked;
 
-		public event EventHandler<PinClickedEventArgs> InfoWindowClicked;
+		public event EventHandler<PinClickedEventArgs>? InfoWindowClicked;
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (ReferenceEquals(null, obj))
 				return false;
@@ -84,12 +84,12 @@ namespace Microsoft.Maui.Controls.Maps
 			}
 		}
 
-		public static bool operator ==(Pin left, Pin right)
+		public static bool operator ==(Pin? left, Pin? right)
 		{
 			return Equals(left, right);
 		}
 
-		public static bool operator !=(Pin left, Pin right)
+		public static bool operator !=(Pin? left, Pin? right)
 		{
 			return !Equals(left, right);
 		}

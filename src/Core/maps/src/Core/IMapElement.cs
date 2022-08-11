@@ -2,6 +2,6 @@
 {
 	public interface IMapElement : IElement, IStroke
 	{
-		object MapElementId { get; set; }
+		object? MapElementId { get; set; }
 	}
 }

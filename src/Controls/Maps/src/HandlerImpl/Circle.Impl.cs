@@ -1,6 +1,4 @@
-﻿using System;
-#nullable enable
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
