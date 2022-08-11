@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 #pragma warning disable CA1416 // Validate platform compatibility
 
 		// Store a reference to the platform delegate so that it is not garbage collected
-		private IUIContextMenuInteractionDelegate? _uiContextMenuInteractionDelegate;
+		IUIContextMenuInteractionDelegate? _uiContextMenuInteractionDelegate;
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutContainer contextFlyoutContainer)
@@ -32,13 +32,13 @@ namespace Microsoft.Maui.Handlers
 			if (contextFlyoutContainer.ContextFlyout?.Count > 0)
 			{
 				var contextFlyoutHandler = contextFlyoutContainer.ContextFlyout.ToHandler(handler.MauiContext);
-				var contextFlyoutPlatformView = contextFlyoutContainer.ContextFlyout.Handler?.PlatformView;
+				var contextFlyoutPlatformView = contextFlyoutHandler.PlatformView;
 
 				if (handler.PlatformView is PlatformView uiView &&
 					contextFlyoutPlatformView is UIMenu uiMenu &&
 					handler is ViewHandler viewHandlerObj)
 				{
-					viewHandlerObj!._uiContextMenuInteractionDelegate = new FlyoutUIContextMenuInteractionDelegate(
+					viewHandlerObj._uiContextMenuInteractionDelegate = new FlyoutUIContextMenuInteractionDelegate(
 						() =>
 						{
 							return UIContextMenuConfiguration.Create(
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		private sealed class FlyoutUIContextMenuInteractionDelegate : NSObject, IUIContextMenuInteractionDelegate
+		sealed class FlyoutUIContextMenuInteractionDelegate : NSObject, IUIContextMenuInteractionDelegate
 		{
 			private readonly Func<UIContextMenuConfiguration> _menuConfigurationFunc;
 
