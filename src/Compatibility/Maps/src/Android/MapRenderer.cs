@@ -598,7 +598,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 						_circles = null;
 					}
 
-					AddMapElements(Element.MapElements);
+					AddMapElements((IEnumerable<MapElement>)Element.MapElements);
 					break;
 			}
 		}

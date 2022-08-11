@@ -39,9 +39,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 			{
 				Geopath =
 				{
-					new Position(47.641944, -122.127222),
-					new Position(37.411625, -122.071327),
-					new Position(35.138901, -80.922623)
+					new Devices.Sensors.Location(47.641944, -122.127222),
+					new Devices.Sensors.Location(37.411625, -122.071327),
+					new Devices.Sensors.Location(35.138901, -80.922623)
 				}
 			};
 
@@ -51,16 +51,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 				FillColor = Color.FromArgb("#88BF0A30"),
 				Geopath =
 				{
-					new Position(37, -102.05),
-					new Position(37, -109.05),
-					new Position(41, -109.05),
-					new Position(41, -102.05)
+					new Devices.Sensors.Location(37, -102.05),
+					new Devices.Sensors.Location(37, -109.05),
+					new Devices.Sensors.Location(41, -109.05),
+					new Devices.Sensors.Location(41, -102.05)
 				}
 			};
 
 			_circle = new Circle
 			{
-				Center = new Position(42.352364, -71.067177),
+				Center = new Devices.Sensors.Location(42.352364, -71.067177),
 				Radius = Distance.FromMiles(100.0),
 				StrokeColor = Color.FromRgb(31, 174, 206),
 				FillColor = Color.FromRgba(31, 174, 206, 127)
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 					_polygon.Geopath.Add(e.Position);
 					break;
 				case SelectedElementType.Circle:
-					if (_circle.Center == default(Position))
+					if (_circle.Center == default(Devices.Sensors.Location))
 					{
 						_circle.Center = e.Position;
 					}

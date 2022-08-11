@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			e.HideInfoWindow = true;
 		}
 
-		async void SearchForAddress(object sender, EventArgs e)
+		void SearchForAddress(object sender, EventArgs e)
 		{
 			//var searchAddress = (SearchBar)sender;
 			//var addressQuery = searchAddress.Text;
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Map.MoveToRegion(Map.VisibleRegion.WithZoom(1.0 / 3));
 		}
 
-		async void ReverseGeocodeClicked(object sender, EventArgs e)
+		void ReverseGeocodeClicked(object sender, EventArgs e)
 		{
 			//var addresses = await _geocoder.GetAddressesForPositionAsync(new Position(41.8902, 12.4923));
 			//foreach (var ad in addresses)
