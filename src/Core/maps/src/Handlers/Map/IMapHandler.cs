@@ -6,7 +6,7 @@ using PlatformView = Android.Gms.Maps.MapView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.WebView2;
 #elif TIZEN
-using PlatformView = System.Object;
+using PlatformView = ElmSharp.EvasObject;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

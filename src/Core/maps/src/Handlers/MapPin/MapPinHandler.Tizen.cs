@@ -1,9 +1,9 @@
 ﻿using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Maps.Handlers
 {
-	public partial class MapPinHandler : ElementHandler<IMapPin, object>
+	public partial class MapPinHandler : ElementHandler<IMapPin, ElmSharp.EvasObject>
 	{
-		protected override object CreatePlatformElement() => throw new System.NotImplementedException();
+		protected override ElmSharp.EvasObject CreatePlatformElement() => throw new System.NotImplementedException();
 		public static void MapPosition(IMapPinHandler handler, IMapPin mapPin) { }
 
 		public static void MapLabel(IMapPinHandler handler, IMapPin mapPin)	{ }

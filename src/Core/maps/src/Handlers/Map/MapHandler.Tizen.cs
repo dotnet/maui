@@ -4,10 +4,10 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Maps.Handlers
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-	public partial class MapHandler : ViewHandler<IMap, object>
+	public partial class MapHandler : ViewHandler<IMap, ElmSharp.EvasObject>
 	{
 
-		protected override object CreatePlatformView() => throw new NotImplementedException();
+		protected override ElmSharp.EvasObject CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapMapType(IMapHandler handler, IMap map) => throw new NotImplementedException();
 

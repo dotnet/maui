@@ -5,7 +5,7 @@ using PlatformView = Java.Lang.Object;
 #elif WINDOWS
 using PlatformView = System.Object;
 #elif TIZEN
-using PlatformView = System.Object;
+using PlatformView = ElmSharp.EvasObject;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
