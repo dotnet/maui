@@ -109,13 +109,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 			{
 				static Random Random = new Random(Environment.TickCount);
 
-				public static Position Next()
-				{
-					return new Position(
-						latitude: Random.NextDouble() * 180 - 90,
-						longitude: Random.NextDouble() * 360 - 180);
-				}
-
 				public static Location Next(Location position, double latitudeRange, double longitudeRange)
 				{
 					return new Location(

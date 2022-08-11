@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapGallery : ContentPage
 	{
-		readonly Geocoder _geocoder = new Geocoder();
+		//readonly Geocoder _geocoder = new Geocoder();
 		readonly Map Map;
 
 		public MapGallery()
@@ -91,23 +91,23 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		async void SearchForAddress(object sender, EventArgs e)
 		{
-			var searchAddress = (SearchBar)sender;
-			var addressQuery = searchAddress.Text;
-			searchAddress.Text = "";
-			searchAddress.Unfocus();
+			//var searchAddress = (SearchBar)sender;
+			//var addressQuery = searchAddress.Text;
+			//searchAddress.Text = "";
+			//searchAddress.Unfocus();
 
-			var positions = (await _geocoder.GetPositionsForAddressAsync(addressQuery)).ToList();
-			if (!positions.Any())
-				return;
+			//var positions = (await _geocoder.GetPositionsForAddressAsync(addressQuery)).ToList();
+			//if (!positions.Any())
+			//	return;
 
-			var position = new Location(positions.First().Latitude, positions.First().Longitude);
-			Map.MoveToRegion(MapSpan.FromCenterAndRadius(position, Distance.FromMeters(4000)));
-			Map.Pins.Add(new Pin
-			{
-				Label = addressQuery,
-				Position = position,
-				Address = addressQuery
-			});
+			//var position = new Location(positions.First().Latitude, positions.First().Longitude);
+			//Map.MoveToRegion(MapSpan.FromCenterAndRadius(position, Distance.FromMeters(4000)));
+			//Map.Pins.Add(new Pin
+			//{
+			//	Label = addressQuery,
+			//	Position = position,
+			//	Address = addressQuery
+			//});
 		}
 
 		void MapClicked(object sender, MapClickedEventArgs e)
@@ -144,9 +144,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		async void ReverseGeocodeClicked(object sender, EventArgs e)
 		{
-			var addresses = await _geocoder.GetAddressesForPositionAsync(new Position(41.8902, 12.4923));
-			foreach (var ad in addresses)
-				Debug.WriteLine(ad);
+			//var addresses = await _geocoder.GetAddressesForPositionAsync(new Position(41.8902, 12.4923));
+			//foreach (var ad in addresses)
+			//	Debug.WriteLine(ad);
 		}
 
 		void HomeClicked(object sender, EventArgs e)
