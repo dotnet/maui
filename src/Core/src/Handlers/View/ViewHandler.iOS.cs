@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -30,44 +29,24 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"The handler's {nameof(handler.MauiContext)} cannot be null.");
 
-			if (contextFlyoutContainer.ContextFlyout != null && contextFlyoutContainer.ContextFlyout.Any())
+			if (contextFlyoutContainer.ContextFlyout?.Count > 0)
 			{
-				// REVIEW: I'd like to call this code, but it throws because the ContextFlyout doesn't yet have a
-				// handler associated, so calling 'ToPlatform()' throws an exception. Instead, I've copied most of
-				// the code of those code paths and changed it to make it work here to create the ContextFlyoutHandler.
-				//var platformViewAttempt = contextFlyoutContainer.ContextFlyout.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert view to {typeof(PlatformView)}");
+				var contextFlyoutHandler = contextFlyoutContainer.ContextFlyout.ToHandler(handler.MauiContext);
+				var contextFlyoutPlatformView = contextFlyoutContainer.ContextFlyout.Handler?.PlatformView;
 
-				// This will set the MauiContext and get everything created first
-				var handler2 = contextFlyoutContainer.ContextFlyout.ToHandler(handler.MauiContext);
-
-				object? contextFlyoutPlatformView;
-				if (contextFlyoutContainer.ContextFlyout is IReplaceableView replaceableView && replaceableView.ReplacedView != contextFlyoutContainer.ContextFlyout)
-					contextFlyoutPlatformView = replaceableView.ReplacedView.ToPlatform();
-
-				_ = contextFlyoutContainer.ContextFlyout.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
-
-				if (contextFlyoutContainer.ContextFlyout.Handler is IViewHandler viewHandler)
+				if (handler.PlatformView is PlatformView uiView &&
+					contextFlyoutPlatformView is UIMenu uiMenu &&
+					handler is ViewHandler viewHandlerObj)
 				{
-					if (viewHandler.ContainerView is PlatformView containerView)
-						contextFlyoutPlatformView = containerView;
-
-					if (viewHandler.PlatformView is PlatformView platformView)
-						contextFlyoutPlatformView = platformView;
-				}
-
-				contextFlyoutPlatformView = contextFlyoutContainer.ContextFlyout.Handler?.PlatformView;
-
-				if (handler.PlatformView is PlatformView uiView && contextFlyoutPlatformView is UIMenu uiMenu)
-				{
-					var viewHandlerObj = handler as ViewHandler;
 					viewHandlerObj!._uiContextMenuInteractionDelegate = new FlyoutUIContextMenuInteractionDelegate(
-							() =>
-							{
-								return UIContextMenuConfiguration.Create(
-									identifier: null,
-									previewProvider: null,
-									actionProvider: _ => uiMenu);
-							});
+						() =>
+						{
+							return UIContextMenuConfiguration.Create(
+								identifier: null,
+								previewProvider: null,
+								actionProvider: _ => uiMenu);
+						});
+
 					var newFlyout = new UIContextMenuInteraction(
 						@delegate: viewHandlerObj!._uiContextMenuInteractionDelegate);
 
