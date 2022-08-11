@@ -220,10 +220,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				ClearFocus(control);
 				// removes cursor in SearchView
-				control.SetInputType(InputTypes.Null);
+				control.InputType = (int)InputTypes.Null;
 			}
 			else
-				control.SetInputType(_inputType);
+				control.InputType = (int)_inputType;
 
 			if (_editText != null)
 			{
@@ -327,7 +327,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					}
 				}
 			}
-			Control.SetInputType(_inputType);
+
+			Control.InputType = (int)_inputType;
 
 			if (keyboard == Keyboard.Numeric)
 			{
