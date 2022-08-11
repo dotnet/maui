@@ -12,6 +12,7 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Platform;
 using Color = Microsoft.Maui.Graphics.Color;
 using Size = Microsoft.Maui.Graphics.Size;
+using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
