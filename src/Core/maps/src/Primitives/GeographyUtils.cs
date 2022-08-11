@@ -11,14 +11,14 @@ namespace Microsoft.Maui.Maps
 
 		public static double ToRadians(this double degrees) => degrees* Math.PI / 180.0;
 
-		public static double ToDegrees(this double radians) = radians / Math.PI* 180.0;
+		public static double ToDegrees(this double radians) => radians / Math.PI* 180.0;
 
-		public static List<Location> ToCircumferencePositions(this Circle circle)
+		public static List<Location> ToCircumferencePositions(this ICircleMapElement circle)
 		{
 			var positions = new List<Location>();
 			double centerLatitude = circle.Center.Latitude.ToRadians();
 			double centerLongitude = circle.Center.Longitude.ToRadians();
-			double distance = circle.Radius.Kilometers / GeographyUtils.EarthRadiusKm;
+			double distance = circle.Radius.Kilometers / EarthRadiusKm;
 
 			for (int angle = 0; angle <= 360; angle++)
 			{
