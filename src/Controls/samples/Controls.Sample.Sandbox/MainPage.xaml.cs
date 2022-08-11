@@ -25,11 +25,11 @@ namespace Maui.Controls.Sample
 			const int newWidth = 800;
 			const int newHeight = 600;
 
-			Window.XRequest = (disp.Width / disp.Density - newWidth) / 2;
-			Window.YRequest = (disp.Height / disp.Density - newHeight) / 2;
+			Window.X = (disp.Width / disp.Density - newWidth) / 2;
+			Window.Y = (disp.Height / disp.Density - newHeight) / 2;
 
-			Window.WidthRequest = newWidth;
-			Window.HeightRequest = newHeight;
+			Window.Width = newWidth;
+			Window.Height = newHeight;
 		}
 	}
 }

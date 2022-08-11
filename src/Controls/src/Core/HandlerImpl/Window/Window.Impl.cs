@@ -26,39 +26,17 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FlowDirectionProperty =
 			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
-		public static readonly BindableProperty XRequestProperty = BindableProperty.Create(
-			nameof(XRequest), typeof(double), typeof(Window), -1d, propertyChanged: OnXRequestChanged);
-
-		public static readonly BindableProperty YRequestProperty = BindableProperty.Create(
-			nameof(YRequest), typeof(double), typeof(Window), -1d, propertyChanged: OnYRequestChanged);
-
-		public static readonly BindableProperty WidthRequestProperty = BindableProperty.Create(
-			nameof(WidthRequest), typeof(double), typeof(Window), -1d, propertyChanged: OnWidthRequestChanged);
-
-		public static readonly BindableProperty HeightRequestProperty = BindableProperty.Create(
-			nameof(HeightRequest), typeof(double), typeof(Window), -1d, propertyChanged: OnHeightRequestChanged);
-
-		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly(
+		public static readonly BindableProperty XProperty = BindableProperty.Create(
 			nameof(X), typeof(double), typeof(Window), -1d);
 
-		public static readonly BindableProperty XProperty = XPropertyKey.BindableProperty;
-
-		static readonly BindablePropertyKey YPropertyKey = BindableProperty.CreateReadOnly(
+		public static readonly BindableProperty YProperty = BindableProperty.Create(
 			nameof(Y), typeof(double), typeof(Window), -1d);
 
-		public static readonly BindableProperty YProperty = YPropertyKey.BindableProperty;
+		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
+			nameof(Width), typeof(double), typeof(Window), -1d);
 
-		static readonly BindablePropertyKey WidthPropertyKey = BindableProperty.CreateReadOnly(
-			nameof(Width), typeof(double), typeof(Window), -1d,
-			coerceValue: (bindable, value) => double.IsNaN((double)value) ? 0d : value);
-
-		public static readonly BindableProperty WidthProperty = WidthPropertyKey.BindableProperty;
-
-		static readonly BindablePropertyKey HeightPropertyKey = BindableProperty.CreateReadOnly(
-			nameof(Height), typeof(double), typeof(Window), -1d,
-			coerceValue: (bindable, value) => double.IsNaN((double)value) ? 0d : value);
-
-		public static readonly BindableProperty HeightProperty = HeightPropertyKey.BindableProperty;
+		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
+			nameof(Height), typeof(double), typeof(Window), -1d);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -121,61 +99,37 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PageProperty, value);
 		}
 
-		public double XRequest
-		{
-			get => (double)GetValue(XRequestProperty);
-			set => SetValue(XRequestProperty, value);
-		}
-
-		public double YRequest
-		{
-			get => (double)GetValue(YRequestProperty);
-			set => SetValue(YRequestProperty, value);
-		}
-
-		public double WidthRequest
-		{
-			get => (double)GetValue(WidthRequestProperty);
-			set => SetValue(WidthRequestProperty, value);
-		}
-
-		public double HeightRequest
-		{
-			get => (double)GetValue(HeightRequestProperty);
-			set => SetValue(HeightRequestProperty, value);
-		}
-
 		public double X
 		{
 			get => (double)GetValue(XProperty);
-			private set => SetValue(XPropertyKey, value);
+			set => SetValue(XProperty, value);
 		}
 
 		public double Y
 		{
 			get => (double)GetValue(YProperty);
-			private set => SetValue(YPropertyKey, value);
+			set => SetValue(YProperty, value);
 		}
 
 		public double Width
 		{
 			get => (double)GetValue(WidthProperty);
-			private set => SetValue(WidthPropertyKey, value);
+			set => SetValue(WidthProperty, value);
 		}
 
 		public double Height
 		{
 			get => (double)GetValue(HeightProperty);
-			private set => SetValue(HeightPropertyKey, value);
+			set => SetValue(HeightProperty, value);
 		}
 
 		double IWindow.X
 		{
 			get
 			{
-				if (!IsSet(XRequestProperty))
+				if (!IsSet(XProperty))
 					return Primitives.Dimension.Unset;
-				var x = XRequest;
+				var x = X;
 				if (x == -1)
 					return Primitives.Dimension.Unset;
 				return x;
@@ -186,9 +140,9 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (!IsSet(YRequestProperty))
+				if (!IsSet(YProperty))
 					return Primitives.Dimension.Unset;
-				var y = YRequest;
+				var y = Y;
 				if (y == -1)
 					return Primitives.Dimension.Unset;
 				return y;
@@ -199,9 +153,9 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (!IsSet(WidthRequestProperty))
+				if (!IsSet(WidthProperty))
 					return Primitives.Dimension.Unset;
-				var width = WidthRequest;
+				var width = Width;
 				if (width == -1)
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(width);
@@ -212,9 +166,9 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (!IsSet(HeightRequestProperty))
+				if (!IsSet(HeightProperty))
 					return Primitives.Dimension.Unset;
-				var height = HeightRequest;
+				var height = Height;
 				if (height == -1)
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(height);
@@ -230,10 +184,6 @@ namespace Microsoft.Maui.Controls
 				Y = value.Y;
 				Width = value.Width;
 				Height = value.Height;
-				XRequest = value.X;
-				YRequest = value.Y;
-				WidthRequest = value.Width;
-				HeightRequest = value.Height;
 			}
 		}
 
@@ -669,18 +619,6 @@ namespace Microsoft.Maui.Controls
 
 			return this.Page?.SendBackButtonPressed() ?? false;
 		}
-
-		static void OnXRequestChanged(BindableObject bindable, object oldvalue, object newvalue) =>
-			(bindable as IWindow)?.Handler?.UpdateValue(nameof(IWindow.X));
-
-		static void OnYRequestChanged(BindableObject bindable, object oldvalue, object newvalue) =>
-			(bindable as IWindow)?.Handler?.UpdateValue(nameof(IWindow.Y));
-
-		static void OnWidthRequestChanged(BindableObject bindable, object oldvalue, object newvalue) =>
-			(bindable as IWindow)?.Handler?.UpdateValue(nameof(IWindow.Width));
-
-		static void OnHeightRequestChanged(BindableObject bindable, object oldvalue, object newvalue) =>
-			(bindable as IWindow)?.Handler?.UpdateValue(nameof(IWindow.Height));
 
 		static double ValidatePositive(double value, [CallerMemberName] string? name = null) =>
 			value >= 0

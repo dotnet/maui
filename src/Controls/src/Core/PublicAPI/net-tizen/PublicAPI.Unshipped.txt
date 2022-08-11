@@ -4,17 +4,13 @@ Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
 Microsoft.Maui.Controls.Window.Frame.get -> Microsoft.Maui.Graphics.Rect
 Microsoft.Maui.Controls.Window.Frame.set -> void
 Microsoft.Maui.Controls.Window.Height.get -> double
-Microsoft.Maui.Controls.Window.HeightRequest.get -> double
-Microsoft.Maui.Controls.Window.HeightRequest.set -> void
+Microsoft.Maui.Controls.Window.Height.set -> void
 Microsoft.Maui.Controls.Window.Width.get -> double
-Microsoft.Maui.Controls.Window.WidthRequest.get -> double
-Microsoft.Maui.Controls.Window.WidthRequest.set -> void
+Microsoft.Maui.Controls.Window.Width.set -> void
 Microsoft.Maui.Controls.Window.X.get -> double
-Microsoft.Maui.Controls.Window.XRequest.get -> double
-Microsoft.Maui.Controls.Window.XRequest.set -> void
+Microsoft.Maui.Controls.Window.X.set -> void
 Microsoft.Maui.Controls.Window.Y.get -> double
-Microsoft.Maui.Controls.Window.YRequest.get -> double
-Microsoft.Maui.Controls.Window.YRequest.set -> void
+Microsoft.Maui.Controls.Window.Y.set -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ContentPresenter.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.FlyoutPage.OnDisappearing() -> void
@@ -28,10 +24,6 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 *REMOVED*override Microsoft.Maui.Controls.FlexLayout.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.HeightProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.Window.HeightRequestProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.WidthProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.Window.WidthRequestProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.XProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.Window.XRequestProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.YProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.Window.YRequestProperty -> Microsoft.Maui.Controls.BindableProperty!
