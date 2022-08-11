@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class VisualElementTests
 	{
-		[Fact( "If WidthRequest has been set and is reset to -1, the Core Width should return to being Unset")]
+		[Fact("If WidthRequest has been set and is reset to -1, the Core Width should return to being Unset")]
 		public void SettingWidthRequestToNegativeOneShouldResetWidth()
 		{
 			var visualElement = new Label();
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(visualElement.WidthRequest, -1);
 		}
 
-		[Fact( "If HeightRequest has been set and is reset to -1, the Core Height should return to being Unset")]
+		[Fact("If HeightRequest has been set and is reset to -1, the Core Height should return to being Unset")]
 		public void SettingHeightRequestToNegativeOneShouldResetWidth()
 		{
 			var visualElement = new Label();

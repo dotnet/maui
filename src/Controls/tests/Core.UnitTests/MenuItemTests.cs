@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 	}
 
-	
+
 	public abstract class MenuItemTests<T>
 		: CommandSourceTests<T>
 		where T : MenuItem, new()

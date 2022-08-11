@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class PickerTests : BaseTestFixture
 	{
 		class PickerTestsContextFixture

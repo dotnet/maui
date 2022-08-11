@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 	}
 
-	
+
 	public class BindableObjectUnitTests : BaseTestFixture
 	{
 		[Fact]

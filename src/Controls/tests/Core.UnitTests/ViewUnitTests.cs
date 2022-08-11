@@ -10,15 +10,15 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class ViewUnitTests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		
+
 		public ViewUnitTests()
 		{
-			
+
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, widthConstraint, heightConstraint) =>
 			{

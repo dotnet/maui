@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	static class TestDataHelpers 
+	static class TestDataHelpers
 	{
 		static IEnumerable<IEnumerable<T>> CartesianProduct<T>(
 			this IEnumerable<IEnumerable<T>> sequences)
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				select accseq.Concat(new[] { item }));
 		}
 
-		public static IEnumerable<object[]> Combinations<T>(IEnumerable<IEnumerable<T>> inputs) 
+		public static IEnumerable<object[]> Combinations<T>(IEnumerable<IEnumerable<T>> inputs)
 		{
 			foreach (var set in CartesianProduct(inputs))
 			{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		public static IEnumerable<object[]> Combinations<T>(IEnumerable<T> inputs) 
+		public static IEnumerable<object[]> Combinations<T>(IEnumerable<T> inputs)
 		{
 			var all = new List<IEnumerable<T>>(inputs.Count());
 			foreach (var _ in inputs)

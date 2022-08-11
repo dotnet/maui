@@ -19,8 +19,17 @@ namespace Microsoft.Maui
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void RegisterSourceInfo(object target, Uri uri, int lineNumber, int linePosition)
 		{
-			if (target != null && DebuggerHelper.DebuggerIsAttached && !sourceInfos.TryGetValue(target, out _))
+#if !NETSTANDARD2_0
+			if (target != null && DebuggerHelper.DebuggerIsAttached)
+				sourceInfos.AddOrUpdate(target, new SourceInfo(uri, lineNumber, linePosition));
+#else
+			if (target != null && DebuggerHelper.DebuggerIsAttached)
+			{
+				if (sourceInfos.TryGetValue(target, out _))
+					sourceInfos.Remove(target);
 				sourceInfos.Add(target, new SourceInfo(uri, lineNumber, linePosition));
+			}
+#endif
 		}
 
 		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='GetXamlSourceInfo']/Docs" />

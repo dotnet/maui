@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public event EventHandler MockEvent2;
 	}
 
-	
+
 	public class EventTriggerTest : BaseTestFixture
 	{
 		[Fact]

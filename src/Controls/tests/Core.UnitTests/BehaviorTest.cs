@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public BindableObject AssociatedObject { get; set; }
 	}
 
-	
+
 	public class BehaviorTest : BaseTestFixture
 	{
 		[Fact]

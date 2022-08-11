@@ -9,17 +9,17 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class MarshalingObservableCollectionTests : IDisposable
 	{
 		MarshalingTestDispatcherProvider _dispatcherProvider;
-		
+
 		public MarshalingObservableCollectionTests()
 		{
 			_dispatcherProvider = new MarshalingTestDispatcherProvider();
 			DispatcherProvider.SetCurrent(_dispatcherProvider);
 		}
-		
+
 		public void Dispose()
 		{
 			DispatcherProvider.SetCurrent(null);
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True((int)onMainThreadValue == 2, "Should have value from after move");
 		});
 
-		
+
 
 		// This class simulates running a single UI thread with a queue and non-UI threads;
 		// this allows us to test IsInvokeRequired/BeginInvoke without having to be on an actual device

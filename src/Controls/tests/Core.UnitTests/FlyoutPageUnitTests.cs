@@ -6,16 +6,16 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class FlyoutPageUnitTests : BaseTestFixture
 	{
 		MockDeviceDisplay mockDeviceDisplay;
 		MockDeviceInfo mockDeviceInfo;
 
-		
+
 		public FlyoutPageUnitTests()
 		{
-			
+
 			DeviceDisplay.SetCurrent(mockDeviceDisplay = new MockDeviceDisplay());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}

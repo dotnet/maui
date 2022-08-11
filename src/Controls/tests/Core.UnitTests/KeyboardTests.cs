@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	
+
 	public class KeyboardTests : BaseTestFixture
 	{
 		[Fact]
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	
+
 	public class KeyboardTypeConverterTests : BaseTestFixture
 	{
 		[Fact]

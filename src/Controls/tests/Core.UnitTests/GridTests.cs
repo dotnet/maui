@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	
+
 	public class GridTests : BaseTestFixture
 	{
 		[Fact]
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			grid.Layout(new Rect(0, 0, sizeRequest.Request.Width, sizeRequest.Request.Height));
 		}
 
-		[Fact( "Columns with a Star width less than one should not cause the Grid to contract below the target width; see https://github.com/xamarin/Microsoft.Maui.Controls/issues/11742")]
+		[Fact("Columns with a Star width less than one should not cause the Grid to contract below the target width; see https://github.com/xamarin/Microsoft.Maui.Controls/issues/11742")]
 		public void StarWidthsLessThanOneShouldNotContractGrid()
 		{
 			var grid = new Grid
@@ -421,7 +421,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			outerGrid.Layout(new Rect(0, 0, firstMeasure.Width, firstMeasure.Height));
 
 			// Verify that the actual height of the label is what we would expect (within a tolerance)
-			AssertEqualWithTolerance(label1.DesiredHeight(expectedColumnWidth), label1.Height, 2);			
+			AssertEqualWithTolerance(label1.DesiredHeight(expectedColumnWidth), label1.Height, 2);
 
 			var label1OriginalHeight = label1.Height;
 
@@ -439,7 +439,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(label1.Height >= (label1OriginalHeight));
 		}
 
-		static void AssertEqualWithTolerance(double a, double b, double tolerance) 
+		static void AssertEqualWithTolerance(double a, double b, double tolerance)
 		{
 			var diff = Math.Abs(a - b);
 			Assert.True(diff <= tolerance);
@@ -757,12 +757,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		
+
 		public class AddDimension : GridTests
 		{
-			public static IEnumerable<object[]> Operations() 
+			public static IEnumerable<object[]> Operations()
 			{
-				var opsStrings = new string[] 
+				var opsStrings = new string[]
 				{
 					"HHH",
 					"HHV",
@@ -828,7 +828,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					}
 				);
 			}
-			
+
 			void AddVertical()
 			{
 				// new block gets new id
@@ -856,7 +856,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					}
 				);
 			}
-			
+
 			void AddRowDef()
 			{
 				_rowDef++;
@@ -864,7 +864,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				_grid.RowDefinitions.Add(new RowDefinition());
 			}
-			
+
 			void AddColumnDef()
 			{
 				_colDef++;

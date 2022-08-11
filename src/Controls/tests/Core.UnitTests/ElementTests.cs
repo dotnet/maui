@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		readonly ObservableCollection<Element> internalChildren = new ObservableCollection<Element>();
 	}
 
-	
+
 	public class ElementTests
 		: BaseTestFixture
 	{

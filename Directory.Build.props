@@ -65,20 +65,26 @@
     <TizenTargetFrameworkVersion>6.5</TizenTargetFrameworkVersion>
   </PropertyGroup>
 
+  <Import Condition="Exists('Directory.Build.Override.props')" Project="Directory.Build.Override.props" />
+
   <PropertyGroup>
     <!-- the real TFMs -->
-    <MauiPlatforms>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-maccatalyst;net$(_MauiDotNetVersion)-android</MauiPlatforms>
     <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion);net$(_MauiDotNetVersion)-windows$(Windows2TargetFrameworkVersion)</WindowsMauiPlatforms>
-    <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
-    <MauiPlatforms Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(MauiPlatforms);net$(_MauiDotNetVersion)-tizen</MauiPlatforms>
+
+    <MauiPlatforms Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-tizen;$(MauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' != 'false'">net$(_MauiDotNetVersion)-android;$(MauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' != 'false'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeIosFrameworks)' != 'false'">net$(_MauiDotNetVersion)-ios;$(MauiPlatforms)</MauiPlatforms>
 
     <!-- Graphics TFMs -->
     <MauiGraphicsPlatforms>$(MauiPlatforms)</MauiGraphicsPlatforms>
     <MauiGraphicsPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiGraphicsPlatforms);net$(_MauiDotNetVersion)-macos</MauiGraphicsPlatforms>
 
     <!-- Work around the IDE not properly handling the NU1703 warning -->
-    <MauiPlatformsNoMacCat>net$(_MauiDotNetVersion)-ios;net$(_MauiDotNetVersion)-android</MauiPlatformsNoMacCat>
     <MauiPlatformsNoMacCat Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatformsNoMacCat);$(WindowsMauiPlatforms)</MauiPlatformsNoMacCat>
+    <MauiPlatformsNoMacCat Condition="'$(IncludeIosFrameworks)' != 'false'">net$(_MauiDotNetVersion)-ios;$(MauiPlatformsNoMacCat)</MauiPlatformsNoMacCat>
+    <MauiPlatformsNoMacCat Condition="'$(IncludeAndroidTargetFrameworks)' != 'false'">net$(_MauiDotNetVersion)-android;$(MauiPlatformsNoMacCat)</MauiPlatformsNoMacCat>
   </PropertyGroup>
 
   <PropertyGroup>

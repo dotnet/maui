@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
 
-	
+
 	public class ContraintTypeConverterTests : BaseTestFixture
 	{
 		[Fact]
