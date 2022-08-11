@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Maps
 		
 
 		// center on Rome by default
-		public Map() : this(new MapSpan(new Devices.Sensors.Location(41.890202, 12.492049), 0.1, 0.1))
+		public Map() : this(new MapSpan(new Devices.Sensors.Location(20.802757, -156.625054), 0.1, 0.1))
 		{
 		}
 
