@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Handlers
 			// TODO: Need to figure out how to rebuild the menu items for the entire context menu. On iOS/MacCat you
 			// can't add/remove individual menu items. You can call UIMenu.GetMenuByReplacingChildren(newChildren) to
 			// rebuild a specific menu, but that needs to be done at the "top" (the menu itself, not individual sub-items).
+			// https://github.com/dotnet/maui/issues/9359
 		}
 	}
 }
