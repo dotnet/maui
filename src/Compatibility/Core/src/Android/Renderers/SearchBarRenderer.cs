@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		void UpdatePlaceholder()
 		{
-			Control.SetQueryHint(Element.Placeholder);
+			Control.QueryHint = Element.Placeholder;
 		}
 
 		[PortHandler]
