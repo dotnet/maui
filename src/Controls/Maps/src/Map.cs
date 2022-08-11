@@ -49,8 +49,8 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 		
 
-		// center on Rome by default
-		public Map() : this(new MapSpan(new Devices.Sensors.Location(20.802757, -156.625054), 0.1, 0.1))
+		// center on Maui by default
+		public Map() : this(new MapSpan(new Devices.Sensors.Location(20.793062527, -156.336394697), 0.5, 0.5))
 		{
 		}
 
