@@ -44,7 +44,7 @@ namespace Maui.Controls.Sample.Pages
 		}
 
 #if WINDOWS
-		private void OnWebView2CoreWebView2Initialized(Microsoft.UI.Xaml.Controls.WebView2 sender, Microsoft.UI.Xaml.Controls.CoreWebView2InitializedEventArgs args)
+		void OnWebView2CoreWebView2Initialized(Microsoft.UI.Xaml.Controls.WebView2 sender, Microsoft.UI.Xaml.Controls.CoreWebView2InitializedEventArgs args)
 		{
 			sender.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
 		}
@@ -54,13 +54,13 @@ namespace Maui.Controls.Sample.Pages
 
 		int count;
 
-		private void Button_Clicked(object sender, EventArgs e)
+		void OnIncrementByOneClicked(object sender, EventArgs e)
 		{
 			count++;
 			OnPropertyChanged(nameof(CounterValue));
 		}
 
-		private void OnIncrementMenuItemClicked(object sender, EventArgs e)
+		void OnIncrementMenuItemClicked(object sender, EventArgs e)
 		{
 			var menuItem = (MenuFlyoutItem)sender;
 			var incrementAmount = int.Parse((string)menuItem.CommandParameter);
@@ -70,7 +70,7 @@ namespace Maui.Controls.Sample.Pages
 
 		public string CounterValue => count.ToString("N0");
 
-		private async void OnEntryShowTextClicked(object sender, EventArgs e)
+		async void OnEntryShowTextClicked(object sender, EventArgs e)
 		{
 			await DisplayAlert(
 				title: "Entry",
@@ -78,17 +78,17 @@ namespace Maui.Controls.Sample.Pages
 				cancel: "OK");
 		}
 
-		private void OnEntryAddTextClicked(object sender, EventArgs e)
+		void OnEntryAddTextClicked(object sender, EventArgs e)
 		{
 			EntryWithContextFlyout.Text += " more text!";
 		}
 
-		private void OnEntryClearTextClicked(object sender, EventArgs e)
+		void OnEntryClearTextClicked(object sender, EventArgs e)
 		{
 			EntryWithContextFlyout.Text = "";
 		}
 
-		private async void OnImageContextClicked(object sender, EventArgs e)
+		async void OnImageContextClicked(object sender, EventArgs e)
 		{
 			await DisplayAlert(
 				title: "Image",
@@ -96,14 +96,26 @@ namespace Maui.Controls.Sample.Pages
 				cancel: "OK");
 		}
 
-		private void OnWebViewGoToSiteClicked(object sender, EventArgs e)
+		void OnWebViewGoToSiteClicked(object sender, EventArgs e)
 		{
 			ContextMenuWebView.Source = new UrlWebViewSource() { Url = "https://github.com/dotnet/maui", };
 		}
 
-		private async void OnWebViewInvokeJSClicked(object sender, EventArgs e)
+		async void OnWebViewInvokeJSClicked(object sender, EventArgs e)
 		{
 			await ContextMenuWebView.EvaluateJavaScriptAsync(@"alert('help, i\'m being invoked!');");
+		}
+
+		void OnAddMenuClicked(object sender, EventArgs e)
+		{
+			var contextFlyout = ((MenuFlyoutItem)sender).Parent as ContextFlyout;
+			contextFlyout.Add(new MenuFlyoutItem() { Text = "Thank you for adding me" });
+		}
+
+		void OnSubMenuClicked(object sender, EventArgs e)
+		{
+			var subMenu = ((MenuFlyoutSubItem)sender);
+			subMenu.Add(new MenuFlyoutItem() { Text = "Thank you for adding me" });
 		}
 	}
 }

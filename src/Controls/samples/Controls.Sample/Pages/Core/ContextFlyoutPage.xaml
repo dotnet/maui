@@ -7,7 +7,7 @@
     <ScrollView>
         <VerticalStackLayout>
             <HorizontalStackLayout Spacing="10">
-                <Button Text="Increment by 1 (or right-click me)" Clicked="Button_Clicked" FontSize="30" BackgroundColor="DarkGray">
+                <Button Text="Increment by 1 (or right-click me)" Clicked="OnIncrementByOneClicked" FontSize="30" BackgroundColor="DarkGray">
                     <Button.ContextFlyout>
                         <MenuFlyoutItem Text="Increment by 10" Clicked="OnIncrementMenuItemClicked" CommandParameter="10"></MenuFlyoutItem>
                         <MenuFlyoutItem Text="Increment by 20" Clicked="OnIncrementMenuItemClicked" CommandParameter="20"></MenuFlyoutItem>
@@ -19,6 +19,13 @@
                 </Button>
                 <Label Text="{Binding CounterValue}" FontSize="30" VerticalOptions="Center"></Label>
             </HorizontalStackLayout>
+
+            <Label Text="Right-click and add additional menus (currently quirky on Windows and Catalyst)">
+                <Label.ContextFlyout>
+                    <MenuFlyoutItem Text="Add Menu" Clicked="OnAddMenuClicked"></MenuFlyoutItem>
+                    <MenuFlyoutSubItem Text="Add Sub Menu" Clicked="OnSubMenuClicked"></MenuFlyoutSubItem>
+                </Label.ContextFlyout>
+            </Label>
 
             <Label Text="Right-click to see beautiful menus" FontSize="30">
                 <Label.ContextFlyout>
@@ -74,7 +81,7 @@
                 </Label.ContextFlyout>
             </Label>
 
-            <Entry Placeholder="Has default context menu">
+            <Entry Placeholder="Has default context menu (crashes on WinUI #9353)">
             </Entry>
 
             <Entry Placeholder="Has a custom context menu" x:Name="EntryWithContextFlyout">
@@ -88,7 +95,7 @@
             <Image MaximumHeightRequest="200" MaximumWidthRequest="200">
                 <Image.ContextFlyout>
                     <MenuFlyoutItem Text="Use Clicked event" Clicked="OnImageContextClicked"></MenuFlyoutItem>
-                    <MenuFlyoutItem Text="Use Command and CommandParameter (doesn't work yet)" Command="{Binding ImageContextCommand}" CommandParameter="some value"></MenuFlyoutItem>
+                    <MenuFlyoutItem Text="Use Command and CommandParameter" Command="{Binding ImageContextCommand}" CommandParameter="some value"></MenuFlyoutItem>
                 </Image.ContextFlyout>
                 <Image.Source>
                     <FontImageSource Glyph="🆒" FontFamily="Arial" Color="MediumPurple" Size="50" />
