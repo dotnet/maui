@@ -20,16 +20,16 @@ namespace Microsoft.Maui.Handlers
 			var command = UIAction.Create(
 				title: VirtualView.Text,
 				uiImage,
-				$"M{index}:",
+				$"{index}",
 				OnMenuClicked);
-
+			
 			menus[index] = VirtualView;
 			return command;
 		}
 
 		static void OnMenuClicked(UIAction uIAction)
 		{
-
+			Execute(uIAction);
 		}
 
 		internal static void Execute(UICommand uICommand)
