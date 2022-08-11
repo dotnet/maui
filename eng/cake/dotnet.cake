@@ -13,6 +13,7 @@ if (TestTFM == "default")
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new string[] {
+    "Microsoft.Maui.Controls.Foldable.*.nupkg",
     "Microsoft.Maui.Graphics.*.nupkg",
 };
 
