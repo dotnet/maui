@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			Assert.Equal(PinType.SavedPin, pin.Type);
-			Assert.Equal(pin.Position.Latitude, -90);
+			Assert.Equal(pin.Position.Latitude, -92);
+			Assert.Equal(pin.Position.Longitude, 178);
 			Assert.Equal("My Desktop", pin.Label);
 			Assert.Equal("123 Hello World Street", pin.Address);
 		}
