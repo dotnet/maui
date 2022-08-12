@@ -98,7 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 			var control = (TElement)Activator.CreateInstance(typeof(TElement));
-			control.TooltipText = expected;
+			control.ToolTip = new ToolTip() { Content = expected };
 
 			var handler = await CreateHandlerAsync(control);
 

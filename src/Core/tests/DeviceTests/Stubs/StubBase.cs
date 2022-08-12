@@ -7,7 +7,7 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBase : ElementStub, IView, IVisualTreeElement
+	public class StubBase : ElementStub, IView, IVisualTreeElement, IToolTipContainer
 	{
 		IElementHandler IElement.Handler
 		{
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool InputTransparent { get; set; }
 
-		public string TooltipText { get; set; }
+		public ToolTip ToolTip { get; set; }
 
 		public Size Arrange(Rect bounds)
 		{

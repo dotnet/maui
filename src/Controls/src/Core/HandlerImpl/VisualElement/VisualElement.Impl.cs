@@ -7,7 +7,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
-	public partial class VisualElement : IView, IToolTipContainer
+	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
 		bool _isLoadedFired;
@@ -457,7 +457,5 @@ namespace Microsoft.Maui.Controls
 		partial void HandlePlatformUnloadedLoaded();
 
 		internal IView? ParentView => ((this as IView)?.Parent as IView);
-
-		ToolTip? IToolTipContainer.ToolTip => new ToolTip() { Content = ToolTipText };
 	}
 }

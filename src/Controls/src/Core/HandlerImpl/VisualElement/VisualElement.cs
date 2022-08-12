@@ -16,8 +16,7 @@ namespace Microsoft.Maui.Controls
 				[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName] = MapAccessKeyVerticalOffset,
 #endif
 				[nameof(BackgroundColor)] = MapBackgroundColor,
-				[nameof(Page.BackgroundImageSource)] = MapBackgroundImageSource,
-				[nameof(VisualElement.ToolTipText)] = (handler, _) => handler.UpdateValue(nameof(IToolTipContainer.ToolTip)),
+				[nameof(Page.BackgroundImageSource)] = MapBackgroundImageSource
 			};
 
 		internal static void RemapForControls()

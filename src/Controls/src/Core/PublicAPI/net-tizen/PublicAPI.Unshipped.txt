@@ -1,8 +1,8 @@
 ﻿#nullable enable
 Microsoft.Maui.Controls.MenuFlyoutSeparator
 Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
-Microsoft.Maui.Controls.VisualElement.ToolTipText.get -> string!
-Microsoft.Maui.Controls.VisualElement.ToolTipText.set -> void
+Microsoft.Maui.Controls.ToolTipProperties
+Microsoft.Maui.Controls.ToolTipProperties.ToolTipProperties() -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ContentPresenter.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.FlyoutPage.OnDisappearing() -> void
@@ -14,5 +14,7 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 *REMOVED*override Microsoft.Maui.Controls.RadioButton.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.RadioButton.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.FlexLayout.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-static readonly Microsoft.Maui.Controls.VisualElement.ToolTipTextProperty -> Microsoft.Maui.Controls.BindableProperty!
+static Microsoft.Maui.Controls.ToolTipProperties.GetContent(Microsoft.Maui.Controls.BindableObject! bindable) -> object!
+static Microsoft.Maui.Controls.ToolTipProperties.SetContent(Microsoft.Maui.Controls.BindableObject! bindable, object! value) -> void
+static readonly Microsoft.Maui.Controls.ToolTipProperties.ContentProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
