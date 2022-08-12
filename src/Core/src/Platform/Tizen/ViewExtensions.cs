@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateToolTip(this EvasObject platformView, ToolTip? tooltip)
 		{
 			string? text = tooltip?.Content?.ToString();
-			platformView.SetUpdateToolTipText(text);
+			platformView.SetTooltipText(text);
 		}
 
 		internal static Rect GetPlatformViewBounds(this IView view)
