@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Pin pin = new Pin
 			{
 				Type = PinType.SavedPin,
-				Position = new Location(-92, 178),
+				Position = new Location(-90, 178),
 				Label = "My Desktop",
 				Address = "123 Hello World Street"
 			};
