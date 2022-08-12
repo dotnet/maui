@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.Apple" Version="6.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="6.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="6.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="6.0.7" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
