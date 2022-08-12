@@ -617,6 +617,17 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ClipProperty, value); }
 		}
 
+#nullable enable
+		public static readonly BindableProperty ToolTipTextProperty =
+ 			BindableProperty.Create(nameof(ToolTipText), typeof(string), typeof(VisualElement), defaultValue: null);
+
+		public string? ToolTipText
+		{
+			get { return (string)GetValue(ToolTipTextProperty); }
+			set { SetValue(ToolTipTextProperty, value); }
+		}
+#nullable disable
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Batched']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool Batched => _batched > 0;

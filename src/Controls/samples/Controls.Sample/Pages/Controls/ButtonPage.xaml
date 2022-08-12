@@ -14,7 +14,7 @@
                 <Button
                     Text="Button"/>
                 <Button
-                    Text="Button with Tooltip" TooltipText="This is a tooltip!" />
+                    Text="Button with Tooltip" ToolTipText="This is a tooltip!" />
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>

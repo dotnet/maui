@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls
 #endif
 				[nameof(BackgroundColor)] = MapBackgroundColor,
 				[nameof(Page.BackgroundImageSource)] = MapBackgroundImageSource,
+				[nameof(VisualElement.ToolTipText)] = (handler, _) => handler.UpdateValue(nameof(IToolTipContainer.ToolTip)),
 			};
 
 		internal static void RemapForControls()

@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
-				[nameof(IView.TooltipText)] = MapTooltipText,
+				[nameof(IToolTipContainer.ToolTip)] = MapToolTip,
 			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
@@ -344,10 +344,11 @@ namespace Microsoft.Maui.Handlers
 			((PlatformView?)handler.PlatformView)?.Unfocus(view);
 		}
 
-		public static void MapTooltipText(IViewHandler handler, IView view)
+		public static void MapToolTip(IViewHandler handler, IView view)
 		{
 #if PLATFORM
-			handler.ToPlatform()?.UpdateTooltipText(view.TooltipText);
+			if (view is IToolTipContainer tooltipContainer)
+				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
 #endif
 		}
 

@@ -483,12 +483,13 @@ namespace Microsoft.Maui.Platform
 			return interaction;
 		}
 
-		public static void UpdateTooltipText(this UIView platformView, string? text)
+		public static void UpdateToolTip(this UIView platformView, ToolTip? tooltip)
 		{
-			// Tooltips were added in 15.0 for both iOS and MacCatalyst
+			// UpdateToolTips were added in 15.0 for both iOS and MacCatalyst
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(15)
 				|| OperatingSystem.IsIOSVersionAtLeast(15))
 			{
+				string? text = tooltip?.Content?.ToString();
 				var interaction = platformView.GetToolTipInteraction();
 
 				if (interaction is null)

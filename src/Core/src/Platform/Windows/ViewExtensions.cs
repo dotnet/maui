@@ -254,9 +254,9 @@ namespace Microsoft.Maui.Platform
 				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
 		}
 
-		public static void UpdateTooltipText(this FrameworkElement platformView, string? text)
+		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
 		{
-			ToolTipService.SetToolTip(platformView, text);
+			ToolTipService.SetToolTip(platformView, tooltip?.Content);
 		}
 
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)

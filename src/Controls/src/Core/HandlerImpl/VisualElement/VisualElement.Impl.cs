@@ -7,7 +7,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
-	public partial class VisualElement : IView
+	public partial class VisualElement : IView, IToolTipContainer
 	{
 		Semantics _semantics;
 		bool _isLoadedFired;
@@ -100,17 +100,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (int)GetValue(ZIndexProperty); }
 			set { SetValue(ZIndexProperty, value); }
-		}
-
-		string ITooltip.TooltipText => TooltipText;
-
-		public static readonly BindableProperty TooltipTextProperty =
- 			BindableProperty.Create(nameof(TooltipText), typeof(string), typeof(VisualElement), defaultValue: null);
-
-		public string TooltipText
-		{
-			get { return (string)GetValue(TooltipTextProperty); }
-			set { SetValue(TooltipTextProperty, value); }
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='DesiredSize']/Docs" />
@@ -468,5 +457,7 @@ namespace Microsoft.Maui.Controls
 		partial void HandlePlatformUnloadedLoaded();
 
 		internal IView? ParentView => ((this as IView)?.Parent as IView);
+
+		ToolTip? IToolTipContainer.ToolTip => new ToolTip() { Content = ToolTipText };
 	}
 }

@@ -341,8 +341,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateTooltipText(this AView view, string? text)
+		public static void UpdateToolTip(this AView view, ToolTip? tooltip)
 		{
+			string? text = tooltip?.Content?.ToString();
 			TooltipCompat.SetTooltipText(view, text);
 		}
 
