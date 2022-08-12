@@ -1,8 +1,8 @@
 ﻿using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
 {

@@ -1,10 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using CoreLocation;
 using MapKit;
-using UIKit;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Platform;
-using System;
+using UIKit;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			_locationManager = new CLLocationManager();
 
 			PlatformView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
-		//	PlatformView.OverlayRenderer = GetViewForOverlay;
+			//	PlatformView.OverlayRenderer = GetViewForOverlay;
 		}
 
 		protected override void DisconnectHandler(MKMapView platformView)

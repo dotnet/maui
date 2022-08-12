@@ -442,10 +442,10 @@ namespace Microsoft.Maui.Maps.Handlers
 			var map = Map;
 			if (map == null)
 				return;
-			
+
 			if (_circles == null)
 				_circles = new List<ACircle>();
-			
+
 			var options = circle.ToHandler(MauiContext!)?.PlatformView as CircleOptions;
 			var nativeCircle = map.AddCircle(options);
 

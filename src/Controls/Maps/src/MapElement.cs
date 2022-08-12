@@ -35,6 +35,6 @@ namespace Microsoft.Maui.Controls.Maps
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public object? MapElementId { get; set; }
-		
+
 	}
 }

@@ -1,10 +1,10 @@
 ﻿using System;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-    public partial class MapHandler : ViewHandler<IMap, WebView2>
+	public partial class MapHandler : ViewHandler<IMap, WebView2>
 	{
 
 		protected override WebView2 CreatePlatformView() => throw new NotImplementedException();

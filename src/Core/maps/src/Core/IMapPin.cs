@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Maps
 		/// The physical address that is associated with this pin.
 		/// </summary>
 		string Address { get; }
-		
+
 		/// <summary>
 		/// The label that is shown for this pin.
 		/// </summary>

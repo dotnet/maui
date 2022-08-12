@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (mapElement is not IFilledMapElement filledMapElement)
 				return;
-			
+
 			var platformColor = filledMapElement.Fill?.ToColor()?.ToPlatform();
 
 			if (handler.PlatformView is MKPolygonRenderer polygonRenderer)

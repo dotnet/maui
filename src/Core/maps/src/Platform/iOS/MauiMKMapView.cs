@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Maps.Platform
 		object? _lastTouchedView;
 
 		public MauiMKMapView(IMapHandler handler)
-		{ 
+		{
 			_handler = handler;
 			OverlayRenderer = GetViewForOverlay1;
 		}

@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls.Maps
 
 		public static readonly BindableProperty MoveToLastRegionOnLayoutChangeProperty = BindableProperty.Create(nameof(MoveToLastRegionOnLayoutChange), typeof(bool), typeof(Map), defaultValue: true);
 
-		readonly ObservableCollection<IMapPin> _pins = new ();
-		readonly ObservableCollection<IMapElement> _mapElements = new ();
+		readonly ObservableCollection<IMapPin> _pins = new();
+		readonly ObservableCollection<IMapElement> _mapElements = new();
 		MapSpan? _visibleRegion;
 		MapSpan? _lastMoveToRegion;
 
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Maps
 			_pins.CollectionChanged += PinsOnCollectionChanged;
 			_mapElements.CollectionChanged += MapElementsCollectionChanged;
 		}
-		
+
 
 		// center on Maui by default
 		public Map() : this(new MapSpan(new Devices.Sensors.Location(20.793062527, -156.336394697), 0.5, 0.5))

@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Maps;
+﻿using System.Collections.Generic;
 using Microsoft.Maui.Devices.Sensors;
-using System.Collections.Generic;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {
