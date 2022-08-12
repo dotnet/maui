@@ -1,28 +1,28 @@
-using System;
+using System.ComponentModel;
 using System.Linq;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
+using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
 using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 using TItemSizingStrategy = Tizen.UIExtensions.NUI.ItemSizingStrategy;
 using TScrollToPosition = Tizen.UIExtensions.Common.ScrollToPosition;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewRenderer instead")]
 	public class ListViewRenderer : ViewRenderer<ListView, TCollectionView>
 	{
+		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
+			new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
+
+		public static CommandMapper<ListView, ListViewRenderer> CommandMapper =
+			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
+
 		bool _isUpdateFromUI;
 
-		public ListViewRenderer()
+		public ListViewRenderer() : base(Mapper, CommandMapper)
 		{
-			RegisterPropertyHandler(ListView.ItemsSourceProperty, UpdateItemsSource);
-			RegisterPropertyHandler(ListView.ItemTemplateProperty, UpdateAdaptor);
-			RegisterPropertyHandler(ListView.RowHeightProperty, UpdateAdaptor);
-			RegisterPropertyHandler(ListView.SelectedItemProperty, UpdateSelectedItem);
-			RegisterPropertyHandler(ListView.HasUnevenRowsProperty, UpdateLayoutManager);
-			RegisterPropertyHandler(ListView.SelectionModeProperty, UpdateSelectionMode);
-			RegisterPropertyHandler(nameof(Element.HeaderElement), UpdateAdaptor);
-			RegisterPropertyHandler(nameof(Element.FooterElement), UpdateAdaptor);
+			AutoPackage = false;
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
@@ -38,6 +38,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			UpdateAdaptor(false);
 		}
 
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+			if (e.PropertyName == ListView.ItemsSourceProperty.PropertyName)
+				UpdateItemsSource(false);
+			else if (e.PropertyName == ListView.ItemTemplateProperty.PropertyName)
+				UpdateAdaptor(false);
+			else if (e.PropertyName == ListView.RowHeightProperty.PropertyName)
+				UpdateAdaptor(false);
+			else if (e.PropertyName == ListView.SelectedItemProperty.PropertyName)
+				UpdateSelectedItem();
+			else if (e.PropertyName == ListView.HasUnevenRowsProperty.PropertyName)
+				UpdateLayoutManager(false);
+			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
+				UpdateSelectionMode();
+			else if (e.PropertyName == "HeaderElement")
+				UpdateAdaptor(false);
+			else if (e.PropertyName == "FooterElement")
+				UpdateAdaptor(false);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -50,15 +71,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 			}
 			base.Dispose(disposing);
-		}
-
-		protected override void AddChild(Element child)
-		{
-			// empty on purpose
-		}
-		protected override void RemoveChild(VisualElement view)
-		{
-			// empty on purpose
 		}
 
 		protected void UpdateAdaptor(bool initialize)
@@ -142,8 +154,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnScrolled(object sender, CollectionViewScrolledEventArgs e)
 		{
-			var x = Forms.ConvertToScaledDP(e.HorizontalOffset);
-			var y = Forms.ConvertToScaledDP(e.VerticalOffset);
+			var x = DPExtensions.ConvertToScaledDP(e.HorizontalOffset);
+			var y = DPExtensions.ConvertToScaledDP(e.VerticalOffset);
 			Element.SendScrolled(new ScrolledEventArgs(x, y));
 		}
 

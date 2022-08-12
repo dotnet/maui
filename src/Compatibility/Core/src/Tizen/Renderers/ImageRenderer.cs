@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
@@ -118,6 +119,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 			}
 			return false;
+		}
+	}
+
+	public sealed class FontImageSourceHandler : IImageSourceHandler
+	{
+		public Task<bool> LoadImageAsync(NUIImage image, ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotSupportedException($"FontImageSource: {imageSource}");
 		}
 	}
 }

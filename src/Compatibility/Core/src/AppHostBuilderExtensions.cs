@@ -36,8 +36,6 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platf
 #elif TIZEN
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Graphics.Skia;
-using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.BoxViewRenderer;
-using CollectionViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StructuredItemsViewRenderer;
 using OpenGLViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
 using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StreamImageSourceHandler;
 using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.UriImageSourceHandler;
@@ -101,19 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 #if TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0612 // Type or member is obsolete
-					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(LayoutRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(FlyoutPage), typeof(FlyoutPageRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Cell), typeof(CellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ImageCell), typeof(ImageCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(EntryCell), typeof(EntryCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(TableView), typeof(TableViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
 #pragma warning disable CS0612 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 #endif
@@ -121,9 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 					Internals.Registrar.Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
 					Internals.Registrar.Registered.Register(typeof(StreamImageSource), typeof(StreamImagesourceHandler));
 					Internals.Registrar.Registered.Register(typeof(UriImageSource), typeof(ImageLoaderSourceHandler));
-#if !TIZEN
 					Internals.Registrar.Registered.Register(typeof(FontImageSource), typeof(FontImageSourceHandler));
-#endif
 					Internals.Registrar.Registered.Register(typeof(Microsoft.Maui.EmbeddedFont), typeof(Microsoft.Maui.EmbeddedFontLoader));
 #endif
 

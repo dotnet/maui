@@ -39,9 +39,6 @@ namespace Maui.Controls.Sample
 			var appBuilder = MauiApp.CreateBuilder();
 
 			appBuilder.UseMauiApp<XamlApp>();
-#if TIZEN
-			appBuilder.UseMauiCompatibility();
-#endif
 			var services = appBuilder.Services;
 
 			if (UseMauiGraphicsSkia)

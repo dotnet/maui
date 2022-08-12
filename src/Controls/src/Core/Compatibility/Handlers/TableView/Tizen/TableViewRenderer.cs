@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
 using Tizen.UIExtensions.NUI;
 using Size = Microsoft.Maui.Graphics.Size;
 using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 using TItemSizingStrategy = Tizen.UIExtensions.NUI.ItemSizingStrategy;
+using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;
+using TSize = Tizen.UIExtensions.Common.Size;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.TableViewRenderer instead")]
-	public class TableViewRenderer : ViewRenderer<TableView, TCollectionView>
+	public class TableViewRenderer : ViewRenderer<TableView, TCollectionView>, IMeasurable
 	{
 		List<Cell> _items = new List<Cell>();
 		DataTemplateSelector _dataTemplateSelector = new TableViewTemplateSelector();
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			ApplyTableRoot();
 		}
 
-		protected override Size Measure(double availableWidth, double availableHeight)
+		TSize IMeasurable.Measure(double availableWidth, double availableHeight)
 		{
 			if (Control.Adaptor == null || Control.LayoutManager == null || Control.LayoutManager.GetScrollCanvasSize().Height == 0 || Control.LayoutManager.GetScrollCanvasSize().Width == 0)
 			{
@@ -47,13 +49,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					size.Width = scaled.Width;
 				if (size.Height == double.PositiveInfinity)
 					size.Height = scaled.Height;
-				return size;
+				return size.ToPixel();
 			}
 
 			var canvasSize = Control.LayoutManager.GetScrollCanvasSize();
 			canvasSize.Width = Math.Min(canvasSize.Width, availableWidth.ToScaledPixel());
 			canvasSize.Height = Math.Min(canvasSize.Height, availableHeight.ToScaledPixel());
-			return canvasSize.ToDP();
+			return canvasSize;
 		}
 
 		protected override void Dispose(bool disposing)

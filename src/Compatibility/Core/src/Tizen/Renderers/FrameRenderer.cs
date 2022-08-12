@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Platform;
+﻿using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using SkiaSharp;
 using Tizen.NUI;
@@ -6,7 +7,7 @@ using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer instead")]
 	public class FrameRenderer : LayoutRenderer
 	{
 		static float s_borderWidth = 1.0f;

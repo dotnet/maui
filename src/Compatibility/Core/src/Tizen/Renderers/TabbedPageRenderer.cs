@@ -1,5 +1,6 @@
 #nullable enable
 
+using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Platform;
 using Tizen.NUI;
@@ -12,7 +13,7 @@ using XLabel = Microsoft.Maui.Controls.Label;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.TabbedRenderer instead")]
 	public class TabbedPageRenderer : VisualElementRenderer<TabbedPage>
 	{
 		NCollectionView? _tabbedView;
