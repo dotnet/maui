@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	public partial class ToolTip
 	{
 		/// <summary>
-		/// Gets the UpdateToolTip content.
+		/// ToolTip content.
 		/// </summary>
 		public object? Content { get; set; }
 	}

@@ -5,7 +5,7 @@ using System.Text;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Indicates that this element has a UpdateToolTip to show
+	/// Indicates that this element has a ToolTip to show
 	/// </summary>
 	public interface IToolTipContainer
 	{

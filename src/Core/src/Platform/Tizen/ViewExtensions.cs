@@ -210,8 +210,9 @@ namespace Microsoft.Maui.Platform
 			platformView.Resize(view.Width.ToScaledPixel(), view.Height.ToScaledPixel());
 		}
 
-		public static void UpdateToolTip(this EvasObject platformView, string? text)
+		public static void UpdateToolTip(this EvasObject platformView, ToolTip? tooltip)
 		{
+			string? text = tooltip?.Content?.ToString();
 			platformView.SetUpdateToolTipText(text);
 		}
 
