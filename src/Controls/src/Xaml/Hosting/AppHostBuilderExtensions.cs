@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Hosting
 #endif
 
 #if WINDOWS || MACCATALYST
-			handlersCollection.AddHandler(typeof(MenuFlyout), typeof(ContextFlyoutHandler));
+			handlersCollection.AddHandler(typeof(MenuFlyout), typeof(MenuFlyoutHandler));
 #endif
 
 #if IOS || MACCATALYST

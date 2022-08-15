@@ -9,7 +9,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ContextFlyoutHandler : IMenuFlyoutHandler
+	public partial class MenuFlyoutHandler : IMenuFlyoutHandler
 	{
 
 		public static IPropertyMapper<IMenuFlyout, IMenuFlyoutHandler> Mapper = new PropertyMapper<IMenuFlyout, IMenuFlyoutHandler>(ElementMapper)
@@ -24,12 +24,12 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuFlyoutHandler.Insert)] = MapInsert,
 		};
 
-		public ContextFlyoutHandler() : this(Mapper, CommandMapper)
+		public MenuFlyoutHandler() : this(Mapper, CommandMapper)
 		{
 
 		}
 
-		public ContextFlyoutHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
+		public MenuFlyoutHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
 		{
 
 		}

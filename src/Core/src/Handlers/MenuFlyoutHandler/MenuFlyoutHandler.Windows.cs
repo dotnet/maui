@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ContextFlyoutHandler : ElementHandler<IMenuFlyout, MenuFlyout>, IMenuFlyoutHandler
+	public partial class MenuFlyoutHandler : ElementHandler<IMenuFlyout, MenuFlyout>, IMenuFlyoutHandler
 	{
 		protected override MenuFlyout CreatePlatformElement()
 		{

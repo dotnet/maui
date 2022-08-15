@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 
-					handlers.AddHandler<MenuFlyout, ContextFlyoutHandler>();
+					handlers.AddHandler<MenuFlyout, MenuFlyoutHandler>();
 					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
 					handlers.AddHandler<MenuFlyoutSeparator, MenuFlyoutSeparatorHandler>();

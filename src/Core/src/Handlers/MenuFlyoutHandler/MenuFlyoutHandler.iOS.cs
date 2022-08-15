@@ -4,7 +4,7 @@ using UIKit;
 namespace Microsoft.Maui.Handlers
 {
 	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
-	public partial class ContextFlyoutHandler : ElementHandler<IMenuFlyout, UIMenu>, IMenuFlyoutHandler
+	public partial class MenuFlyoutHandler : ElementHandler<IMenuFlyout, UIMenu>, IMenuFlyoutHandler
 	{
 		protected override UIMenu CreatePlatformElement()
 		{
