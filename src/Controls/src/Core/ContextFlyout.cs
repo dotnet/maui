@@ -120,8 +120,7 @@ namespace Microsoft.Maui.Controls
 
         void NotifyHandler(string action, int index, IMenuElement view)
         {
-            var args = new Maui.Handlers.ContextFlyoutItemHandlerUpdate(index, view);
-            Handler?.Invoke(action, args);
+            Handler?.Invoke(action, new Maui.Handlers.ContextFlyoutItemHandlerUpdate(index, view));
         }
     }
 }
