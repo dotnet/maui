@@ -108,7 +108,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnAddMenuClicked(object sender, EventArgs e)
 		{
-			var contextFlyout = ((MenuFlyoutItem)sender).Parent as ContextFlyout;
+			var contextFlyout = ((MenuFlyoutItem)sender).Parent as MenuFlyout;
 			contextFlyout.Add(new MenuFlyoutItem() { Text = "Thank you for adding me" });
 		}
 

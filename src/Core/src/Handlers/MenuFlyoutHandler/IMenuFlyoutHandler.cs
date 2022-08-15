@@ -6,7 +6,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public interface IContextFlyoutHandler : IElementHandler
+	public interface IMenuFlyoutHandler : IElementHandler
 	{
 		void Add(IMenuElement view);
 		void Remove(IMenuElement view);
@@ -14,6 +14,6 @@ namespace Microsoft.Maui.Handlers
 		void Insert(int index, IMenuElement view);
 
 		new PlatformView PlatformView { get; }
-		new IContextFlyout VirtualView { get; }
+		new IMenuFlyout VirtualView { get; }
 	}
 }

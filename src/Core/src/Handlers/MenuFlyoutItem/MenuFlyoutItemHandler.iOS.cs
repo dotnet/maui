@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 			IElement? current = VirtualView;
 			while (current != null)
 			{
-				if (current is Microsoft.Maui.IContextFlyout)
+				if (current is Microsoft.Maui.IMenuFlyout)
 				{
 					return true;
 				}

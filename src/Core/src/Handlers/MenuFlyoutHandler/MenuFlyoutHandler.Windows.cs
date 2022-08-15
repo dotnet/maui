@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ContextFlyoutHandler : ElementHandler<IContextFlyout, MenuFlyout>, IContextFlyoutHandler
+	public partial class ContextFlyoutHandler : ElementHandler<IMenuFlyout, MenuFlyout>, IMenuFlyoutHandler
 	{
 		protected override MenuFlyout CreatePlatformElement()
 		{
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 			Clear();
 
-			foreach (var item in (IContextFlyout)view)
+			foreach (var item in (IMenuFlyout)view)
 			{
 				Add(item);
 			}

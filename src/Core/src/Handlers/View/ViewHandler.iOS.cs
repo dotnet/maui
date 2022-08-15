@@ -11,15 +11,19 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
+
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
+#if MACCATALYST
 			if (view is IContextFlyoutContainer contextFlyoutContainer)
 			{
 				MapContextFlyout(handler, contextFlyoutContainer);
 			}
+#endif
 		}
-#pragma warning disable CA1416 // Validate platform compatibility
+
+#if MACCATALYST
 
 		// Store a reference to the platform delegate so that it is not garbage collected
 		IUIContextMenuInteractionDelegate? _uiContextMenuInteractionDelegate;
@@ -29,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"The handler's {nameof(handler.MauiContext)} cannot be null.");
 
-			if (contextFlyoutContainer.ContextFlyout?.Count > 0)
+			if (contextFlyoutContainer.ContextFlyout != null)
 			{
 				var contextFlyoutHandler = contextFlyoutContainer.ContextFlyout.ToHandler(handler.MauiContext);
 				var contextFlyoutPlatformView = contextFlyoutHandler.PlatformView;
@@ -48,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 						});
 
 					var newFlyout = new UIContextMenuInteraction(
-						@delegate: viewHandlerObj!._uiContextMenuInteractionDelegate);
+						@delegate: viewHandlerObj._uiContextMenuInteractionDelegate);
 
 					uiView.AddInteraction(newFlyout);
 				}
@@ -69,7 +73,7 @@ namespace Microsoft.Maui.Handlers
 				return _menuConfigurationFunc();
 			}
 		}
-#pragma warning restore CA1416 // Validate platform compatibility
+#endif
 
 		static partial void MappingFrame(IViewHandler handler, IView view)
 		{

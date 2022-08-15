@@ -6,18 +6,21 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 {
-	[Category("ContextFlyout")]
+	[Category("MenuFlyout")]
 	public class ContextFlyoutTests :
-		MenuTestBase<ContextFlyout, IMenuElement, MenuFlyoutItem, ContextFlyoutItemHandlerUpdate>
+		MenuTestBase<MenuFlyout, IMenuElement, MenuFlyoutItem, ContextFlyoutItemHandlerUpdate>
 	{
 		[Fact]
 		public void BindingContextPropagatesWhenContextFlyoutIsAlreadySetOnParent()
 		{
 			Button button = new Button();
 			var subMenuFlyout = new MenuFlyoutSubItem();
-			var menuFlyout = new MenuFlyoutItem();
-			subMenuFlyout.Add(menuFlyout);
-			button.ContextFlyout.Add(subMenuFlyout);
+			var menuFlyoutItem = new MenuFlyoutItem();
+			var menuFlyout = new MenuFlyout();
+			menuFlyout.Add(subMenuFlyout);
+			subMenuFlyout.Add(menuFlyoutItem);
+
+			button.ContextFlyout = menuFlyout;
 
 			var bc = new Object();
 			button.BindingContext = bc;
@@ -31,12 +34,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 		{
 			Button button = new Button();
 			var subMenuFlyout = new MenuFlyoutSubItem();
-			var menuFlyout = new MenuFlyoutItem();
-			subMenuFlyout.Add(menuFlyout);
+			var menuFlyoutItem = new MenuFlyoutItem();
+			subMenuFlyout.Add(menuFlyoutItem);
 
 			var bc = new Object();
 			button.BindingContext = bc;
-			button.ContextFlyout.Add(subMenuFlyout);
+			button.MenuFlyout.Add(subMenuFlyout);
 
 			Assert.Same(bc, subMenuFlyout.BindingContext);
 			Assert.Same(bc, menuFlyout.BindingContext);
@@ -47,17 +50,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 		{
 			Button button = new Button();
 			var subMenuFlyout = new MenuFlyoutSubItem();
-			var menuFlyout = new MenuFlyoutItem();
+			var menuFlyoutItem = new MenuFlyoutItem();
 
 			var bc = new Object();
 			button.BindingContext = bc;
-			button.ContextFlyout.Add(subMenuFlyout);
+			button.MenuFlyout.Add(subMenuFlyout);
 
-			// Add submenu after ContextFlyout is already set on Button
-			subMenuFlyout.Add(menuFlyout);
+			// Add submenu after MenuFlyout is already set on Button
+			subMenuFlyout.Add(menuFlyoutItem);
 
 			Assert.Same(bc, subMenuFlyout.BindingContext);
-			Assert.Same(bc, menuFlyout.BindingContext);
+			Assert.Same(bc, menuFlyoutItem.BindingContext);
 		}
 
 		protected override int GetIndex(ContextFlyoutItemHandlerUpdate handlerUpdate)
@@ -71,16 +74,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			element.Handler = CreateContextFlyoutHandler((n, h, l, a) => events.Add((n, a)));
 		}
 
-		ContextFlyoutHandler CreateContextFlyoutHandler(Action<string, IContextFlyoutHandler, IContextFlyout, ContextFlyoutItemHandlerUpdate?>? action)
+		ContextFlyoutHandler CreateContextFlyoutHandler(Action<string, IMenuFlyoutHandler, IMenuFlyout, ContextFlyoutItemHandlerUpdate?>? action)
 		{
 			var handler = new NonThrowingContextFlyoutHandler(
 				ContextFlyoutHandler.Mapper,
-				new CommandMapper<IContextFlyout, IContextFlyoutHandler>(ContextFlyoutHandler.CommandMapper)
+				new CommandMapper<IMenuFlyout, IMenuFlyoutHandler>(ContextFlyoutHandler.CommandMapper)
 				{
-					[nameof(IContextFlyoutHandler.Add)] = (h, l, a) => action?.Invoke(nameof(IContextFlyoutHandler.Add), h, l, (ContextFlyoutItemHandlerUpdate?)a),
-					[nameof(IContextFlyoutHandler.Remove)] = (h, l, a) => action?.Invoke(nameof(IContextFlyoutHandler.Remove), h, l, (ContextFlyoutItemHandlerUpdate?)a),
-					[nameof(IContextFlyoutHandler.Clear)] = (h, l, a) => action?.Invoke(nameof(IContextFlyoutHandler.Clear), h, l, (ContextFlyoutItemHandlerUpdate?)a),
-					[nameof(IContextFlyoutHandler.Insert)] = (h, l, a) => action?.Invoke(nameof(IContextFlyoutHandler.Insert), h, l, (ContextFlyoutItemHandlerUpdate?)a),
+					[nameof(IMenuFlyoutHandler.Add)] = (h, l, a) => action?.Invoke(nameof(IMenuFlyoutHandler.Add), h, l, (ContextFlyoutItemHandlerUpdate?)a),
+					[nameof(IMenuFlyoutHandler.Remove)] = (h, l, a) => action?.Invoke(nameof(IMenuFlyoutHandler.Remove), h, l, (ContextFlyoutItemHandlerUpdate?)a),
+					[nameof(IMenuFlyoutHandler.Clear)] = (h, l, a) => action?.Invoke(nameof(IMenuFlyoutHandler.Clear), h, l, (ContextFlyoutItemHandlerUpdate?)a),
+					[nameof(IMenuFlyoutHandler.Insert)] = (h, l, a) => action?.Invoke(nameof(IMenuFlyoutHandler.Insert), h, l, (ContextFlyoutItemHandlerUpdate?)a),
 				});
 
 			return handler;

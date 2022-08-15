@@ -204,17 +204,22 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
 		}
 
-		static readonly BindablePropertyKey ContextFlyoutPropertyKey = BindableProperty.CreateReadOnly(nameof(ContextFlyout), typeof(ContextFlyout), typeof(View), null,
-				defaultValueCreator: bo =>
-				{
-					var contextFlyout = new ContextFlyout();
-					VisualElement.SetInheritedBindingContext(contextFlyout, bo.BindingContext);
-					return contextFlyout;
-				});
+		public static readonly BindableProperty ContextFlyoutProperty = BindableProperty.Create(nameof(ContextFlyout), typeof(FlyoutBase), typeof(View), null,
+			propertyChanged: (bo, oldV, newV) =>
+			{
+				if (oldV is BindableObject oldMenu)
+					VisualElement.SetInheritedBindingContext(oldMenu, bo.BindingContext);
 
-		public static readonly BindableProperty ContextFlyoutProperty = ContextFlyoutPropertyKey.BindableProperty;
+				if (newV is BindableObject newMenu)
+					VisualElement.SetInheritedBindingContext(newMenu, bo.BindingContext);
+
+			});
 
 		/// <inheritdoc />
-		public ContextFlyout ContextFlyout => (ContextFlyout)GetValue(ContextFlyoutProperty);
+		public FlyoutBase ContextFlyout
+		{
+			get => (FlyoutBase)GetValue(ContextFlyoutProperty);
+			set => SetValue(ContextFlyoutProperty, value);
+		}
 	}
 }

@@ -3,7 +3,7 @@
 namespace Microsoft.Maui.Handlers
 {
 	/// <summary>
-	/// Communicates information from an IContextFlyout about updates to an IContextFlyoutHandler
+	/// Communicates information from an IMenuFlyout about updates to an IMenuFlyoutHandler
 	/// </summary>
 	public record ContextFlyoutItemHandlerUpdate(int Index, IMenuElement MenuElement);
 }

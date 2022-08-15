@@ -5,7 +5,14 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-    public partial class ContextFlyout : Element, IContextFlyout // Same pattern as MenuBarItem
+#pragma warning disable RS0016 // Add public types and members to the declared API
+	public class FlyoutBase : Element, IFlyout
+#pragma warning restore RS0016 // Add public types and members to the declared API
+	{
+
+	}
+
+    public partial class MenuFlyout : FlyoutBase, IMenuFlyout // Same pattern as MenuBarItem
 	{
         ReadOnlyCastingList<Element, IMenuElement> _logicalChildren;
         readonly ObservableCollection<IMenuElement> _menus = new ObservableCollection<IMenuElement>();
@@ -31,7 +38,7 @@ namespace Microsoft.Maui.Controls
         {
             var index = _menus.Count;
             _menus.Add(item);
-            NotifyHandler(nameof(IContextFlyoutHandler.Add), index, item);
+            NotifyHandler(nameof(IMenuFlyoutHandler.Add), index, item);
 
             // Take care of the Element internal bookkeeping
             if (item is Element element)
@@ -69,7 +76,7 @@ namespace Microsoft.Maui.Controls
         public void Insert(int index, IMenuElement item)
         {
             _menus.Insert(index, item);
-            NotifyHandler(nameof(IContextFlyoutHandler.Insert), index, item);
+            NotifyHandler(nameof(IMenuFlyoutHandler.Insert), index, item);
 
             // Take care of the Element internal bookkeeping
             if (item is Element element)
@@ -82,7 +89,7 @@ namespace Microsoft.Maui.Controls
         {
             var index = _menus.IndexOf(item);
             var result = _menus.Remove(item);
-            NotifyHandler(nameof(IContextFlyoutHandler.Remove), index, item);
+            NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
 
             // Take care of the Element internal bookkeeping
             if (item is Element element)
@@ -97,7 +104,7 @@ namespace Microsoft.Maui.Controls
         {
             var item = _menus[index];
             _menus.RemoveAt(index);
-            NotifyHandler(nameof(IContextFlyoutHandler.Remove), index, item);
+            NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
 
             // Take care of the Element internal bookkeeping
             if (item is Element element)

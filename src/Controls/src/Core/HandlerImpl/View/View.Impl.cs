@@ -39,16 +39,7 @@ namespace Microsoft.Maui.Controls
 
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => HorizontalOptions.ToCore();
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => VerticalOptions.ToCore();
-		IContextFlyout? IContextFlyoutContainer.ContextFlyout
-		{
-			get
-			{
-				if (!this.IsSet(ContextFlyoutProperty))
-					return null;
-
-				return ContextFlyout;
-			}
-		}
+		IFlyout? IContextFlyoutContainer.ContextFlyout => ContextFlyout;
 
 		#region HotReload
 

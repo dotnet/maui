@@ -116,19 +116,19 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.PlatformView is Microsoft.UI.Xaml.UIElement uiElement)
 			{
-				if (contextFlyoutContainer.ContextFlyout?.Count > 0)
+				if (contextFlyoutContainer.ContextFlyout != null)
 				{
 					var contextFlyoutHandler = contextFlyoutContainer.ContextFlyout.ToHandler(handler.MauiContext);
 					var contextFlyoutPlatformView = contextFlyoutHandler.PlatformView;
 
-					if (contextFlyoutHandler.PlatformView is FlyoutBase flyoutBase)
+					if (contextFlyoutPlatformView is FlyoutBase flyoutBase)
 					{
 						uiElement.ContextFlyout = flyoutBase;
 					}
 				}
-				else if (uiElement.ContextFlyout != null)
+				else
 				{
-					uiElement.ContextFlyout = null;
+					uiElement.ClearValue(UIElement.ContextFlyoutProperty);
 				}
 			}
 		}

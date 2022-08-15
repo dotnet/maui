@@ -16,7 +16,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 namespace Microsoft.Maui.DeviceTests
 {
 
-	[Category(TestCategory.ContextFlyout)]
+	[Category(TestCategory.MenuFlyout)]
 	public partial class ContextFlyoutTests : HandlerTestBase
 	{
 		void SetupBuilder()
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 
-					handlers.AddHandler<ContextFlyout, ContextFlyoutHandler>();
+					handlers.AddHandler<MenuFlyout, ContextFlyoutHandler>();
 					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
 					handlers.AddHandler<MenuFlyoutSeparator, MenuFlyoutSeparatorHandler>();
