@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -14,13 +15,25 @@ namespace Microsoft.Maui.Platform
 		string? _pendingUrl;
 		readonly WebViewHandler _handler;
 
+		public MauiWKWebView(WebViewHandler handler)
+			: this(RectangleF.Empty, handler)
+		{
+		}
+
 		public MauiWKWebView(CGRect frame, WebViewHandler handler)
-			: base(frame, CreateConfiguration())
+			: this(frame, handler, CreateConfiguration())
+		{
+		}
+
+		public MauiWKWebView(CGRect frame, WebViewHandler handler, WKWebViewConfiguration configuration)
+			: base(frame, configuration)
 		{
 			_handler = handler;
 
 			BackgroundColor = UIColor.Clear;
 			AutosizesSubviews = true;
+
+			NavigationDelegate = new MauiWebViewNavigationDelegate(_handler);
 		}
 
 		public string? CurrentUrl =>
@@ -87,7 +100,7 @@ namespace Microsoft.Maui.Platform
 		// The main workaround I've found for ensuring that cookies synchronize 
 		// is to share the Process Pool between all WkWebView instances.
 		// It also has to be shared at the point you call init
-		static WKWebViewConfiguration CreateConfiguration()
+		public static WKWebViewConfiguration CreateConfiguration()
 		{
 			var config = new WKWebViewConfiguration();
 
