@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 		static WKProcessPool? SharedPool;
 
 		string? _pendingUrl;
-		readonly WebViewHandler _handler;
+		readonly WeakReference<WebViewHandler> _handler;
 
 		public MauiWKWebView(WebViewHandler handler)
 			: this(RectangleF.Empty, handler)
@@ -28,12 +28,12 @@ namespace Microsoft.Maui.Platform
 		public MauiWKWebView(CGRect frame, WebViewHandler handler, WKWebViewConfiguration configuration)
 			: base(frame, configuration)
 		{
-			_handler = handler;
+			_handler = new WeakReference<WebViewHandler>(handler);
 
 			BackgroundColor = UIColor.Clear;
 			AutosizesSubviews = true;
 
-			NavigationDelegate = new MauiWebViewNavigationDelegate(_handler);
+			NavigationDelegate = new MauiWebViewNavigationDelegate(handler);
 		}
 
 		public string? CurrentUrl =>
@@ -63,7 +63,8 @@ namespace Microsoft.Maui.Platform
 				InvokeOnMainThread(async () =>
 				{
 					await Task.Delay(500);
-					await _handler.FirstLoadUrlAsync(closure);
+					if (_handler.TryGetTarget(out var handler))
+						await handler.FirstLoadUrlAsync(closure);
 				});
 			}
 		}
@@ -76,7 +77,8 @@ namespace Microsoft.Maui.Platform
 			if (url == null || url == $"file://{NSBundle.MainBundle.BundlePath}/")
 				return;
 
-			await _handler.ProcessNavigatedAsync(url);
+			if (_handler.TryGetTarget(out var handler))
+				await handler.ProcessNavigatedAsync(url);
 		}
 
 		public void LoadHtml(string? html, string? baseUrl)
