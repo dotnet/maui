@@ -5,14 +5,8 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-#pragma warning disable RS0016 // Add public types and members to the declared API
-	public class FlyoutBase : Element, IFlyout
-#pragma warning restore RS0016 // Add public types and members to the declared API
-	{
 
-	}
-
-    public partial class MenuFlyout : FlyoutBase, IMenuFlyout // Same pattern as MenuBarItem
+	public partial class MenuFlyout : FlyoutBase, IMenuFlyout // Same pattern as MenuBarItem
 	{
         ReadOnlyCastingList<Element, IMenuElement> _logicalChildren;
         readonly ObservableCollection<IMenuElement> _menus = new ObservableCollection<IMenuElement>();
