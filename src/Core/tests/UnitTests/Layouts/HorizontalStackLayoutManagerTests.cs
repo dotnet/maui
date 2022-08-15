@@ -105,7 +105,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		public void RtlShouldHaveFirstItemOnTheRight()
 		{
 			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
-			stack.FlowDirection.Returns(FlowDirection.RightToLeft);
+			stack.EffectiveFlowDirection.Returns(FlowDirection.RightToLeft);
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
@@ -383,7 +383,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		public void RtlShouldStartAtRightEdge()
 		{
 			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
-			stack.FlowDirection.Returns(FlowDirection.RightToLeft);
+			stack.EffectiveFlowDirection.Returns(FlowDirection.RightToLeft);
 			stack.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
 			stack.Spacing.Returns(0);
 

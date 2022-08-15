@@ -1676,7 +1676,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
 
-			grid.FlowDirection.Returns(FlowDirection.RightToLeft);
+			grid.EffectiveFlowDirection.Returns(FlowDirection.RightToLeft);
 
 			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 

@@ -477,7 +477,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var childBounds = new Rect(10, 0, 100, 100);
 			SetLayoutBounds(abs, child, childBounds);
 
-			abs.FlowDirection.Returns(FlowDirection.RightToLeft);
+			abs.EffectiveFlowDirection.Returns(FlowDirection.RightToLeft);
 
 			var manager = new AbsoluteLayoutManager(abs);
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
