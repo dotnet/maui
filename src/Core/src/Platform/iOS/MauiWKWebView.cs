@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Platform
 		public MauiWKWebView(CGRect frame, WebViewHandler handler, WKWebViewConfiguration configuration)
 			: base(frame, configuration)
 		{
+			_ = handler ?? throw new ArgumentNullException("handler");
 			_handler = new WeakReference<WebViewHandler>(handler);
 
 			BackgroundColor = UIColor.Clear;

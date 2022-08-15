@@ -18,7 +18,8 @@ namespace Microsoft.Maui.Platform
 
 		public MauiWebViewNavigationDelegate(WebViewHandler handler)
 		{
-			_handler = new WeakReference<WebViewHandler>(handler) ?? throw new ArgumentNullException("handler");
+			_ = handler ?? throw new ArgumentNullException("handler");
+			_handler = new WeakReference<WebViewHandler>(handler);
 		}
 
 		WebViewHandler? Handler
