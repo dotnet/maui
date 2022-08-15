@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			var bc = new Object();
 			button.BindingContext = bc;
-			button.MenuFlyout.Add(subMenuFlyout);
+			var menuFlyout = new MenuFlyout();
+			menuFlyout.Add(subMenuFlyout);
+			button.ContextFlyout = menuFlyout;
 
 			Assert.Same(bc, subMenuFlyout.BindingContext);
 			Assert.Same(bc, menuFlyout.BindingContext);
@@ -54,7 +56,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			var bc = new Object();
 			button.BindingContext = bc;
-			button.MenuFlyout.Add(subMenuFlyout);
+			var menuFlyout = new MenuFlyout();
+			menuFlyout.Add(subMenuFlyout);
+			button.ContextFlyout = menuFlyout;
 
 			// Add submenu after MenuFlyout is already set on Button
 			subMenuFlyout.Add(menuFlyoutItem);
@@ -71,14 +75,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 		protected override void SetHandler(IElement element, List<(string Name, ContextFlyoutItemHandlerUpdate? Args)> events)
 		{
-			element.Handler = CreateContextFlyoutHandler((n, h, l, a) => events.Add((n, a)));
+			element.Handler = CreateMenuFlyoutHandler((n, h, l, a) => events.Add((n, a)));
 		}
 
-		ContextFlyoutHandler CreateContextFlyoutHandler(Action<string, IMenuFlyoutHandler, IMenuFlyout, ContextFlyoutItemHandlerUpdate?>? action)
+		MenuFlyoutHandler CreateMenuFlyoutHandler(Action<string, IMenuFlyoutHandler, IMenuFlyout, ContextFlyoutItemHandlerUpdate?>? action)
 		{
-			var handler = new NonThrowingContextFlyoutHandler(
-				ContextFlyoutHandler.Mapper,
-				new CommandMapper<IMenuFlyout, IMenuFlyoutHandler>(ContextFlyoutHandler.CommandMapper)
+			var handler = new NonThrowingMenuFlyoutHandler(
+				MenuFlyoutHandler.Mapper,
+				new CommandMapper<IMenuFlyout, IMenuFlyoutHandler>(MenuFlyoutHandler.CommandMapper)
 				{
 					[nameof(IMenuFlyoutHandler.Add)] = (h, l, a) => action?.Invoke(nameof(IMenuFlyoutHandler.Add), h, l, (ContextFlyoutItemHandlerUpdate?)a),
 					[nameof(IMenuFlyoutHandler.Remove)] = (h, l, a) => action?.Invoke(nameof(IMenuFlyoutHandler.Remove), h, l, (ContextFlyoutItemHandlerUpdate?)a),
@@ -89,9 +93,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			return handler;
 		}
 
-		class NonThrowingContextFlyoutHandler : ContextFlyoutHandler
+		class NonThrowingMenuFlyoutHandler : MenuFlyoutHandler
 		{
-			public NonThrowingContextFlyoutHandler(IPropertyMapper mapper, CommandMapper commandMapper)
+			public NonThrowingMenuFlyoutHandler(IPropertyMapper mapper, CommandMapper commandMapper)
 				: base(mapper, commandMapper)
 			{
 			}
