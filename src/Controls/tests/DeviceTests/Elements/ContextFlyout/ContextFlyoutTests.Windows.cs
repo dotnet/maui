@@ -28,10 +28,12 @@ namespace Microsoft.Maui.DeviceTests
 				var menu4 = new MenuFlyoutSubItem() { Text = "Menu4" };
 				menu4.Add(new MenuFlyoutItem() { Text = "Menu4-a" });
 				menu4.Add(new MenuFlyoutItem() { Text = "Menu4-b" });
-				labelWithContextFlyout.MenuFlyout.Add(menu1);
-				labelWithContextFlyout.MenuFlyout.Add(menu2);
-				labelWithContextFlyout.MenuFlyout.Add(menu3);
-				labelWithContextFlyout.MenuFlyout.Add(menu4);
+				var menuFlyout = new MenuFlyout();
+				menuFlyout.Add(menu1);
+				menuFlyout.Add(menu2);
+				menuFlyout.Add(menu3);
+				menuFlyout.Add(menu4);
+				labelWithContextFlyout.ContextFlyout = menuFlyout;
 
 				var contentPage = new ContentPage()
 				{
@@ -43,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(contentPage);
 
 				var winLabel = ((LabelHandler)labelWithContextFlyout.Handler).PlatformView;
-				var contextFlyoutItems = ((Microsoft.UI.Xaml.Controls.MenuFlyout)winLabel.MenuFlyout).Items;
+				var contextFlyoutItems = ((Microsoft.UI.Xaml.Controls.MenuFlyout)winLabel.ContextFlyout).Items;
 				Assert.Equal(4, contextFlyoutItems.Count);
 				Assert.Equal("Menu1", ((Microsoft.UI.Xaml.Controls.MenuFlyoutItem)contextFlyoutItems[0]).Text);
 				Assert.Equal("Menu2", ((Microsoft.UI.Xaml.Controls.MenuFlyoutItem)contextFlyoutItems[1]).Text);
