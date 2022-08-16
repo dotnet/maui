@@ -26,6 +26,9 @@
     <MicrosoftGraphicsWin2DPackageVersion>1.0.3.1</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
     <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.8</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>6.0.8</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>6.0.8</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>6.0.8</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.7</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>6.0.7</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>6.0.7</MicrosoftAspNetCoreComponentsPackageVersion>
