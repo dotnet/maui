@@ -1,7 +1,9 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Layouts;
 using NSubstitute;
 using Xunit;
 
@@ -181,6 +183,88 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			layout[0] = child1;
 
 			handler.Received(2).UpdateValue(Arg.Is(nameof(Layout.CascadeInputTransparent)));
+		}
+
+		class AlternateLayoutManager : ILayoutManager
+		{
+			readonly Maui.ILayout _layout;
+			readonly double _width;
+			readonly double _height;
+
+			public AlternateLayoutManager(Maui.ILayout layout, double width, double height) 
+			{
+				_layout = layout;
+				_width = width;
+				_height = height;
+			}
+
+			public Size ArrangeChildren(Rect bounds)
+			{
+				throw new NotImplementedException();
+			}
+
+			public Size Measure(double widthConstraint, double heightConstraint)
+			{
+				return new Size(_width, _height);
+			}
+		}
+
+		[Fact]
+		public void CanUseFactoryForAlternateManager()
+		{
+			Layout.LayoutManagerFactory = (l) => { return new AlternateLayoutManager(l, 8765, 4321); };
+
+			var layout = new Grid();
+
+			var result = layout.CrossPlatformMeasure(100, 100);
+
+			Assert.Equal(8765, result.Width);
+			Assert.Equal(4321, result.Height);
+		}
+
+		[Fact]
+		public void FactoryCanPuntAndUseOriginalType()
+		{
+			Layout.LayoutManagerFactory = (l) => { return null; };
+
+			var layout = new VerticalStackLayout();
+			var view = new Label { Text = "a", WidthRequest = 100, HeightRequest = 100 };
+			layout.Add(view);
+
+			var result = layout.CrossPlatformMeasure(100, 100);
+
+			Assert.Equal(0, result.Width);
+			Assert.Equal(0, result.Height);
+		}
+
+		[Fact]
+		public void FactoryCanCustomizeBasedOnLayoutType()
+		{
+			Layout.LayoutManagerFactory = (l) => 
+			{
+				if (l is AbsoluteLayout)
+				{
+					return new AlternateLayoutManager(l, 1234, 1234);
+				}
+
+				return new AlternateLayoutManager(l, 4567, 4567);
+			};
+
+			var absLayout = new AbsoluteLayout();
+			var view = new Label { Text = "a", WidthRequest = 100, HeightRequest = 100 };
+			absLayout.Add(view);
+
+			var absResult = absLayout.CrossPlatformMeasure(100, 100);
+
+			Assert.Equal(1234, absResult.Width);
+			Assert.Equal(1234, absResult.Height);
+
+			var vsl = new VerticalStackLayout();
+
+			var vslResult = vsl.CrossPlatformMeasure(100, 100);
+
+			Assert.Equal(4567, vslResult.Width);
+			Assert.Equal(4567, vslResult.Height);
 		}
 	}
 }

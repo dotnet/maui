@@ -100,3 +100,5 @@ static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsof
 ~static readonly Microsoft.Maui.Controls.FlyoutBase.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
+~static Microsoft.Maui.Controls.Layout.LayoutManagerFactory.get -> System.Func<Microsoft.Maui.Controls.Layout, Microsoft.Maui.Layouts.ILayoutManager>
+~static Microsoft.Maui.Controls.Layout.LayoutManagerFactory.set -> void

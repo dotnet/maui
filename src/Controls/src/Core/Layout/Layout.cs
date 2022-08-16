@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,9 @@ namespace Microsoft.Maui.Controls
 
 		protected ILayoutManager _layoutManager;
 
-		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
+		ILayoutManager LayoutManager => _layoutManager ??= LayoutManagerFactory?.Invoke(this) ?? CreateLayoutManager();
+
+		public static Func<Layout, ILayoutManager> LayoutManagerFactory { get; set; }
 
 		// The actual backing store for the IViews in the ILayout
 		readonly List<IView> _children = new();

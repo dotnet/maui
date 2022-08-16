@@ -7425,3 +7425,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~virtual Microsoft.Maui.Controls.Toolbar.TitleView.get -> Microsoft.Maui.Controls.VisualElement
 ~virtual Microsoft.Maui.Controls.Toolbar.TitleView.set -> void
 ~virtual Microsoft.Maui.Controls.View.GetChildElements(Microsoft.Maui.Graphics.Point point) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.GestureElement>
+~virtual Microsoft.Maui.Controls.View.GetChildElements(Microsoft.Maui.Graphics.Point point) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.GestureElement>
+static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
+~static Microsoft.Maui.Controls.Layout.LayoutManagerFactory.get -> System.Func<Microsoft.Maui.Controls.Layout, Microsoft.Maui.Layouts.ILayoutManager>
+~static Microsoft.Maui.Controls.Layout.LayoutManagerFactory.set -> void
