@@ -1,31 +1,27 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Runtime.InteropServices;
 using CoreLocation;
 using MapKit;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
+using SpriteKit;
 using UIKit;
 
 namespace Microsoft.Maui.Maps.Platform
 {
 	internal class MauiMKMapView : MKMapView
 	{
-		IMapHandler? _handler;
+		WeakReference<IMapHandler> _handlerRef;
 		object? _lastTouchedView;
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
-			_handler = handler;
+			_handlerRef = new WeakReference<IMapHandler>(handler);
 			OverlayRenderer = GetViewForOverlayDelegate;
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			_handler = null;
-			base.Dispose(disposing);
 		}
 
 		public override void MovedToWindow()
@@ -46,9 +42,6 @@ namespace Microsoft.Maui.Maps.Platform
 
 		void Cleanup()
 		{
-			if (_handler == null)
-				return;
-
 			if (_mapClickedGestureRecognizer != null)
 			{
 				RemoveGestureRecognizer(_mapClickedGestureRecognizer);
@@ -78,14 +71,17 @@ namespace Microsoft.Maui.Maps.Platform
 
 		void MkMapViewOnRegionChanged(object? sender, MKMapViewChangeEventArgs e)
 		{
-			if (_handler?.VirtualView != null)
-				_handler.VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(Region.Center.Latitude, Region.Center.Longitude), Region.Span.LatitudeDelta, Region.Span.LongitudeDelta);
+			IMapHandler? handler;
+
+			if (_handlerRef.TryGetTarget(out handler) && handler?.VirtualView != null)
+				handler.VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(Region.Center.Latitude, Region.Center.Longitude), Region.Span.LatitudeDelta, Region.Span.LongitudeDelta);
 		}
 
 		IMapPin GetPinForAnnotation(IMKAnnotation annotation)
 		{
 			IMapPin targetPin = null!;
-			IMap map = _handler?.VirtualView!;
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			IMap map = handler?.VirtualView!;
 
 			for (int i = 0; i < map.Pins.Count; i++)
 			{
@@ -124,7 +120,8 @@ namespace Microsoft.Maui.Maps.Platform
 		}
 		protected virtual MKPolylineRenderer? GetViewForPolyline(MKPolyline mkPolyline)
 		{
-			var map = _handler?.VirtualView;
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			var map = handler?.VirtualView;
 			IGeoPathMapElement? targetPolyline = null;
 
 			for (int i = 0; i < map?.Elements.Count; i++)
@@ -137,12 +134,13 @@ namespace Microsoft.Maui.Maps.Platform
 				}
 			}
 
-			return targetPolyline?.ToHandler(_handler?.MauiContext!).PlatformView as MKPolylineRenderer;
+			return targetPolyline?.ToHandler(handler?.MauiContext!).PlatformView as MKPolylineRenderer;
 		}
 
 		protected virtual MKPolygonRenderer? GetViewForPolygon(MKPolygon mkPolygon)
 		{
-			var map = _handler?.VirtualView;
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			var map = handler?.VirtualView;
 			IGeoPathMapElement? targetPolygon = null;
 
 			for (int i = 0; i < map?.Elements.Count; i++)
@@ -155,12 +153,13 @@ namespace Microsoft.Maui.Maps.Platform
 				}
 			}
 
-			return targetPolygon?.ToHandler(_handler?.MauiContext!).PlatformView as MKPolygonRenderer;
+			return targetPolygon?.ToHandler(handler?.MauiContext!).PlatformView as MKPolygonRenderer;
 		}
 
 		protected virtual MKCircleRenderer? GetViewForCircle(MKCircle mkCircle)
 		{
-			var map = _handler?.VirtualView;
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			var map = handler?.VirtualView;
 			ICircleMapElement? targetCircle = null;
 
 			for (int i = 0; i < map?.Elements.Count; i++)
@@ -173,7 +172,7 @@ namespace Microsoft.Maui.Maps.Platform
 				}
 			}
 
-			return targetCircle?.ToHandler(_handler?.MauiContext!).PlatformView as MKCircleRenderer;
+			return targetCircle?.ToHandler(handler?.MauiContext!).PlatformView as MKCircleRenderer;
 		}
 
 #pragma warning disable CS0108 // Member hides inherited member; missing new keyword
@@ -268,7 +267,8 @@ namespace Microsoft.Maui.Maps.Platform
 
 		internal void AddPins(IList pins)
 		{
-			if (_handler?.MauiContext == null)
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			if (handler?.MauiContext == null)
 				return;
 
 			if (Annotations?.Length > 0)
@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Maps.Platform
 
 			foreach (IMapPin pin in pins)
 			{
-				if (pin.ToHandler(_handler.MauiContext).PlatformView is IMKAnnotation annotation)
+				if (pin.ToHandler(handler.MauiContext).PlatformView is IMKAnnotation annotation)
 				{
 					pin.MarkerId = annotation;
 					AddAnnotation(annotation);
@@ -325,8 +325,8 @@ namespace Microsoft.Maui.Maps.Platform
 				return;
 			var tapPoint = recognizer.LocationInView(mauiMkMapView);
 			var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
-
-			mauiMkMapView._handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
+				handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
 		}
 	}
 }
