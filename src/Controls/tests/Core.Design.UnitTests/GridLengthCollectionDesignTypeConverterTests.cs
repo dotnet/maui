@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			GridLengthCollectionDesignTypeConverter converter = new GridLengthCollectionDesignTypeConverter();
 			bool actual = converter.IsValid(value);
-			Assert.True(actual);
+			Assert.False(actual);
 		}
 	}
 }

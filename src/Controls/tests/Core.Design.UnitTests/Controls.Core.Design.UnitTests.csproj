@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net472</TargetFrameworks>
-    <AssemblyName>Core.Design.UnitTests</AssemblyName>
+    <AssemblyName>Microsoft.Maui.Controls.Core.Design.UnitTests</AssemblyName>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-    <IsPackable>False</IsPackable>
-    <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Microsoft.Maui.Controls.Core.UnitTests</RootNamespace>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
+  <ItemGroup>
     <Reference Include="System.Xaml" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
