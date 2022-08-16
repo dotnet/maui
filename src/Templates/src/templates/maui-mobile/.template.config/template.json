@@ -85,6 +85,11 @@
       "HostIdentifier": {
         "type": "bind",
         "binding": "HostIdentifier"
+      },
+      "PhonePublisherId": {
+        "type": "generated",
+        "generator": "guid",
+        "replaces": "$guid9$"
       }
     },
     "defaultName": "MauiApp1"
