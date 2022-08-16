@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Maps.Platform
 	{
 		IMapHandler? _handler;
 		object? _lastTouchedView;
+		UITapGestureRecognizer? _mapClickedGestureRecognizer;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			RegionChanged += MkMapViewOnRegionChanged;
 			DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
+			AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
 		}
 
 		void Cleanup()
@@ -47,6 +49,12 @@ namespace Microsoft.Maui.Maps.Platform
 			if (_handler == null)
 				return;
 
+			if (_mapClickedGestureRecognizer != null)
+			{
+				RemoveGestureRecognizer(_mapClickedGestureRecognizer);
+				_mapClickedGestureRecognizer.Dispose();
+				_mapClickedGestureRecognizer = null;
+			}
 			RegionChanged -= MkMapViewOnRegionChanged;
 			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
 		}
@@ -299,6 +307,15 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 		}
 
+		static void OnMapClicked(UITapGestureRecognizer recognizer)
+		{
+			var mauiMkMapView = recognizer.View as MauiMKMapView;
+			if (mauiMkMapView == null)
+				return;
+			var tapPoint = recognizer.LocationInView(mauiMkMapView);
+			var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
 
+			mauiMkMapView._handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+		}
 	}
 }

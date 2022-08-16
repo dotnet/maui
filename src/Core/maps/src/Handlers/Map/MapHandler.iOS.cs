@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using CoreLocation;
 using MapKit;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Platform;
-using UIKit;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
@@ -12,7 +10,6 @@ namespace Microsoft.Maui.Maps.Handlers
 	public partial class MapHandler : ViewHandler<IMap, MKMapView>
 	{
 		CLLocationManager? _locationManager;
-		UITapGestureRecognizer? _mapClickedGestureRecognizer;
 
 		protected override MKMapView CreatePlatformView()
 		{
@@ -23,23 +20,11 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			base.ConnectHandler(platformView);
 			_locationManager = new CLLocationManager();
-
-			PlatformView.AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
-			//	PlatformView.OverlayRenderer = GetViewForOverlay;
 		}
 
 		protected override void DisconnectHandler(MKMapView platformView)
 		{
 			base.DisconnectHandler(platformView);
-
-			if (_mapClickedGestureRecognizer != null)
-			{
-				PlatformView.RemoveGestureRecognizer(_mapClickedGestureRecognizer);
-				_mapClickedGestureRecognizer.Dispose();
-				_mapClickedGestureRecognizer = null;
-			}
-
-			//platformView.OverlayRenderer = null;
 
 			// This handler is done with the MKMapView; we can put it in the pool
 			// for other rendererers to use in the future
@@ -104,13 +89,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			MapSpan? newRegion = arg as MapSpan;
 			if (newRegion != null)
 				(handler as MapHandler)?.MoveToRegion(newRegion, true);
-		}
-
-		void OnMapClicked(UITapGestureRecognizer recognizer)
-		{
-			var tapPoint = recognizer.LocationInView(PlatformView);
-			var tapGPS = PlatformView.ConvertPoint(tapPoint, PlatformView);
-			VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
 		}
 
 		void MoveToRegion(MapSpan mapSpan, bool animated = true)
