@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Maps.Platform
 		public MauiMKMapView(IMapHandler handler)
 		{
 			_handler = handler;
-			OverlayRenderer = GetViewForOverlay1;
+			OverlayRenderer = GetViewForOverlayDelegate;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -99,18 +99,29 @@ namespace Microsoft.Maui.Maps.Platform
 
 			return targetPin;
 		}
-#pragma warning disable CS8603 // Possible null reference return.
-		protected virtual MKOverlayRenderer GetViewForOverlay1(MKMapView mapview, IMKOverlay overlay)
+
+		protected virtual MKOverlayRenderer GetViewForOverlayDelegate(MKMapView mapview, IMKOverlay overlay)
 		{
-			return overlay switch
+			MKOverlayRenderer? overlayRenderer = null;
+			switch (overlay)
 			{
-				MKPolyline polyline => GetViewForPolyline(polyline),
-				MKPolygon polygon => GetViewForPolygon(polygon),
-				MKCircle circle => GetViewForCircle(circle),
-				_ => null,
-			};
+				case MKPolyline polyline:
+					overlayRenderer = GetViewForPolyline(polyline);
+					break;
+				case MKPolygon polygon:
+					overlayRenderer = GetViewForPolygon(polygon);
+					break;
+				case MKCircle circle:
+					overlayRenderer = GetViewForCircle(circle);
+					break;
+				default:
+					break;
+			}
+			if (overlayRenderer == null)
+				throw new InvalidOperationException($"MKOverlayRenderer not found for {overlay}.");
+
+			return overlayRenderer;
 		}
-#pragma warning restore CS8603 // Possible null reference return.
 		protected virtual MKPolylineRenderer? GetViewForPolyline(MKPolyline mkPolyline)
 		{
 			var map = _handler?.VirtualView;
