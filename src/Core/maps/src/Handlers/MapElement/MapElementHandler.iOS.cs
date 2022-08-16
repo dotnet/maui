@@ -11,15 +11,16 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (VirtualView.MapElementId != null)
 			{
-				if (VirtualView is IGeoPathMapElement)
-				{
-					if (VirtualView is IFilledMapElement)
-						return new MKPolygonRenderer((MKPolygon)VirtualView.MapElementId);
-					else
-						return new MKPolylineRenderer((MKPolyline)VirtualView.MapElementId);
-				}
-				if (VirtualView is ICircleMapElement)
-					return new MKCircleRenderer((MKCircle)VirtualView.MapElementId);
+				var mapElementId = VirtualView.MapElementId;
+
+				if (mapElementId is MKPolygon mKPolygon)
+					return new MKPolygonRenderer(mKPolygon);
+
+				if (mapElementId is MKPolyline line)
+					return new MKPolylineRenderer(line);
+
+				if (mapElementId is MKCircle circle)
+					return new MKCircleRenderer(circle);
 			}
 
 			return new MKOverlayRenderer();
