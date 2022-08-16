@@ -5,17 +5,19 @@
     <RootNamespace>Microsoft.Maui.Maps</RootNamespace>
     <AssemblyName>Microsoft.Maui.Maps</AssemblyName>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
   </PropertyGroup>
+
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Core.csproj" />
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
