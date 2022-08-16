@@ -46,7 +46,7 @@ namespace Maui.Controls.Sample
 #if __ANDROID__ || __IOS__
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{
-				handlers.AddMauiMapsControlsHandlers();
+				handlers.AddMauiMaps();
 			});
 #endif
 			appBuilder.UseMauiApp<XamlApp>();
