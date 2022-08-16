@@ -49,7 +49,6 @@ namespace Microsoft.Maui.Maps.Platform
 
 			RegionChanged -= MkMapViewOnRegionChanged;
 			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
-			_handler = null;
 		}
 
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
