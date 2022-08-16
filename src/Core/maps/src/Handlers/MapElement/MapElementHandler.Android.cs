@@ -76,13 +76,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (handler.PlatformView is PolygonOptions polygonOptions)
 			{
 				// Will throw an exception when added to the map if Points is empty
-				if (geoPathMapElement.Geopath.Count == 0)
+				if (geoPathMapElement.Count == 0)
 				{
 					polygonOptions.Points.Add(new LatLng(0, 0));
 				}
 				else
 				{
-					foreach (var position in geoPathMapElement.Geopath)
+					foreach (var position in geoPathMapElement)
 					{
 						polygonOptions.Points.Add(new LatLng(position.Latitude, position.Longitude));
 					}
@@ -92,13 +92,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (handler.PlatformView is PolylineOptions polylineOptions)
 			{
 				// Will throw an exception when added to the map if Points is empty
-				if (geoPathMapElement.Geopath.Count == 0)
+				if (geoPathMapElement.Count == 0)
 				{
 					polylineOptions.Points.Add(new LatLng(0, 0));
 				}
 				else
 				{
-					foreach (var position in geoPathMapElement.Geopath)
+					foreach (var position in geoPathMapElement)
 					{
 						polylineOptions.Points.Add(new LatLng(position.Latitude, position.Longitude));
 					}

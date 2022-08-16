@@ -3,8 +3,7 @@ using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Maps
 {
-	public interface IGeoPathMapElement : IMapElement
+	public interface IGeoPathMapElement : IMapElement, IList<Location>
 	{
-		IList<Location> Geopath { get; }
 	}
 }

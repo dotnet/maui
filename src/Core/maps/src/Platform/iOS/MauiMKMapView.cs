@@ -295,11 +295,11 @@ namespace Microsoft.Maui.Maps.Platform
 				{
 					case IGeoPathMapElement geoPathElement:
 						if (geoPathElement is IFilledMapElement)
-							overlay = MKPolygon.FromCoordinates(geoPathElement.Geopath
+							overlay = MKPolygon.FromCoordinates(geoPathElement
 							.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude))
 							.ToArray());
 						else
-							overlay = MKPolyline.FromCoordinates(geoPathElement.Geopath
+							overlay = MKPolyline.FromCoordinates(geoPathElement
 								.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude))
 								.ToArray());
 						break;
