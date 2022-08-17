@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Hosting;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs" />
-	public partial class Element : Maui.IElement, IEffectControlProvider, IToolTipContainer
+	public partial class Element : Maui.IElement, IEffectControlProvider, IToolTipElement
 	{
 		IElementHandler _handler;
 		EffectsFactory _effectsFactory;
@@ -99,6 +99,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		ToolTip IToolTipContainer.ToolTip => ToolTipProperties.GetToolTip(this);
+		ToolTip IToolTipElement.ToolTip => ToolTipProperties.GetToolTip(this);
 	}
 }

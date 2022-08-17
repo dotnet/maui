@@ -7,7 +7,7 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBase : ElementStub, IView, IVisualTreeElement, IToolTipContainer
+	public class StubBase : ElementStub, IView, IVisualTreeElement, IToolTipElement
 	{
 		IElementHandler IElement.Handler
 		{

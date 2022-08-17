@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		static void OnToolTipPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is IElement element)
-				element?.Handler?.UpdateValue(nameof(IToolTipContainer.ToolTip));
+				element?.Handler?.UpdateValue(nameof(IToolTipElement.ToolTip));
 		}
 
 		public static object GetContent(BindableObject bindable)
