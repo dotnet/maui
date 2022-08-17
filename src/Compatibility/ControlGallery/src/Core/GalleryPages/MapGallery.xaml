@@ -48,13 +48,6 @@
                 <Button Clicked="RemovePinClicked"
                         Text="Remove Pin" />
                 <StackLayout Orientation="Horizontal">
-                    <Label Text="Move to Last Region On Layout Change"
-                           VerticalOptions="Center" />
-                    <Button x:Name="_btnToggleMoveToLastRegionOnLayoutChange"
-                            Clicked="ToggleMoveToLastRegionOnLayoutChange"
-                            VerticalOptions="Center" />
-                </StackLayout>
-                <StackLayout Orientation="Horizontal">
                     <Label Text="Show traffic"
                            VerticalOptions="Center" />
                     <Switch Toggled="ShowTrafficToggled" VerticalOptions="Center" HorizontalOptions="End" />

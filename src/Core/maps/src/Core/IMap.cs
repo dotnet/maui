@@ -57,8 +57,5 @@ namespace Microsoft.Maui.Maps
 		/// Moves the map so that it displays the specified MapSpan region.
 		/// </summary>
 		void MoveToRegion(MapSpan region);
-
-		bool MoveToLastRegionOnLayoutChange { get; }
-
 	}
 }

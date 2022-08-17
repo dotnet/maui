@@ -34,7 +34,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			((Grid)Content).Children.Add(Map, 0, 1);
 
-			_btnToggleMoveToLastRegionOnLayoutChange.Text = Map.MoveToLastRegionOnLayoutChangeProperty.DefaultValue.ToString();
 		}
 
 		public static Map MakeMap()
@@ -179,11 +178,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Map.Pins.RemoveAt(0);
 		}
 
-		void ToggleMoveToLastRegionOnLayoutChange(object sender, EventArgs e)
-		{
-			Map.MoveToLastRegionOnLayoutChange = !Map.MoveToLastRegionOnLayoutChange;
-			((Button)sender).Text = Map.MoveToLastRegionOnLayoutChange.ToString();
-		}
 
 		void ShowTrafficToggled(object sender, ToggledEventArgs e)
 		{

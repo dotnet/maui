@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void MapViewLayoutChange(object? sender, Android.Views.View.LayoutChangeEventArgs e)
 		{
-			if ((_init || VirtualView.MoveToLastRegionOnLayoutChange) && _lastMoveToRegion != null)
+			if (_init && _lastMoveToRegion != null)
 			{
 				MoveToRegion(_lastMoveToRegion, false);
 				if (_pins != null)
