@@ -4,14 +4,17 @@
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Controls.Maps</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Maps</RootNamespace>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\maps\src\Maps.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
