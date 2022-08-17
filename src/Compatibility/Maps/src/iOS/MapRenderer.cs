@@ -401,7 +401,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			var mapModel = (Map)Element;
 			var mkMapView = (MKMapView)Control;
 
-			mapModel.VisibleRegion = new MapSpan(new Devices.Sensors.Location(mkMapView.Region.Center.Latitude, mkMapView.Region.Center.Longitude), mkMapView.Region.Span.LatitudeDelta, mkMapView.Region.Span.LongitudeDelta);
+			(mapModel as IMap).VisibleRegion = new MapSpan(new Devices.Sensors.Location(mkMapView.Region.Center.Latitude, mkMapView.Region.Center.Longitude), mkMapView.Region.Span.LatitudeDelta, mkMapView.Region.Span.LongitudeDelta);
 		}
 
 		void MoveToRegion(MapSpan mapSpan, bool animated = true)

@@ -28,6 +28,7 @@ using Circle = Microsoft.Maui.Controls.Maps.Circle;
 using Math = System.Math;
 using Polygon = Microsoft.Maui.Controls.Maps.Polygon;
 using Polyline = Microsoft.Maui.Controls.Maps.Polyline;
+using IList = System.Collections.IList;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 {
@@ -255,7 +256,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 		protected virtual MarkerOptions CreateMarker(Pin pin)
 		{
 			var opts = new MarkerOptions();
-			opts.SetPosition(new LatLng(pin.Position.Latitude, pin.Position.Longitude));
+			opts.SetPosition(new LatLng(pin.Location.Latitude, pin.Location.Longitude));
 			opts.SetTitle(pin.Label);
 			opts.SetSnippet(pin.Address);
 
@@ -307,9 +308,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			{
 				marker.Snippet = pin.Address;
 			}
-			else if (e.PropertyName == Pin.PositionProperty.PropertyName)
+			else if (e.PropertyName == Pin.LocationProperty.PropertyName)
 			{
-				marker.Position = new LatLng(pin.Position.Latitude, pin.Position.Longitude);
+				marker.Position = new LatLng(pin.Location.Latitude, pin.Location.Longitude);
 			}
 		}
 
@@ -529,7 +530,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			LatLng lr = projection.FromScreenLocation(new global::Android.Graphics.Point(width, height));
 			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
 			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
-			Element.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
+			(Element as IMap).VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
 		}
 
 		void MapElementPropertyChanged(object sender, PropertyChangedEventArgs e)
