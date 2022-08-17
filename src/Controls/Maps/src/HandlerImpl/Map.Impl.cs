@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
@@ -6,7 +7,9 @@ namespace Microsoft.Maui.Controls.Maps
 {
 	public partial class Map : IMap, IEnumerable<IMapPin>
 	{
-		IList<IMapElement> IMap.Elements => MapElements;
+		IList<IMapElement> IMap.Elements => _mapElements.Cast<IMapElement>().ToList();
+
+		IList<IMapPin> IMap.Pins => _pins.Cast<IMapPin>().ToList();
 
 		void IMap.Clicked(Location location) => MapClicked?.Invoke(this, new MapClickedEventArgs(location));
 

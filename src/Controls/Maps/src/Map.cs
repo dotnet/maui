@@ -31,8 +31,8 @@ namespace Microsoft.Maui.Controls.Maps
 		public static readonly BindableProperty ItemTemplateSelectorProperty = BindableProperty.Create(nameof(ItemTemplateSelector), typeof(DataTemplateSelector), typeof(Map), default(DataTemplateSelector),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemTemplateSelectorPropertyChanged());
 
-		readonly ObservableCollection<IMapPin> _pins = new();
-		readonly ObservableCollection<IMapElement> _mapElements = new();
+		readonly ObservableCollection<Pin> _pins = new();
+		readonly ObservableCollection<MapElement> _mapElements = new();
 		MapSpan? _visibleRegion;
 		MapSpan? _lastMoveToRegion;
 
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Maps
 			set { SetValue(MapTypeProperty, value); }
 		}
 
-		public IList<IMapPin> Pins
+		public IList<Pin> Pins
 		{
 			get { return _pins; }
 		}
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Maps
 			set { SetValue(ItemTemplateSelectorProperty, value); }
 		}
 
-		public IList<IMapElement> MapElements => _mapElements;
+		public IList<MapElement> MapElements => _mapElements;
 
 		public event EventHandler<MapClickedEventArgs>? MapClicked;
 
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Maps
 
 		void MapElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (sender is IMapElement mapElement)
+			if (sender is MapElement mapElement)
 			{
 				var index = MapElements.IndexOf(mapElement);
 				var args = new Maui.Maps.Handlers.MapElementHandlerUpdate(index, mapElement);
