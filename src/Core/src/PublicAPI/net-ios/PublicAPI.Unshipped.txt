@@ -25,10 +25,10 @@ Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler.VirtualView.get -> Microsoft
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler() -> void
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.IContextFlyoutContainer.ContextFlyout.get -> Microsoft.Maui.IFlyout?
+Microsoft.Maui.IContextFlyoutElement.ContextFlyout.get -> Microsoft.Maui.IFlyout?
 Microsoft.Maui.IFlyout
 Microsoft.Maui.IMenuFlyout
-Microsoft.Maui.IContextFlyoutContainer
+Microsoft.Maui.IContextFlyoutElement
 Microsoft.Maui.IMenuFlyoutSeparator
 Microsoft.Maui.Platform.MauiWKWebView.MauiWKWebView(CoreGraphics.CGRect frame, Microsoft.Maui.Handlers.WebViewHandler! handler, WebKit.WKWebViewConfiguration! configuration) -> void
 Microsoft.Maui.Platform.MauiWKWebView.MauiWKWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void

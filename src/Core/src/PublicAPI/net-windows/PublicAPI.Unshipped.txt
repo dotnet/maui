@@ -26,10 +26,10 @@ Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler.VirtualView.get -> Microsoft
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler() -> void
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.IContextFlyoutContainer.ContextFlyout.get -> Microsoft.Maui.IFlyout?
+Microsoft.Maui.IContextFlyoutElement.ContextFlyout.get -> Microsoft.Maui.IFlyout?
 Microsoft.Maui.IFlyout
 Microsoft.Maui.IMenuFlyout
-Microsoft.Maui.IContextFlyoutContainer
+Microsoft.Maui.IContextFlyoutElement
 Microsoft.Maui.IMenuFlyoutSeparator
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Controls.MenuFlyout!
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.SetVirtualView(Microsoft.Maui.IElement! view) -> void

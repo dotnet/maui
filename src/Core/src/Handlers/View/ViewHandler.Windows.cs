@@ -104,13 +104,13 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
-			if (view is IContextFlyoutContainer contextFlyoutContainer)
+			if (view is IContextFlyoutElement contextFlyoutContainer)
 			{
 				MapContextFlyout(handler, contextFlyoutContainer);
 			}
 		}
 
-		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutContainer contextFlyoutContainer)
+		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutElement contextFlyoutContainer)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"The handler's {nameof(handler.MauiContext)} cannot be null.");
 

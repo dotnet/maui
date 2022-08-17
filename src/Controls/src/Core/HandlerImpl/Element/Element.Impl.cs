@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Hosting;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs" />
-	public partial class Element : Maui.IElement, IEffectControlProvider, IContextFlyoutContainer
+	public partial class Element : Maui.IElement, IEffectControlProvider, IContextFlyoutElement
 	{
 		IElementHandler _handler;
 		EffectsFactory _effectsFactory;
@@ -99,6 +99,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IFlyout IContextFlyoutContainer.ContextFlyout => FlyoutBase.GetContextFlyout(this);
+		IFlyout IContextFlyoutElement.ContextFlyout => FlyoutBase.GetContextFlyout(this);
 	}
 }

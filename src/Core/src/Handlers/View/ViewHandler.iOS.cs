@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
 #if MACCATALYST
-			if (view is IContextFlyoutContainer contextFlyoutContainer)
+			if (view is IContextFlyoutElement contextFlyoutContainer)
 			{
 				MapContextFlyout(handler, contextFlyoutContainer);
 			}
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 		IUIContextMenuInteractionDelegate? _uiContextMenuInteractionDelegate;
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
-		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutContainer contextFlyoutContainer)
+		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutElement contextFlyoutContainer)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"The handler's {nameof(handler.MauiContext)} cannot be null.");
 

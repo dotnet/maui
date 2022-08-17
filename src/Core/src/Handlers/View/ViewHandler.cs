@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
 #if WINDOWS || MACCATALYST
-				[nameof(IContextFlyoutContainer.ContextFlyout)] = MapContextFlyout,
+				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
             };
 

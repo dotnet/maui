@@ -27,8 +27,8 @@ Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler() 
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.IMenuFlyout
 Microsoft.Maui.IFlyout
-Microsoft.Maui.IContextFlyoutContainer
-Microsoft.Maui.IContextFlyoutContainer.ContextFlyout.get -> Microsoft.Maui.IFlyout?
+Microsoft.Maui.IContextFlyoutElement
+Microsoft.Maui.IContextFlyoutElement.ContextFlyout.get -> Microsoft.Maui.IFlyout?
 Microsoft.Maui.IMenuFlyoutSeparator
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> object!
