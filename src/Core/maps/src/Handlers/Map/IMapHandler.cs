@@ -21,5 +21,6 @@ namespace Microsoft.Maui.Maps.Handlers
 		GoogleMap? Map { get; set; }
 #endif
 
+		void UpdateMapElement(IMapElement element);
 	}
 }

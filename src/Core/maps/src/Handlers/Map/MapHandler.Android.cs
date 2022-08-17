@@ -11,6 +11,7 @@ using Android.Gms.Maps.Model;
 using Android.OS;
 using AndroidX.Core.Content;
 using Java.Lang;
+using Java.Util.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
@@ -156,6 +157,142 @@ namespace Microsoft.Maui.Maps.Handlers
 			MapSpan? newRegion = arg as MapSpan;
 			if (newRegion != null)
 				(handler as MapHandler)?.MoveToRegion(newRegion, true);
+		}
+
+		public void UpdateMapElement(IMapElement element)
+		{
+			switch (element)
+			{
+				case IGeoPathMapElement polyline:
+					{
+						if (element is IFilledMapElement polygon)
+						{
+							PolygonOnPropertyChanged(polyline);
+						}
+						else
+						{
+							PolylineOnPropertyChanged(polyline);
+						}
+						break;
+					}
+				case ICircleMapElement circle:
+					{
+						CircleOnPropertyChanged(circle);
+						break;
+					}
+			}
+		}
+
+		void PolygonOnPropertyChanged(IGeoPathMapElement formsPolygon)
+		{
+			var nativePolygon = GetNativePolygon(formsPolygon);
+
+			if (nativePolygon == null)
+				return;
+
+			if (formsPolygon.Stroke is SolidPaint solidPaint)
+				nativePolygon.StrokeColor = solidPaint.Color.AsColor();
+
+			if ((formsPolygon as IFilledMapElement)?.Fill is SolidPaint solidFillPaint)
+				nativePolygon.FillColor = solidFillPaint.Color.AsColor();
+
+			nativePolygon.StrokeWidth = (float)formsPolygon.StrokeThickness;
+			nativePolygon.Points = formsPolygon.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
+		}
+
+		void PolylineOnPropertyChanged(IGeoPathMapElement formsPolyline)
+		{
+			var nativePolyline = GetNativePolyline(formsPolyline);
+
+			if (nativePolyline == null)
+				return;
+
+			if (formsPolyline.Stroke is SolidPaint solidPaint)
+				nativePolyline.Color = solidPaint.Color.AsColor();
+
+			nativePolyline.Width = (float)formsPolyline.StrokeThickness;
+			nativePolyline.Points = formsPolyline.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
+		}
+
+
+		void CircleOnPropertyChanged(ICircleMapElement formsCircle)
+		{
+			var nativeCircle = GetNativeCircle(formsCircle);
+
+			if (nativeCircle == null)
+				return;
+
+
+			if (formsCircle.Stroke is SolidPaint solidPaint)
+				nativeCircle.FillColor = solidPaint.Color.AsColor();
+
+			if (formsCircle.Fill is SolidPaint solidFillPaint)
+				nativeCircle.FillColor = solidFillPaint.Color.AsColor();
+
+			nativeCircle.Center = new LatLng(formsCircle.Center.Latitude, formsCircle.Center.Longitude);
+			nativeCircle.Radius = formsCircle.Radius.Meters;
+			nativeCircle.StrokeWidth = (float)formsCircle.StrokeThickness;
+
+		}
+
+		protected APolyline? GetNativePolyline(IGeoPathMapElement polyline)
+		{
+			APolyline? targetPolyline = null;
+
+			if (_polylines != null && polyline.MapElementId is string)
+			{
+				for (int i = 0; i < _polylines.Count; i++)
+				{
+					var native = _polylines[i];
+					if (native.Id == (string)polyline.MapElementId)
+					{
+						targetPolyline = native;
+						break;
+					}
+				}
+			}
+
+			return targetPolyline;
+		}
+
+		protected ACircle? GetNativeCircle(ICircleMapElement circle)
+		{
+			ACircle? targetCircle = null;
+
+			if (_circles != null && circle.MapElementId is string)
+			{
+				for (int i = 0; i < _circles.Count; i++)
+				{
+					var native = _circles[i];
+					if (native.Id == (string)circle.MapElementId)
+					{
+						targetCircle = native;
+						break;
+					}
+				}
+			}
+
+			return targetCircle;
+		}
+
+		protected APolygon? GetNativePolygon(IGeoPathMapElement polygon)
+		{
+			APolygon? targetPolygon = null;
+
+			if (_polygons != null && polygon.MapElementId is string)
+			{
+				for (int i = 0; i < _polygons.Count; i++)
+				{
+					var native = _polygons[i];
+					if (native.Id == (string)polygon.MapElementId)
+					{
+						targetPolygon = native;
+						break;
+					}
+				}
+			}
+
+			return targetPolygon;
 		}
 
 		public static void MapPins(IMapHandler handler, IMap map)

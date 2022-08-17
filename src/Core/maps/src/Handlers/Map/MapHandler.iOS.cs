@@ -91,6 +91,12 @@ namespace Microsoft.Maui.Maps.Handlers
 				(handler as MapHandler)?.MoveToRegion(newRegion, true);
 		}
 
+		public void UpdateMapElement(IMapElement element)
+		{
+			(PlatformView as MauiMKMapView)?.RemoveElements(new[] { element });
+			(PlatformView as MauiMKMapView)?.AddElements(new[] { element });
+		}
+
 		void MoveToRegion(MapSpan mapSpan, bool animated = true)
 		{
 			var center = mapSpan.Center;

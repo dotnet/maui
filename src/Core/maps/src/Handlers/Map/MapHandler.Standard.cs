@@ -3,7 +3,6 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public partial class MapHandler : ViewHandler<IMap, object>
 	{
 
@@ -25,6 +24,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapPins(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
 		public static void MapElements(IMapHandler handler, IMap map) => throw new NotImplementedException();
+
+		public void UpdateMapElement(IMapElement element) => throw new NotImplementedException();
 	}
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

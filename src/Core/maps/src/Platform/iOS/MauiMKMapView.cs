@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using CoreLocation;
 using MapKit;
@@ -102,13 +103,13 @@ namespace Microsoft.Maui.Maps.Platform
 			switch (overlay)
 			{
 				case MKPolyline polyline:
-					overlayRenderer = GetViewForPolyline(polyline);
+					overlayRenderer = GetMapElement<MKPolylineRenderer>(polyline);
 					break;
 				case MKPolygon polygon:
-					overlayRenderer = GetViewForPolygon(polygon);
+					overlayRenderer = GetMapElement<MKPolygonRenderer>(polygon);
 					break;
 				case MKCircle circle:
-					overlayRenderer = GetViewForCircle(circle);
+					overlayRenderer = GetMapElement<MKCircleRenderer>(circle);
 					break;
 				default:
 					break;
@@ -117,62 +118,6 @@ namespace Microsoft.Maui.Maps.Platform
 				throw new InvalidOperationException($"MKOverlayRenderer not found for {overlay}.");
 
 			return overlayRenderer;
-		}
-		protected virtual MKPolylineRenderer? GetViewForPolyline(MKPolyline mkPolyline)
-		{
-			_handlerRef.TryGetTarget(out IMapHandler? handler);
-			var map = handler?.VirtualView;
-			IGeoPathMapElement? targetPolyline = null;
-
-			for (int i = 0; i < map?.Elements.Count; i++)
-			{
-				var element = map.Elements[i];
-				if (ReferenceEquals(element.MapElementId, mkPolyline))
-				{
-					targetPolyline = (IGeoPathMapElement)element;
-					break;
-				}
-			}
-
-			return targetPolyline?.ToHandler(handler?.MauiContext!).PlatformView as MKPolylineRenderer;
-		}
-
-		protected virtual MKPolygonRenderer? GetViewForPolygon(MKPolygon mkPolygon)
-		{
-			_handlerRef.TryGetTarget(out IMapHandler? handler);
-			var map = handler?.VirtualView;
-			IGeoPathMapElement? targetPolygon = null;
-
-			for (int i = 0; i < map?.Elements.Count; i++)
-			{
-				var element = map.Elements[i];
-				if (ReferenceEquals(element.MapElementId, mkPolygon))
-				{
-					targetPolygon = (IGeoPathMapElement)element;
-					break;
-				}
-			}
-
-			return targetPolygon?.ToHandler(handler?.MauiContext!).PlatformView as MKPolygonRenderer;
-		}
-
-		protected virtual MKCircleRenderer? GetViewForCircle(MKCircle mkCircle)
-		{
-			_handlerRef.TryGetTarget(out IMapHandler? handler);
-			var map = handler?.VirtualView;
-			ICircleMapElement? targetCircle = null;
-
-			for (int i = 0; i < map?.Elements.Count; i++)
-			{
-				var element = map.Elements[i];
-				if (ReferenceEquals(element.MapElementId, mkCircle))
-				{
-					targetCircle = (ICircleMapElement)element;
-					break;
-				}
-			}
-
-			return targetCircle?.ToHandler(handler?.MauiContext!).PlatformView as MKCircleRenderer;
 		}
 
 #pragma warning disable CS0108 // Member hides inherited member; missing new keyword
@@ -288,8 +233,6 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			foreach (IMapElement element in elements)
 			{
-				//	element.PropertyChanged += MapElementPropertyChanged;
-
 				IMKOverlay? overlay = null;
 				switch (element)
 				{
@@ -318,6 +261,15 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 		}
 
+		internal void RemoveElements(IList elements)
+		{
+			foreach (IMapElement element in elements)
+			{
+				if (element.MapElementId is IMKOverlay overlay)
+					RemoveOverlay(overlay);
+			}
+		}
+
 		static void OnMapClicked(UITapGestureRecognizer recognizer)
 		{
 			var mauiMkMapView = recognizer.View as MauiMKMapView;
@@ -327,6 +279,25 @@ namespace Microsoft.Maui.Maps.Platform
 			var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
 			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
 				handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+		}
+
+		T? GetMapElement<T>(IMKOverlay mkPolyline) where T : MKOverlayRenderer
+		{
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			var map = handler?.VirtualView;
+			IMapElement mapElement = default!;
+			for (int i = 0; i < map?.Elements.Count; i++)
+			{
+				var element = map.Elements[i];
+				if (ReferenceEquals(element.MapElementId, mkPolyline))
+				{
+					mapElement = element;
+					break;
+				}
+			}
+			//Make sure we Disconnect old handler we don't want to reuse that one
+			mapElement?.Handler?.DisconnectHandler();
+			return mapElement?.ToHandler(handler?.MauiContext!).PlatformView as T;
 		}
 	}
 }

@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static CommandMapper<IMap, IMapHandler> CommandMapper = new(ViewCommandMapper)
 		{
 			[nameof(IMap.MoveToRegion)] = MapMoveToRegion,
+			[nameof(IMapHandler.UpdateMapElement)] = MapUpdateMapElement,
 		};
 
 		public MapHandler() : base(Mapper, CommandMapper)
@@ -45,5 +46,13 @@ namespace Microsoft.Maui.Maps.Handlers
 		IMap IMapHandler.VirtualView => VirtualView;
 
 		PlatformView IMapHandler.PlatformView => PlatformView;
+
+		public static void MapUpdateMapElement(IMapHandler handler, IMap map, object? arg)
+		{
+			if (arg is not MapElementHandlerUpdate args)
+				return;
+
+			handler.UpdateMapElement(args.MapElement);
+		}
 	}
 }
