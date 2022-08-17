@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var home = new Pin
 			{
 				Label = "Home",
-				Position = new Location(88, 2),
+				Location = new Location(88, 2),
 				Type = PinType.Place,
 				Address = "123 My Place"
 			};
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mall = new Pin
 			{
 				Label = "Mall",
-				Position = new Location(-12, -67),
+				Location = new Location(-12, -67),
 				Type = PinType.Place,
 				Address = "123 Fun"
 			};
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.Pins.Add(mall);
 
 			Assert.Equal(2, map.Pins.Count);
-			Assert.Equal(map.Pins[1].Position.Latitude, -12);
+			Assert.Equal(map.Pins[1].Location.Latitude, -12);
 		}
 
 		[Fact]
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var map = new Map();
 			var noNamePin = new Pin
 			{
-				Position = new Location(50, 50),
+				Location = new Location(50, 50),
 				Type = PinType.Generic,
 				Address = "123 Fun"
 			};
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var map = new Map();
 			var noAddressPin = new Pin
 			{
-				Position = new Location(37.9, -20.87),
+				Location = new Location(37.9, -20.87),
 				Label = "I have no address",
 				Type = PinType.SearchResult
 			};
@@ -76,26 +76,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void Constructor()
-		{
-			var center = new Location(15.5, 176);
-			var span = new MapSpan(center, 1, 2);
-			var map = new Map(span);
-
-			//Assert.Equal(1, map.LastMoveToRegion.LatitudeDegrees);
-			//Assert.Equal(2, map.LastMoveToRegion.LongitudeDegrees);
-			//var location = new Location(15.5, 176);
-			//Assert.Equal(location, map.LastMoveToRegion.Center);
-		}
-
-		[Fact]
 		public void RemovePin()
 		{
 			var map = new Map();
 			var genericPlace = new Pin
 			{
 				Label = "Generic",
-				Position = new Location(-12, -67),
+				Location = new Location(-12, -67),
 				Type = PinType.Generic,
 				Address = "XXX"
 			};
@@ -103,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mall = new Pin
 			{
 				Label = "Mall",
-				Position = new Location(-29, -87),
+				Location = new Location(-29, -87),
 				Type = PinType.Place,
 				Address = "123 Fun"
 			};
@@ -120,25 +107,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(map.Pins.Contains(mall));
 			Assert.False(map.Pins.Contains(genericPlace));
 		}
-
-		//[Test]
-		//public void VisibleRegion()
-		//{
-		//	var map = new Map(new MapSpan(new Location(), 0, 0));
-		//	map.MoveToRegion(new MapSpan(new Location(1, 2), 3, 4));
-		//	Assert.Equal(null, map.VisibleRegion);
-
-		//	bool signaled = false;
-		//	MessagingCenter.Subscribe<Map, MapSpan>(this, "MapMoveToRegion", (s, a) =>
-		//	{
-		//		signaled = true;
-		//		map.VisibleRegion = a;
-		//	}, map);
-
-		//	map.MoveToRegion(new MapSpan(new Location(1, 2), 3, 4));
-		//	Assert.Equal(new MapSpan(new Location(1, 2), 3, 4), map.LastMoveToRegion);
-		//	Assert.True(signaled);
-		//}
 
 		[Fact]
 		public void VisibleRegionDoubleSet()
@@ -465,7 +433,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Address = address ?? "Address",
 				Label = "Label",
-				Position = new Location()
+				Location = new Location()
 			});
 		}
 
