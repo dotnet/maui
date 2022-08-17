@@ -2,7 +2,7 @@
 {
 	public abstract class FlyoutBase : Element, IFlyout
 	{
-		public static readonly BindableProperty ContextFlyoutProperty = BindableProperty.Create("ContextFlyout", typeof(FlyoutBase), typeof(FlyoutBase), null,
+		public static readonly BindableProperty ContextFlyoutProperty = BindableProperty.CreateAttached("ContextFlyout", typeof(FlyoutBase), typeof(FlyoutBase), null,
 			propertyChanged: (bo, oldV, newV) =>
 			{
 				if (oldV is BindableObject oldMenu)
