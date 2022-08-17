@@ -6,7 +6,7 @@
 			propertyChanged: (bo, oldV, newV) =>
 			{
 				if (oldV is BindableObject oldMenu)
-					VisualElement.SetInheritedBindingContext(oldMenu, bo.BindingContext);
+					VisualElement.SetInheritedBindingContext(oldMenu, null);
 
 				if (newV is BindableObject newMenu)
 					VisualElement.SetInheritedBindingContext(newMenu, bo.BindingContext);
