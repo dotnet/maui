@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp.Views.Gtk3" Version="2.88.0" />
+    <PackageReference Include="SkiaSharp.Views.Gtk3" Version="2.88.1" />
   </ItemGroup>
 
   <ItemGroup>
