@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Maps;
@@ -160,7 +161,33 @@ namespace Microsoft.Maui.Controls.Maps
 		void MapElementsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			Handler?.UpdateValue(nameof(IMap.Elements));
+			if (e.NewItems != null)
+			{
+				foreach (MapElement item in e.NewItems)
+				{
+					item.PropertyChanged += MapElementPropertyChanged;
+				}
+			}
+
+			if (e.OldItems != null)
+			{
+				foreach (MapElement item in e.OldItems)
+				{
+					item.PropertyChanged -= MapElementPropertyChanged;
+				}
+			}
 		}
+
+		void MapElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (sender is IMapElement mapElement)
+			{
+				var index = MapElements.IndexOf(mapElement);
+				var args = new Maui.Maps.Handlers.MapElementHandlerUpdate(index, mapElement);
+				Handler?.Invoke(nameof(Maui.Maps.Handlers.IMapHandler.UpdateMapElement), args);
+			}
+		}
+
 
 		void OnItemsSourcePropertyChanged(IEnumerable oldItemsSource, IEnumerable newItemsSource)
 		{
