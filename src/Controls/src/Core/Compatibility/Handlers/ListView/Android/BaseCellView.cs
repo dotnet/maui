@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility;
@@ -18,9 +19,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		readonly Color _androidDefaultTextColor;
 		Cell _cell;
-		readonly TextView _detailText;
+		readonly AppCompatTextView _detailText;
 		readonly ImageView _imageView;
-		readonly TextView _mainText;
+		readonly AppCompatTextView _mainText;
 		Color _defaultDetailColor;
 		Color _defaultMainTextColor;
 		Color _detailTextColor;
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var textLayout = new LinearLayout(context) { Orientation = Orientation.Vertical };
 
-			_mainText = new TextView(context);
+			_mainText = new AppCompatTextView(context);
 			_mainText.SetSingleLine(true);
 			_mainText.Ellipsize = TextUtils.TruncateAt.End;
 			_mainText.SetPadding((int)context.ToPixels(15), padding, padding, padding);
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			using (var lp = new LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent))
 				textLayout.AddView(_mainText, lp);
 
-			_detailText = new TextView(context);
+			_detailText = new AppCompatTextView(context);
 			_detailText.SetSingleLine(true);
 			_detailText.Ellipsize = TextUtils.TruncateAt.End;
 			_detailText.SetPadding((int)context.ToPixels(15), padding, padding, padding);
