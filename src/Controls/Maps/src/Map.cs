@@ -121,16 +121,19 @@ namespace Microsoft.Maui.Controls.Maps
 		public MapSpan? VisibleRegion
 		{
 			get { return _visibleRegion; }
-			set
-			{
-				if (_visibleRegion == value)
-					return;
-				if (value == null)
-					throw new ArgumentNullException(nameof(value));
-				OnPropertyChanging();
-				_visibleRegion = value;
-				OnPropertyChanged();
-			}
+		}
+
+		void SetVisibleRegion(MapSpan? visibleRegion)
+		{
+			if (visibleRegion == null)
+				throw new ArgumentNullException(nameof(visibleRegion));
+
+			if (_visibleRegion == visibleRegion)
+				return;
+		
+			OnPropertyChanging(nameof(VisibleRegion));
+			_visibleRegion = visibleRegion;
+			OnPropertyChanged(nameof(VisibleRegion));
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
