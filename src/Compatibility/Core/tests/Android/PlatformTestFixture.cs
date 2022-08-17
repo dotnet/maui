@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using AColor = Android.Graphics.Color;
 using AProgressBar = Android.Widget.ProgressBar;
-using ASearchView = Android.Widget.SearchView;
+using ASearchView = AndroidX.AppCompat.Widget.SearchView;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests

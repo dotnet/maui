@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Design
 		public ColorDesignTypeConverter()
 		{ }
 
-		private static readonly string[] knownValues = 
+		private static readonly string[] knownValues =
 			new[]
 			{
 				"AliceBlue",
