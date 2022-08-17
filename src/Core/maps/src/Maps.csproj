@@ -15,12 +15,13 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="..\..\src\IsExternalInit.cs" Link="IsExternalInit.cs" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
+  <ItemGroup>
+    <Compile Include="..\..\src\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
 
 </Project>
