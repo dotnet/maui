@@ -1,5 +1,5 @@
 ﻿#if __IOS__ || MACCATALYST
-using PlatformView = MapKit.MKMapView;
+using PlatformView = Microsoft.Maui.Maps.Platform.MauiMKMapView;
 #elif MONOANDROID
 using Android.Gms.Maps;
 using PlatformView = Android.Gms.Maps.MapView;

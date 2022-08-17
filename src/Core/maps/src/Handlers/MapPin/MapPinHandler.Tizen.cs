@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Maps.Handlers
 	public partial class MapPinHandler : ElementHandler<IMapPin, ElmSharp.EvasObject>
 	{
 		protected override ElmSharp.EvasObject CreatePlatformElement() => throw new System.NotImplementedException();
-		public static void MapPosition(IMapPinHandler handler, IMapPin mapPin) { }
+		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin) { }
 
 		public static void MapLabel(IMapPinHandler handler, IMapPin mapPin) { }
 

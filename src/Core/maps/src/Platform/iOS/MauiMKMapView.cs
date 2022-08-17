@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
 using CoreLocation;
 using MapKit;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
-using SpriteKit;
 using UIKit;
 
 namespace Microsoft.Maui.Maps.Platform
 {
-	internal class MauiMKMapView : MKMapView
+	public class MauiMKMapView : MKMapView
 	{
 		WeakReference<IMapHandler> _handlerRef;
 		object? _lastTouchedView;
@@ -32,69 +29,6 @@ namespace Microsoft.Maui.Maps.Platform
 				Startup();
 			else
 				Cleanup();
-		}
-
-		void Startup()
-		{
-			RegionChanged += MkMapViewOnRegionChanged;
-			DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
-			AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
-		}
-
-		void Cleanup()
-		{
-			if (_mapClickedGestureRecognizer != null)
-			{
-				RemoveGestureRecognizer(_mapClickedGestureRecognizer);
-				_mapClickedGestureRecognizer.Dispose();
-				_mapClickedGestureRecognizer = null;
-			}
-			RegionChanged -= MkMapViewOnRegionChanged;
-			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
-		}
-
-		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
-		{
-			var annotation = e.View.Annotation;
-			var pin = GetPinForAnnotation(annotation!);
-
-			if (pin != null)
-			{
-				// SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
-				// Hide the info window by deselecting the annotation
-				bool deselect = pin.SendMarkerClick();
-				if (deselect)
-				{
-					DeselectAnnotation(annotation, false);
-				}
-			}
-		}
-
-		void MkMapViewOnRegionChanged(object? sender, MKMapViewChangeEventArgs e)
-		{
-			IMapHandler? handler;
-
-			if (_handlerRef.TryGetTarget(out handler) && handler?.VirtualView != null)
-				handler.VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(Region.Center.Latitude, Region.Center.Longitude), Region.Span.LatitudeDelta, Region.Span.LongitudeDelta);
-		}
-
-		IMapPin GetPinForAnnotation(IMKAnnotation annotation)
-		{
-			IMapPin targetPin = null!;
-			_handlerRef.TryGetTarget(out IMapHandler? handler);
-			IMap map = handler?.VirtualView!;
-
-			for (int i = 0; i < map.Pins.Count; i++)
-			{
-				var pin = map.Pins[i];
-				if ((pin?.MarkerId as IMKAnnotation) == annotation)
-				{
-					targetPin = pin;
-					break;
-				}
-			}
-
-			return targetPin;
 		}
 
 		protected virtual MKOverlayRenderer GetViewForOverlayDelegate(MKMapView mapview, IMKOverlay overlay)
@@ -161,55 +95,6 @@ namespace Microsoft.Maui.Maps.Platform
 			return mapPin;
 		}
 
-		void AttachGestureToPin(MKAnnotationView mapPin, IMKAnnotation annotation)
-		{
-			var recognizers = mapPin.GestureRecognizers;
-
-			if (recognizers != null)
-			{
-				foreach (var r in recognizers)
-				{
-					mapPin.RemoveGestureRecognizer(r);
-				}
-			}
-
-			var recognizer = new UITapGestureRecognizer(g => OnCalloutClicked(annotation))
-			{
-				ShouldReceiveTouch = (gestureRecognizer, touch) =>
-				{
-					_lastTouchedView = touch.View;
-					return true;
-				}
-			};
-
-			mapPin.AddGestureRecognizer(recognizer);
-		}
-
-		void OnCalloutClicked(IMKAnnotation annotation)
-		{
-			// lookup pin
-			var targetPin = GetPinForAnnotation(annotation);
-
-			// pin not found. Must have been activated outside of forms
-			if (targetPin == null)
-				return;
-
-			// if the tap happened on the annotation view itself, skip because this is what happens when the callout is showing
-			// when the callout is already visible the tap comes in on a different view
-			if (_lastTouchedView is MKAnnotationView)
-				return;
-
-			targetPin.SendMarkerClick();
-
-			// SendInfoWindowClick() returns the value of PinClickedEventArgs.HideInfoWindow
-			// Hide the info window by deselecting the annotation
-			bool deselect = targetPin.SendInfoWindowClick();
-			if (deselect)
-			{
-				DeselectAnnotation(annotation, true);
-			}
-		}
-
 		internal void AddPins(IList pins)
 		{
 			_handlerRef.TryGetTarget(out IMapHandler? handler);
@@ -270,15 +155,109 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 		}
 
-		static void OnMapClicked(UITapGestureRecognizer recognizer)
+		void Startup()
 		{
-			var mauiMkMapView = recognizer.View as MauiMKMapView;
-			if (mauiMkMapView == null)
+			RegionChanged += MkMapViewOnRegionChanged;
+			DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
+			AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
+		}
+
+		void Cleanup()
+		{
+			if (_mapClickedGestureRecognizer != null)
+			{
+				RemoveGestureRecognizer(_mapClickedGestureRecognizer);
+				_mapClickedGestureRecognizer.Dispose();
+				_mapClickedGestureRecognizer = null;
+			}
+			RegionChanged -= MkMapViewOnRegionChanged;
+			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
+		}
+
+		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
+		{
+			var annotation = e.View.Annotation;
+			var pin = GetPinForAnnotation(annotation!);
+
+			if (pin == null)
 				return;
-			var tapPoint = recognizer.LocationInView(mauiMkMapView);
-			var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
-			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
-				handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+			// SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
+			// Hide the info window by deselecting the annotation
+			bool deselect = pin.SendMarkerClick();
+			if (deselect)
+				DeselectAnnotation(annotation, false);
+		}
+
+		void MkMapViewOnRegionChanged(object? sender, MKMapViewChangeEventArgs e)
+		{
+			if (_handlerRef.TryGetTarget(out IMapHandler? handler) && handler?.VirtualView != null)
+				handler.VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(Region.Center.Latitude, Region.Center.Longitude), Region.Span.LatitudeDelta, Region.Span.LongitudeDelta);
+		}
+
+		IMapPin GetPinForAnnotation(IMKAnnotation annotation)
+		{
+			IMapPin targetPin = null!;
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			IMap map = handler?.VirtualView!;
+
+			for (int i = 0; i < map.Pins.Count; i++)
+			{
+				var pin = map.Pins[i];
+				if ((pin?.MarkerId as IMKAnnotation) == annotation)
+				{
+					targetPin = pin;
+					break;
+				}
+			}
+
+			return targetPin;
+		}
+
+		void AttachGestureToPin(MKAnnotationView mapPin, IMKAnnotation annotation)
+		{
+			var recognizers = mapPin.GestureRecognizers;
+
+			if (recognizers != null)
+			{
+				foreach (var r in recognizers)
+				{
+					mapPin.RemoveGestureRecognizer(r);
+				}
+			}
+
+			var recognizer = new UITapGestureRecognizer(g => OnCalloutClicked(annotation))
+			{
+				ShouldReceiveTouch = (gestureRecognizer, touch) =>
+				{
+					_lastTouchedView = touch.View;
+					return true;
+				}
+			};
+
+			mapPin.AddGestureRecognizer(recognizer);
+		}
+
+		void OnCalloutClicked(IMKAnnotation annotation)
+		{
+			// lookup pin
+			var targetPin = GetPinForAnnotation(annotation);
+
+			// pin not found. Must have been activated outside of forms
+			if (targetPin == null)
+				return;
+
+			// if the tap happened on the annotation view itself, skip because this is what happens when the callout is showing
+			// when the callout is already visible the tap comes in on a different view
+			if (_lastTouchedView is MKAnnotationView)
+				return;
+
+			targetPin.SendMarkerClick();
+
+			// SendInfoWindowClick() returns the value of PinClickedEventArgs.HideInfoWindow
+			// Hide the info window by deselecting the annotation
+			bool deselect = targetPin.SendInfoWindowClick();
+			if (deselect)
+				DeselectAnnotation(annotation, true);
 		}
 
 		T? GetMapElement<T>(IMKOverlay mkPolyline) where T : MKOverlayRenderer
@@ -298,6 +277,16 @@ namespace Microsoft.Maui.Maps.Platform
 			//Make sure we Disconnect old handler we don't want to reuse that one
 			mapElement?.Handler?.DisconnectHandler();
 			return mapElement?.ToHandler(handler?.MauiContext!).PlatformView as T;
+		}
+
+		static void OnMapClicked(UITapGestureRecognizer recognizer)
+		{
+			if (recognizer.View is not MauiMKMapView mauiMkMapView)
+				return;
+			var tapPoint = recognizer.LocationInView(mauiMkMapView);
+			var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
+			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
+				handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
 		}
 	}
 }

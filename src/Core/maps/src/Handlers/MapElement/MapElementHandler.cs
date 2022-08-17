@@ -27,9 +27,7 @@ namespace Microsoft.Maui.Maps.Handlers
 #endif
 		};
 
-		public static CommandMapper<IMapElement, IMapElementHandler> CommandMapper =
-				new CommandMapper<IMapElement, IMapElementHandler>(ElementCommandMapper);
-
+		
 		public MapElementHandler() : base(Mapper)
 		{
 

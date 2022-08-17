@@ -7,22 +7,22 @@ using Microsoft.Maui.Maps.Platform;
 namespace Microsoft.Maui.Maps.Handlers
 {
 
-	public partial class MapHandler : ViewHandler<IMap, MKMapView>
+	public partial class MapHandler : ViewHandler<IMap, MauiMKMapView>
 	{
 		CLLocationManager? _locationManager;
 
-		protected override MKMapView CreatePlatformView()
+		protected override MauiMKMapView CreatePlatformView()
 		{
 			return MapPool.Get() ?? new MauiMKMapView(this);
 		}
 
-		protected override void ConnectHandler(MKMapView platformView)
+		protected override void ConnectHandler(MauiMKMapView platformView)
 		{
 			base.ConnectHandler(platformView);
 			_locationManager = new CLLocationManager();
 		}
 
-		protected override void DisconnectHandler(MKMapView platformView)
+		protected override void DisconnectHandler(MauiMKMapView platformView)
 		{
 			base.DisconnectHandler(platformView);
 
@@ -76,12 +76,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapPins(IMapHandler handler, IMap map)
 		{
-			(handler.PlatformView as MauiMKMapView)?.AddPins((IList)map.Pins);
+			handler.PlatformView.AddPins((IList)map.Pins);
 		}
 
 		public static void MapElements(IMapHandler handler, IMap map)
 		{
-			(handler.PlatformView as MauiMKMapView)?.AddElements((IList)map.Elements);
+			handler.PlatformView.AddElements((IList)map.Elements);
 		}
 
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
@@ -93,8 +93,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public void UpdateMapElement(IMapElement element)
 		{
-			(PlatformView as MauiMKMapView)?.RemoveElements(new[] { element });
-			(PlatformView as MauiMKMapView)?.AddElements(new[] { element });
+			PlatformView.RemoveElements(new[] { element });
+			PlatformView.AddElements(new[] { element });
 		}
 
 		void MoveToRegion(MapSpan mapSpan, bool animated = true)

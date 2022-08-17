@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Maps.Handlers
 	{
 		protected override MarkerOptions CreatePlatformElement() => new MarkerOptions();
 
-		public static void MapPosition(IMapPinHandler handler, IMapPin mapPin)
+		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin)
 		{
 			handler.PlatformView.SetPosition(new LatLng(mapPin.Location.Latitude, mapPin.Location.Longitude));
 		}

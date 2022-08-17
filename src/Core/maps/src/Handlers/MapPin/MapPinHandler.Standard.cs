@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Maps.Handlers
 	public partial class MapPinHandler : ElementHandler<IMapPin, object>
 	{
 		protected override object CreatePlatformElement() => throw new System.NotImplementedException();
-		public static void MapPosition(IMapPinHandler handler, IMapPin mapPin) { }
+		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin) { }
 
 		public static void MapLabel(IMapPinHandler handler, IMapPin mapPin) { }
 

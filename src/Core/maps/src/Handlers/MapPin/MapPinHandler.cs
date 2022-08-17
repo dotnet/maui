@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Maps.Handlers
 	{
 		public static IPropertyMapper<IMapPin, IMapPinHandler> Mapper = new PropertyMapper<IMapPin, IMapPinHandler>(ElementMapper)
 		{
-			[nameof(IMapPin.Location)] = MapPosition,
+			[nameof(IMapPin.Location)] = MapLocation,
 			[nameof(IMapPin.Label)] = MapLabel,
 			[nameof(IMapPin.Address)] = MapAddress,
 		};

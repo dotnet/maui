@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Maps.Handlers
 	{
 		protected override IMKAnnotation CreatePlatformElement() => new MKPointAnnotation();
 
-		public static void MapPosition(IMapPinHandler handler, IMapPin mapPin)
+		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin)
 		{
 			if (handler.PlatformView is MKPointAnnotation mKPointAnnotation)
 				mKPointAnnotation.Coordinate = new CLLocationCoordinate2D(mapPin.Location.Latitude, mapPin.Location.Longitude);
