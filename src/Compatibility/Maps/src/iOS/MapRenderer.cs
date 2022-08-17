@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			{
 				Title = pin.Label,
 				Subtitle = pin.Address ?? "",
-				Coordinate = new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude)
+				Coordinate = new CLLocationCoordinate2D(pin.Location.Latitude, pin.Location.Longitude)
 			};
 		}
 
@@ -386,9 +386,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			{
 				annotation.Subtitle = pin.Address;
 			}
-			else if (e.PropertyName == Pin.PositionProperty.PropertyName)
+			else if (e.PropertyName == Pin.LocationProperty.PropertyName)
 			{
-				annotation.Coordinate = new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude);
+				annotation.Coordinate = new CLLocationCoordinate2D(pin.Location.Latitude, pin.Location.Longitude);
 			}
 
 		}

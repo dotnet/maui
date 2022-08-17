@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Maps
 		/// <summary>
 		/// The geographical location of this pin.
 		/// </summary>
-		Location Position { get; }
+		Location Location { get; }
 
 		object? MarkerId { get; set; }
 

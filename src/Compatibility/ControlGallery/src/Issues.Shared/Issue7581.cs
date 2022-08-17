@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var pin1 = new Pin
 			{
 				Type = PinType.Place,
-				Position = pos1,
+				Location = pos1,
 				Label = "Test Pin 1",
 				Address = "15 Hunt Street, Nelson"
 			};
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var pin2 = new Pin
 			{
 				Type = PinType.Place,
-				Position = pos2,
+				Location = pos2,
 				Label = "Test Pin 2",
 				Address = "29 William Street, Nelson"
 			};

@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 									Address = "address",
 									Label = "label",
 									Type = PinType.Place,
-									Position = new Devices.Sensors.Location (map.VisibleRegion.Center.Latitude + lat, map.VisibleRegion.Center.Longitude + lng)
+									Location = new Devices.Sensors.Location (map.VisibleRegion.Center.Latitude + lat, map.VisibleRegion.Center.Longitude + lng)
 								};
 
 								pin.MarkerClicked += PinClicked;

@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var pin = new Pin
 			{
 				Type = PinType.Place,
-				Position = mapPinPosition,
+				Location = mapPinPosition,
 				Label = LocationTitle,
 				Address = StreetAddress
 			};

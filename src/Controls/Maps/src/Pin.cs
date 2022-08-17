@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Maps
 	{
 		public static readonly BindableProperty TypeProperty = BindableProperty.Create(nameof(Type), typeof(PinType), typeof(Pin), default(PinType));
 
-		public static readonly BindableProperty PositionProperty = BindableProperty.Create(nameof(Position), typeof(Location), typeof(Pin), default(Location));
+		public static readonly BindableProperty LocationProperty = BindableProperty.Create(nameof(Location), typeof(Location), typeof(Pin), default(Location));
 
 		public static readonly BindableProperty AddressProperty = BindableProperty.Create(nameof(Address), typeof(string), typeof(Pin), default(string));
 
@@ -28,10 +28,10 @@ namespace Microsoft.Maui.Controls.Maps
 			set { SetValue(LabelProperty, value); }
 		}
 
-		public Location Position
+		public Location Location
 		{
-			get { return (Location)GetValue(PositionProperty); }
-			set { SetValue(PositionProperty, value); }
+			get { return (Location)GetValue(LocationProperty); }
+			set { SetValue(LocationProperty, value); }
 		}
 
 		public PinType Type
@@ -71,12 +71,12 @@ namespace Microsoft.Maui.Controls.Maps
 			{
 #if NETSTANDARD2_0
 				int hashCode = Label?.GetHashCode() ?? 0;
-				hashCode = (hashCode * 397) ^ Position.GetHashCode();
+				hashCode = (hashCode * 397) ^ Location.GetHashCode();
 				hashCode = (hashCode * 397) ^ (int)Type;
 				hashCode = (hashCode * 397) ^ (Address?.GetHashCode() ?? 0);
 #else
 				int hashCode = Label?.GetHashCode(StringComparison.Ordinal) ?? 0;
-				hashCode = (hashCode * 397) ^ Position.GetHashCode();
+				hashCode = (hashCode * 397) ^ Location.GetHashCode();
 				hashCode = (hashCode * 397) ^ (int)Type;
 				hashCode = (hashCode * 397) ^ (Address?.GetHashCode(StringComparison.Ordinal) ?? 0);
 #endif
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Maps
 		bool Equals(Pin other)
 		{
 			return string.Equals(Label, other.Label, StringComparison.Ordinal) &&
-				Equals(Position, other.Position) && Type == other.Type &&
+				Equals(Location, other.Location) && Type == other.Type &&
 				string.Equals(Address, other.Address, StringComparison.Ordinal);
 		}
 	}

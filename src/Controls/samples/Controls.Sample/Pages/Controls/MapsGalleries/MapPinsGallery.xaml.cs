@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			{
 				Address = "One Microsoft Way, Redmond, USA",
 				Label = "Microsoft Visitors Center",
-				Position = new Location(47.64232, -122.13684),
+				Location = new Location(47.64232, -122.13684),
 			};
 
 			microsoftPin.MarkerClicked += (s, a) =>
@@ -103,7 +103,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			pinsMap.Pins.Add(new Pin()
 			{
 				Label = $"Location {_locationIncrement++}",
-				Position = _randomLocations[_locationRandomSeed.Next(0, _randomLocations.Length)],
+				Location = _randomLocations[_locationRandomSeed.Next(0, _randomLocations.Length)],
 			});
 		}
 	}

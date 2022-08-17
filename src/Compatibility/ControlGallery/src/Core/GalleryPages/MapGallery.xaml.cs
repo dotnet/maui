@@ -47,21 +47,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					new Pin
 					{
 						Type = PinType.Place,
-						Position = new Location(41.890202, 12.492049),
+						Location = new Location(41.890202, 12.492049),
 						Label = "Colosseum",
 						Address = "Piazza del Colosseo, 00184 Rome, Province of Rome, Italy"
 					},
 					new Pin
 					{
 						Type = PinType.Place,
-						Position = new Location (41.898652, 12.476831),
+						Location = new Location (41.898652, 12.476831),
 						Label = "Pantheon",
 						Address = "Piazza della Rotunda, 00186 Rome, Province of Rome, Italy"
 					},
 					new Pin
 					{
 						Type = PinType.Place,
-						Position = new Location (41.903209, 12.454545),
+						Location = new Location (41.903209, 12.454545),
 						Label = "Sistine Chapel",
 						Address = "Piazza della Rotunda, 00186 Rome, Province of Rome, Italy"
 					}
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			var pos = new Devices.Sensors.Location(41.011995, -8.642995);
 			Map.Pins.Clear();
-			Map.Pins.Add(new Pin { Position = pos, Label = "Rui" });
+			Map.Pins.Add(new Pin { Location = pos, Label = "Rui" });
 			Map.MoveToRegion(MapSpan.FromCenterAndRadius(pos, Distance.FromMiles(0.5)));
 		}
 
@@ -169,8 +169,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			pin.Label += " Edited";
 			pin.Address = "Edited";
 
-			var pos = new Devices.Sensors.Location(pin.Position.Latitude + 1, pin.Position.Longitude + 1);
-			pin.Position = pos;
+			var pos = new Devices.Sensors.Location(pin.Location.Latitude + 1, pin.Location.Longitude + 1);
+			pin.Location = pos;
 			Map.MoveToRegion(MapSpan.FromCenterAndRadius(pos, Distance.FromMiles(0.5)));
 		}
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
@@ -11,7 +12,6 @@ namespace Maui.Controls.Sample
 
 	public class MapElementsPage : ContentPage
 	{
-
 		public MapElementsPage()
 		{
 			var grid = new Grid();
@@ -54,21 +54,82 @@ namespace Maui.Controls.Sample
 			Polyline polyline = new Polyline
 			{
 				StrokeColor = Colors.Pink,
-				StrokeWidth = 12,
-				Geopath =
-							{
-									new Location(47.6381401, -122.1317367),
-									new Location(47.6381473, -122.1350841),
-									new Location(47.6382847, -122.1353094),
-									new Location(47.6384582, -122.1354703),
-									new Location(47.6401136, -122.1360819),
-									new Location(47.6403883, -122.1364681),
-									new Location(47.6407426, -122.1377019),
-									new Location(47.6412558, -122.1404056),
-									new Location(47.6414148, -122.1418647),
-									new Location(47.6414654, -122.1432702)
-							}
+				//StrokeWidth = 12,
+				//Geopath =
+				//			{
+				//					new Location(47.6381401, -122.1317367),
+				//					new Location(47.6381473, -122.1350841),
+				//					new Location(47.6382847, -122.1353094),
+				//					new Location(47.6384582, -122.1354703),
+				//					new Location(47.6401136, -122.1360819),
+				//					new Location(47.6403883, -122.1364681),
+				//					new Location(47.6407426, -122.1377019),
+				//					new Location(47.6412558, -122.1404056),
+				//					new Location(47.6414148, -122.1418647),
+				//					new Location(47.6414654, -122.1432702)
+				//			}
 			};
+
+			int count = 0;
+#pragma warning disable CS0612 // Type or member is obsolete
+			Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+			{
+				polyline.StrokeWidth = count;
+				if (count == 0)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6381401, -122.1317367));
+					polyline.StrokeColor = Colors.Blue;
+				}
+				if (count == 1)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6381473, -122.1350841));
+					polyline.StrokeColor = Colors.Yellow;
+				}
+				if (count == 2)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6382847, -122.1353094));
+					polyline.StrokeColor = Colors.Green;
+				}
+				if (count == 3)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6384582, -122.1354703));
+					polyline.StrokeColor = Colors.GreenYellow;
+				}
+				if (count == 4)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6401136, -122.1360819));
+					polyline.StrokeColor = Colors.Black;
+				}
+				if (count == 5)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6403883, -122.1364681));
+					polyline.StrokeColor = Colors.Brown;
+				}
+				if (count == 6)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6407426, -122.1377019));
+					polyline.StrokeColor = Colors.Red;
+				}
+				if (count == 7)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6412558, -122.1404056));
+					polyline.StrokeColor = Colors.Silver;
+				}
+				if (count == 8)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6414148, -122.1418647));
+					polyline.StrokeColor = Colors.SteelBlue;
+				}
+				if (count == 9)
+				{
+					(polyline.Geopath as ObservableCollection<Location>).Add(new Location(47.6414654, -122.1432702));
+					polyline.StrokeColor = Colors.Turquoise;
+				}
+				count++;
+
+				return (count < 10);
+			});
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			// add the polyline to the map's MapElements collection
 			map.MapElements.Add(polyline);
@@ -77,7 +138,7 @@ namespace Maui.Controls.Sample
 
 			Circle circle = new Circle
 			{
-				Center = new Location(37.79752, -122.40183),
+				Center = new Location(47.6381401, -122.1317367),
 				Radius = new Distance(250),
 				StrokeColor = Color.FromHex("#88FF0000"),
 				StrokeWidth = 8,
@@ -114,22 +175,22 @@ namespace Maui.Controls.Sample
 			var map = new Microsoft.Maui.Controls.Maps.Map(new MapSpan(myhouse, 0.1, 0.1));
 			map.Pins.Add(new Pin
 			{
-				Position = myhouse,
+				Location = myhouse,
 				Label = "Casa"
 			});
 			map.Pins.Add(new Pin
 			{
-				Position = new Location(40.9930868, -8.6376671),
+				Location = new Location(40.9930868, -8.6376671),
 				Label = "Bairro"
 			});
 			map.Pins.Add(new Pin
 			{
-				Position = new Location(40.9846363, -8.6412593),
+				Location = new Location(40.9846363, -8.6412593),
 				Label = "Golfe"
 			});
 			map.Pins.Add(new Pin
 			{
-				Position = new Location(41.0000939, -8.6228158),
+				Location = new Location(41.0000939, -8.6228158),
 				Label = "Nave"
 			});
 			map.MapClicked += async (s, e) => { await DisplayAlert("Map Clicked", $"Clicked on Position:{e.Position}", "ok"); };
@@ -188,7 +249,7 @@ namespace Maui.Controls.Sample
 
 			var centerPin = new Pin
 			{
-				Position = map.VisibleRegion?.Center,
+				Location = map.VisibleRegion?.Center,
 				Address = "THe map center",
 				Label = "Center",
 				Type = PinType.Place
@@ -198,7 +259,7 @@ namespace Maui.Controls.Sample
 				Text = "Add",
 				Command = new Command(() =>
 				{
-					centerPin.Position = map.VisibleRegion?.Center;
+					centerPin.Location = map.VisibleRegion?.Center;
 					map.Pins.Add(centerPin);
 				})
 			};
@@ -228,9 +289,18 @@ namespace Maui.Controls.Sample
 			Grid.SetRow(lblVisibleRegion, 7);
 			Grid.SetColumnSpan(lblVisibleRegion, 2);
 
+			map.PropertyChanged += Map_PropertyChanged;
 
 			grid.Children.Add(lblVisibleRegion);
 			Content = grid;
+		}
+
+		private void Map_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if(e.PropertyName == nameof(Map.VisibleRegion))
+			{
+
+			}
 		}
 
 		static void AddBoolMapOption(Grid grid, string name, int row, bool isToogled, Action<bool> toogled)

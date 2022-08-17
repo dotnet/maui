@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapPosition(IMapPinHandler handler, IMapPin mapPin)
 		{
 			if (handler.PlatformView is MKPointAnnotation mKPointAnnotation)
-				mKPointAnnotation.Coordinate = new CLLocationCoordinate2D(mapPin.Position.Latitude, mapPin.Position.Longitude);
+				mKPointAnnotation.Coordinate = new CLLocationCoordinate2D(mapPin.Location.Latitude, mapPin.Location.Longitude);
 		}
 
 		public static void MapLabel(IMapPinHandler handler, IMapPin mapPin)
