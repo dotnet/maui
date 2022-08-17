@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			menuFlyout.Add(subMenuFlyout);
 			subMenuFlyout.Add(menuFlyoutItem);
 
-			button.ContextFlyout = menuFlyout;
+			FlyoutBase.SetContextFlyout(button, menuFlyout);
 
 			var bc = new Object();
 			button.BindingContext = bc;
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			button.BindingContext = bc;
 			var menuFlyout = new MenuFlyout();
 			menuFlyout.Add(subMenuFlyout);
-			button.ContextFlyout = menuFlyout;
+			FlyoutBase.SetContextFlyout(button, menuFlyout);
 
 			Assert.Same(bc, subMenuFlyout.BindingContext);
 			Assert.Same(bc, menuFlyout.BindingContext);
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			button.BindingContext = bc;
 			var menuFlyout = new MenuFlyout();
 			menuFlyout.Add(subMenuFlyout);
-			button.ContextFlyout = menuFlyout;
+			FlyoutBase.SetContextFlyout(button, menuFlyout);
 
 			// Add submenu after MenuFlyout is already set on Button
 			subMenuFlyout.Add(menuFlyoutItem);

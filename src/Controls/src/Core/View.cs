@@ -184,10 +184,6 @@ namespace Microsoft.Maui.Controls
 		protected override void OnBindingContextChanged()
 		{
 			this.PropagateBindingContext(GestureRecognizers);
-
-			if (this.IsSet(ContextFlyoutProperty))
-				SetInheritedBindingContext(ContextFlyout, BindingContext);
-
 			base.OnBindingContextChanged();
 		}
 
@@ -202,24 +198,6 @@ namespace Microsoft.Maui.Controls
 				return;
 			if (gesture is PinchGestureRecognizer && _gestureRecognizers.GetGesturesFor<PinchGestureRecognizer>().Count() > 1)
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
-		}
-
-		public static readonly BindableProperty ContextFlyoutProperty = BindableProperty.Create(nameof(ContextFlyout), typeof(FlyoutBase), typeof(View), null,
-			propertyChanged: (bo, oldV, newV) =>
-			{
-				if (oldV is BindableObject oldMenu)
-					VisualElement.SetInheritedBindingContext(oldMenu, bo.BindingContext);
-
-				if (newV is BindableObject newMenu)
-					VisualElement.SetInheritedBindingContext(newMenu, bo.BindingContext);
-
-			});
-
-		/// <inheritdoc />
-		public FlyoutBase ContextFlyout
-		{
-			get => (FlyoutBase)GetValue(ContextFlyoutProperty);
-			set => SetValue(ContextFlyoutProperty, value);
 		}
 	}
 }
