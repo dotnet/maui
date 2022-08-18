@@ -218,6 +218,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Skia", "src\Graphi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Win2D", "src\Graphics\src\Graphics.Win2D\Graphics.Win2D.csproj", "{291F634A-2D8D-48B6-A1A0-BB9BC265D6E4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graphics.Gtk", "src\Graphics\src\Graphics.Gtk\Graphics.Gtk.csproj", "{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Text.Markdig", "src\Graphics\src\Text.Markdig\Graphics.Text.Markdig.csproj", "{375B22F5-9D79-4D17-B759-F8220DFB8B70}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Tests", "src\Graphics\tests\Graphics.Tests\Graphics.Tests.csproj", "{56BBFDBD-254F-42B6-9984-46E19C53FB00}"
@@ -630,6 +632,10 @@ Global
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -747,6 +753,7 @@ Global
 		{F26D31D3-CE4C-4F32-A77F-E2905C948674} = {42AB9AE1-631D-4AD4-85B7-910FF0940BDB}
 		{F351A992-18E4-473C-8ADD-2BA0BAA7B5A2} = {1BA0121E-0B83-4C8F-81BE-C293E7E35DCE}
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974} = {42AB9AE1-631D-4AD4-85B7-910FF0940BDB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
