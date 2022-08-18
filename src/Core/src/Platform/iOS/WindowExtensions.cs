@@ -9,6 +9,52 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class WindowExtensions
 	{
+		public static void UpdateMaximumWidth(this UIWindow platformWindow, IWindow window) =>
+			platformWindow.UpdateMaximumSize(window.MaximumWidth, window.MaximumHeight);
+
+		public static void UpdateMaximumHeight(this UIWindow platformWindow, IWindow window) =>
+			platformWindow.UpdateMaximumSize(window.MaximumWidth, window.MaximumHeight);
+
+		public static void UpdateMaximumSize(this UIWindow platformWindow, IWindow window) =>
+			platformWindow.UpdateMaximumSize(window.MaximumWidth, window.MaximumHeight);
+
+		internal static void UpdateMaximumSize(this UIWindow platformWindow, double width, double height)
+		{
+			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
+			if (restrictions is null)
+				return;
+
+			if (!Primitives.Dimension.IsExplicitSet(width) || !Primitives.Dimension.IsMaximumSet(width))
+				width = double.MaxValue;
+			if (!Primitives.Dimension.IsExplicitSet(height) || !Primitives.Dimension.IsMaximumSet(height))
+				height = double.MaxValue;
+
+			restrictions.MaximumSize = new CoreGraphics.CGSize(width, height);
+		}
+
+		public static void UpdateMinimumWidth(this UIWindow platformWindow, IWindow window) =>
+			platformWindow.UpdateMinimumSize(window.MinimumWidth, window.MinimumHeight);
+
+		public static void UpdateMinimumHeight(this UIWindow platformWindow, IWindow window) =>
+			platformWindow.UpdateMinimumSize(window.MinimumWidth, window.MinimumHeight);
+
+		public static void UpdateMinimumSize(this UIWindow platformWindow, IWindow window) =>
+			platformWindow.UpdateMinimumSize(window.MinimumWidth, window.MinimumHeight);
+
+		internal static void UpdateMinimumSize(this UIWindow platformWindow, double width, double height)
+		{
+			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
+			if (restrictions is null)
+				return;
+
+			if (!Primitives.Dimension.IsExplicitSet(width) || !Primitives.Dimension.IsMinimumSet(width))
+				width = 0;
+			if (!Primitives.Dimension.IsExplicitSet(height) || !Primitives.Dimension.IsMinimumSet(height))
+				height = 0;
+
+			restrictions.MinimumSize = new CoreGraphics.CGSize(width, height);
+		}
+
 		internal static IWindow? GetHostedWindow(this UIWindow? uiWindow)
 		{
 			if (uiWindow is null)

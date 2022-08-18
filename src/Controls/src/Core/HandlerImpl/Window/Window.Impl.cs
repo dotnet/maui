@@ -27,20 +27,32 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
 		public static readonly BindableProperty XProperty = BindableProperty.Create(
-			nameof(X), typeof(double), typeof(Window), double.NaN,
+			nameof(X), typeof(double), typeof(Window), Primitives.Dimension.Unset,
 			propertyChanged: FrameCoordinateChanged);
 
 		public static readonly BindableProperty YProperty = BindableProperty.Create(
-			nameof(Y), typeof(double), typeof(Window), double.NaN,
+			nameof(Y), typeof(double), typeof(Window), Primitives.Dimension.Unset,
 			propertyChanged: FrameCoordinateChanged);
 
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
-			nameof(Width), typeof(double), typeof(Window), double.NaN,
+			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset,
 			propertyChanged: FrameCoordinateChanged);
 
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
-			nameof(Height), typeof(double), typeof(Window), double.NaN,
+			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset,
 			propertyChanged: FrameCoordinateChanged);
+
+		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
+			nameof(MaximumWidth), typeof(double), typeof(Window), Primitives.Dimension.Maximum);
+
+		public static readonly BindableProperty MaximumHeightProperty = BindableProperty.Create(
+			nameof(MaximumHeight), typeof(double), typeof(Window), Primitives.Dimension.Maximum);
+
+		public static readonly BindableProperty MinimumWidthProperty = BindableProperty.Create(
+			nameof(MinimumWidth), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
+
+		public static readonly BindableProperty MinimumHeightProperty = BindableProperty.Create(
+			nameof(MinimumHeight), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -127,16 +139,37 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(HeightProperty, value);
 		}
 
+		public double MaximumWidth
+		{
+			get => (double)GetValue(MaximumWidthProperty);
+			set => SetValue(MaximumWidthProperty, value);
+		}
+
+		public double MaximumHeight
+		{
+			get => (double)GetValue(MaximumHeightProperty);
+			set => SetValue(MaximumHeightProperty, value);
+		}
+
+		public double MinimumWidth
+		{
+			get => (double)GetValue(MinimumWidthProperty);
+			set => SetValue(MinimumWidthProperty, value);
+		}
+
+		public double MinimumHeight
+		{
+			get => (double)GetValue(MinimumHeightProperty);
+			set => SetValue(MinimumHeightProperty, value);
+		}
+
 		double IWindow.X
 		{
 			get
 			{
 				if (!IsSet(XProperty))
 					return Primitives.Dimension.Unset;
-				var x = X;
-				if (x == -1 || x == double.NaN)
-					return Primitives.Dimension.Unset;
-				return x;
+				return X;
 			}
 		}
 
@@ -146,10 +179,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!IsSet(YProperty))
 					return Primitives.Dimension.Unset;
-				var y = Y;
-				if (y == -1 || y == double.NaN)
-					return Primitives.Dimension.Unset;
-				return y;
+				return Y;
 			}
 		}
 
@@ -160,7 +190,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(WidthProperty))
 					return Primitives.Dimension.Unset;
 				var width = Width;
-				if (width == -1 || width == double.NaN)
+				if (width == -1)
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(width);
 			}
@@ -173,7 +203,59 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(HeightProperty))
 					return Primitives.Dimension.Unset;
 				var height = Height;
-				if (height == -1 || height == double.NaN)
+				if (height == -1)
+					return Primitives.Dimension.Unset;
+				return ValidatePositive(height);
+			}
+		}
+
+		double IWindow.MaximumWidth
+		{
+			get
+			{
+				if (!IsSet(MaximumWidthProperty))
+					return Primitives.Dimension.Unset;
+				var width = MaximumWidth;
+				if (width == -1)
+					return Primitives.Dimension.Unset;
+				return ValidatePositive(width);
+			}
+		}
+
+		double IWindow.MaximumHeight
+		{
+			get
+			{
+				if (!IsSet(MaximumHeightProperty))
+					return Primitives.Dimension.Unset;
+				var height = MaximumHeight;
+				if (height == -1)
+					return Primitives.Dimension.Unset;
+				return ValidatePositive(height);
+			}
+		}
+
+		double IWindow.MinimumWidth
+		{
+			get
+			{
+				if (!IsSet(MinimumWidthProperty))
+					return Primitives.Dimension.Unset;
+				var width = MinimumWidth;
+				if (width == -1)
+					return Primitives.Dimension.Unset;
+				return ValidatePositive(width);
+			}
+		}
+
+		double IWindow.MinimumHeight
+		{
+			get
+			{
+				if (!IsSet(MinimumHeightProperty))
+					return Primitives.Dimension.Unset;
+				var height = MinimumHeight;
+				if (height == -1)
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(height);
 			}

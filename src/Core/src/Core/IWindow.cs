@@ -44,9 +44,29 @@ namespace Microsoft.Maui
 		double Width { get; }
 
 		/// <summary>
+		/// Gets the specified minimum width constraint of the IWindow, between zero and double.PositiveInfinity.
+		/// </summary>
+		double MinimumWidth { get; }
+
+		/// <summary>
+		/// Gets the specified maximum width constraint of the IWindow, between zero and double.PositiveInfinity.
+		/// </summary>
+		double MaximumWidth { get; }
+
+		/// <summary>
 		/// Gets the specified height of the IWindow.
 		/// </summary>
 		double Height { get; }
+
+		/// <summary>
+		/// Gets the specified minimum height constraint of the IWindow, between zero and double.PositiveInfinity.
+		/// </summary>
+		double MinimumHeight { get; }
+
+		/// <summary>
+		/// Gets the specified maximum height constraint of the IWindow, between zero and double.PositiveInfinity.
+		/// </summary>
+		double MaximumHeight { get; }
 
 		/// <summary>
 		/// Adds a Window Overlay to the current Window.

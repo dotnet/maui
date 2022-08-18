@@ -28,5 +28,26 @@ namespace Maui.Controls.Sample.Pages
 		{
 			Application.Current.CloseWindow(Window);
 		}
+
+		void OnSetMaxSize(object sender, EventArgs e)
+		{
+			Window.MaximumWidth = 800;
+			Window.MaximumHeight = 600;
+		}
+
+		void OnSetMinSize(object sender, EventArgs e)
+		{
+			Window.MinimumWidth = 640;
+			Window.MinimumHeight = 480;
+		}
+
+		void OnSetFreeSize(object sender, EventArgs e)
+		{
+			Window.MaximumWidth = double.PositiveInfinity;
+			Window.MaximumHeight = double.PositiveInfinity;
+
+			Window.MinimumWidth = -1d;
+			Window.MinimumHeight = -1d;
+		}
 	}
 }

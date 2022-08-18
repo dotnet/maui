@@ -47,5 +47,19 @@ namespace Microsoft.Maui
 
 			return persistedState.ToUserActivity(window.GetType().FullName!);
 		}
+
+		[Export("windowScene:didUpdateCoordinateSpace:interfaceOrientation:traitCollection:")]
+		public virtual void DidUpdateCoordinateSpace(UIWindowScene windowScene, IUICoordinateSpace previousCoordinateSpace, UIInterfaceOrientation previousInterfaceOrientation, UITraitCollection previousTraitCollection)
+		{
+			var platformWindow = Window;
+			if (platformWindow is null)
+				return;
+
+			var window = platformWindow.GetWindow();
+			if (window is null)
+				return;
+
+			window.Frame = platformWindow.Frame.ToRectangle();
+		}
 	}
 }

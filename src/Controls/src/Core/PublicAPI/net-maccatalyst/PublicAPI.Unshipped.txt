@@ -5,6 +5,14 @@ Microsoft.Maui.Controls.Window.Frame.get -> Microsoft.Maui.Graphics.Rect
 Microsoft.Maui.Controls.Window.Frame.set -> void
 Microsoft.Maui.Controls.Window.Height.get -> double
 Microsoft.Maui.Controls.Window.Height.set -> void
+Microsoft.Maui.Controls.Window.MaximumHeight.get -> double
+Microsoft.Maui.Controls.Window.MaximumHeight.set -> void
+Microsoft.Maui.Controls.Window.MaximumWidth.get -> double
+Microsoft.Maui.Controls.Window.MaximumWidth.set -> void
+Microsoft.Maui.Controls.Window.MinimumHeight.get -> double
+Microsoft.Maui.Controls.Window.MinimumHeight.set -> void
+Microsoft.Maui.Controls.Window.MinimumWidth.get -> double
+Microsoft.Maui.Controls.Window.MinimumWidth.set -> void
 Microsoft.Maui.Controls.Window.Width.get -> double
 Microsoft.Maui.Controls.Window.Width.set -> void
 Microsoft.Maui.Controls.Window.X.get -> double
@@ -25,6 +33,10 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 *REMOVED*override Microsoft.Maui.Controls.FlexLayout.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.HeightProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.MaximumHeightProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.MaximumWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.MinimumHeightProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.MinimumWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.WidthProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.XProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.YProperty -> Microsoft.Maui.Controls.BindableProperty!
