@@ -13,14 +13,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Pin pin = new Pin
 			{
 				Type = PinType.SavedPin,
-				Position = new Location(-90, 178),
+				Location = new Location(-90, 178),
 				Label = "My Desktop",
 				Address = "123 Hello World Street"
 			};
 
 			Assert.Equal(PinType.SavedPin, pin.Type);
-			Assert.Equal(-90, pin.Position.Latitude);
-			Assert.Equal(178, pin.Position.Longitude);
+			Assert.Equal(-90, pin.Location.Latitude);
+			Assert.Equal(178, pin.Location.Longitude);
 			Assert.Equal("My Desktop", pin.Label);
 			Assert.Equal("123 Hello World Street", pin.Address);
 		}
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Pin pin3 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Location(12, -24),
+				Location = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Pin pin4 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Location(12, -24),
+				Location = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pin1 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Location(12, -24),
+				Location = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pin2 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Location(12, -24),
+				Location = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pin1 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Location(11.9, -24),
+				Location = new Location(11.9, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pin2 = new Pin
 			{
 				Type = PinType.Place,
-				Position = new Location(12, -24),
+				Location = new Location(12, -24),
 				Label = "Test",
 				Address = "123 Test street"
 			};
