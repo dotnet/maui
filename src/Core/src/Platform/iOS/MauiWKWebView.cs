@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -12,15 +13,28 @@ namespace Microsoft.Maui.Platform
 		static WKProcessPool? SharedPool;
 
 		string? _pendingUrl;
-		readonly WebViewHandler _handler;
+		readonly WeakReference<WebViewHandler> _handler;
+
+		public MauiWKWebView(WebViewHandler handler)
+			: this(RectangleF.Empty, handler)
+		{
+		}
 
 		public MauiWKWebView(CGRect frame, WebViewHandler handler)
-			: base(frame, CreateConfiguration())
+			: this(frame, handler, CreateConfiguration())
 		{
-			_handler = handler;
+		}
+
+		public MauiWKWebView(CGRect frame, WebViewHandler handler, WKWebViewConfiguration configuration)
+			: base(frame, configuration)
+		{
+			_ = handler ?? throw new ArgumentNullException("handler");
+			_handler = new WeakReference<WebViewHandler>(handler);
 
 			BackgroundColor = UIColor.Clear;
 			AutosizesSubviews = true;
+
+			NavigationDelegate = new MauiWebViewNavigationDelegate(handler);
 		}
 
 		public string? CurrentUrl =>
@@ -50,7 +64,8 @@ namespace Microsoft.Maui.Platform
 				InvokeOnMainThread(async () =>
 				{
 					await Task.Delay(500);
-					await _handler.FirstLoadUrlAsync(closure);
+					if (_handler.TryGetTarget(out var handler))
+						await handler.FirstLoadUrlAsync(closure);
 				});
 			}
 		}
@@ -63,7 +78,8 @@ namespace Microsoft.Maui.Platform
 			if (url == null || url == $"file://{NSBundle.MainBundle.BundlePath}/")
 				return;
 
-			await _handler.ProcessNavigatedAsync(url);
+			if (_handler.TryGetTarget(out var handler))
+				await handler.ProcessNavigatedAsync(url);
 		}
 
 		public void LoadHtml(string? html, string? baseUrl)
@@ -87,7 +103,7 @@ namespace Microsoft.Maui.Platform
 		// The main workaround I've found for ensuring that cookies synchronize 
 		// is to share the Process Pool between all WkWebView instances.
 		// It also has to be shared at the point you call init
-		static WKWebViewConfiguration CreateConfiguration()
+		public static WKWebViewConfiguration CreateConfiguration()
 		{
 			var config = new WKWebViewConfiguration();
 
