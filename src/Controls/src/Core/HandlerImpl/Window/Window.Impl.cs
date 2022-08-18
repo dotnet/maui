@@ -171,7 +171,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!IsSet(XProperty))
 					return Primitives.Dimension.Unset;
-				return X;
+				var x = X;
+				if (!Primitives.Dimension.IsExplicitSet(x))
+					return Primitives.Dimension.Unset;
+				return x;
 			}
 		}
 
@@ -181,7 +184,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!IsSet(YProperty))
 					return Primitives.Dimension.Unset;
-				return Y;
+				var y = Y;
+				if (!Primitives.Dimension.IsExplicitSet(y))
+					return Primitives.Dimension.Unset;
+				return y;
 			}
 		}
 
@@ -192,7 +198,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(WidthProperty))
 					return Primitives.Dimension.Unset;
 				var width = Width;
-				if (width == -1)
+				if (width == -1 || !Primitives.Dimension.IsExplicitSet(width))
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(width);
 			}
@@ -205,7 +211,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(HeightProperty))
 					return Primitives.Dimension.Unset;
 				var height = Height;
-				if (height == -1)
+				if (height == -1 || !Primitives.Dimension.IsExplicitSet(height))
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(height);
 			}
@@ -218,7 +224,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(MaximumWidthProperty))
 					return Primitives.Dimension.Unset;
 				var width = MaximumWidth;
-				if (width == -1)
+				if (width == -1 || !Primitives.Dimension.IsExplicitSet(width))
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(width);
 			}
@@ -231,7 +237,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(MaximumHeightProperty))
 					return Primitives.Dimension.Unset;
 				var height = MaximumHeight;
-				if (height == -1)
+				if (height == -1 || !Primitives.Dimension.IsExplicitSet(height))
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(height);
 			}
@@ -244,7 +250,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(MinimumWidthProperty))
 					return Primitives.Dimension.Unset;
 				var width = MinimumWidth;
-				if (width == -1)
+				if (width == -1 || !Primitives.Dimension.IsExplicitSet(width))
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(width);
 			}
@@ -257,7 +263,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(MinimumHeightProperty))
 					return Primitives.Dimension.Unset;
 				var height = MinimumHeight;
-				if (height == -1)
+				if (height == -1 || !Primitives.Dimension.IsExplicitSet(height))
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(height);
 			}
@@ -270,6 +276,9 @@ namespace Microsoft.Maui.Controls
 			get => new Rect(X, Y, Width, Height);
 			set
 			{
+				if (Frame == value)
+					return;
+
 				_batchFrameUpdate++;
 
 				X = value.X;
