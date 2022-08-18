@@ -134,9 +134,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
-#if !TIZEN
 			handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
-#endif
 #endif
 
 #if WINDOWS

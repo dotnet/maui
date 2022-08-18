@@ -76,10 +76,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Registered.Register(typeof(NavigationPage), () => new NavigationPageRenderer());
 			Registered.Register(typeof(Label), () => new LabelRenderer());
 			Registered.Register(typeof(Image), () => new ImageRenderer());
-			Registered.Register(typeof(ListView), () => new ListViewRenderer());
-			Registered.Register(typeof(TableView), () => new TableViewRenderer());
-			Registered.Register(typeof(StructuredItemsView), () => new StructuredItemsViewRenderer());
-			Registered.Register(typeof(CarouselView), () => new CarouselViewRenderer());
 
 			//ImageSourceHandlers
 			Registered.Register(typeof(FileImageSource), () => new FileImageSourceHandler());
