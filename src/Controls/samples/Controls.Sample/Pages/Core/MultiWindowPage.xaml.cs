@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -54,6 +55,14 @@ namespace Maui.Controls.Sample.Pages
 
 			Window.MinimumWidth = -1d;
 			Window.MinimumHeight = -1d;
+		}
+
+		void OnCenterWindow(object sender, EventArgs e)
+		{
+			var disp = DeviceDisplay.MainDisplayInfo;
+
+			Window.X = (disp.Width / disp.Density - Window.Width) / 2;
+			Window.Y = (disp.Height / disp.Density - Window.Height) / 2;
 		}
 
 		void OnLoaded(object sender, EventArgs e)

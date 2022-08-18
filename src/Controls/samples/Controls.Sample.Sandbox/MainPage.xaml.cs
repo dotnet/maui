@@ -14,22 +14,6 @@ namespace Maui.Controls.Sample
 		public MainPage()
 		{
 			InitializeComponent();
-
-			BindingContext = this;
-		}
-
-		void OnButtonClicked(object sender, EventArgs e)
-		{
-			var disp = DeviceDisplay.MainDisplayInfo;
-
-			const int newWidth = 800;
-			const int newHeight = 600;
-
-			Window.X = (disp.Width / disp.Density - newWidth) / 2;
-			Window.Y = (disp.Height / disp.Density - newHeight) / 2;
-
-			Window.Width = newWidth;
-			Window.Height = newHeight;
 		}
 	}
 }

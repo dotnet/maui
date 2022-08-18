@@ -32,6 +32,10 @@
         <Button 
             Clicked="OnSetFreeSize"
             Text="Remove size restrictions" />
+        
+        <Button 
+            Clicked="OnCenterWindow"
+            Text="Center window" />
 
     </StackLayout>
 
