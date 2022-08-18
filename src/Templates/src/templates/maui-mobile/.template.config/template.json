@@ -86,7 +86,7 @@
         "type": "bind",
         "binding": "HostIdentifier"
       },
-      "PhonePublisherId": {
+      "PhoneProductId": {
         "type": "generated",
         "generator": "guid",
         "replaces": "$guid9$"
