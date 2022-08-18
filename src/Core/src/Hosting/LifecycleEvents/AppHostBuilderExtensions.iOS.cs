@@ -12,40 +12,71 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		static void OnConfigureLifeCycle(IiOSLifecycleBuilder iOS)
 		{
-			iOS
-				.FinishedLaunching((app, launchOptions) =>
-				{
-					app.GetWindow()?.Created();
-					return true;
-				})
-				.WillEnterForeground(app =>
-				{
-					app.GetWindow()?.Resumed();
-				})
-				.OnActivated(app =>
-				{
-					app.GetWindow()?.Activated();
-				})
-				.OnResignActivation(app =>
-				{
-					app.GetWindow()?.Deactivated();
-				})
-				.DidEnterBackground(app =>
-				{
-					app.GetWindow()?.Stopped();
-				})
-				.WillTerminate(app =>
-				{
-					// By this point if we were a multi window app, the GetWindow would be null anyway
-					app.GetWindow()?.Destroying();
-				})
-				.SceneDidDisconnect(scene =>
-				{
-					if (scene is UIWindowScene windowScene)
+			iOS = iOS
+					.OnPlatformWindowCreated((window) =>
 					{
-						windowScene.GetWindow()?.Destroying();
-					}
-				});
+						window.GetWindow()?.Created();
+					})
+					.WillTerminate(app =>
+					{
+						// By this point if we were a multi window app, the GetWindow would be null anyway
+						app.GetWindow()?.Destroying();
+					})
+					.WillEnterForeground(app =>
+					{
+						if (!app.Delegate.HasSceneManifest())
+							app.GetWindow()?.Resumed();
+					})
+					.OnActivated(app =>
+					{
+						if (!app.Delegate.HasSceneManifest())
+							app.GetWindow()?.Activated();
+					})
+					.OnResignActivation(app =>
+					{
+						if (!app.Delegate.HasSceneManifest())
+							app.GetWindow()?.Deactivated();
+					})
+					.DidEnterBackground(app =>
+					{
+						if (!app.Delegate.HasSceneManifest())
+							app.GetWindow()?.Stopped();
+					});
+
+			// Scenes
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
+				// Pre iOS 13 doesn't support scenes
+			}
+			else
+			{
+				iOS
+					.SceneWillEnterForeground(scene =>
+					{
+						if (scene is UIWindowScene windowScene)
+							windowScene.GetWindow()?.Resumed();
+					})
+					.SceneOnActivated(scene =>
+					{
+						if (scene is UIWindowScene windowScene)
+							windowScene.GetWindow()?.Activated();
+					})
+					.SceneOnResignActivation(scene =>
+					{
+						if (scene is UIWindowScene windowScene)
+							windowScene.GetWindow()?.Deactivated();
+					})
+					.SceneDidEnterBackground(scene =>
+					{
+						if (scene is UIWindowScene windowScene)
+							windowScene.GetWindow()?.Stopped();
+					})
+					.SceneDidDisconnect(scene =>
+					{
+						if (scene is UIWindowScene windowScene)
+							windowScene.GetWindow()?.Destroying();
+					});
+			}
 		}
 	}
 }

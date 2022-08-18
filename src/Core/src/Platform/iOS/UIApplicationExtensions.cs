@@ -72,6 +72,11 @@ namespace Microsoft.Maui.Platform
 			}
 #pragma warning restore CA1416
 
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return null;
+			else if (windowScene.Delegate is MauiUISceneDelegate sd)
+				return sd.Window?.GetWindow();
+
 			return null;
 		}
 	}
