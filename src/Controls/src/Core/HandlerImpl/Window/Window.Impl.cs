@@ -27,16 +27,20 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
 		public static readonly BindableProperty XProperty = BindableProperty.Create(
-			nameof(X), typeof(double), typeof(Window), -1d);
+			nameof(X), typeof(double), typeof(Window), double.NaN,
+			propertyChanged: FrameCoordinateChanged);
 
 		public static readonly BindableProperty YProperty = BindableProperty.Create(
-			nameof(Y), typeof(double), typeof(Window), -1d);
+			nameof(Y), typeof(double), typeof(Window), double.NaN,
+			propertyChanged: FrameCoordinateChanged);
 
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
-			nameof(Width), typeof(double), typeof(Window), -1d);
+			nameof(Width), typeof(double), typeof(Window), double.NaN,
+			propertyChanged: FrameCoordinateChanged);
 
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
-			nameof(Height), typeof(double), typeof(Window), -1d);
+			nameof(Height), typeof(double), typeof(Window), double.NaN,
+			propertyChanged: FrameCoordinateChanged);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -130,7 +134,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(XProperty))
 					return Primitives.Dimension.Unset;
 				var x = X;
-				if (x == -1)
+				if (x == -1 || x == double.NaN)
 					return Primitives.Dimension.Unset;
 				return x;
 			}
@@ -143,7 +147,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(YProperty))
 					return Primitives.Dimension.Unset;
 				var y = Y;
-				if (y == -1)
+				if (y == -1 || y == double.NaN)
 					return Primitives.Dimension.Unset;
 				return y;
 			}
@@ -156,7 +160,7 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(WidthProperty))
 					return Primitives.Dimension.Unset;
 				var width = Width;
-				if (width == -1)
+				if (width == -1 || width == double.NaN)
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(width);
 			}
@@ -169,22 +173,44 @@ namespace Microsoft.Maui.Controls
 				if (!IsSet(HeightProperty))
 					return Primitives.Dimension.Unset;
 				var height = Height;
-				if (height == -1)
+				if (height == -1 || height == double.NaN)
 					return Primitives.Dimension.Unset;
 				return ValidatePositive(height);
 			}
 		}
+
+		int _batchFrameUpdate = 0;
 
 		public Rect Frame
 		{
 			get => new Rect(X, Y, Width, Height);
 			set
 			{
+				_batchFrameUpdate++;
+
 				X = value.X;
 				Y = value.Y;
 				Width = value.Width;
 				Height = value.Height;
+
+				_batchFrameUpdate--;
+				if (_batchFrameUpdate < 0)
+					_batchFrameUpdate = 0;
+
+				if (_batchFrameUpdate == 0)
+					OnPropertyChanged(nameof(Frame));
 			}
+		}
+
+		static void FrameCoordinateChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is not Window window)
+				return;
+
+			if (window._batchFrameUpdate > 0)
+				return;
+
+			window.OnPropertyChanged(nameof(Frame));
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;

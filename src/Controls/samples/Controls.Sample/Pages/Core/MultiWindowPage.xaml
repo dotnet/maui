@@ -4,18 +4,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.MultiWindowPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
-    <views:BasePage.Content>
-        <StackLayout
-            Margin="12">
-            <Button 
-                Clicked="OnNewWindowClicked"
-                Text="Open new Window" />
 
-            <Button 
-                Clicked="OnCloseWindowClicked"
-                Text="Close this Window" />
+    <StackLayout
+        Margin="12">
 
-            <Label Text="Window Count: 0" x:Name="label" />
-        </StackLayout>
-    </views:BasePage.Content>
+        <Button 
+            Clicked="OnNewWindowClicked"
+            Text="Open a new Window" />
+
+        <Button 
+            Clicked="OnCloseWindowClicked"
+            Text="Close this Window" />
+
+        <Label Text="{Binding WindowCount, StringFormat='Window Count: {0}'}" x:Name="label" />
+
+        <Label Text="Window Frame:" />
+        <Label Text="{Binding Window.Frame}" />
+
+    </StackLayout>
+
 </views:BasePage>

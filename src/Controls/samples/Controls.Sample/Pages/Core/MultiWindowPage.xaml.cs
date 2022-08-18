@@ -10,10 +10,14 @@ namespace Maui.Controls.Sample.Pages
 
 		public MultiWindowPage()
 		{
+			windowCounter++;
+
 			InitializeComponent();
 
-			label.Text = "Window Count: " + (windowCounter++).ToString();
+			BindingContext = this;
 		}
+
+		public int WindowCount => windowCounter;
 
 		void OnNewWindowClicked(object sender, EventArgs e)
 		{
@@ -22,9 +26,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnCloseWindowClicked(object sender, EventArgs e)
 		{
-			var window = this.GetParentWindow();
-			if (window is not null)
-				Application.Current.CloseWindow(window);
+			Application.Current.CloseWindow(Window);
 		}
 	}
 }
