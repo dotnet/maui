@@ -74,8 +74,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			// Move the map to center on the map location with the proper zoom level
 			var lldegrees = 360 / (Math.Pow(2, 16));
-			map1.MoveToRegion(new MapSpan(map1.Pins[0].Position, lldegrees, lldegrees));
-			map2.MoveToRegion(new MapSpan(map2.Pins[0].Position, lldegrees, lldegrees));
+			map1.MoveToRegion(new MapSpan(map1.Pins[0].Location, lldegrees, lldegrees));
+			map2.MoveToRegion(new MapSpan(map2.Pins[0].Location, lldegrees, lldegrees));
 		}
 	}
 }
