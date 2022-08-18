@@ -113,6 +113,10 @@ namespace Microsoft.Maui.Controls.Maps
 		public MapSpan? VisibleRegion
 		{
 			get { return _visibleRegion; }
+			set
+			{
+				SetVisibleRegion(value);
+			}
 		}
 
 		void SetVisibleRegion(MapSpan? visibleRegion)
