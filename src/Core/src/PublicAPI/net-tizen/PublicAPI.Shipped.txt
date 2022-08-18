@@ -390,7 +390,7 @@ Microsoft.Maui.Handlers.IEntryHandler
 Microsoft.Maui.Handlers.IEntryHandler.PlatformView.get -> Tizen.UIExtensions.NUI.Entry!
 Microsoft.Maui.Handlers.IEntryHandler.VirtualView.get -> Microsoft.Maui.IEntry!
 Microsoft.Maui.Handlers.IFlyoutViewHandler
-Microsoft.Maui.Handlers.IFlyoutViewHandler.PlatformView.get -> object!
+Microsoft.Maui.Handlers.IFlyoutViewHandler.PlatformView.get -> Tizen.UIExtensions.NUI.DrawerView!
 Microsoft.Maui.Handlers.IFlyoutViewHandler.VirtualView.get -> Microsoft.Maui.IFlyoutView!
 Microsoft.Maui.Handlers.IGraphicsViewHandler
 Microsoft.Maui.Handlers.IGraphicsViewHandler.PlatformView.get -> Microsoft.Maui.Platform.PlatformTouchGraphicsView!
@@ -1451,6 +1451,7 @@ Microsoft.Maui.Platform.DPExtensions
 Microsoft.Maui.Platform.EditorExtensions
 Microsoft.Maui.Platform.ElementExtensions
 Microsoft.Maui.Platform.EntryExtensions
+Microsoft.Maui.Platform.FlyoutViewExtensions
 Microsoft.Maui.Platform.GraphicsViewExtensions
 Microsoft.Maui.Platform.ImageExtensions
 Microsoft.Maui.Platform.ImageSourcePartExtensions
@@ -1887,7 +1888,9 @@ override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Tizen.UIExtensi
 override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
 override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Entry!
 override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
-override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
+override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.DrawerView!
+override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Tizen.UIExtensions.NUI.DrawerView! platformView) -> void
+override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Tizen.UIExtensions.NUI.DrawerView! platformView) -> void
 override Microsoft.Maui.Handlers.GraphicsViewHandler.ConnectHandler(Microsoft.Maui.Platform.PlatformTouchGraphicsView! platformView) -> void
 override Microsoft.Maui.Handlers.GraphicsViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.PlatformTouchGraphicsView!
 override Microsoft.Maui.Handlers.GraphicsViewHandler.DisconnectHandler(Microsoft.Maui.Platform.PlatformTouchGraphicsView! platformView) -> void
@@ -2146,6 +2149,13 @@ static Microsoft.Maui.Handlers.EntryHandler.MapTextColor(Microsoft.Maui.Handlers
 static Microsoft.Maui.Handlers.EntryHandler.MapVerticalTextAlignment(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.FlyoutViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IFlyoutView!, Microsoft.Maui.Handlers.IFlyoutViewHandler!>!
 static Microsoft.Maui.Handlers.FlyoutViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IFlyoutView!, Microsoft.Maui.Handlers.IFlyoutViewHandler!>!
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapDetail(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyout(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyoutBehavior(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyoutWidth(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapIsGestureEnabled(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapIsPresented(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Handlers.FlyoutViewHandler.MapToolbar(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IGraphicsView!, Microsoft.Maui.Handlers.IGraphicsViewHandler!>!
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapDrawable(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
@@ -2555,6 +2565,13 @@ static Microsoft.Maui.Platform.EntryExtensions.UpdateText(this Tizen.UIExtension
 static Microsoft.Maui.Platform.EntryExtensions.UpdateTextColor(this Tizen.UIExtensions.NUI.Entry! platformEntry, Microsoft.Maui.ITextStyle! entry) -> void
 static Microsoft.Maui.Platform.EntryExtensions.UpdateVerticalTextAlignment(this Tizen.UIExtensions.NUI.Entry! platformEntry, Microsoft.Maui.ITextAlignment! entry) -> void
 static Microsoft.Maui.Platform.EntryExtensions.UpdateCharacterSpacing(this Tizen.UIExtensions.NUI.Entry! platformEntry, Microsoft.Maui.ITextStyle! entry) -> void
+static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateDetail(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView, Microsoft.Maui.IMauiContext! context) -> void
+static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateFlyout(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView, Microsoft.Maui.IMauiContext! context) -> void
+static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateFlyoutBehavior(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateFlyoutWidth(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateIsGestureEnabled(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateIsPresented(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
+static Microsoft.Maui.Platform.FlyoutViewExtensions.ToPlatform(this Microsoft.Maui.FlyoutBehavior behavior) -> Tizen.UIExtensions.Common.DrawerBehavior
 static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Tizen.UIExtensions.NUI.GraphicsView.SkiaGraphicsView! platformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Platform.ImageExtensions.Clear(this Tizen.UIExtensions.NUI.Image! platformImage) -> void
 static Microsoft.Maui.Platform.ImageExtensions.UpdateAspect(this Tizen.UIExtensions.NUI.Image! platformImage, Microsoft.Maui.IImage! image) -> void

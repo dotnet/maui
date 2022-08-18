@@ -1632,7 +1632,6 @@ Microsoft.Maui.Controls.Platform.PlatformEffect
 Microsoft.Maui.Controls.Platform.PlatformEffect.PlatformEffect() -> void
 Microsoft.Maui.Controls.Platform.SearchBarExtensions
 Microsoft.Maui.Controls.Platform.SemanticExtensions
-Microsoft.Maui.Controls.Platform.ShellExtensions
 Microsoft.Maui.Controls.Platform.SwipeGestureHandler
 Microsoft.Maui.Controls.Platform.SwipeGestureHandler.SwipeGestureHandler(Microsoft.Maui.Controls.IGestureRecognizer! recognizer) -> void
 Microsoft.Maui.Controls.Platform.TapGestureHandler
@@ -3099,7 +3098,6 @@ static Microsoft.Maui.Controls.LayoutDirectionExtensions.ToFlowDirection(this Mi
 static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.ToNative(this Microsoft.Maui.Controls.SelectionMode selectionMode) -> Tizen.UIExtensions.NUI.CollectionViewSelectionMode
 static Microsoft.Maui.Controls.Platform.ImageExtensions.IsNullOrEmpty(this Microsoft.Maui.Controls.ImageSource? imageSource) -> bool
 static Microsoft.Maui.Controls.Platform.SearchBarExtensions.ToPlatform(this Microsoft.Maui.Controls.FontAttributes fontAttribute) -> Tizen.UIExtensions.Common.FontAttributes
-static Microsoft.Maui.Controls.Platform.ShellExtensions.ToPlatform(this Microsoft.Maui.FlyoutBehavior behavior) -> Tizen.UIExtensions.Common.DrawerBehavior
 static Microsoft.Maui.Controls.Shapes.Matrix.Identity.get -> Microsoft.Maui.Controls.Shapes.Matrix
 static Microsoft.Maui.Controls.Shapes.Matrix.Multiply(Microsoft.Maui.Controls.Shapes.Matrix trans1, Microsoft.Maui.Controls.Shapes.Matrix trans2) -> Microsoft.Maui.Controls.Shapes.Matrix
 static Microsoft.Maui.Controls.Shapes.Matrix.operator *(Microsoft.Maui.Controls.Shapes.Matrix trans1, Microsoft.Maui.Controls.Shapes.Matrix trans2) -> Microsoft.Maui.Controls.Shapes.Matrix
