@@ -31,5 +31,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return null;
 		}
+
+		protected override IList<AutomationPeer> GetChildrenCore()
+		{
+			return null;
+		}
 	}
 }
