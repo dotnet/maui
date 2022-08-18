@@ -76,6 +76,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public event EventHandler? SizeChanged;
+
 		public IReadOnlyCollection<IWindowOverlay> Overlays => _overlays.ToList().AsReadOnly();
 
 		public IVisualDiagnosticsOverlay VisualDiagnosticsOverlay { get; }
@@ -280,7 +282,10 @@ namespace Microsoft.Maui.Controls
 					_batchFrameUpdate = 0;
 
 				if (_batchFrameUpdate == 0)
+				{
+					SizeChanged?.Invoke(this, EventArgs.Empty);
 					OnPropertyChanged(nameof(Frame));
+				}
 			}
 		}
 

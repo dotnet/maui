@@ -13,6 +13,7 @@ Microsoft.Maui.Controls.Window.MinimumHeight.get -> double
 Microsoft.Maui.Controls.Window.MinimumHeight.set -> void
 Microsoft.Maui.Controls.Window.MinimumWidth.get -> double
 Microsoft.Maui.Controls.Window.MinimumWidth.set -> void
+Microsoft.Maui.Controls.Window.SizeChanged -> System.EventHandler?
 Microsoft.Maui.Controls.Window.Width.get -> double
 Microsoft.Maui.Controls.Window.Width.set -> void
 Microsoft.Maui.Controls.Window.X.get -> double
