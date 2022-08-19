@@ -10,6 +10,16 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
+		public static MauiAppBuilder UseMauiMaps(this MauiAppBuilder builder)
+		{
+			builder
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddMauiMaps();
+				});
+
+			return builder;
+		}
 
 		public static IMauiHandlersCollection AddMauiMaps(this IMauiHandlersCollection handlersCollection)
 		{

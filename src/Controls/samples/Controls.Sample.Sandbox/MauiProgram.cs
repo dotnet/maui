@@ -17,10 +17,7 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp() =>
 			MauiApp
 				.CreateBuilder()
-				.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddMauiMaps();
-				})
+				.UseMauiMaps()
 				.ConfigureLifecycleEvents(events =>
 				{
 #if __ANDROID__
