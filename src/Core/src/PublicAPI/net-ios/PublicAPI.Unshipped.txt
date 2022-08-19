@@ -12,6 +12,16 @@ Microsoft.Maui.ToolTip
 Microsoft.Maui.ToolTip.Content.get -> object?
 Microsoft.Maui.ToolTip.Content.set -> void
 Microsoft.Maui.ToolTip.ToolTip() -> void
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneContinueUserActivity
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidEnterBackground
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidFailToContinueUserActivity
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidUpdateUserActivity
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnActivated
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnResignActivation
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOpenUrl
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneRestoreInteractionState
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillContinueUserActivity
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillEnterForeground
 Microsoft.Maui.Platform.MauiWKWebView.MauiWKWebView(CoreGraphics.CGRect frame, Microsoft.Maui.Handlers.WebViewHandler! handler, WebKit.WKWebViewConfiguration! configuration) -> void
 Microsoft.Maui.Platform.MauiWKWebView.MauiWKWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
@@ -29,6 +39,16 @@ override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneContinueUserActivity(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneContinueUserActivity! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneDidEnterBackground(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidEnterBackground! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneDidFailToContinueUserActivity(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidFailToContinueUserActivity! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneDidUpdateUserActivity(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidUpdateUserActivity! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneOnActivated(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnActivated! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneOnResignActivation(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOnResignActivation! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneOpenUrl(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOpenUrl! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneRestoreInteractionState(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillConnect! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneWillContinueUserActivity(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillContinueUserActivity! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneWillEnterForeground(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillEnterForeground! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.Platform.MauiWKWebView.CreateConfiguration() -> WebKit.WKWebViewConfiguration!
 static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.Graphics.Paint? paint, Microsoft.Maui.IButtonStroke? stroke = null) -> void
@@ -39,3 +59,13 @@ static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.ApplicationS
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.get -> UIKit.UITextRange?
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.set -> void
 *REMOVED* override Microsoft.Maui.Handlers.PickerSource.Dispose(bool disposing) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.ContinueUserActivity(UIKit.UIScene! scene, Foundation.NSUserActivity! userActivity) -> bool
+virtual Microsoft.Maui.MauiUISceneDelegate.DidEnterBackground(UIKit.UIScene! scene) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.DidFailToContinueUserActivity(UIKit.UIScene! scene, string! userActivityType, Foundation.NSError! error) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.DidUpdateUserActivity(UIKit.UIScene! scene, Foundation.NSUserActivity! userActivity) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.OnActivated(UIKit.UIScene! scene) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.OnResignActivation(UIKit.UIScene! scene) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.OpenUrl(UIKit.UIScene! scene, Foundation.NSSet<UIKit.UIOpenUrlContext!>! urlContexts) -> bool
+virtual Microsoft.Maui.MauiUISceneDelegate.RestoreInteractionState(UIKit.UIScene! scene, Foundation.NSUserActivity! stateRestorationActivity) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.WillContinueUserActivity(UIKit.UIScene! scene, string! userActivityType) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.WillEnterForeground(UIKit.UIScene! scene) -> void
