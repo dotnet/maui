@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(TargetFrameworks)</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(TargetFrameworks)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IncludeIosFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(TargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(TargetFrameworks)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <ApplicationTitle>Profiling</ApplicationTitle>

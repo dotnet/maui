@@ -34,6 +34,9 @@
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) or '$(Packing)' == 'true'">true</IncludeWindowsTargetFrameworks>
     <IncludeMacOSTargetFrameworks Condition="'$(DotNetMacOSWorkloadIsInstalled)' == 'true'">true</IncludeMacOSTargetFrameworks>
     <IncludeTizenTargetFrameworks Condition="'$(DotNetTizenWorkloadIsInstalled)' == 'true'">true</IncludeTizenTargetFrameworks>
+    <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
+    <IncludeMacCatalystTargetFrameworks>true</IncludeMacCatalystTargetFrameworks>
+    <IncludeIosTargetFrameworks>true</IncludeIosTargetFrameworks>
   </PropertyGroup>
 
   <!-- this is CI, so everything should be there -->
@@ -41,6 +44,9 @@
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">true</IncludeWindowsTargetFrameworks>
     <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
     <IncludeMacOSTargetFrameworks>true</IncludeMacOSTargetFrameworks>
+    <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
+    <IncludeMacCatalystTargetFrameworks>true</IncludeMacCatalystTargetFrameworks>
+    <IncludeIosTargetFrameworks>true</IncludeIosTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -75,7 +81,7 @@
     <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiPlatforms)</MauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiPlatforms)</MauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiPlatforms)</MauiPlatforms>
-    <MauiPlatforms Condition="'$(IncludeIosFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiPlatforms)</MauiPlatforms>
 
     <!-- Graphics TFMs -->
     <MauiGraphicsPlatforms>$(MauiPlatforms)</MauiGraphicsPlatforms>

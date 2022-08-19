@@ -16,7 +16,7 @@
     <IncludeAndroidTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeAndroid)' == 'true'">true</IncludeAndroidTargetFrameworks> 
     <IncludeWindowsTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeWindows)' == 'true'">true</IncludeWindowsTargetFrameworks> 
     <IncludeTizenTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeTizen)' == 'true'">true</IncludeTizenTargetFrameworks> 
-    <IncludeIosFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeIos)' == 'true'">true</IncludeIosFrameworks> 
+    <IncludeIosTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeIos)' == 'true'">true</IncludeIosTargetFrameworks> 
     <IncludeMacCatalystTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeMacCatalyst)' == 'true'">true</IncludeMacCatalystTargetFrameworks> 
   </PropertyGroup>
 
