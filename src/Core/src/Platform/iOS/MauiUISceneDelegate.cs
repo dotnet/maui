@@ -48,6 +48,8 @@ namespace Microsoft.Maui
 			return persistedState.ToUserActivity(window.GetType().FullName!);
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		[Export("windowScene:didUpdateCoordinateSpace:interfaceOrientation:traitCollection:")]
 		public virtual void DidUpdateCoordinateSpace(UIWindowScene windowScene, IUICoordinateSpace previousCoordinateSpace, UIInterfaceOrientation previousInterfaceOrientation, UITraitCollection previousTraitCollection)
 		{
