@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
 
   <ItemGroup>

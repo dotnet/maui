@@ -22,9 +22,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMapPin.Address)] = MapAddress,
 		};
 
-		public static CommandMapper<IMapPin, IMapPinHandler> CommandMapper =
-				new CommandMapper<IMapPin, IMapPinHandler>(ElementCommandMapper);
-
 		public MapPinHandler() : base(Mapper)
 		{
 

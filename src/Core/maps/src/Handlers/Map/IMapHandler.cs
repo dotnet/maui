@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Maps.Handlers
 #if MONOANDROID
 		GoogleMap? Map { get; set; }
 #endif
-
 		void UpdateMapElement(IMapElement element);
 	}
 }
