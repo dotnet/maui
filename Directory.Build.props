@@ -83,6 +83,12 @@
     <MauiPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiPlatforms)</MauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiPlatforms)</MauiPlatforms>
 
+    <!-- Device Tests TFMs (no Tizen yet) -->
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+
     <!-- Graphics TFMs -->
     <MauiGraphicsPlatforms>$(MauiPlatforms)</MauiGraphicsPlatforms>
     <MauiGraphicsPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiGraphicsPlatforms);net$(_MauiDotNetVersion)-macos</MauiGraphicsPlatforms>
