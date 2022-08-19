@@ -4,8 +4,27 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TextAlignmentExtensions
 	{
+		internal static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment, UIUserInterfaceLayoutDirection layoutDirection) 
+		{
+			var platformAlignment = alignment.ToPlatformHorizontal();
+
+			if (layoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				if (platformAlignment == UITextAlignment.Left)
+				{
+					return UITextAlignment.Right;
+				}
+				else if (platformAlignment == UITextAlignment.Right)
+				{
+					return UITextAlignment.Left;
+				}
+			}
+
+			return platformAlignment;
+		}
+
 		public static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment, IView view)
-			=> alignment.ToPlatformHorizontal().AdjustForFlowDirection(view);
+			=> alignment.ToPlatformHorizontal();
 
 		public static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment)
 		{
@@ -29,29 +48,9 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
+		// TODO ezhart Do the public api stuff to remove this
 		public static UITextAlignment AdjustForFlowDirection(this UITextAlignment textAlignment, IView view)
 		{
-			if (textAlignment == UITextAlignment.Center)
-			{
-				// Shortcut center; we don't need to bother checking the flow direction in this case
-				return textAlignment;
-			}
-
-			var flowDirection = view.GetEffectiveFlowDirection();
-
-			if (flowDirection == FlowDirection.RightToLeft)
-			{
-				if (textAlignment == UITextAlignment.Left)
-				{
-					return UITextAlignment.Right;
-				}
-
-				if (textAlignment == UITextAlignment.Right)
-				{
-					return UITextAlignment.Left;
-				}
-			}
-
 			return textAlignment;
 		}
 	}
