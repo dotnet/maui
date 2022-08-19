@@ -550,6 +550,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			AddView(_actionView);
+
 			if (_contentView != null)
 			{
 				_contentView.BringToFront();
@@ -659,6 +660,10 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateSwipeItemViewLayout(ISwipeItemView swipeItemView)
 		{
+			var swipeItemSize = GetSwipeItemSize(swipeItemView);
+			var frame = new Rect(0, 0, swipeItemSize.Width, swipeItemSize.Height);
+			swipeItemView.Arrange(frame);
+
 			swipeItemView?.Handler?.ToPlatform().InvalidateMeasure(swipeItemView);
 		}
 
