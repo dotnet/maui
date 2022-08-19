@@ -4,7 +4,13 @@ using System.Text;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Maps.Handlers;
+
+#if ANDROID
+using Android.Gms.Common;
+using Android.Gms.Maps;
+#endif
 
 namespace Microsoft.Maui.Controls.Hosting
 {
@@ -16,6 +22,33 @@ namespace Microsoft.Maui.Controls.Hosting
 				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddMauiMaps();
+				})
+				.ConfigureLifecycleEvents(events =>
+				{
+#if __ANDROID__
+					// Log everything in this one
+					events.AddAndroid(android => android
+						.OnCreate((a, b) =>
+						{
+
+							Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
+#pragma warning disable CS0618 // Type or member is obsolete
+							if (GooglePlayServicesUtil.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
+#pragma warning restore 618
+							{
+								try
+								{
+									MapsInitializer.Initialize(a);
+								}
+								catch (Exception e)
+								{
+									Console.WriteLine("Google Play Services Not Found");
+									Console.WriteLine("Exception: {0}", e);
+								}
+							}
+#pragma warning restore CS0618 // Type or member is obsolete
+						}));
+#endif
 				});
 
 			return builder;
