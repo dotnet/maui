@@ -186,29 +186,7 @@ namespace Maui.Controls.Sample
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
 						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)) && false)
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
-						.OnCreate((a, b) =>
-						{
-							Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
-#pragma warning disable CS0618 // Type or member is obsolete
-						if (GooglePlayServicesUtil.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
-#pragma warning restore 618
-						{
-							try
-							{
-								MapsInitializer.Initialize(a);
-							}
-							catch (Exception e)
-							{
-								Console.WriteLine("Google Play Services Not Found");
-								Console.WriteLine("Exception: {0}", e);
-							}
-						}
-#pragma warning restore CS0618 // Type or member is obsolete
-
-							//new GeocoderBackend(activity).Register();
-							LogEvent(nameof(AndroidLifecycle.OnCreate));
-						})
-					
+						.OnCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
 						.OnDestroy((a) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
 						.OnNewIntent((a, b) => LogEvent(nameof(AndroidLifecycle.OnNewIntent)))
 						.OnPause((a) => LogEvent(nameof(AndroidLifecycle.OnPause)))
