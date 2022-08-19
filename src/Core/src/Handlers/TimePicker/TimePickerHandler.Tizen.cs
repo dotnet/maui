@@ -7,12 +7,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, NEntry>
 	{
-		protected override NEntry CreatePlatformView() => new NEntry
-		{
-			IsReadOnly = true,
-			VerticalAlignment = VerticalAlignment.Center,
-			Focusable = true,
-		};
+		protected override NEntry CreatePlatformView() => new MauiPicker();
 
 		protected override void ConnectHandler(NEntry platformView)
 		{

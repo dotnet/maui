@@ -1,15 +1,15 @@
-﻿using Tizen.UIExtensions.NUI;
+﻿using Tizen.NUI;
+using Tizen.UIExtensions.NUI;
+using NColor = Tizen.NUI.Color;
+using NPosition = Tizen.NUI.Position;
+using NView = Tizen.NUI.BaseComponents.View;
 using NEntry = Tizen.UIExtensions.NUI.Entry;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, NEntry>
 	{
-		protected override NEntry CreatePlatformView() => new NEntry
-		{
-			IsReadOnly = true,
-			Focusable = true,
-		};
+		protected override NEntry CreatePlatformView() => new MauiPicker();
 
 		protected override void ConnectHandler(NEntry platformView)
 		{
