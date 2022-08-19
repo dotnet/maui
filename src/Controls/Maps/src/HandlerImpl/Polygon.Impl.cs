@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
-using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Controls.Maps
 {

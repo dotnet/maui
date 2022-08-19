@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Maps.Handlers
 #endif
 		};
 
-		
+
 		public MapElementHandler() : base(Mapper)
 		{
 
