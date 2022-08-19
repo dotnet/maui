@@ -74,8 +74,8 @@ namespace Microsoft.Maui.Platform
 
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				return null;
-			else if (windowScene.Delegate is MauiUISceneDelegate sd)
-				return sd.Window?.GetWindow();
+			else if (windowScene.Delegate is IUIWindowSceneDelegate sd)
+				return sd.GetWindow().GetWindow();
 
 			return null;
 		}

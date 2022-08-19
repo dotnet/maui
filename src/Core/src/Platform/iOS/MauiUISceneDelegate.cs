@@ -99,7 +99,7 @@ namespace Microsoft.Maui
 
 		[Export("scene:willContinueUserActivityWithType:")]
 		public virtual void WillContinueUserActivity(UIScene scene, string userActivityType) =>
-			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.SceneDidEnterBackground>(del => del(scene));
+			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.SceneWillContinueUserActivity>(del => del(scene, userActivityType));
 
 		[Export("scene:didFailToContinueUserActivityWithType:error:")]
 		public virtual void DidFailToContinueUserActivity(UIScene scene, string userActivityType, NSError error) =>

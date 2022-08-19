@@ -43,40 +43,56 @@ namespace Microsoft.Maui.LifecycleEvents
 							app.GetWindow()?.Stopped();
 					});
 
-			// Scenes
+
+			// Pre iOS 13 doesn't support scenes
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
-			{
-				// Pre iOS 13 doesn't support scenes
-			}
-			else
-			{
-				iOS
-					.SceneWillEnterForeground(scene =>
+				return;
+
+			
+			iOS
+				.SceneWillEnterForeground(scene =>
+				{
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate windowScene &&
+						scene.ActivationState != UISceneActivationState.Unattached)
 					{
-						if (scene is UIWindowScene windowScene)
-							windowScene.GetWindow()?.Resumed();
-					})
-					.SceneOnActivated(scene =>
-					{
-						if (scene is UIWindowScene windowScene)
-							windowScene.GetWindow()?.Activated();
-					})
-					.SceneOnResignActivation(scene =>
-					{
-						if (scene is UIWindowScene windowScene)
-							windowScene.GetWindow()?.Deactivated();
-					})
-					.SceneDidEnterBackground(scene =>
-					{
-						if (scene is UIWindowScene windowScene)
-							windowScene.GetWindow()?.Stopped();
-					})
-					.SceneDidDisconnect(scene =>
-					{
-						if (scene is UIWindowScene windowScene)
-							windowScene.GetWindow()?.Destroying();
-					});
-			}
+						windowScene.GetWindow().GetWindow()?.Resumed();
+					}
+				})
+				.SceneOnActivated(scene =>
+				{
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate sd)
+						sd.GetWindow().GetWindow()?.Activated();
+				})
+				.SceneOnResignActivation(scene =>
+				{
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate sd)
+						sd.GetWindow().GetWindow()?.Deactivated();
+				})
+				.SceneDidEnterBackground(scene =>
+				{
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate sd)
+						sd.GetWindow().GetWindow()?.Stopped();
+				})
+				.SceneDidDisconnect(scene =>
+				{
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate sd)
+						sd.GetWindow().GetWindow()?.Destroying();
+				});
 		}
 	}
 }
