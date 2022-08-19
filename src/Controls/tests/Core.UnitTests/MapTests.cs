@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VisibleRegionDoubleSetShouldntTriggerChange()
 		{
 			var map = new Map();
-			map.VisibleRegion = MapSpan.FromCenterAndRadius(new Location(1, 1), Distance.FromKilometers(1));
+			((IMap)map).VisibleRegion = MapSpan.FromCenterAndRadius(new Location(1, 1), Distance.FromKilometers(1));
 			bool signaled = false;
 			map.PropertyChanged += (sender, args) =>
 			{
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					signaled = true;
 			};
 
-			map.VisibleRegion = MapSpan.FromCenterAndRadius(new Location(1, 1), Distance.FromKilometers(1));
+			((IMap)map).VisibleRegion = MapSpan.FromCenterAndRadius(new Location(1, 1), Distance.FromKilometers(1));
 
 			Assert.False(signaled);
 		}
