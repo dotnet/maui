@@ -1553,7 +1553,6 @@ Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebV
 Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
-Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.MauiWebViewNavigationDelegate(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 Microsoft.Maui.Platform.MauiWKWebView
 Microsoft.Maui.Platform.MauiWKWebView.CurrentUrl.get -> string?
 Microsoft.Maui.Platform.MauiWKWebView.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void

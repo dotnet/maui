@@ -24,53 +24,30 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if MACCATALYST
-
-		// Store a reference to the platform delegate so that it is not garbage collected
-		IUIContextMenuInteractionDelegate? _uiContextMenuInteractionDelegate;
-
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutElement contextFlyoutContainer)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"The handler's {nameof(handler.MauiContext)} cannot be null.");
 
-			if (contextFlyoutContainer.ContextFlyout != null)
+			if (handler.PlatformView is PlatformView uiView)
 			{
-				var contextFlyoutHandler = contextFlyoutContainer.ContextFlyout.ToHandler(handler.MauiContext);
-				var contextFlyoutPlatformView = contextFlyoutHandler.PlatformView;
+				MauiUIContextMenuInteraction? currentInteraction = null;
 
-				if (handler.PlatformView is PlatformView uiView &&
-					contextFlyoutPlatformView is UIMenu uiMenu &&
-					handler is ViewHandler viewHandlerObj)
+				foreach (var interaction in uiView.Interactions)
 				{
-					viewHandlerObj._uiContextMenuInteractionDelegate = new FlyoutUIContextMenuInteractionDelegate(
-						() =>
-						{
-							return UIContextMenuConfiguration.Create(
-								identifier: null,
-								previewProvider: null,
-								actionProvider: _ => uiMenu);
-						});
-
-					var newFlyout = new UIContextMenuInteraction(
-						@delegate: viewHandlerObj._uiContextMenuInteractionDelegate);
-
-					uiView.AddInteraction(newFlyout);
+					if (interaction is MauiUIContextMenuInteraction menuInteraction)
+						currentInteraction = menuInteraction;
 				}
-			}
-		}
 
-		sealed class FlyoutUIContextMenuInteractionDelegate : NSObject, IUIContextMenuInteractionDelegate
-		{
-			private readonly Func<UIContextMenuConfiguration> _menuConfigurationFunc;
-
-			public FlyoutUIContextMenuInteractionDelegate(Func<UIContextMenuConfiguration> menuConfigurationFunc)
-			{
-				_menuConfigurationFunc = menuConfigurationFunc;
-			}
-
-			public UIContextMenuConfiguration? GetConfigurationForMenu(UIContextMenuInteraction interaction, CGPoint location)
-			{
-				return _menuConfigurationFunc();
+				if (contextFlyoutContainer.ContextFlyout != null)
+				{
+					if (currentInteraction == null)
+						uiView.AddInteraction(new MauiUIContextMenuInteraction(handler));
+				}
+				else if (currentInteraction != null)
+				{
+					uiView.RemoveInteraction(currentInteraction);
+				}
 			}
 		}
 #endif
