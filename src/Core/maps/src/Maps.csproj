@@ -23,5 +23,6 @@
   <ItemGroup>
     <Compile Include="..\..\src\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
-
+  
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 </Project>
