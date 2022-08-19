@@ -18,5 +18,6 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 *REMOVED*override Microsoft.Maui.Controls.Platform.ShellFlyoutItemView.OnContentChanged(object oldContent, object newContent) -> void
 ~Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.ShellNavigationViewItemAutomationPeer(Microsoft.Maui.Controls.Platform.ShellNavigationViewItem owner) -> void
 ~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItem.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
+~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.GetChildrenCore() -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Automation.Peers.AutomationPeer>
 ~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.GetLabeledByCore() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
