@@ -11,9 +11,9 @@ override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedCont
 override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
 override Microsoft.Maui.Controls.TemplatedView.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-static Microsoft.Maui.Controls.ToolTipProperties.GetContent(Microsoft.Maui.Controls.BindableObject! bindable) -> object!
-static Microsoft.Maui.Controls.ToolTipProperties.SetContent(Microsoft.Maui.Controls.BindableObject! bindable, object! value) -> void
-static readonly Microsoft.Maui.Controls.ToolTipProperties.ContentProperty -> Microsoft.Maui.Controls.BindableProperty!
+static Microsoft.Maui.Controls.ToolTipProperties.GetText(Microsoft.Maui.Controls.BindableObject! bindable) -> object!
+static Microsoft.Maui.Controls.ToolTipProperties.SetText(Microsoft.Maui.Controls.BindableObject! bindable, object! value) -> void
+static readonly Microsoft.Maui.Controls.ToolTipProperties.TextProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.ViewCellRenderer.DisconnectHandler(Android.Views.View platformView) -> void
 *REMOVED*override Microsoft.Maui.Controls.ContentView.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.ContentView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size

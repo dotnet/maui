@@ -6,8 +6,8 @@ namespace Microsoft.Maui.Controls
 {
 	public class ToolTipProperties
 	{
-		public static readonly BindableProperty ContentProperty =
- 			BindableProperty.CreateAttached("Content", typeof(object), typeof(ToolTipProperties), defaultValue: null, propertyChanged: OnToolTipPropertyChanged);
+		public static readonly BindableProperty TextProperty =
+ 			BindableProperty.CreateAttached("Text", typeof(object), typeof(ToolTipProperties), defaultValue: null, propertyChanged: OnToolTipPropertyChanged);
 
 		static void OnToolTipPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -15,24 +15,24 @@ namespace Microsoft.Maui.Controls
 				element?.Handler?.UpdateValue(nameof(IToolTipElement.ToolTip));
 		}
 
-		public static object GetContent(BindableObject bindable)
+		public static object GetText(BindableObject bindable)
 		{
-			return (object)bindable.GetValue(ContentProperty);
+			return (object)bindable.GetValue(TextProperty);
 		}
 
-		public static void SetContent(BindableObject bindable, object value)
+		public static void SetText(BindableObject bindable, object value)
 		{
-			bindable.SetValue(ContentProperty, value);
+			bindable.SetValue(TextProperty, value);
 		}
 
 		internal static ToolTip? GetToolTip(BindableObject bindable)
 		{
-			if (!bindable.IsSet(ContentProperty))
+			if (!bindable.IsSet(TextProperty))
 				return null;
 
 			return new ToolTip()
 			{
-				Content = GetContent(bindable)
+				Content = GetText(bindable)
 			};
 		}
 	}
