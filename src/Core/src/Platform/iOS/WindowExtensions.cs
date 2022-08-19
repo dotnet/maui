@@ -20,6 +20,9 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateMaximumSize(this UIWindow platformWindow, double width, double height)
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
 			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
 			if (restrictions is null)
 				return;
@@ -43,6 +46,9 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateMinimumSize(this UIWindow platformWindow, double width, double height)
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
 			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
 			if (restrictions is null)
 				return;

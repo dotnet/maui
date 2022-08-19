@@ -35,6 +35,12 @@ static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CommandMapper -> Micro
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
 static Microsoft.Maui.Platform.MauiWKWebView.CreateConfiguration() -> WebKit.WKWebViewConfiguration!
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.Graphics.Paint? paint, Microsoft.Maui.IButtonStroke? stroke = null) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumHeight(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumSize(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumWidth(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMinimumHeight(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMinimumSize(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMinimumWidth(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
 virtual Microsoft.Maui.MauiUIApplicationDelegate.ApplicationSignificantTimeChange(UIKit.UIApplication! application) -> void
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.ApplicationSignificantTimeChange(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
