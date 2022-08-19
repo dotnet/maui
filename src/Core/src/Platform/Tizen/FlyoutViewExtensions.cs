@@ -1,3 +1,4 @@
+using System;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
 

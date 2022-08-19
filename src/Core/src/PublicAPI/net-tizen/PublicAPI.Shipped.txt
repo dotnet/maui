@@ -1544,11 +1544,11 @@ Microsoft.Maui.Platform.MauiSwipeView.UpdateIsSwipeEnabled(bool isEnabled) -> vo
 Microsoft.Maui.Platform.MauiSwipeView.UpdateIsVisibleSwipeItem(Microsoft.Maui.ISwipeItem! item) -> void
 Microsoft.Maui.Platform.MauiSwipeView.UpdateSwipeTransitionMode(Microsoft.Maui.SwipeTransitionMode swipeTransitionMode) -> void
 Microsoft.Maui.Platform.MauiToolbar
-Microsoft.Maui.Platform.MauiToolbar.BackButtonPressed -> System.EventHandler?
+Microsoft.Maui.Platform.MauiToolbar.IconPressed -> System.EventHandler?
 Microsoft.Maui.Platform.MauiToolbar.Collapse() -> void
 Microsoft.Maui.Platform.MauiToolbar.Expand() -> void
 Microsoft.Maui.Platform.MauiToolbar.MauiToolbar() -> void
-Microsoft.Maui.Platform.MauiToolbar.SendBackButtonPressed() -> void
+Microsoft.Maui.Platform.MauiToolbar.SendIconPressed() -> void
 Microsoft.Maui.Platform.MauiWebView
 Microsoft.Maui.Platform.MauiWebView.MauiWebView() -> void
 Microsoft.Maui.Platform.NavigationStackExtensions
@@ -2629,6 +2629,7 @@ static Microsoft.Maui.Platform.TimeExtensions.ToFormattedString(this System.Time
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateFormat(this Tizen.UIExtensions.NUI.Entry! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTime(this Tizen.UIExtensions.NUI.Entry! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.ToolbarExtensions.UpdateTitle(this Microsoft.Maui.Platform.MauiToolbar! platformView, Microsoft.Maui.IToolbar! toolbar) -> void
+static Microsoft.Maui.Platform.ToolbarExtensions.UpdateMenuButton(this Microsoft.Maui.Platform.MauiToolbar! platformToolbar, Microsoft.Maui.IToolbar! toolbar) -> void
 static Microsoft.Maui.Platform.TransformationExtensions.UpdateRotation(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.TransformationExtensions.UpdateScale(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.TransformationExtensions.UpdateTransformation(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IView? view) -> void

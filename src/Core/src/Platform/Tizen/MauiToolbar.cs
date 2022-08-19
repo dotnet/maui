@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 			SizeHeight = s_toolbarHeight.ToScaledPixel();
 		}
 
-		public event EventHandler? BackButtonPressed;
+		public event EventHandler? IconPressed;
 
 		public void Expand()
 		{
@@ -30,9 +30,9 @@ namespace Microsoft.Maui.Platform
 			SizeHeight = 0;
 		}
 
-		public void SendBackButtonPressed()
+		public void SendIconPressed()
 		{
-			BackButtonPressed?.Invoke(this, EventArgs.Empty);
+			IconPressed?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
@@ -42,8 +41,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (source == null || source.IsEmpty)
 			{
-				if (!toolbar.BackButtonVisible)
+				if (!toolbar.BackButtonVisible && !toolbar.DrawerToggleVisible)
 					platformToolbar.Icon = null;
+
 				return;
 			}
 
@@ -65,8 +65,14 @@ namespace Microsoft.Maui.Controls.Platform
 			if (toolbar.BackButtonVisible)
 			{
 				var backButton = CreateBackButton(platformToolbar, toolbar);
-				backButton.Clicked += (s, e) => platformToolbar.SendBackButtonPressed();
+				backButton.Clicked += (s, e) => platformToolbar.SendIconPressed();
 				platformToolbar.Icon = backButton;
+			}
+			else if (toolbar.DrawerToggleVisible)
+			{
+				var menuButton = CreateMenuButton(platformToolbar, toolbar);
+				menuButton.Clicked += (s, e) => platformToolbar.SendIconPressed();
+				platformToolbar.Icon = menuButton;
 			}
 			else if (toolbar.TitleIcon == null)
 			{
@@ -159,6 +165,16 @@ namespace Microsoft.Maui.Controls.Platform
 			var button = new TMaterialIconButton
 			{
 				Icon = MaterialIcons.MoreVert,
+				Color = toolbar.IconColor.IsNotDefault() ? toolbar.IconColor.ToPlatform() : platformToolbar.GetAccentColor()
+			};
+			return button;
+		}
+
+		static TMaterialIconButton CreateMenuButton(MauiToolbar platformToolbar, Toolbar toolbar)
+		{
+			var button = new TMaterialIconButton
+			{
+				Icon = MaterialIcons.Menu,
 				Color = toolbar.IconColor.IsNotDefault() ? toolbar.IconColor.ToPlatform() : platformToolbar.GetAccentColor()
 			};
 			return button;
