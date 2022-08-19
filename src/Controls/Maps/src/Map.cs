@@ -115,24 +115,6 @@ namespace Microsoft.Maui.Controls.Maps
 			get { return _visibleRegion; }
 		}
 
-		void SetVisibleRegion(MapSpan? visibleRegion)
-		{
-			if (visibleRegion == null)
-				throw new ArgumentNullException(nameof(visibleRegion));
-
-			if (_visibleRegion == visibleRegion)
-				return;
-
-			OnPropertyChanging(nameof(VisibleRegion));
-			_visibleRegion = visibleRegion;
-			OnPropertyChanged(nameof(VisibleRegion));
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
 		public IEnumerator<IMapPin> GetEnumerator()
 		{
 			return _pins.GetEnumerator();
@@ -144,6 +126,24 @@ namespace Microsoft.Maui.Controls.Maps
 				throw new ArgumentNullException(nameof(mapSpan));
 			_lastMoveToRegion = mapSpan;
 			Handler?.Invoke(nameof(IMap.MoveToRegion), _lastMoveToRegion);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		void SetVisibleRegion(MapSpan? visibleRegion)
+		{
+			if (visibleRegion == null)
+				throw new ArgumentNullException(nameof(visibleRegion));
+
+			if (_visibleRegion == visibleRegion)
+				return;
+
+			OnPropertyChanging(nameof(VisibleRegion));
+			_visibleRegion = visibleRegion;
+			OnPropertyChanged(nameof(VisibleRegion));
 		}
 
 		void PinsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -182,7 +182,6 @@ namespace Microsoft.Maui.Controls.Maps
 				Handler?.Invoke(nameof(Maui.Maps.Handlers.IMapHandler.UpdateMapElement), args);
 			}
 		}
-
 
 		void OnItemsSourcePropertyChanged(IEnumerable oldItemsSource, IEnumerable newItemsSource)
 		{
