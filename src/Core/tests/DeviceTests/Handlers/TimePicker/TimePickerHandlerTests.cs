@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !MACCATALYST
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -36,3 +37,4 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
+#endif

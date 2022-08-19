@@ -3,14 +3,14 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
-#if IOS
+#if IOS || MACCATALYST
 using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.VisualElement)]
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 #endif
 	public partial class VisualElementTests : HandlerTestBase
