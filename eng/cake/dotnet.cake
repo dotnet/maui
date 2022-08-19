@@ -13,6 +13,7 @@ if (TestTFM == "default")
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new string[] {
+    "Microsoft.Maui.Controls.Foldable.*.nupkg",
     "Microsoft.Maui.Graphics.*.nupkg",
 };
 
@@ -230,6 +231,7 @@ Task("dotnet-test")
         var tests = new []
         {
             "**/Controls.Core.UnitTests.csproj",
+            "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",

@@ -109,8 +109,8 @@ Windows:
 ```bat
 dotnet workload install maui `
   --from-rollback-file https://aka.ms/dotnet/maui/net6.0.json `
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-a21b9a2d/nuget/v3/index.json `
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-52e9452f-3/nuget/v3/index.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-6bb76b3f/nuget/v3/index.json `
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-1026ad55/nuget/v3/index.json `
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json `
   --source https://api.nuget.org/v3/index.json
 ```
@@ -120,8 +120,8 @@ MacOS:
 ```bash
 dotnet workload install maui \
   --from-rollback-file https://aka.ms/dotnet/maui/net6.0.json \
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-a21b9a2d/nuget/v3/index.json \
-  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-52e9452f-3/nuget/v3/index.json \
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-runtime-6bb76b3f/nuget/v3/index.json \
+  --source https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-emsdk-1026ad55/nuget/v3/index.json \
   --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json \
   --source https://api.nuget.org/v3/index.json
 ```
