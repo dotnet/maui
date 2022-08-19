@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 	public class ToolTipProperties
 	{
 		public static readonly BindableProperty TextProperty =
- 			BindableProperty.CreateAttached("Text", typeof(object), typeof(ToolTipProperties), defaultValue: null, propertyChanged: OnToolTipPropertyChanged);
+ 			BindableProperty.CreateAttached("Text", typeof(string), typeof(ToolTipProperties), defaultValue: null, propertyChanged: OnToolTipPropertyChanged);
 
 		static void OnToolTipPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
