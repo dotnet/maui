@@ -25,15 +25,18 @@ namespace Microsoft.Maui.DeviceTests
 				var menu1 = new MenuFlyoutItem() { Text = "Menu1" };
 				var menu2 = new MenuFlyoutItem() { Text = "Menu2" };
 				var menu3 = new MenuFlyoutSeparator();
+				
 				var menu4 = new MenuFlyoutSubItem() { Text = "Menu4" };
 				menu4.Add(new MenuFlyoutItem() { Text = "Menu4-a" });
 				menu4.Add(new MenuFlyoutItem() { Text = "Menu4-b" });
+				
 				var menuFlyout = new MenuFlyout();
 				menuFlyout.Add(menu1);
 				menuFlyout.Add(menu2);
 				menuFlyout.Add(menu3);
 				menuFlyout.Add(menu4);
-				labelWithContextFlyout.ContextFlyout = menuFlyout;
+				
+				FlyoutBase.SetContextFlyout(labelWithContextFlyout, menuFlyout);
 
 				var contentPage = new ContentPage()
 				{
