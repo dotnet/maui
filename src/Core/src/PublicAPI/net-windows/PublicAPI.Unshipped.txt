@@ -31,6 +31,12 @@ Microsoft.Maui.IFlyout
 Microsoft.Maui.IMenuFlyout
 Microsoft.Maui.IContextFlyoutElement
 Microsoft.Maui.IMenuFlyoutSeparator
+Microsoft.Maui.IToolTipElement
+Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
+Microsoft.Maui.ToolTip
+Microsoft.Maui.ToolTip.Content.get -> object?
+Microsoft.Maui.ToolTip.Content.set -> void
+Microsoft.Maui.ToolTip.ToolTip() -> void
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Controls.MenuFlyout!
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.SetVirtualView(Microsoft.Maui.IElement! view) -> void
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator!
@@ -44,4 +50,6 @@ static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CommandMapper -> Micro
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
 override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.EntryHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void

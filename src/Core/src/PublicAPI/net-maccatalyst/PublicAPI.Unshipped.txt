@@ -30,6 +30,12 @@ Microsoft.Maui.IFlyout
 Microsoft.Maui.IMenuFlyout
 Microsoft.Maui.IContextFlyoutElement
 Microsoft.Maui.IMenuFlyoutSeparator
+Microsoft.Maui.IToolTipElement
+Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
+Microsoft.Maui.ToolTip
+Microsoft.Maui.ToolTip.Content.get -> object?
+Microsoft.Maui.ToolTip.Content.set -> void
+Microsoft.Maui.ToolTip.ToolTip() -> void
 Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.MauiWebViewNavigationDelegate(Microsoft.Maui.Handlers.IWebViewHandler! handler) -> void
 Microsoft.Maui.Platform.MauiWebViewUIDelegate
 Microsoft.Maui.Platform.MauiWebViewUIDelegate.MauiWebViewUIDelegate(Microsoft.Maui.Handlers.IWebViewHandler! handler) -> void
@@ -71,6 +77,7 @@ static Microsoft.Maui.Handlers.MenuFlyoutHandler.Mapper -> Microsoft.Maui.IPrope
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapRemove(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
+static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneContinueUserActivity(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneContinueUserActivity! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneDidEnterBackground(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidEnterBackground! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
@@ -84,6 +91,7 @@ static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneWillCon
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneWillEnterForeground(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillEnterForeground! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.Platform.MauiWKWebView.CreateConfiguration() -> WebKit.WKWebViewConfiguration!
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.Graphics.Paint? paint, Microsoft.Maui.IButtonStroke? stroke = null) -> void
+static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this UIKit.UIView! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
 virtual Microsoft.Maui.MauiUIApplicationDelegate.ApplicationSignificantTimeChange(UIKit.UIApplication! application) -> void
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.ApplicationSignificantTimeChange(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!

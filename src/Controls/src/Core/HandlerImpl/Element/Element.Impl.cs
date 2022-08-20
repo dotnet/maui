@@ -99,6 +99,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		ToolTip IToolTipElement.ToolTip => ToolTipProperties.GetToolTip(this);
 		IFlyout IContextFlyoutElement.ContextFlyout => FlyoutBase.GetContextFlyout(this);
 	}
 }

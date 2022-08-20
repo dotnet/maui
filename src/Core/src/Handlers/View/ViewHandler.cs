@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
+				[nameof(IToolTipElement.ToolTip)] = MapToolTip,
 #if WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
@@ -344,6 +345,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapUnfocus(IViewHandler handler, IView view, object? args)
 		{
 			((PlatformView?)handler.PlatformView)?.Unfocus(view);
+		}
+
+		public static void MapToolTip(IViewHandler handler, IView view)
+		{
+#if PLATFORM
+			if (view is IToolTipElement tooltipContainer)
+				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
+#endif
 		}
 
 		static void UpdateHasContainer(IViewHandler handler, bool definitelyNeedsContainer)

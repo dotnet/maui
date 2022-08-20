@@ -7,6 +7,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
@@ -338,6 +339,12 @@ namespace Microsoft.Maui.Platform
 				if (platformView.IsAlive())
 					platformView.Background = backgroundImageDrawable;
 			}
+		}
+
+		public static void UpdateToolTip(this AView view, ToolTip? tooltip)
+		{
+			string? text = tooltip?.Content?.ToString();
+			TooltipCompat.SetTooltipText(view, text);
 		}
 
 		public static void RemoveFromParent(this AView view)
