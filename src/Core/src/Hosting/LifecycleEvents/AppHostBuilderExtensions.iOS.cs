@@ -48,7 +48,7 @@ namespace Microsoft.Maui.LifecycleEvents
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				return;
 
-			
+
 			iOS
 				.SceneWillEnterForeground(scene =>
 				{

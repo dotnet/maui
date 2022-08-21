@@ -50,7 +50,7 @@ namespace Microsoft.Maui
 			if (!this.HasSceneManifest())
 			{
 				this.CreatePlatformWindow(Application, application, launchOptions);
-				
+
 				if (Window != null)
 					Services?.InvokeLifecycleEvents<iOSLifecycle.OnPlatformWindowCreated>(del => del(Window));
 			}
