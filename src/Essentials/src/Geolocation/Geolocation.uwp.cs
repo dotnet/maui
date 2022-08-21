@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class GeolocationImplementation : IGeolocation
 	{
+		public bool IsListening { get => false; }
+
+
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
 			// no need for permissions as AllowFallbackToConsentlessPositions
@@ -54,5 +57,11 @@ namespace Microsoft.Maui.Devices.Sensors
 				}
 			}
 		}
+
+		public Task<bool> StartListeningForegroundAsync(ListeningRequest request) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public Task<bool> StopListeningForegroundAsync() =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

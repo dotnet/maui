@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,6 +28,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <remarks>The location permissions will be requested at runtime if needed. You might still need to declare something in your app manifest.</remarks>
 		/// <returns>A <see cref="Location"/> object containing current location information or <see langword="null"/> if no location could be determined.</returns>
 		Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken);
+
+		bool IsListening { get; }
+
+		event EventHandler<LocationEventArgs>? LocationChanged;
+
+		Task<bool> StartListeningForegroundAsync(ListeningRequest request);
+
+		Task<bool> StopListeningForegroundAsync();
 	}
 
 	/// <summary>
@@ -72,6 +81,20 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken) =>
 			Current.GetLocationAsync(request, cancelToken);
 
+		public static bool IsListening { get => Current.IsListening; }
+
+		public static event EventHandler<LocationEventArgs> LocationChanged
+		{
+			add => Current.LocationChanged += value;
+			remove => Current.LocationChanged -= value;
+		}
+
+		public static Task<bool> StartListeningForegroundAsync(ListeningRequest request) =>
+			Current.StartListeningForegroundAsync(request);
+
+		public static Task<bool> StopListeningForegroundAsync() =>
+			Current.StopListeningForegroundAsync();
+
 		static IGeolocation Current => Devices.Sensors.Geolocation.Default;
 
 		static IGeolocation? defaultImplementation;
@@ -84,6 +107,17 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		internal static void SetDefault(IGeolocation? implementation) =>
 			defaultImplementation = implementation;
+	}
+
+	partial class GeolocationImplementation : IGeolocation
+	{
+		public event EventHandler<LocationEventArgs>? LocationChanged;
+
+		internal void OnLocationChanged(Location location) =>
+			OnLocationChanged(new LocationEventArgs(location));
+
+		internal void OnLocationChanged(LocationEventArgs e) =>
+			LocationChanged?.Invoke(null, e);
 	}
 
 	/// <summary>

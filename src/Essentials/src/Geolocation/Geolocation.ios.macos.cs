@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class GeolocationImplementation : IGeolocation
 	{
+		public bool IsListening { get => false; }
+
+
 		public async Task<Location> GetLastKnownLocationAsync()
 		{
 			if (!CLLocationManager.LocationServicesEnabled)
@@ -91,6 +94,12 @@ namespace Microsoft.Maui.Devices.Sensors
 				tcs.TrySetResult(null);
 			}
 		}
+
+		public Task<bool> StartListeningForegroundAsync(ListeningRequest request) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public Task<bool> StopListeningForegroundAsync() =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
 	class SingleLocationListener : CLLocationManagerDelegate

@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		static LocationManager LocationManager =>
 			locationManager ??= Application.Context.GetSystemService(Context.LocationService) as LocationManager;
 
+		public bool IsListening { get => false; }
+
 		public async Task<Location> GetLastKnownLocationAsync()
 		{
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
@@ -111,6 +113,12 @@ namespace Microsoft.Maui.Devices.Sensors
 					LocationManager.RemoveUpdates(listener);
 			}
 		}
+
+		public Task<bool> StartListeningForegroundAsync(ListeningRequest request) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public Task<bool> StopListeningForegroundAsync() =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		static (string Provider, float Accuracy) GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)
 		{
