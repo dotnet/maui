@@ -59,7 +59,7 @@
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) != true ">
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsGtk)' != 'True' ">
     <Compile Remove="**\*.Gtk.cs" />
     <None Include="**\*.Gtk.cs" />
     <Compile Remove="**\Gtk\**\*.cs" />
@@ -120,4 +120,8 @@
     <DefineConstants>WINDOWS_UWP;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
+  <!-- Gtk -->
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsGtk)' == 'True' ">
+    <DefineConstants>$(DefineConstants);GTK</DefineConstants>
+  </PropertyGroup>
 </Project>
