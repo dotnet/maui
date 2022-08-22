@@ -12,6 +12,7 @@
     <IsTrimmable>true</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GtkRoot>Gtk\</GtkRoot>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
@@ -22,13 +23,13 @@
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
 
   <ItemGroup>
-    <Compile Remove="GTK\**" />
+    <Compile Remove="Gtk2\**" />
     <Compile Remove="MacOS\**" />
     <Compile Remove="WPF\**" />
-    <EmbeddedResource Remove="GTK\**" />
+    <EmbeddedResource Remove="Gtk2\**" />
     <EmbeddedResource Remove="MacOS\**" />
     <EmbeddedResource Remove="WPF\**" />
-    <None Remove="GTK\**" />
+    <None Remove="Gtk2\**" />
     <None Remove="MacOS\**" />
     <None Remove="WPF\**" />
     <Content Remove="GTK\**" />

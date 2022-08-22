@@ -3,6 +3,8 @@ using Microsoft.Maui.Graphics;
 using PlatformView = UIKit.UIView;
 #elif __ANDROID__
 using PlatformView = Android.Views.View;
+#elif GTK
+using PlatformView = Gtk.Widget;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN

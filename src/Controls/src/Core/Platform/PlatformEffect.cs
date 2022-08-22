@@ -9,6 +9,8 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using PlatformView = ElmSharp.EvasObject;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
+#elif GTK
+using PlatformView = Gtk.Widget;
 #endif
 
 namespace Microsoft.Maui.Controls.Platform

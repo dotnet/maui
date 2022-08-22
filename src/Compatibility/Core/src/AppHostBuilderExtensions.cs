@@ -50,6 +50,11 @@ using PathRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSh
 using PolygonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.PolygonRenderer;
 using PolylineRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.PolylineRenderer;
 using RectangleRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.RectangleRenderer;
+#elif GTK
+using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
+using Microsoft.Maui.Controls.Handlers;
+
 #endif
 
 namespace Microsoft.Maui.Controls.Compatibility.Hosting
@@ -138,6 +143,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 #if IOS || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
+#if GTK
+					DependencyService.Register<Xaml.ResourcesLoader>();
+					DependencyService.Register<NativeBindingService>();
+					DependencyService.Register<NativeValueConverterService>();
+					DependencyService.Register<Deserializer>();
+					DependencyService.Register<ResourcesProvider>();
+					DependencyService.Register<Xaml.ValueConverterProvider>();
+					
+					DependencyService.Register<NativeBindingService>();
+					DependencyService.Register<NativeValueConverterService>();
+
+#endif
+
+					// Update the mappings for IView/View to work specifically for Controls
+					VisualElement.RemapForControls();
+					Label.RemapForControls();
+					Button.RemapForControls();
 				});
 
 #if WINDOWS

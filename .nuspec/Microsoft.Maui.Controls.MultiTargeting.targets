@@ -59,6 +59,12 @@
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) != true ">
+    <Compile Remove="**\*.Gtk.cs" />
+    <None Include="**\*.Gtk.cs" />
+    <Compile Remove="**\Gtk\**\*.cs" />
+    <None Include="**\Gtk\**\*.cs" />
+  </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' != 'True' ">
     <Compile Remove="**\**\*.Tizen.cs" />
     <None Include="**\**\*.Tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -69,7 +75,7 @@
     <Compile Remove="bin\**;obj\**" />
     <None Remove="bin\**;obj\**" />
   </ItemGroup>
-
+  
   <PropertyGroup>
     <!-- Windows -->
     <WindowsProjectFolder>Platform\Windows\</WindowsProjectFolder>

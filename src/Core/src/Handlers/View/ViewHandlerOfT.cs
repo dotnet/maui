@@ -3,6 +3,8 @@ using System;
 using PlatformView = UIKit.UIView;
 #elif MONOANDROID
 using PlatformView = Android.Views.View;
+#elif GTK
+using PlatformView = Gtk.Widget;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
