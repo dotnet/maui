@@ -224,6 +224,7 @@ namespace Maui.Controls.Sample
 						.OpenUrl((a, b, c) => LogEvent(nameof(iOSLifecycle.OpenUrl)) && false)
 						.PerformActionForShortcutItem((a, b, c) => LogEvent(nameof(iOSLifecycle.PerformActionForShortcutItem)))
 						.WillEnterForeground((a) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
+						.ApplicationSignificantTimeChange((a) => LogEvent(nameof(iOSLifecycle.ApplicationSignificantTimeChange)))
 						.WillTerminate((a) => LogEvent(nameof(iOSLifecycle.WillTerminate))));
 #elif WINDOWS
 					// Log everything in this one
@@ -256,8 +257,8 @@ namespace Maui.Controls.Sample
 					}
 				});
 
-			//appBuilder
-			//	.UseFoldable();
+			// Adapt to dual-screen and foldable Android devices like Surface Duo, includes TwoPaneView layout control
+			appBuilder.UseFoldable();
 
 			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
 			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });

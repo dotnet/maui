@@ -1,14 +1,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
-	internal class ToolbarTrackerTests : BaseTestFixture
+
+	public class ToolbarTrackerTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void Constructor()
 		{
 			var tracker = new ToolbarTracker();
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(tracker.ToolbarItems.Any());
 		}
 
-		[Test]
+		[Fact]
 		public void SimpleTrackEmpty()
 		{
 			var tracker = new ToolbarTracker();
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(tracker.ToolbarItems.Any());
 		}
 
-		[Test]
+		[Fact]
 		public void SimpleTrackWithItems()
 		{
 			var tracker = new ToolbarTracker();
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(tracker.ToolbarItems.Contains(page.ToolbarItems[1]));
 		}
 
-		[Test]
+		[Fact]
 		public void TrackPreConstructedTabbedPage()
 		{
 			var tracker = new ToolbarTracker();
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(tracker.ToolbarItems.Last() == subPage2.ToolbarItems[1]);
 		}
 
-		[Test]
+		[Fact]
 		public void AdditionalTargets()
 		{
 			var tracker = new ToolbarTracker();
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(tracker.ToolbarItems.Contains(toolbarItem2));
 		}
 
-		[Test]
+		[Fact]
 		public async Task PushAfterTrackingStarted()
 		{
 			var tracker = new ToolbarTracker();
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(tracker.ToolbarItems.Contains(toolbarItem2));
 		}
 
-		[Test]
+		[Fact]
 		public async Task PopAfterTrackingStarted()
 		{
 			var tracker = new ToolbarTracker();
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(tracker.ToolbarItems.Contains(toolbarItem2));
 		}
 
-		[Test]
+		[Fact]
 		public void UnsetTarget()
 		{
 			var tracker = new ToolbarTracker();
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(tracker.ToolbarItems.Any());
 		}
 
-		[Test]
+		[Fact]
 		public async Task NavigationToolBar()
 		{
 			var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var window = new Window()
+			var window = new TestWindow()
 			{
 				Page = page
 			};
@@ -229,8 +229,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await page.Navigation.PushAsync(firstPage);
 
 			var toolbar = window.Toolbar;
-			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem1));
-			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem2));
+			Assert.Contains(toolbarItem1, toolbar.ToolbarItems);
+			Assert.Contains(toolbarItem2, toolbar.ToolbarItems);
 		}
 	}
 }

@@ -1,20 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
-  <Identity
-    Name="CD693923-B3C2-4043-B044-F070046D2DAF"
-    Publisher="CN=User Name"
-    Version="1.0.0.0" />
+  <Identity Name="maui-package-name-placeholder" Publisher="CN=Microsoft" Version="0.0.0.0" />
 
   <Properties>
-    <DisplayName>Essentials Tests</DisplayName>
+    <DisplayName>$placeholder$</DisplayName>
     <PublisherDisplayName>Microsoft</PublisherDisplayName>
-    <Logo>appiconStoreLogo.png</Logo>
+    <Logo>$placeholder$.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -23,30 +19,19 @@
   </Dependencies>
 
   <Resources>
-    <Resource Language="x-generate"/>
+    <Resource Language="x-generate" />
   </Resources>
 
   <Applications>
-    <Application Id="App"
-      Executable="$targetnametoken$.exe"
-      EntryPoint="$targetentrypoint$">
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Essentials Tests"
-        Description="Essentials Tests"
-        BackgroundColor="transparent"
-        Square150x150Logo="appiconMediumTile.png"
-        Square44x44Logo="appiconLogo.png">
-        <uap:DefaultTile
-          Wide310x150Logo="appiconWideTile.png"
-          Square71x71Logo="appiconSmallTile.png"
-          Square310x310Logo="appiconLargeTile.png"
-          ShortName="Essentials Tests">
-          <uap:ShowNameOnTiles>
-            <uap:ShowOn Tile="square150x150Logo"/>
-            <uap:ShowOn Tile="wide310x150Logo"/>
-          </uap:ShowNameOnTiles>
-        </uap:DefaultTile >
-        <uap:SplashScreen Image="appiconfgSplashScreen.png" />
+        DisplayName="$placeholder$"
+        Description="$placeholder$"
+        Square150x150Logo="$placeholder$.png"
+        Square44x44Logo="$placeholder$.png"
+        BackgroundColor="transparent">
+        <uap:DefaultTile Square71x71Logo="$placeholder$.png" Wide310x150Logo="$placeholder$.png" Square310x310Logo="$placeholder$.png" />
+        <uap:SplashScreen Image="$placeholder$.png" />
       </uap:VisualElements>
     </Application>
   </Applications>

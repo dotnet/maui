@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
 using Microsoft.Maui.Media;
+using System;
 
 namespace Microsoft.Maui.Platform
 {
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ContentPanel platformView, IBorderStroke border)
 		{
-			var hasBorder = border.Shape != null && border.Stroke != null;
+			var hasBorder = border.Shape != null;
 
 			if (hasBorder)
 			{
@@ -222,9 +223,8 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
 		{
-
-			if (border is IView v)
-				(platformView as ContentPanel)?.UpdateBackground(v.Background);
+			if (border is IView view)
+				(platformView as ContentPanel)?.UpdateBackground(view.Background);
 
 			if (platformView is Control control)
 				control.UpdateBackground((Paint?)null);
@@ -254,6 +254,11 @@ namespace Microsoft.Maui.Platform
 				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
 		}
 
+		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
+		{
+			ToolTipService.SetToolTip(platformView, tooltip?.Content);
+		}
+
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
 		{
 			// Background and InputTransparent for Windows layouts are heavily intertwined, so setting one
@@ -272,9 +277,7 @@ namespace Microsoft.Maui.Platform
 		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
 		{
 			var root = element?.XamlRoot;
-			if (root == null)
-				return new Matrix4x4();
-			var offset = element?.TransformToVisual(root.Content) as MatrixTransform;
+			var offset = element?.TransformToVisual(root?.Content ?? element) as MatrixTransform;
 			if (offset == null)
 				return new Matrix4x4();
 			Matrix matrix = offset.Matrix;

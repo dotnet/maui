@@ -2,25 +2,25 @@ using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class FlyoutPageUnitTests : BaseTestFixture
 	{
 		MockDeviceDisplay mockDeviceDisplay;
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public override void Setup()
+
+		public FlyoutPageUnitTests()
 		{
-			base.Setup();
+
 			DeviceDisplay.SetCurrent(mockDeviceDisplay = new MockDeviceDisplay());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
-		[Test]
+		[Fact]
 		public void TestConstructor()
 		{
 			FlyoutPage page = new FlyoutPage();
@@ -29,17 +29,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(page.Detail);
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlyoutSetter()
 		{
 			FlyoutPage page = new FlyoutPage();
 			var child = new ContentPage { Content = new Label(), Title = "Foo" };
 			page.Flyout = child;
 
-			Assert.AreEqual(child, page.Flyout);
+			Assert.Equal(child, page.Flyout);
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlyoutSetNull()
 		{
 			FlyoutPage page = new FlyoutPage();
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<ArgumentNullException>(() => { page.Flyout = null; });
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlyoutChanged()
 		{
 			FlyoutPage page = new FlyoutPage();
@@ -67,17 +67,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(changed);
 		}
 
-		[Test]
+		[Fact]
 		public void TestDetailSetter()
 		{
 			FlyoutPage page = new FlyoutPage();
 			var child = new ContentPage { Content = new Label() };
 			page.Detail = child;
 
-			Assert.AreEqual(child, page.Detail);
+			Assert.Equal(child, page.Detail);
 		}
 
-		[Test]
+		[Fact]
 		public void TestDetailSetNull()
 		{
 			FlyoutPage page = new FlyoutPage();
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<ArgumentNullException>(() => { page.Detail = null; });
 		}
 
-		[Test]
+		[Fact]
 		public void TestDetailChanged()
 		{
 			FlyoutPage page = new FlyoutPage();
@@ -105,21 +105,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(changed);
 		}
 
-		[Test]
-		public void ThrowsWhenFlyoutSetWithoutValidTitle([Values(null, "")] string title)
+		[Theory, InlineData(null), InlineData("")]
+		public void ThrowsWhenFlyoutSetWithoutValidTitle(string title)
 		{
 			var page = new FlyoutPage();
 			Assert.Throws<InvalidOperationException>(() => page.Flyout = new ContentPage { Title = title });
 		}
 
-		[Test]
+		[Fact]
 		public void TestThrowsWhenPackedWithoutSetting()
 		{
 			FlyoutPage page = new FlyoutPage();
 			Assert.Throws<InvalidOperationException>(() => new TabbedPage { Children = { page } });
 		}
 
-		[Test]
+		[Fact]
 		public void TestDoesNotThrowWhenPackedWithSetting()
 		{
 			FlyoutPage page = new FlyoutPage
@@ -127,15 +127,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Flyout = new ContentPage { Content = new View(), Title = "Foo" },
 				Detail = new ContentPage { Content = new View() }
 			};
-			Assert.DoesNotThrow(() => new TabbedPage { Children = { page } });
+			_ = new TabbedPage { Children = { page } };
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlyoutVisible()
 		{
 			var page = new FlyoutPage();
 
-			Assert.AreEqual(false, page.IsPresented);
+			Assert.False(page.IsPresented);
 
 			bool signaled = false;
 			page.PropertyChanged += (sender, args) =>
@@ -146,11 +146,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			page.IsPresented = true;
 
-			Assert.AreEqual(true, page.IsPresented);
+			Assert.True(page.IsPresented);
 			Assert.True(signaled);
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlyoutVisibleDoubleSet()
 		{
 			var page = new FlyoutPage();
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(signaled);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSetFlyoutBounds()
 		{
 			var page = new FlyoutPage
@@ -177,11 +177,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			((IFlyoutPageController)page).FlyoutBounds = new Rect(0, 0, 100, 100);
-			Assert.AreEqual(new Rect(0, 0, 100, 100), page.Flyout.Bounds);
-			Assert.AreEqual(new Rect(0, 0, 100, 100), ((IFlyoutPageController)page).FlyoutBounds);
+			Assert.Equal(new Rect(0, 0, 100, 100), page.Flyout.Bounds);
+			Assert.Equal(new Rect(0, 0, 100, 100), ((IFlyoutPageController)page).FlyoutBounds);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSetDetailBounds()
 		{
 			var page = new FlyoutPage
@@ -191,11 +191,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			((IFlyoutPageController)page).DetailBounds = new Rect(0, 0, 100, 100);
-			Assert.AreEqual(new Rect(0, 0, 100, 100), page.Detail.Bounds);
-			Assert.AreEqual(new Rect(0, 0, 100, 100), ((IFlyoutPageController)page).DetailBounds);
+			Assert.Equal(new Rect(0, 0, 100, 100), page.Detail.Bounds);
+			Assert.Equal(new Rect(0, 0, 100, 100), ((IFlyoutPageController)page).DetailBounds);
 		}
 
-		[Test]
+		[Fact]
 		public void TestLayoutChildren()
 		{
 			var page = new FlyoutPage
@@ -213,11 +213,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			page.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(0, 0, 100, 200), page.Flyout.Bounds);
-			Assert.AreEqual(new Rect(0, 0, 100, 100), page.Detail.Bounds);
+			Assert.Equal(new Rect(0, 0, 100, 200), page.Flyout.Bounds);
+			Assert.Equal(new Rect(0, 0, 100, 100), page.Detail.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void ThorwsInLayoutChildrenWithNullDetail()
 		{
 			var page = new FlyoutPage
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rect(0, 0, 200, 200)));
 		}
 
-		[Test]
+		[Fact]
 		public void ThorwsInLayoutChildrenWithNullFlyout()
 		{
 			var page = new FlyoutPage
@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => page.Layout(new Rect(0, 0, 200, 200)));
 		}
 
-		[Test]
+		[Fact]
 		public void ThorwsInSetDetailBoundsWithNullDetail()
 		{
 			var page = new FlyoutPage
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).DetailBounds = new Rect(0, 0, 200, 200));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsInSetFlyoutBoundsWithNullFlyout()
 		{
 			var page = new FlyoutPage
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => ((IFlyoutPageController)page).FlyoutBounds = new Rect(0, 0, 200, 200));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsInSetIsPresentOnSplitModeOnTablet()
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
@@ -280,7 +280,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => page.IsPresented = false);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsInSetIsPresentOnSplitPortraitModeOnTablet()
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => page.IsPresented = false);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSetIsPresentedOnPopoverMode()
 		{
 			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Landscape);
@@ -310,10 +310,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			page.IsPresented = true;
 
-			Assert.AreEqual(true, page.IsPresented);
+			Assert.True(page.IsPresented);
 		}
 
-		[Test]
+		[Fact]
 		public void SendsBackEventToPresentedFlyoutFirst()
 		{
 			var detail = new BackButtonPage() { Handle = true };
@@ -345,7 +345,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(result);
 		}
 
-		[Test]
+		[Fact]
 		public void EmitsCorrectlyWhenPresentedOnBackPressed()
 		{
 			var detail = new BackButtonPage();
@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(result);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsExceptionWhenAddingAlreadyParentedDetail()
 		{
 			var detail = new ContentPage { };
@@ -389,7 +389,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => mdp.Detail = detail);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsExceptionWhenAddingAlreadyParentedFlyout()
 		{
 			var Flyout = new ContentPage { Title = "Foo" };
@@ -399,6 +399,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mdp = new FlyoutPage();
 			Assert.Throws<InvalidOperationException>(() => mdp.Flyout = Flyout);
+		}
+
+		[Fact]
+		public void FlyoutPageAppearingAndDisappearingPropagatesToFlyout()
+		{
+			int disappearing = 0;
+			int appearing = 0;
+
+			var flyout = new ContentPage() { Title = "flyout" };
+			var flyoutPage = new FlyoutPage()
+			{
+				Flyout = flyout,
+				Detail = new ContentPage() { Title = "detail" }
+			};
+
+			_ = new TestWindow(flyoutPage);
+			flyout.Appearing += (_, __) => appearing++;
+			flyout.Disappearing += (_, __) => disappearing++;
+
+			Assert.Equal(0, disappearing);
+			Assert.Equal(0, appearing);
+
+			flyoutPage.SendDisappearing();
+
+			Assert.Equal(1, disappearing);
+			Assert.Equal(0, appearing);
+
+			flyoutPage.SendAppearing();
+
+			Assert.Equal(1, disappearing);
+			Assert.Equal(1, appearing);
+		}
+
+		[Fact]
+		public void FlyoutPageAppearingAndDisappearingPropagatesToDetail()
+		{
+			int disappearing = 0;
+			int appearing = 0;
+
+			var detail = new ContentPage() { Title = "detail" };
+			var flyoutPage = new FlyoutPage()
+			{
+				Flyout = new ContentPage() { Title = "flyout" },
+				Detail = detail
+			};
+
+			_ = new TestWindow(flyoutPage);
+
+			detail.Appearing += (_, __) => appearing++;
+			detail.Disappearing += (_, __) => disappearing++;
+
+			Assert.Equal(0, disappearing);
+			Assert.Equal(0, appearing);
+
+			flyoutPage.SendDisappearing();
+
+			Assert.Equal(1, disappearing);
+			Assert.Equal(0, appearing);
+
+			flyoutPage.SendAppearing();
+
+			Assert.Equal(1, disappearing);
+			Assert.Equal(1, appearing);
 		}
 	}
 

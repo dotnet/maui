@@ -1,42 +1,42 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class WindowsTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void ContentPageFlowDirectionSetsOnIWindow()
 		{
 			var app = new TestApp();
 			var window = app.CreateWindow();
 			window.Page.FlowDirection = FlowDirection.RightToLeft;
 
-			Assert.IsTrue((window as IWindow)
+			Assert.True((window as IWindow)
 				.FlowDirection == FlowDirection.RightToLeft);
 		}
 
-		[Test]
+		[Fact]
 		public void WindowFlowDirectionSetsOnPage()
 		{
 			var app = new TestApp();
 			var window = app.CreateWindow();
 			window.FlowDirection = FlowDirection.RightToLeft;
 
-			Assert.IsTrue((window.Page as IFlowDirectionController)
+			Assert.True((window.Page as IFlowDirectionController)
 				.EffectiveFlowDirection
 				.IsRightToLeft());
 
 			window.Page = new ContentPage();
 
-			Assert.IsTrue((window.Page as IFlowDirectionController)
+			Assert.True((window.Page as IFlowDirectionController)
 				.EffectiveFlowDirection
 				.IsRightToLeft());
 		}
 
-		[Test]
+		[Fact]
 		public void AddWindow()
 		{
 			var app = new TestApp();
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ValidateSetup(app);
 		}
 
-		[Test]
+		[Fact]
 		public void SetMainPage()
 		{
 			var app = new Application();
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ValidateSetup(app);
 		}
 
-		[Test]
+		[Fact]
 		public void SetMainPageTwice()
 		{
 			var app = new Application();
@@ -63,11 +63,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var wind2 = app.LoadPage(secondPage);
 
 			ValidateSetup(app, secondPage);
-			Assert.IsNull(firstPage.Parent);
-			Assert.AreEqual(wind1, wind2);
+			Assert.Null(firstPage.Parent);
+			Assert.Equal(wind1, wind2);
 		}
 
-		[Test]
+		[Fact]
 		public void AddAndRemoveVisualDiagnosticAdorner()
 		{
 			var app = new Application();
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(wind1.VisualDiagnosticsOverlay.WindowElements.Count == 0);
 		}
 
-		[Test]
+		[Fact]
 		public void WindowCanRetrieveDisplayDensity()
 		{
 			var window = new Window(new ContentPage());
@@ -101,9 +101,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			window.Handler = handler;
 
-			Assert.AreEqual(42, window.DisplayDensity);
+			Assert.Equal(42, window.DisplayDensity);
 		}
 
+		[Fact]
 		public void ListViewWindowIsInheritedByViewCells()
 		{
 			var lv = new ListView { ItemTemplate = new DataTemplate(() => new ViewCell { View = new View() }) };
@@ -112,35 +113,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			lv.ItemsSource = Enumerable.Range(0, 10);
 
 			ViewCell cell = lv.TemplatedItems[0] as ViewCell;
-			Assert.AreEqual(window, cell.View.Window);
+			Assert.Equal(window, cell.View.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void ListViewWindowIsInheritedByLabelInViewCells()
 		{
 			var lv = new ListView { ItemTemplate = new DataTemplate(() => new ViewCell { View = new Label() }) };
 			var cp = new ContentPage { Content = lv };
 			var window = new Window(cp);
 
-			Assert.AreEqual(window, lv.Window);
-			Assert.AreEqual(window, cp.Window);
+			Assert.Equal(window, lv.Window);
+			Assert.Equal(window, cp.Window);
 
 			lv.ItemsSource = Enumerable.Range(0, 10);
 
 			var cell = lv.TemplatedItems[0] as ViewCell;
 
-			Assert.AreEqual(window, cell.View.Window);
+			Assert.Equal(window, cell.View.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void ListViewWindowIsInheritedByLayoutsInViewCells()
 		{
 			var lv = new ListView { ItemTemplate = new DataTemplate(() => new ViewCell { View = new Grid { new Label() } }) };
 			var cp = new ContentPage { Content = lv };
 			var window = new Window(cp);
 
-			Assert.AreEqual(window, lv.Window);
-			Assert.AreEqual(window, cp.Window);
+			Assert.Equal(window, lv.Window);
+			Assert.Equal(window, cp.Window);
 
 			lv.ItemsSource = Enumerable.Range(0, 10);
 
@@ -148,12 +149,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var grid = cell.View as Grid;
 			var label = grid.Children[0] as Label;
 
-			Assert.AreEqual(window, ((IWindowController)cell).Window);
-			Assert.AreEqual(window, cell.View.Window);
-			Assert.AreEqual(window, label.Window);
+			Assert.Equal(window, ((IWindowController)cell).Window);
+			Assert.Equal(window, cell.View.Window);
+			Assert.Equal(window, label.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void NestedControlsAllHaveTheSameWindow()
 		{
 			var btn = new Button();
@@ -161,12 +162,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var cp = new ContentPage { Content = grid };
 			var window = new Window(cp);
 
-			Assert.AreEqual(window, btn.Window);
-			Assert.AreEqual(window, grid.Window);
-			Assert.AreEqual(window, cp.Window);
+			Assert.Equal(window, btn.Window);
+			Assert.Equal(window, grid.Window);
+			Assert.Equal(window, cp.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void PageHasTheSameWindowWhenAddedLater()
 		{
 			var btn = new Button();
@@ -180,12 +181,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			window.Page = cp;
 
-			Assert.AreEqual(window, btn.Window);
-			Assert.AreEqual(window, grid.Window);
-			Assert.AreEqual(window, cp.Window);
+			Assert.Equal(window, btn.Window);
+			Assert.Equal(window, grid.Window);
+			Assert.Equal(window, cp.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void NestedControlsAllHaveTheSameWindowWhenAddedLater()
 		{
 			var btn = new Button();
@@ -194,17 +195,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var window = new Window(cp);
 
 			Assert.Null(btn.Window);
-			Assert.AreEqual(window, grid.Window);
-			Assert.AreEqual(window, cp.Window);
+			Assert.Equal(window, grid.Window);
+			Assert.Equal(window, cp.Window);
 
 			grid.Children.Add(btn);
 
-			Assert.AreEqual(window, btn.Window);
-			Assert.AreEqual(window, grid.Window);
-			Assert.AreEqual(window, cp.Window);
+			Assert.Equal(window, btn.Window);
+			Assert.Equal(window, grid.Window);
+			Assert.Equal(window, cp.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void SwappingPagesUpdatesTheWindow()
 		{
 			var btn = new Button();
@@ -214,12 +215,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var window = new Window(cp);
 			var window2 = new Window(cp);
 
-			Assert.AreEqual(window2, btn.Window);
-			Assert.AreEqual(window2, grid.Window);
-			Assert.AreEqual(window2, cp.Window);
+			Assert.Equal(window2, btn.Window);
+			Assert.Equal(window2, grid.Window);
+			Assert.Equal(window2, cp.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void DetachingThePageUnsetsTheWindow()
 		{
 			var btn = new Button();
@@ -234,7 +235,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(cp.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void DetachingInTheMiddleUnsetsTheWindow()
 		{
 			var btn = new Button();
@@ -246,10 +247,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Null(btn.Window);
 			Assert.Null(grid.Window);
-			Assert.AreEqual(window, cp.Window);
+			Assert.Equal(window, cp.Window);
 		}
 
-		[Test]
+		[Fact]
 		public void RemovingControlsFromLayoutsUnsetsTheWindow()
 		{
 			var btn = new Button();
@@ -260,8 +261,79 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			grid.Remove(btn);
 
 			Assert.Null(btn.Window);
-			Assert.AreEqual(window, grid.Window);
-			Assert.AreEqual(window, cp.Window);
+			Assert.Equal(window, grid.Window);
+			Assert.Equal(window, cp.Window);
+		}
+
+		[Fact]
+		public void ApplicationIsSetOnWindowBeforeAppearingIsCalledOnPage()
+		{
+			bool passed = false;
+			ContentPage cp = new ContentPage();
+			cp.Appearing += (_, _) =>
+			{
+				var findApplication = cp?.Parent?.Parent as IApplication;
+				Assert.NotNull(findApplication);
+				passed = true;
+			};
+
+			_ = new TestApp().CreateWindow(cp);
+
+			Assert.True(passed);
+		}
+
+		[Fact]
+		void DeActivatedFiresDisappearingEvent()
+		{
+			int disappear = 0;
+			int appear = 0;
+
+			var cp = new ContentPage();
+			IWindow window = new TestWindow(cp);
+			window.Activated();
+
+			cp.Appearing += (_, __) => appear++;
+			cp.Disappearing += (_, __) => disappear++;
+
+			window.Deactivated();
+			Assert.Equal(1, disappear);
+			Assert.Equal(0, appear);
+		}
+
+		[Fact]
+		public void ReActivatedFiresCorrectActivatedEvent()
+		{
+			int disappear = 0;
+			int appear = 0;
+
+			var cp = new ContentPage();
+			IWindow window = new TestWindow(cp);
+			window.Activated();
+
+			cp.Appearing += (_, __) => appear++;
+			cp.Disappearing += (_, __) => disappear++;
+
+			Assert.Equal(0, disappear);
+			window.Deactivated();
+			window.Activated();
+			Assert.Equal(1, disappear);
+			Assert.Equal(1, appear);
+		}
+
+		[Fact]
+		public void RemovedPageFiresDisappearing()
+		{
+			int disappear = 0;
+			int appear = 0;
+
+			var cp = new ContentPage();
+			cp.Disappearing += (_, __) => disappear++;
+
+			Window window = new TestWindow(cp);
+			(window as IWindow).Activated();
+			Assert.Equal(0, disappear);
+			window.Page = new ContentPage();
+			Assert.Equal(1, disappear);
 		}
 
 		void ValidateSetup(Application app, Page page = null)
@@ -270,33 +342,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			page ??= window.Page;
 
 			// Validate all the parent hierarchies are correct
-			Assert.AreEqual(app, window.Parent);
-			Assert.AreEqual(window, window.Page.Parent);
-			Assert.AreEqual(app.Windows.Count, 1);
-			Assert.AreEqual(app.LogicalChildren[0], window);
-			Assert.AreEqual(window.LogicalChildren[0], page);
-			Assert.AreEqual(app.LogicalChildren.Count, 1);
-			Assert.AreEqual(window.LogicalChildren.Count, 1);
-			Assert.AreEqual(app.NavigationProxy, window.NavigationProxy.Inner);
-			Assert.AreEqual(window.NavigationProxy, page.NavigationProxy.Inner);
-		}
-
-		public class TestApp : Application
-		{
-			public TestWindow CreateWindow() =>
-				(TestWindow)(this as IApplication).CreateWindow(null);
-
-			protected override Window CreateWindow(IActivationState activationState)
-			{
-				return new TestWindow(new ContentPage());
-			}
-		}
-
-		public class TestWindow : Window
-		{
-			public TestWindow(Page page) : base(page)
-			{
-			}
+			Assert.Equal(app, window.Parent);
+			Assert.Equal(window, window.Page.Parent);
+			Assert.Equal(1, app.Windows.Count);
+			Assert.Equal(app.LogicalChildren[0], window);
+			Assert.Equal(window.LogicalChildren[0], page);
+			Assert.Single(app.LogicalChildren);
+			Assert.Single(window.LogicalChildren);
+			Assert.Equal(app.NavigationProxy, window.NavigationProxy.Inner);
+			Assert.Equal(window.NavigationProxy, page.NavigationProxy.Inner);
 		}
 	}
 }

@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					currentPaddingLayer.Children.Clear();
 					currentPaddingLayer.Children.Add(nativeContent);
-					
+
 				}
 			}
 			else

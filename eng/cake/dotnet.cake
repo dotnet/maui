@@ -13,7 +13,11 @@ if (TestTFM == "default")
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new string[] {
+    "Microsoft.Maui.Controls.Foldable.*.nupkg",
+    "Microsoft.Maui.Graphics.*.nupkg",
 };
+
+ProcessTFMSwitches();
 
 // Tasks for CI
 
@@ -138,6 +142,12 @@ Task("dotnet-templates")
                 ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
                 ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
             } },
+            { "mauiunpackaged:maui", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
+            { "mauiblazorunpackaged:maui-blazor", dir => {
+                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+            } },
         };
 
         var alsoPack = new [] {
@@ -159,7 +169,7 @@ Task("dotnet-templates")
                 var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
 
                 projectName = $"{tempDir}/{projectName}_{type}";
-                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM}";
+                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM.Replace('.', '_')}";
 
                 // Create
                 StartProcess(dn, $"new {templateName} -o \"{projectName}\" {framework}");
@@ -206,10 +216,12 @@ Task("dotnet-test")
         var tests = new []
         {
             "**/Controls.Core.UnitTests.csproj",
+            "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
+            "**/Graphics.Tests.csproj",
         };
 
         var success = true;
@@ -292,8 +304,7 @@ Task("dotnet-pack-library-packs")
             CleanDirectories(tempDir);
         }
 
-        Download("Microsoft.Maui.Graphics", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json");
-        Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
+        // Download("PACKAGE_ID", "VERSION_VARIABLE", "SOURCE_URL");
     });
 
 Task("dotnet-pack-docs")
@@ -472,29 +483,6 @@ bool RunPackTarget()
     return false;
 }
 
-string FindMSBuild()
-{
-    if (!string.IsNullOrWhiteSpace(MSBuildExe))
-        return MSBuildExe;
-
-    if (IsRunningOnWindows())
-    {
-        var vsInstallation = VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild", IncludePrerelease = true });
-        if (vsInstallation != null)
-        {
-            var path = vsInstallation.CombineWithFilePath(@"MSBuild\Current\Bin\MSBuild.exe");
-            if (FileExists(path))
-                return path.FullPath;
-
-            path = vsInstallation.CombineWithFilePath(@"MSBuild\15.0\Bin\MSBuild.exe");
-            if (FileExists(path))
-                return path.FullPath;
-        }
-    }
-    return "msbuild";
-}
-
-
 Dictionary<string, string> GetDotNetEnvironmentVariables()
 {
     Dictionary<string, string> envVariables = new Dictionary<string, string>();
@@ -604,83 +592,45 @@ void RunMSBuildWithDotNet(
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    // If we're not on Windows, use ./bin/dotnet/dotnet
-    if (useDotNetBuild)
+    var msbuildSettings = new DotNetCoreMSBuildSettings()
+        .SetConfiguration(configuration)
+        .SetMaxCpuCount(0)
+        .WithTarget(target)
+        .EnableBinaryLogger(binlog);
+
+    if (warningsAsError)
     {
-        var msbuildSettings = new DotNetCoreMSBuildSettings()
-            .SetConfiguration(configuration)
-            .SetMaxCpuCount(0)
-            .WithTarget(target)
-            .EnableBinaryLogger(binlog);
-
-        if (warningsAsError)
-        {
-            msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
-        }
-
-        if (properties != null)
-        {
-            foreach (var property in properties)
-            {
-                msbuildSettings.WithProperty(property.Key, property.Value);
-            }
-        }
-
-        var dotnetBuildSettings = new DotNetCoreBuildSettings
-        {
-            MSBuildSettings = msbuildSettings,
-        };
-
-        dotnetBuildSettings.ArgumentCustomization = args =>
-        {
-            if (!restore)
-                args.Append("--no-restore");
-
-            if (!string.IsNullOrEmpty(targetFramework))
-                args.Append($"-f {targetFramework}");
-
-            return args;
-        };
-
-        if (localDotnet)
-            dotnetBuildSettings.ToolPath = dotnetPath;
-
-        DotNetCoreBuild(sln, dotnetBuildSettings);
+        msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
     }
-    else
-    {
-        // Otherwise we need to run MSBuild for WinUI support
-        var msbuild = FindMSBuild();
-        Information("Using MSBuild: {0}", msbuild);
-        var msbuildSettings = new MSBuildSettings { ToolPath = msbuild }
-            .SetConfiguration(configuration)
-            .SetMaxCpuCount(0)
-            .WithTarget(target)
-            .EnableBinaryLogger(binlog);
 
-        if (warningsAsError)
+    if (properties != null)
+    {
+        foreach (var property in properties)
         {
-            msbuildSettings.WarningsAsError = true;
+            msbuildSettings.WithProperty(property.Key, property.Value);
         }
-        if (restore)
-        {
-            msbuildSettings.WithRestore();
-        }
+    }
+
+    var dotnetBuildSettings = new DotNetCoreBuildSettings
+    {
+        MSBuildSettings = msbuildSettings,
+    };
+
+    dotnetBuildSettings.ArgumentCustomization = args =>
+    {
+        if (!restore)
+            args.Append("--no-restore");
+
         if (!string.IsNullOrEmpty(targetFramework))
-        {
-            msbuildSettings.WithProperty("TargetFramework", targetFramework);
-        }
+            args.Append($"-f {targetFramework}");
 
-        if (properties != null)
-        {
-            foreach (var property in properties)
-            {
-                msbuildSettings.WithProperty(property.Key, property.Value);
-            }
-        }
+        return args;
+    };
 
-        MSBuild(sln, msbuildSettings);
-    }
+    if (localDotnet)
+        dotnetBuildSettings.ToolPath = dotnetPath;
+
+    DotNetCoreBuild(sln, dotnetBuildSettings);
 }
 
 void RunTestWithLocalDotNet(string csproj)
@@ -733,4 +683,38 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectory
     FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
 
     return MakeAbsolute(dir);
+}
+
+void ProcessTFMSwitches()
+{
+    List<string> replaceTarget = new List<String>();
+
+    if(HasArgument("android"))
+        replaceTarget.Add("_IncludeAndroid");
+
+    if(HasArgument("windows"))
+        replaceTarget.Add("_IncludeWindows");
+
+    if(HasArgument("ios"))
+        replaceTarget.Add("_IncludeIos");
+
+    if(HasArgument("catalyst") || HasArgument("maccatalyst"))
+        replaceTarget.Add("_IncludeMacCatalyst");
+
+    if(HasArgument("tizen"))
+        replaceTarget.Add("_IncludeTizen");
+
+    if (replaceTarget.Count > 0)
+    {
+        CopyFile("Directory.Build.Override.props.in", "Directory.Build.Override.props");
+        foreach(var replaceWith in replaceTarget)
+        {
+            ReplaceTextInFiles("Directory.Build.Override.props", $"<{replaceWith}></{replaceWith}>", $"<{replaceWith}>true</{replaceWith}>");
+        }
+    }
+    else
+    {
+        if (FileExists("Directory.Build.Override.props"))
+            DeleteFile("Directory.Build.Override.props");
+    }
 }

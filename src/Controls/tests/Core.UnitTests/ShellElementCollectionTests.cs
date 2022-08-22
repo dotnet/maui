@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ShellElementCollection : ShellTestBase
 	{
-		[Test]
+		[Fact]
 		public void ClearFiresOnlyOneRemovedEvent()
 		{
 			Shell shell = new Shell();
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			shellSection.Items.Clear();
-			Assert.AreEqual(1, firedCount);
+			Assert.Equal(1, firedCount);
 		}
 	}
 }

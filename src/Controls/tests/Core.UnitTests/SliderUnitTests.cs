@@ -2,74 +2,74 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class SliderUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestConstructor()
 		{
 			var slider = new Slider(20, 200, 50);
 
-			Assert.AreEqual(20, slider.Minimum);
-			Assert.AreEqual(200, slider.Maximum);
-			Assert.AreEqual(50, slider.Value);
+			Assert.Equal(20, slider.Minimum);
+			Assert.Equal(200, slider.Maximum);
+			Assert.Equal(50, slider.Value);
 		}
 
-		[Test]
+		[Fact]
 		public void TestInvalidConstructor()
 		{
 			Assert.Throws<ArgumentOutOfRangeException>(() => new Slider(10, 5, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestConstructorClamping()
 		{
 			Slider slider = new Slider(50, 100, 0);
 
-			Assert.AreEqual(50, slider.Value);
+			Assert.Equal(50, slider.Value);
 		}
 
-		[Test]
+		[Fact]
 		public void TestMinValueClamp()
 		{
 			Slider slider = new Slider(0, 100, 0);
 
 			slider.Minimum = 10;
 
-			Assert.AreEqual(10, slider.Value);
-			Assert.AreEqual(10, slider.Minimum);
+			Assert.Equal(10, slider.Value);
+			Assert.Equal(10, slider.Minimum);
 		}
 
-		[Test]
+		[Fact]
 		public void TestMaxValueClamp()
 		{
 			Slider slider = new Slider(0, 100, 100);
 
 			slider.Maximum = 10;
 
-			Assert.AreEqual(10, slider.Value);
-			Assert.AreEqual(10, slider.Maximum);
+			Assert.Equal(10, slider.Value);
+			Assert.Equal(10, slider.Maximum);
 		}
 
-		[Test]
+		[Fact]
 		public void TestInvalidMaxValue()
 		{
 			var slider = new Slider();
-			Assert.Throws<ArgumentException>(() => slider.Maximum = slider.Minimum - 1);
+			slider.Maximum = slider.Minimum - 1;
 		}
 
-		[Test]
+		[Fact]
 		public void TestInvalidMinValue()
 		{
 			var slider = new Slider();
-			Assert.Throws<ArgumentException>(() => slider.Minimum = slider.Maximum + 1);
+			slider.Minimum = slider.Maximum + 1;
 		}
 
-		[Test]
+		[Fact]
 		public void TestValueChanged()
 		{
 			var slider = new Slider();
@@ -82,8 +82,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(changed);
 		}
 
-		[TestCase(0.0, 1.0)]
-		[TestCase(1.0, 0.5)]
+		[Theory]
+		[InlineData(0.0, 1.0)]
+		[InlineData(1.0, 0.5)]
 		public void SliderValueChangedEventArgs(double initialValue, double finalValue)
 		{
 			var slider = new Slider
@@ -106,12 +107,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			slider.Value = finalValue;
 
-			Assert.AreEqual(slider, sliderFromSender);
-			Assert.AreEqual(initialValue, oldValue);
-			Assert.AreEqual(finalValue, newValue);
+			Assert.Equal(slider, sliderFromSender);
+			Assert.Equal(initialValue, oldValue);
+			Assert.Equal(finalValue, newValue);
 		}
 
-		[Test]
+		[Fact]
 		public void TestDragStarted()
 		{
 			var slider = new Slider();
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(started);
 		}
 
-		[Test]
+		[Fact]
 		public void TestDragCompleted()
 		{
 			var slider = new Slider();

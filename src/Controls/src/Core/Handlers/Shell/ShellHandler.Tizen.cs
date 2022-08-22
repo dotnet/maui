@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override ShellView CreatePlatformView()
 		{
-			if (DeviceInfo.GetDeviceType() == DeviceType.TV)
+			if (DeviceInfo.DeviceType == DeviceType.TV)
 			{
 				return new TVShellView(PlatformParent);
 			}

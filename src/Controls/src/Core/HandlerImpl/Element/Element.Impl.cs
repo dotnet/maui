@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Hosting;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs" />
-	public partial class Element : Maui.IElement, IEffectControlProvider
+	public partial class Element : Maui.IElement, IEffectControlProvider, IToolTipElement
 	{
 		IElementHandler _handler;
 		EffectsFactory _effectsFactory;
@@ -60,6 +60,12 @@ namespace Microsoft.Maui.Controls
 
 				_handler = newHandler;
 
+				// Only call disconnect if the previous handler is still connected to this virtual view.
+				// If a handler is being reused for a different VirtualView then the virtual
+				// view would have already rolled 
+				if (_previousHandler?.VirtualView == this)
+					_previousHandler?.DisconnectHandler();
+
 				if (_handler?.VirtualView != this)
 					_handler?.SetVirtualView(this);
 
@@ -92,5 +98,7 @@ namespace Microsoft.Maui.Controls
 				effect.Element = this;
 			}
 		}
+
+		ToolTip IToolTipElement.ToolTip => ToolTipProperties.GetToolTip(this);
 	}
 }

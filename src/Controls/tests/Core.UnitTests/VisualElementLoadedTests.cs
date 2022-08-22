@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class VisualElementLoadedTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public async Task LoadedAndUnloadedFire()
 		{
 			var editor = new Editor();
@@ -23,16 +23,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.AreEqual(1, loaded);
-			Assert.AreEqual(0, unloaded);
+			Assert.Equal(1, loaded);
+			Assert.Equal(0, unloaded);
 
 			window.Page = null;
 
-			Assert.AreEqual(1, loaded);
-			Assert.AreEqual(1, unloaded);
+			Assert.Equal(1, loaded);
+			Assert.Equal(1, unloaded);
 		}
 
-		[Test]
+		[Fact]
 		public async Task LoadedAndUnloadedFireWhenParentRemoved()
 		{
 			var editor = new Editor();
@@ -61,18 +61,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			parentLayout.Remove(layout);
 
-			Assert.AreEqual(1, loaded);
-			Assert.AreEqual(1, unloaded);
+			Assert.Equal(1, loaded);
+			Assert.Equal(1, unloaded);
 
 			parentLayout.Add(layout);
 
-			Assert.AreEqual(2, loaded);
-			Assert.AreEqual(1, unloaded);
+			Assert.Equal(2, loaded);
+			Assert.Equal(1, unloaded);
 
 			window.Page = null;
 
-			Assert.AreEqual(2, loaded);
-			Assert.AreEqual(2, unloaded);
+			Assert.Equal(2, loaded);
+			Assert.Equal(2, unloaded);
 		}
 	}
 }

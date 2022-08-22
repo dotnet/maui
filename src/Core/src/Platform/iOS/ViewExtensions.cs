@@ -67,10 +67,12 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateBackground(this UIView platformView, IView view) =>
-			platformView.UpdateBackground(view.Background);
+		public static void UpdateBackground(this UIView platformView, IView view)
+		{
+			platformView.UpdateBackground(view.Background, view as IButtonStroke);
+		}
 
-		public static void UpdateBackground(this UIView platformView, Paint? paint)
+		public static void UpdateBackground(this UIView platformView, Paint? paint, IButtonStroke? stroke = null)
 		{
 			// Remove previous background gradient layer if any
 			platformView.RemoveBackgroundLayer();
@@ -103,6 +105,9 @@ namespace Microsoft.Maui.Platform
 				{
 					backgroundLayer.Name = BackgroundLayerName;
 					platformView.BackgroundColor = UIColor.Clear;
+
+					backgroundLayer.UpdateLayerBorder(stroke);
+
 					platformView.InsertBackgroundLayer(backgroundLayer, 0);
 				}
 			}
@@ -419,16 +424,6 @@ namespace Microsoft.Maui.Platform
 			return view?.Superview;
 		}
 
-		internal static void LayoutToSize(this IView view, double width, double height)
-		{
-			var platformFrame = new CGRect(0, 0, width, height);
-
-			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
-				viewHandler.PlatformView.Frame = platformFrame;
-
-			view.Arrange(platformFrame.ToRectangle());
-		}
-
 		internal static Size LayoutToMeasuredSize(this IView view, double width, double height)
 		{
 			var size = view.Measure(width, height);
@@ -455,6 +450,61 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent)
 		{
 			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
+		}
+
+
+		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView)
+		{
+			UIToolTipInteraction? interaction = default;
+
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15)
+				|| OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				if (platformView is UIControl control)
+				{
+					interaction = control.ToolTipInteraction;
+				}
+				else
+				{
+					if (platformView.Interactions is not null)
+					{
+						foreach (var ia in platformView.Interactions)
+						{
+							if (ia is UIToolTipInteraction toolTipInteraction)
+							{
+								interaction = toolTipInteraction;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			return interaction;
+		}
+
+		public static void UpdateToolTip(this UIView platformView, ToolTip? tooltip)
+		{
+			// UpdateToolTips were added in 15.0 for both iOS and MacCatalyst
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15)
+				|| OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				string? text = tooltip?.Content?.ToString();
+				var interaction = platformView.GetToolTipInteraction();
+
+				if (interaction is null)
+				{
+					if (!string.IsNullOrEmpty(text))
+					{
+						interaction = new UIToolTipInteraction(text);
+						platformView.AddInteraction(interaction);
+					}
+				}
+				else
+				{
+					interaction.DefaultToolTip = text;
+				}
+			}
 		}
 
 		internal static IWindow? GetHostedWindow(this IView? view)
@@ -541,6 +591,21 @@ namespace Microsoft.Maui.Platform
 			};
 
 			return disposable;
+		}
+
+		internal static void UpdateLayerBorder(this CoreAnimation.CALayer layer, IButtonStroke? stroke)
+		{
+			if (stroke == null)
+				return;
+
+			if (stroke.StrokeColor != null)
+				layer.BorderColor = stroke.StrokeColor.ToCGColor();
+
+			if (stroke.StrokeThickness >= 0)
+				layer.BorderWidth = (float)stroke.StrokeThickness;
+
+			if (stroke.CornerRadius >= 0)
+				layer.CornerRadius = stroke.CornerRadius;
 		}
 	}
 }

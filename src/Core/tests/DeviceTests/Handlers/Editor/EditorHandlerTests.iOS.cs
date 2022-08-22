@@ -138,16 +138,16 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
 
-		static void SetNativeText(EditorHandler editorHandler, string text) =>
+		internal static void SetNativeText(EditorHandler editorHandler, string text) =>
 			GetNativeEditor(editorHandler).Text = text;
 
-		static int GetCursorStartPosition(EditorHandler editorHandler)
+		internal static int GetCursorStartPosition(EditorHandler editorHandler)
 		{
 			var control = GetNativeEditor(editorHandler);
 			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
 		}
 
-		static void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
+		internal static void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
 		{
 			var control = GetNativeEditor(editorHandler);
 			var endPosition = control.GetPosition(control.BeginningOfDocument, position);
@@ -228,6 +228,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (nativeEditor != null && nativeEditor.SelectedTextRange != null)
 				return (int)nativeEditor.GetOffsetFromPosition(nativeEditor.BeginningOfDocument, nativeEditor.SelectedTextRange.Start);
+
+			return -1;
+		}
+
+		int GetNativeSelectionLength(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			if (nativeEditor != null && nativeEditor.SelectedTextRange != null)
+				return (int)nativeEditor.GetOffsetFromPosition(nativeEditor.SelectedTextRange.Start, nativeEditor.SelectedTextRange.End);
 
 			return -1;
 		}

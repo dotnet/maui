@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class AnimatableKeyTests
 	{
 		class FakeAnimatable : IAnimatable
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void KeysWithDifferentHandlesAreNotEqual()
 		{
 			var animatable = new FakeAnimatable();
@@ -28,10 +28,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var key1 = new AnimatableKey(animatable, "handle1");
 			var key2 = new AnimatableKey(animatable, "handle2");
 
-			Assert.AreNotEqual(key1, key2);
+			Assert.NotEqual(key1, key2);
 		}
 
-		[Test]
+		[Fact]
 		public void KeysWithDifferentAnimatablesAreNotEqual()
 		{
 			var animatable1 = new FakeAnimatable();
@@ -40,10 +40,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var key1 = new AnimatableKey(animatable1, "handle");
 			var key2 = new AnimatableKey(animatable2, "handle");
 
-			Assert.AreNotEqual(key1, key2);
+			Assert.NotEqual(key1, key2);
 		}
 
-		[Test]
+		[Fact]
 		public void KeysWithSameAnimatableAndHandleAreEqual()
 		{
 			var animatable = new FakeAnimatable();
@@ -51,10 +51,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var key1 = new AnimatableKey(animatable, "handle");
 			var key2 = new AnimatableKey(animatable, "handle");
 
-			Assert.AreEqual(key1, key2);
+			Assert.Equal(key1, key2);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWhenKeysWithSameAnimatableAdded()
 		{
 			var animatable = new FakeAnimatable();

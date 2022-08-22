@@ -21,14 +21,8 @@ namespace Microsoft.Maui.Handlers
 		internal WebNavigationEvent _lastBackForwardEvent;
 		WKUIDelegate? _delegate;
 
-		protected override WKWebView CreatePlatformView()
-		{
-			var nativeWebView = new MauiWKWebView(RectangleF.Empty, this)
-			{
-				NavigationDelegate = new MauiWebViewNavigationDelegate(this)
-			};
-			return nativeWebView;
-		}
+		protected override WKWebView CreatePlatformView() =>
+			new MauiWKWebView(this);
 
 		internal WebNavigationEvent CurrentNavigationEvent
 		{
@@ -158,7 +152,7 @@ namespace Microsoft.Maui.Handlers
 
 				var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
 				var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
-				NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri));
+				NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri)!);
 
 				if (HasCookiesToLoad(url) && !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 					return;
