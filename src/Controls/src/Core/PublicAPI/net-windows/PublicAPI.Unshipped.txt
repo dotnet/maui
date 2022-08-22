@@ -4,6 +4,8 @@ Microsoft.Maui.Controls.Platform.ShellNavigationViewItem.ShellNavigationViewItem
 Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer
 Microsoft.Maui.Controls.MenuFlyoutSeparator
 Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
+Microsoft.Maui.Controls.ToolTipProperties
+Microsoft.Maui.Controls.ToolTipProperties.ToolTipProperties() -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ContentPresenter.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.FlyoutPage.OnDisappearing() -> void
@@ -21,3 +23,6 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 ~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.GetChildrenCore() -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Automation.Peers.AutomationPeer>
 ~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.GetLabeledByCore() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
+static Microsoft.Maui.Controls.ToolTipProperties.GetText(Microsoft.Maui.Controls.BindableObject! bindable) -> object!
+static Microsoft.Maui.Controls.ToolTipProperties.SetText(Microsoft.Maui.Controls.BindableObject! bindable, object! value) -> void
+static readonly Microsoft.Maui.Controls.ToolTipProperties.TextProperty -> Microsoft.Maui.Controls.BindableProperty!
