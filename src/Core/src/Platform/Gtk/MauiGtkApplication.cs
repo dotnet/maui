@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using Gdk;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Gtk;

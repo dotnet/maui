@@ -50,15 +50,15 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static Microsoft.Maui.Graphics.Extras.LineBreakMode GetLineBreakMode(this LineBreakMode lineBreakMode) =>
+		public static Graphics.Platform.Gtk.LineBreakMode GetLineBreakMode(this LineBreakMode lineBreakMode) =>
 			lineBreakMode switch
 			{
-				LineBreakMode.NoWrap => Graphics.Extras.LineBreakMode.None,
-				LineBreakMode.WordWrap => Graphics.Extras.LineBreakMode.WordWrap,
-				LineBreakMode.CharacterWrap => Graphics.Extras.LineBreakMode.CharacterWrap,
-				LineBreakMode.HeadTruncation => Graphics.Extras.LineBreakMode.HeadTruncation,
-				LineBreakMode.TailTruncation => Graphics.Extras.LineBreakMode.TailTruncation,
-				LineBreakMode.MiddleTruncation => Graphics.Extras.LineBreakMode.MiddleTruncation,
+				LineBreakMode.NoWrap => Graphics.Platform.Gtk.LineBreakMode.None,
+				LineBreakMode.WordWrap => Graphics.Platform.Gtk.LineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => Graphics.Platform.Gtk.LineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => Graphics.Platform.Gtk.LineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => Graphics.Platform.Gtk.LineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => Graphics.Platform.Gtk.LineBreakMode.MiddleTruncation,
 				_ => throw new ArgumentOutOfRangeException()
 			};
 
@@ -82,22 +82,22 @@ namespace Microsoft.Maui
 				_ => throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null)
 			};
 
-		public static Microsoft.Maui.Graphics.Extras.LineBreakMode GetLineBreakMode(this Label nativeLabel)
+		public static Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode GetLineBreakMode(this Label nativeLabel)
 		{
 			var res = nativeLabel.Ellipsize switch
 			{
-				EllipsizeMode.None => Graphics.Extras.LineBreakMode.None,
-				EllipsizeMode.Start => Graphics.Extras.LineBreakMode.Start | Graphics.Extras.LineBreakMode.Elipsis,
-				EllipsizeMode.Middle => Graphics.Extras.LineBreakMode.Center | Graphics.Extras.LineBreakMode.Elipsis,
-				EllipsizeMode.End => Graphics.Extras.LineBreakMode.End | Graphics.Extras.LineBreakMode.Elipsis,
+				EllipsizeMode.None => Graphics.Platform.Gtk.LineBreakMode.None,
+				EllipsizeMode.Start => Graphics.Platform.Gtk.LineBreakMode.Head | Graphics.Platform.Gtk.LineBreakMode.Ellipsis,
+				EllipsizeMode.Middle => Graphics.Platform.Gtk.LineBreakMode.Middle | Graphics.Platform.Gtk.LineBreakMode.Ellipsis,
+				EllipsizeMode.End => Graphics.Platform.Gtk.LineBreakMode.Tail | Graphics.Platform.Gtk.LineBreakMode.Ellipsis,
 				_ => throw new ArgumentOutOfRangeException()
 			};
 
 			var res1 = nativeLabel.LineWrapMode switch
 			{
-				WrapMode.Word => Graphics.Extras.LineBreakMode.Word,
-				WrapMode.Char => Graphics.Extras.LineBreakMode.Character,
-				WrapMode.WordChar => Graphics.Extras.LineBreakMode.Character | Graphics.Extras.LineBreakMode.Word,
+				WrapMode.Word => Graphics.Platform.Gtk.LineBreakMode.Word,
+				WrapMode.Char => Graphics.Platform.Gtk.LineBreakMode.Character,
+				WrapMode.WordChar => Graphics.Platform.Gtk.LineBreakMode.Character | Graphics.Platform.Gtk.LineBreakMode.Word,
 				_ => throw new ArgumentOutOfRangeException()
 			};
 

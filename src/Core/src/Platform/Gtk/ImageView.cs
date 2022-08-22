@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Native
 
 	// GtkImage has nothing like Aspect; maybe an ownerdrawn class is needed 
 	// could be: https://docs.gtk.org/gtk3/class.DrawingArea.html
-	// or Microsoft.Maui.Graphics.Native.Gtk.GtkGraphicsView
+	// or Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView
 
 	public class ImageView : Gtk.Image
 	{

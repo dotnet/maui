@@ -1,9 +1,9 @@
 using System;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 
-	public static class WindowExtensions
+	public static partial class WindowExtensions
 	{
 
 		public static void UpdateTitle(this Gtk.Window nativeWindow, IWindow window) =>
@@ -13,7 +13,7 @@ namespace Microsoft.Maui
 		{
 			foreach (var window in MauiGtkApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView is Gtk.Window win && win == nativeWindow)
+				if (window?.Handler?.PlatformView is Gtk.Window win && win == nativeWindow)
 					return window;
 			}
 

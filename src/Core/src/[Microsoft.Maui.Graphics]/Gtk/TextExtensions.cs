@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Graphics.Native.Gtk
+namespace Microsoft.Maui.Graphics.Platform.Gtk
 {
 
 	public static class TextExtensions

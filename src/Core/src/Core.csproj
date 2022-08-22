@@ -36,9 +36,11 @@
     <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
     <ProjectReference Include="..\..\Graphics\src\Graphics.Skia\Graphics.Skia.csproj" />
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-gtk'))">
+    <ProjectReference Include="..\..\Graphics\src\Graphics.Gtk\Graphics.Gtk.csproj" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />
-    <ProjectReference Include="..\..\Graphics\src\Graphics\Graphics.csproj" />
   </ItemGroup>
-  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+<!--  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />-->
 </Project>

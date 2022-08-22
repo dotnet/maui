@@ -1,7 +1,7 @@
 ﻿using System;
 using Gtk;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Graphics.Platform.Gtk;
 using Microsoft.Maui.Native;
 
 namespace Microsoft.Maui.Handlers
@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Handlers
 	public partial class LabelHandler : ViewHandler<ILabel, LabelView>
 	{
 
-		private static Microsoft.Maui.Graphics.Native.Gtk.TextLayout? _textLayout;
+		private static Microsoft.Maui.Graphics.Platform.Gtk.TextLayout? _textLayout;
 
-		public Microsoft.Maui.Graphics.Native.Gtk.TextLayout SharedTextLayout => _textLayout ??= new Microsoft.Maui.Graphics.Native.Gtk.TextLayout(
-			Microsoft.Maui.Graphics.Native.Gtk.NativeGraphicsService.Instance.SharedContext) { HeightForWidth = true };
+		public Microsoft.Maui.Graphics.Platform.Gtk.TextLayout SharedTextLayout => _textLayout ??= new Microsoft.Maui.Graphics.Platform.Gtk.TextLayout(
+			Microsoft.Maui.Graphics.Platform.Gtk.NativeGraphicsService.Instance.SharedContext) { HeightForWidth = true };
 
 		// https://docs.gtk.org/gtk3/class.Label.html
 		protected override LabelView CreateNativeView()

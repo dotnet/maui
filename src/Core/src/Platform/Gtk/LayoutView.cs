@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Gtk;
-using Microsoft.Maui.Graphics.Native.Gtk;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Microsoft.Maui.Graphics.Platform.Gtk;
+using Rectangle = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using Point = Microsoft.Maui.Graphics.Point;
 
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Native
 			{
 				IsReallocating = true;
 
-				var mAllocation = allocation.ToRectangle();
+				var mAllocation = allocation.ToRect();
 
 				clearCache = LastAllocation.IsEmpty || mAllocation.IsEmpty || LastAllocation != mAllocation;
 				ClearMeasured(clearCache);
@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Native
 			{
 				try
 				{
-					LastAllocation = Allocation.ToRectangle();
+					LastAllocation = Allocation.ToRect();
 					Measure(Allocation.Width, Allocation.Height);
 
 				}

@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Diagnostics;
-using Gdk;
-using Microsoft.Maui.Graphics.Native.Gtk;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
-using Size = Microsoft.Maui.Graphics.Size;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
 
-	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public partial class ViewHandler<TVirtualView, TPlatformView> : IPlatformViewHandler
 	{
 
-		Gtk.Widget? INativeViewHandler.NativeView => (Gtk.Widget?)base.NativeView;
+		Gtk.Widget? IPlatformViewHandler.PlatformView => (Gtk.Widget?)base.PlatformView;
 
-		public override void NativeArrange(Rectangle rect)
+		public override void NativeArrange(Rect rect)
 		{
-			NativeView?.Arrange(rect);
+			PlatformView?.Arrange(rect);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-			=> NativeView.GetDesiredSize(widthConstraint, heightConstraint);
+			=> PlatformView.GetDesiredSize(widthConstraint, heightConstraint);
 
 		protected override void SetupContainer()
 		{ }
@@ -34,17 +32,17 @@ namespace Microsoft.Maui.Handlers
 
 		public void MapFont(ITextStyle textStyle)
 		{
-			MapFont(NativeView, textStyle);
+			MapFont(PlatformView, textStyle);
 
 		}
 
-		public void MapFont(Gtk.Widget? nativeView, ITextStyle textStyle)
+		public void MapFont(Gtk.Widget? platformView, ITextStyle textStyle)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
 			var fontManager = this.GetRequiredService<IFontManager>();
-			nativeView.UpdateFont(textStyle, fontManager);
+			platformView.UpdateFont(textStyle, fontManager);
 
 		}
 

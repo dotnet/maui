@@ -1,12 +1,12 @@
 ﻿using System;
 using Gtk;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Graphics.Platform.Gtk;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
 
-	public static class ViewExtensions
+	public static partial class ViewExtensions
 	{
 
 		public static void UpdateAutomationId(this Widget nativeView, IView view)

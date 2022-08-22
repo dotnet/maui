@@ -1,7 +1,7 @@
 ﻿namespace Microsoft.Maui
 {
-	public interface INativeViewHandler : IViewHandler
+	public interface IPlatformViewHandler : IViewHandler
 	{
-		new Gtk.Widget? NativeView { get; }
+		new Gtk.Widget? PlatformView { get; }
 	}
 }

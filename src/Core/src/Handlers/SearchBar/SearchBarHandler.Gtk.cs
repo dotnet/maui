@@ -1,6 +1,6 @@
 ﻿using System;
 using Gtk;
-using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Graphics.Platform.Gtk;
 using Microsoft.Maui.Native;
 
 namespace Microsoft.Maui.Handlers

@@ -5,16 +5,16 @@ using NativeImage = Gdk.Pixbuf;
 namespace Microsoft.Maui
 {
 
-	public class ImageSourceServiceResult : IImageSourceServiceResult<NativeImage>
+	public class ImageSourceServiceResult_ : IImageSourceServiceResult<NativeImage>
 	{
 
 		Action? _dispose;
 
-		public ImageSourceServiceResult(NativeImage image, Action? dispose = null)
+		public ImageSourceServiceResult_(NativeImage image, Action? dispose = null)
 			: this(image, false, dispose)
 		{ }
 
-		public ImageSourceServiceResult(NativeImage image, bool resolutionDependent, Action? dispose = null)
+		public ImageSourceServiceResult_(NativeImage image, bool resolutionDependent, Action? dispose = null)
 		{
 			Value = image;
 			IsResolutionDependent = resolutionDependent;

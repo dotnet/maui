@@ -1,7 +1,7 @@
 using System;
 using Gtk;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Microsoft.Maui
 {
@@ -100,7 +100,7 @@ namespace Microsoft.Maui
 			return new SizeRequest(new Size(naturalWidth, naturalHeight), new Size(minimumWidth, minimumHeight));
 		}
 
-		public static void Arrange(this Widget? nativeView, Rectangle rect)
+		public static void Arrange(this Widget? nativeView, Rect rect)
 		{
 			if (nativeView == null)
 				return;
@@ -108,7 +108,7 @@ namespace Microsoft.Maui
 			if (rect.IsEmpty)
 				return;
 
-			if (rect != nativeView.Allocation.ToRectangle())
+			if (rect != nativeView.Allocation.ToRect())
 			{
 				nativeView.SizeAllocate(rect.ToNative());
 				nativeView.QueueAllocate();

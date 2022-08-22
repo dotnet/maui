@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 
 		/// <summary>
 		/// size in points
-		/// <seealso cref="https://developer.gnome.org/pygtk/stable/class-pangofontdescription.html#method-pangofontdescription--set-size"/>
+		/// <seealso ref="https://developer.gnome.org/pygtk/stable/class-pangofontdescription.html#method-pangofontdescription--set-size"/>
 		/// the size of a font description is specified in pango units.
 		/// There are <see cref="Pango.Scale.PangoScale"/> pango units in one device unit (the device unit is a point for font sizes).
 		/// </summary>

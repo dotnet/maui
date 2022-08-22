@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui
 {
-	public static partial class SemanticExtensions
+	public static partial class SemanticExtensions_
 	{
 		/// <summary>
 		/// Force semantic screen reader focus to specified element

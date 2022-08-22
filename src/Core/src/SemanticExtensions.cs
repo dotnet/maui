@@ -13,6 +13,8 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ElmSharp;
 using ElmSharp.Accessible;
 using PlatformView = ElmSharp.EvasObject;
+#elif GTK
+using PlatformView = Gtk.Widget;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
