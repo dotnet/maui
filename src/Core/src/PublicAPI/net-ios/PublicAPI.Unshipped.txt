@@ -90,5 +90,4 @@ virtual Microsoft.Maui.MauiUISceneDelegate.OpenUrl(UIKit.UIScene! scene, Foundat
 virtual Microsoft.Maui.MauiUISceneDelegate.RestoreInteractionState(UIKit.UIScene! scene, Foundation.NSUserActivity! stateRestorationActivity) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.WillContinueUserActivity(UIKit.UIScene! scene, string! userActivityType) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.WillEnterForeground(UIKit.UIScene! scene) -> void
-
 virtual Microsoft.Maui.MauiUISceneDelegate.DidUpdateCoordinateSpace(UIKit.UIWindowScene! windowScene, UIKit.IUICoordinateSpace! previousCoordinateSpace, UIKit.UIInterfaceOrientation previousInterfaceOrientation, UIKit.UITraitCollection! previousTraitCollection) -> void
