@@ -206,7 +206,14 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Keys']/Docs" />
 		public ICollection<string> Keys
 		{
-			get { return _innerDictionary.Keys; }
+			get
+			{
+				if (_mergedInstance is null)
+					return _innerDictionary.Keys;
+				if (_innerDictionary.Count == 0)
+					return _mergedInstance.Keys;
+				return new ReadOnlyCollection<string>(_innerDictionary.Keys.Concat(_mergedInstance.Keys).ToList());
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Remove']/Docs" />
@@ -218,7 +225,14 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Values']/Docs" />
 		public ICollection<object> Values
 		{
-			get { return _innerDictionary.Values; }
+			get
+			{
+				if (_mergedInstance is null)
+					return _innerDictionary.Values;
+				if (_innerDictionary.Count == 0)
+					return _mergedInstance.Values;
+				return new ReadOnlyCollection<object>(_innerDictionary.Values.Concat(_mergedInstance.Values).ToList());
+			}
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

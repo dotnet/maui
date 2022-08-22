@@ -5228,7 +5228,6 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.EntryCellTextBox.OnKeyUp(Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ListViewGroupStyleSelector.SelectGroupStyleCore(object group, uint level) -> Microsoft.UI.Xaml.Controls.GroupStyle
 ~override Microsoft.Maui.Controls.Platform.ItemContentControl.OnContentChanged(object oldContent, object newContent) -> void
-~override Microsoft.Maui.Controls.Platform.ShellFlyoutItemView.OnContentChanged(object oldContent, object newContent) -> void
 ~override Microsoft.Maui.Controls.Platform.ShellFlyoutTemplateSelector.SelectTemplateCore(object item) -> Microsoft.UI.Xaml.DataTemplate
 ~override Microsoft.Maui.Controls.Platform.ShellFlyoutTemplateSelector.SelectTemplateCore(object item, Microsoft.UI.Xaml.DependencyObject container) -> Microsoft.UI.Xaml.DataTemplate
 ~override Microsoft.Maui.Controls.ReferenceTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType) -> bool

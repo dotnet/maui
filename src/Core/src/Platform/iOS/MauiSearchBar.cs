@@ -49,5 +49,30 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 		}
+
+		internal event EventHandler? OnMovedToWindow;
+		internal event EventHandler? EditingChanged;
+
+		public override void WillMoveToWindow(UIWindow? window)
+		{
+			var editor = this.GetSearchTextField();
+
+			base.WillMoveToWindow(window);
+
+			if (editor != null)
+			{
+				editor.EditingChanged -= OnEditingChanged;
+				if (window != null)
+					editor.EditingChanged += OnEditingChanged;
+			}
+
+			if (window != null)
+				OnMovedToWindow?.Invoke(this, EventArgs.Empty);
+		}
+
+		void OnEditingChanged(object? sender, EventArgs e)
+		{
+			EditingChanged?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }
