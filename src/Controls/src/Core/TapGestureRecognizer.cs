@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='NumberOfTapsRequiredProperty']/Docs" />
 		public static readonly BindableProperty NumberOfTapsRequiredProperty = BindableProperty.Create("NumberOfTapsRequired", typeof(int), typeof(TapGestureRecognizer), 1);
+		
+		public static readonly BindableProperty ButtonsProperty = BindableProperty.Create(nameof(Buttons), typeof(ButtonsMask), typeof(TapGestureRecognizer), ButtonsMask.Primary);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public TapGestureRecognizer()
@@ -40,6 +42,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (int)GetValue(NumberOfTapsRequiredProperty); }
 			set { SetValue(NumberOfTapsRequiredProperty, value); }
+		}
+
+		public ButtonsMask Buttons
+		{
+			get { return (ButtonsMask)GetValue(ButtonsProperty); }
+			set { SetValue(ButtonsProperty, value); }
 		}
 
 		public event EventHandler Tapped;

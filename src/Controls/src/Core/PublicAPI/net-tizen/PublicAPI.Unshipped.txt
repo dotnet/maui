@@ -9,6 +9,10 @@ Microsoft.Maui.Controls.MenuFlyout.IsReadOnly.get -> bool
 Microsoft.Maui.Controls.MenuFlyout.RemoveAt(int index) -> void
 Microsoft.Maui.Controls.MenuFlyoutSeparator
 Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
+Microsoft.Maui.Controls.TapGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.TapGestureRecognizer.Buttons.set -> void
+Microsoft.Maui.Controls.TappedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
+Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 Microsoft.Maui.Controls.ToolTipProperties
 Microsoft.Maui.Controls.ToolTipProperties.ToolTipProperties() -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
