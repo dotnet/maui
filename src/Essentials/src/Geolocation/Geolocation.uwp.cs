@@ -9,8 +9,9 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class GeolocationImplementation : IGeolocation
 	{
-		public bool IsListening { get => false; }
+		Geolocator? listeningGeolocator;
 
+		public bool IsListening { get => false; }
 
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
@@ -46,22 +47,67 @@ namespace Microsoft.Maui.Devices.Sensors
 			var location = await geolocator.GetGeopositionAsync().AsTask(cancellationToken);
 
 			return location?.Coordinate?.ToLocation();
+		}
 
-			static void CheckStatus(PositionStatus status)
+		static void CheckStatus(PositionStatus status)
+		{
+			switch (status)
 			{
-				switch (status)
-				{
-					case PositionStatus.Disabled:
-					case PositionStatus.NotAvailable:
-						throw new FeatureNotEnabledException("Location services are not enabled on device.");
-				}
+				case PositionStatus.Disabled:
+				case PositionStatus.NotAvailable:
+					throw new FeatureNotEnabledException("Location services are not enabled on device.");
 			}
 		}
 
-		public Task<bool> StartListeningForegroundAsync(ListeningRequest request) =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
+		public async Task<bool> StartListeningForegroundAsync(ListeningRequest request)
+		{
+			_ = request ?? throw new ArgumentNullException(nameof(request));
 
-		public Task<bool> StopListeningForegroundAsync() =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
+			if (request.MinimumTime.TotalMilliseconds < 0)
+				throw new ArgumentOutOfRangeException(nameof(request), "MinimumTime must be positive.");
+
+			if (IsListening)
+				throw new InvalidOperationException("Already listening to location updates.");
+
+			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
+
+			listeningGeolocator = new Geolocator
+			{
+				DesiredAccuracyInMeters = request.PlatformDesiredAccuracy,
+				ReportInterval = (uint)request.MinimumTime.TotalMilliseconds,
+				MovementThreshold = request.PlatformDesiredAccuracy,
+			};
+
+			CheckStatus(listeningGeolocator.LocationStatus);
+
+			listeningGeolocator.PositionChanged += OnLocatorPositionChanged;
+			listeningGeolocator.StatusChanged += OnLocatorStatusChanged;
+
+			return true;
+		}
+
+		public Task<bool> StopListeningForegroundAsync()
+		{
+			if (!IsListening || listeningGeolocator == null)
+				return Task.FromResult(true);
+
+			listeningGeolocator.PositionChanged -= OnLocatorPositionChanged;
+			listeningGeolocator.StatusChanged -= OnLocatorStatusChanged;
+
+			listeningGeolocator = null;
+
+			return Task.FromResult(true);
+		}
+
+		void OnLocatorPositionChanged(Geolocator sender, PositionChangedEventArgs e) =>
+			OnLocationChanged(e.Position.ToLocation());
+
+		async void OnLocatorStatusChanged(Geolocator sender, StatusChangedEventArgs e)
+		{
+			if (IsListening)
+			{
+				await StopListeningForegroundAsync();
+			}
+		}
 	}
 }

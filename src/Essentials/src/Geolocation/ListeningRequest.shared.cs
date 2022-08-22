@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public class ListeningRequest
+	public partial class ListeningRequest
 	{
 		public ListeningRequest()
 			: this(GeolocationAccuracy.Default)

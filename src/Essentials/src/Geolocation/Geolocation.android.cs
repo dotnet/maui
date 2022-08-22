@@ -18,12 +18,15 @@ namespace Microsoft.Maui.Devices.Sensors
 		const long twoMinutes = 120000;
 		static readonly string[] ignoredProviders = new string[] { LocationManager.PassiveProvider, "local_database" };
 
+		static ContinuousLocationListener continuousListener;
+		static List<string> listeningProviders;
+
 		static LocationManager locationManager;
 
 		static LocationManager LocationManager =>
 			locationManager ??= Application.Context.GetSystemService(Context.LocationService) as LocationManager;
 
-		public bool IsListening { get => false; }
+		public bool IsListening { get => continuousListener != null; }
 
 		public async Task<Location> GetLastKnownLocationAsync()
 		{
@@ -114,11 +117,78 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		public Task<bool> StartListeningForegroundAsync(ListeningRequest request) =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
+		public async Task<bool> StartListeningForegroundAsync(ListeningRequest request)
+		{
+			_ = request ?? throw new ArgumentNullException(nameof(request));
 
-		public Task<bool> StopListeningForegroundAsync() =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
+			if (IsListening)
+				throw new InvalidOperationException("Already listening to location changes.");
+
+			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
+
+			var enabledProviders = LocationManager.GetProviders(true);
+			var hasProviders = enabledProviders.Any(p => !ignoredProviders.Contains(p));
+
+			if (!hasProviders)
+				throw new FeatureNotEnabledException("Location services are not enabled on device.");
+
+			// get the best possible provider for the requested accuracy
+			var providerInfo = GetBestProvider(LocationManager, request.DesiredAccuracy);
+
+			// if no providers exist, we can't listen for locations
+			if (string.IsNullOrEmpty(providerInfo.Provider))
+				return false;
+
+			var allProviders = LocationManager.GetProviders(false);
+
+			listeningProviders = new List<string>();
+			if (allProviders.Contains(Android.Locations.LocationManager.GpsProvider))
+				listeningProviders.Add(Android.Locations.LocationManager.GpsProvider);
+			if (allProviders.Contains(Android.Locations.LocationManager.NetworkProvider))
+				listeningProviders.Add(Android.Locations.LocationManager.NetworkProvider);
+
+			if (listeningProviders.Count == 0)
+				listeningProviders.Add(providerInfo.Provider);
+
+			var continuousListener = new ContinuousLocationListener(LocationManager, providerInfo.Accuracy, listeningProviders);
+			continuousListener.LocationHandler = HandleLocation;
+
+			// start getting location updates
+			// make sure to use a thread with a looper
+			var looper = Looper.MyLooper() ?? Looper.MainLooper;
+
+			var minTimeMilliseconds = (long)request.MinimumTime.TotalMilliseconds;
+
+			foreach (var provider in listeningProviders)
+				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, providerInfo.Accuracy, continuousListener, looper);
+
+			return true;
+
+			void HandleLocation(AndroidLocation location)
+			{
+				OnLocationChanged(location.ToLocation());
+			}
+		}
+
+		public Task<bool> StopListeningForegroundAsync()
+		{
+			if (continuousListener == null)
+				return Task.FromResult(true);
+
+			continuousListener.LocationHandler = null;
+
+			if (listeningProviders == null)
+				return Task.FromResult(true);
+
+			for (var i = 0; i < listeningProviders.Count; i++)
+			{
+				LocationManager.RemoveUpdates(continuousListener);
+			}
+
+			continuousListener = null;
+
+			return Task.FromResult(true);
+		}
 
 		static (string Provider, float Accuracy) GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)
 		{
@@ -255,6 +325,64 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				if (GeolocationImplementation.IsBetterLocation(location, BestLocation))
 					BestLocation = location;
+			}
+		}
+
+		void ILocationListener.OnProviderDisabled(string provider)
+		{
+			lock (activeProviders)
+				activeProviders.Remove(provider);
+		}
+
+		void ILocationListener.OnProviderEnabled(string provider)
+		{
+			lock (activeProviders)
+				activeProviders.Add(provider);
+		}
+
+		void ILocationListener.OnStatusChanged(string provider, Availability status, Bundle extras)
+		{
+			switch (status)
+			{
+				case Availability.Available:
+					((ILocationListener)this).OnProviderEnabled(provider);
+					break;
+
+				case Availability.OutOfService:
+					((ILocationListener)this).OnProviderDisabled(provider);
+					break;
+			}
+		}
+	}
+
+	class ContinuousLocationListener : Java.Lang.Object, ILocationListener
+	{
+		readonly LocationManager manager;
+
+		float desiredAccuracy;
+
+		HashSet<string> activeProviders = new HashSet<string>();
+
+		internal Action<AndroidLocation> LocationHandler { get; set; }
+
+		internal ContinuousLocationListener(LocationManager manager, float desiredAccuracy, IEnumerable<string> providers)
+		{
+			this.manager = manager;
+			this.desiredAccuracy = desiredAccuracy;
+
+			foreach (var provider in providers)
+			{
+				if (manager.IsProviderEnabled(provider))
+					activeProviders.Add(provider);
+			}
+		}
+
+		void ILocationListener.OnLocationChanged(AndroidLocation location)
+		{
+			if (location.Accuracy <= desiredAccuracy)
+			{
+				LocationHandler?.Invoke(location);
+				return;
 			}
 		}
 
