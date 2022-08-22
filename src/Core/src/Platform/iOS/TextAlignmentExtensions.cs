@@ -47,11 +47,5 @@ namespace Microsoft.Maui.Platform
 				_ => UIControlContentVerticalAlignment.Top,
 			};
 		}
-
-		// TODO ezhart Do the public api stuff to remove this
-		public static UITextAlignment AdjustForFlowDirection(this UITextAlignment textAlignment, IView view)
-		{
-			return textAlignment;
-		}
 	}
 }

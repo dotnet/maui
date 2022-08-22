@@ -188,11 +188,5 @@ namespace Microsoft.Maui.Layouts
 
 			return size;
 		}
-
-		// TODO ezhart delete this and do all the publicapi shenanigans
-		public static bool ShouldArrangeLeftToRight(this IView view)
-		{
-			return true;
-		}
 	}
 }
