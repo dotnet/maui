@@ -5,19 +5,19 @@
         Cake writes out to these properties when you've used a specific target switch
     -->
     <_IncludeWindows></_IncludeWindows>
-    <_IncludeTizen></_IncludeTizen> 
-    <_IncludeAndroid></_IncludeAndroid> 
-    <_IncludeIos></_IncludeIos> 
-    <_IncludeMacCatalyst></_IncludeMacCatalyst> 
+    <_IncludeTizen></_IncludeTizen>
+    <_IncludeAndroid></_IncludeAndroid>
+    <_IncludeIos></_IncludeIos>
+    <_IncludeMacCatalyst></_IncludeMacCatalyst>
   </PropertyGroup>
 
   <PropertyGroup>
     <_SpecificPlatformRequested Condition="'$(_IncludeAndroid)' == 'true' OR '$(_IncludeWindows)' == 'true' OR '$(_IncludeTizen)' == 'true' OR '$(_IncludeIos)' == 'true' OR '$(_IncludeMacCatalyst)' == 'true'">true</_SpecificPlatformRequested>
-    <IncludeAndroidTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeAndroid)' == 'true'">true</IncludeAndroidTargetFrameworks> 
-    <IncludeWindowsTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeWindows)' == 'true'">true</IncludeWindowsTargetFrameworks> 
-    <IncludeTizenTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeTizen)' == 'true'">true</IncludeTizenTargetFrameworks> 
-    <IncludeIosTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeIos)' == 'true'">true</IncludeIosTargetFrameworks> 
-    <IncludeMacCatalystTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeMacCatalyst)' == 'true'">true</IncludeMacCatalystTargetFrameworks> 
+    <IncludeAndroidTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeAndroid)' == 'true'">true</IncludeAndroidTargetFrameworks>
+    <IncludeWindowsTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeWindows)' == 'true'">true</IncludeWindowsTargetFrameworks>
+    <IncludeTizenTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeTizen)' == 'true'">true</IncludeTizenTargetFrameworks>
+    <IncludeIosTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeIos)' == 'true'">true</IncludeIosTargetFrameworks>
+    <IncludeMacCatalystTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeMacCatalyst)' == 'true'">true</IncludeMacCatalystTargetFrameworks>
   </PropertyGroup>
 
 </Project>
