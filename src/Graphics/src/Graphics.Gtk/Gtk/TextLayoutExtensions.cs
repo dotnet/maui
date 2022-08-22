@@ -52,27 +52,29 @@ internal static class TextLayoutExtensions {
 		_ => Pango.Alignment.Left
 	};
 
-	public static Pango.WrapMode ToPangoWrap(this Extras.LineBreakMode it) {
+	public static Pango.WrapMode ToPangoWrap(this Extras.LineBreakMode it)
+	{
 		if (it.HasFlag(Extras.LineBreakMode.CharacterWrap))
 			return Pango.WrapMode.Char;
-		else if (it.HasFlag(Extras.LineBreakMode.WordCharacterWrap))
+
+		if (it.HasFlag(Extras.LineBreakMode.WordCharacterWrap))
 			return Pango.WrapMode.WordChar;
-		else
-			return Pango.WrapMode.Word;
+
+		return Pango.WrapMode.Word;
 	}
 
 	public static Pango.EllipsizeMode ToPangoEllipsize(this Extras.LineBreakMode it) {
 
-		if (it.HasFlag(Extras.LineBreakMode.Elipsis | Extras.LineBreakMode.End))
+		if (it.HasFlag(Extras.LineBreakMode.Ellipsis | Extras.LineBreakMode.Tail))
 			return Pango.EllipsizeMode.End;
 
-		if (it.HasFlag(Extras.LineBreakMode.Elipsis | Extras.LineBreakMode.Center))
+		if (it.HasFlag(Extras.LineBreakMode.Ellipsis | Extras.LineBreakMode.Middle))
 			return Pango.EllipsizeMode.Middle;
 
-		if (it.HasFlag(Extras.LineBreakMode.Elipsis | Extras.LineBreakMode.Start))
+		if (it.HasFlag(Extras.LineBreakMode.Ellipsis | Extras.LineBreakMode.Head))
 			return Pango.EllipsizeMode.Start;
 
-		if (it.HasFlag(Extras.LineBreakMode.Elipsis))
+		if (it.HasFlag(Extras.LineBreakMode.Ellipsis))
 			return Pango.EllipsizeMode.End;
 
 		return Pango.EllipsizeMode.None;

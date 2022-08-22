@@ -86,7 +86,7 @@ internal class TextLayout : IDisposable {
 
 	public VerticalAlignment VerticalAlignment { get; set; }
 
-	public LineBreakMode LineBreakMode { get; set; } = LineBreakMode.EndTruncation;
+	public LineBreakMode LineBreakMode { get; set; } = LineBreakMode.TailTruncation;
 
 	public Cairo.Color TextColor { get; set; }
 
