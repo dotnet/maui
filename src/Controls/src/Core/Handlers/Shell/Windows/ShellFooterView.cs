@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 			SizeChanged += OnShellFooterViewSizeChanged;
 			HorizontalContentAlignment = HorizontalAlignment.Stretch;
 			VerticalContentAlignment = VerticalAlignment.Stretch;
+			IsTabStop = false;			
 		}
 
 		void OnShellFooterViewSizeChanged(object sender, SizeChangedEventArgs e)
