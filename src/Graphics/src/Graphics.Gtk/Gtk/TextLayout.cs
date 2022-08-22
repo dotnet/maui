@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Graphics.Extras;
 using Microsoft.Maui.Graphics.Text;
 using Pango;
 using Context = Cairo.Context;
