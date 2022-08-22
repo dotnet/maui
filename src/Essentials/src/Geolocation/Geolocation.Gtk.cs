@@ -1,15 +1,15 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Geolocation
+	partial class GeolocationImplementation : IGeolocation
 	{
-		static Task<Location> PlatformLastKnownLocationAsync() =>
+		public Task<Location> GetLastKnownLocationAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken) =>
+		public Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

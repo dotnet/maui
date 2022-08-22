@@ -1,15 +1,16 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
-	public static partial class TextToSpeech
+	partial class TextToSpeechImplementation : ITextToSpeech
 	{
-		internal static Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default) =>
+		Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
+		Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
 
-	public static partial class DeviceDisplay
+	partial class DeviceDisplayImplementation
 	{
 
 		static bool PlatformKeepScreenOn
@@ -13,7 +15,7 @@ namespace Microsoft.Maui.Essentials
 			set => throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
 
-		static DisplayInfo GetMainDisplayInfo()
+		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			var mainMonitor = PrimaryMonitor;
 			var geometry = mainMonitor.Geometry;
@@ -23,9 +25,9 @@ namespace Microsoft.Maui.Essentials
 			return new DisplayInfo(geometry.Width, geometry.Height, DefaultScreen.Resolution, orientation, DisplayRotation.Unknown, rate);
 		}
 
-		static void StartScreenMetricsListeners() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		protected override void StartScreenMetricsListeners() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void StopScreenMetricsListeners() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		protected override void StopScreenMetricsListeners() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public static Gdk.Screen DefaultScreen => Gdk.Screen.Default;
 
@@ -36,8 +38,8 @@ namespace Microsoft.Maui.Essentials
 		/// meaning 24/16/8-bit pixel sizes. For a given pixel size, pixels can be in different formats;
 		/// for example the “red” element of an RGB pixel may be in the top 8 bits of the pixel, or may be in the lower 4 bits.
 		/// There are several standard visuals.
-		/// The visual returned by <see cref="Gdk.Screen.Default.SystemVisual"/> is the system’s default visual,
-		/// and the visual returned by <see cref="Gdk.Screen.Default.RgbaVisual"/> should be used for creating windows with an alpha channel.
+		/// The visual returned by Gdk.Screen.Default.SystemVisual is the system’s default visual,
+		/// and the visual returned Gdk.Screen.Default.RgbaVisual should be used for creating windows with an alpha channel.
 		///
 		/// Get the system’s default visual for screen .
 		/// This is the visual for the root window of the display.
@@ -72,6 +74,16 @@ namespace Microsoft.Maui.Essentials
 				yield return DefaultDisplay.GetMonitor(i);
 			}
 
+		}
+
+		protected override bool GetKeepScreenOn()
+		{
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+		}
+
+		protected override void SetKeepScreenOn(bool keepScreenOn)
+		{
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
 
 	}

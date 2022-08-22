@@ -1,11 +1,16 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Permissions']/Docs" />
 	public static partial class Permissions
 	{
-		public partial class BasePlatformPermission : BasePermission
+		public abstract partial class BasePlatformPermission : BasePermission
 		{
+			protected BasePlatformPermission()
+			{
+			}
+
 			public override Task<PermissionStatus> CheckStatusAsync() =>
 				throw ExceptionUtils.NotSupportedOrImplementedException;
 
@@ -19,6 +24,7 @@ namespace Microsoft.Maui.Essentials
 				throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
 		public partial class Battery : BasePlatformPermission
 		{
 		}
@@ -43,6 +49,7 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Flashlight']/Docs" />
 		public partial class Flashlight : BasePlatformPermission
 		{
 		}
@@ -83,6 +90,10 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
+		public partial class PhotosAddOnly : BasePlatformPermission
+		{
+		}
+
 		public partial class Reminders : BasePlatformPermission
 		{
 		}
@@ -91,6 +102,7 @@ namespace Microsoft.Maui.Essentials
 		{
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Sms']/Docs" />
 		public partial class Sms : BasePlatformPermission
 		{
 		}

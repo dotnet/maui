@@ -1,14 +1,16 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class HapticFeedback
+	/// <include file="../../docs/Microsoft.Maui.Essentials/HapticFeedback.xml" path="Type[@FullName='Microsoft.Maui.Essentials.HapticFeedback']/Docs" />
+	partial class HapticFeedbackImplementation : IHapticFeedback
 	{
-		internal static bool IsSupported
-			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformPerform(HapticFeedbackType type)
+		public bool IsSupported => false;
+
+		public void Perform(HapticFeedbackType type)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

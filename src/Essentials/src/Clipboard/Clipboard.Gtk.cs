@@ -1,14 +1,17 @@
+#nullable enable
+
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
 
-	public static partial class Clipboard
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
+	partial class ClipboardImplementation : IClipboard
 	{
 
 		static readonly Gdk.Atom clipboardAtom = Gdk.Atom.Intern("CLIPBOARD", false);
 
-		static Task PlatformSetTextAsync(string text)
+		public Task SetTextAsync(string? text)
 		{
 			var clipboard = Gtk.Clipboard.Get(clipboardAtom);
 			clipboard.Text = text;
@@ -16,7 +19,7 @@ namespace Microsoft.Maui.Essentials
 			return Task.FromResult(0);
 		}
 
-		static bool PlatformHasText
+		public bool HasText
 		{
 			get
 			{
@@ -26,18 +29,22 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static Task<string> PlatformGetTextAsync()
+		public Task<string?> GetTextAsync()
 		{
 			var clipboard = Gtk.Clipboard.Get(clipboardAtom);
 
-			return Task.FromResult(clipboard.WaitForText());
+			return Task.FromResult(clipboard.WaitForText())!;
 		}
 
-		static void StartClipboardListeners()
-			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+		void StartClipboardListeners()
+		{
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+		}
 
-		static void StopClipboardListeners()
-			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+		void StopClipboardListeners()
+		{
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+		}
 
 	}
 

@@ -1,13 +1,15 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class Flashlight
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Flashlight.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Flashlight']/Docs" />
+	class FlashlightImplementation : IFlashlight
 	{
-		static Task PlatformTurnOnAsync() =>
+		public Task TurnOnAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task PlatformTurnOffAsync() =>
+		public Task TurnOffAsync() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

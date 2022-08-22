@@ -1,11 +1,10 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public static partial class PhoneDialer
+	partial class PhoneDialerImplementation : IPhoneDialer
 	{
-		internal static bool IsSupported =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
+		public bool IsSupported => false;
 
-		static void PlatformOpen(string number) =>
+		public void Open(string number) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

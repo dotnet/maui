@@ -1,14 +1,15 @@
-namespace Microsoft.Maui.Essentials
+using Microsoft.Maui.ApplicationModel;
+
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Gyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
-		internal static bool IsSupported =>
+		bool PlatformIsSupported => false;
+
+		void PlatformStart(SensorSpeed sensorSpeed) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed) =>
-			throw ExceptionUtils.NotSupportedOrImplementedException;
-
-		internal static void PlatformStop() =>
+		void PlatformStop() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

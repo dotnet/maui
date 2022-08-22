@@ -1,20 +1,21 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Launcher
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Launcher']/Docs" />
+	partial class LauncherImplementation
 	{
-		static Task<bool> PlatformCanOpenAsync(Uri uri) =>
+		Task<bool> PlatformCanOpenAsync(Uri uri) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task PlatformOpenAsync(Uri uri) =>
+		Task<bool> PlatformOpenAsync(Uri uri) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task PlatformOpenAsync(OpenFileRequest request) =>
+		Task<bool> PlatformOpenAsync(OpenFileRequest request) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task<bool> PlatformTryOpenAsync(Uri uri) =>
+		Task<bool> PlatformTryOpenAsync(Uri uri) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

@@ -1,19 +1,21 @@
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Networking
 {
-	public static partial class Connectivity
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
+	partial class ConnectivityImplementation : IConnectivity
 	{
-		static NetworkAccess PlatformNetworkAccess =>
+		public NetworkAccess NetworkAccess =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles =>
+		public IEnumerable<ConnectionProfile> ConnectionProfiles =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void StartListeners() =>
+		void StartListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void StopListeners() =>
+		void StopListeners() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

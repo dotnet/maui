@@ -115,7 +115,13 @@ namespace Microsoft.Maui.Media
 
 		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, ElmSharp.EvasObject view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
+#elif GTK
 
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Gtk.Window window) =>
+			screenshot.AsPlatform().CaptureAsync(window);
+
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Gtk.Widget view) =>
+			screenshot.AsPlatform().CaptureAsync(view);
 #endif
 	}
 

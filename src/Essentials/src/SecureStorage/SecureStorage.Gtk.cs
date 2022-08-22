@@ -1,19 +1,20 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
-	public partial class SecureStorage
+	partial class SecureStorageImplementation : ISecureStorage
 	{
-		static Task<string> PlatformGetAsync(string key) =>
+		Task<string> PlatformGetAsync(string key) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task PlatformSetAsync(string key, string data) =>
+		Task PlatformSetAsync(string key, string data) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static bool PlatformRemove(string key) =>
+		bool PlatformRemove(string key) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformRemoveAll() =>
+		void PlatformRemoveAll() =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

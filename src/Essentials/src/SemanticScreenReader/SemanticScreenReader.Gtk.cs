@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Accessibility
 {
-	public static partial class SemanticScreenReader
+	partial class SemanticScreenReaderImplementation : ISemanticScreenReader
 	{
-		static void PlatformAnnounce(string text) =>
+		public void Announce(string text) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

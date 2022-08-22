@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Geocoding
+	class GeocodingImplementation : IGeocoding
 	{
-		static Task<IEnumerable<Placemark>> PlatformGetPlacemarksAsync(double latitude, double longitude) =>
+		public Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task<IEnumerable<Location>> PlatformGetLocationsAsync(string address) =>
+		public Task<IEnumerable<Location>> GetLocationsAsync(string address) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Authentication
 {
-	public static partial class AppleSignInAuthenticator
+	partial class AppleSignInAuthenticatorImplementation : IAppleSignInAuthenticator
 	{
-		static Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Options options) =>
+		public Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

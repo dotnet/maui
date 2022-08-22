@@ -1,13 +1,16 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public static partial class Share
+	partial class ShareImplementation : IShare
 	{
-		static Task PlatformRequestAsync(ShareTextRequest request) =>
+		Task PlatformRequestAsync(ShareTextRequest request) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task PlatformRequestAsync(ShareMultipleFilesRequest request) =>
+		Task PlatformRequestAsync(ShareFileRequest request) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		Task PlatformRequestAsync(ShareMultipleFilesRequest request) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

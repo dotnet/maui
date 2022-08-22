@@ -1,6 +1,6 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-    public static partial class Platform
+	static class PlatformUtils
     {
     }
 

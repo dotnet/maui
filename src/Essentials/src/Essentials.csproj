@@ -65,10 +65,10 @@
     <Compile Include="**\*.macos.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.macos.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup> -->
-  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
-  <ItemGroup Condition="'$(BuildForGtk)' == 'true'">
-    <PackageReference Include="GtkSharp" Version="3.24.24.64" />
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'gtk' ">
+    <PackageReference Include="GtkSharp"/>
     <Compile Include="**\*.Gtk.cs" />
     <Compile Include="**\*.Gtk.*.cs" />
   </ItemGroup>
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 </Project>

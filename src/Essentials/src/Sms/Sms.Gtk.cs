@@ -1,13 +1,14 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public static partial class Sms
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Sms.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Sms']/Docs" />
+	partial class SmsImplementation : ISms
 	{
-		internal static bool IsComposeSupported
+		public bool IsComposeSupported
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static Task PlatformComposeAsync(SmsMessage message)
+		Task PlatformComposeAsync(SmsMessage message)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

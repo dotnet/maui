@@ -1,16 +1,23 @@
 using System;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class Vibration
+
+	partial class VibrationImplementation : IVibration
 	{
-		internal static bool IsSupported
+
+		public bool IsSupported => false;
+
+		void PlatformVibrate()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformVibrate(TimeSpan duration)
+		void PlatformVibrate(TimeSpan duration)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void PlatformCancel()
+		void PlatformCancel()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
+
 	}
+
 }
