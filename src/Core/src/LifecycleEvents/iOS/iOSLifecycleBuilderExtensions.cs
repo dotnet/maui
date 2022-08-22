@@ -27,7 +27,7 @@ namespace Microsoft.Maui.LifecycleEvents
 		public static IiOSLifecycleBuilder SceneDidDisconnect(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneDidDisconnect del) => lifecycle.OnEvent(del);
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")] 
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		public static IiOSLifecycleBuilder SceneOnActivated(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneOnActivated del) => lifecycle.OnEvent(del);
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.LifecycleEvents
 		public static IiOSLifecycleBuilder SceneOnResignActivation(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneOnResignActivation del) => lifecycle.OnEvent(del);
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")] 
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		public static IiOSLifecycleBuilder SceneWillEnterForeground(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneWillEnterForeground del) => lifecycle.OnEvent(del);
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
