@@ -727,4 +727,9 @@ void ProcessTFMSwitches()
             ReplaceTextInFiles("Directory.Build.Override.props", $"<{replaceWith}></{replaceWith}>", $"<{replaceWith}>true</{replaceWith}>");
         }
     }
+    else
+    {
+        if (FileExists("Directory.Build.Override.props"))
+            DeleteFile("Directory.Build.Override.props");
+    }
 }

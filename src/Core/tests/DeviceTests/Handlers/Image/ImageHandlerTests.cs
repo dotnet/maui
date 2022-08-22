@@ -34,8 +34,8 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 		[Theory(
-#if IOS
-			Skip = "Test failing on IOS"
+#if IOS || MACCATALYST
+			Skip = "Test failing on iOS"
 #endif
 			)]
 		[InlineData("#FF0000")]

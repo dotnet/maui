@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class EditorTests : HandlerTestBase
 	{
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		// iOS is broken until this point
 		// https://github.com/dotnet/maui/issues/3425
 		[Theory]

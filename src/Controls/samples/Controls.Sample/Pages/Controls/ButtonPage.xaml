@@ -13,6 +13,8 @@
                     Style="{StaticResource Headline}"/>
                 <Button
                     Text="Button"/>
+                <Button
+                    Text="Button with Tooltip" ToolTipProperties.Text="This is a tooltip!" />
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>
