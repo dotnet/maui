@@ -4578,8 +4578,8 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~Microsoft.Maui.Controls.TapGestureRecognizer.Command.set -> void
 ~Microsoft.Maui.Controls.TapGestureRecognizer.CommandParameter.get -> object
 ~Microsoft.Maui.Controls.TapGestureRecognizer.CommandParameter.set -> void
-~Microsoft.Maui.Controls.TappedEventArgs.Parameter.get -> object
-~Microsoft.Maui.Controls.TappedEventArgs.TappedEventArgs(object parameter) -> void
+Microsoft.Maui.Controls.TappedEventArgs.Parameter.get -> object?
+Microsoft.Maui.Controls.TappedEventArgs.TappedEventArgs(object? parameter) -> void
 ~Microsoft.Maui.Controls.TemplateBinding.Converter.get -> Microsoft.Maui.Controls.IValueConverter
 ~Microsoft.Maui.Controls.TemplateBinding.Converter.set -> void
 ~Microsoft.Maui.Controls.TemplateBinding.ConverterParameter.get -> object

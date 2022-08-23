@@ -120,17 +120,15 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			var view = Element as View;
-			var gestures =
-				view?
-					.GestureRecognizers?
-					.OfType<TRecognizer>();
+			var gestures = view?.GestureRecognizers;
 
 			if (gestures == null)
 				return;
 
 			foreach (var gesture in gestures)
 			{
-				func(gesture);
+				if (gesture is TRecognizer recognizer)
+					func(recognizer);
 			}
 		}
 
@@ -313,7 +311,6 @@ namespace Microsoft.Maui.Controls.Platform
 				_container.DragOver -= HandleDragOver;
 				_container.Drop -= HandleDrop;
 				_container.Tapped -= OnTap;
-				_container.DoubleTapped -= OnDoubleTap;
 				_container.ManipulationDelta -= OnManipulationDelta;
 				_container.ManipulationStarted -= OnManipulationStarted;
 				_container.ManipulationCompleted -= OnManipulationCompleted;
@@ -421,33 +418,6 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdatingGestureRecognizers();
 		}
 
-		void OnDoubleTap(object sender, DoubleTappedRoutedEventArgs e)
-		{
-			var view = Element as View;
-			if (view == null)
-				return;
-
-			var tapPosition = e.GetPosition(Control);
-			var children = (view as IGestureController)?.GetChildElements(new Point(tapPosition.X, tapPosition.Y));
-
-			if (children != null)
-				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2))
-				{
-					recognizer.SendTapped(view);
-					e.Handled = true;
-				}
-
-			if (e.Handled)
-				return;
-
-			IEnumerable<TapGestureRecognizer> doubleTapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2);
-			foreach (TapGestureRecognizer recognizer in doubleTapGestures)
-			{
-				recognizer.SendTapped(view);
-				e.Handled = true;
-			}
-		}
-
 		void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
 		{
 			SwipeComplete(true);
@@ -511,30 +481,56 @@ namespace Microsoft.Maui.Controls.Platform
 			PanComplete(true);
 		}
 
-		void OnTap(object sender, TappedRoutedEventArgs e)
+		void OnTap(object sender, RoutedEventArgs e)
 		{
 			var view = Element as View;
 			if (view == null)
 				return;
 
 			var tapPosition = e.GetPosition(Control);
-			var children = (view as IGestureController)?.GetChildElements(new Point(tapPosition.X, tapPosition.Y));
 
-			if (children != null)
-				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1))
-				{
-					recognizer.SendTapped(view);
-					e.Handled = true;
-				}
+			var children =
+				(view as IGestureController)?.GetChildElements(new Point(tapPosition.X, tapPosition.Y))?.
+				GetChildGesturesFor<TapGestureRecognizer>(ValidateGesture);
 
-			if (e.Handled)
+			if (ProgessGestureRecognizers(children))
 				return;
 
-			IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1);
-			foreach (var recognizer in tapGestures)
+			IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(ValidateGesture);
+			ProgessGestureRecognizers(tapGestures);
+
+			bool ProgessGestureRecognizers(IEnumerable<TapGestureRecognizer>? tapGestures)
 			{
-				recognizer.SendTapped(view);
-				e.Handled = true;
+				bool handled = false;
+				if (tapGestures == null)
+					return handled;
+
+				foreach (var recognizer in tapGestures)
+				{
+					recognizer.SendTapped(view);
+					e.SetHandled(true);
+					handled = true;
+				}
+
+				return handled;
+			}
+
+			bool ValidateGesture(TapGestureRecognizer g)
+			{
+				if (e is RightTappedRoutedEventArgs &&
+					(g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+				{
+					// Currently we only support single right clicks on WinUI
+					return g.NumberOfTapsRequired == 1;
+				}
+
+				if ((g.Buttons & ButtonsMask.Primary) != ButtonsMask.Primary)
+					return false;
+
+				if (e is DoubleTappedRoutedEventArgs)
+					return g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2;
+
+				return g.NumberOfTapsRequired == 1;
 			}
 		}
 
@@ -649,6 +645,7 @@ namespace Microsoft.Maui.Controls.Platform
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_container.Tapped += OnTap;
+				_container.RightTapped += OnTap;
 			}
 			else
 			{
@@ -661,7 +658,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any()
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
 			{
-				_container.DoubleTapped += OnDoubleTap;
+				_container.DoubleTapped += OnTap;
 			}
 			else
 			{
