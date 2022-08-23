@@ -10,9 +10,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propertyName == PointsProperty.PropertyName)
-				this.HeightRequest = this.WidthRequest = double.NaN;
-
 			if (propertyName == PointsProperty.PropertyName ||
 				propertyName == FillRuleProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IShapeView.Shape));

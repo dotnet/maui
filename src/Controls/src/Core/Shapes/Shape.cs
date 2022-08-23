@@ -257,6 +257,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+
 			if (result.Width != 0 && result.Height != 0)
 			{
 				return result;
