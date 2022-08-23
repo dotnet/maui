@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Graphics.Platform.Gtk;
 
-internal static class PaintExtensions {
+public static class PaintExtensions {
 
 	public static Cairo.Context? PaintToSurface(this PatternPaint? it, Cairo.Surface? surface, float scale) {
 		if (surface == null || it == null)
