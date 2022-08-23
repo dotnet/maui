@@ -1,7 +1,7 @@
 using Cairo;
 using Gtk;
 
-namespace Microsoft.Maui.Native
+namespace Microsoft.Maui.Platform
 {
 
 	public class LabelView : Label

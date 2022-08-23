@@ -1,10 +1,10 @@
-﻿using Microsoft.Maui.Native;
+﻿using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
-		protected override MauiDatePicker CreateNativeView()
+		protected override MauiDatePicker CreatePlatformView()
 		{
 			return new MauiDatePicker();
 		}
@@ -12,13 +12,13 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateFormat(datePicker);
+			handler.PlatformView?.UpdateFormat(datePicker);
 		}
 
 		[MissingMapper]
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateDate(datePicker);
+			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
 		[MissingMapper]

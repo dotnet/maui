@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Maui.Native
+namespace Microsoft.Maui.Platform
 {
 	public class MauiDatePicker : Gtk.Label
 	{

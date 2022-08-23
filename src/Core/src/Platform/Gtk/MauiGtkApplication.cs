@@ -151,11 +151,6 @@ namespace Microsoft.Maui
 
 		}
 
-		protected void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
-			//future use: there will be a need of GtkNativeServices, eg. for WebView
-		}
-
 		public static void DispatchPendingEvents()
 		{
 			// The loop is limited to 1000 iterations as a workaround for an issue that some users

@@ -13,7 +13,7 @@
 		[MissingMapper]
 		public static void MapScale(ViewHandler handler, IView view)
 		{
-			//handler.NativeView.UpdateScale(view.Scale);
+			//handler.PlatformView.UpdateScale(view.Scale);
 		}
 
 		[MissingMapper]

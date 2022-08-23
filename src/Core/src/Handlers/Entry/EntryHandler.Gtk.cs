@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class EntryHandler : ViewHandler<IEntry, Entry>
 	{
 
-		protected override Entry CreateNativeView()
+		protected override Entry CreatePlatformView()
 		{
 			return new();
 		}
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 
 		void HandleSelectionChanged()
 		{
-			if (NativeView is not { } nativeView || VirtualView is not { } virtualView)
+			if (PlatformView is not { } nativeView || VirtualView is not { } virtualView)
 				return;
 
 			var actual = nativeView.GetSelection();
@@ -52,16 +52,16 @@ namespace Microsoft.Maui.Handlers
 
 		void OnNativeViewCursorMoved(object sender, MoveCursorArgs args)
 		{
-			if (sender != NativeView)
+			if (sender != PlatformView)
 				return;
 
-			NativeView.OnCursorPositionChanged(VirtualView);
+			PlatformView.OnCursorPositionChanged(VirtualView);
 			HandleSelectionChanged();
 		}
 
 		void OnNativeViewMotionNotified(object sender, MotionNotifyEventArgs args)
 		{
-			if (sender != NativeView)
+			if (sender != PlatformView)
 				return;
 
 			if (_isMouseSelection)
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnNativeViewOnButtonPressed(object sender, Gtk.ButtonPressEventArgs args)
 		{
-			if (sender != NativeView)
+			if (sender != PlatformView)
 				return;
 
 			if (args.Event.Button == 1)
@@ -92,26 +92,26 @@ namespace Microsoft.Maui.Handlers
 
 		protected void OnNativeViewChanged(object? sender, EventArgs e)
 		{
-			if (sender != NativeView)
+			if (sender != PlatformView)
 				return;
 
-			if (NativeView?.OnTextChanged(VirtualView) ?? false)
+			if (PlatformView?.OnTextChanged(VirtualView) ?? false)
 				HandleSelectionChanged();
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateText(entry);
+			handler.PlatformView?.UpdateText(entry);
 		}
 
 		public static void MapTextColor(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateTextColor(entry.TextColor);
+			handler.PlatformView?.UpdateTextColor(entry.TextColor);
 		}
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry)
 		{
-			if (handler.NativeView is { } nativeView)
+			if (handler.PlatformView is { } nativeView)
 			{
 				nativeView.Visibility = !entry.IsPassword;
 			}
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
 		{
-			if (handler.NativeView is { } nativeView)
+			if (handler.PlatformView is { } nativeView)
 				nativeView.Alignment = entry.HorizontalTextAlignment.ToXyAlign();
 		}
 
@@ -132,18 +132,18 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMaxLength(EntryHandler handler, IEntry entry)
 		{
-			if (handler.NativeView is { } nativeView)
+			if (handler.PlatformView is { } nativeView)
 				nativeView.MaxLength = entry.MaxLength;
 		}
 
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdatePlaceholder(entry);
+			handler.PlatformView?.UpdatePlaceholder(entry);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateIsReadOnly(entry);
+			handler.PlatformView?.UpdateIsReadOnly(entry);
 		}
 
 		public static void MapFont(EntryHandler handler, IEntry entry)
@@ -153,12 +153,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateCursorPosition(entry);
+			handler.PlatformView?.UpdateCursorPosition(entry);
 		}
 
 		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateSelectionLength(entry);
+			handler.PlatformView?.UpdateSelectionLength(entry);
 		}
 
 		[MissingMapper]
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
 		{
-			if (handler.NativeView is not { } nativeView)
+			if (handler.PlatformView is not { } nativeView)
 				return;
 
 			nativeView.Attributes = nativeView.Attributes.AttrListFor(entry.CharacterSpacing);
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapKeyboard(EntryHandler handler, IEntry entry)
 		{
-			if (handler.NativeView is not { } nativeView)
+			if (handler.PlatformView is not { } nativeView)
 				return;
 
 			// https://docs.gtk.org/gtk3/method.Entry.set_input_purpose.html

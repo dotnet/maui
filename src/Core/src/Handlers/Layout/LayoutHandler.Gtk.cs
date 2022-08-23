@@ -2,7 +2,7 @@
 using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using Microsoft.Maui.Native;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class LayoutHandler : ViewHandler<ILayout, LayoutView>
 	{
 
-		protected override LayoutView CreateNativeView()
+		protected override LayoutView CreatePlatformView()
 		{
 			if (VirtualView == null)
 			{
@@ -28,95 +28,95 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformVirtualView = () => VirtualView;
+			PlatformView.CrossPlatformVirtualView = () => VirtualView;
 
-			NativeView.ClearChildren();
+			PlatformView.ClearChildren();
 
 			foreach (var child in VirtualView)
 			{
-				if (child.ToNative(MauiContext) is { } nativeChild)
-					NativeView.Add(child, nativeChild);
+				if (child.ToPlatform(MauiContext) is { } nativeChild)
+					PlatformView.Add(child, nativeChild);
 
 			}
 
-			NativeView.QueueAllocate();
-			NativeView.QueueResize();
+			PlatformView.QueueAllocate();
+			PlatformView.QueueResize();
 		}
 
 		protected override void DisconnectHandler(LayoutView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			NativeView.ClearChildren();
+			PlatformView.ClearChildren();
 		}
 
 		public void Add(IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (child.ToNative(MauiContext) is { } nativeChild)
-				NativeView.Add(child, nativeChild);
+			if (child.ToPlatform(MauiContext) is { } nativeChild)
+				PlatformView.Add(child, nativeChild);
 
-			NativeView.QueueAllocate();
+			PlatformView.QueueAllocate();
 		}
 
 		public void Remove(IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (child.ToNative(MauiContext) is { } nativeChild)
-				NativeView.Remove(nativeChild);
+			if (child.ToPlatform(MauiContext) is { } nativeChild)
+				PlatformView.Remove(nativeChild);
 
-			NativeView.QueueAllocate();
+			PlatformView.QueueAllocate();
 		}
 
 		public void Clear()
 		{
-			NativeView?.ClearChildren();
+			PlatformView?.ClearChildren();
 		}
 
 		public void Insert(int index, IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (child.ToNative(MauiContext) is { } nativeChild)
-				NativeView.Insert(child, nativeChild, index);
+			if (child.ToPlatform(MauiContext) is { } nativeChild)
+				PlatformView.Insert(child, nativeChild, index);
 
-			NativeView.QueueAllocate();
+			PlatformView.QueueAllocate();
 
 		}
 
 		public void Update(int index, IView child)
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (child.ToNative(MauiContext) is { } nativeChild)
-				NativeView.Update(child, nativeChild, index);
+			if (child.ToPlatform(MauiContext) is { } nativeChild)
+				PlatformView.Update(child, nativeChild, index);
 
-			NativeView.QueueAllocate();
+			PlatformView.QueueAllocate();
 
 		}
 
 #if DEBUG
-		public override void NativeArrange(Rectangle rect)
+		public override void PlatformArrange(Rect rect)
 		{
-			NativeView?.Arrange(rect);
+			PlatformView?.Arrange(rect);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (NativeView is not { } nativeView)
+			if (PlatformView is not { } nativeView)
 				return Size.Zero;
 
 			return nativeView.GetDesiredSize(widthConstraint, heightConstraint);
@@ -124,6 +124,9 @@ namespace Microsoft.Maui.Handlers
 
 #endif
 
+		[MissingMapper]
+		public void UpdateZIndex(IView view) => throw new NotImplementedException();
+		
 	}
 
 }

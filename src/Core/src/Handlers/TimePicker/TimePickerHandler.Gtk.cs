@@ -1,10 +1,10 @@
-﻿using Microsoft.Maui.Native;
+﻿using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
-		protected override MauiTimePicker CreateNativeView()
+		protected override MauiTimePicker CreatePlatformView()
 		{
 			return new MauiTimePicker();
 		}
@@ -12,13 +12,13 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapFormat(TimePickerHandler handler, ITimePicker view)
 		{
-			handler.NativeView?.UpdateFormat(view);
+			handler.PlatformView?.UpdateFormat(view);
 		}
 
 		[MissingMapper]
 		public static void MapTime(TimePickerHandler handler, ITimePicker view)
 		{
-			handler.NativeView?.UpdateTime(view);
+			handler.PlatformView?.UpdateTime(view);
 		}
 
 		[MissingMapper]

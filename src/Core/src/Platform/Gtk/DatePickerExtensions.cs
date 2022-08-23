@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Native;
+﻿using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {

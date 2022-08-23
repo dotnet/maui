@@ -15,6 +15,10 @@ using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
 using PlatformImageView = Tizen.UIExtensions.ElmSharp.Image;
 using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
+#elif GTK
+using PlatformImage = Gtk.Image;
+using PlatformImageView = Microsoft.Maui.Platform.ImageView;
+using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 using PlatformImageView = System.Object;

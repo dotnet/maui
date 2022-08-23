@@ -1,37 +1,27 @@
 ﻿using System;
 using Gtk;
-using Microsoft.Maui.Native;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
 
-	public partial class PageHandler : ViewHandler<IView, PageView>
+	public partial class PageHandler : ContentViewHandler
 	{
 
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
 
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.Measure;
-			NativeView.CrossPlatformArrange = VirtualView.Arrange;
+			PlatformView.CrossPlatformMeasure = VirtualView.Measure;
+			PlatformView.CrossPlatformArrange = VirtualView.Arrange;
 
 		}
 
-		void UpdateContent()
-		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-
-			if (VirtualView is IContentView { Content: { } view })
-				NativeView.Content = view.ToNative(MauiContext);
-		}
-
-		protected override PageView CreateNativeView()
+		protected override ContentView CreatePlatformView()
 		{
 			if (VirtualView == null)
 			{
@@ -53,8 +43,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTitle(PageHandler handler, IView page)
-		{ }
+		public static void MapTitle(IPageHandler handler, IContentView page) { }
 
 	}
 

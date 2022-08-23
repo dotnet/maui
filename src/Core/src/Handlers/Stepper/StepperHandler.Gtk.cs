@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	// https://docs.gtk.org/gtk3/class.SpinButton.html
 	public partial class StepperHandler : ViewHandler<IStepper, SpinButton>
 	{
-		protected override SpinButton CreateNativeView()
+		protected override SpinButton CreatePlatformView()
 		{
 			// var adjustment = new Adjustment(0, 0, 1, 1, 1, 1);
 			// return new SpinButton(adjustment, 1, 1);
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(nativeView);
 			
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
 			nativeView.ValueChanged += OnNativeViewValueChanged;
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(nativeView);
 			
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
 			nativeView.ValueChanged += OnNativeViewValueChanged;
 		}
@@ -44,25 +44,25 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimum(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateRange(stepper);
+			handler.PlatformView?.UpdateRange(stepper);
 
 		}
 
 		public static void MapMaximum(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateRange(stepper);
+			handler.PlatformView?.UpdateRange(stepper);
 
 		}
 
 		public static void MapIncrement(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateIncrement(stepper);
+			handler.PlatformView?.UpdateIncrement(stepper);
 
 		}
 
 		public static void MapValue(StepperHandler handler, IStepper stepper)
 		{
-			handler.NativeView?.UpdateValue(stepper);
+			handler.PlatformView?.UpdateValue(stepper);
 
 		}
 	}

@@ -1,7 +1,7 @@
 using System;
 using Gdk;
 using Gtk;
-using Microsoft.Maui.Native;
+using Microsoft.Maui.Platform;
 using Point = Microsoft.Maui.Graphics.Point;
 
 namespace Microsoft.Maui.Handlers
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollView>
 	{
 
-		protected override ScrollView CreateNativeView()
+		protected override ScrollView CreatePlatformView()
 		{
 			var s = new ScrollView();
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (handler?.NativeView is not { } nativeView)
+			if (handler?.PlatformView is not { } nativeView)
 				return;
 
 			var nativeContent = scrollView.Content.ToNative(handler.MauiContext);
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual void OnNativeViewValueChanged(object? sender, EventArgs e)
 		{
-			if (NativeView is not { } nativeView || VirtualView is not { } virtualView || sender is not Adjustment adjustment)
+			if (PlatformView is not { } nativeView || VirtualView is not { } virtualView || sender is not Adjustment adjustment)
 				return;
 
 			if (nativeView.Vadjustment == adjustment && adjustment.Value != virtualView.HorizontalOffset)
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
-			if (handler?.NativeView is not { } nativeView)
+			if (handler?.PlatformView is not { } nativeView)
 				return;
 
 			if (args is ScrollToRequest request)
@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOrientation(ScrollViewHandler handler, IScrollView view)
 		{
-			if (handler?.NativeView is not { } nativeView)
+			if (handler?.PlatformView is not { } nativeView)
 				return;
 
 			switch (view.Orientation)
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView view)
 		{
-			if (handler?.NativeView is not { } nativeView)
+			if (handler?.PlatformView is not { } nativeView)
 				return;
 
 			nativeView.HscrollbarPolicy = view.HorizontalScrollBarVisibility.ToNative();
@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVerticalScrollBarVisibility(ScrollViewHandler handler, IScrollView view)
 		{
-			if (handler?.NativeView is not { } nativeView)
+			if (handler?.PlatformView is not { } nativeView)
 				return;
 
 			nativeView.VscrollbarPolicy = view.VerticalScrollBarVisibility.ToNative();

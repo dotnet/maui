@@ -3,19 +3,24 @@
 namespace Microsoft.Maui.Handlers
 {
 
-	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView>
+	public partial class GraphicsViewHandler : ViewHandler<IGraphicsView, PlatformTouchGraphicsView>
 	{
 
-		protected override Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView CreateNativeView() => new();
+		protected override PlatformTouchGraphicsView CreatePlatformView() => new();
 
 		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
-			if (handler.NativeView is { } nativeView)
+			if (handler.PlatformView is { } nativeView)
 			{
 				nativeView.Drawable = graphicsView.Drawable;
 			}
 		}
 
+		[MissingMapper]
+		public static void MapFlowDirection(IGraphicsViewHandler handler, IGraphicsView graphicsView) { }
+
+		[MissingMapper]
+		public static void MapInvalidate(IGraphicsViewHandler handler, IGraphicsView graphicsView, object? arg) { }
 	}
 
 }

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class EditorHandler : ViewHandler<IEditor, TextView>
 	{
 
-		protected override TextView CreateNativeView()
+		protected override TextView CreatePlatformView()
 		{
 			return new() { WrapMode = WrapMode.WordChar };
 		}
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (NativeView is not { } nativeView)
+			if (PlatformView is not { } nativeView)
 				return Size.Zero;
 
 			var res = base.GetDesiredSize(widthConstraint, heightConstraint);
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected void OnNativeTextChanged(object? sender, EventArgs e)
 		{
-			if (NativeView is not { } nativeView || VirtualView is not { } virtualView)
+			if (PlatformView is not { } nativeView || VirtualView is not { } virtualView)
 				return;
 
 			if (sender != nativeView.Buffer) return;
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateText(editor);
+			handler.PlatformView?.UpdateText(editor);
 		}
 
 		public static void MapFont(EditorHandler handler, IEditor editor)
@@ -71,13 +71,13 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsReadOnly(EditorHandler handler, IEditor editor)
 		{
-			if (handler.NativeView is { } nativeView)
+			if (handler.PlatformView is { } nativeView)
 				nativeView.Editable = !editor.IsReadOnly;
 		}
 
 		public static void MapTextColor(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateTextColor(editor.TextColor);
+			handler.PlatformView?.UpdateTextColor(editor.TextColor);
 		}
 
 		[MissingMapper]

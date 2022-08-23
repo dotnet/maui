@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 
 		Gtk.Widget? IPlatformViewHandler.PlatformView => (Gtk.Widget?)base.PlatformView;
 
-		public override void NativeArrange(Rect rect)
+		public override void PlatformArrange(Rect rect)
 		{
 			PlatformView?.Arrange(rect);
 		}

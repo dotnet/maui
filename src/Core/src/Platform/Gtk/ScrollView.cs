@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Native
+namespace Microsoft.Maui.Platform
 {
 
 	public class ScrollView : Gtk.ScrolledWindow

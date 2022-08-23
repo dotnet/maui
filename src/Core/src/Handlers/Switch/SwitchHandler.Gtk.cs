@@ -8,14 +8,14 @@ namespace Microsoft.Maui.Handlers
 	public partial class SwitchHandler : ViewHandler<ISwitch, Switch>
 	{
 		// 
-		protected override Switch CreateNativeView()
+		protected override Switch CreatePlatformView()
 		{
 			return new Switch();
 		}
 
 		public static void MapIsOn(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsOn(view);
+			handler.PlatformView?.UpdateIsOn(view);
 		}
 
 		[MissingMapper]
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			if (handler.NativeView is not { } nativeView)
+			if (handler.PlatformView is not { } nativeView)
 				return;
 
 			nativeView.SetColor(view.ThumbColor, "color", "slider");

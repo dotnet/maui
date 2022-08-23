@@ -11,7 +11,7 @@ using Rectangle = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using Point = Microsoft.Maui.Graphics.Point;
 
-namespace Microsoft.Maui.Native
+namespace Microsoft.Maui.Platform
 {
 
 	// refactored from: https://github.com/mono/xwt/blob/501f6b529fca632655295169094f637627c74c47/Xwt.Gtk/Xwt.GtkBackend/BoxBackend.cs
@@ -427,7 +427,7 @@ namespace Microsoft.Maui.Native
 			if (rect.IsEmpty)
 				return;
 
-			if (rect == Allocation.ToRectangle()) return;
+			if (rect == Allocation.ToRect()) return;
 
 			if (IsSizeAllocating)
 			{

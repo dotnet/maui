@@ -6,6 +6,8 @@ using PlatformView = Android.Views.View;
 using PlatformView = Microsoft.UI.Xaml.Controls.Frame;
 #elif TIZEN
 using PlatformView = ElmSharp.Naviframe;
+#elif GTK
+using PlatformView = Microsoft.Maui.Platform.NavigationView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Native;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
 
-	internal partial class NavigationPageHandler : ViewHandler<INavigationView, NavigationView>
+	public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, NavigationView>
 	{
 
-		protected override NavigationView CreateNativeView()
+		protected override NavigationView CreatePlatformView()
 		{
 			return new();
 		}
@@ -31,18 +31,11 @@ namespace Microsoft.Maui.Handlers
 			var virtualView = VirtualView;
 
 		}
-		
-		
-		private static void PushAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
+
+		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
 			throw new NotImplementedException();
 		}
-
-		private static void PopAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
-		{
-			throw new NotImplementedException();
-		}
-
 	}
 
 }

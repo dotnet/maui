@@ -1,7 +1,7 @@
 ﻿using System;
 using Gtk;
 using Microsoft.Maui.Graphics.Platform.Gtk;
-using Microsoft.Maui.Native;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
 
-		protected override MauiSearchBar CreateNativeView()
+		protected override MauiSearchBar CreatePlatformView()
 		{
 			return new MauiSearchBar();
 		}
@@ -26,60 +26,72 @@ namespace Microsoft.Maui.Handlers
 
 		protected void OnNativeViewChanged(object? sender, EventArgs e)
 		{
-			if (sender != NativeView)
+			if (sender != PlatformView)
 				return;
 
-			NativeView?.Entry.OnTextChanged(VirtualView);
+			PlatformView?.Entry.OnTextChanged(VirtualView);
 		}
 
-		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.Entry.UpdateText(searchBar);
+			handler.PlatformView?.Entry.UpdateText(searchBar);
 		}
 
-		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.Entry.UpdatePlaceholder(searchBar);
-
-		}
-
-		public static void MapIsReadOnly(SearchBarHandler handler, ISearchBar searchBar)
-		{
-			handler.NativeView?.Entry.UpdateIsReadOnly(searchBar);
+			handler.PlatformView?.Entry.UpdatePlaceholder(searchBar);
 
 		}
 
-		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapIsReadOnly(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.MapFont(handler.NativeView?.Entry, searchBar);
+			handler.PlatformView?.Entry.UpdateIsReadOnly(searchBar);
+
 		}
 
-		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		public Gtk.Entry? QueryEditor => PlatformView?.Entry;
+		
+		public static void MapFont(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			if (handler.NativeView?.Entry is { } nativeView)
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.PlatformView?.UpdateFont(searchBar, fontManager);
+		}
+
+		public static void MapHorizontalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (handler.PlatformView?.Entry is { } nativeView)
 				nativeView.Alignment = searchBar.HorizontalTextAlignment.ToXyAlign();
 		}
 
-		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.Entry?.UpdateTextColor(searchBar.TextColor);
+		}
+		
+		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.Entry?.UpdateTextColor(searchBar.TextColor);
 
 		}
 
-		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		[MissingMapper]
+		public static void MapPlaceholderColor(IViewHandler handler, ISearchBar searchBar) { }
+
+		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			if (handler.NativeView?.Entry is { } nativeView)
+			if (handler.PlatformView?.Entry is { } nativeView)
 				nativeView.MaxLength = searchBar.MaxLength;
 		}
 
-		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			if (handler.NativeView?.Entry is { } nativeView)
+			if (handler.PlatformView?.Entry is { } nativeView)
 				nativeView.Attributes = nativeView.Attributes.AttrListFor(searchBar.CharacterSpacing);
 		}
 
 		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
 		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }

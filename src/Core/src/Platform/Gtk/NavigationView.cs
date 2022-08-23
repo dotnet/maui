@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Native
+namespace Microsoft.Maui.Platform
 {
 
 	public class NavigationView : Gtk.Box

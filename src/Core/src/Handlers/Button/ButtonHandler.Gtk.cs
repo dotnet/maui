@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
 
-		protected override Button CreateNativeView()
+		protected override Button CreatePlatformView()
 		{
 			return Button.NewWithLabel(string.Empty);
 		}
@@ -31,17 +31,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateText(button);
+			handler.PlatformView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateTextColor(button.TextColor);
+			handler.PlatformView?.UpdateTextColor(button.TextColor);
 		}
 
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
 		{
-			if (handler.NativeView.Child is Label nativeView)
+			if (handler.PlatformView.Child is Label nativeView)
 			{
 				nativeView.Attributes = nativeView.Attributes.AttrListFor(button.CharacterSpacing);
 			}
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView.WithPadding(button.Padding);
+			handler.PlatformView.WithPadding(button.Padding);
 		}
 
 		void OnButtonPressEvent(object? o, ButtonPressEventArgs args)

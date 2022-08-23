@@ -1,7 +1,7 @@
 ﻿using System;
 using Gtk;
 
-namespace Microsoft.Maui.Native
+namespace Microsoft.Maui.Platform
 {
 
 	public class MauiSearchBar : Gtk.SearchBar

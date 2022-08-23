@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Native
+namespace Microsoft.Maui.Platform
 {
 
 	// https://docs.gtk.org/gtk3/class.Imgage.html 

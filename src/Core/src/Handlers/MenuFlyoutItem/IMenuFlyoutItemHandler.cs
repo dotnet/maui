@@ -6,6 +6,8 @@ using PlatformView = Android.Views.View;
 using PlatformView = Microsoft.UI.Xaml.Controls.MenuFlyoutItem;
 #elif TIZEN
 using PlatformView = ElmSharp.EvasObject;
+#elif GTK
+using PlatformView = Gtk.Widget;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

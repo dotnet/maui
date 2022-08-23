@@ -7,6 +7,8 @@ using PlatformView = Microsoft.Maui.Platform.LayoutViewGroup;
 using PlatformView = Microsoft.Maui.Platform.LayoutPanel;
 #elif TIZEN
 using PlatformView = Microsoft.Maui.Platform.LayoutCanvas;
+#elif GTK
+using PlatformView = Microsoft.Maui.Platform.LayoutView;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
