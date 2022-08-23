@@ -1,1 +1,4 @@
 ﻿#nullable enable
+*REMOVED*Microsoft.Maui.ApplicationModel.IWindowStateManager.ActiveWindowDisplayChanged -> System.EventHandler!
+*REMOVED*Microsoft.Maui.ApplicationModel.IWindowStateManager.OnWindowMessage(System.IntPtr hWnd, uint msg, System.IntPtr wParam, System.IntPtr lParam) -> void
+*REMOVED*static Microsoft.Maui.ApplicationModel.Platform.OnWindowMessage(System.IntPtr hWnd, uint msg, System.IntPtr wParam, System.IntPtr lParam) -> void
