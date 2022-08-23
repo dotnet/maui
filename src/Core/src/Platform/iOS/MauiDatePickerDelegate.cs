@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Platform
 {
-	internal class MauiDatePickerDelegate
+	class MauiDatePickerDelegate
 	{
 		public virtual void DatePickerEditingDidBegin()
 		{

@@ -13,7 +13,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.DeviceTests.Stubs;
 
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		// Automated Shell tests are currently broken via xharness
 		[Fact(DisplayName = "Toolbar Items Update when swapping out Main Page on Handler")]
 		public async Task ToolbarItemsUpdateWhenSwappingOutMainPageOnHandler()

@@ -452,6 +452,61 @@ namespace Microsoft.Maui.Platform
 			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
 		}
 
+
+		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView)
+		{
+			UIToolTipInteraction? interaction = default;
+
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15)
+				|| OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				if (platformView is UIControl control)
+				{
+					interaction = control.ToolTipInteraction;
+				}
+				else
+				{
+					if (platformView.Interactions is not null)
+					{
+						foreach (var ia in platformView.Interactions)
+						{
+							if (ia is UIToolTipInteraction toolTipInteraction)
+							{
+								interaction = toolTipInteraction;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			return interaction;
+		}
+
+		public static void UpdateToolTip(this UIView platformView, ToolTip? tooltip)
+		{
+			// UpdateToolTips were added in 15.0 for both iOS and MacCatalyst
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15)
+				|| OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				string? text = tooltip?.Content?.ToString();
+				var interaction = platformView.GetToolTipInteraction();
+
+				if (interaction is null)
+				{
+					if (!string.IsNullOrEmpty(text))
+					{
+						interaction = new UIToolTipInteraction(text);
+						platformView.AddInteraction(interaction);
+					}
+				}
+				else
+				{
+					interaction.DefaultToolTip = text;
+				}
+			}
+		}
+
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
 
