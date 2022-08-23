@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -103,6 +104,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_control.Tapped -= HandleTapped;
 					_control.DoubleTapped -= HandleDoubleTapped;
+					//_control.PointerEntered -= HandlePointerEventExecuted;
+					//_control.PointerExited -= HandlePointerEventExecuted;
 				}
 
 				_control = value;
@@ -318,6 +321,9 @@ namespace Microsoft.Maui.Controls.Platform
 				_container.PointerExited -= OnPointerExited;
 				_container.PointerReleased -= OnPointerReleased;
 				_container.PointerCanceled -= OnPointerCanceled;
+				_container.PointerEntered -= OnPgrPointerEntered;
+				_container.PointerExited -= OnPgrPointerExited;
+				_container.PointerMoved -= OnPgrPointerMoved;
 			}
 		}
 
@@ -348,6 +354,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_control.Tapped -= HandleTapped;
 				_control.DoubleTapped -= HandleDoubleTapped;
+				//_control.PointerEntered -= HandlePointerEventExecuted;
+				//_control.PointerExited -= HandlePointerEventExecuted;
 			}
 
 			Control = null;
@@ -481,7 +489,82 @@ namespace Microsoft.Maui.Controls.Platform
 			PanComplete(true);
 		}
 
-		void OnTap(object sender, RoutedEventArgs e)
+		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
+		{
+			var view = Element as View;
+			if (view == null)
+				return;
+
+			var pointerPoint = e.GetCurrentPoint(Control);
+			var children = (view as IGestureController)?.GetChildElements(new Point(pointerPoint.Position.X, pointerPoint.Position.Y));
+
+			if (children != null)
+				foreach (var recognizer in children.GetChildGesturesFor<PointerGestureRecognizer>())
+				{
+					recognizer.SendPointerEntered(view);
+				}
+
+			if (e.Handled)
+				return;
+
+			IEnumerable<PointerGestureRecognizer> pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
+			foreach (var recognizer in pointerGestures)
+			{
+				recognizer.SendPointerEntered(view);
+			}
+		}
+
+		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
+		{
+			var view = Element as View;
+			if (view == null)
+				return;
+
+			var pointerPoint = e.GetCurrentPoint(Control);
+			var children = (view as IGestureController)?.GetChildElements(new Point(pointerPoint.Position.X, pointerPoint.Position.Y));
+
+			if (children != null)
+				foreach (var recognizer in children.GetChildGesturesFor<PointerGestureRecognizer>())
+				{
+					recognizer.SendPointerExited(view);
+				}
+
+			if (e.Handled)
+				return;
+
+			IEnumerable<PointerGestureRecognizer> pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
+			foreach (var recognizer in pointerGestures)
+			{
+				recognizer.SendPointerExited(view);
+			}
+		}
+
+		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
+		{
+			var view = Element as View;
+			if (view == null)
+				return;
+
+			var pointerPoint = e.GetCurrentPoint(Control);
+			var children = (view as IGestureController)?.GetChildElements(new Point(pointerPoint.Position.X, pointerPoint.Position.Y));
+
+			if (children != null)
+				foreach (var recognizer in children.GetChildGesturesFor<PointerGestureRecognizer>())
+				{
+					recognizer.SendPointerMoved(view);
+				}
+
+			if (e.Handled)
+				return;
+
+			IEnumerable<PointerGestureRecognizer> pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
+			foreach (var recognizer in pointerGestures)
+			{
+				recognizer.SendPointerMoved(view);
+			}
+		}
+
+		void OnTap(object sender, TappedRoutedEventArgs e)
 		{
 			var view = Element as View;
 			if (view == null)
@@ -678,6 +761,10 @@ namespace Microsoft.Maui.Controls.Platform
 					_control.DoubleTapped += HandleDoubleTapped;
 				}
 			}
+
+			_container.PointerEntered += OnPgrPointerEntered;
+			_container.PointerExited += OnPgrPointerExited;
+			_container.PointerMoved += OnPgrPointerMoved;
 
 			bool hasSwipeGesture = gestures.GetGesturesFor<SwipeGestureRecognizer>().GetEnumerator().MoveNext();
 			bool hasPinchGesture = gestures.GetGesturesFor<PinchGestureRecognizer>().GetEnumerator().MoveNext();
