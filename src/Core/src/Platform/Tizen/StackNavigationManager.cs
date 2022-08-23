@@ -20,13 +20,13 @@ namespace Microsoft.Maui.Platform
 
 		MauiToolbar? _toolbar;
 
-		IMauiContext? MauiContext { get; set; }
-
-		IStackNavigation? NavigationView { get; set; }
-
-		NavigationStack PlatformNavigation { get; }
-
 		IReadOnlyList<IView> NavigationStack { get; set; } = new List<IView>();
+
+		protected IMauiContext? MauiContext { get; set; }
+
+		protected IStackNavigation? NavigationView { get; set; }
+
+		protected NavigationStack PlatformNavigation { get; }
 
 		public StackNavigationManager()
 		{
@@ -110,10 +110,9 @@ namespace Microsoft.Maui.Platform
 				NavigationStack = newPageStack;
 				NavigationFinished(NavigationStack);
 			}
-
 		}
 
-		async Task InitializeStack(IReadOnlyList<IView> newStack, bool animated)
+		protected virtual async Task InitializeStack(IReadOnlyList<IView> newStack, bool animated)
 		{
 			var navigationStack = newStack;
 			if (navigationStack.Count == 0)

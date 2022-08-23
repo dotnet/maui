@@ -42,8 +42,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (source == null || source.IsEmpty)
 			{
 				if (!toolbar.BackButtonVisible && !toolbar.DrawerToggleVisible)
+				{
 					platformToolbar.Icon = null;
-
+				}
 				return;
 			}
 
@@ -93,6 +94,11 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				platformToolbar.UpdateBackgroundColor(s_defaultBackgroundColor);
 			}
+
+			if (platformToolbar.Icon != null && platformToolbar.Icon is TMaterialIconButton button)
+			{
+				button.Color = toolbar.IconColor.IsNotDefault() ? toolbar.IconColor.ToPlatform() : platformToolbar.GetAccentColor();
+			}
 		}
 
 		public static void UpdateBarTextColor(this MauiToolbar platformToolbar, Toolbar toolbar)
@@ -104,6 +110,10 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateMenuItems(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			platformToolbar.Actions.Clear();
+
+			if (toolbar.ToolbarItems == null)
+				return;
+
 			foreach (var action in GetPrimaryActionButtons(platformToolbar, toolbar.ToolbarItems))
 			{
 				platformToolbar.Actions.Add(action);
@@ -160,6 +170,16 @@ namespace Microsoft.Maui.Controls.Platform
 			return button;
 		}
 
+		static TMaterialIconButton CreateMenuButton(MauiToolbar platformToolbar, Toolbar toolbar)
+		{
+			var button = new TMaterialIconButton
+			{
+				Icon = MaterialIcons.Menu,
+				Color = toolbar.IconColor.IsNotDefault() ? toolbar.IconColor.ToPlatform() : platformToolbar.GetAccentColor()
+			};
+			return button;
+		}
+
 		static TMaterialIconButton CreateMoreButton(MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			var button = new TMaterialIconButton
@@ -170,15 +190,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return button;
 		}
 
-		static TMaterialIconButton CreateMenuButton(MauiToolbar platformToolbar, Toolbar toolbar)
-		{
-			var button = new TMaterialIconButton
-			{
-				Icon = MaterialIcons.Menu,
-				Color = toolbar.IconColor.IsNotDefault() ? toolbar.IconColor.ToPlatform() : platformToolbar.GetAccentColor()
-			};
-			return button;
-		}
 
 		static NView CreateToolbarButton(MauiToolbar platformToolbar, ToolbarItem item)
 		{

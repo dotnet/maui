@@ -1564,6 +1564,11 @@ Microsoft.Maui.Platform.SliderExtensions
 Microsoft.Maui.Platform.StackNavigationManager
 Microsoft.Maui.Platform.StackNavigationManager.SetToolbar(Microsoft.Maui.Platform.MauiToolbar! toolbar) -> void
 Microsoft.Maui.Platform.StackNavigationManager.StackNavigationManager() -> void
+Microsoft.Maui.Platform.StackNavigationManager.MauiContext.get -> Microsoft.Maui.IMauiContext?
+Microsoft.Maui.Platform.StackNavigationManager.MauiContext.set -> void
+Microsoft.Maui.Platform.StackNavigationManager.NavigationView.get -> Microsoft.Maui.IStackNavigation?
+Microsoft.Maui.Platform.StackNavigationManager.NavigationView.set -> void
+Microsoft.Maui.Platform.StackNavigationManager.PlatformNavigation.get -> Tizen.UIExtensions.NUI.NavigationStack!
 Microsoft.Maui.Platform.StrokeExtensions
 Microsoft.Maui.Platform.SwipeViewExtensions
 Microsoft.Maui.Platform.SwitchExtensions
@@ -2756,6 +2761,7 @@ virtual Microsoft.Maui.Platform.MauiImageSource.Dispose(bool disposing) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IView! navigationView) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Disconnect() -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.RequestNavigation(Microsoft.Maui.NavigationRequest! e) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.InitializeStack(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IView!>! newStack, bool animated) -> System.Threading.Tasks.Task!
 virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
 virtual Microsoft.Maui.PropertyMapper.GetKeys() -> System.Collections.Generic.IEnumerable<string!>!
 virtual Microsoft.Maui.PropertyMapper.GetProperty(string! key) -> System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>?

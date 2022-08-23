@@ -10,58 +10,58 @@ namespace Microsoft.Maui.Controls
 		IPlatformViewHandler? _nativeTitleViewHandler;
 		MauiToolbar PlatformView => Handler?.PlatformView as MauiToolbar ?? throw new InvalidOperationException("Native View not set");
 
-		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBarTextColor(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg1.PlatformView.UpdateBarTextColor(arg2);
+			handler.PlatformView.UpdateBarTextColor(toolbar);
 		}
 
-		public static void MapBarBackgroundColor(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBarBackgroundColor(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg1.PlatformView.UpdateBarBackgroundColor(arg2);
+			handler.PlatformView.UpdateBarBackgroundColor(toolbar);
 		}
 
-		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBackButtonTitle(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg1.PlatformView.UpdateBackButton(arg2);
+			handler.PlatformView.UpdateBackButton(toolbar);
 		}
 
-		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapToolbarItems(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg2.UpdateMenu();
+			toolbar.UpdateMenu();
 		}
 
-		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapTitle(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg1.PlatformView.UpdateTitle(arg2);
+			handler.PlatformView.UpdateTitle(toolbar);
 		}
 
-		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapTitleView(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg2.UpdateTitleView();
+			toolbar.UpdateTitleView();
 		}
 
-		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapTitleIcon(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg1.PlatformView.UpdateTitleIcon(arg2);
+			handler.PlatformView.UpdateTitleIcon(toolbar);
 		}
 
-		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBackButtonVisible(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg1.PlatformView.UpdateBackButton(arg2);
+			handler.PlatformView.UpdateBackButton(toolbar);
 		}
 
-		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapIsVisible(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg1.PlatformView.UpdateIsVisible(arg2);
+			handler.PlatformView.UpdateIsVisible(toolbar);
 		}
 
-		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBarBackground(ToolbarHandler handler, Toolbar toolbar)
 		{
-			arg1.PlatformView.UpdateBarBackgroundColor(arg2);
+			handler.PlatformView.UpdateBarBackgroundColor(toolbar);
 		}
 
 		[MissingMapper]
-		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2) { }
+		public static void MapIconColor(ToolbarHandler handler, Toolbar toolbar) { }
 
 		void UpdateTitleView()
 		{
