@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 			_editor = searchBar.GetSearchTextField();
 
-			
+
 			return searchBar;
 		}
 
