@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>$(MauiGtkTargets)</TargetFramework>
+    <TargetFrameworks>$(MauiPlatforms);$(_MauiDotNetTfm)</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>Maui</RootNamespace>
   </PropertyGroup>

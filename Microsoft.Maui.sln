@@ -256,6 +256,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicsTester.Skia.Gtk", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.Design.UnitTests", "src\Controls\tests\Core.Design.UnitTests\Controls.Core.Design.UnitTests.csproj", "{F68932B0-81A2-4CC3-A4F7-28091EE91B23}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.Gtk", "src\Controls\samples\Controls.Sample.Gtk\Controls.Sample.Gtk.csproj", "{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -642,6 +644,10 @@ Global
 		{624D161D-762C-45F7-9CBC-9929BA5D13EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{624D161D-762C-45F7-9CBC-9929BA5D13EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{624D161D-762C-45F7-9CBC-9929BA5D13EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -761,6 +767,7 @@ Global
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974} = {42AB9AE1-631D-4AD4-85B7-910FF0940BDB}
 		{624D161D-762C-45F7-9CBC-9929BA5D13EF} = {1BA0121E-0B83-4C8F-81BE-C293E7E35DCE}
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3} = {E1082E26-D700-4127-9329-66D673FD2D55}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
