@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLines(this Label nativeLabel, ILabel label)
 		{
-			nativeLabel.Lines = label.MaxLines;
+			// nativeLabel.Lines = label.MaxLines;
 			nativeLabel.AdjustMaxLines();
 
 		}
@@ -111,10 +111,13 @@ namespace Microsoft.Maui
 
 		public static void UpdateLineBreakMode(this Label nativeLabel, ILabel label)
 		{
-			switch (label.LineBreakMode)
+			var labelLineBreakMode = LineBreakMode.CharacterWrap;
+			var labelMaxLines = 0;
+			
+			switch (labelLineBreakMode)
 			{
 				case LineBreakMode.NoWrap:
-					nativeLabel.LineWrap = label.MaxLines > 0;
+					nativeLabel.LineWrap = labelMaxLines > 0;
 					nativeLabel.Ellipsize = Pango.EllipsizeMode.None;
 
 					break;

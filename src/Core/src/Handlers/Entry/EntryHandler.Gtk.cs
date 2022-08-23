@@ -141,6 +141,9 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdatePlaceholder(entry);
 		}
 
+		[MissingMapper]
+		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) { }
+
 		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateIsReadOnly(entry);
@@ -148,7 +151,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(IEntryHandler handler, IEntry entry)
 		{
-			handler.MapFont(entry);
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.PlatformView?.UpdateFont(entry, fontManager);
 		}
 
 		public static void MapCursorPosition(IEntryHandler handler, IEntry entry)

@@ -74,6 +74,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Active = virtualView.SelectedIndex;
 		}
 
+		internal static void MapItems(IPickerHandler handler, IPicker picker)
+		{
+			SetValues(handler.PlatformView,picker);
+		}
+
 		public static void MapSelectedIndex(PickerHandler handler, IPicker view)
 		{
 			if (handler.PlatformView is { } nativeView)
@@ -117,6 +122,9 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapTitleColor(PickerHandler handler, IPicker view) { }
+
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker view) { }
 
 	}
 

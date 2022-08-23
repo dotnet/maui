@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	public static class ButtonExtensions
 	{
 
-		public static void UpdateText(this Button nativeButton, IButton button)
+		public static void UpdateText(this Button nativeButton, ITextButton button)
 		{
 			// need to attach Attributes after setting text again, so get it ...
 			var attrs = (nativeButton.Child as Label)?.Attributes;

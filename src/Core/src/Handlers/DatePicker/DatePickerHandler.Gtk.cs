@@ -2,8 +2,10 @@
 
 namespace Microsoft.Maui.Handlers
 {
+
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
+
 		protected override MauiDatePicker CreatePlatformView()
 		{
 			return new MauiDatePicker();
@@ -32,10 +34,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.MapFont(datePicker);
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
 		[MissingMapper]
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker) { }
+
 	}
+
 }

@@ -36,21 +36,24 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (handler?.PlatformView is not { } nativeView)
+			if (handler?.PlatformView is not { } platformView)
 				return;
 
-			var nativeContent = scrollView.Content.ToNative(handler.MauiContext);
-			var child = nativeView.Child;
+			if (scrollView.Content is not IView contentView)
+				return;
+
+			var platformContent = contentView.ToPlatform(handler.MauiContext);
+			var child = platformView.Child;
 
 			// check if nativeContent is set as child of Viewport:
-			if (child is Gtk.Viewport vp && vp != nativeContent)
+			if (child is Gtk.Viewport vp && vp != platformContent)
 			{
 				child = vp.Child;
 			}
 
-			if (child != nativeContent)
+			if (child != platformContent)
 			{
-				nativeView.Child = nativeContent;
+				platformView.Child = platformContent;
 
 			}
 		}

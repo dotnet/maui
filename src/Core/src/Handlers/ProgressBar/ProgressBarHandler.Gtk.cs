@@ -14,5 +14,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateProgress(progress);
 		}
+
+		[MissingMapper]
+		public static void MapProgressColor(IProgressBarHandler handler, IProgress progress) { }
+
 	}
 }

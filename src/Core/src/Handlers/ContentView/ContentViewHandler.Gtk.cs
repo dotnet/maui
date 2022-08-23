@@ -2,10 +2,11 @@
 
 namespace Microsoft.Maui.Handlers
 {
+
 	public partial class ContentViewHandler : ViewHandler<IContentView, ContentView>
 	{
-		[MissingMapper]
-		protected override ContentView CreatePlatformView() => throw new NotImplementedException();
+
+		protected override ContentView CreatePlatformView() => new();
 
 		public void UpdateContent()
 		{
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView is { Content: IView view })
 				PlatformView.Content = view.ToPlatform(MauiContext);
 		}
-		
+
 		public static void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			if (handler is ContentViewHandler contentViewHandler)
@@ -24,5 +25,7 @@ namespace Microsoft.Maui.Handlers
 				contentViewHandler.UpdateContent();
 			}
 		}
+
 	}
+
 }

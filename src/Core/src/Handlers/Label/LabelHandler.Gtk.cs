@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 		static PlatformStringSizeService? _stringSizeService;
 
 		PlatformStringSizeService stringSizeService => _stringSizeService ??= new();
-		
+
 		public Microsoft.Maui.Graphics.Platform.Gtk.TextLayout SharedTextLayout => _textLayout ??= new Microsoft.Maui.Graphics.Platform.Gtk.TextLayout(
 			stringSizeService.SharedContext) { HeightForWidth = true };
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 				SharedTextLayout.HorizontalAlignment = virtualView.HorizontalTextAlignment.GetHorizontalAlignment();
 				SharedTextLayout.VerticalAlignment = virtualView.VerticalTextAlignment.GetVerticalAlignment();
 
-				SharedTextLayout.LineBreakMode = virtualView.LineBreakMode.GetLineBreakMode();
+				// SharedTextLayout.LineBreakMode = virtualView.LineBreakMode.GetLineBreakMode();
 
 				var heightForWidth = !heightConstrained;
 
@@ -125,7 +125,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(ILabelHandler handler, ILabel label)
 		{
-			handler.MapFont(label);
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.PlatformView?.UpdateFont(label, fontManager);
 		}
 
 		public static void MapHorizontalTextAlignment(ILabelHandler handler, ILabel label)
@@ -182,7 +184,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				// there is no LineHeight for label in gtk3:
 				// https://gitlab.gnome.org/GNOME/gtk/-/issues/2379
-				
+
 				// try to set it over css: not working: exception thrown: 'line-height' is not a valid property name
 				// nativeView.SetStyleValue($"{(int)label.LineHeight}","line-height");
 

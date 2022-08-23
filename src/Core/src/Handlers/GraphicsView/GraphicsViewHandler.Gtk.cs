@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override PlatformTouchGraphicsView CreatePlatformView() => new();
 
-		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)
+		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
 			if (handler.PlatformView is { } nativeView)
 			{

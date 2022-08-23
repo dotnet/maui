@@ -66,7 +66,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(IEditorHandler handler, IEditor editor)
 		{
-			handler.MapFont(editor);
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.PlatformView?.UpdateFont(editor, fontManager);
 		}
 
 		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor)
@@ -100,6 +102,18 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapKeyboard(IEditorHandler handler, IEditor editor) { }
+
+		[MissingMapper]
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) { }
+
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) { }
+
+		[MissingMapper]
+		public static void MapCursorPosition(IEditorHandler handler, ITextInput editor) { }
+
+		[MissingMapper]
+		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) { }
 
 	}
 

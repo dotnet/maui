@@ -26,8 +26,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFont(ITimePickerHandler handler, ITimePicker view)
 		{
-			handler.MapFont(view);
+			var fontManager = handler.GetRequiredService<IFontManager>();
 
+			handler.PlatformView?.UpdateFont(view, fontManager);
 		}
 
 		[MissingMapper]
