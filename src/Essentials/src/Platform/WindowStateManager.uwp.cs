@@ -76,12 +76,6 @@ namespace Microsoft.Maui.ApplicationModel
 		public Window? GetActiveWindow() =>
 			_activeWindow;
 
-		public void OnActivated(Window window, WindowActivatedEventArgs args)
-		{
-			if (args.WindowActivationState != WindowActivationState.Deactivated)
-				SetActiveWindow(window);
-		}
-
 		void SetActiveWindow(Window window)
 		{
 			if (_activeWindow == window)
@@ -90,6 +84,12 @@ namespace Microsoft.Maui.ApplicationModel
 			_activeWindow = window;
 
 			ActiveWindowChanged?.Invoke(window, EventArgs.Empty);
+		}
+
+		public void OnActivated(Window window, WindowActivatedEventArgs args)
+		{
+			if (args.WindowActivationState != WindowActivationState.Deactivated)
+				SetActiveWindow(window);
 		}
 	}
 }

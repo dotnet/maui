@@ -29,36 +29,8 @@ namespace Microsoft.Maui
 			// and then we can react accordingly
 			ExtendsContentIntoTitleBar = true;
 
+			SubClassingWin32();
 			SetIcon();
-
-			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformWindowSubclassed>(
-				del => del(this, new WindowsPlatformWindowSubclassedEventArgs(WindowHandle)));
-
-			_windowManager.WindowMessage += OnWindowMessage;
-
-			void OnWindowMessage(object? sender, WindowMessageEventArgs e)
-			{
-				var hWnd = e.Hwnd;
-				var msg = e.MessageId;
-				var wParam = e.WParam;
-				var lParam = e.LParam;
-
-				if (msg == PlatformMethods.MessageIds.WM_SETTINGCHANGE || msg == PlatformMethods.MessageIds.WM_THEMECHANGE)
-					MauiWinUIApplication.Current.Application?.ThemeChanged();
-
-				if (msg == PlatformMethods.MessageIds.WM_DPICHANGED)
-				{
-					var dpiX = (short)(long)wParam;
-					var dpiY = (short)((long)wParam >> 16);
-
-					var window = this.GetWindow();
-					if (window is not null)
-						window.DisplayDensityChanged(dpiX / DeviceDisplay.BaseLogicalDpi);
-				}
-
-				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
-					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(hWnd, msg, wParam, lParam)));
-			}
 		}
 
 		protected virtual void OnActivated(object sender, UI.Xaml.WindowActivatedEventArgs args)
@@ -96,6 +68,35 @@ namespace Microsoft.Maui
 		}
 
 		public IntPtr WindowHandle => _windowManager.WindowHandle;
+
+		void SubClassingWin32()
+		{
+			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformWindowSubclassed>(
+				del => del(this, new WindowsPlatformWindowSubclassedEventArgs(WindowHandle)));
+
+			_windowManager.WindowMessage += OnWindowMessage;
+
+			void OnWindowMessage(object? sender, WindowMessageEventArgs e)
+			{
+				if (e.MessageId == PlatformMethods.MessageIds.WM_SETTINGCHANGE ||
+					e.MessageId == PlatformMethods.MessageIds.WM_THEMECHANGE)
+				{
+					MauiWinUIApplication.Current.Application?.ThemeChanged();
+				}
+				else if (e.MessageId == PlatformMethods.MessageIds.WM_DPICHANGED)
+				{
+					var dpiX = (short)(long)e.WParam;
+					var dpiY = (short)((long)e.WParam >> 16);
+
+					var window = this.GetWindow();
+					if (window is not null)
+						window.DisplayDensityChanged(dpiX / DeviceDisplay.BaseLogicalDpi);
+				}
+
+				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
+					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(e.Hwnd, e.MessageId, e.WParam, e.LParam)));
+			}
+		}
 
 		/// <summary>
 		/// Default the Window Icon to the icon stored in the .exe, if any.
