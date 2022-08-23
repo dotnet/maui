@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
+using Microsoft.UI.Xaml;
 using Windows.ApplicationModel;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		const string SettingsUri = "ms-settings:appsfeatures-app";
 
-		UI.Xaml.ApplicationTheme? _applicationTheme;
+		ApplicationTheme? _applicationTheme;
 
 		readonly ActiveWindowTracker _activeWindowTracker;
 
@@ -59,12 +60,12 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			get
 			{
-				if (MainThread.IsMainThread && UI.Xaml.Application.Current != null)
-					_applicationTheme = UI.Xaml.Application.Current.RequestedTheme;
+				if (MainThread.IsMainThread && Application.Current != null)
+					_applicationTheme = Application.Current.RequestedTheme;
 				else if (_applicationTheme == null)
 					return AppTheme.Unspecified;
 
-				return _applicationTheme == UI.Xaml.ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
+				return _applicationTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
 			}
 		}
 
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		void OnActiveWindowThemeChanged()
 		{
-			if (UI.Xaml.Application.Current is UI.Xaml.Application app)
+			if (Application.Current is Application app)
 				_applicationTheme = app.RequestedTheme;
 		}
 	}
