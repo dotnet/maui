@@ -6,14 +6,12 @@ namespace Maui.Controls.Sample.Pages
 {
 	public class TapGestureGalleryPage : BasePage
 	{
-		Command clickCommand;
 		Command TapCommand;
 		Label changeColorBoxView;
 
 		public TapGestureGalleryPage()
 		{
 			TapCommand = new Command<Color>(HandleTapCommand);
-			clickCommand = new Command<Color>(HandleClickCommand);
 
 			var vertical = new VerticalStackLayout
 			{
@@ -81,51 +79,6 @@ namespace Maui.Controls.Sample.Pages
 				})
 			});
 
-			AddMoreStuff(vertical);
-			Content = vertical;
-		}
-
-		void AddMoreStuff(VerticalStackLayout vertical)
-		{
-			var horizontal = new StackLayout
-			{
-				Orientation = StackOrientation.Horizontal,
-				Spacing = 20,
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
-			};
-			vertical.Children.Add(horizontal);
-
-			var singleClickLabel = new Label
-			{
-				Text = "Click me!",
-				BackgroundColor = Colors.PaleGreen
-			};
-			var singleClickGesture = new TapGestureRecognizer
-			{
-				Command = clickCommand,
-				CommandParameter = Colors.PaleGreen,
-				NumberOfTapsRequired = 1,
-				Buttons = ButtonsMask.Primary
-			};
-			singleClickLabel.GestureRecognizers.Add(singleClickGesture);
-			horizontal.Children.Add(singleClickLabel);
-
-			var doubleClickLabel = new Label
-			{
-				Text = "Double click me!!",
-				BackgroundColor = Colors.Aqua
-			};
-			var doubleClickGesture = new TapGestureRecognizer
-			{
-				Command = clickCommand,
-				CommandParameter = Colors.Aqua,
-				NumberOfTapsRequired = 2,
-				Buttons = ButtonsMask.Primary
-			};
-			doubleClickLabel.GestureRecognizers.Add(doubleClickGesture);
-			horizontal.Children.Add(doubleClickLabel);
-
 			var tripleClicklabel = new Label
 			{
 				Text = "Triple click me!!!",
@@ -133,7 +86,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 			var tripleClickGesture = new TapGestureRecognizer
 			{
-				Command = clickCommand,
+				Command = TapCommand,
 				CommandParameter = Colors.Olive,
 				NumberOfTapsRequired = 3,
 				Buttons = ButtonsMask.Primary
@@ -148,7 +101,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 			var rigthClickGesture = new TapGestureRecognizer
 			{
-				Command = clickCommand,
+				Command = TapCommand,
 				CommandParameter = Colors.Coral,
 				NumberOfTapsRequired = 1,
 				Buttons = ButtonsMask.Secondary
@@ -156,30 +109,10 @@ namespace Maui.Controls.Sample.Pages
 			rightClickLabel.GestureRecognizers.Add(rigthClickGesture);
 			horizontal.Children.Add(rightClickLabel);
 
-			var doubleRightClickLabel = new Label
-			{
-				Text = "Double right click me¡¡",
-				BackgroundColor = Colors.Gold
-			};
-			var doubleRigthClickGesture = new TapGestureRecognizer
-			{
-				Command = clickCommand,
-				CommandParameter = Colors.Gold,
-				NumberOfTapsRequired = 2,
-				Buttons = ButtonsMask.Secondary
-			};
-
-			doubleRightClickLabel.GestureRecognizers.Add(doubleRigthClickGesture);
-			horizontal.Children.Add(doubleRightClickLabel);
+			Content = vertical;
 		}
 
-		async void HandleTapCommand(Color backgroundColor)
-		{
-			changeColorBoxView.BackgroundColor = backgroundColor;
-			await DisplayAlert("Tapped", "Tap Command Fired", "Close");
-		}
-
-		void HandleClickCommand(Color backgroundColor)
+		void HandleTapCommand(Color backgroundColor)
 		{
 			changeColorBoxView.BackgroundColor = backgroundColor;
 		}
