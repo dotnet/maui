@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected void InvokeEvent(Action action)
 		{
-			MauiGtkApplication.Invoke(action);
+			Dispatcher.Invoke(action);
 		}
 
 		public void MapFont(ITextStyle textStyle)

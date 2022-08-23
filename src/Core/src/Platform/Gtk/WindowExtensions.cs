@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Platform
 			throw new InvalidOperationException("Window Not Found");
 		}
 
-		public static void SetWindow(this Gtk.Window nativeWindow, IWindow window, IMauiContext context)
+		public static void SetWindow(this Gtk.Window platformWindow, IWindow window, IMauiContext context)
 		{
-			_ = nativeWindow ?? throw new ArgumentNullException(nameof(nativeWindow));
+			_ = platformWindow ?? throw new ArgumentNullException(nameof(platformWindow));
 			_ = window ?? throw new ArgumentNullException(nameof(window));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
