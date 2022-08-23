@@ -109,6 +109,23 @@ namespace Maui.Controls.Sample.Pages
 			rightClickLabel.GestureRecognizers.Add(rigthClickGesture);
 			horizontal.Children.Add(rightClickLabel);
 
+
+			var rightorLeftClickLabel = new Label
+			{
+				Text = "Right or Left click me¡",
+				BackgroundColor = Colors.Green
+			};
+			var rigthOrLeftClickGesture = new TapGestureRecognizer
+			{
+				Command = TapCommand,
+				CommandParameter = Colors.Green,
+				NumberOfTapsRequired = 1,
+				Buttons = ButtonsMask.Secondary | ButtonsMask.Primary
+			};
+			rightorLeftClickLabel.GestureRecognizers.Add(rigthOrLeftClickGesture);
+			horizontal.Children.Add(rightorLeftClickLabel);
+
+
 			Content = vertical;
 		}
 
