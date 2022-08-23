@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			get => Services.GetRequiredService<Android.Content.Context>();
 			set => _androidContext = value;
 		}
-			
+
 #endif
 	}
 }

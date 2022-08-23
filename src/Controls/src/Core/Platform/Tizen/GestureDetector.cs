@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ElmSharp;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
 
 namespace Microsoft.Maui.Controls.Platform

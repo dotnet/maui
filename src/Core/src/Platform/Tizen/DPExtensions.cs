@@ -1,12 +1,12 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
+using EPoint = ElmSharp.Point;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
+using Point = Microsoft.Maui.Graphics.Point;
 using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;
-using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
-using Point = Microsoft.Maui.Graphics.Point;
-using EPoint = ElmSharp.Point;
 
 namespace Microsoft.Maui.Platform
 {

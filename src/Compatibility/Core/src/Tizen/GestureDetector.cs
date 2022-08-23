@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Maui.Devices;
 using ElmSharp;
+using Microsoft.Maui.Devices;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

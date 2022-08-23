@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Microsoft.Maui.Graphics;
 using ElmSharp;
 using ElmSharp.Accessible;
+using Microsoft.Maui.Graphics;
 using Tizen.UIExtensions.ElmSharp;
 using static Microsoft.Maui.Primitives.Dimension;
 using Rect = Microsoft.Maui.Graphics.Rect;
-using System.Linq;
 
 namespace Microsoft.Maui.Platform
 {

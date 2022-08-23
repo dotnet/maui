@@ -4,9 +4,9 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Rect = Microsoft.Maui.Graphics.Rect;
 using ERect = ElmSharp.Rect;
 using EvasObject = ElmSharp.EvasObject;
+using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

@@ -7,9 +7,9 @@ using System.Globalization;
 using ElmSharp;
 using Microsoft.Maui.Controls.Internals;
 using Tizen.UIExtensions.ElmSharp;
+using DPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 using ITNavigtaionView = Tizen.UIExtensions.ElmSharp.INavigationView;
 using TViewHolderState = Tizen.UIExtensions.ElmSharp.ViewHolderState;
-using DPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Platform
 {

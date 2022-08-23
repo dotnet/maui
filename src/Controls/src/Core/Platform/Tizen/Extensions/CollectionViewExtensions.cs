@@ -2,12 +2,12 @@ using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Tizen.UIExtensions.ElmSharp;
+using DPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 using TCollectionView = Tizen.UIExtensions.ElmSharp.CollectionView;
 using TCollectionViewSelectionMode = Tizen.UIExtensions.ElmSharp.CollectionViewSelectionMode;
 using TItemSizingStrategy = Tizen.UIExtensions.ElmSharp.ItemSizingStrategy;
 using TSelectedItemChangedEventArgs = Tizen.UIExtensions.ElmSharp.SelectedItemChangedEventArgs;
 using TSnapPointsType = Tizen.UIExtensions.ElmSharp.SnapPointsType;
-using DPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Platform
 {

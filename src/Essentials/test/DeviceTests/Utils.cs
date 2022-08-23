@@ -37,45 +37,45 @@ namespace Microsoft.Maui.Essentials.DeviceTests
             return tcs.Task;
         }
 #elif __ANDROID__
-        public static Task OnMainThread(Action action)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-            var looper = Android.OS.Looper.MainLooper;
-            var handler = new Android.OS.Handler(looper);
-            handler.Post(() =>
-            {
-                try
-                {
-                    action();
-                    tcs.SetResult(true);
-                }
-                catch (Exception ex)
-                {
-                    tcs.SetException(ex);
-                }
-            });
-            return tcs.Task;
-        }
+		public static Task OnMainThread(Action action)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+			var looper = Android.OS.Looper.MainLooper;
+			var handler = new Android.OS.Handler(looper);
+			handler.Post(() =>
+			{
+				try
+				{
+					action();
+					tcs.SetResult(true);
+				}
+				catch (Exception ex)
+				{
+					tcs.SetException(ex);
+				}
+			});
+			return tcs.Task;
+		}
 
-        public static Task OnMainThread(Func<Task> action)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-            var looper = Android.OS.Looper.MainLooper;
-            var handler = new Android.OS.Handler(looper);
-            handler.Post(async () =>
-            {
-                try
-                {
-                    await action();
-                    tcs.SetResult(true);
-                }
-                catch (Exception ex)
-                {
-                    tcs.SetException(ex);
-                }
-            });
-            return tcs.Task;
-        }
+		public static Task OnMainThread(Func<Task> action)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+			var looper = Android.OS.Looper.MainLooper;
+			var handler = new Android.OS.Handler(looper);
+			handler.Post(async () =>
+			{
+				try
+				{
+					await action();
+					tcs.SetResult(true);
+				}
+				catch (Exception ex)
+				{
+					tcs.SetException(ex);
+				}
+			});
+			return tcs.Task;
+		}
 #elif __IOS__
 		public static Task OnMainThread(Action action)
 		{

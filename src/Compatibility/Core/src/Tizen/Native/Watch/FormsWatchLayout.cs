@@ -1,5 +1,5 @@
-using Microsoft.Maui.Devices;
 using ElmSharp;
+using Microsoft.Maui.Devices;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch

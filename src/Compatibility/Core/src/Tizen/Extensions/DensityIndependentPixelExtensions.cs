@@ -1,7 +1,7 @@
 using Microsoft.Maui.Graphics;
-using Rect = Microsoft.Maui.Graphics.Rect;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
+using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

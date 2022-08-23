@@ -1,10 +1,10 @@
 ﻿using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml.Controls;
+using WASDKApp = Microsoft.UI.Xaml.Application;
+using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSetter = Microsoft.UI.Xaml.Setter;
 using WStyle = Microsoft.UI.Xaml.Style;
-using Microsoft.Maui.Controls.Platform;
-using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using WASDKApp = Microsoft.UI.Xaml.Application;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

@@ -1,6 +1,6 @@
 ﻿using System;
-using EvasObject = ElmSharp.EvasObject;
 using ERect = ElmSharp.Rect;
+using EvasObject = ElmSharp.EvasObject;
 
 namespace Microsoft.Maui
 {

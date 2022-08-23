@@ -2,8 +2,8 @@
 using ElmSharp;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
-using TSize = Tizen.UIExtensions.Common.Size;
 using TColor = Tizen.UIExtensions.Common.Color;
+using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Platform
 {

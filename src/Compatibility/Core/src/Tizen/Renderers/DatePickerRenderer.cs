@@ -1,10 +1,10 @@
 using System;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NIEntery = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
 using EEntry = ElmSharp.Entry;
+using NIEntery = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
 using WatchDateTimePickerDialog = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch.WatchDateTimePickerDialog;
 

@@ -6,15 +6,15 @@ using System.Linq.Expressions;
 using System.Reflection;
 using ElmSharp;
 using ElmSharp.Wearable;
-using Tizen.Applications;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
-using ELayout = ElmSharp.Layout;
-using TSystemInfo = Tizen.System.Information;
-using Size = Microsoft.Maui.Graphics.Size;
+using Tizen.Applications;
 using Color = Microsoft.Maui.Graphics.Color;
+using ELayout = ElmSharp.Layout;
+using Size = Microsoft.Maui.Graphics.Size;
+using TSystemInfo = Tizen.System.Information;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {

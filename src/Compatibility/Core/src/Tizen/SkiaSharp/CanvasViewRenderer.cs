@@ -1,10 +1,10 @@
 using System;
 using System.Diagnostics;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.Shapes;
 using SkiaSharp;
 using SkiaSharp.Views.Tizen;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {

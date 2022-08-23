@@ -4,10 +4,10 @@ using ElmSharp;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
 using Microsoft.Maui.Devices;
+using Color = Microsoft.Maui.Graphics.Color;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
-using Color = Microsoft.Maui.Graphics.Color;
 using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

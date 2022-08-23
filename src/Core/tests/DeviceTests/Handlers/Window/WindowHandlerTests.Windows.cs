@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
-using WBorder = Microsoft.UI.Xaml.Controls.Border;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.DeviceTests
 {

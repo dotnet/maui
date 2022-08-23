@@ -12,11 +12,11 @@ using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using ITNavigationView = Tizen.UIExtensions.ElmSharp.INavigationView;
 using TCollectionView = Tizen.UIExtensions.ElmSharp.CollectionView;
+using TDPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 using TImage = Tizen.UIExtensions.ElmSharp.Image;
 using TNavigationView = Tizen.UIExtensions.ElmSharp.NavigationView;
 using TSelectedItemChangedEventArgs = Tizen.UIExtensions.ElmSharp.SelectedItemChangedEventArgs;
 using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
-using TDPExtensions = Tizen.UIExtensions.ElmSharp.DPExtensions;
 
 namespace Microsoft.Maui.Controls.Platform
 {

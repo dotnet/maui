@@ -1,9 +1,9 @@
 ﻿using System;
-using Microsoft.Maui.Devices;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Media;
-using WinRT.Interop;
 using Windows.Graphics.Display;
+using WinRT.Interop;
 
 namespace Microsoft.Maui.Platform
 {

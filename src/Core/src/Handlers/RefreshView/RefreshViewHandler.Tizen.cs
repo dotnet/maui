@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Maui.Graphics;
 using ElmSharp;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {

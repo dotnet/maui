@@ -1,6 +1,6 @@
 ﻿using ElmSharp;
-using TKeyboard = Tizen.UIExtensions.Common.Keyboard;
 using TEntry = Tizen.UIExtensions.ElmSharp.Entry;
+using TKeyboard = Tizen.UIExtensions.Common.Keyboard;
 
 namespace Microsoft.Maui.Platform
 {

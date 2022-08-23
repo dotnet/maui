@@ -5,14 +5,14 @@ using System.Reflection;
 using System.Threading.Tasks;
 using ElmSharp;
 using ElmSharp.Wearable;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
 using Tizen.Applications;
 using Tizen.Common;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using Microsoft.Maui.Devices;
-using EWindow = ElmSharp.Window;
-using ELayout = ElmSharp.Layout;
 using EDisplayRotation = ElmSharp.DisplayRotation;
+using ELayout = ElmSharp.Layout;
+using EWindow = ElmSharp.Window;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

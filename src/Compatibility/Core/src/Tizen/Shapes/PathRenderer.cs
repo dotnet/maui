@@ -1,5 +1,5 @@
-using SkiaSharp;
 using Microsoft.Maui.Controls.Platform;
+using SkiaSharp;
 using Path = Microsoft.Maui.Controls.Shapes.Path;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp

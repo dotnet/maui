@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
 using ElmSharp;
-using Tizen.Common;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp;
+using Tizen.Common;
 using EGestureType = ElmSharp.GestureLayer.GestureType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

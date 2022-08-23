@@ -1,7 +1,7 @@
 ﻿using System;
-using PlatformView = ElmSharp.EvasObject;
-using EColor = ElmSharp.Color;
 using Tizen.UIExtensions.Common;
+using EColor = ElmSharp.Color;
+using PlatformView = ElmSharp.EvasObject;
 
 namespace Microsoft.Maui.Handlers
 {

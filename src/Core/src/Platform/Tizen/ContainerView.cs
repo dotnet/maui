@@ -1,6 +1,6 @@
 ﻿using System;
-using Microsoft.Maui.HotReload;
 using ElmSharp;
+using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Platform
 {

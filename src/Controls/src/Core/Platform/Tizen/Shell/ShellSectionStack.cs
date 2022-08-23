@@ -3,8 +3,8 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Maui.Devices;
 using ElmSharp;
+using Microsoft.Maui.Devices;
 using EBox = ElmSharp.Box;
 using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 

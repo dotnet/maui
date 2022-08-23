@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 using SkiaSharp;
 using SkiaSharp.Views.Tizen;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

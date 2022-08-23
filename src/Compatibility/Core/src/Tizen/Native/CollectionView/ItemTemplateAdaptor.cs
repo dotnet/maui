@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using ElmSharp;
 using ESize = ElmSharp.Size;
-using XLabel = Microsoft.Maui.Controls.Label;
 using XColor = Microsoft.Maui.Graphics.Color;
+using XLabel = Microsoft.Maui.Controls.Label;
 using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native

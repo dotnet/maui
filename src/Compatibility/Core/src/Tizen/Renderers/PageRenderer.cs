@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Specialized;
 using ElmSharp.Wearable;
-using SkiaSharp.Views.Tizen;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Devices;
+using SkiaSharp.Views.Tizen;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

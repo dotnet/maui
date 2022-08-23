@@ -1,6 +1,6 @@
 using System;
-using Microsoft.Maui.Devices;
 using ElmSharp;
+using Microsoft.Maui.Devices;
 using EColor = ElmSharp.Color;
 using ELayout = ElmSharp.Layout;
 

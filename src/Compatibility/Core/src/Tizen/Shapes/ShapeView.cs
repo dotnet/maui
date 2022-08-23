@@ -1,7 +1,7 @@
 using System;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using SkiaSharp;
 using SkiaSharp.Views.Tizen;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {

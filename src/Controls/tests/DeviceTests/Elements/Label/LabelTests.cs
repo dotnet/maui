@@ -74,7 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 #if __IOS__
 			return handler.PlatformView.AttributedText?.Value;
 #elif __ANDROID__
-				return handler.PlatformView.TextFormatted.ToString();
+			return handler.PlatformView.TextFormatted.ToString();
 #elif WINDOWS
 			return handler.PlatformView.Text;
 #endif

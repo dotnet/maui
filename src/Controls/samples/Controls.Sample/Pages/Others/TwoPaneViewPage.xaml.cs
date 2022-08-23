@@ -1,8 +1,8 @@
 ﻿namespace Maui.Controls.Sample.Pages
 {
 	using Microsoft.Maui;
-	using Microsoft.Maui.Foldable;
 	using Microsoft.Maui.Controls.Foldable;
+	using Microsoft.Maui.Foldable;
 
 	/// <summary>
 	/// Sample demonstrating the use of TwoPaneView control and 

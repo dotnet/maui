@@ -1,8 +1,7 @@
 using System.Collections.Specialized;
 using System.Linq;
-
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Controls.Platform;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ItemsView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

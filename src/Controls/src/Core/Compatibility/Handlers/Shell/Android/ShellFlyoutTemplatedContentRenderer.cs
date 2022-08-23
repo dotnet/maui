@@ -15,9 +15,9 @@ using Google.Android.Material.AppBar;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Layouts;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
-using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {

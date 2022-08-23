@@ -1,6 +1,6 @@
-﻿using Windows.ApplicationModel.Core;
-using System;
+﻿using System;
 using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.Core;
 
 namespace Microsoft.Maui.Animations
 {

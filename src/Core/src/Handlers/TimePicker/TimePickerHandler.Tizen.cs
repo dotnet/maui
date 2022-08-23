@@ -1,9 +1,9 @@
 using System;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
+using EcoreMainloop = ElmSharp.EcoreMainloop;
 using TEntry = Tizen.UIExtensions.ElmSharp.Entry;
 using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
-using EcoreMainloop = ElmSharp.EcoreMainloop;
 
 namespace Microsoft.Maui.Handlers
 {

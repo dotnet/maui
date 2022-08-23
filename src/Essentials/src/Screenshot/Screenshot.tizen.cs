@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel;
 using ElmSharp;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {

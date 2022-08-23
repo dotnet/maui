@@ -1,6 +1,6 @@
 using System.Linq;
-using SkiaSharp;
 using Microsoft.Maui.Controls.Shapes;
+using SkiaSharp;
 using Shape = Microsoft.Maui.Controls.Shapes.Shape;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp

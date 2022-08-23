@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Microsoft.Maui.Devices;
 using ElmSharp;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

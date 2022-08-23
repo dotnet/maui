@@ -1,7 +1,7 @@
 using System;
 using ElmSharp;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {

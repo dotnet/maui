@@ -1,10 +1,10 @@
 using System;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Devices;
-using NIButton = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IButton;
+using Microsoft.Maui.Graphics;
 using EButton = ElmSharp.Button;
+using NIButton = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IButton;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
 

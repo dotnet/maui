@@ -1,7 +1,7 @@
+using ElmSharp;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Skia;
 using SkiaSharp.Views.Tizen;
-using ElmSharp;
 
 namespace Microsoft.Maui.Graphics.Skia.Views
 {

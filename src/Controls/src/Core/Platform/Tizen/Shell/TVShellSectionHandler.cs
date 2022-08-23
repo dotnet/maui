@@ -8,9 +8,9 @@ using ElmSharp;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
 using EBox = ElmSharp.Box;
+using ITCollectionViewController = Tizen.UIExtensions.ElmSharp.ICollectionViewController;
 using TCollectionView = Tizen.UIExtensions.ElmSharp.CollectionView;
 using TNavigationView = Tizen.UIExtensions.ElmSharp.NavigationView;
-using ITCollectionViewController = Tizen.UIExtensions.ElmSharp.ICollectionViewController;
 using TSelectedItemChangedEventArgs = Tizen.UIExtensions.ElmSharp.SelectedItemChangedEventArgs;
 
 

@@ -1,7 +1,7 @@
 using Microsoft.Maui.Devices;
 using Tizen.Common;
-using EColor = ElmSharp.Color;
 using Color = Microsoft.Maui.Graphics.Color;
+using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
