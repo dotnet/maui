@@ -8,30 +8,6 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Label
 	{
-		MauiTextView _mauiTextView;
-
-		private protected override void OnHandlerChangedCore()
-		{
-			base.OnHandlerChangedCore();
-
-			if (Handler != null)
-			{
-				if (Handler is LabelHandler labelHandler && labelHandler.PlatformView is MauiTextView mauiTextView)
-				{
-					_mauiTextView = mauiTextView;
-					_mauiTextView.LayoutChanged += OnLayoutChanged;
-				}
-			}
-			else
-			{
-				if (_mauiTextView != null)
-				{
-					_mauiTextView.LayoutChanged -= OnLayoutChanged;
-					_mauiTextView = null;
-				}
-			}
-		}
-
 		public static void MapTextType(LabelHandler handler, Label label)
 		{
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
@@ -61,6 +37,20 @@ namespace Microsoft.Maui.Controls
 		public static void MapMaxLines(ILabelHandler handler, Label label)
 		{
 			handler.PlatformView?.UpdateMaxLines(label);
+		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (args.OldHandler?.PlatformView is MauiTextView oldTextView)
+			{
+				if (oldTextView.IsAlive())
+					oldTextView.LayoutChanged -= OnLayoutChanged;
+			}
+
+			if (args.NewHandler?.PlatformView is MauiTextView newTextView)
+				newTextView.LayoutChanged += OnLayoutChanged;
 		}
 
 		void OnLayoutChanged(object sender, LayoutChangedEventArgs args)

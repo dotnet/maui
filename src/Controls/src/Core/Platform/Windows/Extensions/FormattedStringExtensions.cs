@@ -11,15 +11,24 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static void UpdateInlines(this TextBlock textBlock, Label label)
-			=> UpdateInlines(
-				textBlock,
-				label.RequireFontManager(false),
-				label.FormattedText,
-				label.LineHeight,
-				label.HorizontalTextAlignment,
-				label.ToFont(),
-				label.TextColor,
-				label.TextTransform);
+		{
+			List<double> lineHeights = new List<double>();
+			UpdateInlines(
+						textBlock,
+						label.RequireFontManager(false),
+						label.FormattedText,
+						label.LineHeight,
+						label.HorizontalTextAlignment,
+						label.ToFont(),
+						label.TextColor,
+						label.TextTransform,
+						lineHeights);
+
+			textBlock.DispatcherQueue.TryEnqueue(() =>
+			{
+				textBlock.RecalculateSpanPositions(label, lineHeights);
+			});
+		}
 
 		public static void UpdateInlines(
 			this TextBlock textBlock,
@@ -31,20 +40,32 @@ namespace Microsoft.Maui.Controls.Platform
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
 		{
+		}
+
+		internal static void UpdateInlines(
+			this TextBlock textBlock,
+			IFontManager fontManager,
+			FormattedString formattedString,
+			double defaultLineHeight = 0d, // TODO: NET7 should be -1, but too late to change for net6
+			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
+			Font? defaultFont = null,
+			Color? defaultColor = null,
+			TextTransform defaultTextTransform = TextTransform.Default,
+			List<double>? heights = null)
+		{
 			textBlock.Inlines.Clear();
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
 
 			var runAndColorTuples = formattedString.ToRunAndColorsTuples(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform);
 
-			var heights = new List<double>();
 			int currentTextIndex = 0;
 			foreach (var runAndColorTuple in runAndColorTuples)
 			{
 				Run run = runAndColorTuple.Item1;
 				Color textColor = runAndColorTuple.Item2;
 				Color background = runAndColorTuple.Item3;
-				heights.Add(textBlock.FindDefaultLineHeight(run));
+				heights?.Add(textBlock.FindDefaultLineHeight(run));
 				textBlock.Inlines.Add(run);
 				int length = run.Text.Length;
 

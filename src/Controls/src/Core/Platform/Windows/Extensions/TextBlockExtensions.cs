@@ -1,17 +1,66 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
+using Microsoft.Maui.Graphics;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label;
 using WSize = Windows.Foundation.Size;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class TextBlockExtensions
 	{
+		public static void RecalculateSpanPositions(this TextBlock control, Label element, IList<double> inlineHeights)
+		{
+			if (element?.FormattedText?.Spans == null
+				|| element.FormattedText.Spans.Count == 0)
+				return;
+
+			var labelWidth = control.ActualWidth;
+
+			if (labelWidth <= 0 || control.Height <= 0)
+				return;
+
+			for (int i = 0; i < element.FormattedText.Spans.Count; i++)
+			{
+				var span = element.FormattedText.Spans[i];
+
+				var inline = control.Inlines.ElementAt(i);
+				var rect = inline.ContentStart.GetCharacterRect(LogicalDirection.Forward);
+				var endRect = inline.ContentEnd.GetCharacterRect(LogicalDirection.Forward);
+				var defaultLineHeight = inlineHeights[i];
+
+				var yaxis = rect.Top;
+				var lineHeights = new List<double>();
+				while (yaxis < endRect.Bottom)
+				{
+					double lineHeight;
+					if (yaxis == rect.Top) // First Line
+					{
+						lineHeight = rect.Bottom - rect.Top;
+					}
+					else if (yaxis != endRect.Top) // Middle Line(s)
+					{
+						lineHeight = defaultLineHeight;
+					}
+					else // Bottom Line
+					{
+						lineHeight = endRect.Bottom - endRect.Top;
+					}
+					lineHeights.Add(lineHeight);
+					yaxis += lineHeight;
+				}
+
+				((ISpatialElement)span).Region = Region.FromLines(lineHeights.ToArray(), labelWidth, rect.X, endRect.X + endRect.Width, rect.Top).Inflate(10);
+
+			}
+		}
+
 		public static void UpdateLineBreakMode(this TextBlock textBlock, Label label) =>
 			textBlock.UpdateLineBreakMode(label.LineBreakMode);
 
