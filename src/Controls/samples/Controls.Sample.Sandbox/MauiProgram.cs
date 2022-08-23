@@ -18,6 +18,6 @@ namespace Maui.Controls.Sample
 	class App : Application
 	{
 		protected override Window CreateWindow(IActivationState activationState) =>
-			new Window(new NavigationPage( new MapElementsPage()));
+			new Window(new NavigationPage( new MapPage()));
 	}
 }
