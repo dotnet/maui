@@ -55,7 +55,10 @@ namespace Microsoft.Maui.Handlers
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
 				[nameof(IToolTipElement.ToolTip)] = MapToolTip,
-			};
+#if WINDOWS || MACCATALYST
+				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
+#endif
+            };
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
 		{
