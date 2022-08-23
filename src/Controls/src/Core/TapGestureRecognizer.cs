@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='NumberOfTapsRequiredProperty']/Docs" />
 		public static readonly BindableProperty NumberOfTapsRequiredProperty = BindableProperty.Create("NumberOfTapsRequired", typeof(int), typeof(TapGestureRecognizer), 1);
-		
+
 		public static readonly BindableProperty ButtonsProperty = BindableProperty.Create(nameof(Buttons), typeof(ButtonsMask), typeof(TapGestureRecognizer), ButtonsMask.Primary);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler Tapped;
 
-		internal void SendTapped(View sender)
+		internal void SendTapped(View sender, object platformArgs = null)
 		{
 			ICommand cmd = Command;
 			if (cmd != null && cmd.CanExecute(CommandParameter))
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 
 			EventHandler handler = Tapped;
 			if (handler != null)
-				handler(sender, new TappedEventArgs(CommandParameter));
+				handler(sender, new TappedEventArgs(CommandParameter, platformArgs));
 		}
 	}
 }

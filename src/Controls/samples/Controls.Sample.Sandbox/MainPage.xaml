@@ -4,4 +4,47 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+    <VerticalStackLayout>
+        <Label Text="When I right click you click just like that">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Buttons="Secondary"></TapGestureRecognizer>
+            </Label.GestureRecognizers>
+        </Label>
+        <Label Text="When I left click you click just like that">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Buttons="Secondary"></TapGestureRecognizer>
+            </Label.GestureRecognizers>
+        </Label>
+        <Label Text="When I  click you click just like that">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer NumberOfTapsRequired="4" Buttons="Secondary"></TapGestureRecognizer>
+            </Label.GestureRecognizers>
+        </Label>
+        <Label Text="When I  click you click just like that">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Font name: Default &#10;"/>
+                    <Span Text="Version: 1.00  &#10;"/>
+                    <Span Text="Digitally Signed, TrueType Outlines &#10;"/>
+                    <Span Text="abcdefghijklmnopqrstuvwxyz "/>
+                    <Span Text="abcdefghijklmnopqrstuvwxyz &#10;" TextTransform="Uppercase"/>
+                    <Span Text="1234567890.:,;'+-*/=  &#10;"/>
+                    <Span Text="12 The quick brown fox jumps over the lazy dog. 1234567890 &#10;" FontSize="12"/>
+                    <Span Text="18 The quick brown fox jumps over the lazy dog. 1234567890 &#10;" FontSize="18"/>
+                    <Span Text="24 The quick brown fox jumps over the lazy dog. 1234567890 &#10;" FontSize="24"/>
+                    <Span Text="36 The quick brown fox jumps over the lazy dog. 1234567890 &#10;" FontSize="36"/>
+                    <Span Text="48 The quick brown fox jumps over the lazy dog. 1234567890 &#10;" FontSize="48"/>
+                    <Span Text="60 The quick brown fox jumps over the lazy dog. 1234567890 &#10;" FontSize="60"/>
+                    <Span Text="72 The quick brown fox jumps over the lazy dog. 1234567890 " FontSize="72" >
+                        <Span.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
+                        </Span.GestureRecognizers>
+                    </Span>
+                </FormattedString>
+            </Label.FormattedText>
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer NumberOfTapsRequired="4" Buttons="Secondary"></TapGestureRecognizer>
+            </Label.GestureRecognizers>
+        </Label>
+    </VerticalStackLayout>
 </ContentPage>

@@ -14,5 +14,10 @@ namespace Maui.Controls.Sample
 		{
 			InitializeComponent();
 		}
+
+		void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+		{
+
+		}
 	}
 }
