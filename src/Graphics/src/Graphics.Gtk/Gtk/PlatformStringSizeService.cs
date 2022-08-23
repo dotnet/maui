@@ -3,7 +3,7 @@
 public class PlatformStringSizeService : IStringSizeService {
 	Cairo.Context? _sharedContext;
 
-	internal Cairo.Context SharedContext {
+	public Cairo.Context SharedContext {
 		get {
 			if (_sharedContext == null) {
 				using var sf = new Cairo.ImageSurface (Cairo.Format.ARGB32, 1, 1);

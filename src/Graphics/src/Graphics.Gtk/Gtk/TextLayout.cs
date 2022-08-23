@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Graphics.Platform.Gtk;
 /// https://developer.gnome.org/pango/1.46/pango-Layout-Objects.html
 /// https://developer.gnome.org/gdk3/stable/gdk3-Pango-Interaction.html
 /// </summary>
-internal class TextLayout : IDisposable {
+public class TextLayout : IDisposable {
 
 	private Context _context;
 
