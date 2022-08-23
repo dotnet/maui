@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class ShellHandler : ViewHandler<Shell, Gtk.Widget>
 	{
-		protected override Gtk.Widget CreateNativeView()
+		protected override Gtk.Widget CreatePlatformView()
 		{
 			throw new NotImplementedException();
 		}
