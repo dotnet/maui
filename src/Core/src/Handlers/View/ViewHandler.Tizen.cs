@@ -61,6 +61,8 @@ namespace Microsoft.Maui.Handlers
 			UpdateTransformation(handler, view);
 		}
 
+		public static void MapContextFlyout(IViewHandler handler, IView view) { }
+
 		internal static void UpdateTransformation(IViewHandler handler, IView view)
 		{
 			handler.ToPlatform()?.UpdateTransformation(view);
