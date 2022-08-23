@@ -14,6 +14,9 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
 using PlatformView = ElmSharp.EvasObject;
+#elif GTK
+using PlatformImage = Gdk.Pixbuf;
+using PlatformView = Gtk.Image;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 using PlatformView = System.Object;

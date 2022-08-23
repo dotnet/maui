@@ -51,26 +51,18 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var imageDirectory = Configuration?.GetImageDirectory();
 				var image = TryLoadFile(filename);
-
-				if (image == null && imageDirectory != null)
-				{
-					image = TryLoadFile(Path.Combine(imageDirectory, filename));
-				}
-
-				var isResource = false;
 
 				if (image == null)
 				{
 					image = TryLoadResource(filename);
-					isResource = true;
+
 				}
 
 				if (image == null)
 					throw new InvalidOperationException("Unable to load image file.");
 
-				var result = new ImageSourceServiceResult(image, () => image.Dispose()) { IsResource = isResource };
+				var result = new ImageSourceServiceResult(image, () => image.Dispose()) { };
 
 				return FromResult(result);
 			}

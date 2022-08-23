@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Threading.Tasks;
+using Gdk;
 using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
@@ -30,16 +31,13 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView == null)
 				return;
 
-			var token = handler._sourceManager.BeginLoad();
+			await handler.SourceLoader.UpdateImageSourceAsync();
 
-			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			var result = await handler.PlatformView.UpdateSourceAsync(image, provider, token);
-
-			handler._sourceManager.CompleteLoad(result);
 		}
 
 		[MissingMapper]
-		void OnSetImageSource(object? obj) => throw new NotImplementedException();
+		void OnSetImageSource(Pixbuf? obj) => throw new NotImplementedException();
+
 	}
 
 }

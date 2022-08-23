@@ -166,10 +166,10 @@ namespace Microsoft.Maui.Platform
 
 		protected void ArrangeAllocation(Rectangle allocation)
 		{
-			if (VirtualView is not { LayoutManager: { } layoutManager } virtualView)
+			if (VirtualView is not { } virtualView)
 				return;
 
-			layoutManager.ArrangeChildren(allocation);
+			VirtualView.CrossPlatformArrange(allocation);
 
 		}
 
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Platform
 
 			bool CanBeCached() => !double.IsPositiveInfinity(widthConstraint) && !double.IsPositiveInfinity(heightConstraint);
 
-			if (VirtualView is not { LayoutManager: { } layoutManager } virtualView)
+			if (VirtualView is not {  } virtualView)
 				return Size.Zero;
 
 			var key = (widthConstraint, heightConstraint, mode);
@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Platform
 
 			}
 
-			var measured = layoutManager.Measure(widthConstraint, heightConstraint);
+			var measured = VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 #if TRACE_ALLOCATION
 			if (_checkCacheHitFailed && cacheHit && measured != cached)
@@ -357,7 +357,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (VirtualView is not { LayoutManager: { } layoutManager } virtualView)
+			if (VirtualView is not { } virtualView)
 				return;
 
 			var measuredMinimum = MeasureMinimum();

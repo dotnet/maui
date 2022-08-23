@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Graphics
 			if (paint.IsNullOrEmpty())
 				return null;
 
-			string Stops(GradientStop[] sorted)
+			string Stops(PaintGradientStop[] sorted)
 			{
 #if NET48
 				var max = sorted[sorted.Length-1].Offset;
