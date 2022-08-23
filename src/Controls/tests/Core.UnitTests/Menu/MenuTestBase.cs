@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 {
-	public abstract class MenuBarTestBase<TTestType, TIChildType, TChildType, THandlerUpdate> : BaseTestFixture
+	public abstract class MenuTestBase<TTestType, TIChildType, TChildType, THandlerUpdate> : BaseTestFixture
 		where TChildType : Element, TIChildType, new()
 		where TTestType : class, Maui.IElement, IList<TIChildType>, new()
 	{

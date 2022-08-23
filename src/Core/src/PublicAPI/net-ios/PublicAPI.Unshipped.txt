@@ -1,10 +1,34 @@
 ﻿#nullable enable
+Microsoft.Maui.Handlers.MenuFlyoutHandler
+Microsoft.Maui.Handlers.MenuFlyoutHandler.Add(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.Clear() -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.MenuFlyoutHandler() -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.MenuFlyoutHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.Insert(int index, Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.Remove(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(int Index, Microsoft.Maui.IMenuElement! MenuElement) -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Index.get -> int
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Index.init -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.MenuElement.get -> Microsoft.Maui.IMenuElement!
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.MenuElement.init -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.Add(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.Clear() -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.Insert(int index, Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.PlatformView.get -> object!
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.Remove(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.VirtualView.get -> Microsoft.Maui.IMenuFlyout!
 Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler
 Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler.PlatformView.get -> UIKit.UIMenu!
 Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler.VirtualView.get -> Microsoft.Maui.IMenuFlyoutSeparator!
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler() -> void
 Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.IContextFlyoutElement.ContextFlyout.get -> Microsoft.Maui.IFlyout?
+Microsoft.Maui.IFlyout
+Microsoft.Maui.IMenuFlyout
+Microsoft.Maui.IContextFlyoutElement
 Microsoft.Maui.IMenuFlyoutSeparator
 Microsoft.Maui.IToolTipElement
 Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
@@ -12,6 +36,9 @@ Microsoft.Maui.ToolTip
 Microsoft.Maui.ToolTip.Content.get -> object?
 Microsoft.Maui.ToolTip.Content.set -> void
 Microsoft.Maui.ToolTip.ToolTip() -> void
+Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.MauiWebViewNavigationDelegate(Microsoft.Maui.Handlers.IWebViewHandler! handler) -> void
+Microsoft.Maui.Platform.MauiWebViewUIDelegate
+Microsoft.Maui.Platform.MauiWebViewUIDelegate.MauiWebViewUIDelegate(Microsoft.Maui.Handlers.IWebViewHandler! handler) -> void
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneContinueUserActivity
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidEnterBackground
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidFailToContinueUserActivity
@@ -26,6 +53,7 @@ Microsoft.Maui.Platform.MauiWKWebView.MauiWKWebView(CoreGraphics.CGRect frame, M
 Microsoft.Maui.Platform.MauiWKWebView.MauiWKWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
 override Microsoft.Maui.Handlers.BorderHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
+override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> UIKit.UIMenu!
 override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> UIKit.UIMenu!
 override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
@@ -37,9 +65,20 @@ override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.get -> bool
 override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
 *REMOVED*override Microsoft.Maui.Handlers.LabelHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Platform.MauiWebViewUIDelegate.RunJavaScriptAlertPanel(WebKit.WKWebView! webView, string! message, WebKit.WKFrameInfo! frame, System.Action! completionHandler) -> void
+override Microsoft.Maui.Platform.MauiWebViewUIDelegate.RunJavaScriptConfirmPanel(WebKit.WKWebView! webView, string! message, WebKit.WKFrameInfo! frame, System.Action<bool>! completionHandler) -> void
+override Microsoft.Maui.Platform.MauiWebViewUIDelegate.RunJavaScriptTextInputPanel(WebKit.WKWebView! webView, string! prompt, string? defaultText, WebKit.WKFrameInfo! frame, System.Action<string!>! completionHandler) -> void
+override Microsoft.Maui.Platform.MauiWebViewUIDelegate.SetContextMenuConfiguration(WebKit.WKWebView! webView, WebKit.WKContextMenuElementInfo! elementInfo, System.Action<UIKit.UIContextMenuConfiguration!>! completionHandler) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyout!, Microsoft.Maui.Handlers.IMenuFlyoutHandler!>!
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapAdd(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapClear(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapInsert(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyout!, Microsoft.Maui.Handlers.IMenuFlyoutHandler!>!
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapRemove(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
 override Microsoft.Maui.Platform.MauiSearchBar.WillMoveToWindow(UIKit.UIWindow? window) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
+static Microsoft.Maui.Handlers.ViewHandler.MapContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneContinueUserActivity(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneContinueUserActivity! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneDidEnterBackground(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidEnterBackground! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneDidFailToContinueUserActivity(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneDidFailToContinueUserActivity! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
@@ -60,6 +99,7 @@ static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.ApplicationS
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.get -> UIKit.UITextRange?
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.set -> void
 *REMOVED* override Microsoft.Maui.Handlers.PickerSource.Dispose(bool disposing) -> void
+*REMOVED* Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.MauiWebViewNavigationDelegate(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.ContinueUserActivity(UIKit.UIScene! scene, Foundation.NSUserActivity! userActivity) -> bool
 virtual Microsoft.Maui.MauiUISceneDelegate.DidEnterBackground(UIKit.UIScene! scene) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.DidFailToContinueUserActivity(UIKit.UIScene! scene, string! userActivityType, Foundation.NSError! error) -> void
