@@ -267,7 +267,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if IOS
+#if IOS || MACCATALYST
 			Skip = "iOS has issues with null graphics contexts."
 #endif
 		)]

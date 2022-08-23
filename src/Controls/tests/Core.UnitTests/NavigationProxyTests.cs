@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class NavigationProxyTests : BaseTestFixture
 	{
 		class NavigationTest : INavigation
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void Constructor()
 		{
 			var proxy = new NavigationProxy();
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(proxy.Inner);
 		}
 
-		[Test]
+		[Fact]
 		public async Task PushesIntoNextInner()
 		{
 			var page = new ContentPage();
@@ -109,10 +109,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var navTest = new NavigationTest();
 			navProxy.Inner = navTest;
 
-			Assert.AreEqual(page, navTest.LastPushed);
+			Assert.Equal(page, navTest.LastPushed);
 		}
 
-		[Test]
+		[Fact]
 		public async Task PushesModalIntoNextInner()
 		{
 			var page = new ContentPage();
@@ -123,10 +123,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var navTest = new NavigationTest();
 			navProxy.Inner = navTest;
 
-			Assert.AreEqual(page, navTest.LastPushedModal);
+			Assert.Equal(page, navTest.LastPushedModal);
 		}
 
-		[Test]
+		[Fact]
 		public async Task TestPushWithInner()
 		{
 			var proxy = new NavigationProxy();
@@ -137,10 +137,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var child = new ContentPage { Content = new View() };
 			await proxy.PushAsync(child);
 
-			Assert.AreEqual(child, inner.LastPushed);
+			Assert.Equal(child, inner.LastPushed);
 		}
 
-		[Test]
+		[Fact]
 		public async Task TestPushModalWithInner()
 		{
 			var proxy = new NavigationProxy();
@@ -151,10 +151,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var child = new ContentPage { Content = new View() };
 			await proxy.PushModalAsync(child);
 
-			Assert.AreEqual(child, inner.LastPushedModal);
+			Assert.Equal(child, inner.LastPushedModal);
 		}
 
-		[Test]
+		[Fact]
 		public async Task TestPopWithInner()
 		{
 			var proxy = new NavigationProxy();
@@ -166,11 +166,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await proxy.PushAsync(child);
 
 			var result = await proxy.PopAsync();
-			Assert.AreEqual(child, result);
+			Assert.Equal(child, result);
 			Assert.True(inner.Popped, "Pop was never called on the inner proxy item");
 		}
 
-		[Test]
+		[Fact]
 		public async Task TestPopModalWithInner()
 		{
 			var proxy = new NavigationProxy();

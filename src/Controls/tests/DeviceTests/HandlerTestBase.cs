@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 				.RemapForControls()
 				.ConfigureLifecycleEvents(lifecycle =>
 				{
-#if IOS
+#if IOS || MACCATALYST
 					lifecycle
 						.AddiOS(iOS => iOS
 							.OpenUrl((app, url, options) =>
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 				var size = view.Measure(view.Width, view.Height);
 				var w = size.Width;
 				var h = size.Height;
-#elif IOS
+#elif IOS || MACCATALYST
 				var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 				var w = size.Width;
 				var h = size.Height;

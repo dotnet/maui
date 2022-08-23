@@ -3,14 +3,14 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Maps;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class MapTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void AddPin()
 		{
 			var map = new Map();
@@ -25,8 +25,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			map.Pins.Add(home);
 
-			Assert.AreEqual(map.Pins.Count, 1);
-			Assert.AreEqual(map.Pins[0].Label, "Home");
+			Assert.Equal(1, map.Pins.Count);
+			Assert.Equal("Home", map.Pins[0].Label);
 			var mall = new Pin
 			{
 				Label = "Mall",
@@ -37,11 +37,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			map.Pins.Add(mall);
 
-			Assert.AreEqual(map.Pins.Count, 2);
-			Assert.AreEqual(map.Pins[1].Position.Latitude, -12);
+			Assert.Equal(2, map.Pins.Count);
+			Assert.Equal(map.Pins[1].Position.Latitude, -12);
 		}
 
-		[Test]
+		[Fact]
 		public void AddPinWithoutName()
 		{
 			var map = new Map();
@@ -53,10 +53,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var exception = Assert.Throws<ArgumentException>(() => map.Pins.Add(noNamePin));
-			Assert.That(exception.Message, Is.EqualTo("Pin must have a Label to be added to a map"));
+			Assert.Equal("Pin must have a Label to be added to a map", exception.Message);
 		}
 
-		[Test]
+		[Fact]
 		public void AddPinWithoutAddress()
 		{
 			var map = new Map();
@@ -68,25 +68,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			map.Pins.Add(noAddressPin);
-			Assert.AreEqual(map.Pins.Count, 1);
-			Assert.AreEqual(map.Pins[0].Label, "I have no address");
-			Assert.AreEqual(map.Pins[0].Address, null);
+			Assert.Equal(1, map.Pins.Count);
+			Assert.Equal("I have no address", map.Pins[0].Label);
+			Assert.Null(map.Pins[0].Address);
 		}
 
-		[Test]
+		[Fact]
 		public void Constructor()
 		{
 			var center = new Position(15.5, 176);
 			var span = new MapSpan(center, 1, 2);
 			var map = new Map(span);
 
-			Assert.AreEqual(1, map.LastMoveToRegion.LatitudeDegrees);
-			Assert.AreEqual(2, map.LastMoveToRegion.LongitudeDegrees);
+			Assert.Equal(1, map.LastMoveToRegion.LatitudeDegrees);
+			Assert.Equal(2, map.LastMoveToRegion.LongitudeDegrees);
 			var position = new Position(15.5, 176);
-			Assert.AreEqual(position, map.LastMoveToRegion.Center);
+			Assert.Equal(position, map.LastMoveToRegion.Center);
 		}
 
-		[Test]
+		[Fact]
 		public void RemovePin()
 		{
 			var map = new Map();
@@ -107,24 +107,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			map.Pins.Add(genericPlace);
-			Assert.AreEqual(map.Pins.Count, 1);
+			Assert.Equal(1, map.Pins.Count);
 
 			map.Pins.Add(mall);
-			Assert.AreEqual(map.Pins.Count, 2);
+			Assert.Equal(2, map.Pins.Count);
 
 			map.Pins.Remove(genericPlace);
-			Assert.AreEqual(map.Pins.Count, 1);
+			Assert.Equal(1, map.Pins.Count);
 
 			Assert.True(map.Pins.Contains(mall));
 			Assert.False(map.Pins.Contains(genericPlace));
 		}
 
-		[Test]
+		[Fact]
 		public void VisibleRegion()
 		{
 			var map = new Map(new MapSpan(new Position(), 0, 0));
 			map.MoveToRegion(new MapSpan(new Position(1, 2), 3, 4));
-			Assert.AreEqual(null, map.VisibleRegion);
+			Assert.Null(map.VisibleRegion);
 
 			bool signaled = false;
 			MessagingCenter.Subscribe<Map, MapSpan>(this, "MapMoveToRegion", (s, a) =>
@@ -134,11 +134,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}, map);
 
 			map.MoveToRegion(new MapSpan(new Position(1, 2), 3, 4));
-			Assert.AreEqual(new MapSpan(new Position(1, 2), 3, 4), map.LastMoveToRegion);
+			Assert.Equal(new MapSpan(new Position(1, 2), 3, 4), map.LastMoveToRegion);
 			Assert.True(signaled);
 		}
 
-		[Test]
+		[Fact]
 		public void VisibleRegionDoubleSet()
 		{
 			var map = new Map();
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(signaled);
 		}
 
-		[Test]
+		[Fact]
 		public void TracksEmpty()
 		{
 			var map = new Map();
@@ -164,10 +164,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ItemsSource = itemsSource;
 			map.ItemTemplate = new DataTemplate();
 
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Test]
+		[Fact]
 		public void TracksAdd()
 		{
 			var itemsSource = new ObservableCollection<int>();
@@ -179,10 +179,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			itemsSource.Add(1);
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Test]
+		[Fact]
 		public void TracksInsert()
 		{
 			var itemsSource = new ObservableCollection<int>();
@@ -194,10 +194,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			itemsSource.Insert(0, 1);
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Test]
+		[Fact]
 		public void TracksRemove()
 		{
 			var itemsSource = new ObservableCollection<int>() { 0, 1 };
@@ -209,13 +209,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			itemsSource.RemoveAt(0);
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 
 			itemsSource.Remove(1);
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Test]
+		[Fact]
 		public void TracksReplace()
 		{
 			var itemsSource = new ObservableCollection<int>() { 0, 1, 2 };
@@ -229,10 +229,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			itemsSource[0] = 3;
 			itemsSource[1] = 4;
 			itemsSource[2] = 5;
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Test]
+		[Fact]
 		public void ItemMove()
 		{
 			var itemsSource = new ObservableCollection<int>() { 0, 1 };
@@ -244,13 +244,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			itemsSource.Move(0, 1);
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 
 			itemsSource.Move(1, 0);
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Test]
+		[Fact]
 		public void TracksClear()
 		{
 			var itemsSource = new ObservableCollection<int>() { 0, 1 };
@@ -262,10 +262,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			itemsSource.Clear();
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Test]
+		[Fact]
 		public void TracksNull()
 		{
 			var map = new Map()
@@ -275,14 +275,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
 			map.ItemsSource = itemsSource;
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 
 			itemsSource = null;
 			map.ItemsSource = itemsSource;
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Test]
+		[Fact]
 		public void TracksItemTemplate()
 		{
 			var map = new Map()
@@ -292,21 +292,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 3));
 			map.ItemsSource = itemsSource;
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 			foreach (Pin pin in map.Pins)
 			{
-				Assert.IsTrue(pin.Address == "Address");
+				Assert.True(pin.Address == "Address");
 			}
 
 			map.ItemTemplate = GetItemTemplate("Address 2");
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 			foreach (Pin pin in map.Pins)
 			{
-				Assert.IsTrue(pin.Address == "Address 2");
+				Assert.True(pin.Address == "Address 2");
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void ItemTemplateSelectorIsSet()
 		{
 			var map = new Map();
@@ -315,14 +315,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ItemsSource = itemsSource;
 			map.ItemTemplateSelector = new TestDataTemplateSelector("Address 2");
 
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 			foreach (Pin pin in map.Pins)
 			{
-				Assert.IsTrue(pin.Address == "Address 2");
+				Assert.True(pin.Address == "Address 2");
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void ItemTemplateTakesPrecendenceOverItemTemplateSelector()
 		{
 			var map = new Map();
@@ -332,14 +332,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ItemTemplate = GetItemTemplate("Address 1");
 			map.ItemTemplateSelector = new TestDataTemplateSelector("Address 2");
 
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 			foreach (Pin pin in map.Pins)
 			{
-				Assert.AreEqual(pin.Address, "Address 1");
+				Assert.Equal("Address 1", pin.Address);
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void ItemsSourceTakePrecendenceOverPins()
 		{
 			var map = new Map()
@@ -352,10 +352,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
 			map.ItemsSource = itemsSource;
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Test, Ignore("https://github.com/dotnet/maui/issues/1524")]
+		[Fact(Skip = "https://github.com/dotnet/maui/issues/1524")]
 		public void ElementIsGarbageCollectedAfterItsRemoved()
 		{
 			var map = new Map()
@@ -369,7 +369,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Set ItemsSource
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 			itemsSource = null;
 
 			// Remove map from container
@@ -384,10 +384,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			Assert.IsFalse(weakReference.IsAlive);
+			Assert.False(weakReference.IsAlive);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsExceptionOnUsingDataTemplateSelectorForItemTemplate()
 		{
 			var map = new Map();
@@ -395,10 +395,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
 			map.ItemsSource = itemsSource;
 
-			Assert.Throws(typeof(NotSupportedException), () => map.ItemTemplate = GetDataTemplateSelector());
+			Assert.Throws<NotSupportedException>(() => map.ItemTemplate = GetDataTemplateSelector());
 		}
 
-		[Test]
+		[Fact]
 		public void DontTrackAfterItemsSourceChanged()
 		{
 			var map = new Map()
@@ -411,10 +411,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ItemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
 
 			itemsSource.Add(11);
-			Assert.IsTrue(itemsSource.Count() == 11);
+			Assert.True(itemsSource.Count() == 11);
 		}
 
-		[Test]
+		[Fact]
 		public void WorksWithNullItems()
 		{
 			var map = new Map()
@@ -425,7 +425,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var itemsSource = new ObservableCollection<int?>(Enumerable.Range(0, 10).Cast<int?>());
 			itemsSource.Add(null);
 			map.ItemsSource = itemsSource;
-			Assert.IsTrue(IsMapWithItemsSource(itemsSource, map));
+			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
 		// Checks if for every item in the items source there's a corresponding pin

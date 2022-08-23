@@ -1930,7 +1930,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Auto row and get the height of the view
 			var measuredSize = manager.Measure(20, double.PositiveInfinity);
 			Assert.Equal(20, measuredSize.Height);
-			
+
 			grid.DesiredSize.Returns(measuredSize);
 
 			// We arrange at a height taller than the Grid's measurement; because the Grid

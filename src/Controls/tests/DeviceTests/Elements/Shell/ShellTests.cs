@@ -12,7 +12,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 			int contentPageAppearingFired = 0;
 			int navigatedToFired = 0;
 			int shellNavigatedToFired = 0;
-			
+
 			// If you fail these from the events then
 			// an exception is raised in the middle of the platform
 			// doing platform things which often leads to a crash
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
 		public async Task SwapShellRootPageForNavigationPage()
 		{
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Flyout Starts as Open correctly")]
 		public async Task FlyoutIsPresented()
 		{
@@ -315,7 +315,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Correctly Adjust to Making Currently Visible Shell Page Invisible")]
 		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
 		{

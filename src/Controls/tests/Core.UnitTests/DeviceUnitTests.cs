@@ -2,16 +2,16 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	// Run all these tests on a new thread/task in order to control the dispatcher creation.
-	[TestFixture]
+
 	public class DeviceUnitTests : BaseTestFixture
 	{
 		// just a check to make sure the test dispatcher is working
-		[Test]
+		[Fact]
 		public Task TestImplementationHasDispatcher() => DispatcherTest.Run(() =>
 		{
 			Assert.False(DispatcherProviderStubOptions.SkipDispatcherCreation);
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 		});
 
-		[Test]
+		[Fact]
 		public Task BackgroundThreadDoesNotHaveDispatcher() => DispatcherTest.Run(() =>
 		{
 			// act like the real world
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 		});
 
-		[Test]
+		[Fact]
 		public Task TestBeginInvokeOnMainThread() => DispatcherTest.Run(() =>
 		{
 			bool calledFromMainThread = false;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(calledFromMainThread, "Action not invoked from main thread.");
 		});
 
-		[Test]
+		[Fact]
 		public Task TestInvokeOnMainThreadWithSyncFunc() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(result, "Unexpected result.");
 		});
 
-		[Test]
+		[Fact]
 		public Task TestInvokeOnMainThreadWithSyncAction() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(calledFromMainThread, "Action not invoked from main thread.");
 		});
 
-		[Test]
+		[Fact]
 		public Task TestInvokeOnMainThreadWithAsyncFunc() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(result, "Unexpected result.");
 		});
 
-		[Test]
+		[Fact]
 		public Task TestInvokeOnMainThreadWithAsyncFuncError() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
@@ -99,17 +99,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bool invoked = false;
 			async Task<bool> boom()
-			{ invoked = true; throw new ApplicationException(); }
+			{
+				invoked = true;
+				throw new ApplicationException();
+			}
 			var task = Device.InvokeOnMainThreadAsync(boom);
 			Assert.True(calledFromMainThread, "Action not invoked from main thread.");
 			Assert.False(invoked, "Action invoked early.");
 
 			async Task MethodThatThrows() => await task;
 			Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
-			Assert.True(invoked, "Action not invoked.");
 		});
 
-		[Test]
+		[Fact]
 		public Task TestInvokeOnMainThreadWithAsyncAction() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
@@ -126,7 +128,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(invoked, "Action not invoked.");
 		});
 
-		[Test]
+		[Fact]
 		public Task TestInvokeOnMainThreadWithAsyncActionError() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
@@ -143,7 +145,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			async Task MethodThatThrows() => await task;
 			Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
-			Assert.True(invoked, "Action not invoked.");
 		});
 
 		private void MockPlatformServices(Action onInvokeOnMainThread, Action<Action> invokeOnMainThread = null)

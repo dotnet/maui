@@ -6,6 +6,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -42,9 +43,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textColor != null)
 			{
-				var androidColor = textColor.ToPlatform();
-				if (!editText.TextColors.IsOneColor(ColorStates.EditText, androidColor))
-					editText.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
+					editText.SetTextColor(c);
 			}
 		}
 
@@ -136,9 +136,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (placeholderTextColor != null)
 			{
-				var androidColor = placeholderTextColor.ToPlatform();
-				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
-					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
+					editText.SetHintTextColor(c);
 			}
 		}
 
@@ -280,7 +279,6 @@ namespace Microsoft.Maui.Platform
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
 		{
 			var previousCursorPosition = editText.SelectionStart;
-
 			var keyboard = textInput.Keyboard;
 			var nativeInputTypeToUpdate = keyboard.ToInputType();
 
@@ -300,6 +298,8 @@ namespace Microsoft.Maui.Platform
 				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
 
+			bool hasPassword = false;
+
 			if (textInput is IEntry entry && entry.IsPassword)
 			{
 				if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
@@ -307,12 +307,25 @@ namespace Microsoft.Maui.Platform
 
 				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
 					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
+
+				hasPassword = true;
 			}
 
 			editText.InputType = nativeInputTypeToUpdate;
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
+
+			if (hasPassword && textInput is IElement element)
+			{
+				var services = element.Handler?.MauiContext?.Services;
+
+				if (services == null)
+					return;
+
+				var fontManager = services.GetRequiredService<IFontManager>();
+				editText.UpdateFont(textInput, fontManager);
+			}
 
 			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
 			// Let's restore the cursor position to its previous location.

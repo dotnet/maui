@@ -13,6 +13,8 @@ if (TestTFM == "default")
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new string[] {
+    "Microsoft.Maui.Controls.Foldable.*.nupkg",
+    "Microsoft.Maui.Graphics.*.nupkg",
 };
 
 ProcessTFMSwitches();
@@ -214,10 +216,12 @@ Task("dotnet-test")
         var tests = new []
         {
             "**/Controls.Core.UnitTests.csproj",
+            "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
+            "**/Graphics.Tests.csproj",
         };
 
         var success = true;
@@ -300,8 +304,7 @@ Task("dotnet-pack-library-packs")
             CleanDirectories(tempDir);
         }
 
-        Download("Microsoft.Maui.Graphics", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json");
-        Download("Microsoft.Maui.Graphics.Win2D.WinUI.Desktop", "MicrosoftMauiGraphicsVersion", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json", "https://api.nuget.org/v3/index.json");
+        // Download("PACKAGE_ID", "VERSION_VARIABLE", "SOURCE_URL");
     });
 
 Task("dotnet-pack-docs")
@@ -708,5 +711,10 @@ void ProcessTFMSwitches()
         {
             ReplaceTextInFiles("Directory.Build.Override.props", $"<{replaceWith}></{replaceWith}>", $"<{replaceWith}>true</{replaceWith}>");
         }
+    }
+    else
+    {
+        if (FileExists("Directory.Build.Override.props"))
+            DeleteFile("Directory.Build.Override.props");
     }
 }

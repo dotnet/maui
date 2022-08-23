@@ -4,14 +4,14 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class DataPackageTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void PropertySetters()
 		{
 			var dataPackage = new DataPackage();
@@ -21,12 +21,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			dataPackage.Image = imageSource;
 			dataPackage.Properties["key"] = "value";
 
-			Assert.AreEqual("text", dataPackage.Text);
-			Assert.AreEqual(imageSource, dataPackage.Image);
-			Assert.AreEqual(dataPackage.Properties["key"], "value");
+			Assert.Equal("text", dataPackage.Text);
+			Assert.Equal(imageSource, dataPackage.Image);
+			Assert.Equal("value", dataPackage.Properties["key"]);
 		}
 
-		[Test]
+		[Fact]
 		public async Task DataPackageViewGetters()
 		{
 			var dataPackage = new DataPackage();
@@ -37,13 +37,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			dataPackage.Properties["key"] = "value";
 			var dataView = dataPackage.View;
 
-			Assert.AreEqual("text", await dataView.GetTextAsync());
-			Assert.AreEqual(imageSource, await dataView.GetImageAsync());
-			Assert.AreEqual(dataView.Properties["key"], "value");
+			Assert.Equal("text", await dataView.GetTextAsync());
+			Assert.Equal(imageSource, await dataView.GetImageAsync());
+			Assert.Equal("value", dataView.Properties["key"]);
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task DataPackageViewGettersArentTiedToInitialDataPackage()
 		{
 			var dataPackage = new DataPackage();
@@ -60,9 +60,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			dataPackage.Properties["key"] = "fail";
 
 
-			Assert.AreEqual("text", await dataView.GetTextAsync());
-			Assert.AreEqual(imageSource, await dataView.GetImageAsync());
-			Assert.AreEqual(dataView.Properties["key"], "value");
+			Assert.Equal("text", await dataView.GetTextAsync());
+			Assert.Equal(imageSource, await dataView.GetImageAsync());
+			Assert.Equal("value", dataView.Properties["key"]);
 		}
 	}
 }
