@@ -11,14 +11,14 @@ namespace Microsoft.Maui
 {
 	public class MauiWinUIWindow : UI.Xaml.Window
 	{
-		readonly WindowManager _windowManager;
+		readonly WindowMessageManager _windowManager;
 
 		IntPtr _windowIcon;
 		bool _enableResumeEvent;
 
 		public MauiWinUIWindow()
 		{
-			_windowManager = WindowManager.Get(this);
+			_windowManager = WindowMessageManager.Get(this);
 
 			Activated += OnActivated;
 			Closed += OnClosedPrivate;

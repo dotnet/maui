@@ -6,17 +6,17 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	class WindowManager : IDisposable
+	class WindowMessageManager : IDisposable
 	{
-		readonly static Dictionary<IntPtr, WeakReference<WindowManager>> _managers = new();
+		readonly static Dictionary<IntPtr, WeakReference<WindowMessageManager>> _managers = new();
 		readonly static PlatformMethods.WindowProc _newWndProc = new(NewWindowProc);
 
-		readonly IntPtr _windowHandle;
-		readonly IntPtr _oldWndProc;
+		IntPtr _windowHandle;
+		IntPtr _oldWndProc;
 
 		bool _isDisposed;
 
-		WindowManager(Window window)
+		WindowMessageManager(Window window)
 		{
 			_windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
 			_oldWndProc = PlatformMethods.SetWindowLongPtr(_windowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, _newWndProc);
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return PlatformMethods.DefSubclassProc(hWnd, uMsg, wParam, lParam);
 		}
 
-		public static WindowManager Get(Window window)
+		public static WindowMessageManager Get(Window window)
 		{
 			var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
 
@@ -57,9 +57,9 @@ namespace Microsoft.Maui.ApplicationModel
 				!manager._isDisposed)
 				return manager;
 
-			var newManager = new WindowManager(window);
+			var newManager = new WindowMessageManager(window);
 
-			_managers[handle] = new WeakReference<WindowManager>(newManager);
+			_managers[handle] = new WeakReference<WindowMessageManager>(newManager);
 
 			return newManager;
 		}
@@ -84,11 +84,14 @@ namespace Microsoft.Maui.ApplicationModel
 
 				// set large fields to null
 
+				_windowHandle = IntPtr.Zero;
+				_oldWndProc = IntPtr.Zero;
+
 				_isDisposed = true;
 			}
 		}
 
-		~WindowManager()
+		~WindowMessageManager()
 		{
 			Dispose(disposing: false);
 		}

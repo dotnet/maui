@@ -7,7 +7,7 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		readonly IWindowStateManager _windowStateManager;
 
-		WindowManager? _currentWindowManager;
+		WindowMessageManager? _currentWindowManager;
 
 		public ActiveWindowTracker(IWindowStateManager windowStateManager)
 		{
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 			if (window is not null)
 			{
-				_currentWindowManager = WindowManager.Get(window);
+				_currentWindowManager = WindowMessageManager.Get(window);
 				_currentWindowManager.WindowMessage += OnWindowMessage;
 			}
 		}
