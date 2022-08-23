@@ -29,17 +29,17 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ButtonReleaseEvent -= OnButtonReleaseEvent;
 		}
 
-		public static void MapText(ButtonHandler handler, IButton button)
+		public static void MapText(IButtonHandler handler, IButton button)
 		{
 			handler.PlatformView?.UpdateText(button);
 		}
 
-		public static void MapTextColor(ButtonHandler handler, IButton button)
+		public static void MapTextColor(IButtonHandler handler, IButton button)
 		{
 			handler.PlatformView?.UpdateTextColor(button.TextColor);
 		}
 
-		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
+		public static void MapCharacterSpacing(IButtonHandler handler, IButton button)
 		{
 			if (handler.PlatformView.Child is Label nativeView)
 			{
@@ -48,14 +48,14 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapImageSource(ButtonHandler handler, IButton image) { }
+		public static void MapImageSource(IButtonHandler handler, IImage image) { }
 
-		public static void MapFont(ButtonHandler handler, IButton button)
+		public static void MapFont(IButtonHandler handler, IButton button)
 		{
 			handler.MapFont(button);
 		}
 
-		public static void MapPadding(ButtonHandler handler, IButton button)
+		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
 			handler.PlatformView.WithPadding(button.Padding);
 		}

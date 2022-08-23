@@ -43,28 +43,28 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public static void MapMinimum(SliderHandler handler, ISlider slider)
+		public static void MapMinimum(ISliderHandler handler, ISlider slider)
 		{
 			handler.PlatformView?.UpdateRange(slider);
 		}
 
-		public static void MapMaximum(SliderHandler handler, ISlider slider)
+		public static void MapMaximum(ISliderHandler handler, ISlider slider)
 		{
 			handler.PlatformView?.UpdateRange(slider);
 		}
 
-		public static void MapValue(SliderHandler handler, ISlider slider)
+		public static void MapValue(ISliderHandler handler, ISlider slider)
 		{
 			handler.PlatformView?.UpdateValue(slider);
 		}
 
 		[MissingMapper]
-		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider) { }
+		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider) { }
 
 		[MissingMapper]
-		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider) { }
+		public static void MapMaximumTrackColor(ISliderHandler handler, ISlider slider) { }
 
-		public static void MapThumbColor(SliderHandler handler, ISlider slider)
+		public static void MapThumbColor(ISliderHandler handler, ISlider slider)
 		{
 			if (handler.PlatformView is not { } nativeView)
 				return;
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Handlers
 			w.SetStyleValue("contain", "background-size", "contents > trough > slider");
 		}
 
-		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
+		public static void MapThumbImageSource(ISliderHandler handler, ISlider slider)
 		{
 
 			if (handler.PlatformView is not { } nativeView)

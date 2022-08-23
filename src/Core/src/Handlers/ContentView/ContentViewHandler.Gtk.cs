@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		protected override ContentView CreatePlatformView() => throw new NotImplementedException();
 
-		void UpdateContent()
+		public void UpdateContent()
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");

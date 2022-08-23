@@ -99,17 +99,17 @@ namespace Microsoft.Maui.Handlers
 				HandleSelectionChanged();
 		}
 
-		public static void MapText(EntryHandler handler, IEntry entry)
+		public static void MapText(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateText(entry);
 		}
 
-		public static void MapTextColor(EntryHandler handler, IEntry entry)
+		public static void MapTextColor(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateTextColor(entry.TextColor);
 		}
 
-		public static void MapIsPassword(EntryHandler handler, IEntry entry)
+		public static void MapIsPassword(IEntryHandler handler, IEntry entry)
 		{
 			if (handler.PlatformView is { } nativeView)
 			{
@@ -117,57 +117,57 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
+		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry)
 		{
 			if (handler.PlatformView is { } nativeView)
 				nativeView.Alignment = entry.HorizontalTextAlignment.ToXyAlign();
 		}
 
 		[MissingMapper]
-		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
+		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry)
 		{ }
 
 		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry) { }
+		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry) { }
 
-		public static void MapMaxLength(EntryHandler handler, IEntry entry)
+		public static void MapMaxLength(IEntryHandler handler, IEntry entry)
 		{
 			if (handler.PlatformView is { } nativeView)
 				nativeView.MaxLength = entry.MaxLength;
 		}
 
-		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
+		public static void MapPlaceholder(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdatePlaceholder(entry);
 		}
 
-		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
+		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateIsReadOnly(entry);
 		}
 
-		public static void MapFont(EntryHandler handler, IEntry entry)
+		public static void MapFont(IEntryHandler handler, IEntry entry)
 		{
 			handler.MapFont(entry);
 		}
 
-		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		public static void MapCursorPosition(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateCursorPosition(entry);
 		}
 
-		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		public static void MapSelectionLength(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateSelectionLength(entry);
 		}
 
 		[MissingMapper]
-		public static void MapReturnType(EntryHandler handler, IEntry entry) { }
+		public static void MapReturnType(IEntryHandler handler, IEntry entry) { }
 
 		[MissingMapper]
-		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry) { }
+		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) { }
 
-		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
+		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry)
 		{
 			if (handler.PlatformView is not { } nativeView)
 				return;
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapKeyboard(EntryHandler handler, IEntry entry)
+		public static void MapKeyboard(IEntryHandler handler, IEntry entry)
 		{
 			if (handler.PlatformView is not { } nativeView)
 				return;

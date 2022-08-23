@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Graphics
 					var pixbuf = patternPaint.GetPatternBitmap(1);
 					owned = true;
 
-					// todo: create a cairo.pattern & store it in pixbuf
+					// TODO: create a cairo.pattern & store it in pixbuf
 					return pixbuf;
 
 				}

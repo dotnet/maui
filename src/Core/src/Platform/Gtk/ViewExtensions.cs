@@ -143,6 +143,34 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFlowDirection(this Widget nativeView, IView view)
 		{ }
 
+		internal static Rect GetBoundingBox(this IView view)
+			=> view.ToPlatform().GetBoundingBox();
+
+		internal static Graphics.Rect GetPlatformViewBounds(this IView view)
+		{
+			var w = view.ToPlatform();
+
+			if (w.Toplevel is not { } tl) 
+				return w.GetBoundingBox();
+
+			w.TranslateCoordinates(tl, 0, 0, out var x, out var y);
+
+			return new Rect(x, y, w.AllocatedWidth, w.AllocatedHeight);
+
+		}
+
+		internal static Rect GetBoundingBox(this Gtk.Widget? platformView)
+		{
+			if (platformView == null)
+				return new Rect();
+
+			return platformView.Allocation.ToRect();
+		}
+
+		internal static Widget? GetParent(this Widget? view)
+		{
+			return view?.Parent;
+		}
 	}
 
 }

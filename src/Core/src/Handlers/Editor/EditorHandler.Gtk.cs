@@ -59,47 +59,47 @@ namespace Microsoft.Maui.Handlers
 				virtualView.Text = text;
 		}
 
-		public static void MapText(EditorHandler handler, IEditor editor)
+		public static void MapText(IEditorHandler handler, IEditor editor)
 		{
 			handler.PlatformView?.UpdateText(editor);
 		}
 
-		public static void MapFont(EditorHandler handler, IEditor editor)
+		public static void MapFont(IEditorHandler handler, IEditor editor)
 		{
 			handler.MapFont(editor);
 		}
 
-		public static void MapIsReadOnly(EditorHandler handler, IEditor editor)
+		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor)
 		{
 			if (handler.PlatformView is { } nativeView)
 				nativeView.Editable = !editor.IsReadOnly;
 		}
 
-		public static void MapTextColor(EditorHandler handler, IEditor editor)
+		public static void MapTextColor(IEditorHandler handler, IEditor editor)
 		{
 			handler.PlatformView?.UpdateTextColor(editor.TextColor);
 		}
 
 		[MissingMapper]
-		public static void MapPlaceholder(EditorHandler handler, IEditor editor) { }
+		public static void MapPlaceholder(IEditorHandler handler, IEditor editor) { }
 
 		[MissingMapper]
-		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) { }
+		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor) { }
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
+		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor)
 		{
 			// see: https://docs.gtk.org/gtk3/property.TextTag.letter-spacing.html
 		}
 
 		[MissingMapper]
-		public static void MapMaxLength(EditorHandler handler, IEditor editor) { }
+		public static void MapMaxLength(IEditorHandler handler, IEditor editor) { }
 
 		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
+		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor) { }
 
 		[MissingMapper]
-		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
+		public static void MapKeyboard(IEditorHandler handler, IEditor editor) { }
 
 	}
 

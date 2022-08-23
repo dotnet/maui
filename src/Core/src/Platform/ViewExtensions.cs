@@ -20,6 +20,9 @@ using ParentView = Microsoft.UI.Xaml.DependencyObject;
 #elif TIZEN
 using PlatformView = ElmSharp.EvasObject;
 using ParentView = ElmSharp.EvasObject;
+#elif GTK
+using PlatformView = Gtk.Widget;
+using ParentView = Gtk.Widget;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;

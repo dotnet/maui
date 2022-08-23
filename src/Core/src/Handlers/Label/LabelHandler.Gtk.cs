@@ -113,48 +113,48 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public static void MapText(LabelHandler handler, ILabel label)
+		public static void MapText(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateText(label);
 		}
 
-		public static void MapTextColor(LabelHandler handler, ILabel label)
+		public static void MapTextColor(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateTextColor(label.TextColor);
 		}
 
-		public static void MapFont(LabelHandler handler, ILabel label)
+		public static void MapFont(ILabelHandler handler, ILabel label)
 		{
 			handler.MapFont(label);
 		}
 
-		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
+		public static void MapHorizontalTextAlignment(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
 		}
 
-		public static void MapVerticalTextAlignment(LabelHandler handler, ILabel label)
+		public static void MapVerticalTextAlignment(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateVerticalTextAlignment(label);
 		}
 
-		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
+		public static void MapLineBreakMode(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateLineBreakMode(label);
 		}
 
-		public static void MapMaxLines(LabelHandler handler, ILabel label)
+		public static void MapMaxLines(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateMaxLines(label);
 		}
 
-		public static void MapPadding(LabelHandler handler, ILabel label)
+		public static void MapPadding(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView.WithPadding(label.Padding);
 
 		}
 
-		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
+		public static void MapCharacterSpacing(ILabelHandler handler, ILabel label)
 		{
 			if (handler.PlatformView is not { } nativeView)
 				return;
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations, label.CharacterSpacing);
 		}
 
-		public static void MapTextDecorations(LabelHandler handler, ILabel label)
+		public static void MapTextDecorations(ILabelHandler handler, ILabel label)
 		{
 			if (handler.PlatformView is not { } nativeView)
 				return;
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations, label.CharacterSpacing);
 		}
 
-		public static void MapLineHeight(LabelHandler handler, ILabel label)
+		public static void MapLineHeight(ILabelHandler handler, ILabel label)
 		{
 			if (handler.PlatformView is not { } nativeView)
 				return;

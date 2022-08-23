@@ -5,37 +5,37 @@
 	{
 
 		[MissingMapper]
-		public static void MapTranslationX(ViewHandler handler, IView view) { }
+		public static void MapTranslationX(IViewHandler handler, IView view) { }
 
 		[MissingMapper]
-		public static void MapTranslationY(ViewHandler handler, IView view) { }
+		public static void MapTranslationY(IViewHandler handler, IView view) { }
 
 		[MissingMapper]
-		public static void MapScale(ViewHandler handler, IView view)
+		public static void MapScale(IViewHandler handler, IView view)
 		{
 			//handler.PlatformView.UpdateScale(view.Scale);
 		}
 
 		[MissingMapper]
-		public static void MapScaleX(ViewHandler handler, IView view) { }
+		public static void MapScaleX(IViewHandler handler, IView view) { }
 
 		[MissingMapper]
-		public static void MapScaleY(ViewHandler handler, IView view) { }
+		public static void MapScaleY(IViewHandler handler, IView view) { }
 
 		[MissingMapper]
-		public static void MapRotation(ViewHandler handler, IView view) { }
+		public static void MapRotation(IViewHandler handler, IView view) { }
 
 		[MissingMapper]
-		public static void MapRotationX(ViewHandler handler, IView view) { }
+		public static void MapRotationX(IViewHandler handler, IView view) { }
 
 		[MissingMapper]
-		public static void MapRotationY(ViewHandler handler, IView view) { }
+		public static void MapRotationY(IViewHandler handler, IView view) { }
 
 		[MissingMapper]
-		public static void MapAnchorX(ViewHandler handler, IView view) { }
+		public static void MapAnchorX(IViewHandler handler, IView view) { }
 
 		[MissingMapper]
-		public static void MapAnchorY(ViewHandler handler, IView view) { }
+		public static void MapAnchorY(IViewHandler handler, IView view) { }
 		
 		[MissingMapper]
 		public virtual bool NeedsContainer => false;

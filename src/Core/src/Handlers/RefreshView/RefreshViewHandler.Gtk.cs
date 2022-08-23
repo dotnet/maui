@@ -13,22 +13,22 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapIsRefreshing(RefreshViewHandler handler, IRefreshView refreshView)
+		public static void MapIsRefreshing(IRefreshViewHandler handler, IRefreshView refreshView)
 		{
 		}
 
 		[MissingMapper]
-		public static void MapContent(RefreshViewHandler handler, IRefreshView refreshView)
+		public static void MapContent(IRefreshViewHandler handler, IRefreshView refreshView)
 		{
 		}
 
 		[MissingMapper]
-		public static void MapRefreshColor(RefreshViewHandler handler, IRefreshView refreshView)
+		public static void MapRefreshColor(IRefreshViewHandler handler, IRefreshView refreshView)
 		{
 		}
 
 		[MissingMapper]
-		public static void MapRefreshViewBackground(RefreshViewHandler handler, IView view)
+		public static void MapRefreshViewBackground(IRefreshViewHandler handler, IView view)
 		{
 		}
 	}

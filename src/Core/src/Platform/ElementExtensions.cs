@@ -20,6 +20,11 @@ using PlatformView = ElmSharp.EvasObject;
 using BasePlatformType = System.Object;
 using PlatformWindow = ElmSharp.Window;
 using PlatformApplication = Tizen.Applications.CoreUIApplication;
+#elif GTK
+using PlatformView = Gtk.Widget;
+using BasePlatformType = System.Object;
+using PlatformWindow = Gtk.Window;
+using PlatformApplication = Gtk.Application;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 using BasePlatformType = System.Object;

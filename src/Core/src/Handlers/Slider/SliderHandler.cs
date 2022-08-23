@@ -7,6 +7,8 @@ using PlatformView = Android.Widget.SeekBar;
 using PlatformView = Microsoft.UI.Xaml.Controls.Slider;
 #elif TIZEN
 using PlatformView = ElmSharp.Slider;
+#elif GTK
+using PlatformView = Gtk.Scale;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
+		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			if (handler.MauiContext == null || scrollView.Content == null)
 			{
@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args)
+		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
 			if (handler?.PlatformView is not { } nativeView)
 				return;
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapOrientation(ScrollViewHandler handler, IScrollView view)
+		public static void MapOrientation(IScrollViewHandler handler, IScrollView view)
 		{
 			if (handler?.PlatformView is not { } nativeView)
 				return;
@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ScrollOrientation = view.Orientation;
 		}
 
-		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView view)
+		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView view)
 		{
 			if (handler?.PlatformView is not { } nativeView)
 				return;
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public static void MapVerticalScrollBarVisibility(ScrollViewHandler handler, IScrollView view)
+		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView view)
 		{
 			if (handler?.PlatformView is not { } nativeView)
 				return;
