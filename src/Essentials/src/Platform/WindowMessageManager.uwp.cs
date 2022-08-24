@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Linq;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -23,6 +23,15 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		public IntPtr WindowHandle => _windowHandle;
+
+		public static IEnumerable<WindowMessageManager> GetAll()
+		{
+			foreach (var weakManager in _managers.Values.ToArray())
+			{
+				if (weakManager.TryGetTarget(out var manager))
+					yield return manager;
+			}
+		}
 
 		public event EventHandler<WindowMessageEventArgs>? WindowMessage;
 
@@ -78,9 +87,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 				// free unmanaged resources (unmanaged objects) and override finalizer
 
-				var newPtr = PlatformMethods.SetWindowLongPtr(_windowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, _oldWndProc);
-				var p = Marshal.GetFunctionPointerForDelegate(_newWndProc);
-				var same = p == newPtr;
+				PlatformMethods.SetWindowLongPtr(_windowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, _oldWndProc);
 
 				// set large fields to null
 
