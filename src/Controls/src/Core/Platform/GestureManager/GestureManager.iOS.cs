@@ -145,8 +145,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 			Point? CalculatePosition(IElement? element)
 			{
-				// TODO Shane will fill this in for iteration 2
-				return null;
+				var recognizer = weakRecognizer.Target as IGestureRecognizer;
+
+				if (recognizer == null)
+					return null;
+
+				if (uITapGestureRecognizer == null)
+					return null;
+
+				CGPoint? result = null;
+				if (element == null)
+					result = uITapGestureRecognizer.LocationInView(null);
+				else if(element.Handler?.PlatformView is UIView view)
+					result = uITapGestureRecognizer.LocationInView(view);
+
+				if (result == null)
+					return null;
+
+				return new Point(result.Value.X, result.Value.Y);
+
 			}
 		}
 
