@@ -11,18 +11,23 @@ namespace Microsoft.Maui.ApplicationModel
 		readonly static Dictionary<IntPtr, WeakReference<WindowMessageManager>> _managers = new();
 		readonly static PlatformMethods.WindowProc _newWndProc = new(NewWindowProc);
 
+		readonly object _locker = new();
+
 		IntPtr _windowHandle;
 		IntPtr _oldWndProc;
 
 		bool _isDisposed;
 
+		event EventHandler<WindowMessageEventArgs>? WindowMessageInternal;
+
 		WindowMessageManager(Window window)
 		{
 			_windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
-			_oldWndProc = PlatformMethods.SetWindowLongPtr(_windowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, _newWndProc);
 		}
 
 		public IntPtr WindowHandle => _windowHandle;
+
+		public bool IsAttached => _oldWndProc != IntPtr.Zero;
 
 		public static IEnumerable<WindowMessageManager> GetAll()
 		{
@@ -33,13 +38,52 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 
-		public event EventHandler<WindowMessageEventArgs>? WindowMessage;
+		public event EventHandler<WindowMessageEventArgs> WindowMessage
+		{
+			add
+			{
+				if (WindowMessageInternal is null)
+					Attach();
+
+				WindowMessageInternal += value;
+			}
+			remove
+			{
+				WindowMessageInternal -= value;
+
+				if (WindowMessageInternal is null)
+					Detach();
+			}
+		}
+
+		void Attach()
+		{
+			lock (_locker)
+			{
+				if (_oldWndProc == IntPtr.Zero)
+				{
+					_oldWndProc = PlatformMethods.SetWindowLongPtr(_windowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, _newWndProc);
+				}
+			}
+		}
+
+		void Detach()
+		{
+			lock (_locker)
+			{
+				if (_oldWndProc != IntPtr.Zero)
+				{
+					PlatformMethods.SetWindowLongPtr(_windowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, _oldWndProc);
+					_oldWndProc = IntPtr.Zero;
+				}
+			}
+		}
 
 		static IntPtr NewWindowProc(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam)
 		{
 			if (_managers.TryGetValue(hWnd, out var weakManager) && weakManager.TryGetTarget(out var manager))
 			{
-				var evt = manager.WindowMessage;
+				var evt = manager.WindowMessageInternal;
 				if (evt is not null)
 				{
 					var args = new WindowMessageEventArgs(hWnd, uMsg, wParam, lParam);
@@ -87,7 +131,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 				// free unmanaged resources (unmanaged objects) and override finalizer
 
-				PlatformMethods.SetWindowLongPtr(_windowHandle, PlatformMethods.WindowLongFlags.GWL_WNDPROC, _oldWndProc);
+				Detach();
 
 				// set large fields to null
 
