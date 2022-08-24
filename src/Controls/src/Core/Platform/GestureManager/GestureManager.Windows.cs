@@ -104,8 +104,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_control.Tapped -= HandleTapped;
 					_control.DoubleTapped -= HandleDoubleTapped;
-					//_control.PointerEntered -= HandlePointerEventExecuted;
-					//_control.PointerExited -= HandlePointerEventExecuted;
 				}
 
 				_control = value;
@@ -354,8 +352,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_control.Tapped -= HandleTapped;
 				_control.DoubleTapped -= HandleDoubleTapped;
-				//_control.PointerEntered -= HandlePointerEventExecuted;
-				//_control.PointerExited -= HandlePointerEventExecuted;
 			}
 
 			Control = null;
@@ -489,57 +485,16 @@ namespace Microsoft.Maui.Controls.Platform
 			PanComplete(true);
 		}
 
-		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
-		{
-			var view = Element as View;
-			if (view == null)
-				return;
-
-			var pointerPoint = e.GetCurrentPoint(Control);
-			var children = (view as IGestureController)?.GetChildElements(new Point(pointerPoint.Position.X, pointerPoint.Position.Y));
-
-			if (children != null)
-				foreach (var recognizer in children.GetChildGesturesFor<PointerGestureRecognizer>())
-				{
-					recognizer.SendPointerEntered(view);
-				}
-
-			if (e.Handled)
-				return;
-
-			IEnumerable<PointerGestureRecognizer> pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
-			foreach (var recognizer in pointerGestures)
-			{
-				recognizer.SendPointerEntered(view);
-			}
-		}
+		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e) 
+			=> HandlePgrPointerEvent(e, (view, recognizer) => recognizer.SendPointerEntered(view));
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
-		{
-			var view = Element as View;
-			if (view == null)
-				return;
-
-			var pointerPoint = e.GetCurrentPoint(Control);
-			var children = (view as IGestureController)?.GetChildElements(new Point(pointerPoint.Position.X, pointerPoint.Position.Y));
-
-			if (children != null)
-				foreach (var recognizer in children.GetChildGesturesFor<PointerGestureRecognizer>())
-				{
-					recognizer.SendPointerExited(view);
-				}
-
-			if (e.Handled)
-				return;
-
-			IEnumerable<PointerGestureRecognizer> pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
-			foreach (var recognizer in pointerGestures)
-			{
-				recognizer.SendPointerExited(view);
-			}
-		}
+			=> HandlePgrPointerEvent(e, (view, recognizer) => recognizer.SendPointerExited(view));
 
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer) => recognizer.SendPointerMoved(view));
+
+		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
 			var view = Element as View;
 			if (view == null)
@@ -549,18 +504,20 @@ namespace Microsoft.Maui.Controls.Platform
 			var children = (view as IGestureController)?.GetChildElements(new Point(pointerPoint.Position.X, pointerPoint.Position.Y));
 
 			if (children != null)
+			{
 				foreach (var recognizer in children.GetChildGesturesFor<PointerGestureRecognizer>())
 				{
-					recognizer.SendPointerMoved(view);
+					SendPointerEvent.Invoke(view, recognizer);
 				}
+			}
 
 			if (e.Handled)
 				return;
 
-			IEnumerable<PointerGestureRecognizer> pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
+			var pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
 			foreach (var recognizer in pointerGestures)
 			{
-				recognizer.SendPointerMoved(view);
+				SendPointerEvent.Invoke(view, recognizer);
 			}
 		}
 

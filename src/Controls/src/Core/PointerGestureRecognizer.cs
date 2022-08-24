@@ -1,5 +1,7 @@
+#nullable enable
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Graphics;
 using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
@@ -25,21 +27,9 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		//public ICommand Command
-		//{
-		//	get { return (ICommand)GetValue(CommandProperty); }
-		//	set { SetValue(CommandProperty, value); }
-		//}
-
-		//public object CommandParameter
-		//{
-		//	get { return GetValue(CommandParameterProperty); }
-		//	set { SetValue(CommandParameterProperty, value); }
-		//}
-
-		public event EventHandler<PointerEventArgs> PointerEntered;
-		public event EventHandler<PointerEventArgs> PointerExited;
-		public event EventHandler<PointerEventArgs> PointerMoved;
+		public event EventHandler<PointerEventArgs>? PointerEntered;
+		public event EventHandler<PointerEventArgs>? PointerExited;
+		public event EventHandler<PointerEventArgs>? PointerMoved;
 
 		PointerEventArgs args = new PointerEventArgs();
 
@@ -88,7 +78,7 @@ namespace Microsoft.Maui.Controls
 			if (cmd != null && cmd.CanExecute(PointerEnteredCommandParameter))
 				cmd.Execute(PointerEnteredCommandParameter);
 
-			EventHandler<PointerEventArgs> handler = PointerEntered;
+			EventHandler<PointerEventArgs>? handler = PointerEntered;
 			if (handler != null)
 				handler?.Invoke(sender, args);
 		}
@@ -99,7 +89,7 @@ namespace Microsoft.Maui.Controls
 			if (cmd != null && cmd.CanExecute(PointerExitedCommandParameter))
 				cmd.Execute(PointerExitedCommandParameter);
 
-			EventHandler<PointerEventArgs> handler = PointerExited;
+			EventHandler<PointerEventArgs>? handler = PointerExited;
 			if (handler != null)
 				handler?.Invoke(sender, args);
 		}
@@ -110,7 +100,7 @@ namespace Microsoft.Maui.Controls
 			if (cmd != null && cmd.CanExecute(PointerMovedCommandParameter))
 				cmd.Execute(PointerMovedCommandParameter);
 
-			EventHandler<PointerEventArgs> handler = PointerMoved;
+			EventHandler<PointerEventArgs>? handler = PointerMoved;
 			if (handler != null)
 				handler?.Invoke(sender, args);
 		}
