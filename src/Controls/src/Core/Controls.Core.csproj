@@ -53,6 +53,6 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+<!--  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />-->
 
 </Project>
