@@ -28,8 +28,8 @@
   <PropertyGroup Condition="'$(CI)' != 'true' and '$(TF_BUILD)' != 'true'">
     <DotNetWorkloadVersionRegex>\d+\.\d+\.\d+(-[a-z]+[\.\d+]+)?</DotNetWorkloadVersionRegex>
 
-    <DotNetWorkloadInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' == '' and Exists('$(DOTNET_ROOT)\sdk-manifests\$(DotNetVersionBand)\microsoft.net.sdk.macos\WorkloadManifest.json')">$(DOTNET_ROOT)\sdk-manifests\$(DotNetVersionBand)\</DotNetWorkloadInstallLocation>
-    <DotNetWorkloadInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' == '' and Exists('$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetVersionBand)\microsoft.net.sdk.macos\WorkloadManifest.json')">$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetVersionBand)\</DotNetWorkloadInstallLocation>
+    <DotNetWorkloadInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' == '' and Exists('$(DOTNET_ROOT)\sdk-manifests\$(DotNetSdkManifestsFolder)\microsoft.net.sdk.macos\WorkloadManifest.json')">$(DOTNET_ROOT)\sdk-manifests\$(DotNetSdkManifestsFolder)\</DotNetWorkloadInstallLocation>
+    <DotNetWorkloadInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' == '' and Exists('$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetSdkManifestsFolder)\microsoft.net.sdk.macos\WorkloadManifest.json')">$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetSdkManifestsFolder)\</DotNetWorkloadInstallLocation>
     <DotNetWorkloadPacksInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' != ''">$(DotNetWorkloadInstallLocation)..\..\packs\</DotNetWorkloadPacksInstallLocation>
 
     <DotNetMacOSWorkloadInstalledVersion Condition="Exists('$(DotNetWorkloadInstallLocation)microsoft.net.sdk.macos\WorkloadManifest.json')">$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(DotNetWorkloadInstallLocation)\microsoft.net.sdk.macos\WorkloadManifest.json')), '$(DotNetWorkloadVersionRegex)'))</DotNetMacOSWorkloadInstalledVersion>
