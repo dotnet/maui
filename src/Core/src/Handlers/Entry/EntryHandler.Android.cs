@@ -157,7 +157,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEditorAction(object? sender, EditorActionEventArgs e)
 		{
-			if (e.IsCompletedAction())
+			var currentInputImeFlag = VirtualView?.ReturnType.ToPlatform();
+
+			if (e.IsCompletedAction(currentInputImeFlag))
 			{
 				// TODO: Dismiss keyboard for hardware / physical keyboards
 
