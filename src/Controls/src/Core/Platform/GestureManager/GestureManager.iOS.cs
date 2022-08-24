@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 
 				if (view != null)
-					tapGestureRecognizer.SendTapped(view, CalculatePosition);
+					tapGestureRecognizer.SendTapped(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker));
 			}
 			else if (recognizer is ChildGestureRecognizer childGestureRecognizer)
 			{
@@ -144,44 +144,60 @@ namespace Microsoft.Maui.Controls.Platform
 				var childTapGestureRecognizer = childGestureRecognizer.GestureRecognizer as TapGestureRecognizer;
 				foreach (var item in recognizers)
 					if (item == childTapGestureRecognizer && view != null)
-						childTapGestureRecognizer.SendTapped(view, CalculatePosition);
+						childTapGestureRecognizer.SendTapped(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker));
 			}
+		}
 
-			Point? CalculatePosition(IElement? element)
+
+		static Point? CalculatePosition(IElement? element, CGPoint originPoint, WeakReference? weakPlatformRecognizer, WeakReference weakEventTracker)
+		{
+			var eventTracker = weakEventTracker.Target as GestureManager;
+			var virtualView = eventTracker?._handler?.VirtualView as View;
+			var platformRecognizer = weakPlatformRecognizer?.Target as UIGestureRecognizer;
+
+			if (virtualView == null)
+				return null;
+
+			if (platformRecognizer == null)
 			{
-				var recognizer = weakRecognizer.Target as IGestureRecognizer;
-				var platformRecognizer = weakPlatformRecognizer?.Target as UIGestureRecognizer;
+				if (virtualView == element)
+					return new Point((int)originPoint.X, (int)originPoint.Y);
 
-				if (recognizer == null)
+				var targetViewScreenLocation = virtualView.GetLocationOnScreen();
+
+				if (!targetViewScreenLocation.HasValue)
 					return null;
 
-				if (platformRecognizer == null)
+				var windowX = targetViewScreenLocation.Value.X + originPoint.X;
+				var windowY = targetViewScreenLocation.Value.Y + originPoint.Y;
+
+				if (element == null)
+					return new Point(windowX, windowY);
+
+				if (element?.Handler?.PlatformView is UIView uiView)
 				{
-					if (element?.Handler?.PlatformView is UIView uiView)
-					{
-						var location = uiView.GetLocationOnScreen();
+					var location = uiView.GetLocationOnScreen();
 
-						var x = originPoint.X - location.X;
-						var y = originPoint.Y - location.Y;
+					var x = windowX - location.X;
+					var y = windowY - location.Y;
 
-						return new Point(x, y);
-					}
-
-					return null;
+					return new Point(x, y);
 				}
 
-				CGPoint? result = null;
-				if (element == null)
-					result = platformRecognizer.LocationInView(null);
-				else if (element.Handler?.PlatformView is UIView view)
-					result = platformRecognizer.LocationInView(view);
-
-				if (result == null)
-					return null;
-
-				return new Point(result.Value.X, result.Value.Y);
-
+				return null;
 			}
+
+			CGPoint? result = null;
+			if (element == null)
+				result = platformRecognizer.LocationInView(null);
+			else if (element.Handler?.PlatformView is UIView view)
+				result = platformRecognizer.LocationInView(view);
+
+			if (result == null)
+				return null;
+
+			return new Point((int)result.Value.X, (int)result.Value.Y);
+
 		}
 
 		protected virtual UIGestureRecognizer? GetPlatformRecognizer(IGestureRecognizer recognizer)
@@ -663,9 +679,13 @@ namespace Microsoft.Maui.Controls.Platform
 		[UnsupportedOSPlatform("tvos")]
 		class FakeRightClickContextMenuInteraction : UIContextMenuInteraction
 		{
+			// Store a reference to the platform delegate so that it is not garbage collected
+			IUIContextMenuInteractionDelegate? _dontCollectMePlease;
+
 			public FakeRightClickContextMenuInteraction(TapGestureRecognizer tapGestureRecognizer, GestureManager gestureManager)
 				: base(new FakeRightClickDelegate(tapGestureRecognizer, gestureManager))
 			{
+				_dontCollectMePlease = Delegate;
 			}
 
 			class FakeRightClickDelegate : UIContextMenuInteractionDelegate
