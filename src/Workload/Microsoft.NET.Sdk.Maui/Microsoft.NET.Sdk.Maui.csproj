@@ -57,7 +57,9 @@
       <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion" PropertyName="MicrosoftMauiGraphicsVersion" />
       <_VersionsToReplace Include="MAUI_GRAPHICS_VERSION" PropertyName="MicrosoftMauiGraphicsVersion" />
       <_VersionsToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+      <_VersionsToReplace Include="MAUI_DOTNET_TFM" PropertyName="_MauiDotNetTfm" />
       <_VersionsToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_TFM" PropertyName="_MauiPreviousDotNetTfm" />
       <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION" PropertyName="_MauiPreviousDotNetVersion" />
       <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
       <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
