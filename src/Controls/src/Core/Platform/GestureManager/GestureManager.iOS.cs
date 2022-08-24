@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Reflection;
 using System.Runtime.Versioning;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
 		readonly Dictionary<IGestureRecognizer, UIGestureRecognizer> _gestureRecognizers = new Dictionary<IGestureRecognizer, UIGestureRecognizer>();
-
+		readonly List<INativeObject> _interactions = new List<INativeObject>();
 		readonly IPlatformViewHandler _handler;
 
 		bool _disposed;
@@ -80,12 +81,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (var kvp in _gestureRecognizers)
 			{
+				if (TryGetTapGestureRecognizer(kvp.Key, out TapGestureRecognizer? tapGestureRecognizer) &&
+					tapGestureRecognizer != null)
+				{
+					tapGestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
+				}
+
 				if (_platformView != null)
 					_platformView.RemoveGestureRecognizer(kvp.Value);
 				kvp.Value.ShouldReceiveTouch = null;
 				kvp.Value.Dispose();
 			}
 
+			if (_platformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				foreach(IUIInteraction interaction in _interactions)
+				{
+					_platformView.RemoveInteraction(interaction);
+				}
+			}
 			_gestureRecognizers.Clear();
 
 			Disconnect();
@@ -502,12 +516,20 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
+			_interactions.Clear();
+
 			for (int i = 0; i < ElementGestureRecognizers.Count; i++)
 			{
 				IGestureRecognizer recognizer = ElementGestureRecognizers[i];
 
 				if (_gestureRecognizers.ContainsKey(recognizer))
 					continue;
+
+				if(TryGetTapGestureRecognizer(recognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
+					tapGestureRecognizer != null)
+				{
+					tapGestureRecognizer.PropertyChanged += OnTapGestureRecognizerPropertyChanged;
+				}
 
 				// AddFakeRightClickForMacCatalyst returns the button mask for the processed tap gesture
 				// If a fake gesture wasn't added then it just returns 0
@@ -578,8 +600,32 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_platformView != null)
 					_platformView.RemoveGestureRecognizer(uiRecognizer);
 
+				if (TryGetTapGestureRecognizer(gestureRecognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
+					tapGestureRecognizer != null)
+				{
+					gestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
+				}
+
 				uiRecognizer.Dispose();
 			}
+
+			if (_platformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				for (int i = _platformView.Interactions.Length - 1; i >= 0; i--)
+				{
+					var interaction = (IUIInteraction)_platformView.Interactions[i];
+					if (interaction is FakeRightClickContextMenuInteraction && !_interactions.Contains(interaction))
+					{
+						_platformView.RemoveInteraction(interaction);
+					}
+				}
+			}
+		}
+
+		void OnTapGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.Is(TapGestureRecognizer.ButtonsProperty))
+				LoadRecognizers();
 		}
 
 		bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
@@ -664,9 +710,28 @@ namespace Microsoft.Maui.Controls.Platform
 				TryGetTapGestureRecognizer(recognizer, out TapGestureRecognizer? tapRecognizer);
 
 				if (tapRecognizer == null || (tapRecognizer.Buttons & ButtonsMask.Secondary) != ButtonsMask.Secondary)
+				{
 					return (ButtonsMask)0;
+				}
 
-				_platformView?.AddInteraction(new FakeRightClickContextMenuInteraction(tapRecognizer, this));
+				if (_platformView != null)
+				{
+					foreach (var interaction in _platformView.Interactions)
+					{
+						// check if this gesture was already added
+						if (interaction is FakeRightClickContextMenuInteraction faker &&
+							faker.TapGestureRecognizer == tapRecognizer)
+						{
+							_interactions.Add(faker);
+							return tapRecognizer.Buttons;
+						}
+					}
+				}
+
+				var fakeInteraction = new FakeRightClickContextMenuInteraction(tapRecognizer, this);
+				_interactions.Add(fakeInteraction);
+
+				_platformView?.AddInteraction(fakeInteraction);
 
 				return tapRecognizer.Buttons;
 			}
@@ -677,22 +742,25 @@ namespace Microsoft.Maui.Controls.Platform
 		[SupportedOSPlatform("ios13.0")]
 		[SupportedOSPlatform("maccatalyst13.0.0")]
 		[UnsupportedOSPlatform("tvos")]
-		class FakeRightClickContextMenuInteraction : UIContextMenuInteraction
+		internal class FakeRightClickContextMenuInteraction : UIContextMenuInteraction
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
-			IUIContextMenuInteractionDelegate? _dontCollectMePlease;
+			FakeRightClickDelegate? _dontCollectMePlease;
 
 			public FakeRightClickContextMenuInteraction(TapGestureRecognizer tapGestureRecognizer, GestureManager gestureManager)
 				: base(new FakeRightClickDelegate(tapGestureRecognizer, gestureManager))
 			{
-				_dontCollectMePlease = Delegate;
+				_dontCollectMePlease = Delegate as FakeRightClickDelegate;
 			}
+
+			public TapGestureRecognizer? TapGestureRecognizer => _dontCollectMePlease?.TapGestureRecognizer;
 
 			class FakeRightClickDelegate : UIContextMenuInteractionDelegate
 			{
 				WeakReference _recognizer;
 				WeakReference _gestureManager;
 
+				public TapGestureRecognizer? TapGestureRecognizer => _recognizer.Target as TapGestureRecognizer;
 				public FakeRightClickDelegate(TapGestureRecognizer tapGestureRecognizer, GestureManager gestureManager)
 				{
 					_recognizer = new WeakReference(tapGestureRecognizer);
