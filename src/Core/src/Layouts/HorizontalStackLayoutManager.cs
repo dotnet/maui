@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Layouts
 
 			double measuredWidth = 0;
 			double measuredHeight = 0;
+			int spacingCount = 0;
 
 			for (int n = 0; n < Stack.Count; n++)
 			{
@@ -26,12 +27,13 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
+				spacingCount += 1;
 				var measure = child.Measure(double.PositiveInfinity, heightConstraint - padding.VerticalThickness);
 				measuredWidth += measure.Width;
 				measuredHeight = Math.Max(measuredHeight, measure.Height);
 			}
 
-			measuredWidth += MeasureSpacing(Stack.Spacing, Stack.Count);
+			measuredWidth += MeasureSpacing(Stack.Spacing, spacingCount);
 			measuredWidth += padding.HorizontalThickness;
 			measuredHeight += padding.VerticalThickness;
 

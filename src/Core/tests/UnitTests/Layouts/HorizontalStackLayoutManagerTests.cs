@@ -427,5 +427,87 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			view.Received().Measure(Arg.Is(expectedMeasureConstraint.Width), Arg.Is(expectedMeasureConstraint.Height));
 		}
+
+		[Fact]
+		public void CollapsedItemsDoNotIncurSpacingInMiddle()
+		{
+			var viewWidth = 5;
+			var viewHeight = 7;
+			var spacing = 10;
+
+			var stack = SetUpVisibilityTestStack(viewWidth, viewHeight, spacing);
+			stack.Spacing.Returns(spacing);
+
+			stack[1].Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var expectedWidth = viewWidth + spacing + viewWidth;
+
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Fact]
+		public void CollapsedItemsDoNotIncurSpacingAtEnd()
+		{
+			var viewWidth = 5;
+			var viewHeight = 7;
+			var spacing = 10;
+
+			var stack = SetUpVisibilityTestStack(viewWidth, viewHeight, spacing);
+			stack.Spacing.Returns(spacing);
+
+			stack[2].Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var expectedWidth = viewWidth + spacing + viewWidth;
+
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Fact]
+		public void CollapsedItemsDoNotIncurSpacingAtStart()
+		{
+			var viewWidth = 5;
+			var viewHeight = 7;
+			var spacing = 10;
+
+			var stack = SetUpVisibilityTestStack(viewWidth, viewHeight, spacing);
+			stack.Spacing.Returns(spacing);
+
+			stack[0].Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var expectedWidth = viewWidth + spacing + viewWidth;
+
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Fact]
+		public void LayoutWithAllCollapsedItemsHasNoSpacing()
+		{
+			var viewWidth = 5;
+			var viewHeight = 7;
+			var spacing = 10;
+
+			var stack = SetUpVisibilityTestStack(viewWidth, viewHeight, spacing);
+			stack.Spacing.Returns(spacing);
+
+			stack[0].Visibility.Returns(Visibility.Collapsed);
+			stack[1].Visibility.Returns(Visibility.Collapsed);
+			stack[2].Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var expectedWidth = 0;
+
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
 	}
 }
