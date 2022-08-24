@@ -496,13 +496,13 @@ namespace Microsoft.Maui.Controls.Platform
 				(view as IGestureController)?.GetChildElements(new Point(tapPosition.Value.X, tapPosition.Value.Y))?.
 				GetChildGesturesFor<TapGestureRecognizer>(ValidateGesture);
 
-			if (ProgessGestureRecognizers(children))
+			if (ProcessGestureRecognizers(children))
 				return;
 
 			IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(ValidateGesture);
-			ProgessGestureRecognizers(tapGestures);
+			ProcessGestureRecognizers(tapGestures);
 
-			bool ProgessGestureRecognizers(IEnumerable<TapGestureRecognizer>? tapGestures)
+			bool ProcessGestureRecognizers(IEnumerable<TapGestureRecognizer>? tapGestures)
 			{
 				bool handled = false;
 				if (tapGestures == null)

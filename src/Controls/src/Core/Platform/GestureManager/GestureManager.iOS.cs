@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_platformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				foreach(IUIInteraction interaction in _interactions)
+				foreach (IUIInteraction interaction in _interactions)
 				{
 					_platformView.RemoveInteraction(interaction);
 				}
@@ -509,6 +509,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 				_addedFlags |= UIAccessibilityTrait.Button;
+
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 				{
 					_defaultAccessibilityRespondsToUserInteraction = _platformView.AccessibilityRespondsToUserInteraction;
@@ -525,7 +526,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_gestureRecognizers.ContainsKey(recognizer))
 					continue;
 
-				if(TryGetTapGestureRecognizer(recognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
+				if (TryGetTapGestureRecognizer(recognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
 					tapGestureRecognizer != null)
 				{
 					tapGestureRecognizer.PropertyChanged += OnTapGestureRecognizerPropertyChanged;

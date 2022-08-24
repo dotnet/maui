@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<TappedEventArgs>? Tapped;
 
-		internal void SendTapped(View sender, Func<IElement?, Point?>? getPosition)
+		internal void SendTapped(View sender, Func<IElement?, Point?>? getPosition = null)
 		{
 			var cmd = Command;
 			if (cmd != null && cmd.CanExecute(CommandParameter))
