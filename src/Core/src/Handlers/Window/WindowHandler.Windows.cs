@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Handlers
 {

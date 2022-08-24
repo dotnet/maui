@@ -1,11 +1,19 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui.ApplicationModel
 {
 	static class PlatformMethods
 	{
+		public static class MessageIds
+		{
+			public const int WM_DPICHANGED = 0x02E0;
+			public const int WM_DISPLAYCHANGE = 0x007E;
+			public const int WM_SETTINGCHANGE = 0x001A;
+			public const int WM_THEMECHANGE = 0x031A;
+		}
+
 		public delegate IntPtr WindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
 		public static IntPtr SetWindowLongPtr(IntPtr hWnd, WindowLongFlags nIndex, WindowProc dwNewLong)
@@ -20,6 +28,20 @@ namespace Microsoft.Maui.Platform
 
 			[DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
 			static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, WindowLongFlags nIndex, WindowProc dwNewLong);
+		}
+
+		public static IntPtr SetWindowLongPtr(IntPtr hWnd, WindowLongFlags nIndex, IntPtr dwNewLong)
+		{
+			if (IntPtr.Size == 8)
+				return SetWindowLongPtr64(hWnd, nIndex, dwNewLong);
+			else
+				return new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong));
+
+			[DllImport("user32.dll", EntryPoint = "SetWindowLong")]
+			static extern int SetWindowLong32(IntPtr hWnd, WindowLongFlags nIndex, IntPtr dwNewLong);
+
+			[DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
+			static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, WindowLongFlags nIndex, IntPtr dwNewLong);
 		}
 
 		public static IntPtr SetWindowLongPtr(IntPtr hWnd, WindowLongFlags nIndex, long dwNewLong)
@@ -51,14 +73,16 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[DllImport("user32.dll")]
-		public static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+		public static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam);
 
 		[DllImport("user32.dll")]
 		public static extern bool SetWindowPos(IntPtr hWnd, SpecialWindowHandles hWndInsertAfter, int x, int y, int width, int height, SetWindowPosFlags uFlags);
 
+		[DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+		public static extern IntPtr DefSubclassProc(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam);
+
 		[DllImport("user32.dll")]
 		public static extern uint GetDpiForWindow(IntPtr hWnd);
-
 
 		[DllImport("User32", CharSet = CharSet.Unicode, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]

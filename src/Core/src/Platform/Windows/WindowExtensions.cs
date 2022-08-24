@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Windows.Graphics;
 using Windows.Graphics.Display;

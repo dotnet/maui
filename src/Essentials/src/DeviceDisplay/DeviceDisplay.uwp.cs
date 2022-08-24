@@ -11,7 +11,15 @@ namespace Microsoft.Maui.Devices
 	partial class DeviceDisplayImplementation
 	{
 		readonly object locker = new object();
+		readonly ActiveWindowTracker _activeWindowTracker;
+
 		DisplayRequest? displayRequest;
+
+		public DeviceDisplayImplementation()
+		{
+			_activeWindowTracker = new(WindowStateManager.Default);
+			_activeWindowTracker.WindowMessage += OnWindowMessage;
+		}
 
 		protected override bool GetKeepScreenOn()
 		{
@@ -49,13 +57,13 @@ namespace Microsoft.Maui.Devices
 		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			if (WindowStateManager.Default.GetActiveAppWindow(false) is not AppWindow appWindow)
-				return new DisplayInfo();
+				return default;
 
 			var windowHandle = UI.Win32Interop.GetWindowFromWindowId(appWindow.Id);
 			var mi = GetDisplay(windowHandle);
 
 			if (mi == null)
-				return new DisplayInfo();
+				return default;
 
 			var vDevMode = new DEVMODE();
 			EnumDisplaySettings(mi.Value.DeviceNameToLPTStr(), -1, ref vDevMode);
@@ -104,46 +112,21 @@ namespace Microsoft.Maui.Devices
 			return null;
 		}
 
-		protected override void StartScreenMetricsListeners()
+		protected override void StartScreenMetricsListeners() =>
+			MainThread.BeginInvokeOnMainThread(_activeWindowTracker.Start);
+
+		protected override void StopScreenMetricsListeners() =>
+			MainThread.BeginInvokeOnMainThread(_activeWindowTracker.Stop);
+
+		// Currently there isn't a way to detect Orientation Changes unless you subclass the WinUI.Window and watch the messages.
+		// This is the "subtlest" way to currently wire this together.
+		// Hopefully there will be a more public API for this down the road so we can just use that directly from Essentials
+		void OnWindowMessage(object? sender, WindowMessageEventArgs e)
 		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				WindowStateManager.Default.ActiveWindowDisplayChanged += OnWindowDisplayChanged;
-				WindowStateManager.Default.ActiveWindowChanged += OnCurrentWindowChanged;
-
-				_currentAppWindowListeningTo = WindowStateManager.Default.GetActiveAppWindow(true)!;
-				_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
-			});
+			if (e.MessageId == PlatformMethods.MessageIds.WM_DISPLAYCHANGE ||
+				e.MessageId == PlatformMethods.MessageIds.WM_DPICHANGED)
+				OnMainDisplayInfoChanged();
 		}
-
-		protected override void StopScreenMetricsListeners()
-		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				WindowStateManager.Default.ActiveWindowChanged -= OnCurrentWindowChanged;
-				WindowStateManager.Default.ActiveWindowDisplayChanged -= OnWindowDisplayChanged;
-
-				if (_currentAppWindowListeningTo != null)
-					_currentAppWindowListeningTo.Changed -= OnAppWindowChanged;
-
-				_currentAppWindowListeningTo = null;
-			});
-		}
-
-		void OnCurrentWindowChanged(object? sender, EventArgs e)
-		{
-			if (_currentAppWindowListeningTo != null)
-				_currentAppWindowListeningTo.Changed -= OnAppWindowChanged;
-
-			_currentAppWindowListeningTo = WindowStateManager.Default.GetActiveAppWindow(true)!;
-			_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
-		}
-
-		void OnWindowDisplayChanged(object? sender, EventArgs e) =>
-			OnMainDisplayInfoChanged();
-
-		void OnAppWindowChanged(AppWindow sender, AppWindowChangedEventArgs args) =>
-			OnMainDisplayInfoChanged();
 
 		static DisplayRotation CalculateRotation(DisplayOrientations orientation) =>
 			orientation switch
@@ -165,39 +148,25 @@ namespace Microsoft.Maui.Devices
 				_ => DisplayOrientations.Landscape,
 			};
 
-		[DllImport("User32", CharSet = CharSet.Unicode)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		static extern int GetDpiForWindow(IntPtr hwnd);
 
-		[DllImport("User32", CharSet = CharSet.Unicode, SetLastError = true)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		static extern IntPtr MonitorFromRect(ref RECT lprc, MonitorOptions dwFlags);
 
-		[DllImport("User32", CharSet = CharSet.Unicode, SetLastError = true)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
-		[DllImport("User32.dll")]
+		[DllImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern Boolean EnumDisplaySettings(
+		static extern bool EnumDisplaySettings(
 			byte[] lpszDeviceName,
 			[param: MarshalAs(UnmanagedType.U4)] int iModeNum,
 			[In, Out] ref DEVMODE lpDevMode);
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFOEX lpmi);
-
-		[DllImport("user32.dll")]
-		static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, EnumMonitorsDelegate lpfnEnum, IntPtr dwData);
-		delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
-
-		static bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData)
-		{
-			MONITORINFOEX mi = new MONITORINFOEX();
-			mi.Size = Marshal.SizeOf(typeof(MONITORINFOEX));
-			if (GetMonitorInfo(hMonitor, ref mi))
-				Console.WriteLine(mi.DeviceName);
-
-			return true;
-		}
 
 		enum MonitorOptions : uint
 		{
@@ -241,9 +210,10 @@ namespace Microsoft.Maui.Devices
 
 		struct DEVMODE
 		{
-			private const int CCHDEVICENAME = 0x20;
-			private const int CCHFORMNAME = 0x20;
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+			const int CCHDEVICENAME = 0x20;
+			const int CCHFORMNAME = 0x20;
+
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)]
 			public string dmDeviceName;
 			public short dmSpecVersion;
 			public short dmDriverVersion;
@@ -259,7 +229,7 @@ namespace Microsoft.Maui.Devices
 			public short dmYResolution;
 			public short dmTTOption;
 			public short dmCollate;
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHFORMNAME)]
 			public string dmFormName;
 			public short dmLogPixels;
 			public int dmBitsPerPel;
