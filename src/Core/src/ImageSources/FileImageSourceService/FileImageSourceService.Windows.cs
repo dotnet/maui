@@ -1,9 +1,11 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Storage;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
@@ -24,7 +26,7 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var image = await GetLocal(filename) ?? GetAppPackage(filename);
+				BitmapImage? image = await GetImageAsync(filename);
 
 				if (image == null)
 					throw new InvalidOperationException("Unable to load image file.");
@@ -40,7 +42,27 @@ namespace Microsoft.Maui
 			}
 		}
 
-		BitmapImage GetAppPackage(string filename)
+		static async Task<BitmapImage?> GetImageAsync(string filename)
+		{
+			string fileExtension = Path.GetExtension(filename);
+
+			if (!string.IsNullOrEmpty(fileExtension))
+				return await GetLocal(filename) ?? GetAppPackage(filename);
+
+			var imageExtensions = new List<string> { ".jpg", ".png", ".bmp", ".gif", ".tif" };
+
+			foreach (var imageExtension in imageExtensions)
+			{
+				var filenameExtension = filename + ".scale-100" + imageExtension;
+
+				if (FileSystemUtils.AppPackageFileExists(filenameExtension))
+					return await GetLocal(filenameExtension) ?? GetAppPackage(filenameExtension);
+			}
+
+			return null;
+		}
+
+		static BitmapImage GetAppPackage(string filename)
 		{
 			return new BitmapImage(new Uri("ms-appx:///" + filename));
 		}
