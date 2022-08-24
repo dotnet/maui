@@ -14,8 +14,8 @@ Microsoft.Maui.Controls.MenuFlyoutSeparator
 Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
 Microsoft.Maui.Controls.TapGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
 Microsoft.Maui.Controls.TapGestureRecognizer.Buttons.set -> void
+Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler<Microsoft.Maui.Controls.TappedEventArgs!>?
 Microsoft.Maui.Controls.TappedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
-Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 Microsoft.Maui.Controls.ToolTipProperties
 Microsoft.Maui.Controls.ToolTipProperties.ToolTipProperties() -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
@@ -30,6 +30,7 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 *REMOVED*override Microsoft.Maui.Controls.RadioButton.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.FlexLayout.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.Platform.ShellFlyoutItemView.OnContentChanged(object oldContent, object newContent) -> void
+virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 ~Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.ShellNavigationViewItemAutomationPeer(Microsoft.Maui.Controls.Platform.ShellNavigationViewItem owner) -> void
 ~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItem.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
 ~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.GetChildrenCore() -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Automation.Peers.AutomationPeer>
@@ -50,4 +51,5 @@ static readonly Microsoft.Maui.Controls.ToolTipProperties.TextProperty -> Micros
 ~static Microsoft.Maui.Controls.FlyoutBase.GetContextFlyout(Microsoft.Maui.Controls.BindableObject b) -> Microsoft.Maui.Controls.FlyoutBase
 ~static Microsoft.Maui.Controls.FlyoutBase.SetContextFlyout(Microsoft.Maui.Controls.BindableObject b, Microsoft.Maui.Controls.FlyoutBase value) -> void
 ~static readonly Microsoft.Maui.Controls.FlyoutBase.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
+*REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?

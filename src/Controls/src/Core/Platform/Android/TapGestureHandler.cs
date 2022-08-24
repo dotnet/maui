@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,14 +10,14 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class TapGestureHandler
 	{
-		public TapGestureHandler(Func<View> getView, Func<IList<GestureElement>> getChildElements)
+		public TapGestureHandler(Func<View?> getView, Func<IList<GestureElement>> getChildElements)
 		{
 			GetView = getView;
 			GetChildElements = getChildElements;
 		}
 
 		Func<IList<GestureElement>> GetChildElements { get; }
-		Func<View> GetView { get; }
+		Func<View?> GetView { get; }
 
 		public void OnSingleClick()
 		{
@@ -28,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public bool OnTap(int count, Point point)
 		{
-			View view = GetView();
+			var view = GetView();
 
 			if (view == null)
 				return false;
@@ -38,11 +40,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var children = view.GetChildElements(point);
 
 			if (children != null)
+			{
 				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(recognizer => recognizer.NumberOfTapsRequired == count))
 				{
-					recognizer.SendTapped(view);
+					recognizer.SendTapped(view, CalculatePosition);
 					captured = true;
 				}
+			}
 
 			if (captured)
 				return captured;
@@ -50,11 +54,17 @@ namespace Microsoft.Maui.Controls.Platform
 			IEnumerable<TapGestureRecognizer> gestureRecognizers = TapGestureRecognizers(count);
 			foreach (var gestureRecognizer in gestureRecognizers)
 			{
-				gestureRecognizer.SendTapped(view);
+				gestureRecognizer.SendTapped(view, CalculatePosition);
 				captured = true;
 			}
 
 			return captured;
+
+			Point? CalculatePosition(IElement? element)
+			{
+				// TODO Shane will fill this in for iteration 2
+				return null;
+			}
 		}
 
 		public bool HasAnyGestures()
@@ -66,7 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public IEnumerable<TapGestureRecognizer> TapGestureRecognizers(int count)
 		{
-			View view = GetView();
+			var view = GetView();
 			if (view == null)
 				return Enumerable.Empty<TapGestureRecognizer>();
 

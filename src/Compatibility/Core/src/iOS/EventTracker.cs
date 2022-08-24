@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					return;
 
 				if (weakRecognizer.Target is TapGestureRecognizer tapGestureRecognizer && view != null)
-					tapGestureRecognizer.SendTapped(view);
+					tapGestureRecognizer.SendTapped(view, null);
 			});
 		}
 
@@ -230,7 +230,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				var tapGestureRecognizer = ((ChildGestureRecognizer)weakRecognizer.Target).GestureRecognizer as TapGestureRecognizer;
 				foreach (var item in recognizers)
 					if (item == tapGestureRecognizer && view != null)
-						tapGestureRecognizer.SendTapped(view);
+						tapGestureRecognizer.SendTapped(view, null);
 			});
 		}
 #endif

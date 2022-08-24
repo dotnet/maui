@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	// TODO MAUI: can we convert this over to using IView
+	[Obsolete]
 	public class VisualElementTracker<TElement, TPlatformElement> : IDisposable where TElement : VisualElement where TPlatformElement : FrameworkElement
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
@@ -504,7 +504,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (children != null)
 				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2))
 				{
-					recognizer.SendTapped(view);
+					recognizer.SendTapped(view, null);
 					e.Handled = true;
 				}
 
@@ -514,7 +514,7 @@ namespace Microsoft.Maui.Controls.Platform
 			IEnumerable<TapGestureRecognizer> doubleTapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2);
 			foreach (TapGestureRecognizer recognizer in doubleTapGestures)
 			{
-				recognizer.SendTapped(view);
+				recognizer.SendTapped(view, null);
 				e.Handled = true;
 			}
 		}
@@ -599,7 +599,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (children != null)
 				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1))
 				{
-					recognizer.SendTapped(view);
+					recognizer.SendTapped(view, null);
 					e.Handled = true;
 				}
 
@@ -609,7 +609,7 @@ namespace Microsoft.Maui.Controls.Platform
 			IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1);
 			foreach (var recognizer in tapGestures)
 			{
-				recognizer.SendTapped(view);
+				recognizer.SendTapped(view, null);
 				e.Handled = true;
 			}
 		}

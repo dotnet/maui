@@ -111,7 +111,8 @@ namespace Microsoft.Maui.Controls.Platform
 			WeakReference weakEventTracker,
 			WeakReference weakRecognizer,
 			CGPoint originPoint,
-			int uiTapGestureRecognizerNumberOfTapsRequired)
+			int uiTapGestureRecognizerNumberOfTapsRequired, 
+			UITapGestureRecognizer? uITapGestureRecognizer = null)
 		{
 			var recognizer = weakRecognizer.Target as IGestureRecognizer;
 			var eventTracker = weakEventTracker.Target as GestureManager;
@@ -125,7 +126,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 
 				if (view != null)
-					tapGestureRecognizer.SendTapped(view);
+					tapGestureRecognizer.SendTapped(view, CalculatePosition);
 			}
 			else if (recognizer is ChildGestureRecognizer childGestureRecognizer)
 			{
@@ -139,7 +140,13 @@ namespace Microsoft.Maui.Controls.Platform
 				var childTapGestureRecognizer = childGestureRecognizer.GestureRecognizer as TapGestureRecognizer;
 				foreach (var item in recognizers)
 					if (item == childTapGestureRecognizer && view != null)
-						childTapGestureRecognizer.SendTapped(view);
+						childTapGestureRecognizer.SendTapped(view, CalculatePosition);
+			}
+
+			Point? CalculatePosition(IElement? element)
+			{
+				// TODO Shane will fill this in for iteration 2
+				return null;
 			}
 		}
 
@@ -325,7 +332,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var eventTracker = weakEventTracker.Target as GestureManager;
 				var originPoint = sender.LocationInView(eventTracker?._handler?.PlatformView);
-				ProcessRecognizerHandlerTap(weakEventTracker, weakRecognizer, originPoint, (int)sender.NumberOfTapsRequired);
+				ProcessRecognizerHandlerTap(weakEventTracker, weakRecognizer, originPoint, (int)sender.NumberOfTapsRequired, sender);
 			});
 
 			var result = new UITapGestureRecognizer(action)

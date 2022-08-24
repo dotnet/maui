@@ -486,11 +486,14 @@ namespace Microsoft.Maui.Controls.Platform
 			var view = Element as View;
 			if (view == null)
 				return;
+						
+			var tapPosition = e.GetPositionRelativeToPlatformElement(Control);
 
-			var tapPosition = e.GetPosition(Control);
+			if (tapPosition == null)
+				return;
 
 			var children =
-				(view as IGestureController)?.GetChildElements(new Point(tapPosition.X, tapPosition.Y))?.
+				(view as IGestureController)?.GetChildElements(new Point(tapPosition.Value.X, tapPosition.Value.Y))?.
 				GetChildGesturesFor<TapGestureRecognizer>(ValidateGesture);
 
 			if (ProgessGestureRecognizers(children))
@@ -507,7 +510,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 				foreach (var recognizer in tapGestures)
 				{
-					recognizer.SendTapped(view);
+					recognizer.SendTapped(view, (relativeTo) =>
+					{
+						var result = e.GetPositionRelativeToElement(relativeTo);
+						if (result == null)
+							return null;
+
+						return new Point(result.Value.X, result.Value.Y);
+					});
+
 					e.SetHandled(true);
 					handled = true;
 				}
@@ -706,6 +717,5 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			doubleTappedRoutedEventArgs.Handled = true;
 		}
-
 	}
 }

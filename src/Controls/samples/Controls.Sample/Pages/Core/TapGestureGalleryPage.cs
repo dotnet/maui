@@ -8,6 +8,10 @@ namespace Maui.Controls.Sample.Pages
 	{
 		Command TapCommand;
 		Label changeColorBoxView;
+		Label windowPosition = new Label();
+		Label relativeToToggleButtonPosition = new Label();
+		Label relativeToContainerPosition = new Label();
+		Button toggleButton;
 
 		public TapGestureGalleryPage()
 		{
@@ -19,6 +23,10 @@ namespace Maui.Controls.Sample.Pages
 				HorizontalOptions = LayoutOptions.Center,
 				Spacing = 40
 			};
+
+			vertical.Add(windowPosition);
+			vertical.Add(relativeToToggleButtonPosition);
+			vertical.Add(relativeToContainerPosition);
 
 			var horizontal = new HorizontalStackLayout
 			{
@@ -39,6 +47,7 @@ namespace Maui.Controls.Sample.Pages
 				CommandParameter = Colors.PaleGreen,
 				NumberOfTapsRequired = 1,
 			};
+			singleTapGesture.Tapped += OnTapped;
 			singleTapLabel.GestureRecognizers.Add(singleTapGesture);
 			horizontal.Add(singleTapLabel);
 
@@ -53,6 +62,7 @@ namespace Maui.Controls.Sample.Pages
 				CommandParameter = Colors.Aqua,
 				NumberOfTapsRequired = 2,
 			};
+			doubleTapGesture.Tapped += OnTapped;
 			doubleTapLabel.GestureRecognizers.Add(doubleTapGesture);
 			horizontal.Add(doubleTapLabel);
 
@@ -66,8 +76,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 			vertical.Add(changeColorBoxView);
 
-
-			vertical.Add(new Button()
+			toggleButton = new Button()
 			{
 				Text = "Toggle Single Tap Gesture",
 				Command = new Command(() =>
@@ -77,7 +86,9 @@ namespace Maui.Controls.Sample.Pages
 					else
 						singleTapLabel.GestureRecognizers.Add(singleTapGesture);
 				})
-			});
+			};
+
+			vertical.Add(toggleButton);
 
 			var tripleClicklabel = new Label
 			{
@@ -91,6 +102,7 @@ namespace Maui.Controls.Sample.Pages
 				NumberOfTapsRequired = 3,
 				Buttons = ButtonsMask.Primary
 			};
+			tripleClickGesture.Tapped += OnTapped;
 			tripleClicklabel.GestureRecognizers.Add(tripleClickGesture);
 			horizontal.Children.Add(tripleClicklabel);
 
@@ -106,6 +118,7 @@ namespace Maui.Controls.Sample.Pages
 				NumberOfTapsRequired = 1,
 				Buttons = ButtonsMask.Secondary
 			};
+			rigthClickGesture.Tapped += OnTapped;
 			rightClickLabel.GestureRecognizers.Add(rigthClickGesture);
 			horizontal.Children.Add(rightClickLabel);
 
@@ -122,11 +135,23 @@ namespace Maui.Controls.Sample.Pages
 				NumberOfTapsRequired = 1,
 				Buttons = ButtonsMask.Secondary | ButtonsMask.Primary
 			};
+
+			rigthOrLeftClickGesture.Tapped += OnTapped;
 			rightorLeftClickLabel.GestureRecognizers.Add(rigthOrLeftClickGesture);
 			horizontal.Children.Add(rightorLeftClickLabel);
 
 
 			Content = vertical;
+		}
+
+		void OnTapped(object sender, System.EventArgs e)
+		{
+			var args = (TappedEventArgs)e;
+			var view = (View)sender;
+
+			windowPosition.Text = $"Position inside window: {args.GetPosition(null)}";
+			relativeToToggleButtonPosition.Text = $"Position relative to toggle button: {args.GetPosition(toggleButton)}";
+			relativeToContainerPosition.Text = $"Position inside my view: {args.GetPosition(view)}";
 		}
 
 		void HandleTapCommand(Color backgroundColor)

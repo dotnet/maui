@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class RoutedEventArgsExtensions
 	{
-
 		public static void SetHandled(this RoutedEventArgs e, bool value)
 		{
 			if (e is RightTappedRoutedEventArgs rt)
@@ -19,7 +18,18 @@ namespace Microsoft.Maui.Platform
 				dt.Handled = value;
 		}
 
-		public static WPoint GetPosition(this RoutedEventArgs e, UIElement? relativeTo)
+		public static WPoint? GetPositionRelativeToElement(this RoutedEventArgs e, IElement? relativeTo)
+		{
+			if (relativeTo == null)
+				return GetPositionRelativeToPlatformElement(e, null);
+
+			if (relativeTo?.Handler?.PlatformView is UIElement element)
+				return GetPositionRelativeToPlatformElement(e, element);
+
+			return null;
+		}
+
+		public static WPoint? GetPositionRelativeToPlatformElement(this RoutedEventArgs e, UIElement? relativeTo)
 		{
 			if (e is RightTappedRoutedEventArgs rt)
 				return rt.GetPosition(relativeTo);
@@ -28,7 +38,7 @@ namespace Microsoft.Maui.Platform
 			else if (e is DoubleTappedRoutedEventArgs dt)
 				return dt.GetPosition(relativeTo);
 
-			throw new InvalidOperationException();
+			return null;
 		}
 	}
 }
