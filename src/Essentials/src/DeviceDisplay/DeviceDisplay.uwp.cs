@@ -49,13 +49,13 @@ namespace Microsoft.Maui.Devices
 		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			if (WindowStateManager.Default.GetActiveAppWindow(false) is not AppWindow appWindow)
-				return new DisplayInfo();
+				return default;
 
 			var windowHandle = UI.Win32Interop.GetWindowFromWindowId(appWindow.Id);
 			var mi = GetDisplay(windowHandle);
 
 			if (mi == null)
-				return new DisplayInfo();
+				return default;
 
 			var vDevMode = new DEVMODE();
 			EnumDisplaySettings(mi.Value.DeviceNameToLPTStr(), -1, ref vDevMode);
@@ -75,8 +75,6 @@ namespace Microsoft.Maui.Devices
 			var orientation = displayOrientation == DisplayOrientations.Landscape || displayOrientation == DisplayOrientations.LandscapeFlipped
 				? DisplayOrientation.Landscape
 				: DisplayOrientation.Portrait;
-
-			var perpendicular = orientation == DisplayOrientation.Portrait;
 
 			return new DisplayInfo(
 				width: w,
@@ -165,39 +163,25 @@ namespace Microsoft.Maui.Devices
 				_ => DisplayOrientations.Landscape,
 			};
 
-		[DllImport("User32", CharSet = CharSet.Unicode)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		static extern int GetDpiForWindow(IntPtr hwnd);
 
-		[DllImport("User32", CharSet = CharSet.Unicode, SetLastError = true)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		static extern IntPtr MonitorFromRect(ref RECT lprc, MonitorOptions dwFlags);
 
-		[DllImport("User32", CharSet = CharSet.Unicode, SetLastError = true)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
-		[DllImport("User32.dll")]
+		[DllImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern Boolean EnumDisplaySettings(
+		static extern bool EnumDisplaySettings(
 			byte[] lpszDeviceName,
 			[param: MarshalAs(UnmanagedType.U4)] int iModeNum,
 			[In, Out] ref DEVMODE lpDevMode);
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFOEX lpmi);
-
-		[DllImport("user32.dll")]
-		static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, EnumMonitorsDelegate lpfnEnum, IntPtr dwData);
-		delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
-
-		static bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData)
-		{
-			MONITORINFOEX mi = new MONITORINFOEX();
-			mi.Size = Marshal.SizeOf(typeof(MONITORINFOEX));
-			if (GetMonitorInfo(hMonitor, ref mi))
-				Console.WriteLine(mi.DeviceName);
-
-			return true;
-		}
 
 		enum MonitorOptions : uint
 		{
@@ -241,9 +225,10 @@ namespace Microsoft.Maui.Devices
 
 		struct DEVMODE
 		{
-			private const int CCHDEVICENAME = 0x20;
-			private const int CCHFORMNAME = 0x20;
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+			const int CCHDEVICENAME = 0x20;
+			const int CCHFORMNAME = 0x20;
+
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)]
 			public string dmDeviceName;
 			public short dmSpecVersion;
 			public short dmDriverVersion;
@@ -259,7 +244,7 @@ namespace Microsoft.Maui.Devices
 			public short dmYResolution;
 			public short dmTTOption;
 			public short dmCollate;
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHFORMNAME)]
 			public string dmFormName;
 			public short dmLogPixels;
 			public int dmBitsPerPel;
