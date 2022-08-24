@@ -1,12 +1,13 @@
-﻿using ElmSharp;
-using Microsoft.Maui.Graphics.Skia.Views;
+﻿using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.NUI.GraphicsView;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiShapeView : SkiaGraphicsView
+	public class MauiShapeView : SkiaGraphicsView, IMeasurable
 	{
-		public MauiShapeView(EvasObject parent) : base(parent)
+		Size IMeasurable.Measure(double availableWidth, double availableHeight)
 		{
+			return new Size(0, 0);
 		}
 	}
 }

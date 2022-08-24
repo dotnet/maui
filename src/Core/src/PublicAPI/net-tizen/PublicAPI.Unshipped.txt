@@ -1,1 +1,5 @@
 ﻿#nullable enable
+Microsoft.Maui.Platform.MauiPicker
+Microsoft.Maui.Platform.MauiPicker.MauiPicker() -> void
+override Microsoft.Maui.Platform.MauiPicker.OnEnabled(bool enabled) -> void
+override Microsoft.Maui.Platform.MauiStepper.OnEnabled(bool enabled) -> void
