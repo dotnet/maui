@@ -53,6 +53,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(recognizer => recognizer.NumberOfTapsRequired == count))
 				{
+					if (!CheckButtonMask(recognizer, e))
+						continue;
+
 					recognizer.SendTapped(view, CalculatePosition);
 					captured = true;
 				}
@@ -64,11 +67,28 @@ namespace Microsoft.Maui.Controls.Platform
 			IEnumerable<TapGestureRecognizer> gestureRecognizers = TapGestureRecognizers(count);
 			foreach (var gestureRecognizer in gestureRecognizers)
 			{
+				if (!CheckButtonMask(gestureRecognizer, e))
+					continue;
+
 				gestureRecognizer.SendTapped(view, CalculatePosition);
 				captured = true;
 			}
 
 			return captured;
+
+			bool CheckButtonMask(TapGestureRecognizer tapGestureRecognizer, MotionEvent? motionEvent)
+			{
+				if (tapGestureRecognizer.Buttons == ButtonsMask.Secondary)
+				{
+					var buttonState = motionEvent?.ButtonState ?? MotionEventButtonState.Primary;
+
+					return
+						buttonState == MotionEventButtonState.Secondary ||
+						buttonState == MotionEventButtonState.StylusSecondary;
+				}
+
+				return (tapGestureRecognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
+			}
 
 			Point? CalculatePosition(IElement? element)
 			{
