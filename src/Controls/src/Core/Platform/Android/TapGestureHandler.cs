@@ -3,8 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Android.Views;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -25,11 +28,18 @@ namespace Microsoft.Maui.Controls.Platform
 			if (TapGestureRecognizers(2).Any())
 				return;
 
-			OnTap(1, new Point(-1, -1));
+			OnTap(1, null);
 		}
 
-		public bool OnTap(int count, Point point)
+		public bool OnTap(int count, MotionEvent? e)
 		{
+			Point point;
+
+			if (e == null)
+				point = new Point(-1, -1);
+			else
+				point = new Point(e.GetX(), e.GetY());
+
 			var view = GetView();
 
 			if (view == null)
@@ -62,7 +72,34 @@ namespace Microsoft.Maui.Controls.Platform
 
 			Point? CalculatePosition(IElement? element)
 			{
-				// TODO Shane will fill this in for iteration 2
+				var context = GetView()?.Handler?.MauiContext?.Context;
+
+				if (context == null)
+					return null;
+
+				if (e == null)
+					return null;
+
+				if (element == null)
+				{
+					return new Point(context.FromPixels(e.RawX), context.FromPixels(e.RawY));
+				}
+
+				if (element == GetView())
+				{
+					return new Point(context.FromPixels(e.GetX()), context.FromPixels(e.GetY()));
+				}
+
+				if (element?.Handler?.PlatformView is AView aView)
+				{
+					var location = aView.GetLocationOnScreenPx();
+
+					var x = e.RawX - location.X;
+					var y = e.RawY - location.Y;
+
+					return new Point(context.FromPixels(x), context.FromPixels(y));
+				}
+
 				return null;
 			}
 		}

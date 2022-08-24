@@ -44,4 +44,4 @@ virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Contr
 ~static Microsoft.Maui.Controls.FlyoutBase.SetContextFlyout(Microsoft.Maui.Controls.BindableObject b, Microsoft.Maui.Controls.FlyoutBase value) -> void
 ~static readonly Microsoft.Maui.Controls.FlyoutBase.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
-*REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
+*REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler

@@ -111,12 +111,16 @@ namespace Microsoft.Maui.Controls.Platform
 			WeakReference weakEventTracker,
 			WeakReference weakRecognizer,
 			CGPoint originPoint,
-			int uiTapGestureRecognizerNumberOfTapsRequired, 
+			int uiTapGestureRecognizerNumberOfTapsRequired,
 			UITapGestureRecognizer? uITapGestureRecognizer = null)
 		{
 			var recognizer = weakRecognizer.Target as IGestureRecognizer;
 			var eventTracker = weakEventTracker.Target as GestureManager;
 			var view = eventTracker?._handler?.VirtualView as View;
+
+			WeakReference? weakPlatformRecognizer = null;
+			if (uITapGestureRecognizer != null)
+				weakPlatformRecognizer = new WeakReference(uITapGestureRecognizer);
 
 			if (recognizer is TapGestureRecognizer tapGestureRecognizer)
 			{
@@ -146,18 +150,31 @@ namespace Microsoft.Maui.Controls.Platform
 			Point? CalculatePosition(IElement? element)
 			{
 				var recognizer = weakRecognizer.Target as IGestureRecognizer;
+				var platformRecognizer = weakPlatformRecognizer?.Target as UIGestureRecognizer;
 
 				if (recognizer == null)
 					return null;
 
-				if (uITapGestureRecognizer == null)
+				if (platformRecognizer == null)
+				{
+					if (element?.Handler?.PlatformView is UIView uiView)
+					{
+						var location = uiView.GetLocationOnScreen();
+
+						var x = originPoint.X - location.X;
+						var y = originPoint.Y - location.Y;
+
+						return new Point(x, y);
+					}
+
 					return null;
+				}
 
 				CGPoint? result = null;
 				if (element == null)
-					result = uITapGestureRecognizer.LocationInView(null);
-				else if(element.Handler?.PlatformView is UIView view)
-					result = uITapGestureRecognizer.LocationInView(view);
+					result = platformRecognizer.LocationInView(null);
+				else if (element.Handler?.PlatformView is UIView view)
+					result = platformRecognizer.LocationInView(view);
 
 				if (result == null)
 					return null;
