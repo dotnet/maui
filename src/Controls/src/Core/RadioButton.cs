@@ -559,12 +559,18 @@ namespace Microsoft.Maui.Controls
 		public string ContentAsString()
 		{
 			var content = Content;
-			if (content is View)
+
+			string viewString = string.Empty;
+
+			if (content is View view)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<RadioButton>()?.LogWarning("Warning - {RuntimePlatform} does not support View as the {PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.", DeviceInfo.Platform, ContentProperty.PropertyName);
+
+				viewString = view.GetStringValue();
 			}
 
-			return content?.ToString();
+			return !string.IsNullOrEmpty(viewString) ? viewString : content?.ToString();
+
 		}
 	}
 }
