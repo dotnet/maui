@@ -213,6 +213,27 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: NET7 make this public for net7.0
+		internal static void UpdateShadowLayerFrame(this UIView view)
+		{
+			if (view == null || view.Frame.IsEmpty)
+				return;
+
+			var layer = view.Layer;
+
+			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
+				return;
+
+			foreach (var sublayer in layer.Sublayers)
+			{
+				if (sublayer.Opacity > 0) // If the layer has shadow, invalidate the Size
+				{
+					sublayer.Frame = view.Bounds;
+					break;
+				}
+			}
+		}
+
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
 			platformView.SetNeedsLayout();
