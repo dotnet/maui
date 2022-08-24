@@ -119,8 +119,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 					return new List<GestureElement>();
 				}),
-				new PanGestureHandler(() => View, context.FromPixels),
-				new SwipeGestureHandler(() => View, context.FromPixels),
+				new PanGestureHandler(() => View),
+				new SwipeGestureHandler(() => View),
 				InitializeDragAndDropHandler()
 			);
 
