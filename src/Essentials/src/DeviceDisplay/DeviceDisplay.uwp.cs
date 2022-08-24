@@ -52,8 +52,6 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 
-		AppWindow? _currentAppWindowListeningTo;
-
 		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			if (WindowStateManager.Default.GetActiveAppWindow(false) is not AppWindow appWindow)
@@ -83,8 +81,6 @@ namespace Microsoft.Maui.Devices
 			var orientation = displayOrientation == DisplayOrientations.Landscape || displayOrientation == DisplayOrientations.LandscapeFlipped
 				? DisplayOrientation.Landscape
 				: DisplayOrientation.Portrait;
-
-			var perpendicular = orientation == DisplayOrientation.Portrait;
 
 			return new DisplayInfo(
 				width: w,
