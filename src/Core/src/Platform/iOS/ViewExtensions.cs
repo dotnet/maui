@@ -59,9 +59,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ContentView platformView, IBorderStroke border)
 		{
-			bool hasBorder = border.Shape != null && border.Stroke != null;
+			bool hasShape = border.Shape != null;
 
-			if (hasBorder)
+			if (hasShape)
 			{
 				platformView.UpdateMauiCALayer(border);
 			}
