@@ -12,6 +12,7 @@ namespace Microsoft.Maui.ApplicationModel
 			public const int WM_DISPLAYCHANGE = 0x007E;
 			public const int WM_SETTINGCHANGE = 0x001A;
 			public const int WM_THEMECHANGE = 0x031A;
+			public const int WM_GETMINMAXINFO = 0x0024;
 		}
 
 		public delegate IntPtr WindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
@@ -172,12 +173,29 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
-		struct RECT
+		public struct RECT
 		{
 			public int Left;
 			public int Top;
 			public int Right;
 			public int Bottom;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct POINT
+		{
+			public int X;
+			public int Y;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct MinMaxInfo
+		{
+			public POINT Reserved;
+			public POINT MaxSize;
+			public POINT MaxPosition;
+			public POINT MinTrackSize;
+			public POINT MaxTrackSize;
 		}
 	}
 }

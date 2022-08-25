@@ -6,15 +6,17 @@ using Microsoft.Maui.LifecycleEvents;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Graphics;
 
 namespace Microsoft.Maui
 {
-	public class MauiWinUIWindow : UI.Xaml.Window
+	public class MauiWinUIWindow : UI.Xaml.Window, IPlatformSizeRestrictedWindow
 	{
 		readonly WindowMessageManager _windowManager;
 
 		IntPtr _windowIcon;
 		bool _enableResumeEvent;
+		UI.Xaml.UIElement? _customTitleBar;
 
 		public MauiWinUIWindow()
 		{
@@ -85,16 +87,41 @@ namespace Microsoft.Maui
 				}
 				else if (e.MessageId == PlatformMethods.MessageIds.WM_DPICHANGED)
 				{
-					var dpiX = (short)(long)e.WParam;
-					var dpiY = (short)((long)e.WParam >> 16);
-
 					var window = this.GetWindow();
 					if (window is not null)
-						window.DisplayDensityChanged(dpiX / DeviceDisplay.BaseLogicalDpi);
+					{
+						var dpiX = (short)(long)e.WParam;
+						var dpiY = (short)((long)e.WParam >> 16);
+
+						var density = dpiX / DeviceDisplay.BaseLogicalDpi;
+
+						window.DisplayDensityChanged(density);
+					}
+				}
+				else if (e.MessageId == PlatformMethods.MessageIds.WM_GETMINMAXINFO)
+				{
+					var win = this as IPlatformSizeRestrictedWindow;
+					var minSize = win.MinimumSize;
+					var maxSize = win.MaximumSize;
+
+					var rect = Marshal.PtrToStructure<PlatformMethods.MinMaxInfo>(e.LParam);
+
+					rect.MinTrackSize = new PlatformMethods.POINT
+					{
+						X = Math.Max(minSize.Width, rect.MinTrackSize.X),
+						Y = Math.Max(minSize.Height, rect.MinTrackSize.Y)
+					};
+					rect.MaxTrackSize = new PlatformMethods.POINT
+					{
+						X = Math.Min(maxSize.Width, rect.MaxTrackSize.X),
+						Y = Math.Min(maxSize.Height, rect.MaxTrackSize.Y)
+					};
+
+					Marshal.StructureToPtr(rect, e.LParam, true);
 				}
 
 				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
-					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(e.Hwnd, e.MessageId, e.WParam, e.LParam)));
+						m => m.Invoke(this, new WindowsPlatformMessageEventArgs(e.Hwnd, e.MessageId, e.WParam, e.LParam)));
 			}
 		}
 
@@ -122,7 +149,10 @@ namespace Microsoft.Maui
 			}
 		}
 
-		UI.Xaml.UIElement? _customTitleBar;
+		SizeInt32 IPlatformSizeRestrictedWindow.MinimumSize { get; set; }
+
+		SizeInt32 IPlatformSizeRestrictedWindow.MaximumSize { get; set; }
+
 		internal UI.Xaml.UIElement? MauiCustomTitleBar
 		{
 			get => _customTitleBar;
@@ -143,11 +173,17 @@ namespace Microsoft.Maui
 			}
 		}
 
-
 		[DllImport("shell32.dll", CharSet = CharSet.Auto)]
 		static extern IntPtr ExtractAssociatedIcon(IntPtr hInst, string iconPath, ref IntPtr index);
 
 		[DllImport("user32.dll", SetLastError = true)]
 		static extern int DestroyIcon(IntPtr hIcon);
+	}
+
+	interface IPlatformSizeRestrictedWindow
+	{
+		SizeInt32 MinimumSize { get; set; }
+
+		SizeInt32 MaximumSize { get; set; }
 	}
 }

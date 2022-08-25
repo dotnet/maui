@@ -86,13 +86,17 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHeight(IWindowHandler handler, IWindow view) =>
 			handler.PlatformView?.UpdateHeight(view);
 
-		public static void MapMaximumWidth(IWindowHandler handler, IWindow view) { }
+		public static void MapMaximumWidth(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateMaximumWidth(view);
 
-		public static void MapMaximumHeight(IWindowHandler handler, IWindow view) { }
+		public static void MapMaximumHeight(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateMaximumHeight(view);
 
-		public static void MapMinimumWidth(IWindowHandler handler, IWindow view) { }
+		public static void MapMinimumWidth(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateMinimumWidth(view);
 
-		public static void MapMinimumHeight(IWindowHandler handler, IWindow view) { }
+		public static void MapMinimumHeight(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateMinimumHeight(view);
 
 		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{
