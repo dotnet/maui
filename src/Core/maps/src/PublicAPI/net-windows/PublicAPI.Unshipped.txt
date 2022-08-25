@@ -11,7 +11,7 @@ Microsoft.Maui.Maps.Handlers.IMapElementHandler
 Microsoft.Maui.Maps.Handlers.IMapElementHandler.PlatformView.get -> object!
 Microsoft.Maui.Maps.Handlers.IMapElementHandler.VirtualView.get -> Microsoft.Maui.Maps.IMapElement!
 Microsoft.Maui.Maps.Handlers.IMapHandler
-Microsoft.Maui.Maps.Handlers.IMapHandler.PlatformView.get -> Microsoft.UI.Xaml.Controls.WebView2!
+Microsoft.Maui.Maps.Handlers.IMapHandler.PlatformView.get -> Microsoft.UI.Xaml.FrameworkElement!
 Microsoft.Maui.Maps.Handlers.IMapHandler.UpdateMapElement(Microsoft.Maui.Maps.IMapElement! element) -> void
 Microsoft.Maui.Maps.Handlers.IMapHandler.VirtualView.get -> Microsoft.Maui.Maps.IMap!
 Microsoft.Maui.Maps.Handlers.IMapPinHandler
@@ -77,7 +77,7 @@ Microsoft.Maui.Maps.MapType.Street = 0 -> Microsoft.Maui.Maps.MapType
 override Microsoft.Maui.Maps.Distance.Equals(object? obj) -> bool
 override Microsoft.Maui.Maps.Distance.GetHashCode() -> int
 override Microsoft.Maui.Maps.Handlers.MapElementHandler.CreatePlatformElement() -> object!
-override Microsoft.Maui.Maps.Handlers.MapHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.WebView2!
+override Microsoft.Maui.Maps.Handlers.MapHandler.CreatePlatformView() -> Microsoft.UI.Xaml.FrameworkElement!
 override Microsoft.Maui.Maps.Handlers.MapPinHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Maps.MapSpan.Equals(object? obj) -> bool
 override Microsoft.Maui.Maps.MapSpan.GetHashCode() -> int
