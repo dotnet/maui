@@ -124,7 +124,7 @@ namespace Microsoft.Maui
 			{
 				// Determine the flipped left/right edges for the RTL layout
 				var width = right - left;
-				left = parentView.Right - left - width;
+				left = parentView.Width - left - width;
 				right = left + width;
 			}
 
