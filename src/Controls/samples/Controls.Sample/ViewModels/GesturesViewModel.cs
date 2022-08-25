@@ -19,6 +19,8 @@ namespace Maui.Controls.Sample.ViewModels
 				"Swipe Gesture."),
 			new SectionModel(typeof(TapGestureGalleryPage), "Tap Gesture",
 				"Tap Gesture."),
+			new SectionModel(typeof(PointerGestureGalleryPage), "Pointer Gesture",
+				"Pointer Gesture."),
 		};
 	}
 }
