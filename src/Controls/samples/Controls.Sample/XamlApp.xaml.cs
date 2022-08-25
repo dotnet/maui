@@ -48,7 +48,7 @@ namespace Maui.Controls.Sample
 		// Must not use MainPage for multi-window
 		protected override Window CreateWindow(IActivationState activationState)
 		{
-			var window = new MauiWindow(Services.GetRequiredService<Page>())
+			var window = new MauiWindow(new Pages.AppShell())
 			{
 				Title = ".NET MAUI Samples Gallery"
 			};

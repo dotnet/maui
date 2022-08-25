@@ -39,7 +39,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 
 		async void OnPushPage(object sender, EventArgs e)
 		{
-			await Navigation.PushAsync(new ShellChromeGallery());
+			await Navigation.PushAsync(new Pages.TapGestureGalleryPage());
 		}
 
 		async void OnPopPage(object sender, EventArgs e)

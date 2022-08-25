@@ -167,25 +167,43 @@ namespace Microsoft.Maui.Controls.Platform
 			if (View.GestureRecognizers.Count == 0)
 			{
 				platformView.Touch -= OnPlatformViewTouched;
+				platformView.KeyPress -= OnPlatformViewKeyPressed;
 			}
 			else
 			{
 				platformView.Touch += OnPlatformViewTouched;
-			}
+				platformView.KeyPress += OnPlatformViewKeyPressed;
 
-			if (View is not Microsoft.Maui.IButton)
-			{
-				platformView.KeyPress += PlatformView_KeyPress;
+				bool testMe = platformView.HasOnClickListeners;
 				platformView.Click += PlatformView_Click;
 			}
 		}
 
-		private void PlatformView_Click(object? sender, EventArgs e)
+		void PlatformView_Click(object? sender, EventArgs e)
 		{
 		}
 
-		private void PlatformView_KeyPress(object? sender, AView.KeyEventArgs e)
+		void OnPlatformViewKeyPressed(object? sender, AView.KeyEventArgs e)
 		{
+			if (_disposed)
+			{
+				var platformView = Control;
+				if (platformView != null)
+				{
+					platformView.Touch -= OnPlatformViewTouched;
+					platformView.KeyPress -= OnPlatformViewKeyPressed;
+				}
+
+				return;
+			}
+
+			if ((e.Event?.Source & InputSourceType.Mouse) == InputSourceType.Mouse && e.KeyCode == Keycode.Back)
+			{
+			}
+			else
+			{
+				e.Handled = false;
+			}
 		}
 
 		void OnPlatformViewTouched(object? sender, AView.TouchEventArgs e)
@@ -194,7 +212,10 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var platformView = Control;
 				if (platformView != null)
+				{
 					platformView.Touch -= OnPlatformViewTouched;
+					platformView.KeyPress -= OnPlatformViewKeyPressed;
+				}
 
 				return;
 			}
@@ -207,7 +228,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var platformView = Control;
 			if (platformView != null)
+			{
 				platformView.Touch -= OnPlatformViewTouched;
+				platformView.KeyPress -= OnPlatformViewKeyPressed;
+			}
 
 			_handler = null;
 			if (oldElement != null)

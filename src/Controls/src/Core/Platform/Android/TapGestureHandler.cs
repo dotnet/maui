@@ -35,6 +35,14 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			Point point;
 
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				var thing = e?.ActionButton;
+				var what = e?.ActionMasked;
+				var ohOk = e?.ButtonState;
+			}
+
 			if (e == null)
 				point = new Point(-1, -1);
 			else
