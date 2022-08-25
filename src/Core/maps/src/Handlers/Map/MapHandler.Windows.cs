@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapHasScrollEnabled(IMapHandler handler, IMap map)
 		{
-			CallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.HasScrollEnabled).ToString().ToLower()});");
+			CallJSMethod(handler.PlatformView, $"disablePanning({(!map.HasScrollEnabled).ToString().ToLower()});");
 		}
 
 		public static void MapHasTrafficEnabled(IMapHandler handler, IMap map)
@@ -39,7 +39,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapIsShowingUser(IMapHandler handler, IMap map) { }
 
-		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg) { }
+		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
+		{
+			MapSpan? newRegion = arg as MapSpan;
+			if (newRegion != null)
+				CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude},{newRegion.Center.Longitude});");
+		}
 
 		public static void MapPins(IMapHandler handler, IMap map) { }
 
@@ -75,10 +80,10 @@ namespace Microsoft.Maui.Maps.Handlers
 								//	disableZooming: true,
 								//	disablePanning: true,
 									showScalebar: false,
-									showLocateMeButton: true,
-									showDashboard: true,
-									showTermsLink: true,
-									showTrafficButton: true
+									showLocateMeButton: false,
+									showDashboard: false,
+									showTermsLink: false,
+									showTrafficButton: false
 								});
 								loadTrafficModule();
 			                }
@@ -131,6 +136,13 @@ namespace Microsoft.Maui.Maps.Handlers
 								}
 								map.setView({
 									mapTypeId: mapTypeID
+								});
+							}
+
+							function setRegion(latitude, longitude)
+							{
+								map.setView({
+									center: new Microsoft.Maps.Location(latitude, longitude),
 								});
 							}	
 						</script>
