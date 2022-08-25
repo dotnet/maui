@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
 			handlersCollection.AddHandler<Shell, ShellHandler>();
 #endif
-            return handlersCollection;
+			return handlersCollection;
 		}
 
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
