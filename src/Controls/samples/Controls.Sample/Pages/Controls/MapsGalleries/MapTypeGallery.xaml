@@ -23,7 +23,8 @@
                 </Picker.Items>
             </Picker>
         </HorizontalStackLayout>
-        <Slider 
+        <Slider
+            Grid.Row="1"
             Margin="20,0,20,0"
             Maximum="18"
             Minimum="1"
@@ -31,6 +32,6 @@
             ValueChanged="OnSliderValueChanged" />
         <Map 
             x:Name="mapTypeMap" 
-            Grid.Row="1" />
+            Grid.Row="2" />
     </Grid>
 </ContentPage>
