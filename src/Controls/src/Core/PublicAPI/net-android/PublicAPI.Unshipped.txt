@@ -38,7 +38,6 @@ static readonly Microsoft.Maui.Controls.ToolTipProperties.TextProperty -> Micros
 *REMOVED*override Microsoft.Maui.Controls.RadioButton.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.FlexLayout.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string propertyName = null) -> void
-~override Microsoft.Maui.Controls.Shell.OnHandlerChanging(Microsoft.Maui.Controls.HandlerChangingEventArgs args) -> void
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
 ~static Microsoft.Maui.Controls.FlyoutBase.GetContextFlyout(Microsoft.Maui.Controls.BindableObject b) -> Microsoft.Maui.Controls.FlyoutBase
