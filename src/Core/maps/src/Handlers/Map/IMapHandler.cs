@@ -4,7 +4,7 @@ using PlatformView = Microsoft.Maui.Maps.Platform.MauiMKMapView;
 using Android.Gms.Maps;
 using PlatformView = Android.Gms.Maps.MapView;
 #elif WINDOWS
-using PlatformView = Microsoft.UI.Xaml.Controls.WebView2;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 using PlatformView = ElmSharp.EvasObject;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
