@@ -31,8 +31,6 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<PointerEventArgs>? PointerExited;
 		public event EventHandler<PointerEventArgs>? PointerMoved;
 
-		PointerEventArgs args = new PointerEventArgs();
-
 		public ICommand PointerEnteredCommand
 		{
 			get { return (ICommand)GetValue(PointerEnteredCommandProperty); }
@@ -67,12 +65,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(PointerMovedCommandParameterProperty, value); }
 		}
 		
-		public Point? GetPosition(Element? relativeTo)
-		{
-			throw new NotImplementedException();
-		}
-		
-		internal void SendPointerEntered(View sender)
+		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition)
 		{
 			ICommand cmd = PointerEnteredCommand;
 			if (cmd != null && cmd.CanExecute(PointerEnteredCommandParameter))
@@ -80,10 +73,10 @@ namespace Microsoft.Maui.Controls
 
 			EventHandler<PointerEventArgs>? handler = PointerEntered;
 			if (handler != null)
-				handler?.Invoke(sender, args);
+				handler?.Invoke(sender, new PointerEventArgs(getPosition));
 		}
 
-		internal void SendPointerExited(View sender)
+		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition)
 		{
 			ICommand cmd = PointerExitedCommand;
 			if (cmd != null && cmd.CanExecute(PointerExitedCommandParameter))
@@ -91,10 +84,10 @@ namespace Microsoft.Maui.Controls
 
 			EventHandler<PointerEventArgs>? handler = PointerExited;
 			if (handler != null)
-				handler?.Invoke(sender, args);
+				handler?.Invoke(sender, new PointerEventArgs(getPosition));
 		}
 
-		internal void SendPointerMoved(View sender)
+		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition)
 		{
 			ICommand cmd = PointerMovedCommand;
 			if (cmd != null && cmd.CanExecute(PointerMovedCommandParameter))
@@ -102,7 +95,7 @@ namespace Microsoft.Maui.Controls
 
 			EventHandler<PointerEventArgs>? handler = PointerMoved;
 			if (handler != null)
-				handler?.Invoke(sender, args);
+				handler?.Invoke(sender, new PointerEventArgs(getPosition));
 		}
 	}
 }
