@@ -8,14 +8,14 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class MultiWindowPage : BasePage
 	{
-		static int windowCounter = 1;
+		static int windowCounter = 0;
 
 		int currentWindow = 0;
 
 		public MultiWindowPage()
 		{
-			currentWindow = windowCounter;
 			windowCounter++;
+			currentWindow = windowCounter;
 
 			InitializeComponent();
 
