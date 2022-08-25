@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -38,7 +39,9 @@ namespace Microsoft.Maui.Controls
 
 		static void UpdateSemanticsProperty(BindableObject bindable, Action<Semantics> action)
 		{
-			action.Invoke(((VisualElement)bindable).SetupSemantics());
+			if (bindable is VisualElement ve)
+				action.Invoke(ve.SetupSemantics());
+
 			if (bindable is IView fe)
 				fe.Handler?.UpdateValue(nameof(IView.Semantics));
 		}
@@ -71,6 +74,49 @@ namespace Microsoft.Maui.Controls
 		public static void SetHeadingLevel(BindableObject bindable, SemanticHeadingLevel value)
 		{
 			bindable.SetValue(HeadingLevelProperty, value);
+		}
+
+		static BindableProperty[] _semanticPropertiesToWatch = new[]
+		{
+			SemanticProperties.DescriptionProperty,
+			SemanticProperties.HintProperty,
+			SemanticProperties.HeadingLevelProperty,
+			AutomationProperties.NameProperty,
+			AutomationProperties.LabeledByProperty,
+			AutomationProperties.HelpTextProperty,
+			AutomationProperties.IsInAccessibleTreeProperty,
+		};
+
+		// https://github.com/dotnet/maui/issues/9156
+		// this is currently required because you can't bind to an attached property
+		internal static ActionDisposable FakeBindSemanticProperties(BindableObject source, BindableObject dest)
+		{
+			foreach (var bp in _semanticPropertiesToWatch)
+			{
+				CopyProperty(bp, source, dest);
+			}
+
+			source.PropertyChanged += PropagateSemanticProperties;
+
+			// The BindingContext on the template might get changed if the
+			// platform is recycling the views so we need to detach the grid
+			// from watching the FlyoutItem that it's associated with
+			return new ActionDisposable(() => source.PropertyChanged -= PropagateSemanticProperties);
+
+			void PropagateSemanticProperties(Object sender, PropertyChangedEventArgs args)
+			{
+				foreach (var bp in _semanticPropertiesToWatch)
+				{
+					if (args.Is(bp))
+						CopyProperty(bp, source, dest);
+				}
+			}
+
+			void CopyProperty(BindableProperty bp, BindableObject source, BindableObject dest)
+			{
+				if (source.IsSet(bp))
+					dest.SetValue(bp, source.GetValue(bp));
+			}
 		}
 	}
 }
