@@ -21,8 +21,8 @@ namespace Microsoft.Maui
 
 		// TODO: Investigate whether the new AndroidX way is actually useful:
 		//       https://developer.android.com/reference/android/app/Activity#onBackPressed()
-#pragma warning disable 809
 		[Obsolete]
+#pragma warning disable 809
 		public override void OnBackPressed()
 #pragma warning restore 809
 		{
