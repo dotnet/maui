@@ -10,7 +10,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin)
 		{
-			handler.PlatformView.SetPosition(new LatLng(mapPin.Location.Latitude, mapPin.Location.Longitude));
+			if (mapPin.Location != null)
+				handler.PlatformView.SetPosition(new LatLng(mapPin.Location.Latitude, mapPin.Location.Longitude));
 		}
 
 		public static void MapLabel(IMapPinHandler handler, IMapPin mapPin)
