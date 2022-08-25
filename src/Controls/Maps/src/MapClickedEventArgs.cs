@@ -4,11 +4,11 @@ namespace Microsoft.Maui.Controls.Maps
 {
 	public class MapClickedEventArgs
 	{
-		public Location Position { get; }
+		public Location Location { get; }
 
-		public MapClickedEventArgs(Location position)
+		public MapClickedEventArgs(Location location)
 		{
-			Position = position;
+			Location = location;
 		}
 	}
 }

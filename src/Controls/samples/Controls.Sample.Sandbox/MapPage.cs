@@ -195,7 +195,7 @@ namespace Maui.Controls.Sample
 				Location = new Location(41.0000939, -8.6228158),
 				Label = "Nave"
 			});
-			map.MapClicked += async (s, e) => { await DisplayAlert("Map Clicked", $"Clicked on Position:{e.Position}", "ok"); };
+			map.MapClicked += async (s, e) => { await DisplayAlert("Map Clicked", $"Clicked on Position:{e.Location}", "ok"); };
 
 			Grid.SetColumnSpan(map, 2);
 

@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapGallery : ContentPage
 	{
-		//readonly Geocoder _geocoder = new Geocoder();
 		readonly Map Map;
 
 		public MapGallery()
@@ -27,8 +26,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Map = MakeMap();
 			Map.Pins.ToList().ForEach(pin =>
 			{
-				(pin as Pin).MarkerClicked += MarkerClicked;
-				(pin as Pin).InfoWindowClicked += InfoWindowClicked;
+				pin.MarkerClicked += MarkerClicked;
+				pin.InfoWindowClicked += InfoWindowClicked;
 			});
 			Map.MapClicked += MapClicked;
 
@@ -88,27 +87,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			e.HideInfoWindow = true;
 		}
 
-		void SearchForAddress(object sender, EventArgs e)
-		{
-			//var searchAddress = (SearchBar)sender;
-			//var addressQuery = searchAddress.Text;
-			//searchAddress.Text = "";
-			//searchAddress.Unfocus();
-
-			//var positions = (await _geocoder.GetPositionsForAddressAsync(addressQuery)).ToList();
-			//if (!positions.Any())
-			//	return;
-
-			//var position = new Location(positions.First().Latitude, positions.First().Longitude);
-			//Map.MoveToRegion(MapSpan.FromCenterAndRadius(position, Distance.FromMeters(4000)));
-			//Map.Pins.Add(new Pin
-			//{
-			//	Label = addressQuery,
-			//	Position = position,
-			//	Address = addressQuery
-			//});
-		}
-
 		void MapClicked(object sender, MapClickedEventArgs e)
 		{
 			LastMapClickLabel.Text = $"Last MapClick: {e.Position.Latitude}, {e.Position.Longitude}";
@@ -141,13 +119,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Map.MoveToRegion(Map.VisibleRegion.WithZoom(1.0 / 3));
 		}
 
-		void ReverseGeocodeClicked(object sender, EventArgs e)
-		{
-			//var addresses = await _geocoder.GetAddressesForPositionAsync(new Position(41.8902, 12.4923));
-			//foreach (var ad in addresses)
-			//	Debug.WriteLine(ad);
-		}
-
 		void HomeClicked(object sender, EventArgs e)
 		{
 			Map.MoveToRegion(MapSpan.FromCenterAndRadius(new Devices.Sensors.Location(41.890202, 12.492049), Distance.FromMiles(0.5)));
@@ -177,7 +148,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			Map.Pins.RemoveAt(0);
 		}
-
 
 		void ShowTrafficToggled(object sender, ToggledEventArgs e)
 		{

@@ -40,7 +40,6 @@ namespace Microsoft.Maui.Controls.Maps
 			set { SetValue(TypeProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public object? MarkerId
 		{
 			get => _markerId;

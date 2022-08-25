@@ -32,9 +32,7 @@ namespace Microsoft.Maui.Controls.Hosting
 						{
 
 							Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
-#pragma warning disable CS0618 // Type or member is obsolete
-							if (GooglePlayServicesUtil.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
-#pragma warning restore 618
+							if (GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
 							{
 								try
 								{
@@ -46,7 +44,6 @@ namespace Microsoft.Maui.Controls.Hosting
 									Console.WriteLine("Exception: {0}", e);
 								}
 							}
-#pragma warning restore CS0618 // Type or member is obsolete
 						}));
 #endif
 				});

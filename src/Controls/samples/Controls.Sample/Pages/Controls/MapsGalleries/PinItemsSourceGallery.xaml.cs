@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 
         void OnMapClicked(object sender, MapClickedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"MapClick: {e.Position.Latitude}, {e.Position.Longitude}");
+            System.Diagnostics.Debug.WriteLine($"MapClick: {e.Location.Latitude}, {e.Location.Longitude}");
         }
 	}
 
