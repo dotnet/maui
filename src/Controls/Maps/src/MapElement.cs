@@ -33,8 +33,6 @@ namespace Microsoft.Maui.Controls.Maps
 			set => SetValue(StrokeWidthProperty, value);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public object? MapElementId { get; set; }
-
 	}
 }
