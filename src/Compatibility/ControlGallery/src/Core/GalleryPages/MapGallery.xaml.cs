@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		void MapClicked(object sender, MapClickedEventArgs e)
 		{
-			LastMapClickLabel.Text = $"Last MapClick: {e.Position.Latitude}, {e.Position.Longitude}";
+			LastMapClickLabel.Text = $"Last MapClick: {e.Location.Latitude}, {e.Location.Longitude}";
 		}
 
 		async void MapTypeClicked(object sender, EventArgs e)

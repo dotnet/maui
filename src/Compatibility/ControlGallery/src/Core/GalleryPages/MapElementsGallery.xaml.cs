@@ -78,19 +78,19 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 			switch (_selectedType)
 			{
 				case SelectedElementType.Polyline:
-					_polyline.Geopath.Add(e.Position);
+					_polyline.Geopath.Add(e.Location);
 					break;
 				case SelectedElementType.Polygon:
-					_polygon.Geopath.Add(e.Position);
+					_polygon.Geopath.Add(e.Location);
 					break;
 				case SelectedElementType.Circle:
 					if (_circle.Center == default(Devices.Sensors.Location))
 					{
-						_circle.Center = e.Position;
+						_circle.Center = e.Location;
 					}
 					else
 					{
-						_circle.Radius = Distance.BetweenPositions(_circle.Center, e.Position);
+						_circle.Radius = Distance.BetweenPositions(_circle.Center, e.Location);
 					}
 					break;
 			}
