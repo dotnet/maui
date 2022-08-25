@@ -7,9 +7,15 @@
              x:Class="Maui.Controls.Sample.Pages.MapsGalleries.MapTypeGallery"
              Title="Map Type">
 
-    <Grid RowDefinitions="Auto, *">
+    <Grid 
+        RowDefinitions="Auto, Auto, *">
         <HorizontalStackLayout Grid.Row="0">
-            <Picker x:Name="MapTypePicker" Title="Select type" Margin="5" VerticalOptions="Center" SelectedIndexChanged="MapTypePicker_SelectedIndexChanged">
+            <Picker
+                x:Name="MapTypePicker"
+                Title="Select type"
+                Margin="5"
+                VerticalOptions="Center"
+                SelectedIndexChanged="MapTypePicker_SelectedIndexChanged">
                 <Picker.Items>
                     <x:String>Street</x:String>
                     <x:String>Satellite</x:String>
@@ -17,6 +23,14 @@
                 </Picker.Items>
             </Picker>
         </HorizontalStackLayout>
-        <Map x:Name="mapTypeMap" Grid.Row="1" />
+        <Slider 
+            Margin="20,0,20,0"
+            Maximum="18"
+            Minimum="1"
+            Value="12"
+            ValueChanged="OnSliderValueChanged" />
+        <Map 
+            x:Name="mapTypeMap" 
+            Grid.Row="1" />
     </Grid>
 </ContentPage>

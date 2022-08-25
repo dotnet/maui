@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Maps;
 
@@ -12,7 +13,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			InitializeComponent();
 		}
 
-		private void MapTypePicker_SelectedIndexChanged(object sender, System.EventArgs e)
+		void MapTypePicker_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
 			var picker = (Picker)sender;
 
@@ -28,6 +29,17 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 				case "Hybrid":
 					mapTypeMap.MapType = MapType.Hybrid;
 					break;
+			}
+		}
+
+		void OnSliderValueChanged(object sender, ValueChangedEventArgs e)
+		{
+			double zoomLevel = e.NewValue;
+			double latlongDegrees = 360 / (Math.Pow(2, zoomLevel));
+
+			if (mapTypeMap.VisibleRegion != null)
+			{
+				mapTypeMap.MoveToRegion(new Microsoft.Maui.Maps.MapSpan(mapTypeMap.VisibleRegion.Center, latlongDegrees, latlongDegrees));
 			}
 		}
 	}
