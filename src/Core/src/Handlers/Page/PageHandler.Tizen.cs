@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 		protected override ContentCanvas CreatePlatformView()
 		{
 			var view = base.CreatePlatformView();
-			view.BackgroundColor = (DeviceInfo.GetDeviceType() == DeviceType.TV) ? EColor.Transparent : EColor.White;
+			view.BackgroundColor = (DeviceInfo.DeviceType == DeviceType.TV) ? EColor.Transparent : EColor.White;
 
 			return view;
 		}

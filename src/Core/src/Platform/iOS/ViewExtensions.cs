@@ -59,9 +59,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ContentView platformView, IBorderStroke border)
 		{
-			bool hasBorder = border.Shape != null && border.Stroke != null;
+			bool hasShape = border.Shape != null;
 
-			if (hasBorder)
+			if (hasShape)
 			{
 				platformView.UpdateMauiCALayer(border);
 			}
@@ -206,6 +206,27 @@ namespace Microsoft.Maui.Platform
 			foreach (var sublayer in layer.Sublayers)
 			{
 				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
+				{
+					sublayer.Frame = view.Bounds;
+					break;
+				}
+			}
+		}
+
+		// TODO: NET7 make this public for net7.0
+		internal static void UpdateShadowLayerFrame(this UIView view)
+		{
+			if (view == null || view.Frame.IsEmpty)
+				return;
+
+			var layer = view.Layer;
+
+			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
+				return;
+
+			foreach (var sublayer in layer.Sublayers)
+			{
+				if (sublayer.Opacity > 0) // If the layer has shadow, invalidate the Size
 				{
 					sublayer.Frame = view.Bounds;
 					break;
@@ -450,6 +471,61 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent)
 		{
 			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
+		}
+
+
+		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView)
+		{
+			UIToolTipInteraction? interaction = default;
+
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15)
+				|| OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				if (platformView is UIControl control)
+				{
+					interaction = control.ToolTipInteraction;
+				}
+				else
+				{
+					if (platformView.Interactions is not null)
+					{
+						foreach (var ia in platformView.Interactions)
+						{
+							if (ia is UIToolTipInteraction toolTipInteraction)
+							{
+								interaction = toolTipInteraction;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			return interaction;
+		}
+
+		public static void UpdateToolTip(this UIView platformView, ToolTip? tooltip)
+		{
+			// UpdateToolTips were added in 15.0 for both iOS and MacCatalyst
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15)
+				|| OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				string? text = tooltip?.Content?.ToString();
+				var interaction = platformView.GetToolTipInteraction();
+
+				if (interaction is null)
+				{
+					if (!string.IsNullOrEmpty(text))
+					{
+						interaction = new UIToolTipInteraction(text);
+						platformView.AddInteraction(interaction);
+					}
+				}
+				else
+				{
+					interaction.DefaultToolTip = text;
+				}
+			}
 		}
 
 		internal static IWindow? GetHostedWindow(this IView? view)

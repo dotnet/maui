@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationView)]
-	public partial class NavigationViewHandlerTests : HandlerTestBase<NavigationViewHandler, NavigationViewStub>
+	public partial class NavigationViewHandlerTests : HandlerTestBase
 	{
 #if ANDROID || WINDOWS
 		[Fact(DisplayName = "Push Multiple Pages At Start")]

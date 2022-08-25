@@ -1,10 +1,10 @@
 ﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
-	[TestFixture, Category("Layout")]
+	[Category("Layout")]
 	public class FlexLayoutTests
 	{
 		class TestImage : Image
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void FlexLayoutMeasuresImagesUnconstrained()
 		{
 			var root = new Grid();
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.True(image.Passed, "Image should be measured unconstrained even if the FlexLayout is constrained.");
 		}
 
-		[Test]
+		[Fact]
 		public void FlexLayoutRecognizesVisibilityChange()
 		{
 			var root = new Grid();

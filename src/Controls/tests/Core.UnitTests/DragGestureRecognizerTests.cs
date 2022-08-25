@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class DragGestureRecognizerTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void PropertySetters()
 		{
 			var dragRec = new DragGestureRecognizer();
@@ -23,14 +23,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			dragRec.DropCompletedCommand = cmd;
 			dragRec.DropCompletedCommandParameter = parameter;
 
-			Assert.AreEqual(true, dragRec.CanDrag);
-			Assert.AreEqual(cmd, dragRec.DragStartingCommand);
-			Assert.AreEqual(parameter, dragRec.DragStartingCommandParameter);
-			Assert.AreEqual(cmd, dragRec.DropCompletedCommand);
-			Assert.AreEqual(parameter, dragRec.DropCompletedCommandParameter);
+			Assert.True(dragRec.CanDrag);
+			Assert.Equal(cmd, dragRec.DragStartingCommand);
+			Assert.Equal(parameter, dragRec.DragStartingCommandParameter);
+			Assert.Equal(cmd, dragRec.DropCompletedCommand);
+			Assert.Equal(parameter, dragRec.DropCompletedCommandParameter);
 		}
 
-		[Test]
+		[Fact]
 		public void DragStartingCommandFires()
 		{
 			var dragRec = new DragGestureRecognizer();
@@ -42,10 +42,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			dragRec.DragStartingCommandParameter = parameter;
 			dragRec.SendDragStarting(new Label());
 
-			Assert.AreEqual(commandExecuted, parameter);
+			Assert.Equal(commandExecuted, parameter);
 		}
 
-		[Test]
+		[Fact]
 		public void UserSpecifiedTextIsntOverwritten()
 		{
 			var dragRec = new DragGestureRecognizer();
@@ -56,10 +56,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var returnedArgs = dragRec.SendDragStarting(element);
-			Assert.AreEqual("Right Text", returnedArgs.Data.Text);
+			Assert.Equal("Right Text", returnedArgs.Data.Text);
 		}
 
-		[Test]
+		[Fact]
 		public void UserSpecifiedImageIsntOverwritten()
 		{
 			var dragRec = new DragGestureRecognizer();
@@ -72,10 +72,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var returnedArgs = dragRec.SendDragStarting(element);
-			Assert.AreEqual(fileImageSource, returnedArgs.Data.Image);
+			Assert.Equal(fileImageSource, returnedArgs.Data.Image);
 		}
 
-		[Test]
+		[Fact]
 		public void DropCompletedCommandFires()
 		{
 			var dragRec = new DragGestureRecognizer();
@@ -88,10 +88,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			dragRec.DropCompletedCommandParameter = parameter;
 			dragRec.SendDropCompleted(new DropCompletedEventArgs());
 
-			Assert.AreEqual(commandExecuted, parameter);
+			Assert.Equal(commandExecuted, parameter);
 		}
 
-		[Test]
+		[Fact]
 		public void DropCompletedCommandFiresOnce()
 		{
 			int counter = 0;
@@ -104,26 +104,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			dragRec.SendDropCompleted(new DropCompletedEventArgs());
 			dragRec.SendDropCompleted(new DropCompletedEventArgs());
 
-			Assert.AreEqual(1, counter);
+			Assert.Equal(1, counter);
 		}
 
-		[TestCase(typeof(Entry), "EntryTest")]
-		[TestCase(typeof(Label), "LabelTest")]
-		[TestCase(typeof(Editor), "EditorTest")]
-		[TestCase(typeof(TimePicker), "01:00:00")]
-		[TestCase(typeof(CheckBox), "True")]
-		[TestCase(typeof(Switch), "True")]
-		[TestCase(typeof(RadioButton), "True")]
+		[Theory]
+		[InlineData(typeof(Entry), "EntryTest")]
+		[InlineData(typeof(Label), "LabelTest")]
+		[InlineData(typeof(Editor), "EditorTest")]
+		[InlineData(typeof(TimePicker), "01:00:00")]
+		[InlineData(typeof(CheckBox), "True")]
+		[InlineData(typeof(Switch), "True")]
+		[InlineData(typeof(RadioButton), "True")]
 		public void TextPackageCorrectlyExtractedFromCompatibleElement(Type fieldType, string result)
 		{
 			var dragRec = new DragGestureRecognizer();
 			var element = (VisualElement)Activator.CreateInstance(fieldType);
-			Assert.IsTrue(element.TrySetValue(result));
+			Assert.True(element.TrySetValue(result));
 			var args = dragRec.SendDragStarting((IView)element);
-			Assert.AreEqual(result, args.Data.Text);
+			Assert.Equal(result, args.Data.Text);
 		}
 
-		[TestCase(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
+		[Theory]
+		[InlineData(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
 		public void DateTextPackageCorrectlyExtractedFromCompatibleElement(Type fieldType, string result)
 		{
 			var date = DateTime.Parse(result);
@@ -131,7 +133,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			TextPackageCorrectlyExtractedFromCompatibleElement(fieldType, result);
 		}
 
-		[Test]
+		[Fact]
 		public void HandledTest()
 		{
 			string testString = "test String";
@@ -142,7 +144,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			args.Handled = true;
 			args.Data.Text = "Text Shouldn't change";
 			dragRec.SendDragStarting(element);
-			Assert.AreNotEqual(args.Data.Text, testString);
+			Assert.NotEqual(args.Data.Text, testString);
 		}
 	}
 }

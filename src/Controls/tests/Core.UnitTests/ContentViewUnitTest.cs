@@ -2,26 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	[TestFixture]
+
 	public class ContentViewUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestConstructor()
 		{
 			var contentView = new ContentView();
 
 			Assert.Null(contentView.Content);
-			Assert.AreEqual(null, contentView.BackgroundColor);
-			Assert.AreEqual(new Thickness(0), contentView.Padding);
+			Assert.Null(contentView.BackgroundColor);
+			Assert.Equal(new Thickness(0), contentView.Padding);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSetChild()
 		{
 			var contentView = new ContentView();
@@ -35,8 +35,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			contentView.Content = child1;
 
 			Assert.True(added);
-			Assert.AreEqual(child1, contentView.Content);
-			Assert.AreEqual(child1.Parent, contentView);
+			Assert.Equal(child1, contentView.Content);
+			Assert.Equal(child1.Parent, contentView);
 
 			added = false;
 			contentView.Content = child1;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(added);
 		}
 
-		[Test]
+		[Fact]
 		public void TestReplaceChild()
 		{
 			var contentView = new ContentView();
@@ -66,10 +66,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(removed);
 			Assert.True(added);
-			Assert.AreEqual(child2, contentView.Content);
+			Assert.Equal(child2, contentView.Content);
 		}
 
-		[Test]
+		[Fact]
 		public void TestFrameLayout()
 		{
 			View child;
@@ -86,14 +86,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.AreEqual(new Size(120, 220), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.Equal(new Size(120, 220), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 
 			contentView.Layout(new Rect(0, 0, 300, 300));
 
-			Assert.AreEqual(new Rect(10, 10, 280, 280), child.Bounds);
+			Assert.Equal(new Rect(10, 10, 280, 280), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void WidthRequest()
 		{
 			View child;
@@ -111,10 +111,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				WidthRequest = 20
 			};
 
-			Assert.AreEqual(new Size(40, 220), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.Equal(new Size(40, 220), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 		}
 
-		[Test]
+		[Fact]
 		public void HeightRequest()
 		{
 			View child;
@@ -132,10 +132,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				HeightRequest = 20
 			};
 
-			Assert.AreEqual(new Size(120, 40), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.Equal(new Size(120, 40), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutVerticallyCenter()
 		{
 			View child;
@@ -154,10 +154,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(0, 50, 200, 100), child.Bounds);
+			Assert.Equal(new Rect(0, 50, 200, 100), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutVerticallyBegin()
 		{
 			View child;
@@ -176,10 +176,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(0, 0, 200, 100), child.Bounds);
+			Assert.Equal(new Rect(0, 0, 200, 100), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutVerticallyEnd()
 		{
 			View child;
@@ -198,10 +198,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(0, 100, 200, 100), child.Bounds);
+			Assert.Equal(new Rect(0, 100, 200, 100), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutHorizontallyCenter()
 		{
 			View child;
@@ -220,10 +220,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(50, 0, 100, 200), child.Bounds);
+			Assert.Equal(new Rect(50, 0, 100, 200), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutHorizontallyBegin()
 		{
 			View child;
@@ -242,10 +242,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(0, 0, 100, 200), child.Bounds);
+			Assert.Equal(new Rect(0, 0, 100, 200), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutHorizontallyEnd()
 		{
 			View child;
@@ -264,10 +264,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			contentView.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(100, 0, 100, 200), child.Bounds);
+			Assert.Equal(new Rect(100, 0, 100, 200), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void NullTemplateDirectlyHosts()
 		{
 			// order of setting properties carefully picked to emulate running on real backend
@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			contentView.Content = child;
 
-			Assert.AreEqual(child, ((IElementController)contentView).LogicalChildren[0]);
+			Assert.Equal(child, ((IElementController)contentView).LogicalChildren[0]);
 		}
 
 		class SimpleTemplate : StackLayout
@@ -290,17 +290,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		[Test]
+		[Fact]
 		public void TemplateInflates()
 		{
 			var contentView = new ContentView();
 
 			contentView.ControlTemplate = new ControlTemplate(typeof(SimpleTemplate));
 
-			Assert.That(((IElementController)contentView).LogicalChildren[0], Is.TypeOf<SimpleTemplate>());
+			Assert.IsType<SimpleTemplate>(((IElementController)contentView).LogicalChildren[0]);
 		}
 
-		[Test]
+		[Fact]
 		public void PacksContent()
 		{
 			var contentView = new ContentView();
@@ -309,11 +309,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			contentView.ControlTemplate = new ControlTemplate(typeof(SimpleTemplate));
 			contentView.Content = child;
 
-			Assume.That(((IElementController)contentView).LogicalChildren[0], Is.TypeOf<SimpleTemplate>());
-			Assert.That(contentView.Descendants(), Contains.Item(child));
+			Assert.IsType<SimpleTemplate>(((IElementController)contentView).LogicalChildren[0]);
+
+			Assert.Contains(child, contentView.Descendants());
 		}
 
-		[Test]
+		[Fact]
 		public void DoesNotInheritBindingContextToTemplate()
 		{
 			var contentView = new ContentView();
@@ -325,11 +326,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var bc = "Test";
 			contentView.BindingContext = bc;
 
-			Assert.AreNotEqual(bc, ((IElementController)contentView).LogicalChildren[0].BindingContext);
-			Assert.IsNull(((IElementController)contentView).LogicalChildren[0].BindingContext);
+			Assert.NotEqual(bc, ((IElementController)contentView).LogicalChildren[0].BindingContext);
+			Assert.Null(((IElementController)contentView).LogicalChildren[0].BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void ContentDoesGetBindingContext()
 		{
 			var contentView = new ContentView();
@@ -341,10 +342,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var bc = "Test";
 			contentView.BindingContext = bc;
 
-			Assert.AreEqual(bc, child.BindingContext);
+			Assert.Equal(bc, child.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void ContentParentIsNotInsideTempalte()
 		{
 			var contentView = new ContentView();
@@ -353,10 +354,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			contentView.ControlTemplate = new ControlTemplate(typeof(SimpleTemplate));
 			contentView.Content = child;
 
-			Assert.AreEqual(contentView, child.Parent);
+			Assert.Equal(contentView, child.Parent);
 		}
 
-		[Test]
+		[Fact]
 		public void NonTemplatedContentInheritsBindingContext()
 		{
 			var contentView = new ContentView();
@@ -365,10 +366,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			contentView.Content = child;
 			contentView.BindingContext = "Foo";
 
-			Assert.AreEqual("Foo", child.BindingContext);
+			Assert.Equal("Foo", child.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void ContentView_should_have_the_InternalChildren_correctly_when_Content_changed()
 		{
 			var sut = new ContentView();
@@ -380,8 +381,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var expected = new View();
 			sut.Content = expected;
 
-			Assert.AreEqual(1, internalChildren.Count);
-			Assert.AreSame(expected, internalChildren[0]);
+			Assert.Equal(1, internalChildren.Count);
+			Assert.Same(expected, internalChildren[0]);
 		}
 	}
 }

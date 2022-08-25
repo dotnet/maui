@@ -24,6 +24,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ClipPage), "Clip",
 				"Defines the outline of the contents of an element."),
 
+			new SectionModel(typeof(ContextFlyoutPage), "ContextFlyout",
+				"Right-click context menu for controls."),
+
 			new SectionModel(typeof(ContentPageGallery), "ContentPage",
 				"Demonstrates using a Content Page."),
 

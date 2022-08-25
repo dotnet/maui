@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
 using Microsoft.Maui.Media;
+using System;
 
 namespace Microsoft.Maui.Platform
 {
@@ -251,6 +252,11 @@ namespace Microsoft.Maui.Platform
 				await control.UpdateBackgroundImageSourceAsync(imageSource, provider);
 			else if (platformView is Panel panel)
 				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
+		}
+
+		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
+		{
+			ToolTipService.SetToolTip(platformView, tooltip?.Content);
 		}
 
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)

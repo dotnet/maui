@@ -18,11 +18,14 @@ namespace Microsoft.Maui.Handlers.Memory
 			if (result.Count > 2)
 				throw new InvalidOperationException("Add new test to sort if you want it to run");
 
-			return new List<TTestCase>()
-			{
-				result.First(x=> x.TestMethod.Method.Name == nameof(MemoryTests.Allocate)),
-				result.First(x=> x.TestMethod.Method.Name == nameof(MemoryTests.CheckAllocation)),
-			};
+			var method1 = result.FirstOrDefault(x => x.TestMethod.Method.Name == nameof(MemoryTests.Allocate));
+			var method2 = result.FirstOrDefault(x => x.TestMethod.Method.Name == nameof(MemoryTests.CheckAllocation));
+
+			if (method1 != null)
+				yield return method1;
+
+			if (method2 != null)
+				yield return method2;
 		}
 	}
 }

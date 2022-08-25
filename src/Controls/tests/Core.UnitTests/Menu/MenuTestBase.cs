@@ -1,11 +1,11 @@
 ﻿#nullable enable
 using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 {
-	public abstract class MenuBarTestBase<TTestType, TIChildType, TChildType, THandlerUpdate> : BaseTestFixture
+	public abstract class MenuTestBase<TTestType, TIChildType, TChildType, THandlerUpdate> : BaseTestFixture
 		where TChildType : Element, TIChildType, new()
 		where TTestType : class, Maui.IElement, IList<TIChildType>, new()
 	{
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 		protected abstract int GetIndex(THandlerUpdate handlerUpdate);
 
-		[Test]
+		[Fact]
 		public void UsingIndexUpdatesParent()
 		{
 			var menuBar = new TTestType();
@@ -30,16 +30,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			menuBar.Add(child0);
 
-			Assert.AreEqual(menuBar, child0.Parent);
+			Assert.Same(menuBar, child0.Parent);
 			Assert.Null(child1.Parent);
 
 			menuBar[0] = child1;
 
 			Assert.Null(child0.Parent);
-			Assert.AreEqual(menuBar, child1.Parent);
+			Assert.Same(menuBar, child1.Parent);
 		}
 
-		[Test]
+		[Fact]
 		public void ClearUpdatesParent()
 		{
 			var menuBar = new TTestType();
@@ -50,8 +50,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			menuBar.Add(child0);
 			menuBar.Add(child1);
 
-			Assert.AreEqual(menuBar, child0.Parent);
-			Assert.AreEqual(menuBar, child1.Parent);
+			Assert.Same(menuBar, child0.Parent);
+			Assert.Same(menuBar, child1.Parent);
 
 			menuBar.Clear();
 
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			Assert.Null(child1.Parent);
 		}
 
-		[Test]
+		[Fact]
 		public void AddCallsCorrectHandlerMethod()
 		{
 			var events = new List<(string Name, THandlerUpdate? Args)>();
@@ -73,14 +73,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			menuBar.Add(child0);
 
-			Assert.AreEqual(1, events.Count);
+			Assert.Single(events);
 			var (name, args) = events[0];
-			Assert.AreEqual(nameof(IMenuBarHandler.Add), name);
-			Assert.AreEqual(0, GetIndex(args!));
-			Assert.AreEqual(child0, GetItem(args!));
+			Assert.Equal(nameof(IMenuBarHandler.Add), name);
+			Assert.Equal(0, GetIndex(args!));
+			Assert.Equal(child0, GetItem(args!));
 		}
 
-		[Test]
+		[Fact]
 		public void RemoveCallsCorrectHandlerMethod()
 		{
 			var events = new List<(string Name, THandlerUpdate? Args)>();
@@ -95,14 +95,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			menuBar.Remove(child0);
 
-			Assert.AreEqual(1, events.Count);
+			Assert.Single(events);
 			var (name, args) = events[0];
-			Assert.AreEqual(nameof(IMenuBarHandler.Remove), name);
-			Assert.AreEqual(0, GetIndex(args!));
-			Assert.AreEqual(child0, GetItem(args!));
+			Assert.Equal(nameof(IMenuBarHandler.Remove), name);
+			Assert.Equal(0, GetIndex(args!));
+			Assert.Equal(child0, GetItem(args!));
 		}
 
-		[Test]
+		[Fact]
 		public void InsertCallsCorrectHandlerMethod()
 		{
 			var events = new List<(string Name, THandlerUpdate? Args)>();
@@ -121,11 +121,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			menuBar.Insert(1, child1);
 
-			Assert.AreEqual(1, events.Count);
+			Assert.Single(events);
 			var (name, args) = events[0];
-			Assert.AreEqual(nameof(IMenuBarHandler.Insert), name);
-			Assert.AreEqual(1, GetIndex(args!));
-			Assert.AreEqual(child1, GetItem(args!));
+			Assert.Equal(nameof(IMenuBarHandler.Insert), name);
+			Assert.Equal(1, GetIndex(args!));
+			Assert.Equal(child1, GetItem(args!));
 		}
 	}
 }
