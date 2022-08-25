@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -36,6 +37,37 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
+#if MACCATALYST
+		//TODO: make this public on NET7
+		internal static void MapBackground(IButtonHandler handler, IButton button)
+		{
+			//If this is a Mac optimized interface
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+			{
+				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
+				if (button?.Background is Paint paint)
+				{
+					if (paint is SolidPaint solidPaint)
+					{
+						Color backgroundColor = solidPaint.Color;
+
+						if (backgroundColor == null)
+							config.BaseBackgroundColor = ColorExtensions.BackgroundColor;
+						else
+							config.BaseBackgroundColor = backgroundColor.ToPlatform();
+
+					}
+				}
+				if (handler.PlatformView != null)
+					handler.PlatformView.Configuration = config;
+			}
+			else
+			{
+				handler.PlatformView?.UpdateBackground(button);
+			}
+		}
+#endif
+
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			handler.PlatformView?.UpdateStrokeColor(buttonStroke);
@@ -61,7 +93,19 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.PlatformView?.UpdateTextColor(button);
+			//If this is a Mac optimized interface
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+			{
+				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
+				if (button?.TextColor != null && handler.PlatformView != null)
+					config.BaseForegroundColor = button?.TextColor.ToPlatform();
+				if (handler.PlatformView != null)
+					handler.PlatformView.Configuration = config;
+			}
+			else
+			{
+				handler.PlatformView?.UpdateTextColor(button);
+			}
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
