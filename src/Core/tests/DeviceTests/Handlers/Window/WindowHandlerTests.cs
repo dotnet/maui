@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(100, 300)]
+		[InlineData(150, 300)]
 		[InlineData(200, 300)]
 		[InlineData(500, 500)]
 		[InlineData(1000, 1000)]
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(100, 300)]
+		[InlineData(150, 300)]
 		[InlineData(200, 300)]
 		[InlineData(500, 500)]
 		[InlineData(1000, 1000)]
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(100, 100)]
+		[InlineData(150, 150)]
 		[InlineData(200, 200)]
 		[InlineData(500, 300)]
 		[InlineData(1000, 300)]
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(100, 100)]
+		[InlineData(150, 150)]
 		[InlineData(200, 200)]
 		[InlineData(500, 300)]
 		[InlineData(1000, 300)]

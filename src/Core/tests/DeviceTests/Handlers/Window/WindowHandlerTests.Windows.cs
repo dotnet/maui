@@ -1,124 +1,70 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Handlers;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+﻿using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Windows.Graphics;
 using Xunit;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
-using WGrid = Microsoft.UI.Xaml.Controls.Grid;
-using WImage = Microsoft.UI.Xaml.Controls.Image;
-using WBorder = Microsoft.UI.Xaml.Controls.Border;
-using WVisibility = Microsoft.UI.Xaml.Visibility;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowHandlerTests : HandlerTestBase
 	{
-		[Fact(DisplayName = "Back Button Not Visible With No Navigation Page")]
-		public async Task BackButtonNotVisibleWithBasicView()
+		[Fact]
+		public async Task ContentIsSetInitially()
 		{
-			var window = new WindowStub()
+			var window = new Window
 			{
-				Content = new ButtonStub()
+				Page = new ContentPage
+				{
+					Content = new Label { Text = "Yay!" }
+				}
 			};
 
-			await RunWindowTest(window, manager =>
+			await RunWindowTest(window, handler =>
 			{
-				var navView = GetRootNavigationView(manager);
-				Assert.Equal(NavigationViewBackButtonVisible.Collapsed, navView.IsBackButtonVisible);
-				return Task.CompletedTask;
+				var rootContainer = handler.PlatformView.Content;
+
+				Assert.NotNull(rootContainer);
+				var container = Assert.IsType<WindowRootViewContainer>(rootContainer);
+
+				Assert.NotEmpty(container.Children);
+				var root = Assert.IsType<WindowRootView>(container.Children[0]);
+				var navigation = Assert.IsType<RootNavigationView>(root.Content);
+				var panel = Assert.IsType<ContentPanel>(navigation.Content);
+				var btn = Assert.IsAssignableFrom<UI.Xaml.Controls.TextBlock>(panel.Children[0]);
+
+				Assert.Equal("Yay!", btn.Text);
 			});
 		}
 
-		[Theory(DisplayName = "MauiToolbar Control Visibilities Toggle")]
-		[InlineData("titleIcon")]
-		[InlineData("textBlockBorder")]
-		[InlineData("menuContent")]
-		[InlineData("titleView")]
-		public async Task MauiToolbarControlVisibilitiesToggle(string controlName)
+		[Fact]
+		public async Task WindowSupportsEmptyPage_Platform()
 		{
-			await InvokeOnMainThreadAsync(async () =>
+			var window = new Window(new ContentPage());
+
+			await RunWindowTest(window, handler =>
 			{
-				MauiToolbar mauiToolbar = new MauiToolbar();
-				var toolbarContent = (DependencyObject)mauiToolbar.Content;
-				var control = toolbarContent.GetDescendantByName<UIElement>(controlName);
+				var rootContainer = handler.PlatformView.Content;
 
-				Assert.Equal(WVisibility.Collapsed, control.Visibility);
+				Assert.NotNull(rootContainer);
+				var container = Assert.IsType<WindowRootViewContainer>(rootContainer);
 
-				switch (controlName)
-				{
-					case "titleIcon":
-						var tcs = new TaskCompletionSource<bool>();
-						var fileImageSource = new Controls.FileImageSource() { File = "black.png" };
-						fileImageSource.LoadImage(MauiContext, (result) =>
-						{
-							mauiToolbar.TitleIconImageSource = result.Value;
-							tcs.SetResult(true);
-						});
+				Assert.NotEmpty(container.Children);
+				var root = Assert.IsType<WindowRootView>(container.Children[0]);
+				var navigation = Assert.IsType<RootNavigationView>(root.Content);
+				var panel = Assert.IsType<ContentPanel>(navigation.Content);
 
-						await tcs.Task;
-						Assert.Equal(WVisibility.Visible, control.Visibility);
-						mauiToolbar.TitleIconImageSource = null;
-						Assert.Equal(WVisibility.Collapsed, control.Visibility);
-						break;
-					case "textBlockBorder":
-						mauiToolbar.Title = "text";
-						Assert.Equal(WVisibility.Visible, control.Visibility);
-						mauiToolbar.Title = "";
-						Assert.Equal(WVisibility.Collapsed, control.Visibility);
-						break;
-					case "menuContent":
-						mauiToolbar.SetMenuBar(new MenuBar() { Items = { new MenuBarItem() } });
-						Assert.Equal(WVisibility.Visible, control.Visibility);
-						mauiToolbar.SetMenuBar(new MenuBar());
-						Assert.Equal(WVisibility.Collapsed, control.Visibility);
-						mauiToolbar.SetMenuBar(new MenuBar() { Items = { new MenuBarItem() } });
-						Assert.Equal(WVisibility.Visible, control.Visibility);
-						mauiToolbar.SetMenuBar(null);
-						Assert.Equal(WVisibility.Collapsed, control.Visibility);
-						break;
-					case "titleView":
-						mauiToolbar.TitleView = "text";
-						Assert.Equal(WVisibility.Visible, control.Visibility);
-						mauiToolbar.TitleView = null;
-						Assert.Equal(WVisibility.Collapsed, control.Visibility);
-						break;
-				}
+				Assert.Null(panel.Content);
+				Assert.Empty(panel.Children);
 			});
 		}
 
-		RootNavigationView GetRootNavigationView(NavigationRootManager navigationRootManager)
+		void MovePlatformWindow(UI.Xaml.Window window, Rect rect)
 		{
-			return (navigationRootManager.RootView as WindowRootView).NavigationViewControl;
-		}
-
-		Task RunWindowTest(IWindow window, Func<NavigationRootManager, Task> action)
-		{
-			return InvokeOnMainThreadAsync(async () =>
-			{
-				var scopedContext = new MauiContext(MauiContext.Services);
-				scopedContext.AddWeakSpecific(window);
-				var mauiContext = scopedContext.MakeScoped(true);
-				var windowManager = mauiContext.GetNavigationRootManager();
-				windowManager.Connect(window.Content.ToPlatform(mauiContext));
-				var frameworkElement = windowManager.RootView;
-
-				await AssertionExtensions.AttachAndRun(frameworkElement, async () =>
-				{
-					frameworkElement.Unloaded += (_, _) =>
-					{
-						windowManager?.Disconnect();
-						windowManager = null;
-					};
-
-					await action.Invoke(windowManager);
-				});
-
-				return;
-			});
+			var density = window.GetDisplayDensity();
+			window.GetAppWindow().MoveAndResize(new RectInt32(
+				(int)(rect.X * density),
+				(int)(rect.Y * density),
+				(int)(rect.Width * density),
+				(int)(rect.Height * density)));
 		}
 	}
 }
