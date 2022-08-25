@@ -4,6 +4,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
 
@@ -20,15 +21,16 @@ namespace Maui.Controls.Sample
 			var myhouse = new Location(47.6368678, -122.137305);
 
 			//var center = new 
-			var map = new Microsoft.Maui.Controls.Maps.Map(new MapSpan(myhouse, 0.1, 0.1));
+			var map = new Map(new MapSpan(myhouse, 0.1, 0.1));
 			grid.Children.Add(map);
 
 			// add the polygon to the map's MapElements collection
 			map.MapElements.Add(AddPolygon());
 
 			// add the polyline to the map's MapElements collection
-			map.MapElements.Add(AddPolyline());
-			//UpdatePolyLine(polyline);
+			var polyline = AddPolyline();
+			map.MapElements.Add(polyline);
+			//UpdatePolyLine(Dispatcher,polyline);
 
 			// add the Circle to the map's MapElements collection
 			map.MapElements.Add(AddCircle());
@@ -36,7 +38,7 @@ namespace Maui.Controls.Sample
 			Content = grid;
 		}
 
-		private static Polygon AddPolygon()
+		static Polygon AddPolygon()
 		{
 			return new Polygon
 			{
@@ -92,11 +94,10 @@ namespace Maui.Controls.Sample
 			};
 		}
 
-		[Obsolete]
-		static void UpdatePolyLine(Polyline polyline)
+		static void UpdatePolyLine(IDispatcher dispatcher, Polyline polyline)
 		{
 			int count = 0;
-			Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+			dispatcher.StartTimer(TimeSpan.FromSeconds(1), () =>
 			{
 				polyline.StrokeWidth = count;
 				if (count == 0)
