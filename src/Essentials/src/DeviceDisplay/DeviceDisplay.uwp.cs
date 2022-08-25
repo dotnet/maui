@@ -44,60 +44,21 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 
-		static DisplayRotation CalculateRotation(DisplayOrientations native, DisplayOrientations current)
-		{
-			if (native == DisplayOrientations.Portrait)
-			{
-				switch (current)
-				{
-					case DisplayOrientations.Landscape:
-						return DisplayRotation.Rotation90;
-					case DisplayOrientations.Portrait:
-						return DisplayRotation.Rotation0;
-					case DisplayOrientations.LandscapeFlipped:
-						return DisplayRotation.Rotation270;
-					case DisplayOrientations.PortraitFlipped:
-						return DisplayRotation.Rotation180;
-				}
-			}
-			else if (native == DisplayOrientations.Landscape)
-			{
-				switch (current)
-				{
-					case DisplayOrientations.Landscape:
-						return DisplayRotation.Rotation0;
-					case DisplayOrientations.Portrait:
-						return DisplayRotation.Rotation270;
-					case DisplayOrientations.LandscapeFlipped:
-						return DisplayRotation.Rotation180;
-					case DisplayOrientations.PortraitFlipped:
-						return DisplayRotation.Rotation90;
-				}
-			}
-
-			return DisplayRotation.Unknown;
-		}
-
 		AppWindow? _currentAppWindowListeningTo;
 
 		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			if (WindowStateManager.Default.GetActiveAppWindow(false) is not AppWindow appWindow)
-				return new DisplayInfo();
+				return default;
 
 			var windowHandle = UI.Win32Interop.GetWindowFromWindowId(appWindow.Id);
 			var mi = GetDisplay(windowHandle);
 
 			if (mi == null)
-				return new DisplayInfo();
+				return default;
 
-			DEVMODE vDevMode = new DEVMODE();
+			var vDevMode = new DEVMODE();
 			EnumDisplaySettings(mi.Value.DeviceNameToLPTStr(), -1, ref vDevMode);
-
-			var rotation = CalculateRotation(vDevMode, appWindow);
-			var perpendicular =
-				rotation == DisplayRotation.Rotation90 ||
-				rotation == DisplayRotation.Rotation270;
 
 			var w = vDevMode.dmPelsWidth;
 			var h = vDevMode.dmPelsHeight;
@@ -108,13 +69,16 @@ namespace Microsoft.Maui.Devices
 			else
 				dpi = 1.0;
 
-			var orientation = GetWindowOrientationWin32(appWindow) == DisplayOrientations.Landscape
+			var displayOrientation = GetDisplayOrientation(vDevMode);
+			var rotation = CalculateRotation(displayOrientation);
+
+			var orientation = displayOrientation == DisplayOrientations.Landscape || displayOrientation == DisplayOrientations.LandscapeFlipped
 				? DisplayOrientation.Landscape
 				: DisplayOrientation.Portrait;
 
 			return new DisplayInfo(
-				width: perpendicular ? h : w,
-				height: perpendicular ? w : h,
+				width: w,
+				height: h,
 				density: dpi,
 				orientation: orientation,
 				rotation: rotation,
@@ -179,76 +143,45 @@ namespace Microsoft.Maui.Devices
 		void OnAppWindowChanged(AppWindow sender, AppWindowChangedEventArgs args) =>
 			OnMainDisplayInfoChanged();
 
-		static DisplayRotation CalculateRotation(DEVMODE devMode, AppWindow appWindow)
-		{
-			DisplayOrientations native = DisplayOrientations.Portrait;
-			switch (devMode.dmDisplayOrientation)
+		static DisplayRotation CalculateRotation(DisplayOrientations orientation) =>
+			orientation switch
 			{
-				case 0:
-					native = DisplayOrientations.Landscape;
-					break;
-				case 1:
-					native = DisplayOrientations.Portrait;
-					break;
-				case 2:
-					native = DisplayOrientations.LandscapeFlipped;
-					break;
-				case 3:
-					native = DisplayOrientations.PortraitFlipped;
-					break;
-			}
+				DisplayOrientations.Landscape => DisplayRotation.Rotation0,
+				DisplayOrientations.Portrait => DisplayRotation.Rotation270,
+				DisplayOrientations.LandscapeFlipped => DisplayRotation.Rotation180,
+				DisplayOrientations.PortraitFlipped => DisplayRotation.Rotation90,
+				_ => DisplayRotation.Rotation0,
+			};
 
-			var current = GetWindowOrientationWin32(appWindow);
-			return CalculateRotation(native, current);
-		}
+		static DisplayOrientations GetDisplayOrientation(DEVMODE devMode) =>
+			devMode.dmDisplayOrientation switch
+			{
+				0 => DisplayOrientations.Landscape,
+				1 => DisplayOrientations.Portrait,
+				2 => DisplayOrientations.LandscapeFlipped,
+				3 => DisplayOrientations.PortraitFlipped,
+				_ => DisplayOrientations.Landscape,
+			};
 
-		// https://github.com/marb2000/DesktopWindow/blob/abb21b797767bb24da09c066514117d5f1aabd75/WindowExtensions/DesktopWindow.cs#L407
-		static DisplayOrientations GetWindowOrientationWin32(AppWindow appWindow)
-		{
-			DisplayOrientations orientationEnum;
-			int theScreenWidth = appWindow.Size.Width;
-			int theScreenHeight = appWindow.Size.Height;
-			if (theScreenWidth > theScreenHeight)
-				orientationEnum = DisplayOrientations.Landscape;
-			else
-				orientationEnum = DisplayOrientations.Portrait;
-
-			return orientationEnum;
-		}
-
-		[DllImport("User32", CharSet = CharSet.Unicode)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		static extern int GetDpiForWindow(IntPtr hwnd);
 
-		[DllImport("User32", CharSet = CharSet.Unicode, SetLastError = true)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		static extern IntPtr MonitorFromRect(ref RECT lprc, MonitorOptions dwFlags);
 
-		[DllImport("User32", CharSet = CharSet.Unicode, SetLastError = true)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
-		[DllImport("User32.dll")]
+		[DllImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern Boolean EnumDisplaySettings(
+		static extern bool EnumDisplaySettings(
 			byte[] lpszDeviceName,
 			[param: MarshalAs(UnmanagedType.U4)] int iModeNum,
 			[In, Out] ref DEVMODE lpDevMode);
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFOEX lpmi);
-
-		[DllImport("user32.dll")]
-		static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, EnumMonitorsDelegate lpfnEnum, IntPtr dwData);
-		delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
-
-		static bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData)
-		{
-			MONITORINFOEX mi = new MONITORINFOEX();
-			mi.Size = Marshal.SizeOf(typeof(MONITORINFOEX));
-			if (GetMonitorInfo(hMonitor, ref mi))
-				Console.WriteLine(mi.DeviceName);
-
-			return true;
-		}
 
 		enum MonitorOptions : uint
 		{
@@ -292,9 +225,10 @@ namespace Microsoft.Maui.Devices
 
 		struct DEVMODE
 		{
-			private const int CCHDEVICENAME = 0x20;
-			private const int CCHFORMNAME = 0x20;
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+			const int CCHDEVICENAME = 0x20;
+			const int CCHFORMNAME = 0x20;
+
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)]
 			public string dmDeviceName;
 			public short dmSpecVersion;
 			public short dmDriverVersion;
@@ -310,7 +244,7 @@ namespace Microsoft.Maui.Devices
 			public short dmYResolution;
 			public short dmTTOption;
 			public short dmCollate;
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHFORMNAME)]
 			public string dmFormName;
 			public short dmLogPixels;
 			public int dmBitsPerPel;
