@@ -183,55 +183,55 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
-		void PolygonOnPropertyChanged(IGeoPathMapElement formsPolygon)
+		void PolygonOnPropertyChanged(IGeoPathMapElement mauiPolygon)
 		{
-			var nativePolygon = GetNativePolygon(formsPolygon);
+			var nativePolygon = GetNativePolygon(mauiPolygon);
 
 			if (nativePolygon == null)
 				return;
 
-			if (formsPolygon.Stroke is SolidPaint solidPaint)
+			if (mauiPolygon.Stroke is SolidPaint solidPaint)
 				nativePolygon.StrokeColor = solidPaint.Color.AsColor();
 
-			if ((formsPolygon as IFilledMapElement)?.Fill is SolidPaint solidFillPaint)
+			if ((mauiPolygon as IFilledMapElement)?.Fill is SolidPaint solidFillPaint)
 				nativePolygon.FillColor = solidFillPaint.Color.AsColor();
 
-			nativePolygon.StrokeWidth = (float)formsPolygon.StrokeThickness;
-			nativePolygon.Points = formsPolygon.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
+			nativePolygon.StrokeWidth = (float)mauiPolygon.StrokeThickness;
+			nativePolygon.Points = mauiPolygon.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
 		}
 
-		void PolylineOnPropertyChanged(IGeoPathMapElement formsPolyline)
+		void PolylineOnPropertyChanged(IGeoPathMapElement mauiPolyline)
 		{
-			var nativePolyline = GetNativePolyline(formsPolyline);
+			var nativePolyline = GetNativePolyline(mauiPolyline);
 
 			if (nativePolyline == null)
 				return;
 
-			if (formsPolyline.Stroke is SolidPaint solidPaint)
+			if (mauiPolyline.Stroke is SolidPaint solidPaint)
 				nativePolyline.Color = solidPaint.Color.AsColor();
 
-			nativePolyline.Width = (float)formsPolyline.StrokeThickness;
-			nativePolyline.Points = formsPolyline.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
+			nativePolyline.Width = (float)mauiPolyline.StrokeThickness;
+			nativePolyline.Points = mauiPolyline.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
 		}
 
 
-		void CircleOnPropertyChanged(ICircleMapElement formsCircle)
+		void CircleOnPropertyChanged(ICircleMapElement mauiCircle)
 		{
-			var nativeCircle = GetNativeCircle(formsCircle);
+			var nativeCircle = GetNativeCircle(mauiCircle);
 
 			if (nativeCircle == null)
 				return;
 
 
-			if (formsCircle.Stroke is SolidPaint solidPaint)
+			if (mauiCircle.Stroke is SolidPaint solidPaint)
 				nativeCircle.FillColor = solidPaint.Color.AsColor();
 
-			if (formsCircle.Fill is SolidPaint solidFillPaint)
+			if (mauiCircle.Fill is SolidPaint solidFillPaint)
 				nativeCircle.FillColor = solidFillPaint.Color.AsColor();
 
-			nativeCircle.Center = new LatLng(formsCircle.Center.Latitude, formsCircle.Center.Longitude);
-			nativeCircle.Radius = formsCircle.Radius.Meters;
-			nativeCircle.StrokeWidth = (float)formsCircle.StrokeThickness;
+			nativeCircle.Center = new LatLng(mauiCircle.Center.Latitude, mauiCircle.Center.Longitude);
+			nativeCircle.Radius = mauiCircle.Radius.Meters;
+			nativeCircle.StrokeWidth = (float)mauiCircle.StrokeThickness;
 
 		}
 
