@@ -10,8 +10,9 @@
             FontSize="24"
             Text="Hover me!">
             <Label.GestureRecognizers>
-                <PointerGestureRecognizer PointerEntered="HoverBegan" PointerExited="HoverEnded" />
+                <PointerGestureRecognizer PointerEntered="HoverBegan" PointerExited="HoverEnded" PointerMoved="HoverMoved" />
             </Label.GestureRecognizers>
         </Label>
+        <Label x:Name="positionLabel" Text="Hover above label to reveal pointer position"/>
     </StackLayout>
 </views:BasePage>
