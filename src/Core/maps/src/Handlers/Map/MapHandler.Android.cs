@@ -124,32 +124,32 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
-		public static void MapHasScrollEnabled(IMapHandler handler, IMap map)
+		public static void MapIsScrollEnabled(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)
 				return;
 
-			googleMap.UiSettings.ScrollGesturesEnabled = map.HasScrollEnabled;
+			googleMap.UiSettings.ScrollGesturesEnabled = map.IsScrollEnabled;
 		}
 
-		public static void MapHasTrafficEnabled(IMapHandler handler, IMap map)
+		public static void MapIsTrafficEnabled(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)
 				return;
 
-			googleMap.TrafficEnabled = map.HasTrafficEnabled;
+			googleMap.TrafficEnabled = map.IsTrafficEnabled;
 		}
 
-		public static void MapHasZoomEnabled(IMapHandler handler, IMap map)
+		public static void MapIsZoomEnabled(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
 			if (googleMap == null)
 				return;
 
-			googleMap.UiSettings.ZoomControlsEnabled = map.HasZoomEnabled;
-			googleMap.UiSettings.ZoomGesturesEnabled = map.HasZoomEnabled;
+			googleMap.UiSettings.ZoomControlsEnabled = map.IsZoomEnabled;
+			googleMap.UiSettings.ZoomGesturesEnabled = map.IsZoomEnabled;
 		}
 
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)

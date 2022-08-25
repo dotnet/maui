@@ -26,17 +26,17 @@ namespace Microsoft.Maui.Maps
 		/// <summary>
 		/// Get whether the Map is allowed to scroll.
 		/// </summary>
-		bool HasScrollEnabled { get; }
+		bool IsScrollEnabled { get; }
 
 		/// <summary>
 		/// Get whether this Map is allowed to zoom.
 		/// </summary>
-		bool HasZoomEnabled { get; }
+		bool IsZoomEnabled { get; }
 
 		/// <summary>
 		/// Get whether this Map is showing traffic information.
 		/// </summary>
-		bool HasTrafficEnabled { get; }
+		bool IsTrafficEnabled { get; }
 
 		/// <summary>
 		/// The pins that are to be shown on this Map.

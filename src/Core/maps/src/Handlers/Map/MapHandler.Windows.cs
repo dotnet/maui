@@ -11,11 +11,11 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapMapType(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
-		public static void MapHasZoomEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
+		public static void MapIsZoomEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
-		public static void MapHasScrollEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
+		public static void MapIsScrollEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
-		public static void MapHasTrafficEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
+		public static void MapIsTrafficEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
 		public static void MapIsShowingUser(IMapHandler handler, IMap map) => throw new NotImplementedException();
 

@@ -19,9 +19,9 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			[nameof(IMap.MapType)] = MapMapType,
 			[nameof(IMap.IsShowingUser)] = MapIsShowingUser,
-			[nameof(IMap.HasScrollEnabled)] = MapHasScrollEnabled,
-			[nameof(IMap.HasTrafficEnabled)] = MapHasTrafficEnabled,
-			[nameof(IMap.HasZoomEnabled)] = MapHasZoomEnabled,
+			[nameof(IMap.IsScrollEnabled)] = MapIsScrollEnabled,
+			[nameof(IMap.IsTrafficEnabled)] = MapIsTrafficEnabled,
+			[nameof(IMap.IsZoomEnabled)] = MapIsZoomEnabled,
 			[nameof(IMap.Pins)] = MapPins,
 			[nameof(IMap.Elements)] = MapElements,
 		};
