@@ -521,12 +521,12 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void OnTap(object sender, TappedRoutedEventArgs e)
+		void OnTap(object sender, RoutedEventArgs e)
 		{
 			var view = Element as View;
 			if (view == null)
 				return;
-						
+
 			var tapPosition = e.GetPositionRelativeToPlatformElement(Control);
 
 			if (tapPosition == null)
@@ -584,6 +584,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return g.NumberOfTapsRequired == 1;
 			}
 		}
+
 
 		void SwipeComplete(bool success)
 		{
