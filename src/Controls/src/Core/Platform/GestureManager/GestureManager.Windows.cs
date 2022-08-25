@@ -486,13 +486,16 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e) 
-			=> HandlePgrPointerEvent(e, (view, recognizer) => recognizer.SendPointerEntered(view));
+			=> HandlePgrPointerEvent(e, (view, recognizer) 
+				=> recognizer.SendPointerEntered(view, (relativeTo) => GetPosition(relativeTo, e)));
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer) => recognizer.SendPointerExited(view));
+			=> HandlePgrPointerEvent(e, (view, recognizer) 
+				=> recognizer.SendPointerExited(view, (relativeTo) => GetPosition(relativeTo, e)));
 
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer) => recognizer.SendPointerMoved(view));
+			=> HandlePgrPointerEvent(e, (view, recognizer) 
+				=> recognizer.SendPointerMoved(view, (relativeTo) => GetPosition(relativeTo, e)));
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
@@ -500,25 +503,20 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return;
 
-			var pointerPoint = e.GetCurrentPoint(Control);
-			var children = (view as IGestureController)?.GetChildElements(new Point(pointerPoint.Position.X, pointerPoint.Position.Y));
-
-			if (children != null)
-			{
-				foreach (var recognizer in children.GetChildGesturesFor<PointerGestureRecognizer>())
-				{
-					SendPointerEvent.Invoke(view, recognizer);
-				}
-			}
-
-			if (e.Handled)
-				return;
-
 			var pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
 			foreach (var recognizer in pointerGestures)
 			{
 				SendPointerEvent.Invoke(view, recognizer);
 			}
+		}
+
+		Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)
+		{
+			var result = e.GetPositionRelativeToElement(relativeTo);
+			if (result == null)
+				return null;
+
+			return new Point(result.Value.X, result.Value.Y);
 		}
 
 		void OnTap(object sender, RoutedEventArgs e)
@@ -550,14 +548,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				foreach (var recognizer in tapGestures)
 				{
-					recognizer.SendTapped(view, (relativeTo) =>
-					{
-						var result = e.GetPositionRelativeToElement(relativeTo);
-						if (result == null)
-							return null;
-
-						return new Point(result.Value.X, result.Value.Y);
-					});
+					recognizer.SendTapped(view, (relativeTo) => GetPosition(relativeTo, e));
 
 					e.SetHandled(true);
 					handled = true;
