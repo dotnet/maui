@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Func<bool> _scrollCompleteDelegate;
 		Func<float, float, int, bool> _scrollDelegate;
 		Func<int, bool> _scrollStartedDelegate;
-		Func<int, Point, bool> _tapDelegate;
+		Func<int, MotionEvent, bool> _tapDelegate;
 		Func<int, IEnumerable<TapGestureRecognizer>> _tapGestureRecognizers;
 
 		public InnerGestureListener(
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (HasDoubleTapHandler())
 			{
-				return _tapDelegate(2, new Point(e.GetX(), e.GetY()));
+				return _tapDelegate(2, e);
 			}
 
 			if (HasSingleTapHandler())
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// If we're registering double taps and we don't actually have a double-tap handler,
 				// but we _do_ have a single-tap handler, then we're really just seeing two singles in a row
 				// Fire off the delegate for the second single-tap (OnSingleTapUp already did the first one)
-				return _tapDelegate(1, new Point(e.GetX(), e.GetY()));
+				return _tapDelegate(1, e);
 			}
 
 			return false;
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// A single tap has occurred and there's no handler for double tap to worry about,
 			// so we can go ahead and run the delegate
-			return _tapDelegate(1, new Point(e.GetX(), e.GetY()));
+			return _tapDelegate(1, e);
 		}
 
 		bool GestureDetector.IOnDoubleTapListener.OnSingleTapConfirmed(MotionEvent e)
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// Since there was a double-tap handler, we had to wait for OnSingleTapConfirmed;
 			// Now that we're sure it's a single tap, we can run the delegate
-			return _tapDelegate(1, new Point(e.GetX(), e.GetY()));
+			return _tapDelegate(1, e);
 		}
 
 		protected override void Dispose(bool disposing)
