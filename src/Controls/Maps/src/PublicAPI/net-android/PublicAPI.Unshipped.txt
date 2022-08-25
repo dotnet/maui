@@ -34,8 +34,8 @@ Microsoft.Maui.Controls.Maps.Map.MoveToRegion(Microsoft.Maui.Maps.MapSpan! mapSp
 Microsoft.Maui.Controls.Maps.Map.Pins.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Maps.Pin!>!
 Microsoft.Maui.Controls.Maps.Map.VisibleRegion.get -> Microsoft.Maui.Maps.MapSpan?
 Microsoft.Maui.Controls.Maps.MapClickedEventArgs
-Microsoft.Maui.Controls.Maps.MapClickedEventArgs.MapClickedEventArgs(Microsoft.Maui.Devices.Sensors.Location! position) -> void
-Microsoft.Maui.Controls.Maps.MapClickedEventArgs.Position.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Controls.Maps.MapClickedEventArgs.MapClickedEventArgs(Microsoft.Maui.Devices.Sensors.Location! location) -> void
+Microsoft.Maui.Controls.Maps.MapClickedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Controls.Maps.MapElement
 Microsoft.Maui.Controls.Maps.MapElement.MapElement() -> void
 Microsoft.Maui.Controls.Maps.MapElement.MapElementId.get -> object?
