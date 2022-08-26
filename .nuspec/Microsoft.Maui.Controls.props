@@ -5,7 +5,8 @@
 	<PropertyGroup>
 		<_IsHotRestartDefined>$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants.Trim())', '(^|;)HOTRESTART($|;)'))</_IsHotRestartDefined>
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
-		<UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug'">True</UseInterpreter>
+		<!-- Only enabled on Android, see: https://github.com/dotnet/runtime/issues/74628 -->
+		<UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug' and '$(TargetPlatformIdentifier)' == 'Android'">True</UseInterpreter>
 		<MtouchLink Condition="'$(MtouchLink)' == '' and '$(Configuration)' == 'Debug' and '$(UseInterpreter)' == 'true'">None</MtouchLink>
 	</PropertyGroup>
 
