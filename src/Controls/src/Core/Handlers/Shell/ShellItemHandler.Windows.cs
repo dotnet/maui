@@ -1,7 +1,6 @@
 ﻿#nullable enable
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
@@ -10,7 +9,6 @@ using Microsoft.Maui.Controls.Platform;
 using System.Collections.ObjectModel;
 using WApp = Microsoft.UI.Xaml.Application;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using Windows.UI;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -291,6 +289,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				selectedItem = itemTemplateContext.Item;
 
 			((ISearchHandlerController)_currentSearchHandler).ItemSelected(selectedItem);
+			_currentSearchHandler.Query = selectedItem.ToString();
 		}
 
 		void OnSearchBoxQuerySubmitted(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxQuerySubmittedEventArgs args)
