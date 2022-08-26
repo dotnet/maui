@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
-            };
+			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
 		{

@@ -4,6 +4,6 @@ namespace Microsoft.Maui
 {
 
 	public interface IMenuFlyout : IList<IMenuElement>, IFlyout
-	{ 
+	{
 	}
 }
