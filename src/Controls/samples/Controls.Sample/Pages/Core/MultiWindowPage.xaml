@@ -20,7 +20,7 @@
 
         <Label Text="Window Frame:" />
         <Label Text="{Binding Window.Frame}" />
-        
+
         <Button 
             Clicked="OnSetMinSize"
             Text="Set the minimum size to 640x480" />
@@ -28,11 +28,15 @@
         <Button 
             Clicked="OnSetMaxSize"
             Text="Set the maximum size to 800x600" />
-        
+
         <Button 
             Clicked="OnSetFreeSize"
             Text="Remove size restrictions" />
-        
+
+        <Button 
+            Clicked="OnSetCustomSize"
+            Text="Set window size to 700x500" />
+
         <Button 
             Clicked="OnCenterWindow"
             Text="Center window" />

@@ -56,6 +56,11 @@ namespace Maui.Controls.Sample.Pages
 			Window.MinimumWidth = -1d;
 			Window.MinimumHeight = -1d;
 		}
+		void OnSetCustomSize(object sender, EventArgs e)
+		{
+			Window.Width = 700;
+			Window.Height = 500;
+		}
 
 		void OnCenterWindow(object sender, EventArgs e)
 		{

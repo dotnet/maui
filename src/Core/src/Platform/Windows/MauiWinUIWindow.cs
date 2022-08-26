@@ -12,6 +12,9 @@ namespace Microsoft.Maui
 {
 	public class MauiWinUIWindow : UI.Xaml.Window, IPlatformSizeRestrictedWindow
 	{
+		static readonly SizeInt32 DefaultMinimumSize = new SizeInt32(0, 0);
+		static readonly SizeInt32 DefaultMaximumSize = new SizeInt32(int.MaxValue, int.MaxValue);
+
 		readonly WindowMessageManager _windowManager;
 
 		IntPtr _windowIcon;
@@ -104,20 +107,35 @@ namespace Microsoft.Maui
 					var minSize = win.MinimumSize;
 					var maxSize = win.MaximumSize;
 
-					var rect = Marshal.PtrToStructure<PlatformMethods.MinMaxInfo>(e.LParam);
+					var changedMinSize = minSize != DefaultMinimumSize;
+					var changedMaxSize = maxSize != DefaultMaximumSize;
 
-					rect.MinTrackSize = new PlatformMethods.POINT
+					if (changedMinSize || changedMaxSize)
 					{
-						X = Math.Max(minSize.Width, rect.MinTrackSize.X),
-						Y = Math.Max(minSize.Height, rect.MinTrackSize.Y)
-					};
-					rect.MaxTrackSize = new PlatformMethods.POINT
-					{
-						X = Math.Min(maxSize.Width, rect.MaxTrackSize.X),
-						Y = Math.Min(maxSize.Height, rect.MaxTrackSize.Y)
-					};
+						var rect = Marshal.PtrToStructure<PlatformMethods.MinMaxInfo>(e.LParam);
 
-					Marshal.StructureToPtr(rect, e.LParam, true);
+						if (changedMinSize)
+						{
+							var newMinSize = new PlatformMethods.POINT
+							{
+								X = Math.Max(minSize.Width, rect.MinTrackSize.X),
+								Y = Math.Max(minSize.Height, rect.MinTrackSize.Y)
+							};
+							rect.MinTrackSize = newMinSize;
+						}
+
+						if (changedMaxSize)
+						{
+							var newMaxSize = new PlatformMethods.POINT
+							{
+								X = Math.Min(maxSize.Width, rect.MaxTrackSize.X),
+								Y = Math.Min(maxSize.Height, rect.MaxTrackSize.Y)
+							};
+							rect.MaxTrackSize = newMaxSize;
+						}
+
+						Marshal.StructureToPtr(rect, e.LParam, true);
+					}
 				}
 
 				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
@@ -149,9 +167,9 @@ namespace Microsoft.Maui
 			}
 		}
 
-		SizeInt32 IPlatformSizeRestrictedWindow.MinimumSize { get; set; }
+		SizeInt32 IPlatformSizeRestrictedWindow.MinimumSize { get; set; } = DefaultMinimumSize;
 
-		SizeInt32 IPlatformSizeRestrictedWindow.MaximumSize { get; set; }
+		SizeInt32 IPlatformSizeRestrictedWindow.MaximumSize { get; set; } = DefaultMaximumSize;
 
 		internal UI.Xaml.UIElement? MauiCustomTitleBar
 		{
