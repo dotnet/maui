@@ -6,9 +6,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
-	public partial class BordersPage
+	public partial class BorderPlayground
 	{
-		public BordersPage()
+		public BorderPlayground()
 		{
 			InitializeComponent();
 
