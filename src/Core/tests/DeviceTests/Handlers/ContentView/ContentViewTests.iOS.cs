@@ -9,6 +9,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
+using UserNotificationsUI;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
@@ -22,6 +23,9 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			var contentView = new ContentViewStub();
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
 			contentView.PresentedContent = label;
+
+			// Have to set this manually with the stubs, and the propagation code relies on Parentage
+			label.Parent = contentView;
 
 			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
 			{
@@ -45,6 +49,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
 			contentView.PresentedContent = layout1;
 			layout1.Add(label);
+			label.Parent = layout1;
 
 			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
 			{
@@ -68,6 +73,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
 			var label2 = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
 			contentView.PresentedContent = label;
+			label.Parent = contentView;
 
 			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
 			{
@@ -90,6 +96,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			var contentView = new ContentViewStub();
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.LeftToRight };
 			contentView.PresentedContent = label;
+			label.Parent = contentView;
 
 			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
 			{

@@ -96,6 +96,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			var layout = new LayoutStub();
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
 			layout.Add(label);
+			label.Parent = layout;
 
 			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
 			{
@@ -119,6 +120,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
 			layout0.Add(layout1);
 			layout1.Add(label);
+			label.Parent = layout1;
+			layout1.Parent = layout0;
 
 			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
 			{
@@ -140,6 +143,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		{
 			var layout = new LayoutStub() { FlowDirection = FlowDirection.RightToLeft };
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
+			label.Parent = layout;
 
 			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
 			{
@@ -163,6 +167,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			var layout = new LayoutStub();
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.LeftToRight };
 			layout.Add(label);
+			label.Parent = layout;
 
 			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
 			{
