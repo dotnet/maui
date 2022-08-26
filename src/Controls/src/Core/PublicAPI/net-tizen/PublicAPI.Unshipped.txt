@@ -1480,6 +1480,25 @@ Microsoft.Maui.Controls.MenuFlyoutItem
 Microsoft.Maui.Controls.MenuFlyoutItem.MenuFlyoutItem() -> void
 Microsoft.Maui.Controls.MenuFlyoutSeparator
 Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
+Microsoft.Maui.Controls.PointerEventArgs
+Microsoft.Maui.Controls.PointerEventArgs.PointerEventArgs() -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEntered -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommand.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExited -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommand.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerGestureRecognizer() -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMoved -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommand.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.set -> void
 Microsoft.Maui.Controls.MenuFlyoutSubItem
 Microsoft.Maui.Controls.MenuFlyoutSubItem.Clear() -> void
 Microsoft.Maui.Controls.MenuFlyoutSubItem.Count.get -> int
@@ -3276,6 +3295,12 @@ static Microsoft.Maui.Controls.Toolbar.MapTitleView(Microsoft.Maui.Handlers.Tool
 static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.ToolTipProperties.GetText(Microsoft.Maui.Controls.BindableObject! bindable) -> object!
 static Microsoft.Maui.Controls.ToolTipProperties.SetText(Microsoft.Maui.Controls.BindableObject! bindable, object! value) -> void
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(this Microsoft.Maui.Controls.VisualElement! view) -> void
 static Microsoft.Maui.Controls.ViewExtensions.FadeTo(this Microsoft.Maui.Controls.VisualElement! view, double opacity, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.LayoutTo(this Microsoft.Maui.Controls.VisualElement! view, Microsoft.Maui.Graphics.Rect bounds, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
@@ -3326,6 +3351,7 @@ static readonly Microsoft.Maui.Controls.TapGestureRecognizer.NumberOfTapsRequire
 static readonly Microsoft.Maui.Controls.ToolTipProperties.TextProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.VisualElement.ShadowProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.PointerEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 static readonly Microsoft.Maui.Controls.Window.FlowDirectionProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.PageProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.TitleProperty -> Microsoft.Maui.Controls.BindableProperty!
