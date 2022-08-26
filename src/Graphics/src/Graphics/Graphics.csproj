@@ -10,6 +10,7 @@
     <AssemblyName>Microsoft.Maui.Graphics</AssemblyName>
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
     <PackageId>Microsoft.Maui.Graphics</PackageId>
+    <Product>Microsoft.Maui.Graphics</Product>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CA1307;CA1309;CS1591</NoWarn>
   </PropertyGroup>
