@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using System.Windows.Input;
 
@@ -72,8 +71,7 @@ namespace Microsoft.Maui.Controls
 				cmd.Execute(PointerEnteredCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerEntered;
-			if (handler != null)
-				handler?.Invoke(sender, new PointerEventArgs(getPosition));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition));
 		}
 
 		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition)
@@ -83,8 +81,7 @@ namespace Microsoft.Maui.Controls
 				cmd.Execute(PointerExitedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerExited;
-			if (handler != null)
-				handler?.Invoke(sender, new PointerEventArgs(getPosition));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition));
 		}
 
 		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition)
@@ -94,8 +91,7 @@ namespace Microsoft.Maui.Controls
 				cmd.Execute(PointerMovedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerMoved;
-			if (handler != null)
-				handler?.Invoke(sender, new PointerEventArgs(getPosition));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition));
 		}
 	}
 }
