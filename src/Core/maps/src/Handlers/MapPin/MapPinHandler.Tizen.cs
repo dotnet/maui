@@ -1,9 +1,9 @@
 ﻿using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Maps.Handlers
 {
-	public partial class MapPinHandler : ElementHandler<IMapPin, ElmSharp.EvasObject>
+	public partial class MapPinHandler : ElementHandler<IMapPin, Tizen.NUI.BaseComponents.View>
 	{
-		protected override ElmSharp.EvasObject CreatePlatformElement() => throw new System.NotImplementedException();
+		protected override Tizen.NUI.BaseComponents.View CreatePlatformElement() => throw new System.NotImplementedException();
 		public static void MapLocation(IMapPinHandler handler, IMapPin mapPin) { }
 
 		public static void MapLabel(IMapPinHandler handler, IMapPin mapPin) { }
