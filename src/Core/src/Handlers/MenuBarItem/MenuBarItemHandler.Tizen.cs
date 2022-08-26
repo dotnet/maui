@@ -1,12 +1,12 @@
 ﻿using System;
-using ElmSharp;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, EvasObject>, IMenuBarItemHandler
+	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, NView>, IMenuBarItemHandler
 	{
 		// TODO : Need to implement
-		protected override EvasObject CreatePlatformElement()
+		protected override NView CreatePlatformElement()
 		{
 			throw new NotImplementedException();
 		}

@@ -13,6 +13,7 @@
       "src\\Controls\\src\\Xaml.Design\\Controls.Xaml.Design.csproj",
       "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",
       "src\\Core\\src\\Core.csproj",
+      "src\\Core\\maps\\src\\Maps.csproj",
       "src\\Essentials\\src\\Essentials.csproj",
       "src\\Graphics\\src\\Graphics\\Graphics.csproj",
       "src\\Graphics\\src\\Graphics.Skia\\Graphics.Skia.csproj",

@@ -1,0 +1,99 @@
+﻿#nullable enable
+
+using System;
+using Microsoft.Maui.Controls.Platform;
+
+namespace Microsoft.Maui.Controls.Handlers
+{
+	public partial class ShellItemHandler : ElementHandler<ShellItem, ShellItemView>, IAppearanceObserver, IDisposable
+	{
+		bool _disposedValue;
+
+		public static PropertyMapper<ShellItem, ShellItemHandler> Mapper =
+				new PropertyMapper<ShellItem, ShellItemHandler>(ElementMapper)
+				{
+					[nameof(ShellItem.CurrentItem)] = MapCurrentItem,
+					[Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible
+				};
+
+		public static CommandMapper<ShellItem, ShellItemHandler> CommandMapper =
+				new CommandMapper<ShellItem, ShellItemHandler>(ElementCommandMapper);
+
+		public ShellItemHandler() : base(Mapper, CommandMapper)
+		{
+		}
+
+
+		protected override ShellItemView CreatePlatformElement() => new ShellItemView(VirtualView, MauiContext!);
+
+		protected override void ConnectHandler(ShellItemView platformView)
+		{
+			if (VirtualView.Parent is IShellController controller)
+			{
+				controller.AddAppearanceObserver(this, VirtualView);
+			}
+			base.ConnectHandler(platformView);
+		}
+
+		protected override void DisconnectHandler(ShellItemView platformView)
+		{
+			if (VirtualView.Parent is IShellController controller)
+			{
+				controller.RemoveAppearanceObserver(this);
+			}
+			base.DisconnectHandler(platformView);
+		}
+
+		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
+		{
+			handler.PlatformView.UpdateTabBar(Shell.GetTabBarIsVisible(item));
+		}
+
+		public static void MapCurrentItem(ShellItemHandler handler, ShellItem item)
+		{
+			handler.UpdateCurrentItem();
+		}
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					var platformView = PlatformView;
+					foreach (var item in VirtualView.Items)
+					{
+						if (item.Handler is IDisposable thandler)
+						{
+							thandler.Dispose();
+						}
+					}
+					(this as IElementHandler)?.DisconnectHandler();
+					platformView?.Dispose();
+				}
+
+				_disposedValue = true;
+			}
+		}
+
+		void UpdateCurrentItem()
+		{
+			PlatformView.UpdateCurrentItem(VirtualView.CurrentItem);
+		}
+
+		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
+		{
+			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
+			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
+
+			PlatformView?.UpdateTabbarBackgroundColor(tabBarBackgroudColor);
+			PlatformView?.UpdateTabbarTitleColor(tabBarTitleColor);
+		}
+	}
+}

@@ -7,7 +7,7 @@ using PlatformView = Android.App.Activity;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Window;
 #elif TIZEN
-using PlatformView = ElmSharp.Window;
+using PlatformView = Tizen.NUI.Window;
 #endif
 
 namespace Microsoft.Maui.Handlers
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWindow.MinimumWidth)] = MapMinimumWidth,
 			[nameof(IWindow.MinimumHeight)] = MapMinimumHeight,
 #endif
-#if ANDROID || WINDOWS
+#if ANDROID || WINDOWS || TIZEN
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 #if WINDOWS || IOS

@@ -48,6 +48,8 @@
     <_XamarinAndroidGlideVersion>4.13.2.1</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
     <_XamarinGoogleCryptoTinkAndroidVersion>1.6.1.7</_XamarinGoogleCryptoTinkAndroidVersion>
+    <!-- Android Maps -->
+    <XamarinGooglePlayServicesMaps>117.0.0</XamarinGooglePlayServicesMaps>
     <!--
       SKIASHARP & HARFBUZZSHARP - the various things must be kept in sync with maui graphics:
        - NuGet versions below
