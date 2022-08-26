@@ -49,6 +49,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
 			contentView.PresentedContent = layout1;
 			layout1.Add(label);
+			layout1.Parent = contentView;
 			label.Parent = layout1;
 
 			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
@@ -82,6 +83,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 				var contentViewHandler = CreateHandler<ContentViewHandler>(contentView);
 
 				contentView.PresentedContent = label2;
+				label.Parent = null;
+				label2.Parent = contentView;
 				contentViewHandler.UpdateValue(nameof(IContentView.Content));
 
 				return labelHandler2.PlatformView.EffectiveUserInterfaceLayoutDirection;
