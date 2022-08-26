@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Platform
 			switch (view.FlowDirection)
 			{
 				case FlowDirection.MatchParent:
-					updateValue = GetParentMatchingSemanticContentAttribute(platformView);
+					updateValue = GetParentMatchingSemanticContentAttribute(view);
 					break;
 				case FlowDirection.LeftToRight:
 					updateValue = UISemanticContentAttribute.ForceLeftToRight;
@@ -144,9 +144,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static UISemanticContentAttribute GetParentMatchingSemanticContentAttribute(this UIView platformView) 
+		static UISemanticContentAttribute GetParentMatchingSemanticContentAttribute(IView view) 
 		{
-			var parent = platformView.Superview;
+			var parent = view.Parent?.Handler?.PlatformView as UIView;
 
 			if (parent == null)
 			{
