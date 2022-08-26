@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Maps;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -114,8 +115,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Label, FormattedString> ("FormattedText", v => v.FormattedText, (v, o) => v.FormattedText = o, () => default (FormattedString), new FormattedString()),
 			new PropertyTestCase<Map, MapType> ("MapType", v => v.MapType, (v, o) => v.MapType = o, () => MapType.Street, MapType.Satellite),
 			new PropertyTestCase<Map, bool> ("IsShowingUser", v => v.IsShowingUser, (v, o) => v.IsShowingUser = o, () => false, true),
-			new PropertyTestCase<Map, bool> ("HasScrollEnabled", v => v.HasScrollEnabled, (v, o) => v.HasScrollEnabled = o, () => true, false),
-			new PropertyTestCase<Map, bool> ("HasZoomEnabled", v => v.HasZoomEnabled, (v, o) => v.HasZoomEnabled = o, () => true, false),
+			new PropertyTestCase<Map, bool> ("IsScrollEnabled", v => v.IsScrollEnabled, (v, o) => v.IsScrollEnabled = o, () => true, false),
+			new PropertyTestCase<Map, bool> ("IsZoomEnabled", v => v.IsZoomEnabled, (v, o) => v.IsZoomEnabled = o, () => true, false),
 			new PropertyTestCase<OpenGLView, bool> ("HasRenderLoop", v => v.HasRenderLoop, (v, o) => v.HasRenderLoop = o, () => false, true),
 			new PropertyTestCase<Page, ImageSource> ("BackgroundImageSource", v => v.BackgroundImageSource, (v, o) => v.BackgroundImageSource = o, () => null, "Foo"),
 			new PropertyTestCase<Page, Color> ("BackgroundColor", v => v.BackgroundColor, (v, o) => v.BackgroundColor = o, () => default(Color), new Color (0, 1, 0)),

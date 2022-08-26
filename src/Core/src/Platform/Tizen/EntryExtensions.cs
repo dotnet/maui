@@ -1,8 +1,7 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.ElmSharp;
-using InputPanelReturnKeyType = ElmSharp.InputPanelReturnKeyType;
+﻿using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.NUI;
+using GColor = Microsoft.Maui.Graphics.Color;
+using TReturnType = Tizen.UIExtensions.Common.ReturnType;
 using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
 
 namespace Microsoft.Maui.Platform
@@ -11,7 +10,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateText(this Entry platformEntry, IText entry)
 		{
-			platformEntry.Text = entry.Text ?? "";
+			if (platformEntry.Text != entry.Text)
+				platformEntry.Text = entry.Text ?? "";
 		}
 
 		public static void UpdateTextColor(this Entry platformEntry, ITextStyle entry)
@@ -26,45 +26,27 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVerticalTextAlignment(this Entry platformEntry, ITextAlignment entry)
 		{
-			platformEntry.SetVerticalTextAlignment(entry.VerticalTextAlignment.ToPlatformDouble());
-			platformEntry.SetVerticalPlaceHolderTextAlignment(entry.VerticalTextAlignment.ToPlatformDouble());
+			platformEntry.VerticalTextAlignment = entry.VerticalTextAlignment.ToPlatform();
 		}
 
 		public static void UpdateIsPassword(this Entry platformEntry, IEntry entry)
 		{
 			platformEntry.IsPassword = entry.IsPassword;
+
+			// it is workaround, Text does not instantly changed
+			platformEntry.Text = platformEntry.Text;
 		}
 
 		public static void UpdateReturnType(this Entry platformEntry, IEntry entry)
 		{
-			platformEntry.SetInputPanelReturnKeyType(entry.ReturnType.ToInputPanelReturnKeyType());
-		}
-
-		public static void UpdateClearButtonVisibility(this Entry platformEntry, IEntry entry)
-		{
-			if (entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
-			{
-				if (platformEntry is EditfieldEntry editfieldEntry)
-				{
-					editfieldEntry.EnableClearButton = true;
-				}
-			}
-			else
-			{
-				if (platformEntry is EditfieldEntry editfieldEntry)
-				{
-					editfieldEntry.EnableClearButton = false;
-				}
-			}
+			platformEntry.ReturnType = entry.ReturnType.ToPlatform();
 		}
 
 		public static void UpdateFont(this Entry platformEntry, ITextStyle textStyle, IFontManager fontManager)
 		{
-			platformEntry.BatchBegin();
-			platformEntry.FontSize = textStyle.Font.Size > 0 ? textStyle.Font.Size : 25.ToDPFont();
+			platformEntry.FontSize = textStyle.Font.Size > 0 ? textStyle.Font.Size.ToScaledPoint() : 25d.ToScaledPoint();
 			platformEntry.FontAttributes = textStyle.Font.GetFontAttributes();
 			platformEntry.FontFamily = fontManager.GetFontFamily(textStyle.Font.Family) ?? "";
-			platformEntry.BatchCommit();
 		}
 
 		public static void UpdatePlaceholder(this Entry platformEntry, ITextInput entry)
@@ -72,91 +54,77 @@ namespace Microsoft.Maui.Platform
 			platformEntry.Placeholder = entry.Placeholder ?? string.Empty;
 		}
 
+		public static void UpdatePlaceholder(this Entry platformEntry, string placeholder)
+		{
+			platformEntry.Placeholder = placeholder;
+		}
+
 		public static void UpdatePlaceholderColor(this Entry platformEntry, ITextInput entry)
 		{
 			platformEntry.PlaceholderColor = entry.PlaceholderColor.ToPlatform();
 		}
 
+		public static void UpdatePlaceholderColor(this Entry platformEntry, GColor color)
+		{
+			platformEntry.PlaceholderColor = color.ToPlatform();
+		}
+
 		public static void UpdateIsReadOnly(this Entry platformEntry, ITextInput entry)
 		{
-			platformEntry.IsEditable = !entry.IsReadOnly;
+			platformEntry.IsReadOnly = entry.IsReadOnly;
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this Entry platformEntry, ITextInput entry)
 		{
-			platformEntry.InputHint = entry.Keyboard.ToInputHints(true, entry.IsTextPredictionEnabled);
+			platformEntry.IsTextPredictionEnabled = entry.IsTextPredictionEnabled;
 		}
+
+		public static void UpdateMaxLength(this Entry platformEntry, ITextInput entry) =>
+			platformEntry.MaxLength = entry.MaxLength;
 
 		public static void UpdateKeyboard(this Entry platformEntry, ITextInput entry)
 		{
-			platformEntry.UpdateKeyboard(entry.Keyboard, true, entry.IsTextPredictionEnabled);
+			platformEntry.Keyboard = entry.Keyboard.ToPlatform();
 		}
 
-		public static void UpdateMaxLength(this Entry platformEntry, ITextInput entry)
+		public static void UpdateCursorPosition(this Entry platformEntry, IEntry entry)
 		{
-			if (entry.MaxLength > 0 && platformEntry.Text.Length > entry.MaxLength)
-				platformEntry.Text = platformEntry.Text.Substring(0, entry.MaxLength);
+			platformEntry.PrimaryCursorPosition = entry.CursorPosition;
 		}
 
-		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
-		[PortHandler]
-		public static void UpdateSelectionLength(this Entry platformEntry, ITextInput entry)
+		public static void UpdateSelectionLength(this Entry platformEntry, IEntry entry)
 		{
-			if (platformEntry.IsUpdatingCursorPosition)
-				return;
-
-			int start = GetSelectionStart(platformEntry, entry);
-			int end = GetSelectionEnd(platformEntry, entry, start);
-
-			if (start < end)
+			if (entry.SelectionLength == 0)
 			{
-				platformEntry.SetSelectionRegion(start, end);
+				platformEntry.SelectNone();
 			}
 			else
 			{
-				platformEntry.CursorPosition = entry.CursorPosition;
+				platformEntry.SelectText(entry.CursorPosition, entry.CursorPosition + entry.SelectionLength);
 			}
 		}
 
-		static int GetSelectionStart(Entry platformEntry, ITextInput entry)
+		public static void UpdateCharacterSpacing(this Entry platformEntry, ITextStyle entry)
 		{
-			int start = platformEntry.Text?.Length ?? 0;
-			int cursorPosition = entry.CursorPosition;
-
-			if (!string.IsNullOrEmpty(platformEntry.Text))
-				start = Math.Min(start, cursorPosition);
-
-			if (start != cursorPosition)
-				entry.CursorPosition = start;
-
-			return start;
+			platformEntry.CharacterSpacing = entry.CharacterSpacing.ToScaledPixel();
 		}
 
-		static int GetSelectionEnd(Entry platformEntry, ITextInput entry, int start)
-		{
-			int end = Math.Max(start, Math.Min(platformEntry.Text?.Length ?? 0, start + entry.SelectionLength));
-			int selectionLength = end - start;
-			if (selectionLength != entry.SelectionLength)
-				entry.SelectionLength = selectionLength;
-			return end;
-		}
-
-		public static InputPanelReturnKeyType ToInputPanelReturnKeyType(this ReturnType returnType)
+		public static TReturnType ToPlatform(this ReturnType returnType)
 		{
 			switch (returnType)
 			{
 				case ReturnType.Go:
-					return InputPanelReturnKeyType.Go;
+					return TReturnType.Go;
 				case ReturnType.Next:
-					return InputPanelReturnKeyType.Next;
+					return TReturnType.Next;
 				case ReturnType.Send:
-					return InputPanelReturnKeyType.Send;
+					return TReturnType.Send;
 				case ReturnType.Search:
-					return InputPanelReturnKeyType.Search;
+					return TReturnType.Search;
 				case ReturnType.Done:
-					return InputPanelReturnKeyType.Done;
+					return TReturnType.Done;
 				case ReturnType.Default:
-					return InputPanelReturnKeyType.Default;
+					return TReturnType.Default;
 				default:
 					throw new System.NotImplementedException($"ReturnType {returnType} not supported");
 			}
@@ -182,34 +150,5 @@ namespace Microsoft.Maui.Platform
 					return TTextAlignment.Auto;
 			}
 		}
-
-		public static double ToPlatformDouble(this TextAlignment alignment)
-		{
-			switch (alignment)
-			{
-				case TextAlignment.Center:
-					return 0.5d;
-
-				case TextAlignment.Start:
-					return 0;
-
-				case TextAlignment.End:
-					return 1d;
-
-				default:
-					Log.Warn("Warning: unrecognized HorizontalTextAlignment value {0}. " +
-						"Expected: {Start|Center|End}.", alignment);
-					Log.Debug("Falling back to platform's default settings.");
-					return 0.5d;
-			}
-		}
-
-		public static void GetSelectRegion(this Entry entry, out int start, out int end)
-		{
-			elm_entry_select_region_get(entry.RealHandle, out start, out end);
-		}
-
-		[DllImport("libelementary.so.1")]
-		static extern void elm_entry_select_region_get(IntPtr obj, out int start, out int end);
 	}
 }

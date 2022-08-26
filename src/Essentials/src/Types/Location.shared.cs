@@ -38,8 +38,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public Location(double latitude, double longitude)
 		{
-			Latitude = latitude;
-			Longitude = longitude;
+			Latitude = Math.Min(Math.Max(latitude, -90.0), 90.0);
+			Longitude = Math.Min(Math.Max(longitude, -180.0), 180.0);
 			Timestamp = DateTimeOffset.UtcNow;
 		}
 
@@ -152,5 +152,35 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(Speed)}: {Speed}, " +
 			$"{nameof(Course)}: {Course}, " +
 			$"{nameof(Timestamp)}: {Timestamp}";
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj))
+				return false;
+			if (obj.GetType() != GetType())
+				return false;
+			var other = (Location)obj;
+			return Latitude == other.Latitude && Longitude == other.Longitude;
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hashCode = Latitude.GetHashCode();
+				hashCode = (hashCode * 397) ^ Longitude.GetHashCode();
+				return hashCode;
+			}
+		}
+
+		public static bool operator ==(Location left, Location right)
+		{
+			return Equals(left, right);
+		}
+
+		public static bool operator !=(Location left, Location right)
+		{
+			return !Equals(left, right);
+		}
 	}
 }

@@ -363,7 +363,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void CollapsedItemsDoNotIncurSpacingInMiddle() 
+		public void CollapsedItemsDoNotIncurSpacingInMiddle()
 		{
 			var viewWidth = 7;
 			var viewHeight = 5;
@@ -371,7 +371,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var stack = SetUpVisibilityTestStack(viewWidth, viewHeight, spacing);
 			stack.Spacing.Returns(spacing);
-			
+
 			stack[1].Visibility.Returns(Visibility.Collapsed);
 
 			var manager = new VerticalStackLayoutManager(stack);
