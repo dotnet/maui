@@ -5,7 +5,7 @@ using PlatformView = Android.App.Activity;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Window;
 #elif TIZEN
-using PlatformView = ElmSharp.Window;
+using PlatformView = Tizen.NUI.Window;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

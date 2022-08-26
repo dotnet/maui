@@ -1,5 +1,5 @@
 ﻿#nullable enable
-#if WINDOWS || ANDROID || IOS
+#if WINDOWS || ANDROID || IOS || TIZEN
 
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,8 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using PlatformView = Android.Views.View;
 #elif IOS
 using PlatformView = UIKit.UIView;
+#elif TIZEN
+using PlatformView = Tizen.NUI.BaseComponents.View;
 #endif
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
@@ -153,7 +155,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return new SizeRequest(size, minSize);
 		}
 
+#if TIZEN
+		protected new virtual Size MinimumSize()
+#else
 		protected virtual Size MinimumSize()
+#endif
 		{
 			return new Size();
 		}

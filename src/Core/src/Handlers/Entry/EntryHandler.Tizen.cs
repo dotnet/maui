@@ -1,53 +1,70 @@
 ﻿using System;
-using Tizen.UIExtensions.ElmSharp;
-using EEntry = ElmSharp.Entry;
+using Tizen.NUI;
+using Tizen.NUI.BaseComponents;
+using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
+using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, Entry>
 	{
-
-		protected override Entry CreatePlatformView()
+		// It is workaround, Tizen.UIExtension should be updated
+		class MauiEntry : Entry, IMeasurable
 		{
-			return new EditfieldEntry(PlatformParent)
+			TSize IMeasurable.Measure(double availableWidth, double availableHeight)
 			{
-				IsSingleLine = true
-			};
+				if (!string.IsNullOrEmpty(Text))
+				{
+					if (availableWidth < NaturalSize.Width)
+					{
+						return new TSize(availableWidth, NaturalSize.Height);
+					}
+					else if (NaturalSize.Width > 0)
+					{
+						return new TSize(NaturalSize.Width, NaturalSize.Height);
+					}
+					else
+					{
+						// even though text but natural size is zero. it is abnormal state
+						return new TSize(Math.Max(Text.Length * PixelSize + 10, availableWidth), PixelSize + 10);
+					}
+				}
+				else
+				{
+					return new TSize(Math.Max(PixelSize + 10, availableWidth), PixelSize + 10);
+				};
+			}
 		}
+
+		protected override Entry CreatePlatformView() => new MauiEntry
+		{
+			Focusable = true,
+			FocusableInTouch = true,
+		};
 
 		protected override void ConnectHandler(Entry platformView)
 		{
-			platformView.Activated += OnCompleted;
-			platformView.CursorPositionChanged += OnCursorChanged;
-
-			// In order to know when the selection is cleared, SelectionCleared event has been used.
-			// Because CursorChanged event is still invoked with the selected text when an user clears selection. It is an known issue in EFL.
+			platformView.KeyEvent += OnKeyEvent;
+			platformView.CursorPositionChanged += OnCursorPositionChanged;
+			platformView.SelectionChanged += OnSelectionChanged;
 			platformView.SelectionCleared += OnSelectionCleared;
-
 			platformView.TextChanged += OnTextChanged;
-			platformView.EntryLayoutFocused += OnFocused;
-			platformView.EntryLayoutUnfocused += OnUnfocused;
-			platformView.PrependMarkUpFilter(MaxLengthFilter);
-
-
-			// TODO: Fix me later
-			// An initial CursorPosition is set after layouting to avoid timing issue when the EditField entry is initialized.
-			//if (VirtualView != null)
-			//{
-			//	MainThread.BeginInvokeOnMainThread(() =>
-			//	{
-			//		platformView.UpdateSelectionLength(VirtualView);
-			//	});
-			//}
+			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(Entry platformView)
 		{
-			platformView.Activated -= OnCompleted;
-			platformView.CursorPositionChanged -= OnCursorChanged;
+			if (!platformView.HasBody())
+				return;
+
+			platformView.KeyEvent -= OnKeyEvent;
+			platformView.CursorPositionChanged -= OnCursorPositionChanged;
+			platformView.SelectionChanged -= OnSelectionChanged;
+			platformView.SelectionCleared -= OnSelectionCleared;
 			platformView.TextChanged -= OnTextChanged;
-			platformView.EntryLayoutFocused -= OnFocused;
-			platformView.EntryLayoutUnfocused -= OnUnfocused;
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry)
@@ -56,144 +73,85 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform()?.UpdateBackground(entry);
 		}
 
-		public static void MapText(IEntryHandler handler, IEntry entry)
-		{
+		public static void MapText(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateText(entry);
 
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, entry);
-		}
-
-		public static void MapTextColor(IEntryHandler handler, IEntry entry)
-		{
+		public static void MapTextColor(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateTextColor(entry);
-		}
 
-		public static void MapPlaceholder(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdatePlaceholder(entry);
-		}
-
-		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdatePlaceholderColor(entry);
-		}
-
-		public static void MapIsPassword(IEntryHandler handler, IEntry entry)
-		{
+		public static void MapIsPassword(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsPassword(entry);
-		}
 
-		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry)
-		{
+		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
-		}
 
-		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry)
-		{
+		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry) =>
 			handler?.PlatformView?.UpdateVerticalTextAlignment(entry);
-		}
 
-		public static void MapMaxLength(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdateMaxLength(entry);
-		}
-
-		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdateIsReadOnly(entry);
-		}
-
-		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry)
-		{
+		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(entry);
-		}
 
-		public static void MapKeyboard(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdateKeyboard(entry);
-		}
-
-		public static void MapReturnType(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdateReturnType(entry);
-		}
-
-		public static void MapFont(IEntryHandler handler, IEntry entry)
-		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
-
-			handler.PlatformView?.UpdateFont(entry, fontManager);
-		}
-
-		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdateClearButtonVisibility(entry);
-		}
-
-		public static void MapFormatting(IEntryHandler handler, IEntry entry)
-		{
-			// Update all of the attributed text formatting properties
-			// Setting any of those may have removed text alignment settings,
-			// so we need to make sure those are applied, too
+		public static void MapMaxLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateMaxLength(entry);
-			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
-		}
 
-		public static void MapSelectionLength(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdateSelectionLength(entry);
-		}
+		public static void MapPlaceholder(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdatePlaceholder(entry);
 
-		public static void MapCursorPosition(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdateSelectionLength(entry);
-		}
+		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdatePlaceholderColor(entry);
 
-		public static void MapKeyboard(EditorHandler handler, IEntry entry)
-		{
+		public static void MapFont(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateFont(entry, handler.GetRequiredService<IFontManager>());
+
+		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateIsReadOnly(entry);
+
+		public static void MapKeyboard(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateKeyboard(entry);
-		}
+
+		public static void MapReturnType(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateReturnType(entry);
+
+		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView.UpdateCharacterSpacing(entry);
+
+		public static void MapCursorPosition(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateCursorPosition(entry);
+
+		public static void MapSelectionLength(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateSelectionLength(entry);
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) { }
+		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) { }
 
-		string? MaxLengthFilter(EEntry entry, string s)
+		bool OnKeyEvent(object? source, NView.KeyEventArgs e)
 		{
 			if (VirtualView == null || PlatformView == null)
-				return null;
+				return false;
 
-			if (entry.Text.Length < VirtualView.MaxLength)
-				return s;
-
-			return null;
-		}
-
-		void OnTextChanged(object? sender, EventArgs e)
-		{
-			if (VirtualView == null || PlatformView == null)
-				return;
-
-			VirtualView.Text = PlatformView.Text;
-		}
-
-		void OnCursorChanged(object? sender, EventArgs e)
-		{
-			if (VirtualView == null || PlatformView == null)
-				return;
-
-			var position = PlatformView.CursorPosition;
-
-			PlatformView.GetSelectRegion(out int start, out int end);
-
-			if (start > -1)
+			if (e.Key.State == Key.StateType.Down && e.Key.KeyPressedName == "Return")
 			{
-				position = (start < end) ? start : end;
-				var selectionLength = Math.Abs(end - start);
-				VirtualView.SelectionLength = selectionLength;
+				VirtualView.Completed();
+				return true;
 			}
+			return false;
+		}
 
-			VirtualView.CursorPosition = position;
+		void OnSelectionChanged(object? sender, EventArgs e)
+		{
+			if (VirtualView == null || PlatformView == null)
+				return;
+
+			VirtualView.SelectionLength = Math.Abs(PlatformView.SelectedTextEnd - PlatformView.SelectedTextStart);
+			VirtualView.CursorPosition = Math.Min(PlatformView.SelectedTextEnd, PlatformView.SelectedTextStart);
+		}
+
+		void OnCursorPositionChanged(object? sender, EventArgs e)
+		{
+			if (VirtualView == null || PlatformView == null)
+				return;
+
+			VirtualView.CursorPosition = PlatformView.PrimaryCursorPosition;
 		}
 
 		void OnSelectionCleared(object? sender, EventArgs e)
@@ -201,19 +159,16 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || PlatformView == null)
 				return;
 
-			if (PlatformView.IsFocused)
-			{
-				VirtualView.SelectionLength = 0;
-				VirtualView.CursorPosition = PlatformView.CursorPosition;
-			}
+			VirtualView.SelectionLength = 0;
+			VirtualView.CursorPosition = PlatformView.PrimaryCursorPosition;
 		}
 
-		void OnCompleted(object? sender, EventArgs e)
+		void OnTextChanged(object? sender, TextField.TextChangedEventArgs e)
 		{
-			if (PlatformView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			PlatformView.SetFocus(false);
+			VirtualView.Text = PlatformView.Text;
 		}
 	}
 }

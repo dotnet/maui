@@ -2,12 +2,13 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
-using ElmSharp;
+using NView = Tizen.NUI.BaseComponents.View;
+using Window = Tizen.NUI.Window;
 
 namespace Microsoft.Maui.Media
 {
 	// TODO: Need to impl
-	partial class ScreenshotImplementation : IScreenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
 	{
 		public bool IsCaptureSupported =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Media
 		public Task<IScreenshotResult> CaptureAsync(Window window) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public Task<IScreenshotResult> CaptureAsync(EvasObject view) =>
+		public Task<IScreenshotResult> CaptureAsync(NView view) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 

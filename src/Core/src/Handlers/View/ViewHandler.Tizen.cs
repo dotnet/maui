@@ -1,6 +1,5 @@
 ﻿using System;
-using ElmSharp;
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -61,6 +60,36 @@ namespace Microsoft.Maui.Handlers
 			UpdateTransformation(handler, view);
 		}
 
+		public static void MapToolbar(IViewHandler handler, IView view)
+		{
+			if (handler.VirtualView is not IToolbarElement te || te.Toolbar == null)
+				return;
+
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			var platformToolbar = te.Toolbar?.ToPlatform(handler.MauiContext);
+
+			if (handler.PlatformView is IToolbarContainer toolbarContainer)
+			{
+				toolbarContainer.SetToolbar((MauiToolbar)platformToolbar!);
+			}
+			else
+			{
+				handler.MauiContext.GetToolbarContainer()?.SetToolbar((MauiToolbar)platformToolbar!);
+			}
+		}
+
+		internal static void MapToolbar(IElementHandler handler, IToolbarElement toolbarElement)
+		{
+			if (toolbarElement.Toolbar == null)
+				return;
+
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
+
+			var platformToolbar = toolbarElement.Toolbar?.ToPlatform(handler.MauiContext);
+			handler.MauiContext.GetToolbarContainer()?.SetToolbar((MauiToolbar)platformToolbar!);
+		}
+
 		internal static void UpdateTransformation(IViewHandler handler, IView view)
 		{
 			handler.ToPlatform()?.UpdateTransformation(view);
@@ -80,11 +109,19 @@ namespace Microsoft.Maui.Handlers
 
 		protected void OnFocused(object? sender, EventArgs e)
 		{
+			if (VirtualView != null)
+			{
+				VirtualView.IsFocused = true;
+			}
 			OnFocused();
 		}
 
 		protected void OnUnfocused(object? sender, EventArgs e)
 		{
+			if (VirtualView != null)
+			{
+				VirtualView.IsFocused = false;
+			}
 			OnUnfocused();
 		}
 
@@ -93,22 +130,14 @@ namespace Microsoft.Maui.Handlers
 			if (platformView == null)
 				return;
 
-
-			platformView.Deleted += OnPlatformViewDeleted;
-
-			if (platformView is Widget widget)
-			{
-				widget.Focused += OnFocused;
-				widget.Unfocused += OnUnfocused;
-			}
+			platformView.FocusGained += OnFocused;
+			platformView.FocusLost += OnUnfocused;
 		}
 
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
 			if (platformView == null)
 				return;
-
-			platformView.Deleted -= OnPlatformViewDeleted;
 		}
 
 		public virtual bool NeedsContainer
