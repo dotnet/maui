@@ -11,7 +11,6 @@ Microsoft.Maui.Maps.Handlers.IMapElementHandler.PlatformView.get -> Java.Lang.Ob
 Microsoft.Maui.Maps.Handlers.IMapElementHandler.VirtualView.get -> Microsoft.Maui.Maps.IMapElement!
 Microsoft.Maui.Maps.Handlers.IMapHandler
 Microsoft.Maui.Maps.Handlers.IMapHandler.Map.get -> Android.Gms.Maps.GoogleMap?
-Microsoft.Maui.Maps.Handlers.IMapHandler.Map.set -> void
 Microsoft.Maui.Maps.Handlers.IMapHandler.PlatformView.get -> Android.Gms.Maps.MapView!
 Microsoft.Maui.Maps.Handlers.IMapHandler.UpdateMapElement(Microsoft.Maui.Maps.IMapElement! element) -> void
 Microsoft.Maui.Maps.Handlers.IMapHandler.VirtualView.get -> Microsoft.Maui.Maps.IMap!
@@ -33,7 +32,6 @@ Microsoft.Maui.Maps.Handlers.MapHandler.GetNativePolygon(Microsoft.Maui.Maps.IGe
 Microsoft.Maui.Maps.Handlers.MapHandler.GetNativePolyline(Microsoft.Maui.Maps.IGeoPathMapElement! polyline) -> Android.Gms.Maps.Model.Polyline?
 Microsoft.Maui.Maps.Handlers.MapHandler.GetPinForMarker(Android.Gms.Maps.Model.Marker! marker) -> Microsoft.Maui.Maps.IMapPin?
 Microsoft.Maui.Maps.Handlers.MapHandler.Map.get -> Android.Gms.Maps.GoogleMap?
-Microsoft.Maui.Maps.Handlers.MapHandler.Map.set -> void
 Microsoft.Maui.Maps.Handlers.MapHandler.MapHandler() -> void
 Microsoft.Maui.Maps.Handlers.MapHandler.MapHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Maps.Handlers.MapHandler.UpdateMapElement(Microsoft.Maui.Maps.IMapElement! element) -> void

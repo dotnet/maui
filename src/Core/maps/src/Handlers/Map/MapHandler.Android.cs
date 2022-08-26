@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		List<APolygon>? _polygons;
 		List<ACircle>? _circles;
 
-		public GoogleMap? Map { get; set; }
+		public GoogleMap? Map { get; private set; }
 
 		static Bundle? s_bundle;
 
