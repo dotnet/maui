@@ -172,20 +172,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				platformView.Touch += OnPlatformViewTouched;
 			}
-
-			if (View is not Microsoft.Maui.IButton)
-			{
-				platformView.KeyPress += PlatformView_KeyPress;
-				platformView.Click += PlatformView_Click;
-			}
-		}
-
-		private void PlatformView_Click(object? sender, EventArgs e)
-		{
-		}
-
-		private void PlatformView_KeyPress(object? sender, AView.KeyEventArgs e)
-		{
 		}
 
 		void OnPlatformViewTouched(object? sender, AView.TouchEventArgs e)
