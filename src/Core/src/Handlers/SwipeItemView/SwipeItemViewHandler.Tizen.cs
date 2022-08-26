@@ -1,24 +1,19 @@
 ﻿using System;
-using PlatformView = Microsoft.Maui.Platform.ContentCanvas;
+using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentCanvas>, ISwipeItemViewHandler
+	public partial class SwipeItemViewHandler : ViewHandler<ISwipeItemView, PlatformView>, ISwipeItemViewHandler
 	{
 		IPlatformViewHandler? _contentHandler;
 
-		protected override ContentCanvas CreatePlatformView()
+		protected override ContentViewGroup CreatePlatformView()
 		{
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
-
-			var view = new ContentCanvas(PlatformParent, VirtualView)
+			return new ContentViewGroup(VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
-
-			view.Show();
-			return view;
 		}
 
 		public override void SetVirtualView(IView view)
@@ -29,6 +24,16 @@ namespace Microsoft.Maui.Handlers
 
 			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
 			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+			if (disposing)
+			{
+				_contentHandler?.Dispose();
+				_contentHandler = null;
+			}
 		}
 
 		void UpdateContent()
@@ -47,7 +52,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Children.Add(view.ToPlatform(MauiContext));
 				if (view.Handler is IPlatformViewHandler thandler)
 				{
-					thandler?.SetParent(this);
 					_contentHandler = thandler;
 				}
 			}
@@ -61,12 +65,11 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(ISwipeItemViewHandler handler, ISwipeItemView view)
 		{
-			//TODO : need to update
-			//var swipeView = handler.PlatformView.GetParentOfType<EvasObject>();
-			//if (swipeView != null)
-			//	swipeView.UpdateIsVisibleSwipeItem(view);
+			handler.PlatformView.UpdateVisibility(view);
 
-			//handler.PlatformView.UpdateVisibility(view.Visibility);
+			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
+			if (swipeView != null)
+				swipeView.UpdateIsVisibleSwipeItem(view);
 		}
 	}
 }

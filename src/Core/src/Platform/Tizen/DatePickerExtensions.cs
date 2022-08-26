@@ -1,4 +1,4 @@
-﻿using Tizen.UIExtensions.ElmSharp;
+﻿using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Platform
 {

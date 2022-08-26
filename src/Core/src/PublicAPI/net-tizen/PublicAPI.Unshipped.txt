@@ -53,5 +53,9 @@ Microsoft.Maui.ScrollToRequest.HorizontalOffset.get -> double
 Microsoft.Maui.ScrollToRequest.HorizontalOffset.init -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(double HorizontalOffset, double VerticalOffset, bool Instant) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
-static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this ElmSharp.EvasObject! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
+static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.Platform.MauiPicker
+Microsoft.Maui.Platform.MauiPicker.MauiPicker() -> void
+override Microsoft.Maui.Platform.MauiPicker.OnEnabled(bool enabled) -> void
+override Microsoft.Maui.Platform.MauiStepper.OnEnabled(bool enabled) -> void

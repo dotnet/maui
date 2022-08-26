@@ -1,34 +1,61 @@
 ﻿using System;
-using Tizen.UIExtensions.ElmSharp;
-using EEntry = ElmSharp.Entry;
+using Tizen.NUI.BaseComponents;
+using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.NUI;
+using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : ViewHandler<IEditor, Entry>
+	public partial class EditorHandler : ViewHandler<IEditor, Editor>
 	{
-		protected override Entry CreatePlatformView()
+		class MauiEditor : Editor, IMeasurable
 		{
-			return new EditfieldEntry(PlatformParent, EditFieldEntryLayout.Styles.MulitLine)
+			TSize IMeasurable.Measure(double availableWidth, double availableHeight)
 			{
-				IsSingleLine = false
-			};
+				if (!string.IsNullOrEmpty(Text))
+				{
+					if (availableWidth < NaturalSize.Width)
+					{
+						return new TSize(availableWidth, NaturalSize.Height);
+					}
+					else if (NaturalSize.Width > 0)
+					{
+						return new TSize(NaturalSize.Width, NaturalSize.Height);
+					}
+					else
+					{
+						// even though text but natural size is zero. it is abnormal state
+						return new TSize(Math.Max(Text.Length * PixelSize + 10, availableWidth), PixelSize + 10);
+					}
+				}
+				else
+				{
+					return new TSize(Math.Max(PixelSize + 10, availableWidth), PixelSize + 10);
+				};
+			}
 		}
 
-		protected override void ConnectHandler(Entry platformView)
+		protected override Editor CreatePlatformView() => new MauiEditor
 		{
-			platformView.Focused += OnEntryFocused;
-			platformView.Unfocused += OnEntryUnfocused;
-			platformView.Unfocused += OnCompleted;
-			platformView.PrependMarkUpFilter(MaxLengthFilter);
+			Focusable = true,
+			FocusableInTouch = true,
+		};
+
+		protected override void ConnectHandler(Editor platformView)
+		{
 			platformView.TextChanged += OnTextChanged;
+			platformView.FocusLost += OnFocusLost;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Entry platformView)
+		protected override void DisconnectHandler(Editor platformView)
 		{
-			platformView.BackButtonPressed -= OnCompleted;
-			platformView.Unfocused -= OnEntryUnfocused;
-			platformView.Focused -= OnEntryFocused;
+			if (!platformView.HasBody())
+				return;
+
 			platformView.TextChanged -= OnTextChanged;
+			platformView.FocusLost -= OnFocusLost;
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor)
@@ -37,132 +64,61 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform()?.UpdateBackground(editor);
 		}
 
-		public static void MapText(IEditorHandler handler, IEditor editor)
-		{
+		public static void MapText(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateText(editor);
 
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, editor);
-		}
-
-		public static void MapTextColor(IEditorHandler handler, IEditor editor)
-		{
+		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateTextColor(editor);
-		}
 
-		public static void MapPlaceholder(IEditorHandler handler, IEditor editor)
-		{
+		public static void MapPlaceholder(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdatePlaceholder(editor);
-		}
 
-		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor)
-		{
+		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdatePlaceholderColor(editor);
-		}
 
-		public static void MapMaxLength(IEditorHandler handler, IEditor editor)
-		{
+		public static void MapCursorPosition(IEditorHandler handler, ITextInput editor) =>
+			handler.PlatformView?.UpdateCursorPosition(editor);
+
+		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) =>
+			handler.PlatformView?.UpdateSelectionLength(editor);
+
+		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView.UpdateCharacterSpacing(editor);
+
+		public static void MapMaxLength(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateMaxLength(editor);
-		}
 
-		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor)
-		{
+		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateIsReadOnly(editor);
-		}
 
-		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor)
-		{
+		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
-		}
 
-		public static void MapFont(IEditorHandler handler, IEditor editor)
-		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
+		public static void MapFont(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
 
-			handler.PlatformView?.UpdateFont(editor, fontManager);
-		}
-
-		public static void MapFormatting(IEditorHandler handler, IEditor editor)
-		{
-			// Update all of the attributed text formatting properties
-			handler.PlatformView?.UpdateMaxLength(editor);
-		}
-
-		public static void MapKeyboard(IEditorHandler handler, IEditor editor)
-		{
-			handler.PlatformView?.UpdateKeyboard(editor);
-		}
-
-		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor)
-		{
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
-		}
 
-		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor)
-		{
-			handler.PlatformView?.UpdateVerticalTextAlignment(editor);
-		}
+		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView.UpdateVerticalTextAlignment(editor);
 
-		public static void MapCursorPosition(IEditorHandler handler, ITextInput editor)
-		{
-			handler.PlatformView?.UpdateSelectionLength(editor);
-		}
+		public static void MapKeyboard(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateKeyboard(editor);
 
-		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor)
-		{
-			handler.PlatformView?.UpdateSelectionLength(editor);
-		}
-
-		[MissingMapper]
-		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) { }
-
-		string? MaxLengthFilter(EEntry entry, string s)
-		{
-			if (VirtualView == null || PlatformView == null)
-				return null;
-
-			if (entry.Text.Length < VirtualView.MaxLength)
-				return s;
-
-			return null;
-		}
-
-		void OnTextChanged(object? sender, EventArgs e)
+		void OnTextChanged(object? sender, TextEditor.TextChangedEventArgs e)
 		{
 			if (VirtualView == null || PlatformView == null)
 				return;
 
 			VirtualView.Text = PlatformView.Text;
 		}
-
-
-
-		void OnEntryFocused(object? sender, EventArgs e)
+		void OnFocusLost(object? sender, System.EventArgs e)
 		{
-			if (PlatformView == null)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			// BackButtonPressed is only passed to the object that is at the highest Z-Order, and it does not propagate to lower objects.
-			// If you want to make Editor input completed by using BackButtonPressed, you should subscribe BackButtonPressed event only when Editor gets focused.
-			PlatformView.BackButtonPressed += OnCompleted;
-		}
-
-		void OnEntryUnfocused(object? sender, EventArgs e)
-		{
-			if (PlatformView == null)
-				return;
-
-			// BackButtonPressed is only passed to the object that is at the highest Z-Order, and it does not propagate to lower objects.
-			// When the object is unfocesed BackButtonPressed event has to be released to stop using it.
-			PlatformView.BackButtonPressed -= OnCompleted;
-		}
-
-		void OnCompleted(object? sender, EventArgs e)
-		{
-			if (PlatformView == null)
-				return;
-
-			PlatformView.SetFocus(false);
+			VirtualView.Completed();
 		}
 	}
 }

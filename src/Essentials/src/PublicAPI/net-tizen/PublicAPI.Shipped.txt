@@ -610,6 +610,8 @@ Microsoft.Maui.Media.IMediaPicker.IsCaptureSupported.get -> bool
 Microsoft.Maui.Media.IMediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
 Microsoft.Maui.Media.IMediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
 Microsoft.Maui.Media.IPlatformScreenshot
+Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(Tizen.NUI.Window! window) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(Tizen.NUI.BaseComponents.View! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
 Microsoft.Maui.Media.IScreenshot
 Microsoft.Maui.Media.IScreenshot.CaptureAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
 Microsoft.Maui.Media.IScreenshot.IsCaptureSupported.get -> bool
@@ -991,8 +993,8 @@ static Microsoft.Maui.Media.MediaPicker.PickVideoAsync(Microsoft.Maui.Media.Medi
 static Microsoft.Maui.Media.Screenshot.CaptureAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
 static Microsoft.Maui.Media.Screenshot.Default.get -> Microsoft.Maui.Media.IScreenshot!
 static Microsoft.Maui.Media.Screenshot.IsCaptureSupported.get -> bool
-static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, ElmSharp.EvasObject! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
-static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, ElmSharp.Window! window) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, Tizen.NUI.BaseComponents.View! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, Tizen.NUI.Window! window) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
 static Microsoft.Maui.Media.TextToSpeech.Default.get -> Microsoft.Maui.Media.ITextToSpeech!
 static Microsoft.Maui.Media.TextToSpeech.GetLocalesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Media.Locale!>!>!
 static Microsoft.Maui.Media.TextToSpeech.SpeakAsync(string! text, Microsoft.Maui.Media.SpeechOptions? options, System.Threading.CancellationToken cancelToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
