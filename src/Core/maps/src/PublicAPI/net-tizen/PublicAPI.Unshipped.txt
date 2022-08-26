@@ -8,14 +8,14 @@ Microsoft.Maui.Maps.Distance.Meters.get -> double
 Microsoft.Maui.Maps.Distance.Miles.get -> double
 Microsoft.Maui.Maps.GeographyUtils
 Microsoft.Maui.Maps.Handlers.IMapElementHandler
-Microsoft.Maui.Maps.Handlers.IMapElementHandler.PlatformView.get -> ElmSharp.EvasObject!
+Microsoft.Maui.Maps.Handlers.IMapElementHandler.PlatformView.get -> Tizen.NUI.BaseComponents.View!
 Microsoft.Maui.Maps.Handlers.IMapElementHandler.VirtualView.get -> Microsoft.Maui.Maps.IMapElement!
 Microsoft.Maui.Maps.Handlers.IMapHandler
-Microsoft.Maui.Maps.Handlers.IMapHandler.PlatformView.get -> ElmSharp.EvasObject!
+Microsoft.Maui.Maps.Handlers.IMapHandler.PlatformView.get -> Tizen.NUI.BaseComponents.View!
 Microsoft.Maui.Maps.Handlers.IMapHandler.UpdateMapElement(Microsoft.Maui.Maps.IMapElement! element) -> void
 Microsoft.Maui.Maps.Handlers.IMapHandler.VirtualView.get -> Microsoft.Maui.Maps.IMap!
 Microsoft.Maui.Maps.Handlers.IMapPinHandler
-Microsoft.Maui.Maps.Handlers.IMapPinHandler.PlatformView.get -> ElmSharp.EvasObject!
+Microsoft.Maui.Maps.Handlers.IMapPinHandler.PlatformView.get -> Tizen.NUI.BaseComponents.View!
 Microsoft.Maui.Maps.Handlers.IMapPinHandler.VirtualView.get -> Microsoft.Maui.Maps.IMapPin!
 Microsoft.Maui.Maps.Handlers.MapElementHandler
 Microsoft.Maui.Maps.Handlers.MapElementHandler.MapElementHandler() -> void
@@ -76,9 +76,9 @@ Microsoft.Maui.Maps.MapType.Satellite = 1 -> Microsoft.Maui.Maps.MapType
 Microsoft.Maui.Maps.MapType.Street = 0 -> Microsoft.Maui.Maps.MapType
 override Microsoft.Maui.Maps.Distance.Equals(object? obj) -> bool
 override Microsoft.Maui.Maps.Distance.GetHashCode() -> int
-override Microsoft.Maui.Maps.Handlers.MapElementHandler.CreatePlatformElement() -> ElmSharp.EvasObject!
-override Microsoft.Maui.Maps.Handlers.MapHandler.CreatePlatformView() -> ElmSharp.EvasObject!
-override Microsoft.Maui.Maps.Handlers.MapPinHandler.CreatePlatformElement() -> ElmSharp.EvasObject!
+override Microsoft.Maui.Maps.Handlers.MapElementHandler.CreatePlatformElement() -> Tizen.NUI.BaseComponents.View!
+override Microsoft.Maui.Maps.Handlers.MapHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
+override Microsoft.Maui.Maps.Handlers.MapPinHandler.CreatePlatformElement() -> Tizen.NUI.BaseComponents.View!
 override Microsoft.Maui.Maps.MapSpan.Equals(object? obj) -> bool
 override Microsoft.Maui.Maps.MapSpan.GetHashCode() -> int
 override Microsoft.Maui.Maps.MapSpan.ToString() -> string!

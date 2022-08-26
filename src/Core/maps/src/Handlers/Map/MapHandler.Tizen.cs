@@ -3,10 +3,10 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	public partial class MapHandler : ViewHandler<IMap, ElmSharp.EvasObject>
+	public partial class MapHandler : ViewHandler<IMap, Tizen.NUI.BaseComponents.View>
 	{
 
-		protected override ElmSharp.EvasObject CreatePlatformView() => throw new NotImplementedException();
+		protected override Tizen.NUI.BaseComponents.View CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapMapType(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
