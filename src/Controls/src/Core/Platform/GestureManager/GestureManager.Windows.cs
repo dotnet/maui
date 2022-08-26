@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -318,6 +319,9 @@ namespace Microsoft.Maui.Controls.Platform
 				_container.PointerExited -= OnPointerExited;
 				_container.PointerReleased -= OnPointerReleased;
 				_container.PointerCanceled -= OnPointerCanceled;
+				_container.PointerEntered -= OnPgrPointerEntered;
+				_container.PointerExited -= OnPgrPointerExited;
+				_container.PointerMoved -= OnPgrPointerMoved;
 			}
 		}
 
@@ -481,6 +485,40 @@ namespace Microsoft.Maui.Controls.Platform
 			PanComplete(true);
 		}
 
+		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e) 
+			=> HandlePgrPointerEvent(e, (view, recognizer) 
+				=> recognizer.SendPointerEntered(view, (relativeTo) => GetPosition(relativeTo, e)));
+
+		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer) 
+				=> recognizer.SendPointerExited(view, (relativeTo) => GetPosition(relativeTo, e)));
+
+		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer) 
+				=> recognizer.SendPointerMoved(view, (relativeTo) => GetPosition(relativeTo, e)));
+
+		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
+		{
+			var view = Element as View;
+			if (view == null)
+				return;
+
+			var pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
+			foreach (var recognizer in pointerGestures)
+			{
+				SendPointerEvent.Invoke(view, recognizer);
+			}
+		}
+
+		Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)
+		{
+			var result = e.GetPositionRelativeToElement(relativeTo);
+			if (result == null)
+				return null;
+
+			return new Point(result.Value.X, result.Value.Y);
+		}
+
 		void OnTap(object sender, RoutedEventArgs e)
 		{
 			var view = Element as View;
@@ -510,14 +548,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				foreach (var recognizer in tapGestures)
 				{
-					recognizer.SendTapped(view, (relativeTo) =>
-					{
-						var result = e.GetPositionRelativeToElement(relativeTo);
-						if (result == null)
-							return null;
-
-						return new Point(result.Value.X, result.Value.Y);
-					});
+					recognizer.SendTapped(view, (relativeTo) => GetPosition(relativeTo, e));
 
 					e.SetHandled(true);
 					handled = true;
@@ -544,6 +575,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return g.NumberOfTapsRequired == 1;
 			}
 		}
+
 
 		void SwipeComplete(bool success)
 		{
@@ -678,6 +710,10 @@ namespace Microsoft.Maui.Controls.Platform
 					_control.DoubleTapped += HandleDoubleTapped;
 				}
 			}
+
+			_container.PointerEntered += OnPgrPointerEntered;
+			_container.PointerExited += OnPgrPointerExited;
+			_container.PointerMoved += OnPgrPointerMoved;
 
 			bool hasSwipeGesture = gestures.GetGesturesFor<SwipeGestureRecognizer>().GetEnumerator().MoveNext();
 			bool hasPinchGesture = gestures.GetGesturesFor<PinchGestureRecognizer>().GetEnumerator().MoveNext();
