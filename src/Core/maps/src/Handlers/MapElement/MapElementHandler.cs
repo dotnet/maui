@@ -5,7 +5,7 @@ using PlatformView = Java.Lang.Object;
 #elif WINDOWS
 using PlatformView = System.Object;
 #elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
+using PlatformView = System.Object;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
