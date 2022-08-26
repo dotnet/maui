@@ -5,7 +5,7 @@ using PlatformView = Android.Gms.Maps.Model.MarkerOptions;
 #elif WINDOWS
 using PlatformView = System.Object;
 #elif TIZEN
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = System.Object;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

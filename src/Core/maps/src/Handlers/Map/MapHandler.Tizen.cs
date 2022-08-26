@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.Maui.Handlers;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	public partial class MapHandler : ViewHandler<IMap, ElmSharp.EvasObject>
+	public partial class MapHandler : ViewHandler<IMap, NView>
 	{
 
-		protected override ElmSharp.EvasObject CreatePlatformView() => throw new NotImplementedException();
+		protected override NView CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapMapType(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
