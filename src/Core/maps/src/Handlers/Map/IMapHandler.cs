@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		new IMap VirtualView { get; }
 		new PlatformView PlatformView { get; }
 #if MONOANDROID
-		GoogleMap? Map { get; set; }
+		GoogleMap? Map { get; }
 #endif
 		void UpdateMapElement(IMapElement element);
 	}
