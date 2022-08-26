@@ -16,10 +16,11 @@
             Clicked="OnCloseWindowClicked"
             Text="Close this Window" />
 
-        <Label Text="{Binding WindowCount, StringFormat='Window Count: {0}'}" x:Name="label" />
-
         <Label Text="Window Frame:" />
-        <Label Text="{Binding Window.Frame}" />
+        <Label Text="{Binding Window.X, StringFormat='X = {0:0.00}'}" />
+        <Label Text="{Binding Window.Y, StringFormat='Y = {0:0.00}'}" />
+        <Label Text="{Binding Window.Width, StringFormat='W = {0:0.00}'}" />
+        <Label Text="{Binding Window.Height, StringFormat='H = {0:0.00}'}" />
 
         <Button 
             Clicked="OnSetMinSize"

@@ -165,119 +165,58 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(MinimumHeightProperty, value);
 		}
 
-		double IWindow.X
+		double IWindow.X => GetPositionCoordinate(XProperty);
+
+		double IWindow.Y => GetPositionCoordinate(YProperty);
+
+		double IWindow.Width => GetSizeCoordinate(WidthProperty);
+
+		double IWindow.Height => GetSizeCoordinate(HeightProperty);
+
+		double IWindow.MaximumWidth => GetSizeCoordinate(MaximumWidthProperty);
+
+		double IWindow.MaximumHeight => GetSizeCoordinate(MaximumHeightProperty);
+
+		double IWindow.MinimumWidth => GetSizeCoordinate(MinimumWidthProperty);
+
+		double IWindow.MinimumHeight => GetSizeCoordinate(MinimumHeightProperty);
+
+		double GetPositionCoordinate(BindableProperty property)
 		{
-			get
-			{
-				if (!IsSet(XProperty))
-					return Primitives.Dimension.Unset;
-				var x = X;
-				if (!Primitives.Dimension.IsExplicitSet(x))
-					return Primitives.Dimension.Unset;
-				return x;
-			}
+			if (!IsSet(property))
+				return Primitives.Dimension.Unset;
+			var coord = (double)GetValue(property);
+			if (!Primitives.Dimension.IsExplicitSet(coord))
+				return Primitives.Dimension.Unset;
+			return coord;
 		}
 
-		double IWindow.Y
+		double GetSizeCoordinate(BindableProperty property)
 		{
-			get
-			{
-				if (!IsSet(YProperty))
-					return Primitives.Dimension.Unset;
-				var y = Y;
-				if (!Primitives.Dimension.IsExplicitSet(y))
-					return Primitives.Dimension.Unset;
-				return y;
-			}
-		}
-
-		double IWindow.Width
-		{
-			get
-			{
-				if (!IsSet(WidthProperty))
-					return Primitives.Dimension.Unset;
-				var width = Width;
-				if (width == -1 || !Primitives.Dimension.IsExplicitSet(width))
-					return Primitives.Dimension.Unset;
-				return ValidatePositive(width);
-			}
-		}
-
-		double IWindow.Height
-		{
-			get
-			{
-				if (!IsSet(HeightProperty))
-					return Primitives.Dimension.Unset;
-				var height = Height;
-				if (height == -1 || !Primitives.Dimension.IsExplicitSet(height))
-					return Primitives.Dimension.Unset;
-				return ValidatePositive(height);
-			}
-		}
-
-		double IWindow.MaximumWidth
-		{
-			get
-			{
-				if (!IsSet(MaximumWidthProperty))
-					return Primitives.Dimension.Unset;
-				var width = MaximumWidth;
-				if (width == -1 || !Primitives.Dimension.IsExplicitSet(width))
-					return Primitives.Dimension.Unset;
-				return ValidatePositive(width);
-			}
-		}
-
-		double IWindow.MaximumHeight
-		{
-			get
-			{
-				if (!IsSet(MaximumHeightProperty))
-					return Primitives.Dimension.Unset;
-				var height = MaximumHeight;
-				if (height == -1 || !Primitives.Dimension.IsExplicitSet(height))
-					return Primitives.Dimension.Unset;
-				return ValidatePositive(height);
-			}
-		}
-
-		double IWindow.MinimumWidth
-		{
-			get
-			{
-				if (!IsSet(MinimumWidthProperty))
-					return Primitives.Dimension.Unset;
-				var width = MinimumWidth;
-				if (width == -1 || !Primitives.Dimension.IsExplicitSet(width))
-					return Primitives.Dimension.Unset;
-				return ValidatePositive(width);
-			}
-		}
-
-		double IWindow.MinimumHeight
-		{
-			get
-			{
-				if (!IsSet(MinimumHeightProperty))
-					return Primitives.Dimension.Unset;
-				var height = MinimumHeight;
-				if (height == -1 || !Primitives.Dimension.IsExplicitSet(height))
-					return Primitives.Dimension.Unset;
-				return ValidatePositive(height);
-			}
+			if (!IsSet(property))
+				return Primitives.Dimension.Unset;
+			var coord = (double)GetValue(property);
+			if (coord == -1 || !Primitives.Dimension.IsExplicitSet(coord))
+				return Primitives.Dimension.Unset;
+			return ValidatePositive(coord);
 		}
 
 		int _batchFrameUpdate = 0;
+		Rect _frame = new Rect(
+			Primitives.Dimension.Unset,
+			Primitives.Dimension.Unset,
+			Primitives.Dimension.Unset,
+			Primitives.Dimension.Unset);
 
-		public Rect Frame
+		Rect IWindow.Frame
 		{
-			get => new Rect(X, Y, Width, Height);
+			get => _frame;
 			set
 			{
-				if (Frame == value)
+				if (_frame == value)
 					return;
+
+				_frame = value;
 
 				_batchFrameUpdate++;
 
@@ -293,7 +232,7 @@ namespace Microsoft.Maui.Controls
 				if (_batchFrameUpdate == 0)
 				{
 					SizeChanged?.Invoke(this, EventArgs.Empty);
-					OnPropertyChanged(nameof(Frame));
+					OnPropertyChanged(nameof(IWindow.Frame));
 				}
 			}
 		}
@@ -306,7 +245,7 @@ namespace Microsoft.Maui.Controls
 			if (window._batchFrameUpdate > 0)
 				return;
 
-			window.OnPropertyChanged(nameof(Frame));
+			window.OnPropertyChanged(nameof(IWindow.Frame));
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;

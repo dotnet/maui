@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
@@ -8,23 +7,12 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class MultiWindowPage : BasePage
 	{
-		static int windowCounter = 0;
-
-		int currentWindow = 0;
-
 		public MultiWindowPage()
 		{
-			windowCounter++;
-			currentWindow = windowCounter;
-
 			InitializeComponent();
 
 			BindingContext = this;
-
-			Loaded += OnLoaded;
 		}
-
-		public int WindowCount => windowCounter;
 
 		void OnNewWindowClicked(object sender, EventArgs e)
 		{
@@ -56,6 +44,7 @@ namespace Maui.Controls.Sample.Pages
 			Window.MinimumWidth = -1d;
 			Window.MinimumHeight = -1d;
 		}
+
 		void OnSetCustomSize(object sender, EventArgs e)
 		{
 			Window.Width = 700;
@@ -68,26 +57,6 @@ namespace Maui.Controls.Sample.Pages
 
 			Window.X = (disp.Width / disp.Density - Window.Width) / 2;
 			Window.Y = (disp.Height / disp.Density - Window.Height) / 2;
-		}
-
-		void OnLoaded(object sender, EventArgs e)
-		{
-			var window = Window;
-
-			window.SizeChanged += OnWindowSizeChanged;
-
-			Unloaded += OnUnloaded;
-
-			void OnUnloaded(object sender, EventArgs e)
-			{
-				Unloaded -= OnUnloaded;
-				window.SizeChanged -= OnWindowSizeChanged;
-			}
-		}
-
-		void OnWindowSizeChanged(object sender, EventArgs e)
-		{
-			Debug.WriteLine($"Window Size Changed ({currentWindow}): {Window.Frame.Size}");
 		}
 	}
 }
