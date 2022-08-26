@@ -21,7 +21,7 @@ namespace Samples.ViewModel
 		public DeviceIdiom Idiom => DeviceInfo.Idiom;
 
 		public DeviceType DeviceType => DeviceInfo.DeviceType;
-		
+
 		public double Rotation =>
 			ScreenMetrics.Rotation switch
 			{
