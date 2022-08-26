@@ -23,12 +23,15 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		public override long Position { get => _baseStream.Position; set => _baseStream.Position = value; }
 
-		public override void Flush() => _baseStream?.Flush();
+		public override void Flush() => _baseStream.Flush();
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
 			var bytesRead = _baseStream.Read(buffer, offset, count);
 
+			// Stream.Read only returns 0 when it has reached the end of stream
+			// and no further bytes are expected. Otherwise it blocks until
+			// one or more (and at most count) bytes can be read.
 			if (bytesRead == 0)
 			{
 				_baseStream.Close();
@@ -41,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		public override void SetLength(long value) => _baseStream.SetLength(value);
 
-		public override void Write(byte[] buffer, int offset, int count) => _baseStream?.Write(buffer, offset, count);
+		public override void Write(byte[] buffer, int offset, int count) => _baseStream.Write(buffer, offset, count);
 	}
 }
 
