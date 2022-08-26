@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Controls
 		void IMapColorPropertyToPaint.MapColorPropertyToPaint(Color color)
 		{
 			Foreground = color?.AsPaint();
+
+			Handler?.UpdateValue(nameof(ICheckBox.Foreground));
 		}
 	}
 }
