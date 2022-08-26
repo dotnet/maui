@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml;
 using WPoint = Windows.Foundation.Point;
@@ -37,6 +38,11 @@ namespace Microsoft.Maui.Platform
 				return t.GetPosition(relativeTo);
 			else if (e is DoubleTappedRoutedEventArgs dt)
 				return dt.GetPosition(relativeTo);
+			else if (e is PointerRoutedEventArgs p)
+			{
+				var point = p.GetCurrentPoint(relativeTo);
+				return new WPoint(point.Position.X, point.Position.Y);
+			}
 
 			return null;
 		}

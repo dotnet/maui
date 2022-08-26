@@ -12,6 +12,25 @@ Microsoft.Maui.Controls.Platform.ShellNavigationViewItem.ShellNavigationViewItem
 Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer
 Microsoft.Maui.Controls.MenuFlyoutSeparator
 Microsoft.Maui.Controls.MenuFlyoutSeparator.MenuFlyoutSeparator() -> void
+Microsoft.Maui.Controls.PointerEventArgs
+Microsoft.Maui.Controls.PointerEventArgs.PointerEventArgs() -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEntered -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommand.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExited -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommand.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerGestureRecognizer() -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMoved -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommand.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.set -> void
 Microsoft.Maui.Controls.TapGestureRecognizer.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
 Microsoft.Maui.Controls.TapGestureRecognizer.Buttons.set -> void
 Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler<Microsoft.Maui.Controls.TappedEventArgs!>?
@@ -49,6 +68,13 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 *REMOVED*override Microsoft.Maui.Controls.RadioButton.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.FlexLayout.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Controls.Platform.ShellFlyoutItemView.OnContentChanged(object oldContent, object newContent) -> void
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.PointerEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 ~Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.ShellNavigationViewItemAutomationPeer(Microsoft.Maui.Controls.Platform.ShellNavigationViewItem owner) -> void
 ~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItem.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
