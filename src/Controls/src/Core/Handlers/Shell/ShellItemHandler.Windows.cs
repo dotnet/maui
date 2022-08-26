@@ -1,13 +1,16 @@
 ﻿#nullable enable
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Maui.Controls.Platform;
 using System.Collections.ObjectModel;
 using WApp = Microsoft.UI.Xaml.Application;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using Windows.UI;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -239,7 +242,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
-					autoSuggestBox.ItemsSource = _currentSearchHandler.ItemsSource;
+					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					autoSuggestBox.ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["CarouselItemsViewDefaultTemplate"]; // _currentSearchHandler.ItemTemplate;
 					autoSuggestBox.Text = _currentSearchHandler.Query;
 
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
@@ -280,14 +284,33 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (_currentSearchHandler == null)
 				return;
-			((ISearchHandlerController)_currentSearchHandler).ItemSelected(args.SelectedItem);
+
+			object selectedItem = args.SelectedItem;
+
+			if (selectedItem is ItemTemplateContext itemTemplateContext)
+				selectedItem = itemTemplateContext.Item;
+
+			((ISearchHandlerController)_currentSearchHandler).ItemSelected(selectedItem);
 		}
 
 		void OnSearchBoxQuerySubmitted(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxQuerySubmittedEventArgs args)
 		{
 			if (_currentSearchHandler == null)
 				return;
+
 			((ISearchHandlerController)_currentSearchHandler).QueryConfirmed();
+		}
+
+		object? CreateSearchHandlerItemsSource()
+		{
+			if (_currentSearchHandler == null)
+				return null;
+
+			if (_currentSearchHandler.ItemsSource == null)
+				return _currentSearchHandler.ItemsSource;
+
+			return TemplatedItemSourceFactory.Create(_currentSearchHandler.ItemsSource, _currentSearchHandler.ItemTemplate, _currentSearchHandler,
+				null, null, null, MauiContext);
 		}
 
 		void OnCurrentSearchHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -304,7 +327,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					ShellItemNavigationView.AutoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					break;
 				case nameof(SearchHandler.ItemsSource):
-					ShellItemNavigationView.AutoSuggestBox.ItemsSource = _currentSearchHandler.ItemsSource;
+					ShellItemNavigationView.AutoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
 					break;
 				case nameof(SearchHandler.Query):
 					ShellItemNavigationView.AutoSuggestBox.Text = _currentSearchHandler.Query;
