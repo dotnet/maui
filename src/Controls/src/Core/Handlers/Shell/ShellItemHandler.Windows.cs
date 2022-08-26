@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
-					autoSuggestBox.ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["CarouselItemsViewDefaultTemplate"]; // _currentSearchHandler.ItemTemplate;
+					autoSuggestBox.ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.Text = _currentSearchHandler.Query;
 
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
