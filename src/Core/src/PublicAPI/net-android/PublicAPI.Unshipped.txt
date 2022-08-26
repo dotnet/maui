@@ -90,3 +90,9 @@ virtual Microsoft.Maui.Platform.StackNavigationManager.OnDestinationChanged(Andr
 *REMOVED*virtual Microsoft.Maui.Platform.StackNavigationManager.OnDestinationChanged(AndroidX.Navigation.NavController! navController, AndroidX.Navigation.NavDestination! navDestination, Android.OS.Bundle! bundle) -> void
 *REMOVED* override Microsoft.Maui.Platform.MauiDatePicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
 *REMOVED* override Microsoft.Maui.Platform.MauiTimePicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
+*REMOVED*Microsoft.Maui.ScrollToRequest.HoriztonalOffset.get -> double
+*REMOVED*Microsoft.Maui.ScrollToRequest.HoriztonalOffset.init -> void
+*REMOVED*Microsoft.Maui.ScrollToRequest.ScrollToRequest(double HoriztonalOffset, double VerticalOffset, bool Instant) -> void
+Microsoft.Maui.ScrollToRequest.HorizontalOffset.get -> double
+Microsoft.Maui.ScrollToRequest.HorizontalOffset.init -> void
+Microsoft.Maui.ScrollToRequest.ScrollToRequest(double HorizontalOffset, double VerticalOffset, bool Instant) -> void

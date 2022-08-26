@@ -71,7 +71,7 @@ namespace Microsoft.Maui
 			{
 				canvas.SaveState();
 				var borderPath = Border.Shape?.PathForBounds(drawBounds);
-				if (borderPath != null)
+				if (borderPath != null && Border.StrokeThickness > 0)
 				{
 					canvas.MiterLimit = Border.StrokeMiterLimit;
 					canvas.StrokeColor = Border.Stroke.ToColor();
