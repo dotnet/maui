@@ -1,4 +1,7 @@
 <Project>
+  <ItemGroup>
+	<ProjectCapability Include="Maui" />
+  </ItemGroup>
   <Import Project="$(_MauiBuildTasksLocation)AutoImport.InTree.props"/>
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props"/>
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.props"/>
