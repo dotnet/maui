@@ -16,11 +16,11 @@ namespace Microsoft.Maui.Controls.Maps
 
 		public static readonly BindableProperty IsShowingUserProperty = BindableProperty.Create(nameof(IsShowingUser), typeof(bool), typeof(Map), default(bool));
 
-		public static readonly BindableProperty HasTrafficEnabledProperty = BindableProperty.Create(nameof(HasTrafficEnabled), typeof(bool), typeof(Map), default(bool));
+		public static readonly BindableProperty IsTrafficEnabledProperty = BindableProperty.Create(nameof(IsTrafficEnabled), typeof(bool), typeof(Map), default(bool));
 
-		public static readonly BindableProperty HasScrollEnabledProperty = BindableProperty.Create(nameof(HasScrollEnabled), typeof(bool), typeof(Map), true);
+		public static readonly BindableProperty IsScrollEnabledProperty = BindableProperty.Create(nameof(IsScrollEnabled), typeof(bool), typeof(Map), true);
 
-		public static readonly BindableProperty HasZoomEnabledProperty = BindableProperty.Create(nameof(HasZoomEnabled), typeof(bool), typeof(Map), true);
+		public static readonly BindableProperty IsZoomEnabledProperty = BindableProperty.Create(nameof(IsZoomEnabled), typeof(bool), typeof(Map), true);
 
 		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(Map), default(IEnumerable),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemsSourcePropertyChanged((IEnumerable)o, (IEnumerable)n));
@@ -53,16 +53,16 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 		}
 
-		public bool HasScrollEnabled
+		public bool IsScrollEnabled
 		{
-			get { return (bool)GetValue(HasScrollEnabledProperty); }
-			set { SetValue(HasScrollEnabledProperty, value); }
+			get { return (bool)GetValue(IsScrollEnabledProperty); }
+			set { SetValue(IsScrollEnabledProperty, value); }
 		}
 
-		public bool HasZoomEnabled
+		public bool IsZoomEnabled
 		{
-			get { return (bool)GetValue(HasZoomEnabledProperty); }
-			set { SetValue(HasZoomEnabledProperty, value); }
+			get { return (bool)GetValue(IsZoomEnabledProperty); }
+			set { SetValue(IsZoomEnabledProperty, value); }
 		}
 
 		public bool IsShowingUser
@@ -71,10 +71,10 @@ namespace Microsoft.Maui.Controls.Maps
 			set { SetValue(IsShowingUserProperty, value); }
 		}
 
-		public bool HasTrafficEnabled
+		public bool IsTrafficEnabled
 		{
-			get => (bool)GetValue(HasTrafficEnabledProperty);
-			set => SetValue(HasTrafficEnabledProperty, value);
+			get => (bool)GetValue(IsTrafficEnabledProperty);
+			set => SetValue(IsTrafficEnabledProperty, value);
 		}
 
 		public MapType MapType

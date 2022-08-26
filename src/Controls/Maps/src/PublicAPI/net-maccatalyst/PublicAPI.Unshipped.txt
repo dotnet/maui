@@ -10,12 +10,12 @@ Microsoft.Maui.Controls.Maps.Circle.Radius.get -> Microsoft.Maui.Maps.Distance
 Microsoft.Maui.Controls.Maps.Circle.Radius.set -> void
 Microsoft.Maui.Controls.Maps.Map
 Microsoft.Maui.Controls.Maps.Map.GetEnumerator() -> System.Collections.Generic.IEnumerator<Microsoft.Maui.Maps.IMapPin!>!
-Microsoft.Maui.Controls.Maps.Map.HasScrollEnabled.get -> bool
-Microsoft.Maui.Controls.Maps.Map.HasScrollEnabled.set -> void
-Microsoft.Maui.Controls.Maps.Map.HasTrafficEnabled.get -> bool
-Microsoft.Maui.Controls.Maps.Map.HasTrafficEnabled.set -> void
-Microsoft.Maui.Controls.Maps.Map.HasZoomEnabled.get -> bool
-Microsoft.Maui.Controls.Maps.Map.HasZoomEnabled.set -> void
+Microsoft.Maui.Controls.Maps.Map.IsScrollEnabled.get -> bool
+Microsoft.Maui.Controls.Maps.Map.IsScrollEnabled.set -> void
+Microsoft.Maui.Controls.Maps.Map.IsTrafficEnabled.get -> bool
+Microsoft.Maui.Controls.Maps.Map.IsTrafficEnabled.set -> void
+Microsoft.Maui.Controls.Maps.Map.IsZoomEnabled.get -> bool
+Microsoft.Maui.Controls.Maps.Map.IsZoomEnabled.set -> void
 Microsoft.Maui.Controls.Maps.Map.IsShowingUser.get -> bool
 Microsoft.Maui.Controls.Maps.Map.IsShowingUser.set -> void
 Microsoft.Maui.Controls.Maps.Map.ItemsSource.get -> System.Collections.IEnumerable!
@@ -114,9 +114,9 @@ static Microsoft.Maui.Controls.Maps.Pin.operator ==(Microsoft.Maui.Controls.Maps
 static readonly Microsoft.Maui.Controls.Maps.Circle.CenterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Circle.FillColorProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Circle.RadiusProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.Maps.Map.HasScrollEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.Maps.Map.HasTrafficEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.Maps.Map.HasZoomEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Map.IsScrollEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Map.IsTrafficEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Map.IsZoomEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.IsShowingUserProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.ItemsSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.ItemTemplateProperty -> Microsoft.Maui.Controls.BindableProperty!

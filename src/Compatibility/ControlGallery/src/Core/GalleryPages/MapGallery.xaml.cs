@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		void ShowTrafficToggled(object sender, ToggledEventArgs e)
 		{
 			var control = (Switch)sender;
-			Map.HasTrafficEnabled = control.IsToggled;
+			Map.IsTrafficEnabled = control.IsToggled;
 		}
 	}
 }

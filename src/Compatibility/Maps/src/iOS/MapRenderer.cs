@@ -168,8 +168,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				UpdateTrafficEnabled();
 				UpdateMapType();
 				UpdateIsShowingUser();
-				UpdateHasScrollEnabled();
-				UpdateHasZoomEnabled();
+				UpdateIsScrollEnabled();
+				UpdateIsZoomEnabled();
 
 				((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged += OnPinCollectionChanged;
 				OnPinCollectionChanged(mapModel.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -187,11 +187,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				UpdateMapType();
 			else if (e.PropertyName == Map.IsShowingUserProperty.PropertyName)
 				UpdateIsShowingUser();
-			else if (e.PropertyName == Map.HasScrollEnabledProperty.PropertyName)
-				UpdateHasScrollEnabled();
-			else if (e.PropertyName == Map.HasZoomEnabledProperty.PropertyName)
-				UpdateHasZoomEnabled();
-			else if (e.PropertyName == Map.HasTrafficEnabledProperty.PropertyName)
+			else if (e.PropertyName == Map.IsScrollEnabledProperty.PropertyName)
+				UpdateIsScrollEnabled();
+			else if (e.PropertyName == Map.IsZoomEnabledProperty.PropertyName)
+				UpdateIsZoomEnabled();
+			else if (e.PropertyName == Map.IsTrafficEnabledProperty.PropertyName)
 				UpdateTrafficEnabled();
 			//else if (e.PropertyName == VisualElement.HeightProperty.PropertyName && ((Map)Element).LastMoveToRegion != null)
 			//	_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange;
@@ -451,19 +451,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			}
 		}
 
-		void UpdateHasScrollEnabled()
+		void UpdateIsScrollEnabled()
 		{
-			((MKMapView)Control).ScrollEnabled = ((Map)Element).HasScrollEnabled;
+			((MKMapView)Control).ScrollEnabled = ((Map)Element).IsScrollEnabled;
 		}
 
 		void UpdateTrafficEnabled()
 		{
-			((MKMapView)Control).ShowsTraffic = ((Map)Element).HasTrafficEnabled;
+			((MKMapView)Control).ShowsTraffic = ((Map)Element).IsTrafficEnabled;
 		}
 
-		void UpdateHasZoomEnabled()
+		void UpdateIsZoomEnabled()
 		{
-			((MKMapView)Control).ZoomEnabled = ((Map)Element).HasZoomEnabled;
+			((MKMapView)Control).ZoomEnabled = ((Map)Element).IsZoomEnabled;
 		}
 
 		void UpdateIsShowingUser()

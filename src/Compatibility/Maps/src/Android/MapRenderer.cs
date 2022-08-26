@@ -191,18 +191,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			{
 				SetUserVisible();
 			}
-			else if (e.PropertyName == Map.HasScrollEnabledProperty.PropertyName)
+			else if (e.PropertyName == Map.IsScrollEnabledProperty.PropertyName)
 			{
-				gmap.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
+				gmap.UiSettings.ScrollGesturesEnabled = Map.IsScrollEnabled;
 			}
-			else if (e.PropertyName == Map.HasZoomEnabledProperty.PropertyName)
+			else if (e.PropertyName == Map.IsZoomEnabledProperty.PropertyName)
 			{
-				gmap.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
-				gmap.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
+				gmap.UiSettings.ZoomControlsEnabled = Map.IsZoomEnabled;
+				gmap.UiSettings.ZoomGesturesEnabled = Map.IsZoomEnabled;
 			}
-			else if (e.PropertyName == Map.HasTrafficEnabledProperty.PropertyName)
+			else if (e.PropertyName == Map.IsTrafficEnabledProperty.PropertyName)
 			{
-				gmap.TrafficEnabled = Map.HasTrafficEnabled;
+				gmap.TrafficEnabled = Map.IsTrafficEnabled;
 			}
 		}
 
@@ -245,10 +245,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
 
-			map.TrafficEnabled = Map.HasTrafficEnabled;
-			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
-			map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
-			map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
+			map.TrafficEnabled = Map.IsTrafficEnabled;
+			map.UiSettings.ZoomControlsEnabled = Map.IsZoomEnabled;
+			map.UiSettings.ZoomGesturesEnabled = Map.IsZoomEnabled;
+			map.UiSettings.ScrollGesturesEnabled = Map.IsScrollEnabled;
 			SetUserVisible();
 			SetMapType();
 		}
