@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls
 		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition)
 		{
 			ICommand cmd = PointerEnteredCommand;
-			if (cmd != null && cmd.CanExecute(PointerEnteredCommandParameter))
+			if (cmd?.CanExecute(PointerEnteredCommandParameter) == true)
 				cmd.Execute(PointerEnteredCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerEntered;
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition)
 		{
 			ICommand cmd = PointerExitedCommand;
-			if (cmd != null && cmd.CanExecute(PointerExitedCommandParameter))
+			if (cmd?.CanExecute(PointerExitedCommandParameter) == true)
 				cmd.Execute(PointerExitedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerExited;
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition)
 		{
 			ICommand cmd = PointerMovedCommand;
-			if (cmd != null && cmd.CanExecute(PointerMovedCommandParameter))
+			if (cmd?.CanExecute(PointerMovedCommandParameter) == true)
 				cmd.Execute(PointerMovedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerMoved;
