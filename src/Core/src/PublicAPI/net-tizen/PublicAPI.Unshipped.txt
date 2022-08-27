@@ -59,3 +59,6 @@ Microsoft.Maui.Platform.MauiPicker
 Microsoft.Maui.Platform.MauiPicker.MauiPicker() -> void
 override Microsoft.Maui.Platform.MauiPicker.OnEnabled(bool enabled) -> void
 override Microsoft.Maui.Platform.MauiStepper.OnEnabled(bool enabled) -> void
+*REMOVED*static Microsoft.Maui.IViewExtensions.GetEffectiveFlowDirection(this Microsoft.Maui.IView! view) -> Microsoft.Maui.FlowDirection
+*REMOVED*Microsoft.Maui.IViewExtensions
+*REMOVED*static Microsoft.Maui.Layouts.LayoutExtensions.ShouldArrangeLeftToRight(this Microsoft.Maui.IView! view) -> bool
