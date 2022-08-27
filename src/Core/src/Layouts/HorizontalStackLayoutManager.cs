@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
@@ -46,18 +45,15 @@ namespace Microsoft.Maui.Layouts
 		public override Size ArrangeChildren(Rect bounds)
 		{
 			var padding = Stack.Padding;
+			double spacing = Stack.Spacing;
+			var childCount = Stack.Count;
+
 			double top = padding.Top + bounds.Top;
 
 			var height = bounds.Height - padding.VerticalThickness;
-			double stackWidth;
 
-			bool leftToRight = Stack.ShouldArrangeLeftToRight();
-
-			// Figure out where we're starting from (the left edge of the padded area, or the right edge)
-			double xPosition = leftToRight ? padding.Left + bounds.Left : bounds.Right - padding.Right;
-
-			// If we're arranging from the right, spacing will be added to the left
-			double spacingDelta = leftToRight ? Stack.Spacing : -Stack.Spacing;
+			// Figure out where we're starting from 
+			double xPosition = padding.Left + bounds.Left;
 
 			for (int n = 0; n < Stack.Count; n++)
 			{
@@ -68,39 +64,25 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				xPosition += leftToRight
-					? ArrangeChildFromLeftEdge(child, height, top, xPosition)
-					: ArrangeChildFromRightEdge(child, height, top, xPosition);
+				xPosition += ArrangeChild(child, height, top, xPosition);
 
-				if (n < Stack.Count - 1)
+				if (n < childCount - 1)
 				{
 					// If we have more than one child and we're not on the last one, add spacing
-					xPosition += spacingDelta;
+					xPosition += spacing;
 				}
 			}
 
-			// If we started from the left, the total width is the current x position;
-			// If we started from the right, it's the difference between the right edge and the current x position
-			stackWidth = leftToRight ? xPosition : bounds.Right - xPosition;
-
-			var actual = new Size(stackWidth, height);
+			var actual = new Size(xPosition, height);
 
 			return actual.AdjustForFill(bounds, Stack);
 		}
 
-		static double ArrangeChildFromLeftEdge(IView child, double height, double top, double x)
+		static double ArrangeChild(IView child, double height, double top, double x)
 		{
 			var destination = new Rect(x, top, child.DesiredSize.Width, height);
 			child.Arrange(destination);
 			return destination.Width;
-		}
-
-		static double ArrangeChildFromRightEdge(IView child, double height, double top, double x)
-		{
-			var width = child.DesiredSize.Width;
-			var destination = new Rect(x - width, top, width, height);
-			child.Arrange(destination);
-			return -destination.Width;
 		}
 	}
 }

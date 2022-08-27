@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 				platformView.UpdateMauiCALayer(border);
 			}
 		}
-
+	
 		public static void UpdateBackground(this UIView platformView, IView view)
 		{
 			platformView.UpdateBackground(view.Background, view as IButtonStroke);
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Platform
 			switch (view.FlowDirection)
 			{
 				case FlowDirection.MatchParent:
-					updateValue = UISemanticContentAttribute.Unspecified;
+					updateValue = GetParentMatchingSemanticContentAttribute(view);
 					break;
 				case FlowDirection.LeftToRight:
 					updateValue = UISemanticContentAttribute.ForceLeftToRight;
@@ -131,7 +131,71 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (updateValue != platformView.SemanticContentAttribute)
+			{
 				platformView.SemanticContentAttribute = updateValue;
+
+				if (view is ITextAlignment)
+				{
+					// A change in flow direction may mean a change in text alignment
+					view.Handler?.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment));
+				}
+
+				PropagateFlowDirection(updateValue, view);
+			}
+		}
+
+		static UISemanticContentAttribute GetParentMatchingSemanticContentAttribute(IView view) 
+		{
+			var parent = view.Parent?.Handler?.PlatformView as UIView;
+
+			if (parent == null)
+			{
+				// No parent, no direction we need to match
+				return UISemanticContentAttribute.Unspecified;
+			}
+
+			var parentSemanticContentAttribute = parent.SemanticContentAttribute;
+
+			if (parentSemanticContentAttribute == UISemanticContentAttribute.ForceLeftToRight
+				|| parentSemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
+			{
+				return parentSemanticContentAttribute;
+			}
+
+			// The parent view isn't using an explicit direction, so there's nothing for us to match
+			return UISemanticContentAttribute.Unspecified;
+		}
+
+		static void PropagateFlowDirection(UISemanticContentAttribute semanticContentAttribute, IView view)
+		{
+			if (semanticContentAttribute != UISemanticContentAttribute.ForceLeftToRight
+				&& semanticContentAttribute != UISemanticContentAttribute.ForceRightToLeft)
+			{
+				// If the current view isn't using an explicit LTR/RTL value, there's nothing to propagate
+				return;
+			}
+
+			// If this view has any child/content views, we'll need to call UpdateFlowDirection on them
+			// because they _may_ need to update their FlowDirection to match this view
+
+			if (view is IContainer container)
+			{
+				foreach (var child in container)
+				{
+					if (child.Handler?.PlatformView is UIView uiView)
+					{
+						uiView.UpdateFlowDirection(child);
+					}
+				}
+			}
+			else if (view is IContentView contentView
+				&& contentView.PresentedContent is IView child)
+			{
+				if (child.Handler?.PlatformView is UIView uiView)
+				{
+					uiView.UpdateFlowDirection(child);
+				}
+			}
 		}
 
 		public static void UpdateOpacity(this UIView platformView, IView view)
