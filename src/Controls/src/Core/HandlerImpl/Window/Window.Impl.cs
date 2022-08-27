@@ -213,7 +213,9 @@ namespace Microsoft.Maui.Controls
 			get => _frame;
 			set
 			{
-				if (_frame == value)
+				// do not use Frame as we need to test again the
+				// current user value and not the final value
+				if (new Rect(X, Y, Width, Height) == value)
 					return;
 
 				_frame = value;

@@ -18,13 +18,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IWindow.Title)] = MapTitle,
 			[nameof(IWindow.Content)] = MapContent,
-#if WINDOWS
+#if WINDOWS || MACCATALYST
 			[nameof(IWindow.X)] = MapX,
 			[nameof(IWindow.Y)] = MapY,
 			[nameof(IWindow.Width)] = MapWidth,
 			[nameof(IWindow.Height)] = MapHeight,
-#endif
-#if WINDOWS || MACCATALYST
 			[nameof(IWindow.MaximumWidth)] = MapMaximumWidth,
 			[nameof(IWindow.MaximumHeight)] = MapMaximumHeight,
 			[nameof(IWindow.MinimumWidth)] = MapMinimumWidth,

@@ -20,6 +20,20 @@ namespace Microsoft.Maui.Handlers
 				window.VisualDiagnosticsOverlay.Initialize();
 		}
 
+#if MACCATALYST
+
+		public static void MapX(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateX(view);
+
+		public static void MapY(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateY(view);
+
+		public static void MapWidth(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateWidth(view);
+
+		public static void MapHeight(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateHeight(view);
+
 		public static void MapMaximumWidth(IWindowHandler handler, IWindow view) =>
 			handler.PlatformView?.UpdateMaximumWidth(view);
 
@@ -31,6 +45,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimumHeight(IWindowHandler handler, IWindow view) =>
 			handler.PlatformView?.UpdateMinimumHeight(view);
+
+#endif
 
 		public static void MapMenuBar(IWindowHandler handler, IWindow view)
 		{

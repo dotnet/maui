@@ -99,20 +99,10 @@ static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneOpenUrl
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneRestoreInteractionState(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillConnect! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneWillContinueUserActivity(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillContinueUserActivity! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneWillEnterForeground(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillEnterForeground! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
-static Microsoft.Maui.Handlers.WindowHandler.MapMaximumHeight(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
-static Microsoft.Maui.Handlers.WindowHandler.MapMaximumWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
-static Microsoft.Maui.Handlers.WindowHandler.MapMinimumHeight(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
-static Microsoft.Maui.Handlers.WindowHandler.MapMinimumWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Platform.MauiWKWebView.CreateConfiguration() -> WebKit.WKWebViewConfiguration!
 static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.Graphics.Paint? paint, Microsoft.Maui.IButtonStroke? stroke = null) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this UIKit.UIView! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
-static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumHeight(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
-static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumSize(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
-static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumWidth(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
-static Microsoft.Maui.Platform.WindowExtensions.UpdateMinimumHeight(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
-static Microsoft.Maui.Platform.WindowExtensions.UpdateMinimumSize(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
-static Microsoft.Maui.Platform.WindowExtensions.UpdateMinimumWidth(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
 virtual Microsoft.Maui.MauiUIApplicationDelegate.ApplicationSignificantTimeChange(UIKit.UIApplication! application) -> void
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.ApplicationSignificantTimeChange(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.ApplicationSignificantTimeChange! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
