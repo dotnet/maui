@@ -201,8 +201,6 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.FrameChanged(Rect frame)
 		{
-			// do not use Frame as we need to test again the
-			// current user value and not the final value
 			if (new Rect(X, Y, Width, Height) == frame)
 				return;
 
