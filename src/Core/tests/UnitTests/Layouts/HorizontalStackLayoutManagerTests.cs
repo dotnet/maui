@@ -101,25 +101,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
 		}
 
-		[Fact(DisplayName = "First View in RTL Horizontal Stack is on the right")]
-		public void RtlShouldHaveFirstItemOnTheRight()
-		{
-			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
-			stack.FlowDirection.Returns(FlowDirection.RightToLeft);
-
-			var manager = new HorizontalStackLayoutManager(stack);
-			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
-
-			// We expect that the starting view (0) should be arranged on the right,
-			// and the next rectangle (1) should be on the left
-			var expectedRectangle0 = new Rect(100, 0, 100, 100);
-			var expectedRectangle1 = new Rect(0, 0, 100, 100);
-
-			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
-			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
-		}
-
 		[Fact]
 		public void IgnoresCollapsedViews()
 		{
@@ -377,30 +358,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// we expect the returned actual arrangement size to be as large as the target space
 			Assert.Equal(arrangedWidth, actual.Width);
 			Assert.Equal(arrangedHeight, actual.Height);
-		}
-
-		[Fact(DisplayName = "RTL layout starts at right edge")]
-		public void RtlShouldStartAtRightEdge()
-		{
-			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
-			stack.FlowDirection.Returns(FlowDirection.RightToLeft);
-			stack.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
-			stack.Spacing.Returns(0);
-
-			var manager = new HorizontalStackLayoutManager(stack);
-			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-
-			// Arranging in a larger space than measured to simulate a Fill situation
-			var rightEdge = measuredSize.Width * 2;
-			manager.ArrangeChildren(new Rect(0, 0, rightEdge, measuredSize.Height));
-
-			// We expect that the starting view (0) should be arranged on the right,
-			// and the next rectangle (1) should be on the left
-			var expectedRectangle0 = new Rect(rightEdge - 100, 0, 100, 100);
-			var expectedRectangle1 = new Rect(rightEdge - 200, 0, 100, 100);
-
-			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
-			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
 		}
 
 		public static IEnumerable<object[]> ChildMeasureAccountsForPaddingTestCases()

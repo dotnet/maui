@@ -64,3 +64,6 @@ Microsoft.Maui.ScrollToRequest.HorizontalOffset.init -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(double HorizontalOffset, double VerticalOffset, bool Instant) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
+*REMOVED*static Microsoft.Maui.IViewExtensions.GetEffectiveFlowDirection(this Microsoft.Maui.IView! view) -> Microsoft.Maui.FlowDirection
+*REMOVED*Microsoft.Maui.IViewExtensions
+*REMOVED*static Microsoft.Maui.Layouts.LayoutExtensions.ShouldArrangeLeftToRight(this Microsoft.Maui.IView! view) -> bool

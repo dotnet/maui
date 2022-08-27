@@ -127,3 +127,7 @@ virtual Microsoft.Maui.MauiUISceneDelegate.RestoreInteractionState(UIKit.UIScene
 virtual Microsoft.Maui.MauiUISceneDelegate.WillContinueUserActivity(UIKit.UIScene! scene, string! userActivityType) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.WillEnterForeground(UIKit.UIScene! scene) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.DidUpdateCoordinateSpace(UIKit.UIWindowScene! windowScene, UIKit.IUICoordinateSpace! previousCoordinateSpace, UIKit.UIInterfaceOrientation previousInterfaceOrientation, UIKit.UITraitCollection! previousTraitCollection) -> void
+*REMOVED*static Microsoft.Maui.IViewExtensions.GetEffectiveFlowDirection(this Microsoft.Maui.IView! view) -> Microsoft.Maui.FlowDirection
+*REMOVED*Microsoft.Maui.IViewExtensions
+*REMOVED*static Microsoft.Maui.Layouts.LayoutExtensions.ShouldArrangeLeftToRight(this Microsoft.Maui.IView! view) -> bool
+*REMOVED*static Microsoft.Maui.Platform.TextAlignmentExtensions.AdjustForFlowDirection(this UIKit.UITextAlignment textAlignment, Microsoft.Maui.IView! view) -> UIKit.UITextAlignment

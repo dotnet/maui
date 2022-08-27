@@ -36,9 +36,6 @@ namespace Microsoft.Maui.Handlers
 
 		static PickerHandler()
 		{
-#if __IOS__
-			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
-#endif
 		}
 
 		public PickerHandler() : base(Mapper, CommandMapper)
