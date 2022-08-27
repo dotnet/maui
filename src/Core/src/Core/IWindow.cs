@@ -24,11 +24,6 @@ namespace Microsoft.Maui
 		IReadOnlyCollection<IWindowOverlay> Overlays { get; }
 
 		/// <summary>
-		/// Gets the bounds of the IWindow within its monitor.
-		/// </summary>
-		Rect Frame { get; set; }
-
-		/// <summary>
 		/// Gets the specified X coordinate of the IWindow.
 		/// </summary>
 		double X { get; }
@@ -126,6 +121,8 @@ namespace Microsoft.Maui
 		FlowDirection FlowDirection { get; }
 
 		void DisplayDensityChanged(float displayDensity);
+
+		void FrameChanged(Rect frame);
 
 		float RequestDisplayDensity();
 	}

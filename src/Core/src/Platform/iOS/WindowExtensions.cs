@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				return;
 
-			window.Frame = platformWindow.Bounds.ToRectangle();
+			window.FrameChanged(platformWindow.Bounds.ToRectangle());
 		}
 
 		public static void UpdateMaximumWidth(this UIWindow platformWindow, IWindow window) =>

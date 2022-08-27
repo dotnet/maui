@@ -32,16 +32,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool IsStopped { get; set; }
 		public FlowDirection FlowDirection { get; set; }
 
-		public Rect Frame
+		public void FrameChanged(Rect frame)
 		{
-			get => new Rect(X, Y, Width, Height);
-			set
-			{
-				X = value.X;
-				Y = value.Y;
-				Width = value.Width;
-				Height = value.Height;
-			}
+			X = frame.X;
+			Y = frame.Y;
+			Width = frame.Width;
+			Height = frame.Height;
 		}
 
 		public double X { get; set; } = double.NaN;

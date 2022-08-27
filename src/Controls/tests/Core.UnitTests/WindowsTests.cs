@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
 			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
 
-			((IWindow)window).Frame = new Rect(100, 200, 300, 400);
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			Assert.Equal(1, sizeChangedCount);
 			Assert.Equal(new[] { "X", "Y", "Width", "Height", "Frame" }, propertyChanges);
@@ -377,12 +377,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var propertyChanges = new List<string>();
 
 			var window = new TestWindow();
-			((IWindow)window).Frame = new Rect(100, 200, 300, 400);
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
 			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
 
-			((IWindow)window).Frame = new Rect(100, 200, 300, 400);
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			Assert.Equal(0, sizeChangedCount);
 			Assert.Empty(propertyChanges);
@@ -395,12 +395,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var propertyChanges = new List<string>();
 
 			var window = new TestWindow();
-			((IWindow)window).Frame = new Rect(100, 200, 300, 400);
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
 			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
 
-			((IWindow)window).Frame = new Rect(100, 250, 300, 400);
+			((IWindow)window).FrameChanged(new Rect(100, 250, 300, 400));
 
 			Assert.Equal(1, sizeChangedCount);
 			Assert.Equal(new[] { "Y", "Frame" }, propertyChanges);
@@ -413,12 +413,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var propertyChanges = new List<string>();
 
 			var window = new TestWindow();
-			((IWindow)window).Frame = new Rect(100, 200, 300, 400);
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
 			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
 
-			((IWindow)window).Frame = new Rect(100, 200, 350, 400);
+			((IWindow)window).FrameChanged(new Rect(100, 200, 350, 400));
 
 			Assert.Equal(1, sizeChangedCount);
 			Assert.Equal(new[] { "Width", "Frame" }, propertyChanges);

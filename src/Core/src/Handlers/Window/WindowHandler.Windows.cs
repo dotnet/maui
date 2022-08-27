@@ -151,9 +151,9 @@ namespace Microsoft.Maui.Handlers
 
 			var density = PlatformView.GetDisplayDensity();
 
-			VirtualView.Frame = new Rect(
+			VirtualView.FrameChanged(new Rect(
 				pos.X / density, pos.Y / density,
-				size.Width / density, size.Height / density);
+				size.Width / density, size.Height / density));
 		}
 	}
 }

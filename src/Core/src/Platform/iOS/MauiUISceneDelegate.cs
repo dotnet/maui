@@ -130,7 +130,7 @@ namespace Microsoft.Maui
 			if (window is null)
 				return;
 
-			window.Frame = platformWindow.Frame.ToRectangle();
+			window.FrameChanged(platformWindow.Frame.ToRectangle());
 		}
 	}
 }

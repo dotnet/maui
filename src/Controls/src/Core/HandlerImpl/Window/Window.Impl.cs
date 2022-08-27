@@ -27,20 +27,16 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
 		public static readonly BindableProperty XProperty = BindableProperty.Create(
-			nameof(X), typeof(double), typeof(Window), Primitives.Dimension.Unset,
-			propertyChanged: FrameCoordinateChanged);
+			nameof(X), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
 		public static readonly BindableProperty YProperty = BindableProperty.Create(
-			nameof(Y), typeof(double), typeof(Window), Primitives.Dimension.Unset,
-			propertyChanged: FrameCoordinateChanged);
+			nameof(Y), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
-			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset,
-			propertyChanged: FrameCoordinateChanged);
+			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
-			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset,
-			propertyChanged: FrameCoordinateChanged);
+			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
 		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
 			nameof(MaximumWidth), typeof(double), typeof(Window), Primitives.Dimension.Maximum);
@@ -202,52 +198,29 @@ namespace Microsoft.Maui.Controls
 		}
 
 		int _batchFrameUpdate = 0;
-		Rect _frame = new Rect(
-			Primitives.Dimension.Unset,
-			Primitives.Dimension.Unset,
-			Primitives.Dimension.Unset,
-			Primitives.Dimension.Unset);
 
-		Rect IWindow.Frame
+		void IWindow.FrameChanged(Rect frame)
 		{
-			get => _frame;
-			set
+			// do not use Frame as we need to test again the
+			// current user value and not the final value
+			if (new Rect(X, Y, Width, Height) == frame)
+				return;
+
+			_batchFrameUpdate++;
+
+			X = frame.X;
+			Y = frame.Y;
+			Width = frame.Width;
+			Height = frame.Height;
+
+			_batchFrameUpdate--;
+			if (_batchFrameUpdate < 0)
+				_batchFrameUpdate = 0;
+
+			if (_batchFrameUpdate == 0)
 			{
-				// do not use Frame as we need to test again the
-				// current user value and not the final value
-				if (new Rect(X, Y, Width, Height) == value)
-					return;
-
-				_frame = value;
-
-				_batchFrameUpdate++;
-
-				X = value.X;
-				Y = value.Y;
-				Width = value.Width;
-				Height = value.Height;
-
-				_batchFrameUpdate--;
-				if (_batchFrameUpdate < 0)
-					_batchFrameUpdate = 0;
-
-				if (_batchFrameUpdate == 0)
-				{
-					SizeChanged?.Invoke(this, EventArgs.Empty);
-					OnPropertyChanged(nameof(IWindow.Frame));
-				}
+				SizeChanged?.Invoke(this, EventArgs.Empty);
 			}
-		}
-
-		static void FrameCoordinateChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			if (bindable is not Window window)
-				return;
-
-			if (window._batchFrameUpdate > 0)
-				return;
-
-			window.OnPropertyChanged(nameof(IWindow.Frame));
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
