@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			Assert.Equal(1, sizeChangedCount);
-			Assert.Equal(new[] { "X", "Y", "Width", "Height", "Frame" }, propertyChanges);
+			Assert.Equal(new[] { "X", "Y", "Width", "Height" }, propertyChanges);
 		}
 
 		[Fact]
@@ -403,11 +403,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((IWindow)window).FrameChanged(new Rect(100, 250, 300, 400));
 
 			Assert.Equal(1, sizeChangedCount);
-			Assert.Equal(new[] { "Y", "Frame" }, propertyChanges);
+			Assert.Equal(new[] { "Y" }, propertyChanges);
 		}
 
 		[Fact]
-		public void UpdatingSingleBoundOnlyFiresSinglePropertyAndFrameEvent()
+		public void UpdatingSingleBoundOnlyFiresSingleProperty()
 		{
 			var sizeChangedCount = 0;
 			var propertyChanges = new List<string>();
@@ -421,7 +421,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((IWindow)window).FrameChanged(new Rect(100, 200, 350, 400));
 
 			Assert.Equal(1, sizeChangedCount);
-			Assert.Equal(new[] { "Width", "Frame" }, propertyChanges);
+			Assert.Equal(new[] { "Width" }, propertyChanges);
 		}
 
 		[Fact]
