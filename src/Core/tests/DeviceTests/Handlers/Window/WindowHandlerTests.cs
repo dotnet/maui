@@ -153,8 +153,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#endif
-
 		Task RunWindowTest(Window window, Func<IWindowHandler, Task> action)
 		{
 			var created = new TaskCompletionSource();
@@ -177,7 +175,7 @@ namespace Microsoft.Maui.DeviceTests
 				var windowHandler = window.Handler as IWindowHandler;
 				var platformWindow = windowHandler.PlatformView;
 
-#if IOS || MACCATALYST
+#if MACCATALYST
 				var retry = 5;
 				while (!platformWindow.HasNSWindow() && retry-- > 0)
 				{
@@ -213,5 +211,7 @@ namespace Microsoft.Maui.DeviceTests
 				action(handler);
 				return Task.CompletedTask;
 			});
+
+#endif
 	}
 }

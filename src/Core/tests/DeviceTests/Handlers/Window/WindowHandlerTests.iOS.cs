@@ -9,6 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowHandlerTests : HandlerTestBase
 	{
+#if MACCATALYST
 		[Fact]
 		public async Task ContentIsSetInitially()
 		{
@@ -58,5 +59,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			window.SetFrame(rect, true, false);
 		}
+#endif
 	}
 }
