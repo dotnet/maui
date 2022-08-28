@@ -1173,7 +1173,6 @@ Microsoft.Maui.IView.VerticalLayoutAlignment.get -> Microsoft.Maui.Primitives.La
 Microsoft.Maui.IView.Visibility.get -> Microsoft.Maui.Visibility
 Microsoft.Maui.IView.Width.get -> double
 Microsoft.Maui.IView.ZIndex.get -> int
-Microsoft.Maui.IViewExtensions
 Microsoft.Maui.IViewHandler
 Microsoft.Maui.IViewHandler.ContainerView.get -> object?
 Microsoft.Maui.IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
@@ -1230,12 +1229,21 @@ Microsoft.Maui.IWindow.Deactivated() -> void
 Microsoft.Maui.IWindow.Destroying() -> void
 Microsoft.Maui.IWindow.DisplayDensityChanged(float displayDensity) -> void
 Microsoft.Maui.IWindow.FlowDirection.get -> Microsoft.Maui.FlowDirection
+Microsoft.Maui.IWindow.FrameChanged(Microsoft.Maui.Graphics.Rect frame) -> void
+Microsoft.Maui.IWindow.Height.get -> double
+Microsoft.Maui.IWindow.MaximumHeight.get -> double
+Microsoft.Maui.IWindow.MaximumWidth.get -> double
+Microsoft.Maui.IWindow.MinimumHeight.get -> double
+Microsoft.Maui.IWindow.MinimumWidth.get -> double
 Microsoft.Maui.IWindow.Overlays.get -> System.Collections.Generic.IReadOnlyCollection<Microsoft.Maui.IWindowOverlay!>!
 Microsoft.Maui.IWindow.RemoveOverlay(Microsoft.Maui.IWindowOverlay! overlay) -> bool
 Microsoft.Maui.IWindow.RequestDisplayDensity() -> float
 Microsoft.Maui.IWindow.Resumed() -> void
 Microsoft.Maui.IWindow.Stopped() -> void
 Microsoft.Maui.IWindow.VisualDiagnosticsOverlay.get -> Microsoft.Maui.IVisualDiagnosticsOverlay!
+Microsoft.Maui.IWindow.Width.get -> double
+Microsoft.Maui.IWindow.X.get -> double
+Microsoft.Maui.IWindow.Y.get -> double
 Microsoft.Maui.IWindowOverlay
 Microsoft.Maui.IWindowOverlay.AddWindowElement(Microsoft.Maui.IWindowOverlayElement! element) -> bool
 Microsoft.Maui.IWindowOverlay.Deinitialize() -> bool
@@ -2508,7 +2516,6 @@ static Microsoft.Maui.ImageSourceServiceProviderExtensions.GetRequiredImageSourc
 static Microsoft.Maui.IPickerExtension.GetItemsAsArray(this Microsoft.Maui.IPicker! picker) -> string![]!
 static Microsoft.Maui.IPickerExtension.GetItemsAsList(this Microsoft.Maui.IPicker! picker) -> System.Collections.Generic.List<string!>!
 static Microsoft.Maui.ITextInputExtensions.UpdateText(this Microsoft.Maui.ITextInput! textInput, string? text) -> void
-static Microsoft.Maui.IViewExtensions.GetEffectiveFlowDirection(this Microsoft.Maui.IView! view) -> Microsoft.Maui.FlowDirection
 static Microsoft.Maui.Keyboard.Chat.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Create(Microsoft.Maui.KeyboardFlags flags) -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Default.get -> Microsoft.Maui.Keyboard!
@@ -2525,7 +2532,6 @@ static Microsoft.Maui.Layouts.LayoutExtensions.ComputeDesiredSize(this Microsoft
 static Microsoft.Maui.Layouts.LayoutExtensions.ComputeFrame(this Microsoft.Maui.IView! view, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Rect
 static Microsoft.Maui.Layouts.LayoutExtensions.MeasureContent(this Microsoft.Maui.IContentView! contentView, double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Layouts.LayoutExtensions.MeasureContent(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Thickness inset, double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-static Microsoft.Maui.Layouts.LayoutExtensions.ShouldArrangeLeftToRight(this Microsoft.Maui.IView! view) -> bool
 static Microsoft.Maui.Layouts.LayoutManager.ResolveConstraints(double externalConstraint, double explicitLength, double measuredLength, double min = 0, double max = Infinity) -> double
 static Microsoft.Maui.Layouts.StackLayoutManager.MeasureSpacing(double spacing, int childCount) -> double
 static Microsoft.Maui.LifecycleEvents.LifecycleBuilderExtensions.AddEvent(this Microsoft.Maui.LifecycleEvents.ILifecycleBuilder! builder, string! eventName, System.Action! action) -> Microsoft.Maui.LifecycleEvents.ILifecycleBuilder!
@@ -2868,6 +2874,3 @@ virtual Microsoft.Maui.WindowOverlay.RemoveWindowElements() -> void
 ~override Microsoft.Maui.Converters.ThicknessTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
 ~override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
 ~override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
-*REMOVED*static Microsoft.Maui.IViewExtensions.GetEffectiveFlowDirection(this Microsoft.Maui.IView! view) -> Microsoft.Maui.FlowDirection
-*REMOVED*Microsoft.Maui.IViewExtensions
-*REMOVED*static Microsoft.Maui.Layouts.LayoutExtensions.ShouldArrangeLeftToRight(this Microsoft.Maui.IView! view) -> bool

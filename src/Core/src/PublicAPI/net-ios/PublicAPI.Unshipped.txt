@@ -32,6 +32,7 @@ Microsoft.Maui.IContextFlyoutElement
 Microsoft.Maui.IMenuFlyoutSeparator
 Microsoft.Maui.IToolTipElement
 Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
+Microsoft.Maui.IWindow.FrameChanged(Microsoft.Maui.Graphics.Rect frame) -> void
 Microsoft.Maui.ToolTip
 Microsoft.Maui.ToolTip.Content.get -> object?
 Microsoft.Maui.ToolTip.Content.set -> void
@@ -49,6 +50,14 @@ Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneOpenUrl
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneRestoreInteractionState
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillContinueUserActivity
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.SceneWillEnterForeground
+Microsoft.Maui.IWindow.Height.get -> double
+Microsoft.Maui.IWindow.Width.get -> double
+Microsoft.Maui.IWindow.MaximumHeight.get -> double
+Microsoft.Maui.IWindow.MaximumWidth.get -> double
+Microsoft.Maui.IWindow.MinimumHeight.get -> double
+Microsoft.Maui.IWindow.MinimumWidth.get -> double
+Microsoft.Maui.IWindow.X.get -> double
+Microsoft.Maui.IWindow.Y.get -> double
 Microsoft.Maui.Platform.MauiWKWebView.MauiWKWebView(CoreGraphics.CGRect frame, Microsoft.Maui.Handlers.WebViewHandler! handler, WebKit.WKWebViewConfiguration! configuration) -> void
 Microsoft.Maui.Platform.MauiWKWebView.MauiWKWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
@@ -116,6 +125,7 @@ virtual Microsoft.Maui.MauiUISceneDelegate.OpenUrl(UIKit.UIScene! scene, Foundat
 virtual Microsoft.Maui.MauiUISceneDelegate.RestoreInteractionState(UIKit.UIScene! scene, Foundation.NSUserActivity! stateRestorationActivity) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.WillContinueUserActivity(UIKit.UIScene! scene, string! userActivityType) -> void
 virtual Microsoft.Maui.MauiUISceneDelegate.WillEnterForeground(UIKit.UIScene! scene) -> void
+virtual Microsoft.Maui.MauiUISceneDelegate.DidUpdateCoordinateSpace(UIKit.UIWindowScene! windowScene, UIKit.IUICoordinateSpace! previousCoordinateSpace, UIKit.UIInterfaceOrientation previousInterfaceOrientation, UIKit.UITraitCollection! previousTraitCollection) -> void
 *REMOVED*static Microsoft.Maui.IViewExtensions.GetEffectiveFlowDirection(this Microsoft.Maui.IView! view) -> Microsoft.Maui.FlowDirection
 *REMOVED*Microsoft.Maui.IViewExtensions
 *REMOVED*static Microsoft.Maui.Layouts.LayoutExtensions.ShouldArrangeLeftToRight(this Microsoft.Maui.IView! view) -> bool
