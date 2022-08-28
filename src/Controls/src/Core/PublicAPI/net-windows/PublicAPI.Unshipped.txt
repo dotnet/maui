@@ -37,6 +37,23 @@ Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler<Micro
 Microsoft.Maui.Controls.TappedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
 Microsoft.Maui.Controls.ToolTipProperties
 Microsoft.Maui.Controls.ToolTipProperties.ToolTipProperties() -> void
+Microsoft.Maui.Controls.Window.Height.get -> double
+Microsoft.Maui.Controls.Window.Height.set -> void
+Microsoft.Maui.Controls.Window.MaximumHeight.get -> double
+Microsoft.Maui.Controls.Window.MaximumHeight.set -> void
+Microsoft.Maui.Controls.Window.MaximumWidth.get -> double
+Microsoft.Maui.Controls.Window.MaximumWidth.set -> void
+Microsoft.Maui.Controls.Window.MinimumHeight.get -> double
+Microsoft.Maui.Controls.Window.MinimumHeight.set -> void
+Microsoft.Maui.Controls.Window.MinimumWidth.get -> double
+Microsoft.Maui.Controls.Window.MinimumWidth.set -> void
+Microsoft.Maui.Controls.Window.SizeChanged -> System.EventHandler?
+Microsoft.Maui.Controls.Window.Width.get -> double
+Microsoft.Maui.Controls.Window.Width.set -> void
+Microsoft.Maui.Controls.Window.X.get -> double
+Microsoft.Maui.Controls.Window.X.set -> void
+Microsoft.Maui.Controls.Window.Y.get -> double
+Microsoft.Maui.Controls.Window.Y.set -> void
 override Microsoft.Maui.Controls.ContentPresenter.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.ContentPresenter.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.FlyoutPage.OnDisappearing() -> void
@@ -62,6 +79,14 @@ virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Contr
 ~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.GetChildrenCore() -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Automation.Peers.AutomationPeer>
 ~override Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer.GetLabeledByCore() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.HeightProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.MaximumHeightProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.MaximumWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.MinimumHeightProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.MinimumWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.WidthProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.XProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.YProperty -> Microsoft.Maui.Controls.BindableProperty!
 static Microsoft.Maui.Controls.ToolTipProperties.GetText(Microsoft.Maui.Controls.BindableObject! bindable) -> object!
 static Microsoft.Maui.Controls.ToolTipProperties.SetText(Microsoft.Maui.Controls.BindableObject! bindable, object! value) -> void
 static readonly Microsoft.Maui.Controls.ToolTipProperties.TextProperty -> Microsoft.Maui.Controls.BindableProperty!

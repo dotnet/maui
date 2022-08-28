@@ -32,10 +32,19 @@ Microsoft.Maui.IContextFlyoutElement
 Microsoft.Maui.IMenuFlyoutSeparator
 Microsoft.Maui.IToolTipElement
 Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
+Microsoft.Maui.IWindow.FrameChanged(Microsoft.Maui.Graphics.Rect frame) -> void
 Microsoft.Maui.ToolTip
 Microsoft.Maui.ToolTip.Content.get -> object?
 Microsoft.Maui.ToolTip.Content.set -> void
 Microsoft.Maui.ToolTip.ToolTip() -> void
+Microsoft.Maui.IWindow.Height.get -> double
+Microsoft.Maui.IWindow.Width.get -> double
+Microsoft.Maui.IWindow.MaximumHeight.get -> double
+Microsoft.Maui.IWindow.MaximumWidth.get -> double
+Microsoft.Maui.IWindow.MinimumHeight.get -> double
+Microsoft.Maui.IWindow.MinimumWidth.get -> double
+Microsoft.Maui.IWindow.X.get -> double
+Microsoft.Maui.IWindow.Y.get -> double
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void

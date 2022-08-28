@@ -33,10 +33,19 @@ Microsoft.Maui.IContextFlyoutElement
 Microsoft.Maui.IMenuFlyoutSeparator
 Microsoft.Maui.IToolTipElement
 Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
+Microsoft.Maui.IWindow.FrameChanged(Microsoft.Maui.Graphics.Rect frame) -> void
 Microsoft.Maui.ToolTip
 Microsoft.Maui.ToolTip.Content.get -> object?
 Microsoft.Maui.ToolTip.Content.set -> void
 Microsoft.Maui.ToolTip.ToolTip() -> void
+Microsoft.Maui.IWindow.Height.get -> double
+Microsoft.Maui.IWindow.Width.get -> double
+Microsoft.Maui.IWindow.MaximumHeight.get -> double
+Microsoft.Maui.IWindow.MaximumWidth.get -> double
+Microsoft.Maui.IWindow.MinimumHeight.get -> double
+Microsoft.Maui.IWindow.MinimumWidth.get -> double
+Microsoft.Maui.IWindow.X.get -> double
+Microsoft.Maui.IWindow.Y.get -> double
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Controls.MenuFlyout!
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.SetVirtualView(Microsoft.Maui.IElement! view) -> void
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator!
@@ -59,7 +68,27 @@ Microsoft.Maui.ScrollToRequest.HorizontalOffset.get -> double
 Microsoft.Maui.ScrollToRequest.HorizontalOffset.init -> void
 Microsoft.Maui.ScrollToRequest.ScrollToRequest(double HorizontalOffset, double VerticalOffset, bool Instant) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapHeight(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapMaximumHeight(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapMaximumWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapMinimumHeight(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapMinimumWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapX(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapY(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateHeight(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumHeight(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumSize(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumWidth(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMinimumHeight(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMinimumSize(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateMinimumWidth(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdatePosition(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateSize(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateWidth(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateX(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Platform.WindowExtensions.UpdateY(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 *REMOVED*static Microsoft.Maui.IViewExtensions.GetEffectiveFlowDirection(this Microsoft.Maui.IView! view) -> Microsoft.Maui.FlowDirection
 *REMOVED*Microsoft.Maui.IViewExtensions

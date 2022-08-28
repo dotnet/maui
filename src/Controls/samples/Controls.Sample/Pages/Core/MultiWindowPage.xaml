@@ -4,18 +4,44 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.MultiWindowPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
-    <views:BasePage.Content>
-        <StackLayout
-            Margin="12">
-            <Button 
-                Clicked="OnNewWindowClicked"
-                Text="Open new Window" />
 
-            <Button 
-                Clicked="OnCloseWindowClicked"
-                Text="Close this Window" />
+    <StackLayout
+        Margin="12">
 
-            <Label Text="Window Count: 0" x:Name="label" />
-        </StackLayout>
-    </views:BasePage.Content>
+        <Button 
+            Clicked="OnNewWindowClicked"
+            Text="Open a new Window" />
+
+        <Button 
+            Clicked="OnCloseWindowClicked"
+            Text="Close this Window" />
+
+        <Label Text="Window Frame:" />
+        <Label Text="{Binding Window.X, StringFormat='X = {0:0.00}'}" />
+        <Label Text="{Binding Window.Y, StringFormat='Y = {0:0.00}'}" />
+        <Label Text="{Binding Window.Width, StringFormat='W = {0:0.00}'}" />
+        <Label Text="{Binding Window.Height, StringFormat='H = {0:0.00}'}" />
+
+        <Button 
+            Clicked="OnSetMinSize"
+            Text="Set the minimum size to 640x480" />
+
+        <Button 
+            Clicked="OnSetMaxSize"
+            Text="Set the maximum size to 800x600" />
+
+        <Button 
+            Clicked="OnSetFreeSize"
+            Text="Remove size restrictions" />
+
+        <Button 
+            Clicked="OnSetCustomSize"
+            Text="Set window size to 700x500" />
+
+        <Button 
+            Clicked="OnCenterWindow"
+            Text="Center window" />
+
+    </StackLayout>
+
 </views:BasePage>
