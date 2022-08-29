@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
 
-		public static IMauiContext MauiContext { get; internal set;}
+		public static IMauiContext MauiContext { get; internal set; }
 
 		internal static TizenTitleBarVisibility TitleBarVisibility
 		{

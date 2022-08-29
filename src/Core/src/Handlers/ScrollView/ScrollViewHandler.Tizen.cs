@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					viewgroup.LayoutUpdated += OnContentLayoutUpdated;
 				}
-			} 
+			}
 			UpdateContentSize();
 		}
 

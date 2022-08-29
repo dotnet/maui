@@ -485,16 +485,16 @@ namespace Microsoft.Maui.Controls.Platform
 			PanComplete(true);
 		}
 
-		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e) 
-			=> HandlePgrPointerEvent(e, (view, recognizer) 
+		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer)
 				=> recognizer.SendPointerEntered(view, (relativeTo) => GetPosition(relativeTo, e)));
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer) 
+			=> HandlePgrPointerEvent(e, (view, recognizer)
 				=> recognizer.SendPointerExited(view, (relativeTo) => GetPosition(relativeTo, e)));
 
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer) 
+			=> HandlePgrPointerEvent(e, (view, recognizer)
 				=> recognizer.SendPointerMoved(view, (relativeTo) => GetPosition(relativeTo, e)));
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
