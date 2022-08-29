@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Animations;
 public class Animation : IDisposable, IEnumerable
 {
 	/// <summary>
-	/// Instantiate a new <see cref="Animation"/>
+	/// Instantiate a new <see cref="Animation"/> object.
 	/// </summary>
 	public Animation()
 	{
@@ -20,13 +20,13 @@ public class Animation : IDisposable, IEnumerable
 	}
 
 	/// <summary>
-	/// Instantiate a new <see cref="Animation"/> with the given parameters.
+	/// Instantiate a new <see cref="Animation"/> object with the given parameters.
 	/// </summary>
 	/// <param name="callback">The <see cref="Action{T}"/> that is invoked after each tick of this animation.</param>
-	/// <param name="start">Specifies </param>
+	/// <param name="start">Specifies a delay (in seconds) taken into account before the animation starts.</param>
 	/// <param name="duration">Specifies the duration that this animation will take.</param>
-	/// <param name="easing"></param>
-	/// <param name="finished"></param>
+	/// <param name="easing">The easing function to apply to this animation.</param>
+	/// <param name="finished">A callback <see cref="Action{T}"/> that is invoked after the animation has finished.</param>
 	public Animation(Action<double> callback, double start = 0.0f, double duration = 1.0f, Easing? easing = null, Action? finished = null)
 	{
 		StartDelay = start;
@@ -38,7 +38,7 @@ public class Animation : IDisposable, IEnumerable
 	}
 
 	/// <summary>
-	/// Instantiate a new <see cref="Animation"/> that consists of the given list of child animations.
+	/// Instantiate a new <see cref="Animation"/> object that consists of the given list of child animations.
 	/// </summary>
 	/// <param name="animations">A <see cref="List{T}"/> that contains <see cref="Animation"/> objects that will be children of the newly instantiated animation.</param>
 	public Animation(List<Animation> animations)
@@ -58,50 +58,100 @@ public class Animation : IDisposable, IEnumerable
 	/// </summary>
 	public Action<double>? Step { get; set; }
 
-	bool paused;
+	bool _paused;
+
 	/// <summary>
 	/// Specifies whether this animation is currently paused.
 	/// </summary>
-	public bool IsPaused => paused;
+	public bool IsPaused => _paused;
 
 	/// <summary>
 	/// Collection of child animations associated to this animation.
 	/// </summary>
 	protected List<Animation> childrenAnimations = new();
 
+	/// <summary>
+	/// The name of this animation.
+	/// </summary>
 	public string? Name { get; set; }
+
+	/// <summary>
+	/// The delay (in seconds) taken into account before the animation starts.
+	/// </summary>
 	public double StartDelay { get; set; }
+
+	/// <summary>
+	/// The duration of this animation.
+	/// </summary>
 	public double Duration { get; set; }
+
+	/// <summary>
+	/// The current timestamp (in seconds) of the animation.
+	/// </summary>
 	public double CurrentTime { get; protected set; }
+
+	/// <summary>
+	/// 
+	/// </summary>
 	public double Progress { get; protected set; }
+
+	/// <summary>
+	/// The <see cref="Easing"/> function that is applied to this animation.
+	/// </summary>
 	public Easing Easing { get; set; } = Easing.Default;
+
+	/// <summary>
+	/// Specifies whether this animation has finished.
+	/// </summary>
 	public bool HasFinished { get; protected set; }
+
+	/// <summary>
+	/// Specifies whether this animation should repeat.
+	/// </summary>
 	public bool Repeats { get; set; }
+
 	double _skippedSeconds;
 	int _usingResource = 0;
 
+	/// <summary>
+	/// Provides an <see cref="IEnumerator"/> of the child animations.
+	/// </summary>
+	/// <returns><see cref="IEnumerator"/> of <see cref="Animation"/></returns>
 	public IEnumerator GetEnumerator() => childrenAnimations.GetEnumerator();
 
+	/// <summary>
+	/// Adds a new child animation to this animation with the specified parameters.
+	/// </summary>
+	/// <param name="beginAt">Specifies a delay (in seconds) taken into account before the added child animation starts.</param>
+	/// <param name="duration">Specifies the duration that the added child animation will take.</param>
+	/// <param name="animation">The <see cref="Animation"/> object to add to this animation as a child.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="beginAt"/> or <paramref name="duration"/> is less than 0 or more than 1.</exception>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="duration"/> is less than or equal to <paramref name="beginAt"/>.</exception>
 	public void Add(double beginAt, double duration, Animation animation)
 	{
 		if (beginAt < 0 || beginAt > 1)
-			throw new ArgumentOutOfRangeException("beginAt");
+			throw new ArgumentOutOfRangeException(nameof(beginAt));
 
 		if (duration < 0 || duration > 1)
-			throw new ArgumentOutOfRangeException("finishAt");
+			throw new ArgumentOutOfRangeException(nameof(duration));
 
 		if (duration <= beginAt)
-			throw new ArgumentException("finishAt must be greater than beginAt");
+			throw new ArgumentException($"{nameof(duration)} must be greater than {nameof(beginAt)}");
 
 		animation.StartDelay = beginAt;
 		animation.Duration = duration;
 		childrenAnimations.Add(animation);
 	}
 
+	/// <summary>
+	/// Method to trigger an update for this animation.
+	/// </summary>
+	/// <param name="milliseconds">Number of milliseconds that have passed since the last tick.</param>
 	public void Tick(double milliseconds)
 	{
 		if (IsPaused)
 			return;
+
 		if (0 == Interlocked.Exchange(ref _usingResource, 1))
 		{
 			try
@@ -121,9 +171,21 @@ public class Animation : IDisposable, IEnumerable
 			_skippedSeconds += milliseconds;
 		}
 	}
+
+	/// <summary>
+	/// A reference to the <see cref="IAnimationManager"/> that manages this animation.
+	/// </summary>
 	public IAnimationManager? AnimationManager => animationManger;
+
+	/// <summary>
+	/// 
+	/// </summary>
 	protected IAnimationManager? animationManger;
 
+	/// <summary>
+	/// Executes the logic to update all animations within this animation.
+	/// </summary>
+	/// <param name="millisecondsSinceLastUpdate">Number of milliseconds that have passed since the last tick.</param>
 	protected virtual void OnTick(double millisecondsSinceLastUpdate)
 	{
 		if (HasFinished)
@@ -143,25 +205,33 @@ public class Animation : IDisposable, IEnumerable
 					hasFinished = false;
 
 			}
+
 			HasFinished = hasFinished;
 		}
 		else
 		{
-
 			var start = CurrentTime - StartDelay;
+
 			if (CurrentTime < StartDelay)
 				return;
+
 			var percent = Math.Min(start / Duration, 1);
 			Update(percent);
 		}
+
 		if (HasFinished)
 		{
 			Finished?.Invoke();
+
 			if (Repeats)
 				Reset();
 		}
 	}
 
+	/// <summary>
+	/// Updates this animation.
+	/// </summary>
+	/// <param name="percent">Progress of this animation in percentage.</param>
 	public virtual void Update(double percent)
 	{
 		try
@@ -177,89 +247,121 @@ public class Animation : IDisposable, IEnumerable
 			HasFinished = true;
 		}
 	}
+
+	/// <summary>
+	/// Sets the <see cref="IAnimationManager"/> for this animation.
+	/// </summary>
+	/// <param name="animationManger">Reference to the <see cref="IAnimationManager"/> that will manage this animation.</param>
 	public void Commit(IAnimationManager animationManger)
 	{
 		this.animationManger = animationManger;
 		animationManger.Add(this);
-
 	}
 
+	/// <summary>
+	/// Creates an animation that includes both the original animation and a reversed version of the same animation.
+	/// </summary>
+	/// <returns>An <see cref="Animation"/> object with the original animation and the reversed animation.</returns>
+	/// <remarks>You can get just the reversed animation by using <see cref="CreateReverse"/>.</remarks>
 	public Animation CreateAutoReversing()
 	{
-		var reveresedChildren = childrenAnimations.ToList();
-		reveresedChildren.Reverse();
-		var reveresed = CreateReverse();
+		var reversedChildren = childrenAnimations.ToList();
+		reversedChildren.Reverse();
+		var reversed = CreateReverse();
+
 		var parentAnimation = new Animation
 		{
-			Duration = reveresed.StartDelay + reveresed.Duration,
+			Duration = reversed.StartDelay + reversed.Duration,
 			Repeats = Repeats,
 			childrenAnimations =
 			{
 				this,
-				reveresed,
+				reversed,
 			}
 		};
+
 		Repeats = false;
 		return parentAnimation;
 	}
 
+	/// <summary>
+	/// Creates a reversed version of the current animation, including reversing the child animations.
+	/// </summary>
+	/// <returns>An <see cref="Animation"/> object that is the reversed version of this animation.</returns>
+	/// <remarks>You can the forward and reverse animation by using <see cref="CreateAutoReversing"/>.</remarks>
 	protected virtual Animation CreateReverse()
 	{
-		var reveresedChildren = childrenAnimations.ToList();
-		reveresedChildren.Reverse();
+		var reversedChildren = childrenAnimations.ToList();
+		reversedChildren.Reverse();
+
 		return new Animation
 		{
 			Easing = Easing,
 			Duration = Duration,
 			StartDelay = StartDelay + Duration,
-			childrenAnimations = reveresedChildren,
+			childrenAnimations = reversedChildren,
 		};
 	}
 
+	/// <summary>
+	/// Resets the animation (and all child animations) to its initial state.
+	/// </summary>
 	public virtual void Reset()
 	{
 		CurrentTime = 0;
 		HasFinished = false;
+
 		foreach (var x in childrenAnimations)
 			x.Reset();
 	}
 
+	/// <summary>
+	/// Pauses the animation.
+	/// </summary>
 	public void Pause()
 	{
-		paused = true;
+		_paused = true;
 		animationManger?.Remove(this);
 	}
 
+	/// <summary>
+	/// Resumes the animation.
+	/// </summary>
 	public void Resume()
 	{
-		paused = false;
+		_paused = false;
 		animationManger?.Add(this);
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
 	public void RemoveFromParent()
 	{
 		IAnimator? view = null;
-		if (this.Parent?.TryGetTarget(out view) ?? false)
+		if (Parent?.TryGetTarget(out view) ?? false)
 			view?.RemoveAnimation(this);
 	}
 
 	/// <inheritdoc/>
-	public bool IsDisposed => disposedValue;
+	public bool IsDisposed => _disposedValue;
 
-	private bool disposedValue = false; // To detect redundant calls
+	private bool _disposedValue = false; // To detect redundant calls
 
 	/// <inheritdoc/>
 	protected virtual void Dispose(bool disposing)
 	{
-		if (!disposedValue)
+		if (!_disposedValue)
 		{
 			if (disposing)
 			{
 				foreach (var child in childrenAnimations)
 					child.Dispose();
+
 				childrenAnimations.Clear();
 			}
-			disposedValue = true;
+
+			_disposedValue = true;
 			animationManger?.Remove(this);
 			Finished = null;
 			Step = null;
@@ -267,7 +369,6 @@ public class Animation : IDisposable, IEnumerable
 	}
 
 	/// <inheritdoc/>
-	// This code added to correctly implement the disposable pattern.
 	public void Dispose()
 	{
 		// Do not change this code. Put cleanup code in Dispose(bool disposing) above.
