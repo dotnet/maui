@@ -2,11 +2,11 @@
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
 {
-    public partial class PolygonsGallery : ContentPage
-    {
-        public PolygonsGallery()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class PolygonsGallery : ContentPage
+	{
+		public PolygonsGallery()
+		{
+			InitializeComponent();
+		}
+	}
 }

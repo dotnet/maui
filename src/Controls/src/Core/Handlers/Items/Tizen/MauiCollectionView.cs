@@ -314,7 +314,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView == null || Adaptor == null || _updateSelection)
 			{
-				return; 
+				return;
 			}
 
 			_updateFromUI = true;

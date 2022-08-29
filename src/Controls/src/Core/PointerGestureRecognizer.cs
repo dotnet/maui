@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls
 			get { return (ICommand)GetValue(PointerMovedCommandParameterProperty); }
 			set { SetValue(PointerMovedCommandParameterProperty, value); }
 		}
-		
+
 		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition)
 		{
 			ICommand cmd = PointerEnteredCommand;

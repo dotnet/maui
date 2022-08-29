@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 		{
 			if (_shouldUpdateRegion)
 			{
-			//	MoveToRegion(((Map)Element).LastMoveToRegion, false);
+				//	MoveToRegion(((Map)Element).LastMoveToRegion, false);
 				_shouldUpdateRegion = false;
 			}
 		}

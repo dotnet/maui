@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TextAlignmentExtensions
 	{
-		internal static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment, UIUserInterfaceLayoutDirection layoutDirection) 
+		internal static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment, UIUserInterfaceLayoutDirection layoutDirection)
 		{
 			var platformAlignment = alignment.ToPlatformHorizontal();
 

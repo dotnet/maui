@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (groupItem is IEnumerable enumerable)
 			{
-			 	_groupSource.Add(CreateSource(enumerable));
+				_groupSource.Add(CreateSource(enumerable));
 				_originalGroupSource.Add(groupItem);
 				if (groupItem is INotifyCollectionChanged collectionChanged)
 				{

@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			{
 				if (NativeMap != null)
 				{
-				//	MoveToRegion(Element.LastMoveToRegion, false);
+					//	MoveToRegion(Element.LastMoveToRegion, false);
 					OnPinCollectionChanged(Element.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 					OnMapElementCollectionChanged(Element.MapElements, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 					_init = false;

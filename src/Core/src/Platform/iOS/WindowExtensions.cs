@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class WindowExtensions
 	{
-# if MACCATALYST
+#if MACCATALYST
 
 		internal static void UpdateX(this UIWindow platformWindow, IWindow window) =>
 			platformWindow.UpdateUnsupportedCoordinate(window);

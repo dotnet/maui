@@ -44,11 +44,11 @@ namespace Microsoft.Maui.DeviceTests
 					tcs.SetResult(true);
 				});
 				await tcs.Task;
-				
+
 				Assert.Equal(WVisibility.Visible, control.Visibility);
-				
+
 				mauiToolbar.TitleIconImageSource = null;
-				
+
 				Assert.Equal(WVisibility.Collapsed, control.Visibility);
 			});
 		}
