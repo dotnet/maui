@@ -188,21 +188,6 @@ Task("dotnet-templates")
                     "</TargetFrameworks> -->",
                     "</TargetFrameworks>");
 
-                // TODO: remove this once issues are fixed
-                if (TestTFM.StartsWith("net6"))
-                {
-                    // Mac Catalyst/iOS does not yet support net6 from the net7 SDK.
-                    ReplaceTextInFiles($"{projectName}/*.csproj",
-                        ";net6.0-ios;net6.0-maccatalyst",
-                        "");
-
-                    // Android does not yet support net6 from the net7 SDK in Release builds
-                    if (configuration == "Release")
-                        ReplaceTextInFiles($"{projectName}/*.csproj",
-                            "net6.0-android",
-                            "");
-                }
-
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
 
