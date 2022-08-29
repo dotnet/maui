@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Platform
 			for (int i = start; i < newStack.Count; i++)
 			{
 				var isTop = i + 1 == newStack.Count;
-				await PlatformNavigation.Push(GetNavigationItem(newStack[i]),  isTop && animated);
+				await PlatformNavigation.Push(GetNavigationItem(newStack[i]), isTop && animated);
 			}
 		}
 

@@ -10,7 +10,7 @@ using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	[Obsolete]	
+	[Obsolete]
 	internal class OpenGLViewRenderer : ViewRenderer<OpenGLView, GLSurfaceView>
 	{
 		bool _disposed;

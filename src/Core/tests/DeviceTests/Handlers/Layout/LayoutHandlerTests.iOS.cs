@@ -91,7 +91,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		}
 
 		[Fact, Category(TestCategory.FlowDirection)]
-		public async Task FlowDirectionPropagatesToImmediateChildren() 
+		public async Task FlowDirectionPropagatesToImmediateChildren()
 		{
 			var layout = new LayoutStub();
 			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };

@@ -11,19 +11,19 @@ using Position = Microsoft.Maui.Devices.Sensors.Location;
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
 {
-    public partial class PinItemsSourceGallery : ContentPage
-    {
-        public PinItemsSourceGallery()
-        {
-            InitializeComponent();
-            BindingContext = new PinItemsSourcePageViewModel();
-            map.MoveToRegion(MapSpan.FromCenterAndRadius(new Position(39.8283459, -98.5794797), Distance.FromMiles(1500)));
-        }
+	public partial class PinItemsSourceGallery : ContentPage
+	{
+		public PinItemsSourceGallery()
+		{
+			InitializeComponent();
+			BindingContext = new PinItemsSourcePageViewModel();
+			map.MoveToRegion(MapSpan.FromCenterAndRadius(new Position(39.8283459, -98.5794797), Distance.FromMiles(1500)));
+		}
 
-        void OnMapClicked(object sender, MapClickedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine($"MapClick: {e.Location.Latitude}, {e.Location.Longitude}");
-        }
+		void OnMapClicked(object sender, MapClickedEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine($"MapClick: {e.Location.Latitude}, {e.Location.Longitude}");
+		}
 	}
 
 	public class PinItemsSourcePageViewModel

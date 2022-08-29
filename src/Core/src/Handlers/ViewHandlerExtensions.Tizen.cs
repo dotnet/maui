@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 			this IPlatformViewHandler viewHandler,
 			double widthConstraint,
 			double heightConstraint,
-			Func<double,double, Size>? measureFunc = null)
+			Func<double, double, Size>? measureFunc = null)
 		{
 			var virtualView = viewHandler.VirtualView;
 			var platformView = viewHandler.PlatformView;
@@ -62,7 +62,7 @@ namespace Microsoft.Maui
 			double availableHeight = (availableHeightAsInt < 0 || availableHeightAsInt == int.MaxValue) ? double.PositiveInfinity : availableHeightAsInt;
 
 			double? explicitWidth = (virtualView.Width >= 0) ? virtualView.Width : null;
-			double? explicitHeight = (virtualView.Height >=0) ? virtualView.Height : null;
+			double? explicitHeight = (virtualView.Height >= 0) ? virtualView.Height : null;
 
 			Size measured;
 			if (platformView is IMeasurable platformViewMeasurable)
