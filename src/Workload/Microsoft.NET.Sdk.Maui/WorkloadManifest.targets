@@ -5,7 +5,7 @@
   </ItemGroup>
   <Import
       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true' "
-      Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk"
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk.net6"
   />
   <Import
       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' "
