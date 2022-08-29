@@ -15,6 +15,7 @@
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";
+		public const string FlowDirection = "FlowDirection";
 		public const string FlyoutView = "FlyoutView";
 		public const string Fonts = "Fonts";
 		public const string GraphicsView = "GraphicsView";

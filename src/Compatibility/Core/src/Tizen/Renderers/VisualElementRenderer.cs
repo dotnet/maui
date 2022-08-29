@@ -2,20 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using ElmSharp;
-using ElmSharp.Accessible;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using Tizen.UIExtensions.ElmSharp;
 using Size = Microsoft.Maui.Graphics.Size;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using Point = Microsoft.Maui.Graphics.Point;
-using EFocusDirection = ElmSharp.FocusDirection;
-using ERect = ElmSharp.Rect;
-using ESize = ElmSharp.Size;
+using Microsoft.Maui.Controls.Platform;
+using Tizen.NUI;
+using Tizen.UIExtensions.Common;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement;
 using XFocusDirection = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.FocusDirection;
+using NView = Tizen.NUI.BaseComponents.View;
+using TPoint = Tizen.UIExtensions.Common.Point;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -25,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer instead")]
 	public abstract class VisualElementRenderer<TElement> : IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
 	{
-		readonly List<EventHandler<VisualElementChangedEventArgs>> _elementChangedHandlers = new List<EventHandler<VisualElementChangedEventArgs>>();
+		event EventHandler<VisualElementChangedEventArgs> _elementChanged;
 
 		readonly Dictionary<string, Action<bool>> _propertyHandlersWithInit = new Dictionary<string, Action<bool>>();
 
@@ -34,13 +32,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		readonly HashSet<string> _batchedProperties = new HashSet<string>();
 
 		VisualElementRendererFlags _flags = VisualElementRendererFlags.None;
-
-		bool _movedCallbackEnabled = false;
-		string _defaultAccessibilityName;
-		string _defaultAccessibilityDescription;
-		bool? _defaultIsAccessibilityElement;
-
-		Lazy<CustomFocusManager> _customFocusManager;
 
 		/// <summary>
 		/// Default constructor.
@@ -81,11 +72,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			RegisterPropertyHandler(AutomationProperties.HelpTextProperty, SetAccessibilityDescription);
 			RegisterPropertyHandler(AutomationProperties.IsInAccessibleTreeProperty, SetIsAccessibilityElement);
 			RegisterPropertyHandler(AutomationProperties.LabeledByProperty, SetLabeledBy);
-
-			_customFocusManager = new Lazy<CustomFocusManager>(() =>
-			{
-				return new CustomFocusManager(Element, NativeView as Widget);
-			});
 		}
 
 		~VisualElementRenderer()
@@ -97,11 +83,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			add
 			{
-				_elementChangedHandlers.Add(value);
+				_elementChanged += value;
 			}
 			remove
 			{
-				_elementChangedHandlers.Remove(value);
+				_elementChanged -= value;
 			}
 		}
 
@@ -122,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 		}
 
-		public EvasObject NativeView { get; private set; }
+		public NView NativeView { get; private set; }
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
 
@@ -160,14 +146,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					availableHeight = int.MaxValue;
 
 				Size measured;
-				var nativeViewMeasurable = NativeView as Native.IMeasurable;
-				if (nativeViewMeasurable != null)
+				if (NativeView is IMeasurable nativeViewMeasurable)
 				{
 					measured = nativeViewMeasurable.Measure(availableWidth, availableHeight).ToDP();
 				}
 				else
 				{
-					measured = Measure(availableWidth, availableHeight).ToDP();
+					measured = Measure(widthConstraint, heightConstraint);
 				}
 
 				return new SizeRequest(measured, MinimumSize());
@@ -308,14 +293,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				if (NativeView != null)
 				{
-					NativeView.Deleted -= NativeViewDeleted;
-					NativeView.Unrealize();
+					NativeView.Unparent();
+					NativeView.Dispose();
 					NativeView = null;
-				}
-
-				if (_customFocusManager.IsValueCreated)
-				{
-					_customFocusManager.Value.Dispose();
 				}
 			}
 		}
@@ -345,8 +325,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 
 			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
-			for (var i = 0; i < _elementChangedHandlers.Count; i++)
-				_elementChangedHandlers[i](this, args);
+			_elementChanged?.Invoke(this, args);
 
 			ElementChanged?.Invoke(this, e);
 
@@ -425,38 +404,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// <summary>
 		/// Updates the attached event handlers, sets the native control.
 		/// </summary>
-		protected void SetNativeView(EvasObject control)
+		protected void SetNativeView(NView control)
 		{
 			if (NativeView != null)
 			{
-				if (_movedCallbackEnabled)
-				{
-					NativeView.Moved -= OnMoved;
-				}
-				NativeView.Deleted -= NativeViewDeleted;
+				NativeView.FocusGained -= OnFocused;
+				NativeView.FocusLost -= OnUnfocused;
 			}
 
-			Widget widget = NativeView as Widget;
-			if (widget != null)
-			{
-				widget.Focused -= OnFocused;
-				widget.Unfocused -= OnUnfocused;
-			}
 			NativeView = control;
+
 			if (NativeView != null)
 			{
-				NativeView.Deleted += NativeViewDeleted;
-				if (_movedCallbackEnabled)
-				{
-					NativeView.Moved += OnMoved;
-				}
-			}
-
-			widget = NativeView as Widget;
-			if (widget != null)
-			{
-				widget.Focused += OnFocused;
-				widget.Unfocused += OnUnfocused;
+				NativeView.FocusGained += OnFocused;
+				NativeView.FocusLost += OnUnfocused;
 			}
 		}
 
@@ -464,12 +425,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (initialize && (string)Element.GetValue(AutomationProperties.NameProperty) == (default(string)))
 				return;
-
-			var accessibleObject = NativeView as IAccessibleObject;
-			if (accessibleObject != null)
-			{
-				_defaultAccessibilityName = accessibleObject.SetAccessibilityName(Element, _defaultAccessibilityName);
-			}
+			// TODO
 		}
 
 		protected virtual void SetAccessibilityDescription(bool initialize)
@@ -477,11 +433,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && (string)Element.GetValue(AutomationProperties.HelpTextProperty) == (default(string)))
 				return;
 
-			var accessibleObject = NativeView as IAccessibleObject;
-			if (accessibleObject != null)
-			{
-				_defaultAccessibilityDescription = accessibleObject.SetAccessibilityDescription(Element, _defaultAccessibilityDescription);
-			}
+			// TODO
 		}
 
 		protected virtual void SetIsAccessibilityElement(bool initialize)
@@ -489,11 +441,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) == default(bool?))
 				return;
 
-			var accessibleObject = NativeView as IAccessibleObject;
-			if (accessibleObject != null)
-			{
-				_defaultIsAccessibilityElement = accessibleObject.SetIsAccessibilityElement(Element, _defaultIsAccessibilityElement);
-			}
+			// TODO
 		}
 
 		protected virtual void SetLabeledBy(bool initialize)
@@ -501,32 +449,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty) == default(VisualElement))
 				return;
 
-			var accessibleObject = NativeView as IAccessibleObject;
-			if (accessibleObject != null)
-			{
-				accessibleObject.SetLabeledBy(Element);
-			}
+			// TODO
 		}
 
-		internal virtual void SendVisualElementInitialized(VisualElement element, EvasObject nativeView)
+		internal virtual void SendVisualElementInitialized(VisualElement element, NView nativeView)
 		{
 			element.SendViewInitialized(nativeView);
 		}
 
 		void UpdateNativeGeometry()
 		{
-			var updatedGeometry = new Rect(ComputeAbsolutePoint(Element), new Size(Element.Width, Element.Height)).ToEFLPixel();
-
-			if (NativeView.Geometry != updatedGeometry)
-			{
-				NativeView.Geometry = updatedGeometry;
-				ApplyTransformation();
-			}
-		}
-
-		void NativeViewDeleted(object sender, EventArgs e)
-		{
-			Dispose();
+			NativeView.UpdateBounds(Element.Bounds.ToPixel());
+			ApplyTranslation(true);
 		}
 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
@@ -619,16 +553,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual Size MinimumSize()
 		{
-			return new ESize(NativeView.MinimumWidth, NativeView.MinimumHeight).ToDP();
+			return NativeView.MinimumSize.ToDP();
 		}
 
 		/// <summary>
 		/// Calculates how much space this element should take, given how much room there is.
 		/// </summary>
 		/// <returns>a desired dimensions of the element</returns>
-		protected virtual ESize Measure(int availableWidth, int availableHeight)
+		protected virtual Size Measure(double availableWidth, double availableHeight)
 		{
-			return new ESize(NativeView.MinimumWidth, NativeView.MinimumHeight);
+			return MinimumSize();
 		}
 
 		protected virtual void UpdateBackgroundColor(bool initialize)
@@ -636,36 +570,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.BackgroundColor.IsDefault())
 				return;
 
-			if (NativeView is Widget)
-			{
-				(NativeView as Widget).BackgroundColor = Element.BackgroundColor.ToPlatformEFL();
-			}
-			else
-			{
-				Log.Warn("{0} uses {1} which does not support background color", this, NativeView);
-			}
+			NativeView.UpdateBackgroundColor(Element.BackgroundColor.ToNative());
 		}
 
 		protected virtual void UpdateBackground(bool initialize)
 		{
-			if (!Forms.UseSkiaSharp || (initialize && Element.Background.Equals(Brush.Default)))
+			if (initialize && Element.Background.Equals(Brush.Default))
 				return;
 
-			if (this is SkiaSharp.IBackgroundCanvas canvasRenderer)
-			{
-				canvasRenderer.BackgroundCanvas.Invalidate();
-			}
+			// TODO
 		}
 
 		protected virtual void UpdateClip(bool initialize)
 		{
-			if (!Forms.UseSkiaSharp || (initialize && Element.Clip == null))
-				return;
-
-			if (this is SkiaSharp.IClipperCanvas canvasRenderer)
-			{
-				canvasRenderer.ClipperCanvas.Invalidate();
-			}
+			// TODO
 		}
 
 		protected virtual void UpdateOpacity(bool initialize)
@@ -673,73 +591,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.Opacity == 1d)
 				return;
 
-			if (NativeView is Widget)
-			{
-				(NativeView as Widget).Opacity = (int)(Element.Opacity * 255.0);
-			}
-			else
-			{
-				Log.Warn("{0} uses {1} which does not support opacity", this, NativeView);
-			}
-		}
-
-		public virtual ERect GetNativeContentGeometry()
-		{
-			return NativeView.Geometry;
-		}
-
-		static double ComputeAbsoluteX(VisualElement e)
-		{
-			var parentX = 0.0;
-			if (e.RealParent is VisualElement parent)
-			{
-				if (CompressedLayout.GetIsHeadless(e.RealParent))
-				{
-					parentX = ComputeAbsoluteX(parent);
-				}
-				else
-				{
-					if (parent.Handler is IPlatformViewHandler nativeHandler)
-					{
-
-						parentX = nativeHandler.GetPlatformContentGeometry().X.ToScaledDP();
-					}
-					else
-					{
-						parentX = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X);
-					}
-				}
-			}
-			return e.X + parentX;
-		}
-
-		static double ComputeAbsoluteY(VisualElement e)
-		{
-			var parentY = 0.0;
-			if (e.RealParent is VisualElement parent)
-			{
-				if (CompressedLayout.GetIsHeadless(e.RealParent))
-				{
-					parentY = ComputeAbsoluteY(parent);
-				}
-				else
-				{
-					if (parent.Handler is IPlatformViewHandler nativeHandler)
-					{
-						parentY = nativeHandler.GetPlatformContentGeometry().Y.ToScaledDP();
-					}
-					else
-					{
-						parentY = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y);
-					}
-				}
-			}
-			return e.Y + parentY;
-		}
-
-		static Point ComputeAbsolutePoint(VisualElement e)
-		{
-			return new Point(ComputeAbsoluteX(e), ComputeAbsoluteY(e));
+			NativeView.Opacity = (float)Element.Opacity;
 		}
 
 		/// <summary>
@@ -772,53 +624,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (child is VisualElement ve)
 			{
-				if (CompressedLayout.GetIsHeadless(ve) && NativeView is IContainable<EvasObject> containerNativeView)
+				var childRenderer = Platform.GetOrCreateRenderer(ve);
+				// if the native view can have children, attach the new child
+				if (NativeView is IContainable<NView> containerView)
 				{
-					AddHeadlessChild(ve, containerNativeView);
-					ve.IsPlatformEnabled = true;
-				}
-				else
-				{
-					var childRenderer = Platform.GetOrCreateRenderer(ve);
-					// if the native view can have children, attach the new child
-					if (NativeView is IContainable<EvasObject> containerView)
-					{
-						containerView.Children.Add(childRenderer.NativeView);
-					}
+					containerView.Children.Add(childRenderer.NativeView);
 				}
 			}
 		}
 
-		protected virtual void AddHeadlessChild(VisualElement element, IContainable<EvasObject> parent)
-		{
-			foreach (var child in (element as IVisualTreeElement).GetVisualChildren())
-			{
-				if (child is VisualElement visualChild)
-				{
-					if (CompressedLayout.GetIsHeadless(visualChild))
-					{
-						AddHeadlessChild(visualChild, parent);
-						visualChild.IsPlatformEnabled = true;
-					}
-					else
-					{
-						var childRenderer = Platform.GetOrCreateRenderer(visualChild);
-						parent.Children.Add(childRenderer.NativeView);
-					}
-				}
-			}
-		}
 
 		protected virtual void RemoveChild(VisualElement view)
 		{
 			var renderer = Platform.GetRenderer(view);
-			var containerObject = NativeView as Native.IContainable<EvasObject>;
-			if (containerObject != null)
+			if (NativeView is IContainable<NView> containerObject)
 			{
 				containerObject.Children.Remove(renderer.NativeView);
 			}
-
-			renderer.Dispose();
+			renderer?.Dispose();
 		}
 
 		void OnChildAdded(object sender, ElementEventArgs e)
@@ -862,14 +685,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
-			Widget widget = NativeView as Widget;
-			if (widget == null)
-			{
-				Log.Warn("{0} is not a widget, it cannot receive focus", NativeView);
-				return;
-			}
-
-			widget.SetFocus(e.Focus);
+			FocusManager.Instance.SetCurrentFocusView(NativeView);
 			e.Result = true;
 		}
 
@@ -881,11 +697,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			effect.Container = Element.Parent == null ? null : Platform.GetRenderer(Element.Parent)?.NativeView;
 			effect.Control = NativeView;
-		}
-
-		void OnMoved(object sender, EventArgs e)
-		{
-			ApplyTransformation();
 		}
 
 		void EnsureChildOrder()
@@ -924,11 +735,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.IsEnabled)
 				return;
 
-			var widget = NativeView as Widget;
-			if (widget != null)
-			{
-				widget.IsEnabled = Element.IsEnabled;
-			}
+			NativeView.SetEnable(Element.IsEnabled);
 		}
 
 		/// <summary>
@@ -939,7 +746,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.InputTransparent == default(bool))
 				return;
 
-			NativeView.PassEvents = Element.InputTransparent;
+			NativeView.Sensitive = !Element.InputTransparent;
 		}
 
 		protected virtual void UpdateThemeStyle()
@@ -958,80 +765,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && isFocusAllowed == null)
 				return;
 
-			var widget = NativeView as Widget;
-			if (widget != null && isFocusAllowed != null)
+			if (isFocusAllowed != null)
 			{
-				widget.AllowFocus((bool)Specific.IsFocusAllowed(Element));
-			}
-			else
-			{
-				Log.Warn("{0} uses {1} which does not support Focus management", this, NativeView);
+				NativeView.Focusable = (bool)isFocusAllowed;
 			}
 		}
 
 		void UpdateFocusDirection(bool initialize)
 		{
-			var direction = Specific.GetNextFocusDirection(Element);
-			if (!initialize && direction != XFocusDirection.None)
-			{
-				var widget = NativeView as Widget;
-				if (widget != null)
-				{
-					widget.FocusNext(ConvertToNativeFocusDirection(direction));
-				}
-				else
-				{
-					Log.Warn("{0} uses {1} which does not support Focus management", this, NativeView);
-				}
-			}
+			// TODO
 		}
 
 		void UpdateToolTip(bool initialize)
 		{
-			var tooltip = Specific.GetToolTip(Element);
-			if (tooltip != null)
-			{
-				NativeView.SetTooltipText(tooltip);
-			}
-			else if (!initialize)
-			{
-				NativeView.UnsetTooltip();
-			}
+			// TODO
 		}
 
 		void SetNextFocusViewInternal(string direction)
 		{
-			var widget = NativeView as Widget;
-			if (widget != null)
-			{
-				switch (direction)
-				{
-					case XFocusDirection.Back:
-						_customFocusManager.Value.NextBackward = Specific.GetNextFocusBackView(Element);
-						break;
-					case XFocusDirection.Forward:
-						_customFocusManager.Value.NextForward = Specific.GetNextFocusForwardView(Element);
-						break;
-					case XFocusDirection.Up:
-						_customFocusManager.Value.NextUp = Specific.GetNextFocusUpView(Element);
-						break;
-					case XFocusDirection.Down:
-						_customFocusManager.Value.NextDown = Specific.GetNextFocusDownView(Element);
-						break;
-					case XFocusDirection.Right:
-						_customFocusManager.Value.NextRight = Specific.GetNextFocusRightView(Element);
-						break;
-					case XFocusDirection.Left:
-						_customFocusManager.Value.NextLeft = Specific.GetNextFocusLeftView(Element);
-						break;
-					default:
-						break;
-				}
-			}
-			else
-			{
-				Log.Warn("{0} uses {1} which does not support Focus management", this, NativeView);
-			}
+			// TODO
 		}
 
 		void UpdateFocusUpView()
@@ -1082,129 +834,69 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 		}
 
-		void ApplyRotation(EvasMap map, ERect geometry, ref bool changed)
+		void ApplyRotation(bool init)
 		{
 			var rotationX = Element.RotationX;
 			var rotationY = Element.RotationY;
 			var rotationZ = Element.Rotation;
-			var anchorX = Element.AnchorX;
-			var anchorY = Element.AnchorY;
 
-			// apply rotations
-			if (rotationX != 0 || rotationY != 0 || rotationZ != 0)
+			if (init && rotationX == 0 && rotationY == 0 && rotationZ == 0)
+				return;
+
+			var zRotation = new Rotation(new Radian(DegreeToRadian((float)rotationZ)), PositionAxis.Z);
+			var xRotation = new Rotation(new Radian(DegreeToRadian((float)rotationX)), PositionAxis.X);
+			var yRotation = new Rotation(new Radian(DegreeToRadian((float)rotationY)), PositionAxis.Y);
+			var totalRotation = zRotation * xRotation * yRotation;
+			NativeView.Orientation = totalRotation;
+
+			float DegreeToRadian(float degree)
 			{
-				map.Rotate3D(rotationX, rotationY, rotationZ, (int)(geometry.X + geometry.Width * anchorX),
-															  (int)(geometry.Y + geometry.Height * anchorY), 0);
-				// the last argument is focal length, it determine the strength of distortion. We compared it with the Android implementation
-				map.Perspective3D(geometry.X + geometry.Width / 2, geometry.Y + geometry.Height / 2, 0, (int)(1.3 * Math.Max(geometry.Height, geometry.Width)));
-				// Need to unset clip because perspective 3d rotation is going beyond the container bound
-				NativeView.SetClip(null);
-				changed = true;
+				return (float)(degree * Math.PI / 180);
 			}
 		}
 
-		void ApplyScale(EvasMap map, ERect geometry, ref bool changed)
+		void ApplyScale(bool init)
 		{
 			var scale = Element.Scale;
 			var scaleX = Element.ScaleX * scale;
 			var scaleY = Element.ScaleY * scale;
+			if (init && scaleX == 1.0 && scaleY == 1.0)
+				return;
 
-			// apply scale factor
-			if (scaleX != 1.0 || scaleY != 1.0)
-			{
-				map.Zoom(scaleX, scaleY,
-					geometry.X + (int)(geometry.Width * Element.AnchorX),
-					geometry.Y + (int)(geometry.Height * Element.AnchorY));
-				changed = true;
-			}
+			NativeView.ScaleX = (float)scaleX;
+			NativeView.ScaleY = (float)scaleY;
 		}
-
-		void ApplyTranslation(EvasMap map, ERect geometry, ref bool changed)
+		protected void ApplyTranslation(bool init)
 		{
 			var shiftX = Forms.ConvertToScaledPixel(Element.TranslationX);
 			var shiftY = Forms.ConvertToScaledPixel(Element.TranslationY);
-
-			// apply translation, i.e. move/shift the object a little
-			if (shiftX != 0 || shiftY != 0)
+			if (init && shiftX == 0 && shiftY == 0)
 			{
-				if (changed)
-				{
-					// special care is taken to apply the translation last
-					Point3D p;
-					for (int i = 0; i < 4; i++)
-					{
-						p = map.GetPointCoordinate(i);
-						p.X += shiftX;
-						p.Y += shiftY;
-						map.SetPointCoordinate(i, p);
-					}
-				}
-				else
-				{
-					// in case when we only need translation, then construct the map in a simpler way
-					geometry.X += shiftX;
-					geometry.Y += shiftY;
-					map.PopulatePoints(geometry, 0);
-
-					changed = true;
-				}
+				return;
 			}
+
+			var pos = Element.Bounds.ToPixel();
+			NativeView.UpdatePosition(new TPoint(pos.X + shiftX, pos.Y + shiftY));
+		}
+		void ApplyAnchor(bool init)
+		{
+			if (init && Element.AnchorX == 0.5 && Element.AnchorY == 0.5)
+				return;
+
+			NativeView.PivotPoint = new Position((float)Element.AnchorX, (float)Element.AnchorY, 0);
 		}
 
-		protected virtual void ApplyTransformation()
+		protected virtual void ApplyTransformation(bool init = false)
 		{
 			if (null == NativeView)
 			{
 				Log.Error("Trying to apply transformation to the non-existent native control");
 				return;
 			}
-
-			// prepare the EFL effect structure
-			ERect geometry = NativeView.Geometry;
-			EvasMap map = new EvasMap(4);
-			map.PopulatePoints(geometry, 0);
-
-			bool changed = false;
-			ApplyScale(map, geometry, ref changed);
-			ApplyRotation(map, geometry, ref changed);
-			ApplyTranslation(map, geometry, ref changed);
-
-			NativeView.IsMapEnabled = changed;
-			if (changed)
-			{
-				NativeView.EvasMap = map;
-				if (!_movedCallbackEnabled)
-				{
-					_movedCallbackEnabled = true;
-					NativeView.Moved += OnMoved;
-				}
-			}
-			else
-			{
-				if (_movedCallbackEnabled)
-				{
-					_movedCallbackEnabled = false;
-					NativeView.Moved -= OnMoved;
-				}
-			}
-		}
-
-		EFocusDirection ConvertToNativeFocusDirection(string direction)
-		{
-			if (direction == XFocusDirection.Back)
-				return EFocusDirection.Previous;
-			if (direction == XFocusDirection.Forward)
-				return EFocusDirection.Next;
-			if (direction == XFocusDirection.Up)
-				return EFocusDirection.Up;
-			if (direction == XFocusDirection.Down)
-				return EFocusDirection.Down;
-			if (direction == XFocusDirection.Right)
-				return EFocusDirection.Right;
-			if (direction == XFocusDirection.Left)
-				return EFocusDirection.Left;
-
-			return EFocusDirection.Next;
+			ApplyAnchor(init);
+			ApplyScale(init);
+			ApplyRotation(init);
+			ApplyTranslation(init);
 		}
 	}
 }

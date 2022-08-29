@@ -35,8 +35,6 @@ namespace Microsoft.Maui.Controls
 					Console.WriteLine("Exception: {0}", e);
 				}
 			}
-
-			new GeocoderBackend(activity).Register();
 		}
 	}
 }

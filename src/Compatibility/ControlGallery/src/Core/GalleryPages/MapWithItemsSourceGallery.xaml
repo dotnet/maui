@@ -9,7 +9,7 @@
             <local:MapItemTemplateSelector x:Key="MapItemTemplateSelector">
                 <local:MapItemTemplateSelector.DataTemplate>
                     <DataTemplate>
-                        <map:Pin Position="{Binding Position}"
+                        <map:Pin Location="{Binding Position}"
                                  Address="{Binding Address}"
                                  Label="{Binding Description}" />
                     </DataTemplate>

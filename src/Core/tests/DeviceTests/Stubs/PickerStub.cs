@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
@@ -12,7 +13,24 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IList<string> Items { get; set; } = new List<string>();
 
-		public IList ItemsSource { get; set; }
+		IList _itemsSource;
+
+		public IList ItemsSource
+		{
+			get => _itemsSource;
+			set => SetProperty(ref _itemsSource, value, onChanged: OnItemsSourceChanged);
+		}
+
+		void OnItemsSourceChanged(IList oldValue, IList newValue)
+		{
+			if (ItemsSource == null)
+				return;
+
+			Items.Clear();
+
+			foreach (object item in ItemsSource)
+				Items.Add(item.ToString());
+		}
 
 		public int SelectedIndex { get; set; } = -1;
 
