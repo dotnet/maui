@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_underline = new NView
 			{
-				Color = _defaultUnderlineColor,
+				BackgroundColor = _defaultUnderlineColor,
 				SizeHeight = 1d.ToScaledPixel(),
 				WidthResizePolicy = ResizePolicyType.FillToParent,
 				ParentOrigin = Position.ParentOriginBottomLeft
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 		protected override void OnEnabled(bool enabled)
 		{
 			base.OnEnabled(enabled);
-			_underline.Color = enabled ? _defaultUnderlineColor : NColor.LightGray;
+			_underline.BackgroundColor = enabled ? _defaultUnderlineColor : NColor.LightGray;
 		}
 	}
 }
