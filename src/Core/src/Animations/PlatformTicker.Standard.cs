@@ -1,6 +1,6 @@
-﻿namespace Microsoft.Maui.Animations
+﻿namespace Microsoft.Maui.Animations;
+
+/// <inheritdoc/>
+public class PlatformTicker : Ticker
 {
-	public class PlatformTicker : Ticker
-	{
-	}
 }
