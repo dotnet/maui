@@ -1553,7 +1553,6 @@ Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebV
 Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
-Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.MauiWebViewNavigationDelegate(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 Microsoft.Maui.Platform.MauiWKWebView
 Microsoft.Maui.Platform.MauiWKWebView.CurrentUrl.get -> string?
 Microsoft.Maui.Platform.MauiWKWebView.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
@@ -1938,7 +1937,6 @@ override Microsoft.Maui.Handlers.PageHandler.DisconnectHandler(Microsoft.Maui.Pl
 override Microsoft.Maui.Handlers.PickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiPicker! platformView) -> void
 override Microsoft.Maui.Handlers.PickerHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiPicker!
 override Microsoft.Maui.Handlers.PickerHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiPicker! platformView) -> void
-override Microsoft.Maui.Handlers.PickerSource.Dispose(bool disposing) -> void
 override Microsoft.Maui.Handlers.PickerSource.GetComponentCount(UIKit.UIPickerView! picker) -> nint
 override Microsoft.Maui.Handlers.PickerSource.GetRowsInComponent(UIKit.UIPickerView! pickerView, nint component) -> nint
 override Microsoft.Maui.Handlers.PickerSource.GetTitle(UIKit.UIPickerView! picker, nint row, nint component) -> string!

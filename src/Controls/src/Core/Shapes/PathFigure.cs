@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -15,7 +17,13 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='SegmentsProperty']/Docs" />
 		public static readonly BindableProperty SegmentsProperty =
-			BindableProperty.Create(nameof(Segments), typeof(PathSegmentCollection), typeof(PathFigure), null);
+			BindableProperty.Create(nameof(Segments), typeof(PathSegmentCollection), typeof(PathFigure), null,
+				propertyChanged: OnPathSegmentCollectionChanged);
+
+		static void OnPathSegmentCollectionChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			(bindable as PathFigure)?.UpdatePathSegmentCollection(oldValue as PathSegmentCollection, newValue as PathSegmentCollection);
+		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='StartPointProperty']/Docs" />
 		public static readonly BindableProperty StartPointProperty =
@@ -57,6 +65,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (bool)GetValue(IsFilledProperty); }
 		}
 
+		internal event EventHandler InvalidatePathSegmentRequested;
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='BatchBegin']/Docs" />
 		public void BatchBegin()
 		{
@@ -67,6 +77,66 @@ namespace Microsoft.Maui.Controls.Shapes
 		public void BatchCommit()
 		{
 
+		}
+
+		void UpdatePathSegmentCollection(PathSegmentCollection oldCollection, PathSegmentCollection newCollection)
+		{
+			if (oldCollection != null)
+			{
+				oldCollection.CollectionChanged -= OnPathSegmentCollectionChanged;
+
+				foreach (var oldPathSegment in oldCollection)
+				{
+					oldPathSegment.PropertyChanged -= OnPathSegmentPropertyChanged;
+				}
+			}
+
+			if (newCollection == null)
+				return;
+
+			newCollection.CollectionChanged += OnPathSegmentCollectionChanged;
+
+			foreach (var newPathSegment in newCollection)
+			{
+				newPathSegment.PropertyChanged += OnPathSegmentPropertyChanged;
+			}
+		}
+
+		void OnPathSegmentCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.OldItems != null)
+			{
+				foreach (var oldItem in e.OldItems)
+				{
+					if (!(oldItem is PathSegment oldPathSegment))
+						continue;
+
+					oldPathSegment.PropertyChanged -= OnPathSegmentPropertyChanged;
+				}
+			}
+
+			if (e.NewItems != null)
+			{
+				foreach (var newItem in e.NewItems)
+				{
+					if (!(newItem is PathSegment newPathSegment))
+						continue;
+
+					newPathSegment.PropertyChanged += OnPathSegmentPropertyChanged;
+				}
+			}
+
+			Invalidate();
+		}
+
+		void OnPathSegmentPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			Invalidate();
+		}
+
+		void Invalidate()
+		{
+			InvalidatePathSegmentRequested?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

@@ -92,7 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if IOS
+#if IOS || MACCATALYST
 			Skip = "Not able to debug iOS right now"
 #elif ANDROID
 			Skip = "Android stopped working in the tests, but works in real life..."

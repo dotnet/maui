@@ -57,6 +57,15 @@ namespace Microsoft.Maui.DeviceTests
 			_context = new ContextStub(_servicesProvider);
 		}
 
+		protected Task SetValueAsync<TValue, THandler>(IView view, TValue value, Action<THandler, TValue> func)
+			where THandler : IElementHandler, new()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				func(handler, value);
+			});
+		}
 
 		protected THandler CreateHandler<THandler>(IElement view, IMauiContext mauiContext = null)
 			where THandler : IElementHandler, new()
@@ -86,6 +95,15 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = new TCustomHandler();
 			InitializeViewHandler(view, handler, mauiContext);
 			return handler;
+		}
+
+
+		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType)
+		{
+			var handler = (IPlatformViewHandler)Activator.CreateInstance(handlerType);
+			InitializeViewHandler(view, handler, MauiContext);
+			return handler;
+
 		}
 
 		public void Dispose()

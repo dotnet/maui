@@ -1,43 +1,43 @@
 using System;
-using NUnit.Framework;
-using NUnit.Framework.Constraints;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class SwitchCellTemplateTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void Create()
 		{
 			var template = new DataTemplate(typeof(SwitchCell));
 			var content = template.CreateContent();
 
-			Assert.That(content, Is.InstanceOf<SwitchCell>());
+			Assert.IsType<SwitchCell>(content);
 		}
 
-		[Test]
+		[Fact]
 		public void Text()
 		{
 			var template = new DataTemplate(typeof(SwitchCell));
 			template.SetValue(SwitchCell.TextProperty, "text");
 
 			SwitchCell cell = (SwitchCell)template.CreateContent();
-			Assert.That(cell.Text, Is.EqualTo("text"));
+			Assert.Equal("text", cell.Text);
 		}
 
-		[Test]
+		[Fact]
 		public void On()
 		{
 			var template = new DataTemplate(typeof(SwitchCell));
 			template.SetValue(SwitchCell.OnProperty, true);
 
 			SwitchCell cell = (SwitchCell)template.CreateContent();
-			Assert.That(cell.On, Is.EqualTo(true));
+			Assert.True(cell.On);
 		}
 
-		[TestCase(false, true)]
-		[TestCase(true, false)]
+		[Theory]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
 		public void SwitchCellSwitchChangedArgs(bool initialValue, bool finalValue)
 		{
 			var template = new DataTemplate(typeof(SwitchCell));
@@ -56,8 +56,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			cell.On = finalValue;
 
-			Assert.AreEqual(cell, switchCellFromSender);
-			Assert.AreEqual(finalValue, newSwitchValue);
+			Assert.Equal(cell, switchCellFromSender);
+			Assert.Equal(finalValue, newSwitchValue);
 		}
 	}
 }

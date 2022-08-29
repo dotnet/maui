@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Platform
 		public static ColorStateList CreateCheckBox(int enabledChecked, int enabledUnchecked, int disabledChecked, int disabledUnchecked) =>
 			PlatformInterop.GetCheckBoxColorStateList(enabledChecked, enabledUnchecked, disabledChecked, disabledUnchecked);
 
+		public static ColorStateList CreateSwitch(int all) =>
+			CreateSwitch(all, all, all);
+
 		public static ColorStateList CreateSwitch(int disabled, int on, int normal) =>
 			PlatformInterop.GetSwitchColorStateList(disabled, on, normal);
 

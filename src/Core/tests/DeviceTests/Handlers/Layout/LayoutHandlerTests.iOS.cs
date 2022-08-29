@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -86,6 +88,99 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(expected, actual);
+		}
+
+		[Fact, Category(TestCategory.FlowDirection)]
+		public async Task FlowDirectionPropagatesToImmediateChildren()
+		{
+			var layout = new LayoutStub();
+			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
+			layout.Add(label);
+			label.Parent = layout;
+
+			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
+			{
+				var labelHandler = CreateHandler<LabelHandler>(label);
+				var layoutHandler = CreateHandler<LayoutHandler>(layout);
+
+				layout.FlowDirection = FlowDirection.RightToLeft;
+				layoutHandler.UpdateValue(nameof(IView.FlowDirection));
+
+				return labelHandler.PlatformView.EffectiveUserInterfaceLayoutDirection;
+			});
+
+			Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, labelFlowDirection);
+		}
+
+		[Fact, Category(TestCategory.FlowDirection)]
+		public async Task FlowDirectionPropagatesToDescendants()
+		{
+			var layout0 = new LayoutStub();
+			var layout1 = new LayoutStub() { FlowDirection = FlowDirection.MatchParent };
+			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
+			layout0.Add(layout1);
+			layout1.Add(label);
+			label.Parent = layout1;
+			layout1.Parent = layout0;
+
+			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
+			{
+				var labelHandler = CreateHandler<LabelHandler>(label);
+				var layout1Handler = CreateHandler<LayoutHandler>(layout1);
+				var layout0Handler = CreateHandler<LayoutHandler>(layout0);
+
+				layout0.FlowDirection = FlowDirection.RightToLeft;
+				layout0Handler.UpdateValue(nameof(IView.FlowDirection));
+
+				return labelHandler.PlatformView.EffectiveUserInterfaceLayoutDirection;
+			});
+
+			Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, labelFlowDirection);
+		}
+
+		[Fact, Category(TestCategory.FlowDirection)]
+		public async Task FlowDirectionPropagatesToAddedChildren()
+		{
+			var layout = new LayoutStub() { FlowDirection = FlowDirection.RightToLeft };
+			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.MatchParent };
+			label.Parent = layout;
+
+			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
+			{
+				var labelHandler = CreateHandler<LabelHandler>(label);
+				var layoutHandler = CreateHandler<LayoutHandler>(layout);
+
+				layout.Add(label);
+
+				var args = new Maui.Handlers.LayoutHandlerUpdate(0, label);
+				layoutHandler.Invoke(nameof(ILayoutHandler.Add), args);
+
+				return labelHandler.PlatformView.EffectiveUserInterfaceLayoutDirection;
+			});
+
+			Assert.Equal(UIUserInterfaceLayoutDirection.RightToLeft, labelFlowDirection);
+		}
+
+		[Fact, Category(TestCategory.FlowDirection)]
+		public async Task DoesNotPropagateToChildrenWithExplicitFlowDirection()
+		{
+			var layout = new LayoutStub();
+			var label = new LabelStub { Text = "Test", FlowDirection = FlowDirection.LeftToRight };
+			layout.Add(label);
+			label.Parent = layout;
+
+			var labelFlowDirection = await InvokeOnMainThreadAsync(() =>
+			{
+				var labelHandler = CreateHandler<LabelHandler>(label);
+				var layoutHandler = CreateHandler<LayoutHandler>(layout);
+
+				layout.FlowDirection = FlowDirection.RightToLeft;
+				layoutHandler.UpdateValue(nameof(IView.FlowDirection));
+
+				return labelHandler.PlatformView.EffectiveUserInterfaceLayoutDirection;
+			});
+
+			Assert.Equal(UIUserInterfaceLayoutDirection.LeftToRight, labelFlowDirection);
 		}
 	}
 }

@@ -272,6 +272,9 @@ namespace Microsoft.Maui.Controls
 
 			if (Shell.GetTitleView(this) is View titleView)
 				SetInheritedBindingContext(titleView, BindingContext);
+
+			if (FlyoutBase.GetContextFlyout(this) is BindableObject contextFlyout)
+				SetInheritedBindingContext(contextFlyout, BindingContext);
 		}
 
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	// TODO MAUI: can we convert this over to using IView
+	[Obsolete("VisualElementTracker is obsolete as of .NET 7. This behavior has been built into ViewHandler and is included by default on anything that inherits from `Microsoft.Maui.Controls.View`. If something is missing for you please log an issue. In the mean time, you can try using Microsoft.Maui.Controls.Compatibility.Platform.UWP.VisualElementTracker")]
 	public class VisualElementTracker<TElement, TPlatformElement> : IDisposable where TElement : VisualElement where TPlatformElement : FrameworkElement
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;

@@ -12,11 +12,10 @@ jobs:
   steps:
   - checkout: self
   - task: DownloadPipelineArtifact@2
+    continueOnError: true
     inputs:
       artifactName: library-packs
       downloadPath: $(Build.StagingDirectory)\nuget
-      patterns: |
-        **/Microsoft.Maui.Graphics.*.nupkg
   - task: DownloadPipelineArtifact@2
     inputs:
       artifactName: nuget

@@ -15,8 +15,8 @@ using ParentView = Android.Views.IViewParent;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ParentView = Microsoft.UI.Xaml.DependencyObject;
 #elif TIZEN
-using PlatformView = ElmSharp.EvasObject;
-using ParentView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
+using ParentView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;

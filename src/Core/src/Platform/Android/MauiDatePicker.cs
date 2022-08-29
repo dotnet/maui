@@ -39,23 +39,13 @@ namespace Microsoft.Maui.Platform
 			ShowPicker?.Invoke();
 		}
 
-		protected override void OnFocusChanged(bool gainFocus, [GeneratedEnum] FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect)
-		{
-			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
-
-			if (gainFocus)
-			{
-				if (Clickable)
-					CallOnClick();
-			}
-		}
-
 		void Initialize()
 		{
 			if (Background != null)
 				DrawableCompat.Wrap(Background);
 
 			Focusable = true;
+			FocusableInTouchMode = false;
 			Clickable = true;
 			InputType = InputTypes.Null;
 

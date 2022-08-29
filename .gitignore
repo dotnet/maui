@@ -372,3 +372,6 @@ FodyWeavers.xsd
 .gradle/
 .idea/
 local.properties
+
+# Directory Build overrides for local setups
+Directory.Build.Override.props

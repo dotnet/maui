@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
+    <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
@@ -42,21 +42,13 @@
   <!-- include/exclude the *.<platform>.cs files -->
   <ItemGroup>
     <None Include="@(Compile)" />
-    <None Include="Handlers\Entry\EntryHandlerTests.Windows.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <Compile Remove="Handlers\*\*.cs" />
-    <Compile Include="Handlers\ActivityIndicator\*.cs" />
-    <Compile Include="Handlers\Button\*.cs" />
-    <Compile Include="Handlers\Layout\*.cs" />
-    <Compile Include="Handlers\Editor\*.cs" />
-    <Compile Include="Handlers\Entry\*.cs" />
-    <Compile Include="Handlers\Navigation\*.cs" />
-    <Compile Include="Handlers\RadioButton\*.cs" />
-    <Compile Include="Handlers\Switch\*.cs" />
-    <Compile Include="Handlers\TextInput\*.cs" />
-    <Compile Include="Handlers\View\*.cs" />
-    <Compile Include="Handlers\Window\*.cs" />
+    <Compile Remove="Handlers\Fonts\*.cs" />
+    <Compile Remove="Handlers\Image\*.cs" />
+    <Compile Remove="Handlers\ImageButton\*.cs" />
+    <Compile Remove="Handlers\RefreshView\*.cs" />
+    <Compile Remove="Handlers\ShapeView\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
     <Compile Remove="**\*.Android.cs" />
@@ -69,5 +61,5 @@
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
-
+  
 </Project>

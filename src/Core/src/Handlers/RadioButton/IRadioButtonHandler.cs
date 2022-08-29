@@ -5,7 +5,7 @@ using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.RadioButton;
 #elif TIZEN
-using PlatformView = Microsoft.Maui.Platform.MauiRadioButton;
+using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

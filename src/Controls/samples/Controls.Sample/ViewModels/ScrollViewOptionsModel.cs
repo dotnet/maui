@@ -31,8 +31,8 @@ namespace Maui.Controls.Sample.ViewModels
 				"Default Template with Large Item Spacing", new ScrollViewTemplatePageModel{ Spacing = 200 }),
 
 			new SectionModel(typeof(ScrollViewTemplatePage), "Large Item Spacing, ScrollView Padding",
-				"Default Template with Large Item Spacing and ScrollView Padding", 
-				new ScrollViewTemplatePageModel{ Spacing = 200, ScrollViewPadding = new Thickness(25), 
+				"Default Template with Large Item Spacing and ScrollView Padding",
+				new ScrollViewTemplatePageModel{ Spacing = 200, ScrollViewPadding = new Thickness(25),
 					ContentBackground = Colors.LightBlue, VerticalAlignment = LayoutOptions.Fill }),
 
 

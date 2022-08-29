@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
 		Drawable? _clearButtonDrawable;
+		bool _clearButtonVisible;
 		bool _set;
 
 		protected override AppCompatEditText CreatePlatformView()
@@ -127,21 +128,32 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateClearButtonVisibility(entry, platformHandler.GetClearButtonDrawable);
 		}
 
-		void OnTextChanged(object? sender, TextChangedEventArgs e) =>
-			VirtualView?.UpdateText(e);
+		void OnTextChanged(object? sender, TextChangedEventArgs e)
+		{
+			if (VirtualView == null)
+			{
+				return;
+			}
 
-		// This will eliminate additional native property setting if not required.
+			VirtualView.UpdateText(e);
+			MapClearButtonVisibility(this, VirtualView);
+		}
+
 		void OnFocusedChange(object? sender, FocusChangeEventArgs e)
 		{
-			if (VirtualView?.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
-				UpdateValue(nameof(IEntry.ClearButtonVisibility));
+			if (VirtualView == null)
+			{
+				return;
+			}
+
+			MapClearButtonVisibility(this, VirtualView);
 		}
 
 		// Check whether the touched position inbounds with clear button.
 		void OnTouch(object? sender, TouchEventArgs e) =>
 			e.Handled =
-				VirtualView?.ClearButtonVisibility == ClearButtonVisibility.WhileEditing &&
-				PlatformView.HandleClearButtonTouched(VirtualView.FlowDirection, e, GetClearButtonDrawable);
+				_clearButtonVisible && VirtualView != null &&
+				PlatformView.HandleClearButtonTouched(e, GetClearButtonDrawable);
 
 		void OnEditorAction(object? sender, EditorActionEventArgs e)
 		{
@@ -165,6 +177,38 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
+		}
+
+		internal void ShowClearButton()
+		{
+			if (_clearButtonVisible)
+			{
+				return;
+			}
+
+			var drawable = GetClearButtonDrawable();
+
+			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
+			{
+				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+			}
+			else
+			{
+				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
+			}
+
+			_clearButtonVisible = true;
+		}
+
+		internal void HideClearButton()
+		{
+			if (!_clearButtonVisible)
+			{
+				return;
+			}
+
+			PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+			_clearButtonVisible = false;
 		}
 	}
 }

@@ -1,14 +1,17 @@
 using System;
-using ElmSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Tizen.Applications;
+using Tizen.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiApplication : CoreUIApplication, IPlatformApplication
+	public abstract class MauiApplication : NUIApplication, IPlatformApplication
 	{
+		internal Func<bool>? _handleBackButtonPressed;
+
 		IMauiContext _applicationContext = null!;
 
 		protected MauiApplication()
@@ -22,12 +25,10 @@ namespace Microsoft.Maui
 		protected override void OnPreCreate()
 		{
 			base.OnPreCreate();
-
-			Elementary.Initialize();
-			Elementary.ThemeOverlay();
+			FocusManager.Instance.EnableDefaultAlgorithm(true);
+			NView.SetDefaultGrabTouchAfterLeave(true);
 
 			var mauiApp = CreateMauiApp();
-
 			var rootContext = new MauiContext(mauiApp.Services);
 
 			var platformWindow = CoreAppExtensions.GetDefaultWindow();
@@ -38,7 +39,10 @@ namespace Microsoft.Maui
 
 			Services = _applicationContext.Services;
 
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
+			if (Services == null)
+				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
+
+			Current.Services.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
 		}
 
 		protected override void OnCreate()
@@ -52,6 +56,11 @@ namespace Microsoft.Maui
 			this.CreatePlatformWindow(Application);
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
+		}
+
+		public void SetBackButtonPressedHandler(Func<bool> handler)
+		{
+			_handleBackButtonPressed = handler;
 		}
 
 		protected override void OnAppControlReceived(AppControlReceivedEventArgs e)

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UILabel platformLabel, ILabel label)
 		{
-			platformLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatformHorizontal(label);
+			platformLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatformHorizontal(platformLabel.EffectiveUserInterfaceLayoutDirection);
 		}
 
 		// Don't use this method, it doesn't work. But we can't remove it.

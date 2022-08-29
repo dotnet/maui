@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -24,6 +25,30 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FlowDirectionProperty =
 			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
+
+		public static readonly BindableProperty XProperty = BindableProperty.Create(
+			nameof(X), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+
+		public static readonly BindableProperty YProperty = BindableProperty.Create(
+			nameof(Y), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+
+		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
+			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+
+		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
+			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+
+		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
+			nameof(MaximumWidth), typeof(double), typeof(Window), Primitives.Dimension.Maximum);
+
+		public static readonly BindableProperty MaximumHeightProperty = BindableProperty.Create(
+			nameof(MaximumHeight), typeof(double), typeof(Window), Primitives.Dimension.Maximum);
+
+		public static readonly BindableProperty MinimumWidthProperty = BindableProperty.Create(
+			nameof(MinimumWidth), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
+
+		public static readonly BindableProperty MinimumHeightProperty = BindableProperty.Create(
+			nameof(MinimumHeight), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -46,6 +71,8 @@ namespace Microsoft.Maui.Controls
 				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
 			}
 		}
+
+		public event EventHandler? SizeChanged;
 
 		public IReadOnlyCollection<IWindowOverlay> Overlays => _overlays.ToList().AsReadOnly();
 
@@ -84,6 +111,114 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Page?)GetValue(PageProperty);
 			set => SetValue(PageProperty, value);
+		}
+
+		public double X
+		{
+			get => (double)GetValue(XProperty);
+			set => SetValue(XProperty, value);
+		}
+
+		public double Y
+		{
+			get => (double)GetValue(YProperty);
+			set => SetValue(YProperty, value);
+		}
+
+		public double Width
+		{
+			get => (double)GetValue(WidthProperty);
+			set => SetValue(WidthProperty, value);
+		}
+
+		public double Height
+		{
+			get => (double)GetValue(HeightProperty);
+			set => SetValue(HeightProperty, value);
+		}
+
+		public double MaximumWidth
+		{
+			get => (double)GetValue(MaximumWidthProperty);
+			set => SetValue(MaximumWidthProperty, value);
+		}
+
+		public double MaximumHeight
+		{
+			get => (double)GetValue(MaximumHeightProperty);
+			set => SetValue(MaximumHeightProperty, value);
+		}
+
+		public double MinimumWidth
+		{
+			get => (double)GetValue(MinimumWidthProperty);
+			set => SetValue(MinimumWidthProperty, value);
+		}
+
+		public double MinimumHeight
+		{
+			get => (double)GetValue(MinimumHeightProperty);
+			set => SetValue(MinimumHeightProperty, value);
+		}
+
+		double IWindow.X => GetPositionCoordinate(XProperty);
+
+		double IWindow.Y => GetPositionCoordinate(YProperty);
+
+		double IWindow.Width => GetSizeCoordinate(WidthProperty);
+
+		double IWindow.Height => GetSizeCoordinate(HeightProperty);
+
+		double IWindow.MaximumWidth => GetSizeCoordinate(MaximumWidthProperty);
+
+		double IWindow.MaximumHeight => GetSizeCoordinate(MaximumHeightProperty);
+
+		double IWindow.MinimumWidth => GetSizeCoordinate(MinimumWidthProperty);
+
+		double IWindow.MinimumHeight => GetSizeCoordinate(MinimumHeightProperty);
+
+		double GetPositionCoordinate(BindableProperty property)
+		{
+			if (!IsSet(property))
+				return Primitives.Dimension.Unset;
+			var coord = (double)GetValue(property);
+			if (!Primitives.Dimension.IsExplicitSet(coord))
+				return Primitives.Dimension.Unset;
+			return coord;
+		}
+
+		double GetSizeCoordinate(BindableProperty property)
+		{
+			if (!IsSet(property))
+				return Primitives.Dimension.Unset;
+			var coord = (double)GetValue(property);
+			if (coord == -1 || !Primitives.Dimension.IsExplicitSet(coord))
+				return Primitives.Dimension.Unset;
+			return ValidatePositive(coord);
+		}
+
+		int _batchFrameUpdate = 0;
+
+		void IWindow.FrameChanged(Rect frame)
+		{
+			if (new Rect(X, Y, Width, Height) == frame)
+				return;
+
+			_batchFrameUpdate++;
+
+			X = frame.X;
+			Y = frame.Y;
+			Width = frame.Width;
+			Height = frame.Height;
+
+			_batchFrameUpdate--;
+			if (_batchFrameUpdate < 0)
+				_batchFrameUpdate = 0;
+
+			if (_batchFrameUpdate == 0)
+			{
+				SizeChanged?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
@@ -264,13 +399,19 @@ namespace Microsoft.Maui.Controls
 				{
 					_visualChildren.Add(item);
 					OnChildAdded(item);
-					// TODO once we have better life cycle events on pages 
-					if (item is Page)
+
+					if (Parent != null && item is Page)
 					{
 						SendWindowAppearing();
 					}
 				}
 			}
+		}
+
+		internal void FinishedAddingWindowToApplication(Application application)
+		{
+			if (Parent != null)
+				SendWindowAppearing();
 		}
 
 		void SendWindowAppearing()
@@ -512,6 +653,11 @@ namespace Microsoft.Maui.Controls
 
 			return this.Page?.SendBackButtonPressed() ?? false;
 		}
+
+		static double ValidatePositive(double value, [CallerMemberName] string? name = null) =>
+			value >= 0
+				? value
+				: throw new InvalidOperationException($"{name} cannot be less than zero.");
 
 		class NavigationImpl : NavigationProxy
 		{
