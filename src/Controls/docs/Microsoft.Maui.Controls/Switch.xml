@@ -88,7 +88,7 @@ namespace FormsGallery
 }]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Switch.TripleScreenShot.png" />
+        <img href="_images/Switch.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

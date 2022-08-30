@@ -57,7 +57,7 @@ MainPage = new ContentPage
       </example>
       <block type="note">Application developers should not nest one <see cref="T:Microsoft.Maui.Controls.ScrollView" /> within another. Additionally, they should refrain from nesting them  other elements that can scroll, such as <see cref="T:Microsoft.Maui.Controls.WebView" />.</block>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/ScrollView.TripleScreenShot.png" />
+        <img href="_images/ScrollView.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

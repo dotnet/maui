@@ -47,7 +47,7 @@
     <remarks>
       <para>For single line entries, see <see cref="T:Microsoft.Maui.Controls.Entry" />.</para>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Editor.TripleScreenShot.png" />
+        <img href="_images/Editor.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

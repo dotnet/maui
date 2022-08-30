@@ -77,7 +77,7 @@ namespace FormsGallery
 ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/EntryCell.TripleScreenShot.png" />
+        <img href="_images/EntryCell.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

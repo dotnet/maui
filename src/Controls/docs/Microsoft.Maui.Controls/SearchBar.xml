@@ -82,7 +82,7 @@ public class App : Application
 }]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/SearchBar.TripleScreenShot.png" />
+        <img href="_images/SearchBar.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

@@ -86,7 +86,7 @@ namespace FormsGallery
 }]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/WebView.TripleScreenShot.png" />
+        <img href="_images/WebView.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

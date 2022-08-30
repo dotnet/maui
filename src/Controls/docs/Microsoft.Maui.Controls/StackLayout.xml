@@ -109,7 +109,7 @@ StackLayout stackLayout = new StackLayout
 ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/StackLayout.TripleScreenShot.png" />
+        <img href="_images/StackLayout.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

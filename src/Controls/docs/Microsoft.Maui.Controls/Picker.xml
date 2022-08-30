@@ -119,7 +119,7 @@ namespace FormsGallery
 ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Picker.TripleScreenShot.png" />
+        <img href="_images/Picker.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
