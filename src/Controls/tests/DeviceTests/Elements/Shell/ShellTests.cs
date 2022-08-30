@@ -49,6 +49,53 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task FlyoutWithAsMultipleItemsRendersWithoutCrashing()
+		{
+			SetupBuilder();
+
+			Shell shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new FlyoutItem()
+				{
+					FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+					Items =
+					{
+						new ShellSection()
+						{
+							FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+							Items =
+							{
+								new ShellContent()
+								{
+									ContentTemplate = new DataTemplate(() => new ContentPage())
+								}
+							}
+						},
+						new ShellSection()
+						{
+							FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+							Items =
+							{
+								new ShellContent()
+								{
+									ContentTemplate = new DataTemplate(() => new ContentPage())
+								}
+							}
+						}
+					}
+				});
+			});
+
+			bool finished = false;
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (_) =>
+			{
+				finished = true;
+			});
+
+			Assert.True(finished);
+		}
+
 		[Fact(DisplayName = "Appearing Fires Before NavigatedTo")]
 		public async Task AppearingFiresBeforeNavigatedTo()
 		{
