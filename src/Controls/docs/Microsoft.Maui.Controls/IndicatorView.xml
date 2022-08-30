@@ -114,17 +114,17 @@
       </Docs>
     </Member>
     <Member MemberName="IndicatorColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color IndicatorColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color IndicatorColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color IndicatorColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color IndicatorColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.IndicatorView.IndicatorColor" />
-      <MemberSignature Language="F#" Value="member this.IndicatorColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.IndicatorView.IndicatorColor" />
+      <MemberSignature Language="F#" Value="member this.IndicatorColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.IndicatorView.IndicatorColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -417,17 +417,17 @@
       </Docs>
     </Member>
     <Member MemberName="SelectedIndicatorColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color SelectedIndicatorColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color SelectedIndicatorColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color SelectedIndicatorColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color SelectedIndicatorColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.IndicatorView.SelectedIndicatorColor" />
-      <MemberSignature Language="F#" Value="member this.SelectedIndicatorColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.IndicatorView.SelectedIndicatorColor" />
+      <MemberSignature Language="F#" Value="member this.SelectedIndicatorColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.IndicatorView.SelectedIndicatorColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

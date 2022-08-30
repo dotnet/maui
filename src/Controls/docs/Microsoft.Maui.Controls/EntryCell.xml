@@ -251,10 +251,10 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="LabelColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color LabelColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color LabelColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color LabelColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color LabelColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.EntryCell.LabelColor" />
-      <MemberSignature Language="F#" Value="member this.LabelColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.EntryCell.LabelColor" />
+      <MemberSignature Language="F#" Value="member this.LabelColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.EntryCell.LabelColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -268,7 +268,7 @@ namespace FormsGallery
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the Color used for rendering the Label property. This is a bindable property.</summary>

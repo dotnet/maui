@@ -182,10 +182,10 @@
       </Docs>
     </Member>
     <Member MemberName="BackgroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color BackgroundColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color BackgroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BackgroundColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BackgroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.VisualElement.BackgroundColor" />
-      <MemberSignature Language="F#" Value="member this.BackgroundColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.VisualElement.BackgroundColor" />
+      <MemberSignature Language="F#" Value="member this.BackgroundColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.VisualElement.BackgroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -199,11 +199,11 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color which will fill the background of a VisualElement. This is a bindable property.</summary>
-        <value>The color that is used to fill the background of a VisualElement. The default is <see cref="P:Microsoft.Maui.Controls.Color.Default" />.</value>
+        <value>The color that is used to fill the background of a VisualElement.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

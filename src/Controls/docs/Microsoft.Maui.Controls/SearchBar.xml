@@ -110,10 +110,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="CancelButtonColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color CancelButtonColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color CancelButtonColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color CancelButtonColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color CancelButtonColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.SearchBar.CancelButtonColor" />
-      <MemberSignature Language="F#" Value="member this.CancelButtonColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.SearchBar.CancelButtonColor" />
+      <MemberSignature Language="F#" Value="member this.CancelButtonColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.SearchBar.CancelButtonColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -124,7 +124,7 @@ public class App : Application
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color of the cancel button.</summary>
