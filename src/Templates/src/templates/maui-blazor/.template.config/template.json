@@ -59,6 +59,12 @@
         "datatype": "string",
         "replaces": "com.companyname.MauiApp.1"
       },
+      "msExtensionsVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "MS_EXT_VERSION",
+        "defaultValue": "MS_EXT_VERSION_VALUE"
+      },
       "Framework": {
         "type": "parameter",
         "description": "The target framework for the project.",

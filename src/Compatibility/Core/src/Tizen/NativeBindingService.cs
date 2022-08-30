@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml.Internals;
 
-using EObject = ElmSharp.EvasObject;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
-			var view = target as EObject;
+			var view = target as NView;
 			if (view == null)
 				return false;
 			if (target.GetType().GetProperty(propertyName)?.GetMethod == null)
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public bool TrySetBinding(object target, BindableProperty property, BindingBase binding)
 		{
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
-			var view = target as EObject;
+			var view = target as NView;
 			if (view == null)
 				return false;
 			view.SetBinding(property, binding);
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		public bool TrySetValue(object target, BindableProperty property, object value)
 		{
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
-			var view = target as EObject;
+			var view = target as NView;
 			if (view == null)
 				return false;
 			view.SetValue(property, value);

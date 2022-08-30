@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Devices
 		[DllImport("libcapi-system-device.so.0", EntryPoint = "device_power_release_lock")]
 		static extern void ReleaseKeepScreenOn(int type = 1);
 
-		static CoreUIApplication CoreUIApplication => Application.Current as CoreUIApplication;
+		static CoreApplication CoreApplication => Application.Current as CoreApplication;
 		static int displayWidth = PlatformUtils.GetFeatureInfo<int>("screen.width");
 		static int displayHeight = PlatformUtils.GetFeatureInfo<int>("screen.height");
 		static int displayDpi = DeviceInfo.Idiom == DeviceIdiom.TV ? 72 : PlatformUtils.GetFeatureInfo<int>("screen.dpi");
@@ -46,17 +46,17 @@ namespace Microsoft.Maui.Devices
 
 		protected override void StartScreenMetricsListeners()
 		{
-			if (CoreUIApplication != null)
+			if (CoreApplication != null)
 			{
-				CoreUIApplication.DeviceOrientationChanged += OnRotationChanged;
+				CoreApplication.DeviceOrientationChanged += OnRotationChanged;
 			}
 		}
 
 		protected override void StopScreenMetricsListeners()
 		{
-			if (CoreUIApplication != null)
+			if (CoreApplication != null)
 			{
-				CoreUIApplication.DeviceOrientationChanged -= OnRotationChanged;
+				CoreApplication.DeviceOrientationChanged -= OnRotationChanged;
 			}
 		}
 

@@ -12,7 +12,9 @@
   </PropertyGroup>
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Graphics" />
+    <ProjectReference Include="..\..\Graphics\src\Graphics\Graphics.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\..\..\LICENSE" PackagePath="" Pack="true" />
     <None Include="..\..\..\Assets\xamarin.essentials_128x128.png" PackagePath="icon.png" Pack="true" />
     <None Include="nugetreadme.txt" PackagePath="readme.txt" Pack="true" />

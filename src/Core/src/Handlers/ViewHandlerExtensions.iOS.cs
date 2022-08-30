@@ -90,13 +90,24 @@ namespace Microsoft.Maui
 			if (platformView == null)
 				return;
 
+			var centerX = rect.Center.X;
+			var boundsX = (double)platformView.Bounds.X;
+
+			var parent = platformView.Superview;
+			if (parent?.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				// We'll need to adjust the center point to reflect the RTL layout
+				centerX = parent.Bounds.Right - rect.Center.X;
+				boundsX = boundsX - (rect.Center.X - centerX);
+			}
+
 			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
 			// anything other than the identity (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
-			platformView.Center = new CoreGraphics.CGPoint(rect.Center.X, rect.Center.Y);
+			platformView.Center = new CGPoint(centerX, rect.Center.Y);
 
 			// The position of Bounds is usually (0,0), but in some cases (e.g., UIScrollView) it's the content offset.
-			// So just leave it a whatever value iOS thinks it should be.
-			platformView.Bounds = new CoreGraphics.CGRect(platformView.Bounds.X, platformView.Bounds.Y, rect.Width, rect.Height);
+			// So just leave it whatever value iOS thinks it should be (adjusted for RTL if appropriate)
+			platformView.Bounds = new CGRect(boundsX, platformView.Bounds.Y, rect.Width, rect.Height);
 
 			viewHandler.Invoke(nameof(IView.Frame), rect);
 		}

@@ -159,9 +159,19 @@ namespace Microsoft.Maui.DeviceTests
 			return FlowDirection.LeftToRight;
 		}
 
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
+		protected UIView GetAccessiblePlatformView(IViewHandler viewHandler)
 		{
 			var platformView = ((UIView)viewHandler.PlatformView);
+
+			if (platformView is UISearchBar searchBar)
+				platformView = searchBar.GetSearchTextField();
+
+			return platformView;
+		}
+
+		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
+		{
+			var platformView = GetAccessiblePlatformView(viewHandler);
 
 			// UIControl elements when instantiated have IsAccessibilityElement set to false.
 			// Once they are added to the visual tree then iOS transitions IsAccessibilityElement
@@ -182,13 +192,13 @@ namespace Microsoft.Maui.DeviceTests
 			((UIView)viewHandler.PlatformView).GetViewTransform();
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).AccessibilityLabel;
+			GetAccessiblePlatformView(viewHandler).AccessibilityLabel;
 
 		protected string GetSemanticHint(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).AccessibilityHint;
+			GetAccessiblePlatformView(viewHandler).AccessibilityHint;
 
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
+			GetAccessiblePlatformView(viewHandler).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
 				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
 		protected nfloat GetOpacity(IViewHandler viewHandler) =>

@@ -1,19 +1,10 @@
-using Tizen.UIExtensions.ElmSharp;
-using EColor = ElmSharp.Color;
-using EProgressBar = ElmSharp.ProgressBar;
+using Tizen.UIExtensions.NUI.GraphicsView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ActivityIndicatorHandler : ViewHandler<IActivityIndicator, EProgressBar>
+	public partial class ActivityIndicatorHandler : ViewHandler<IActivityIndicator, ActivityIndicator>
 	{
-		protected virtual EColor DefaultColor => ThemeConstants.ProgressBar.ColorClass.Default;
-
-		protected override EProgressBar CreatePlatformView()
-		{
-			var progressBar = new EProgressBar(PlatformParent) { IsPulseMode = true }.SetSmallStyle();
-			progressBar.Color = DefaultColor;
-			return progressBar;
-		}
+		protected override ActivityIndicator CreatePlatformView() => new ActivityIndicator();
 
 		public static void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
