@@ -2358,7 +2358,6 @@ static Microsoft.Maui.Handlers.TimePickerHandler.MapTextColor(Microsoft.Maui.Han
 static Microsoft.Maui.Handlers.TimePickerHandler.MapTime(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.ToolbarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IToolbar!, Microsoft.Maui.Handlers.IToolbarHandler!>!
 static Microsoft.Maui.Handlers.ToolbarHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IToolbar!, Microsoft.Maui.Handlers.IToolbarHandler!>!
-static Microsoft.Maui.Handlers.ToolbarHandler.MapTitle(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.IToolbar! arg2) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapAnchorX(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapAnchorY(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapAutomationId(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
