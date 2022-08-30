@@ -7,8 +7,15 @@ on:
   issues:
     types: [opened]
 
+permissions:
+  contents: read
+
 jobs:
   label-partner-issues:
+    permissions:
+      # for eilon/IssueOpenerLabeler
+      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
 
     # Check out the repo into the workspace within the VM
