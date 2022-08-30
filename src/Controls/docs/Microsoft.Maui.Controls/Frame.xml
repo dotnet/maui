@@ -53,7 +53,7 @@
           ]]></code>
       </example>
       <para>
-        <img href="_images/Frame.iOS_Android_UWP.png" />
+        <img href="~/Microsoft.Maui.Controls/_images/Frame.iOS_Android_UWP.png" />
       </para>
     </remarks>
   </Docs>

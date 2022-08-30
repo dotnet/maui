@@ -142,7 +142,7 @@ class TabbedPageDemoPage2 : TabbedPage
       ]]></code>
       </example>
       <para>
-        <img href="_images/TabbedPage.TripleScreenShot.png" />
+        <img href="~/Microsoft.Maui.Controls/_images/TabbedPage.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

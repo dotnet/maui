@@ -35,7 +35,7 @@
     <remarks>
       <para>The visual representation of a DatePicker is very similar to the one of <see cref="T:Microsoft.Maui.Controls.Entry" />, except that a special control for picking a date appears in place of a keyboard.</para>
       <para>
-        <img href="_images/DatePicker.TripleScreenShot.png" />
+        <img href="~/Microsoft.Maui.Controls/_images/DatePicker.TripleScreenShot.png" />
       </para>
       <example>
         <para>The example below creates a working <see cref="T:Microsoft.Maui.Controls.DatePicker" /> that displays the current date and allows the user to select a date between the specified ranges. The value for the <see cref="P:Microsoft.Maui.Controls.DatePicker.Date" /> property is specified with the <c>x:Static</c> markup extension, and the <see cref="P:Microsoft.Maui.Controls.DatePicker.MinimumDate" /> and <see cref="P:Microsoft.Maui.Controls.DatePicker.MaximumDate" /> properties are specified by calling the <see cref="M:System.DateTime.Parse*" /> method with the <c>x:FactoryMethod</c> and <x>x:Arguments</x> tags. <block type="note">The example below requires a namespace declaration in the root <c>ContentPage</c> or <c>ContentView</c> tags. In particular, <c>xmlns:sys="clr-namespace:System;assembly=mscorlib"</c> must appear in the attribute list for the root element, so that the XAML parser can resolve the name, <c>sys:DateTime</c>.</block></para>

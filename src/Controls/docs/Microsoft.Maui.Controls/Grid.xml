@@ -134,7 +134,7 @@ namespace FormsGallery
       </example>
       <para>The following shows Grids on the various platforms:</para>
       <para>
-        <img href="_images/Grid.TripleScreenShot.png" />
+        <img href="~/Microsoft.Maui.Controls/_images/Grid.TripleScreenShot.png" />
       </para>
       <para>It is convenient for the <see cref="T:Microsoft.Maui.Controls.Grid" /> layout class to store row and column indices of each of its child elements. Additionally, when a <see cref="T:Microsoft.Maui.Controls.View" /> element is laid out with a grid, application developers can access and change the child's position and span from the child itself by using the <see cref="M:Microsoft.Maui.Controls.Grid.GetRow(Microsoft.Maui.Controls.BindableObject)" />, <see cref="M:Microsoft.Maui.Controls.Grid.SetRow(Microsoft.Maui.Controls.BindableObject,System.Int32)" />, <see cref="M:Microsoft.Maui.Controls.Grid.GetRowSpan(Microsoft.Maui.Controls.BindableObject)" />, <see cref="M:Microsoft.Maui.Controls.Grid.SetRowSpan(Microsoft.Maui.Controls.BindableObject,System.Int32)" /> static methods, and the equivalent static methods for columns and column spans.</para>
       <para>The documentation for the following <see cref="T:Microsoft.Maui.Controls.Grid" /> member methods contains XAML syntax examples:

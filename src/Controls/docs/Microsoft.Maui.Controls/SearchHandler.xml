@@ -958,7 +958,7 @@
         <summary>The <see cref="T:Microsoft.Maui.Controls.DataTemplate" /> to apply to each item in <see cref="P:Microsoft.Maui.Controls.SearchHandler.ItemsSource" />.</summary>
         <value>To be added.</value>
         <remarks>
-          <para>For example, to create the style shown here: <img src="_images/search-results-template.png" />, developers could use either the following XAML or C#:</para>
+          <para>For example, to create the style shown here: <img src="~/Microsoft.Maui.Controls/_images/search-results-template.png" />, developers could use either the following XAML or C#:</para>
           <example>
             <code lang="XAML"><![CDATA[<ContentPage ...
              xmlns:controls="clr-namespace:Xaminals.Controls">    

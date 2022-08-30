@@ -46,7 +46,7 @@ Debug.WriteLine ("Animation completed");
 ]]></code>
       </example>
       <para>
-        <img href="_images/ProgressBar.TripleScreenShot.png" />
+        <img href="~/Microsoft.Maui.Controls/_images/ProgressBar.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
