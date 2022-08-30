@@ -330,6 +330,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			map.MarkerClick += OnMarkerClick;
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
+			InitialUpdate();
 		}
 
 		internal void UpdateVisibleRegion(LatLng pos)
@@ -351,6 +352,14 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void MapViewLayoutChange(object? sender, Android.Views.View.LayoutChangeEventArgs e)
 		{
+			InitialUpdate();
+		}
+
+		void InitialUpdate()
+		{
+			if (Map == null)
+				return;
+
 			if (_init && _lastMoveToRegion != null)
 			{
 				MoveToRegion(_lastMoveToRegion, false);
@@ -361,10 +370,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				_init = false;
 			}
 
-			if (Map != null)
-			{
-				UpdateVisibleRegion(Map.CameraPosition.Target);
-			}
+			UpdateVisibleRegion(Map.CameraPosition.Target);
 		}
 
 		void MoveToRegion(MapSpan span, bool animate)
