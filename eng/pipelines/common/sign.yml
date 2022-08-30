@@ -14,7 +14,7 @@ stages:
           displayName: Sign Phase
           condition: and(succeeded(), eq(variables.signingCondition, true))
 
-      - template: nuget-msi-convert/job/v2.yml@xamarin-templates
+      - template: nuget-msi-convert/job/v3.yml@xamarin-templates
         parameters:
           yamlResourceName: xamarin-templates
           artifactName: nuget
@@ -23,6 +23,7 @@ stages:
           artifactPath: signed
           propsArtifactName: nuget
           signType: Real
+          useDateTimeVersion: false
           preConvertSteps:
             - task: DownloadPipelineArtifact@2
               displayName: Download library-packs nugets

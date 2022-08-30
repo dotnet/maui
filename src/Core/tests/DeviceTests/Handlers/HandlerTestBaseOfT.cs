@@ -46,11 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task SetValueAsync<TValue>(IView view, TValue value, Action<THandler, TValue> func)
 		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler(view);
-				func(handler, value);
-			});
+			return SetValueAsync<TValue, THandler>(view, value, func);
 		}
 
 		async protected Task ValidatePropertyInitValue<TValue>(

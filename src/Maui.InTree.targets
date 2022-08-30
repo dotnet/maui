@@ -1,4 +1,7 @@
 <Project>
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+		<ProjectCapability Include="Maui" />
+  </ItemGroup>
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />

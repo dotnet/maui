@@ -283,11 +283,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (textField == null)
 				return;
 
-			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatformHorizontal();
-			if (view != null)
-			{
-				textField.TextAlignment = textField.TextAlignment.AdjustForFlowDirection(view);
-			}
+			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatformHorizontal(textField.EffectiveUserInterfaceLayoutDirection);
 		}
 
 		void UpdateSearchBarVerticalTextAlignment(UITextField textField)

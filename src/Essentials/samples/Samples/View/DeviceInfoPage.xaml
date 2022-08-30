@@ -8,10 +8,10 @@
         <viewmodels:DeviceInfoViewModel />
     </views:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Find out about the device with ease." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <Label Text="Device Info:" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label Text="{Binding Model, StringFormat='Model: {0}'}" />
@@ -30,8 +30,11 @@
                 <Label Text="{Binding ScreenMetrics.Orientation, StringFormat='Orientation: {0}'}" />
                 <Label Text="{Binding ScreenMetrics.Rotation, StringFormat='Rotation: {0}'}" />
                 <Label Text="{Binding ScreenMetrics.RefreshRate, StringFormat='Refresh Rate: {0}'}" />
+
+                <Label Text="Top of Device Arrow:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="&#x2191;" FontSize="64" HorizontalOptions="Start" Rotation="{Binding Rotation}" />
             </StackLayout>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </views:BasePage>

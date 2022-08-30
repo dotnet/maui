@@ -110,16 +110,16 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		static void SetNativeText(EntryHandler entryHandler, string text) =>
+		internal static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
-		static int GetCursorStartPosition(EntryHandler entryHandler)
+		internal static int GetCursorStartPosition(EntryHandler entryHandler)
 		{
 			var control = GetNativeEntry(entryHandler);
 			return control.SelectionStart;
 		}
 
-		static void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
+		internal static void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
 		{
 			var control = GetNativeEntry(entryHandler);
 			control.SetSelection(position);

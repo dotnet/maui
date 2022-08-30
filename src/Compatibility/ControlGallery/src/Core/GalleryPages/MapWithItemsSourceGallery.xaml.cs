@@ -8,13 +8,15 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapWithItemsSourceGallery : ContentPage
 	{
-		static readonly Position startPosition = new Position(39.8283459, -98.5794797);
+		static readonly Location startPosition = new Location(39.8283459, -98.5794797);
 
 		public MapWithItemsSourceGallery()
 		{
@@ -41,9 +43,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 			public ViewModel()
 			{
 				_places = new ObservableCollection<Place>() {
-					new Place("New York, USA", "The City That Never Sleeps", new Position(40.67, -73.94)),
-					new Place("Los Angeles, USA", "City of Angels", new Position(34.11, -118.41)),
-					new Place("San Francisco, USA", "Bay City ", new Position(37.77, -122.45))
+					new Place("New York, USA", "The City That Never Sleeps", new Location(40.67, -73.94)),
+					new Place("Los Angeles, USA", "City of Angels", new Location(34.11, -118.41)),
+					new Place("San Francisco, USA", "Bay City ", new Location(37.77, -122.45))
 				};
 
 				AddPlaceCommand = new Command(AddPlace);
@@ -85,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 					foreach (Place place in Places)
 					{
-						place.Position = new Position(lastLatitude, place.Position.Longitude);
+						place.Position = new Location(lastLatitude, place.Position.Longitude);
 					}
 				});
 			}
@@ -107,16 +109,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 			{
 				static Random Random = new Random(Environment.TickCount);
 
-				public static Position Next()
+				public static Location Next(Location position, double latitudeRange, double longitudeRange)
 				{
-					return new Position(
-						latitude: Random.NextDouble() * 180 - 90,
-						longitude: Random.NextDouble() * 360 - 180);
-				}
-
-				public static Position Next(Position position, double latitudeRange, double longitudeRange)
-				{
-					return new Position(
+					return new Location(
 						latitude: position.Latitude + (Random.NextDouble() * 2 - 1) * latitudeRange,
 						longitude: position.Longitude + (Random.NextDouble() * 2 - 1) * longitudeRange);
 				}
@@ -129,14 +124,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 				return new Place(
 					$"Pin {_pinCreatedCount}",
 					$"Desc {_pinCreatedCount}",
-					RandomPosition.Next(startPosition, 8, 19));
+				 RandomPosition.Next(startPosition, 8, 19));
 			}
 		}
 
 		[Preserve(AllMembers = true)]
 		class Place : INotifyPropertyChanged
 		{
-			Position _position;
+			Location _position;
 
 			public event PropertyChangedEventHandler PropertyChanged;
 
@@ -144,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 			public string Description { get; }
 
-			public Position Position
+			public Location Position
 			{
 				get => _position;
 				set
@@ -157,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 				}
 			}
 
-			public Place(string address, string description, Position position)
+			public Place(string address, string description, Location position)
 			{
 				Address = address;
 				Description = description;
