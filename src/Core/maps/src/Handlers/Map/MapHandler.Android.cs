@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
-using Android;
-using Android.Content.PM;
+using System.Threading.Tasks;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.OS;
-using AndroidX.Core.Content;
 using Java.Lang;
-using Java.Util.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
@@ -103,25 +98,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (handler?.MauiContext?.Context == null)
 				return;
 
-			if (map.IsShowingUser)
-			{
-				var coarseLocationPermission = ContextCompat.CheckSelfPermission(handler.MauiContext.Context, Manifest.Permission.AccessCoarseLocation);
-				var fineLocationPermission = ContextCompat.CheckSelfPermission(handler.MauiContext.Context, Manifest.Permission.AccessFineLocation);
-
-				if (coarseLocationPermission == Permission.Granted || fineLocationPermission == Permission.Granted)
-				{
-					googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = true;
-				}
-				else
-				{
-					handler.MauiContext?.Services.GetService<ILogger<MapHandler>>()?.LogWarning("Missing location permissions for IsShowingUser");
-					googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
-				}
-			}
-			else
-			{
-				googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
-			}
+			SetIsShowingUser(handler, map, googleMap).FireAndForget(handler);
 		}
 
 		public static void MapIsScrollEnabled(IMapHandler handler, IMap map)
@@ -591,6 +568,36 @@ namespace Microsoft.Maui.Maps.Handlers
 			_circles.Add(nativeCircle);
 		}
 
+		static async Task SetIsShowingUser(IMapHandler handler, IMap map, GoogleMap googleMap)
+		{
+			if (map.IsShowingUser)
+			{
+				var locationStatus = await ApplicationModel.Permissions.CheckStatusAsync<Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse>();
+
+				if (locationStatus == ApplicationModel.PermissionStatus.Granted)
+				{
+					googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = true;
+				}
+				else
+				{
+					var locationResult = await Microsoft.Maui.ApplicationModel.Permissions.RequestAsync<Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse>();
+					if (locationResult == ApplicationModel.PermissionStatus.Granted)
+					{
+						googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = true;
+						return;
+					}
+					else
+					{
+						handler.MauiContext?.Services.GetService<ILogger<MapHandler>>()?.LogWarning("Missing location permissions for IsShowingUser");
+						googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
+					}
+				}
+			}
+			else
+			{
+				googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
+			}
+		}
 	}
 
 	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
