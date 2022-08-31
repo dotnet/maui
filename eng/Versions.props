@@ -58,7 +58,7 @@
     -->
     <_SkiaSharpVersion>2.88.2-preview.5</_SkiaSharpVersion>
     <_HarfBuzzSharpVersion>2.8.2.2-preview.5</_HarfBuzzSharpVersion>
-    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.a26ea4ca482ae8a2f0a530874264328885cce2c4.475</_SkiaSharpNativeAssetsVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.88c096095fc1cf61a64b47b7044e9e89e3f6c097.480</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.5.22226.1</MicrosoftTemplateEngineTasksVersion>
     <MicrosoftDotNetXHarnessTestRunnersCommonVersion>1.0.0-prerelease.22429.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
     <MicrosoftDotNetXHarnessTestRunnersXunitVersion>1.0.0-prerelease.22429.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
