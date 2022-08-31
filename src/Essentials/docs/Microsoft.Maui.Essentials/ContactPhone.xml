@@ -1,7 +1,7 @@
-<Type Name="ContactPhone" FullName="Microsoft.Maui.ApplicationModel.CommunicationPhone">
+<Type Name="ContactPhone" FullName="Microsoft.Maui.ApplicationModel.Communication.ContactPhone">
   <TypeSignature Language="C#" Value="public class ContactPhone" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ContactPhone extends System.Object" />
-  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.ApplicationModel.CommunicationPhone" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.ApplicationModel.Communication.ContactPhone" />
   <AssemblyInfo>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -18,7 +18,7 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public ContactPhone ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.ApplicationModel.CommunicationPhone.#ctor" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.ApplicationModel.Communication.ContactPhone.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
@@ -26,14 +26,14 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>Constructs a new instance of <see cref="T:Microsoft.Maui.ApplicationModel.CommunicationPhone" />.</summary>
+        <summary>Constructs a new instance of <see cref="T:Microsoft.Maui.ApplicationModel.Communication.ContactPhone" />.</summary>
         <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public ContactPhone (string phoneNumber);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string phoneNumber) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.ApplicationModel.CommunicationPhone.#ctor(System.String)" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.ApplicationModel.Communication.ContactPhone.#ctor(System.String)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
@@ -44,14 +44,14 @@
       </Parameters>
       <Docs>
         <param name="phoneNumber">The phone number.</param>
-        <summary>Constructs a new instance of <see cref="T:Microsoft.Maui.ApplicationModel.CommunicationPhone" /> using the various parameters.</summary>
+        <summary>Constructs a new instance of <see cref="T:Microsoft.Maui.ApplicationModel.Communication.ContactPhone" /> using the various parameters.</summary>
         <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="PhoneNumber">
       <MemberSignature Language="C#" Value="public string PhoneNumber { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string PhoneNumber" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.ApplicationModel.CommunicationPhone.PhoneNumber" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.ApplicationModel.Communication.ContactPhone.PhoneNumber" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
@@ -69,7 +69,7 @@
     <Member MemberName="ToString">
       <MemberSignature Language="C#" Value="public override string ToString ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.ApplicationModel.CommunicationPhone.ToString" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.ApplicationModel.Communication.ContactPhone.ToString" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
@@ -81,7 +81,7 @@
       <Parameters />
       <Docs>
         <summary>
-          <see cref="P:Microsoft.Maui.ApplicationModel.CommunicationPhone.PhoneNumber" />
+          <see cref="P:Microsoft.Maui.ApplicationModel.Communication.ContactPhone.PhoneNumber" />
         </summary>
         <returns></returns>
         <remarks></remarks>
