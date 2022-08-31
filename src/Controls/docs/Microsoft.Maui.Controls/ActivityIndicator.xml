@@ -32,7 +32,7 @@
     <remarks>
       <para>This control gives a visual clue to the user that something is happening, without information about its progress.</para>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/ActivityIndicator.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/ActivityIndicator.TripleScreenShot.png" />
       </para>
       <example>
         <para>The example below creates a red activity indicator that is animated to imply that an activity is ongoing:</para>

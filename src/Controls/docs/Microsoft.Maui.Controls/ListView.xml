@@ -47,7 +47,7 @@
     <summary>An <see cref="T:Microsoft.Maui.Controls.ItemsView`1" /> that displays a collection of data as a vertical list.</summary>
     <remarks>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/ListView.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/ListView.TripleScreenShot.png" />
       </para>
       <para>The following example shows a basic use:</para>
       <example>

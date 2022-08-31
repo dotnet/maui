@@ -81,7 +81,7 @@ namespace FormsGallery
 ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/BoxView.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/BoxView.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

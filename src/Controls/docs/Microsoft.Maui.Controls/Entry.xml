@@ -59,7 +59,7 @@ View CreateLoginForm ()
         <para>The FormsGallery sample, which can be found on the <format type="text/html"><a href="https://developer.xamarin.com/samples/tag/Microsoft.Maui.Controls/" target="_blank">Sample Applications</a></format> page, has an EntryDemoPage.cs file. This file contains a more complete example.</para>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Entry.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Entry.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

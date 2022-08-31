@@ -61,7 +61,7 @@
         <remarks>
           <para>This property behaves similarly to <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" />, but applies to how entire rows or columns are aligned, not individual elements. The below image illustrates three different <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignContent" /> values working on wrapped rows. The iOS screenshot shows <see cref="F:Microsoft.Maui.Controls.FlexAlignContent.SpaceBetween" />, the Android screenshot shows <see cref="F:Microsoft.Maui.Controls.FlexAlignContent.SpaceAround" />, and the UWP screenshot shows <see cref="F:Microsoft.Maui.Controls.FlexAlignContent.SpaceEvenly" />.</para>
           <para>
-            <img href="~/Microsoft.Maui.Controls/_images/ExperimentAlignContent2-Large.png" />
+            <img href="~/xml/Microsoft.Maui.Controls/_images/ExperimentAlignContent2-Large.png" />
           </para>
         </remarks>
       </Docs>
@@ -105,7 +105,7 @@
         <remarks>
           <para>The following image shows the options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> with <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> set to <see cref="F:Microsoft.Maui.Controls.FlexDirection.Column" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> set to <see cref="F:Microsoft.Maui.Controls.FlexJustify.Start" />:</para>
           <para>
-            <img href="~/Microsoft.Maui.Controls/_images/FlexAlign.All.png" />
+            <img href="~/xml/Microsoft.Maui.Controls/_images/FlexAlign.All.png" />
           </para>
         </remarks>
       </Docs>
@@ -187,7 +187,7 @@
         <remarks>
           <para>The following image shows the options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> with <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> set to <see cref="F:Microsoft.Maui.Controls.FlexJustify.Start" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> set to <see cref="F:Microsoft.Maui.Controls.FlexAlignItems.Stretch" />:</para>
           <para>
-            <img href="~/Microsoft.Maui.Controls/_images/FlexDirection.All.png" />
+            <img href="~/xml/Microsoft.Maui.Controls/_images/FlexDirection.All.png" />
           </para>
         </remarks>
       </Docs>
@@ -370,7 +370,7 @@
         <remarks>
           <para>The following image shows options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> when <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> is set to <see cref="F:Microsoft.Maui.Controls.FlexDirection.Column" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> is set to <see cref="F:Microsoft.Maui.Controls.FlexAlignItems.Stretch" />:</para>
           <para>
-            <img href="~/Microsoft.Maui.Controls/_images/FlexJustify.All.png" />
+            <img href="~/xml/Microsoft.Maui.Controls/_images/FlexJustify.All.png" />
           </para>
         </remarks>
       </Docs>
@@ -598,7 +598,7 @@
         <remarks>
           <para>The following image shows the effect of <c>FlexLayout.SetAlignSelf(c, FlexAlignSelf.Start);</c> on a layout with<see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> value of <see cref="F:Microsoft.Maui.Controls.FlexAlignItems.Stretch" />: </para>
           <para>
-            <img href="~/Microsoft.Maui.Controls/_images/FlexLayout.SetAlignSelf.png" />
+            <img href="~/xml/Microsoft.Maui.Controls/_images/FlexLayout.SetAlignSelf.png" />
           </para>
         </remarks>
       </Docs>
@@ -679,7 +679,7 @@
           <para>Multiple elements may have the same ordering priority, in which case they will appear in the order in which they occur in the <see cref="P:Microsoft.Maui.Controls.Layout`1.Children" /> list. By default, the value of <see cref="M:Microsoft.Maui.Controls.FlexLayout.GetOrder(Microsoft.Maui.Controls.BindableObject)" /> is 0.</para>
           <para>For instance, if 3 children <c>a</c>, <c>b</c>, and <c>c</c> are added in order, and the developer wishes <c>c</c> to appear in the middle, the proper code is <c>FlexLayout.SetOrder(b, 1)</c>. (A developer mistaking order priority for an index might wrongly expect <c>FlexLayout.SetOrder(c, 1)</c> to work, but as <c>a</c> and <c>b</c> will still have order priority <c>0</c>, the elements in that case would still layout in the sequence <c>a, b, c</c>.</para>
           <para>
-            <img href="~/Microsoft.Maui.Controls/_images/FlexLayout.SetOrder.png" />
+            <img href="~/xml/Microsoft.Maui.Controls/_images/FlexLayout.SetOrder.png" />
           </para>
         </remarks>
       </Docs>

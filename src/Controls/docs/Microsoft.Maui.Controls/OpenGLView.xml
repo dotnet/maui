@@ -99,7 +99,7 @@ namespace opengl
           ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/OpenGLView.Example.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/OpenGLView.Example.png" />
       </para>
     </remarks>
   </Docs>

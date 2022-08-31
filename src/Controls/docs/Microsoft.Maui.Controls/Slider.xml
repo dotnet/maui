@@ -34,7 +34,7 @@
     <summary>A <see cref="T:Microsoft.Maui.Controls.View" /> control that inputs a linear value.</summary>
     <remarks>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Slider.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Slider.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

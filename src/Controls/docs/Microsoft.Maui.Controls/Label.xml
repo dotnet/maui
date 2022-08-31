@@ -41,7 +41,7 @@
     <remarks>
       <para>A Label is used to display single-line text elements as well as multi-line blocks of text.</para>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Label.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Label.TripleScreenShot.png" />
       </para>
       <para>The following example, adapted from the default Microsoft.Maui.Controls solution, shows a basic use:</para>
       <example>
