@@ -1522,6 +1522,8 @@ Microsoft.Maui.Platform.MauiClipperView.Clip.set -> void
 Microsoft.Maui.Platform.MauiClipperView.MauiClipperView() -> void
 Microsoft.Maui.Platform.MauiDateTimePicker
 Microsoft.Maui.Platform.MauiDateTimePicker.MauiDateTimePicker(System.DateTime dateTime, bool isTimePicker) -> void
+Microsoft.Maui.Platform.MauiFlyoutView
+Microsoft.Maui.Platform.MauiFlyoutView.MauiFlyoutView() -> void
 Microsoft.Maui.Platform.MauiImageButton
 Microsoft.Maui.Platform.MauiImageButton.Clicked -> System.EventHandler?
 Microsoft.Maui.Platform.MauiImageButton.MauiImageButton() -> void
@@ -1591,6 +1593,8 @@ Microsoft.Maui.Platform.MauiToolbar.Expand() -> void
 Microsoft.Maui.Platform.MauiToolbar.IconPressed -> System.EventHandler?
 Microsoft.Maui.Platform.MauiToolbar.MauiToolbar() -> void
 Microsoft.Maui.Platform.MauiToolbar.SendIconPressed() -> void
+Microsoft.Maui.Platform.MauiTVFlyoutView
+Microsoft.Maui.Platform.MauiTVFlyoutView.MauiTVFlyoutView() -> void
 Microsoft.Maui.Platform.MauiWebView
 Microsoft.Maui.Platform.MauiWebView.MauiWebView() -> void
 Microsoft.Maui.Platform.NavigationStackExtensions
@@ -2008,7 +2012,9 @@ override Microsoft.Maui.Handlers.TabbedViewHandler.CreatePlatformView() -> Tizen
 override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
 override Microsoft.Maui.Handlers.TimePickerHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Entry!
 override Microsoft.Maui.Handlers.TimePickerHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
+override Microsoft.Maui.Handlers.ToolbarHandler.ConnectHandler(Microsoft.Maui.Platform.MauiToolbar! platformView) -> void
 override Microsoft.Maui.Handlers.ToolbarHandler.CreatePlatformElement() -> Microsoft.Maui.Platform.MauiToolbar!
+override Microsoft.Maui.Handlers.ToolbarHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiToolbar! platformView) -> void
 override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.OnPlatformViewDeleted() -> void
@@ -2416,7 +2422,7 @@ static Microsoft.Maui.Handlers.TimePickerHandler.MapTextColor(Microsoft.Maui.Han
 static Microsoft.Maui.Handlers.TimePickerHandler.MapTime(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.ToolbarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IToolbar!, Microsoft.Maui.Handlers.IToolbarHandler!>!
 static Microsoft.Maui.Handlers.ToolbarHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IToolbar!, Microsoft.Maui.Handlers.IToolbarHandler!>!
-static Microsoft.Maui.Handlers.ToolbarHandler.MapTitle(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.IToolbar! arg2) -> void
+static Microsoft.Maui.Handlers.ToolbarHandler.MapTitle(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.IToolbar! toolbar) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapAnchorX(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapAnchorY(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapAutomationId(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
