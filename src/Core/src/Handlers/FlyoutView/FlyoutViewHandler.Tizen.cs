@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override DrawerView CreatePlatformView()
 		{
-			return DeviceInfo.IsTV ? new TVNavigationDrawer() : new NavigationDrawer();
+			return DeviceInfo.IsTV ? new MauiTVFlyoutView() : new MauiFlyoutView();
 		}
 
 		protected override void ConnectHandler(DrawerView platformView)
@@ -61,25 +61,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
+			ViewHandler.MapToolbar(handler, flyoutView);
+
 			if (handler.VirtualView is not IToolbarElement toolbarElement)
 				return;
 
 			if (toolbarElement.Toolbar?.ToPlatform(handler.MauiContext) is MauiToolbar platformToolbar)
 			{
-				var toolbarContainer = handler.PlatformView.Content is IToolbarContainer container ?
-					container : handler.MauiContext.GetToolbarContainer();
-
 				platformToolbar.IconPressed += (s, e) =>
 				{
-					if (!toolbarElement.Toolbar.BackButtonVisible)
-					{
-						if (handler.PlatformView.IsOpened)
-							_ = handler.PlatformView.CloseAsync(true);
-						else
-							_ = handler.PlatformView.OpenAsync(true);
-					}
+					if (!toolbarElement.Toolbar.BackButtonVisible && (toolbarElement.Toolbar.IsVisible))
+						_ = handler.PlatformView.OpenAsync(true);
 				};
-				toolbarContainer?.SetToolbar(platformToolbar);
 			}
 		}
 
