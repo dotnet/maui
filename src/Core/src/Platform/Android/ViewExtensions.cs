@@ -422,8 +422,16 @@ namespace Microsoft.Maui.Platform
 				context.FromPixels((float)rect.Height()));
 		}
 
-		internal static bool IsLoaded(this View frameworkElement) =>
-			frameworkElement.IsAttachedToWindow;
+		internal static bool IsLoaded(this View frameworkElement)
+		{
+			if (frameworkElement == null)
+				return false;
+
+			if (frameworkElement.IsDisposed())
+				return false;
+
+			return frameworkElement.IsAttachedToWindow;
+		}
 
 		internal static IDisposable OnLoaded(this View frameworkElement, Action action)
 		{
