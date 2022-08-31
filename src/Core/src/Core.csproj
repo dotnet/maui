@@ -33,7 +33,7 @@
     <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
-    <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
+    <PackageReference Include="Tizen.UIExtensions.NUI" />
     <ProjectReference Include="..\..\Graphics\src\Graphics.Skia\Graphics.Skia.csproj" />
   </ItemGroup>
   <ItemGroup>

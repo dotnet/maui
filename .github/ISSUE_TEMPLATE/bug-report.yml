@@ -13,7 +13,7 @@ body:
     id: description
     attributes:
       label: Description
-      description: Please give us a detailed description of the issue that you're seeing. You can add screenshots and videos as well. We love [reproduction projects](https://github.com/dotnet/maui/blob/main/.github/repro.md), please provide them through a GitHub repo and link that here.
+      description: Please give us a detailed description of the issue that you're seeing. You can add screenshots and videos as well.
       placeholder: Tell us what you see!
     validations:
       required: true
@@ -29,6 +29,13 @@ body:
         
         Expected outcome: a bug was added
         Actual outcome: a ladybug appeared
+    validations:
+      required: true
+  - type: input
+    id: repro-link
+    attributes:
+      label: Link to public reproduction project repository
+      description: Add a link to a public [reproduction project](https://github.com/dotnet/maui/blob/main/.github/repro.md) repository. Attached zip files cannot be opened by us.
     validations:
       required: true
   - type: dropdown

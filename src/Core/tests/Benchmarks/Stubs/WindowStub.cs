@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers.Benchmarks
 {
@@ -18,6 +19,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public bool IsDestroyed { get; set; }
 		public bool IsResumed { get; set; }
 		public bool IsStopped { get; set; }
+		public double X { get; set; }
+		public double Y { get; set; }
 
 		public void Activated()
 		{
@@ -67,5 +70,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public float RequestDisplayDensity() => 1.0f;
 
 		public virtual void DisplayDensityChanged(float displayDensity) { }
+
+		public virtual void FrameChanged(Rect frame) =>
+			Frame = frame;
 	}
 }

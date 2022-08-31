@@ -116,5 +116,21 @@ namespace Microsoft.Maui
 		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		public virtual void RestoreInteractionState(UIScene scene, NSUserActivity stateRestorationActivity) =>
 			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.SceneRestoreInteractionState>(del => del(scene, stateRestorationActivity));
+
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
+		[Export("windowScene:didUpdateCoordinateSpace:interfaceOrientation:traitCollection:")]
+		public virtual void DidUpdateCoordinateSpace(UIWindowScene windowScene, IUICoordinateSpace previousCoordinateSpace, UIInterfaceOrientation previousInterfaceOrientation, UITraitCollection previousTraitCollection)
+		{
+			var platformWindow = Window;
+			if (platformWindow is null)
+				return;
+
+			var window = platformWindow.GetWindow();
+			if (window is null)
+				return;
+
+			window.FrameChanged(platformWindow.Frame.ToRectangle());
+		}
 	}
 }

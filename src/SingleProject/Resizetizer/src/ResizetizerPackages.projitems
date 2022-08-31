@@ -20,7 +20,7 @@
     <PackageReference Include="Fizzler" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Memory" Version="4.5.5" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Buffers" Version="4.5.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Text.Json" Version="6.0.5" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" Version="6.0.6" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.IO.UnmanagedMemoryStream" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" GeneratePathProperty="true" PrivateAssets="all" />
