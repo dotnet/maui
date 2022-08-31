@@ -42,10 +42,10 @@
       </Docs>
     </Member>
     <Member MemberName="AlignContent">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.FlexAlignContent AlignContent { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.FlexAlignContent AlignContent" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Layouts.FlexAlignContent AlignContent { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Layouts.FlexAlignContent AlignContent" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.FlexLayout.AlignContent" />
-      <MemberSignature Language="F#" Value="member this.AlignContent : Microsoft.Maui.Controls.FlexAlignContent with get, set" Usage="Microsoft.Maui.Controls.FlexLayout.AlignContent" />
+      <MemberSignature Language="F#" Value="member this.AlignContent : Microsoft.Maui.Layouts.FlexAlignContent with get, set" Usage="Microsoft.Maui.Controls.FlexLayout.AlignContent" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -103,7 +103,7 @@
         <summary>Gets or sets a value that controls how child elements are laid out within their row or column.</summary>
         <value>A value that controls how child elements are laid out within their row or column.</value>
         <remarks>
-          <para>The following image shows the options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> with <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> set to <see cref="F:Microsoft.Maui.Controls.FlexDirection.Column" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> set to <see cref="F:Microsoft.Maui.Controls.FlexJustify.Start" />:</para>
+          <para>The following image shows the options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> with <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> set to <see cref="F:Microsoft.Maui.Layouts.FlexDirection.Column" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> set to <see cref="F:Microsoft.Maui.Layouts.FlexJustify.Start" />:</para>
           <para>
             <img href="~/xml/Microsoft.Maui.Controls/_images/FlexAlign.All.png" />
           </para>
@@ -168,10 +168,10 @@
       </Docs>
     </Member>
     <Member MemberName="Direction">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.FlexDirection Direction { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.FlexDirection Direction" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Layouts.FlexDirection  Direction { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Layouts.FlexDirection  Direction" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.FlexLayout.Direction" />
-      <MemberSignature Language="F#" Value="member this.Direction : Microsoft.Maui.Controls.FlexDirection with get, set" Usage="Microsoft.Maui.Controls.FlexLayout.Direction" />
+      <MemberSignature Language="F#" Value="member this.Direction : Microsoft.Maui.Layouts.FlexDirection  with get, set" Usage="Microsoft.Maui.Controls.FlexLayout.Direction" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -185,7 +185,7 @@
         <summary>Gets or sets the flex direction for child elements within this layout.</summary>
         <value>The flex direction for child elements within this layout.</value>
         <remarks>
-          <para>The following image shows the options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> with <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> set to <see cref="F:Microsoft.Maui.Controls.FlexJustify.Start" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> set to <see cref="F:Microsoft.Maui.Controls.FlexAlignItems.Stretch" />:</para>
+          <para>The following image shows the options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> with <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> set to <see cref="F:Microsoft.Maui.Layouts.FlexJustify.Start" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> set to <see cref="F:Microsoft.Maui.Layouts.FlexAlignItems.Stretch" />:</para>
           <para>
             <img href="~/xml/Microsoft.Maui.Controls/_images/FlexDirection.All.png" />
           </para>
@@ -351,10 +351,10 @@
       </Docs>
     </Member>
     <Member MemberName="JustifyContent">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.FlexJustify JustifyContent { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.FlexJustify JustifyContent" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Layouts.FlexJustify   JustifyContent { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Layouts.FlexJustify   JustifyContent" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" />
-      <MemberSignature Language="F#" Value="member this.JustifyContent : Microsoft.Maui.Controls.FlexJustify with get, set" Usage="Microsoft.Maui.Controls.FlexLayout.JustifyContent" />
+      <MemberSignature Language="F#" Value="member this.JustifyContent : Microsoft.Maui.Layouts.FlexJustify   with get, set" Usage="Microsoft.Maui.Controls.FlexLayout.JustifyContent" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -368,7 +368,7 @@
         <summary>Gets or sets a value that that describes how child elements are justified when there is extra space around them.</summary>
         <value>A value that that describes how child elements are justified when there is extra space around them.</value>
         <remarks>
-          <para>The following image shows options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> when <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> is set to <see cref="F:Microsoft.Maui.Controls.FlexDirection.Column" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> is set to <see cref="F:Microsoft.Maui.Controls.FlexAlignItems.Stretch" />:</para>
+          <para>The following image shows options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> when <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> is set to <see cref="F:Microsoft.Maui.Layouts.FlexDirection.Column" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> is set to <see cref="F:Microsoft.Maui.Controls.FlexAlignItems.Stretch" />:</para>
           <para>
             <img href="~/xml/Microsoft.Maui.Controls/_images/FlexJustify.All.png" />
           </para>

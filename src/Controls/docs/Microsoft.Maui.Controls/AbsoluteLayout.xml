@@ -390,7 +390,7 @@
       </ReturnValue>
       <Docs>
         <summary>Implements the attached property that represents the layout bounds of child elements. Bindable at run time with the string "LayoutBounds". See Remarks.</summary>
-        <remarks>The interface for this property is defined by the <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(Microsoft.Maui.Controls.BindableObject)" /> and <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutBounds(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Rectangle)" /> methods.
+        <remarks>The interface for this property is defined by the <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(Microsoft.Maui.Controls.BindableObject)" /> and <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutBounds(Microsoft.Maui.IView,Microsoft.Maui.Graphics.Rect)" /> methods.
         </remarks>
       </Docs>
     </Member>
