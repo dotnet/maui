@@ -43,8 +43,6 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var oldVirtualView = VirtualView;
-			if (oldVirtualView?.Handler != null)
-				oldVirtualView.Handler = null;
 
 			bool setupPlatformView = oldVirtualView == null;
 
@@ -53,6 +51,13 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.Handler != this)
 				VirtualView.Handler = this;
+
+			// We set the previous virtual view to null after setting it on the incoming virtual view.
+			// This makes it easier for the incoming virtual view to have influence
+			// on how the exchange of handlers happens.
+			// We will just set the handler to null ourselves as a last resort cleanup
+			if (oldVirtualView?.Handler != null)
+				oldVirtualView.Handler = null;
 
 			if (setupPlatformView)
 			{

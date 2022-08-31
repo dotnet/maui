@@ -16,6 +16,26 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Theory(DisplayName = "MaxLength Works Correctly")]
+		[InlineData("123")]
+		[InlineData("Hello")]
+		[InlineData("Goodbye")]
+		public async Task MaxLengthWorksCorrectly(string text)
+		{
+			const int maxLength = 4;
+
+			var entry = new EntryStub
+			{
+				Text = text,
+				MaxLength = maxLength
+			};
+
+			var expectedText = text.Length > maxLength ? text.Substring(0, maxLength) : text;
+			var platformText = await GetValueAsync(entry, GetNativeText);
+
+			Assert.Equal(expectedText, platformText);
+		}
+
 		static TextBox GetNativeEntry(EntryHandler entryHandler) =>
 			entryHandler.PlatformView;
 
@@ -25,13 +45,13 @@ namespace Microsoft.Maui.DeviceTests
 		static string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		static void SetNativeText(EntryHandler entryHandler, string text) =>
+		internal static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
-		static int GetCursorStartPosition(EntryHandler entryHandler) =>
+		internal static int GetCursorStartPosition(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).GetCursorPosition();
 
-		static void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
+		internal static void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
 			GetNativeEntry(entryHandler).SelectionStart = position;
 
 		Color GetNativeTextColor(EntryHandler entryHandler) =>

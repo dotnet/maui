@@ -1,5 +1,5 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 
 namespace Microsoft.Maui.Controls.Core.UnitTests

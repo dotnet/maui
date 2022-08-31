@@ -49,6 +49,12 @@
                     Text="I am read only" 
                     IsReadOnly="True"/>
                 <Label
+                    Text="Read-only (long text)"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    IsReadOnly="True" 
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eget tempus lorem. Sed vitae elit nisi. Donec quis quam sed mi lobortis suscipit vel quis augue. Phasellus risus enim, venenatis id blandit non, vehicula nec dui. Quisque luctus nisi vel ex imperdiet, eget molestie nisl cursus. Cras posuere vulputate lectus, ut sodales augue consequat vel." />
+                <Label
                     Text="Focus"
                     Style="{StaticResource Headline}" />
                 <Editor 

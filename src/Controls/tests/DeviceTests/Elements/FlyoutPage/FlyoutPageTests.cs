@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
-#if !IOS
+#if !IOS && !MACCATALYST
 
 		[Fact(DisplayName = "FlyoutPage With Toolbar")]
 		public async Task FlyoutPageWithToolbar()

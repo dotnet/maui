@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Maps</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Maps</AssemblyName>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
+  </PropertyGroup>
+
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\Hosting\ServiceProviderExtensions.cs" Link="ServiceProviderExtensions.cs" />
+    <Compile Include="..\..\src\IsExternalInit.cs" Link="IsExternalInit.cs" />
+    <Compile Include="..\..\src\TaskExtensions.cs" Link="TaskExtensions.cs" />
+  </ItemGroup>
+  
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+</Project>

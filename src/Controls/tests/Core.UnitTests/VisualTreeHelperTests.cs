@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class VisualTreeHelperTests : BaseTestFixture, IDisposable
 	{
 		readonly List<(Element? Parent, VisualTreeChangeEventArgs Args)> _treeEvents = new();
@@ -30,10 +30,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			VisualTreeChanged?.Invoke(sender as Element, e);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void LayoutChildren(Type TLayout)
 		{
 			var layout = CreateLayout(TLayout)!;
@@ -45,12 +46,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var visualChildren = (layout as IVisualTreeElement).GetVisualChildren();
 
-			Assert.AreEqual(layout.Children.Count, visualChildren.Count);
-			Assert.AreEqual(label, visualChildren[0]);
-			Assert.AreEqual(button, visualChildren[1]);
+			Assert.Equal(layout.Children.Count, visualChildren.Count);
+			Assert.Equal(label, visualChildren[0]);
+			Assert.Equal(button, visualChildren[1]);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ModalChildren()
 		{
 			CreateNewApp(out _, out var window, out var page);
@@ -62,13 +63,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var windowChildren = (window as IVisualTreeElement).GetVisualChildren();
 			var modalParent = (modalPage as IVisualTreeElement).GetVisualParent();
 
-			Assert.AreEqual(windowChildren.Count, 2);
-			Assert.AreEqual(page, windowChildren[0]);
-			Assert.AreEqual(modalPage, windowChildren[1]);
-			Assert.AreEqual(window, modalParent);
+			Assert.Equal(2, windowChildren.Count);
+			Assert.Equal(page, windowChildren[0]);
+			Assert.Equal(modalPage, windowChildren[1]);
+			Assert.Equal(window, modalParent);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ModalChildrenFiresDiagnosticEvents()
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -80,30 +81,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await window.Navigation.PushModalAsync(modalPage);
 
-			Assert.AreEqual(1, _treeEvents.Count);
+			Assert.Single(_treeEvents);
 			var (parent, args) = _treeEvents[0];
 
-			Assert.AreEqual(window, parent);
-			Assert.AreEqual(window, args.Parent);
-			Assert.AreEqual(modalPage, args.Child);
-			Assert.AreEqual(1, args.ChildIndex);
-			Assert.AreEqual(VisualTreeChangeType.Add, args.ChangeType);
+			Assert.Equal(window, parent);
+			Assert.Equal(window, args.Parent);
+			Assert.Equal(modalPage, args.Child);
+			Assert.Equal(1, args.ChildIndex);
+			Assert.Equal(VisualTreeChangeType.Add, args.ChangeType);
 
 			_treeEvents.Clear();
 
 			await window.Navigation.PopModalAsync();
 
-			Assert.AreEqual(1, _treeEvents.Count);
+			Assert.Single(_treeEvents);
 			(parent, args) = _treeEvents[0];
 
-			Assert.AreEqual(window, parent);
-			Assert.AreEqual(window, args.Parent);
-			Assert.AreEqual(modalPage, args.Child);
-			Assert.AreEqual(1, args.ChildIndex);
-			Assert.AreEqual(VisualTreeChangeType.Remove, args.ChangeType);
+			Assert.Equal(window, parent);
+			Assert.Equal(window, args.Parent);
+			Assert.Equal(modalPage, args.Child);
+			Assert.Equal(1, args.ChildIndex);
+			Assert.Equal(VisualTreeChangeType.Remove, args.ChangeType);
 		}
 
-		[Test]
+		[Fact]
 		public void ApplicationChildren()
 		{
 			CreateNewApp(out var app, out var window, out var page);
@@ -112,14 +113,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var windowChildren = ((IVisualTreeElement)window).GetVisualChildren();
 			var pageChildren = ((IVisualTreeElement)page).GetVisualChildren();
 
-			Assert.AreEqual(1, appChildren.Count);
-			Assert.AreEqual(window, appChildren[0]);
-			Assert.AreEqual(1, windowChildren.Count);
-			Assert.AreEqual(page, windowChildren[0]);
-			Assert.AreEqual(0, pageChildren.Count);
+			Assert.Equal(1, appChildren.Count);
+			Assert.Equal(window, appChildren[0]);
+			Assert.Equal(1, windowChildren.Count);
+			Assert.Equal(page, windowChildren[0]);
+			Assert.Equal(0, pageChildren.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void VisualElementParent()
 		{
 			CreateNewApp(out var app, out var window, out var page);
@@ -128,12 +129,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var windowParent = ((IVisualTreeElement)window).GetVisualParent();
 			var pageParent = ((IVisualTreeElement)page).GetVisualParent();
 
-			Assert.IsNull(appParent);
-			Assert.AreEqual(app, windowParent);
-			Assert.AreEqual(window, pageParent);
+			Assert.Null(appParent);
+			Assert.Equal(app, windowParent);
+			Assert.Equal(window, pageParent);
 		}
 
-		[Test]
+		[Fact]
 		public async Task AddPageContentFiresVisualTreeChanged()
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -144,17 +145,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			page.Content = button;
 
-			Assert.AreEqual(1, _treeEvents.Count);
+			Assert.Single(_treeEvents);
 
 			var (parent, args) = _treeEvents[0];
-			Assert.AreEqual(page, parent);
-			Assert.AreEqual(page, args.Parent);
-			Assert.AreEqual(button, args.Child);
-			Assert.AreEqual(0, args.ChildIndex);
-			Assert.AreEqual(VisualTreeChangeType.Add, args.ChangeType);
+			Assert.Equal(page, parent);
+			Assert.Equal(page, args.Parent);
+			Assert.Equal(button, args.Child);
+			Assert.Equal(0, args.ChildIndex);
+			Assert.Equal(VisualTreeChangeType.Add, args.ChangeType);
 		}
 
-		[Test]
+		[Fact]
 		public async Task RemovePageContentFiresVisualTreeChanged()
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -167,20 +168,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			page.Content = null;
 
-			Assert.AreEqual(1, _treeEvents.Count);
+			Assert.Single(_treeEvents);
 
 			var (parent, args) = _treeEvents[0];
-			Assert.AreEqual(page, parent);
-			Assert.AreEqual(page, args.Parent);
-			Assert.AreEqual(button, args.Child);
-			Assert.AreEqual(0, args.ChildIndex);
-			Assert.AreEqual(VisualTreeChangeType.Remove, args.ChangeType);
+			Assert.Equal(page, parent);
+			Assert.Equal(page, args.Parent);
+			Assert.Equal(button, args.Child);
+			Assert.Equal(0, args.ChildIndex);
+			Assert.Equal(VisualTreeChangeType.Remove, args.ChangeType);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void AddLayoutChildFiresVisualTreeChanged(Type TLayout)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -202,21 +204,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				var button = buttons[i];
 				layout.Add(button);
 
-				Assert.AreEqual(i + 1, _treeEvents.Count);
+				Assert.Equal(i + 1, _treeEvents.Count);
 
 				var (parent, args) = _treeEvents[i];
-				Assert.AreEqual(layout, parent);
-				Assert.AreEqual(layout, args.Parent);
-				Assert.AreEqual(button, args.Child);
-				Assert.AreEqual(i, args.ChildIndex);
-				Assert.AreEqual(VisualTreeChangeType.Add, args.ChangeType);
+				Assert.Equal(layout, parent);
+				Assert.Equal(layout, args.Parent);
+				Assert.Equal(button, args.Child);
+				Assert.Equal(i, args.ChildIndex);
+				Assert.Equal(VisualTreeChangeType.Add, args.ChangeType);
 			}
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void InsertLayoutChildFiresVisualTreeChanged(Type TLayout)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -234,20 +237,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 			layout.Insert(2, button);
 
-			Assert.AreEqual(1, _treeEvents.Count);
+			Assert.Single(_treeEvents);
 
 			var (parent, args) = _treeEvents[0];
-			Assert.AreEqual(layout, parent);
-			Assert.AreEqual(layout, args.Parent);
-			Assert.AreEqual(button, args.Child);
-			Assert.AreEqual(2, args.ChildIndex);
-			Assert.AreEqual(VisualTreeChangeType.Add, args.ChangeType);
+			Assert.Equal(layout, parent);
+			Assert.Equal(layout, args.Parent);
+			Assert.Equal(button, args.Child);
+			Assert.Equal(2, args.ChildIndex);
+			Assert.Equal(VisualTreeChangeType.Add, args.ChangeType);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void RemoveLayoutChildFiresVisualTreeChanged(Type TLayout)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -264,20 +268,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Remove(button);
 
-			Assert.AreEqual(1, _treeEvents.Count);
+			Assert.Single(_treeEvents);
 
 			var (parent, args) = _treeEvents[0];
-			Assert.AreEqual(layout, parent);
-			Assert.AreEqual(layout, args.Parent);
-			Assert.AreEqual(button, args.Child);
-			Assert.AreEqual(0, args.ChildIndex);
-			Assert.AreEqual(VisualTreeChangeType.Remove, args.ChangeType);
+			Assert.Equal(layout, parent);
+			Assert.Equal(layout, args.Parent);
+			Assert.Equal(button, args.Child);
+			Assert.Equal(0, args.ChildIndex);
+			Assert.Equal(VisualTreeChangeType.Remove, args.ChangeType);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void ClearLayoutChildrenFiresVisualTreeChanged(Type TLayout)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -300,21 +305,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Clear();
 
-			Assert.AreEqual(3, _treeEvents.Count);
+			Assert.Equal(3, _treeEvents.Count);
 
 			for (var i = _treeEvents.Count - 1; i >= 0; i--)
 			{
 				var (parent, args) = _treeEvents[_treeEvents.Count - 1 - i];
 
-				Assert.AreEqual(layout, parent);
-				Assert.AreEqual(layout, args.Parent);
-				Assert.AreEqual(buttons[i], args.Child);
-				Assert.AreEqual(i, args.ChildIndex);
-				Assert.AreEqual(VisualTreeChangeType.Remove, args.ChangeType);
+				Assert.Equal(layout, parent);
+				Assert.Equal(layout, args.Parent);
+				Assert.Equal(buttons[i], args.Child);
+				Assert.Equal(i, args.ChildIndex);
+				Assert.Equal(VisualTreeChangeType.Remove, args.ChangeType);
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutTableView()
 		{
 			var tableview = new TableView
@@ -332,10 +337,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var tableRootElement = (tableview as IVisualTreeElement).GetVisualChildren();
-			Assert.IsInstanceOf(typeof(TableRoot), tableRootElement[0]);
+			Assert.IsType<TableRoot>(tableRootElement[0]);
 			var tableRoot = (TableRoot)tableRootElement[0];
 			var tableSectionElement = (tableRoot[0] as IVisualTreeElement).GetVisualChildren();
-			Assert.AreEqual(tableSectionElement.Count, 2);
+			Assert.Equal(2, tableSectionElement.Count);
 		}
 
 		Layout CreateLayout(Type TLayout)

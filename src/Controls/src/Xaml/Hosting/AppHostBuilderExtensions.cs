@@ -21,6 +21,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 #elif TIZEN
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 #endif
 
@@ -97,16 +98,22 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
 #pragma warning restore CA1416
 
-#if WINDOWS || ANDROID || IOS || MACCATALYST
+#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 			handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
+#if !TIZEN
 			handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
 			handlersCollection.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
 			handlersCollection.AddHandler(typeof(EntryCell), typeof(Handlers.Compatibility.EntryCellRenderer));
 			handlersCollection.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
 			handlersCollection.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
 			handlersCollection.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
+#endif
 			handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
 			handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
+#endif
+
+#if WINDOWS || MACCATALYST
+			handlersCollection.AddHandler(typeof(MenuFlyout), typeof(MenuFlyoutHandler));
 #endif
 
 #if IOS || MACCATALYST
@@ -121,9 +128,11 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<Shell, ShellRenderer>();
 #else
 			handlersCollection.AddHandler<Shell, ShellHandler>();
+			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
+			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #endif
 #endif
-#if WINDOWS || ANDROID
+#if WINDOWS || ANDROID || TIZEN
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
@@ -213,6 +222,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
 			Button.RemapForControls();
+			CheckBox.RemapForControls();
 			DatePicker.RemapForControls();
 			RadioButton.RemapForControls();
 			FlyoutPage.RemapForControls();

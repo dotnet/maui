@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -33,6 +35,33 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public ImageSource ImageByName { get; set; }
 
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+		public IShape EllipseShape { get; set; }
+
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+		public IShape LineShape { get; set; }
+
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+		public IShape LineShapeTwo { get; set; }
+
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+		public IShape LineShapeFour { get; set; }
+
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+		public IShape PolygonShape { get; set; }
+
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+		public IShape PolylineShape { get; set; }
+
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+		public IShape RectangleShape { get; set; }
+
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+		public IShape RoundRectangleShape { get; set; }
+
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+		public IShape PathShape { get; set; }
+
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> List { get; set; }
 
@@ -61,6 +90,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual("https://picsum.photos/200/300", ((UriImageSource)p.ImageByUrl).Uri.AbsoluteUri);
 				Assert.AreEqual("foo.png", ((FileImageSource)p.ImageByName).File);
 				Assert.AreEqual(Colors.Pink, p.BackgroundColor);
+				Assert.IsInstanceOf<Ellipse>(p.EllipseShape);
+				Assert.IsInstanceOf<Line>(p.LineShape);
+				Assert.AreEqual(1, ((Line)p.LineShapeTwo).X1);
+				Assert.AreEqual(2, ((Line)p.LineShapeTwo).Y1);
+				Assert.AreEqual(1, ((Line)p.LineShapeFour).X1);
+				Assert.AreEqual(2, ((Line)p.LineShapeFour).Y1);
+				Assert.AreEqual(3, ((Line)p.LineShapeFour).X2);
+				Assert.AreEqual(4, ((Line)p.LineShapeFour).Y2);
+				Assert.AreEqual(3, ((Shapes.Polygon)p.PolygonShape).Points.Count);
+				Assert.AreEqual(10, ((Shapes.Polyline)p.PolylineShape).Points.Count);
+				Assert.IsInstanceOf<Rectangle>(p.RectangleShape);
+				Assert.AreEqual(new CornerRadius(1, 2, 3, 4), ((RoundRectangle)p.RoundRectangleShape).CornerRadius);
+				Assert.AreEqual(3, ((PathGeometry)((Path)p.PathShape).Data).Figures.Count);
 				Assert.AreEqual(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
 				var xConstraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetXConstraint(p.label);
 				Assert.AreEqual(2, xConstraint.Compute(null));
@@ -72,6 +114,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Test]
 			[TestCase(typeof(Microsoft.Maui.Controls.BrushTypeConverter))]
 			[TestCase(typeof(Microsoft.Maui.Controls.ImageSourceConverter))]
+			[TestCase(typeof(Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter))]
 			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.PointTypeConverter))]
 			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.RectTypeConverter))]
 			public void ConvertersAreReplaced(Type converterType)

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Controls;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests.Layouts
+namespace Microsoft.Maui.UnitTests.Views
 {
 	[Category(TestCategory.Core, TestCategory.View)]
 	public class BorderTests
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Border border = new Border();
 
 			Assert.NotNull(border);
-			Assert.Null(border.StrokeShape);
+			Assert.NotNull(border.StrokeShape);
 		}
 
 		[Fact]

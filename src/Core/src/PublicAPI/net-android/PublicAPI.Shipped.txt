@@ -2127,7 +2127,6 @@ override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.FilterFormatted(Java
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.GetAcceptedChars() -> char[]!
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.InputType.get -> Android.Text.InputTypes
 override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
-override Microsoft.Maui.Platform.MauiDatePicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
 override Microsoft.Maui.Platform.MauiMaterialButton.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.MauiPicker.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiPicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
@@ -2141,7 +2140,6 @@ override Microsoft.Maui.Platform.MauiSwipeView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiSwipeView.OnInterceptTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiSwipeView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiTextView.OnLayout(bool changed, int l, int t, int r, int b) -> void
-override Microsoft.Maui.Platform.MauiTimePicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
 override Microsoft.Maui.Platform.MauiWebChromeClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebViewClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebViewClient.OnPageFinished(Android.Webkit.WebView? view, string? url) -> void

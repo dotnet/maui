@@ -248,8 +248,6 @@ namespace Microsoft.Maui.Controls
 			// If the index has not changed, still need to change the selected item
 			if (newIndex == oldIndex)
 				UpdateSelectedItem(newIndex);
-
-			Handler?.Invoke("Reload");
 		}
 
 		static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
@@ -295,7 +293,10 @@ namespace Microsoft.Maui.Controls
 					ResetItems();
 					break;
 			}
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
+
 		void AddItems(NotifyCollectionChangedEventArgs e)
 		{
 			int index = e.NewStartingIndex < 0 ? Items.Count : e.NewStartingIndex;
@@ -317,6 +318,7 @@ namespace Microsoft.Maui.Controls
 			((LockableObservableListWrapper)Items).InternalClear();
 			foreach (object item in ItemsSource)
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			Handler?.UpdateValue(nameof(IPicker.Items));
 			UpdateSelectedItem(SelectedIndex);
 		}
 

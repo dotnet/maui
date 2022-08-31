@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateText(this EditText editText, IEntry entry)
 		{
+			var previousTextLength = editText.Length();
+
 			// Setting the text causes the cursor to reset to position zero
 			// Therefore if:
 			// User Types => VirtualView Updated => Triggers Native Update
@@ -170,30 +172,16 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
+		// TODO: NET7 hartez - Remove this, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
 			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
 
+		// TODO: NET7 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
 		{
-			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
-			void ShowClearButton()
+			if (entry?.Handler is not EntryHandler entryHandler)
 			{
-				var drawable = getClearButtonDrawable?.Invoke();
-
-				if (entry.GetEffectiveFlowDirection() == FlowDirection.RightToLeft)
-				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-				}
-				else
-				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
-				}
-			}
-
-			// Hides clear button drawable from the control.
-			void HideClearButton()
-			{
-				editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+				return;
 			}
 
 			bool isFocused = editText.IsFocused;
@@ -205,11 +193,11 @@ namespace Microsoft.Maui.Platform
 
 			if (shouldDisplayClearButton)
 			{
-				ShowClearButton();
+				entryHandler.ShowClearButton();
 			}
 			else
 			{
-				HideClearButton();
+				entryHandler.HideClearButton();
 			}
 		}
 
@@ -359,7 +347,7 @@ namespace Microsoft.Maui.Platform
 		/// This will return True to handle OnTouch to prevent re-activating keyboard after clearing the text.
 		/// </summary>
 		/// <returns>True if clear button is clicked and Text is cleared. False if not.</returns>
-		internal static bool HandleClearButtonTouched(this EditText? platformView, FlowDirection flowDirection, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
+		internal static bool HandleClearButtonTouched(this EditText? platformView, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
 		{
 			if (platformView is null)
 				return false;
@@ -377,15 +365,17 @@ namespace Microsoft.Maui.Platform
 			if (motionEvent.Action != MotionEventActions.Up)
 				return false;
 
-			var x = motionEvent.GetX();
+			var x = motionEvent.RawX;
 			var y = motionEvent.GetY();
 
-			if ((flowDirection != FlowDirection.LeftToRight
+			var flowDirection = platformView.LayoutDirection;
+
+			if ((flowDirection != LayoutDirection.Ltr
 				|| x < platformView.Right - buttonWidth
 				|| x > platformView.Right - platformView.PaddingRight
 				|| y < platformView.PaddingTop
 				|| y > platformView.Height - platformView.PaddingBottom) &&
-				(flowDirection != FlowDirection.RightToLeft
+				(flowDirection != LayoutDirection.Rtl
 				|| x < platformView.Left + platformView.PaddingLeft
 				|| x > platformView.Left + buttonWidth
 				|| y < platformView.PaddingTop

@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Design
 				"Start",
 				"End",
 				"SpaceBetween",
-				"SpaceAroun",
+				"SpaceAround",
 				"SpaceEvenly",
 		};
 	}

@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Storage
 			_preferences.Set<T>(key, value, sharedName);
 
 		public T Get<T>(string key, T defaultValue, string sharedName) =>
-			_preferences.Get<T>(key, default, sharedName);
+			_preferences.Get<T>(key, defaultValue, sharedName);
 	}
 
 	class PackagedPreferencesImplementation : IPreferences

@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class ShellParameterPassingTests : ShellTestBase
 	{
-		[TestCase(true)]
-		[TestCase(false)]
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
 		public async Task ReNavigatingToCurrentLocationPassesParameters(bool useDataTemplates)
 		{
 			var shell = new Shell();
@@ -26,16 +27,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				page = (ShellTestPage)one.CurrentItem.CurrentItem.Content;
 			}
 
-			Assert.AreEqual(null, page.SomeQueryParameter);
+			Assert.Null(page.SomeQueryParameter);
 			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=1234");
-			Assert.AreEqual("1234", page.SomeQueryParameter);
+			Assert.Equal("1234", page.SomeQueryParameter);
 			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=4321");
-			Assert.AreEqual("4321", page.SomeQueryParameter);
+			Assert.Equal("4321", page.SomeQueryParameter);
 			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}");
-			Assert.AreEqual(null, page.SomeQueryParameter);
+			Assert.Null(page.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task DotDotNavigationPassesParameters()
 		{
 			Routing.RegisterRoute(nameof(DotDotNavigationPassesParameters), typeof(ContentPage));
@@ -56,14 +57,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 
 			var page = (ShellTestPage)(one.CurrentItem.CurrentItem as IShellContentController).GetOrCreateContent();
-			Assert.AreEqual(null, page.SomeQueryParameter);
+			Assert.Null(page.SomeQueryParameter);
 			await shell.GoToAsync(nameof(DotDotNavigationPassesParameters));
 			await shell.GoToAsync($"..?{nameof(ShellTestPage.SomeQueryParameter)}=1234");
-			Assert.AreEqual("1234", page.SomeQueryParameter);
+			Assert.Equal("1234", page.SomeQueryParameter);
 
 		}
 
-		[Test]
+		[Fact]
 		public async Task NavigationWithQueryStringWhenPageMatchesBindingContext()
 		{
 			var shell = new Shell();
@@ -91,12 +92,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 			var page = (two.CurrentItem.CurrentItem as IShellContentController).GetOrCreateContent();
-			Assert.AreEqual("1234", (page as ShellTestPage).SomeQueryParameter);
+			Assert.Equal("1234", (page as ShellTestPage).SomeQueryParameter);
 
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task NavigationWithQueryStringThenWithoutQueryString()
 		{
 			var shell = new Shell();
@@ -127,11 +128,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync(new ShellNavigationState($"//two/tabfour/content"));
 
 			var page = (two.CurrentItem.CurrentItem as IShellContentController).GetOrCreateContent();
-			Assert.AreEqual(null, (page as ShellTestPage).SomeQueryParameter);
+			Assert.Null((page as ShellTestPage).SomeQueryParameter);
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task NavigationBetweenShellContentsPassesQueryString()
 		{
 			var shell = new Shell();
@@ -150,10 +151,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync(new ShellNavigationState($"//section2/details?{nameof(ShellTestPage.SomeQueryParameter)}=4321"));
 
 			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
-			Assert.AreEqual("4321", testPage.SomeQueryParameter);
+			Assert.Equal("4321", testPage.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task NavigationBetweenFlyoutItemsRetainsQueryString()
 		{
 			var testPage1 = new ShellTestPage();
@@ -172,15 +173,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					{nameof(ShellTestPage.ComplexObject), complexParameter }
 				});
 
-			Assert.AreEqual("1234", testPage2.SomeQueryParameter);
-			Assert.AreEqual(complexParameter, testPage2.ComplexObject);
+			Assert.Equal("1234", testPage2.SomeQueryParameter);
+			Assert.Equal(complexParameter, testPage2.ComplexObject);
 			await shellController.OnFlyoutItemSelectedAsync(flyoutItem1);
 			await shellController.OnFlyoutItemSelectedAsync(flyoutItem2);
-			Assert.AreEqual("1234", testPage2.SomeQueryParameter);
-			Assert.AreEqual(complexParameter, testPage2.ComplexObject);
+			Assert.Equal("1234", testPage2.SomeQueryParameter);
+			Assert.Equal(complexParameter, testPage2.ComplexObject);
 		}
 
-		[Test]
+		[Fact]
 		public async Task NavigationBetweenFlyoutItemWithPushedPageRetainsQueryString()
 		{
 			var testPage1 = new ShellTestPage();
@@ -200,10 +201,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shellController.OnFlyoutItemSelectedAsync(flyoutItem2);
 
 			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
-			Assert.AreEqual("1234", testPage.SomeQueryParameter);
+			Assert.Equal("1234", testPage.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task BasicQueryStringTest()
 		{
 			var shell = new Shell();
@@ -213,10 +214,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item);
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
 			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
-			Assert.AreEqual("1234", testPage.SomeQueryParameter);
+			Assert.Equal("1234", testPage.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task NavigationWithQueryStringAndNoDataTemplate()
 		{
 			var shell = new Shell();
@@ -234,11 +235,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(two);
 
 			await shell.GoToAsync(new ShellNavigationState($"//two/tabfour/content?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
-			Assert.AreEqual("1234", (two.CurrentItem.CurrentItem.Content as ShellTestPage).SomeQueryParameter);
+			Assert.Equal("1234", (two.CurrentItem.CurrentItem.Content as ShellTestPage).SomeQueryParameter);
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task UriDecodesQueryString()
 		{
 			var shell = new Shell();
@@ -248,10 +249,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1 2 3 4 % ^"));
 			var testPage = shell.CurrentPage as ShellTestPage;
-			Assert.AreEqual("1 2 3 4 % ^", testPage.SomeQueryParameter);
+			Assert.Equal("1 2 3 4 % ^", testPage.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task UriEncodedStringDecodesCorrectly()
 		{
 			var shell = new Shell();
@@ -264,10 +265,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}={parameter}"));
 			var testPage = shell.CurrentPage as ShellTestPage;
-			Assert.AreEqual(result, testPage.SomeQueryParameter);
+			Assert.Equal(result, testPage.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task UrlParameter()
 		{
 			var shell = new Shell();
@@ -278,10 +279,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			string urlTest = @"https://www.somewebsite.com/id/545/800/600.jpg";
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}={urlTest}"));
 			var testPage = shell.CurrentPage as ShellTestPage;
-			Assert.AreEqual(urlTest, testPage.SomeQueryParameter);
+			Assert.Equal(urlTest, testPage.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task SetParameterOfTypeThatsNotAString()
 		{
 			var shell = new Shell();
@@ -290,10 +291,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item);
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.DoubleQueryParameter)}=1234"));
 			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
-			Assert.AreEqual(1234d, testPage.DoubleQueryParameter);
+			Assert.Equal(1234d, testPage.DoubleQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task NavigatingBackDoesntClearParametersFromPreviousPage()
 		{
 			var shell = new TestShell(CreateShellItem());
@@ -304,11 +305,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("details");
 			await shell.GoToAsync("..");
 			var testPage = shell.CurrentPage as ShellTestPage;
-			Assert.AreEqual("1", testPage.SomeQueryParameter);
+			Assert.Equal("1", testPage.SomeQueryParameter);
 
 		}
 
-		[Test]
+		[Fact]
 		public async Task NavigatingBackAbsolutelyClearsParametersFromPreviousPage()
 		{
 			var shell = new TestShell(CreateShellItem(shellItemRoute: "item"));
@@ -319,11 +320,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("details");
 			await shell.GoToAsync("//item/details");
 			var testPage = shell.CurrentPage as ShellTestPage;
-			Assert.AreEqual(null, testPage.SomeQueryParameter);
+			Assert.Null(testPage.SomeQueryParameter);
 
 		}
 
-		[Test]
+		[Fact]
 		public async Task NavigatingBackToShellContentRetainsQueryParameter()
 		{
 			var shell = new Shell();
@@ -335,10 +336,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=1234");
 			await shell.Navigation.PushAsync(new ContentPage());
 			await shell.Navigation.PopAsync();
-			Assert.AreEqual("1234", page.SomeQueryParameter);
+			Assert.Equal("1234", page.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task NavigatingBackToShellContentAbsolutelyClearsQueryParameter()
 		{
 			var shell = new Shell();
@@ -350,10 +351,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=1234");
 			await shell.Navigation.PushAsync(new ContentPage());
 			await shell.GoToAsync($"//content");
-			Assert.AreEqual(null, page.SomeQueryParameter);
+			Assert.Null(page.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task BasicShellParameterTest()
 		{
 			var shell = new Shell();
@@ -370,12 +371,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"), parameter);
 			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
-			Assert.AreEqual("1234", testPage.SomeQueryParameter);
-			Assert.AreEqual(2d, testPage.DoubleQueryParameter);
-			Assert.AreEqual(obj, testPage.ComplexObject);
+			Assert.Equal("1234", testPage.SomeQueryParameter);
+			Assert.Equal(2d, testPage.DoubleQueryParameter);
+			Assert.Equal(obj, testPage.ComplexObject);
 		}
 
-		[Test]
+		[Fact]
 		public async Task DotDotNavigationPassesShellParameters()
 		{
 			Routing.RegisterRoute(nameof(DotDotNavigationPassesParameters), typeof(ContentPage));
@@ -403,15 +404,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var page = (ShellTestPage)(one.CurrentItem.CurrentItem as IShellContentController).GetOrCreateContent();
-			Assert.AreEqual(null, page.SomeQueryParameter);
+			Assert.Null(page.SomeQueryParameter);
 			await shell.GoToAsync(nameof(DotDotNavigationPassesParameters));
 			await shell.GoToAsync($"..?{nameof(ShellTestPage.SomeQueryParameter)}=1234", parameter);
-			Assert.AreEqual("1234", page.SomeQueryParameter);
-			Assert.AreEqual(2d, page.DoubleQueryParameter);
-			Assert.AreEqual(obj, page.ComplexObject);
+			Assert.Equal("1234", page.SomeQueryParameter);
+			Assert.Equal(2d, page.DoubleQueryParameter);
+			Assert.Equal(obj, page.ComplexObject);
 		}
 
-		[Test]
+		[Fact]
 		public async Task PassesUrlInShellParameter()
 		{
 			var shell = new Shell();
@@ -427,15 +428,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync(new ShellNavigationState($"details"), parameter);
 			var testPage = shell.CurrentPage as ShellTestPage;
-			Assert.AreEqual(urlTest, testPage.SomeQueryParameter);
+			Assert.Equal(urlTest, testPage.SomeQueryParameter);
 		}
 
-		[Test]
+		[Fact]
 		public void InitialNavigationDoesntSetQueryAttributesProperty()
 		{
 			var content = CreateShellContent();
 			_ = new TestShell(content);
-			Assert.IsFalse(content.IsSet(ShellContent.QueryAttributesProperty));
+			Assert.False(content.IsSet(ShellContent.QueryAttributesProperty));
 		}
 	}
 }
