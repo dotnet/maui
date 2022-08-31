@@ -7,7 +7,6 @@
     <RootNamespace>Microsoft.Maui.MauiBlazorWebView.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.MauiBlazorWebView.DeviceTests</AssemblyName>
     <NoWarn>$(NoWarn),CA1416</NoWarn>
-    <UseInterpreter>false</UseInterpreter>
   </PropertyGroup>
 
   <PropertyGroup>

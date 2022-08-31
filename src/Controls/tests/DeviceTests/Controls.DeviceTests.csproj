@@ -7,7 +7,6 @@
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.DeviceTests</AssemblyName>
     <NoWarn>$(NoWarn),CA1416</NoWarn>
-    <UseInterpreter>false</UseInterpreter>
   </PropertyGroup>
 
   <PropertyGroup>
