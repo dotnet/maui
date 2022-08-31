@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Graphics;
 using TLog = Tizen.UIExtensions.Common.Log;
 using TColor = Tizen.UIExtensions.Common.Color;
-using EColor = ElmSharp.Color;
+using NColor = Tizen.NUI.Color;
 
 namespace Microsoft.Maui.Platform
 {
@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Platform
 			return c == null ? TColor.Default : new TColor(c.Red, c.Green, c.Blue, c.Alpha);
 		}
 
-		public static EColor ToPlatformEFL(this Color c)
+		public static NColor? ToNUIColor(this Color c)
 		{
-			return c == null ? EColor.Default : new EColor((int)(255.0 * c.Red), (int)(255.0 * c.Green), (int)(255.0 * c.Blue), (int)(255.0 * c.Alpha));
+			return c == null ? null : new NColor(c.Red, c.Green, c.Blue, c.Alpha);
 		}
 
 		public static Color WithAlpha(this Color color, double alpha)

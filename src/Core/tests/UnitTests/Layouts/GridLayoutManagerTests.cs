@@ -372,6 +372,30 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(100 + 100 + 10, measure.Height);
 		}
 
+		[Category(GridSpacing, GridAutoSizing)]
+		[Fact(DisplayName = "Auto rows with collapsed views should not incur additional row spacing")]
+		public void RowSpacingForAutoRowsWithCollapsedViews()
+		{
+			var grid = CreateGridLayout(rows: "100, auto, 100", rowSpacing: 10);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view2);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+
+			view1.Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Because the auto row has no content, we expect it to have height zero
+			// and we expect that it won't add more row spacing 
+			Assert.Equal(100 + 100 + 10, measure.Height);
+		}
+
 		[Category(GridSpacing)]
 		[Fact(DisplayName = "Column spacing shouldn't affect a single-column grid")]
 		public void SingleColumnIgnoresColumnSpacing()
@@ -453,6 +477,30 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0, view2);
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, col: 2);
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Because the auto column has no content, we expect it to have width zero
+			// and we expect that it won't add more column spacing 
+			Assert.Equal(100 + 100 + 10, measure.Width);
+		}
+
+		[Category(GridSpacing, GridAutoSizing)]
+		[Fact(DisplayName = "Auto columns with collapsed views should not incur additional column spacing")]
+		public void AutoColumnsWithCollapsedViews()
+		{
+			var grid = CreateGridLayout(columns: "100, auto, 100", colSpacing: 10);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view2);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			view1.Visibility.Returns(Visibility.Collapsed);
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
@@ -1663,26 +1711,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			manager.ArrangeChildren(new Rect(0, 0, measure.Width, measure.Height));
 			AssertArranged(view0, new Rect(0, 0, 100, 100));
 			AssertArranged(view1, new Rect(0, 220, 100, 100));
-		}
-
-		[Fact(DisplayName = "Grids with RTL FlowDirection should order columns from the right")]
-		public void RtlShouldReverseColumnOrder()
-		{
-			var grid = CreateGridLayout(columns: "100, 100", colSpacing: 10);
-			var view0 = CreateTestView(new Size(100, 100));
-			var view1 = CreateTestView(new Size(100, 100));
-			SubstituteChildren(grid, view0, view1);
-			SetLocation(grid, view0);
-			SetLocation(grid, view1, col: 1);
-
-			grid.FlowDirection.Returns(FlowDirection.RightToLeft);
-
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
-
-			// Because the Grid is RTL, we expect the view in column 1 to be on the left,
-			// and the view in column 0 to be on the right
-			AssertArranged(view1, 0, 0, 100, 100);
-			AssertArranged(view0, 110, 0, 100, 100);
 		}
 
 		[Fact]

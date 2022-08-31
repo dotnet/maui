@@ -115,7 +115,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true') and ('$(TargetPlatformIdentifier)' == 'tizen') ">
-    <PackageReference Include="Tizen.UIExtensions.ElmSharp" Version="@TizenUIExtensionsVersion@" IsImplicitlyDefined="true">
+    <PackageReference Include="Tizen.UIExtensions.NUI" Version="@TizenUIExtensionsVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="@MicrosoftMauiGraphicsVersion@" IsImplicitlyDefined="true">

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		{
 			TabbedViewHandler.Mapper = ControlsTabbedPageMapper;
 
-#if WINDOWS || ANDROID
+#if WINDOWS || ANDROID || TIZEN
 			TabbedViewHandler.PlatformViewFactory = OnCreatePlatformView;
 #endif
 		}

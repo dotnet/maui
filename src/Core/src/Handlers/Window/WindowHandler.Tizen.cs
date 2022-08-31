@@ -1,5 +1,5 @@
 using System;
-using ElmSharp;
+using Tizen.NUI;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -13,14 +13,16 @@ namespace Microsoft.Maui.Handlers
 
 			var platformContent = window.Content.ToContainerView(handler.MauiContext);
 
-			platformContent.SetAlignment(-1, -1);
-			platformContent.SetWeight(1, 1);
-			platformContent.Show();
-			handler.MauiContext.GetModalStack().Reset();
-			handler.MauiContext.GetModalStack().Push(platformContent);
+			handler.MauiContext.GetPlatformWindow().SetContent(platformContent);
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();
+		}
+
+		public static void MapToolbar(IWindowHandler handler, IWindow view)
+		{
+			if (view is IToolbarElement tb)
+				ViewHandler.MapToolbar(handler, tb);
 		}
 
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)

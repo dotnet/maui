@@ -10,7 +10,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class OnPlatformOptimization : ContentPage
 	{
 		public OnPlatformOptimization()
@@ -31,6 +30,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, targetFramework);
 				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformExtensionCtor(methodDef, instr)), "This Xaml still generates a new OnPlatformExtension()");
+
+				var expected = targetFramework.EndsWith("-ios") ? "bar" : "foo";
+				Assert.That(methodDef.Body.Instructions.Any(instr => instr.Operand as string == expected), $"Did not find instruction containing '{expected}'");
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void ValuesAreSet(bool useCompiledXaml)
+			{
+				var p = new OnPlatformOptimization(useCompiledXaml);
+				Assert.AreEqual("ringo", p.label0.Text);
+				Assert.AreEqual("foo", p.label1.Text);
 			}
 
 			bool InstructionIsOnPlatformExtensionCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)

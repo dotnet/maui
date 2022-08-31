@@ -126,7 +126,7 @@
         Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)"
     />
     <PackageReference
-        Update="Tizen.UIExtensions.ElmSharp"
+        Update="Tizen.UIExtensions.NUI"
         Version="$(TizenUIExtensionsVersion)"
     />
     <PackageReference

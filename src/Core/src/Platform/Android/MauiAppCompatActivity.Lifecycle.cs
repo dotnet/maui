@@ -22,7 +22,9 @@ namespace Microsoft.Maui
 		// TODO: Investigate whether the new AndroidX way is actually useful:
 		//       https://developer.android.com/reference/android/app/Activity#onBackPressed()
 		[Obsolete]
+#pragma warning disable 809
 		public override void OnBackPressed()
+#pragma warning restore 809
 		{
 			var preventBackPropagation = false;
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>

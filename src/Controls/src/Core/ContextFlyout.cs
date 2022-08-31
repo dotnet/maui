@@ -8,113 +8,113 @@ namespace Microsoft.Maui.Controls
 
 	public partial class MenuFlyout : FlyoutBase, IMenuFlyout // Same pattern as MenuBarItem
 	{
-        ReadOnlyCastingList<Element, IMenuElement> _logicalChildren;
-        readonly ObservableCollection<IMenuElement> _menus = new ObservableCollection<IMenuElement>();
+		ReadOnlyCastingList<Element, IMenuElement> _logicalChildren;
+		readonly ObservableCollection<IMenuElement> _menus = new ObservableCollection<IMenuElement>();
 
-        internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-            _logicalChildren ??= new ReadOnlyCastingList<Element, IMenuElement>(_menus);
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
+			_logicalChildren ??= new ReadOnlyCastingList<Element, IMenuElement>(_menus);
 
-        public IMenuElement this[int index]
-        {
-            get { return _menus[index]; }
-            set
-            {
-                RemoveAt(index);
-                Insert(index, value);
-            }
-        }
+		public IMenuElement this[int index]
+		{
+			get { return _menus[index]; }
+			set
+			{
+				RemoveAt(index);
+				Insert(index, value);
+			}
+		}
 
-        public int Count => _menus.Count;
+		public int Count => _menus.Count;
 
-        public bool IsReadOnly => false;
+		public bool IsReadOnly => false;
 
-        public void Add(IMenuElement item)
-        {
-            var index = _menus.Count;
-            _menus.Add(item);
-            NotifyHandler(nameof(IMenuFlyoutHandler.Add), index, item);
+		public void Add(IMenuElement item)
+		{
+			var index = _menus.Count;
+			_menus.Add(item);
+			NotifyHandler(nameof(IMenuFlyoutHandler.Add), index, item);
 
-            // Take care of the Element internal bookkeeping
-            if (item is Element element)
-            {
-                OnChildAdded(element);
-            }
-        }
+			// Take care of the Element internal bookkeeping
+			if (item is Element element)
+			{
+				OnChildAdded(element);
+			}
+		}
 
-        public void Clear()
-        {
-            for (int i = _menus.Count - 1; i >= 0; i--)
-                RemoveAt(i);
-        }
+		public void Clear()
+		{
+			for (int i = _menus.Count - 1; i >= 0; i--)
+				RemoveAt(i);
+		}
 
-        public bool Contains(IMenuElement item)
-        {
-            return _menus.Contains(item);
-        }
+		public bool Contains(IMenuElement item)
+		{
+			return _menus.Contains(item);
+		}
 
-        public void CopyTo(IMenuElement[] array, int arrayIndex)
-        {
-            _menus.CopyTo(array, arrayIndex);
-        }
+		public void CopyTo(IMenuElement[] array, int arrayIndex)
+		{
+			_menus.CopyTo(array, arrayIndex);
+		}
 
-        public IEnumerator<IMenuElement> GetEnumerator()
-        {
-            return _menus.GetEnumerator();
-        }
+		public IEnumerator<IMenuElement> GetEnumerator()
+		{
+			return _menus.GetEnumerator();
+		}
 
-        public int IndexOf(IMenuElement item)
-        {
-            return _menus.IndexOf(item);
-        }
+		public int IndexOf(IMenuElement item)
+		{
+			return _menus.IndexOf(item);
+		}
 
-        public void Insert(int index, IMenuElement item)
-        {
-            _menus.Insert(index, item);
-            NotifyHandler(nameof(IMenuFlyoutHandler.Insert), index, item);
+		public void Insert(int index, IMenuElement item)
+		{
+			_menus.Insert(index, item);
+			NotifyHandler(nameof(IMenuFlyoutHandler.Insert), index, item);
 
-            // Take care of the Element internal bookkeeping
-            if (item is Element element)
-            {
-                OnChildAdded(element);
-            }
-        }
+			// Take care of the Element internal bookkeeping
+			if (item is Element element)
+			{
+				OnChildAdded(element);
+			}
+		}
 
-        public bool Remove(IMenuElement item)
-        {
-            var index = _menus.IndexOf(item);
-            var result = _menus.Remove(item);
-            NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
+		public bool Remove(IMenuElement item)
+		{
+			var index = _menus.IndexOf(item);
+			var result = _menus.Remove(item);
+			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
 
-            // Take care of the Element internal bookkeeping
-            if (item is Element element)
-            {
-                OnChildRemoved(element, index);
-            }
+			// Take care of the Element internal bookkeeping
+			if (item is Element element)
+			{
+				OnChildRemoved(element, index);
+			}
 
-            return result;
-        }
+			return result;
+		}
 
-        public void RemoveAt(int index)
-        {
-            var item = _menus[index];
-            _menus.RemoveAt(index);
-            NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
+		public void RemoveAt(int index)
+		{
+			var item = _menus[index];
+			_menus.RemoveAt(index);
+			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
 
-            // Take care of the Element internal bookkeeping
-            if (item is Element element)
-            {
-                OnChildRemoved(element, index);
-            }
-        }
+			// Take care of the Element internal bookkeeping
+			if (item is Element element)
+			{
+				OnChildRemoved(element, index);
+			}
+		}
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _menus.GetEnumerator();
-        }
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _menus.GetEnumerator();
+		}
 
-        void NotifyHandler(string action, int index, IMenuElement view)
-        {
-            Handler?.Invoke(action, new Maui.Handlers.ContextFlyoutItemHandlerUpdate(index, view));
-        }
-    }
+		void NotifyHandler(string action, int index, IMenuElement view)
+		{
+			Handler?.Invoke(action, new Maui.Handlers.ContextFlyoutItemHandlerUpdate(index, view));
+		}
+	}
 }

@@ -49,7 +49,7 @@ namespace Maui.Controls.Sample.ViewModels
 				"Focus and onfocus views, detect when a view gains focus and more."),
 
 			new SectionModel(typeof(GesturesPage), "Gestures",
-				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),
+				"Use tap, pinch, pan, swipe, drag and drop, and pointer gestures on View instances."),
 
 			new SectionModel(typeof(InputTransparentPage), "InputTransparent",
 				"Manage whether a view participates in the user interaction cycle."),
