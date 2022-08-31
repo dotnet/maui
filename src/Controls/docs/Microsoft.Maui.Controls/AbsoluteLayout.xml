@@ -28,7 +28,7 @@
   <Docs>
     <summary>Positions child elements at absolute positions.</summary>
     <remarks>
-      <para>Application developers can control the placement of child elements by providing proportional coordinates, device coordinates, or a combination of both, depending on the <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> values that are passed to <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.AbsoluteLayoutFlags)" /> method. When one of the proportional <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> enumeration values is provided, the corresponding X, or Y arguments that range between 0.0 and 1.0 will always cause the child to be displayed completely on screen. That is, you do not need to subtract or add the height or width of a child in order to display it flush with the left, right, top, or bottom of the <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" />. For width, height, X, or Y values that are not specified proportionally, application developers use device-dependent units to locate and size the child element.</para>
+      <para>Application developers can control the placement of child elements by providing proportional coordinates, device coordinates, or a combination of both, depending on the <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> values that are passed to <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Layouts.AbsoluteLayoutFlags)" /> method. When one of the proportional <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> enumeration values is provided, the corresponding X, or Y arguments that range between 0.0 and 1.0 will always cause the child to be displayed completely on screen. That is, you do not need to subtract or add the height or width of a child in order to display it flush with the left, right, top, or bottom of the <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" />. For width, height, X, or Y values that are not specified proportionally, application developers use device-dependent units to locate and size the child element.</para>
       <example>
         <para>The following example shows how to use an <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" /> with proportional position arguments.</para>
         <code lang="csharp lang-csharp"><![CDATA[
@@ -159,7 +159,7 @@
             <term>AbsoluteLayout.LayoutFlags</term>
             <description>
               <para>
-                <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> enumeration value names: <c>All</c>, <c>None</c>, <c>HeightProportional</c>, <c>WidthProportional</c>, <c>SizeProportional</c>, <c>XProportional</c>, <c>YProportional</c>, or <c>PositionProportional</c>. Application developers can combine any of these flags together by supplying a comma-separated list. </para>
+                <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> enumeration value names: <c>All</c>, <c>None</c>, <c>HeightProportional</c>, <c>WidthProportional</c>, <c>SizeProportional</c>, <c>XProportional</c>, <c>YProportional</c>, or <c>PositionProportional</c>. Application developers can combine any of these flags together by supplying a comma-separated list. </para>
             </description>
           </item>
         </list>
@@ -173,7 +173,7 @@
     ]]></code>
       </example>
       <para>The <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" /> class can lay its child elements out in proportional units, device units, or a combination of both. Application developers should remember the following points when specifying a <see cref="T:Microsoft.Maui.Controls.Rectangle" /> structure that will define the layout bounds of a child element:
-            <list type="bullet"><item><term>For elements whose height and width fit on the screen, proportional position dimensions in the range [0,1] represent elements that are completely on the screen, regardless of whether the height, width, or both are specified in device or proportional units.</term></item><item><term>The above point means that, to specify an element in the lower right hand corner of the screen and that is half as wide and half as all as the screen, with a  <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> value of <c>All</c>, the application developer would specify "1.0, 1.0, 0.5, 0.5".</term></item><item><term>The app developer can inadvertently cause child elements for which one or both size dimensions were specified proportionally to be displayed partially off the screen, or hidden altogether, by specifying device-unit positions that do not leave enough room for the calculated size of the child.</term></item><item><term>Each part of the bounding <see cref="T:Microsoft.Maui.Controls.Rectangle" /> structure is interpreted according to the <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> value that controls it. A given rectangle might, for example, have an X-coordinate that is in device units, a Y-coordinate that is in proportional units, a height that is in proportional units, and a width that is in device units, or any other combination of device and proportional units. </term></item><item><term>Rectangles that, when interpreted by using the current <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> set on the child, represent bounding boxes that are partially or wholly off-screen—for example, by having a width that is larger than the screen width—may give unexpected results.</term></item></list></para>
+            <list type="bullet"><item><term>For elements whose height and width fit on the screen, proportional position dimensions in the range [0,1] represent elements that are completely on the screen, regardless of whether the height, width, or both are specified in device or proportional units.</term></item><item><term>The above point means that, to specify an element in the lower right hand corner of the screen and that is half as wide and half as all as the screen, with a  <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> value of <c>All</c>, the application developer would specify "1.0, 1.0, 0.5, 0.5".</term></item><item><term>The app developer can inadvertently cause child elements for which one or both size dimensions were specified proportionally to be displayed partially off the screen, or hidden altogether, by specifying device-unit positions that do not leave enough room for the calculated size of the child.</term></item><item><term>Each part of the bounding <see cref="T:Microsoft.Maui.Controls.Rectangle" /> structure is interpreted according to the <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> value that controls it. A given rectangle might, for example, have an X-coordinate that is in device units, a Y-coordinate that is in proportional units, a height that is in proportional units, and a width that is in device units, or any other combination of device and proportional units. </term></item><item><term>Rectangles that, when interpreted by using the current <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> set on the child, represent bounding boxes that are partially or wholly off-screen—for example, by having a width that is larger than the screen width—may give unexpected results.</term></item></list></para>
     </remarks>
   </Docs>
   <Members>
@@ -294,10 +294,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetLayoutFlags">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.AbsoluteLayoutFlags GetLayoutFlags (Microsoft.Maui.Controls.BindableObject bindable);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.AbsoluteLayoutFlags GetLayoutFlags(class Microsoft.Maui.Controls.BindableObject bindable) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Layouts.AbsoluteLayoutFlags GetLayoutFlags (Microsoft.Maui.Controls.BindableObject bindable);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Layouts.AbsoluteLayoutFlags GetLayoutFlags(class Microsoft.Maui.Controls.BindableObject bindable) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutFlags(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetLayoutFlags : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.AbsoluteLayoutFlags" Usage="Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutFlags bindable" />
+      <MemberSignature Language="F#" Value="static member GetLayoutFlags : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Layouts.AbsoluteLayoutFlags" Usage="Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutFlags bindable" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -311,7 +311,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.AbsoluteLayoutFlags</ReturnType>
+        <ReturnType>Microsoft.Maui.Layouts.AbsoluteLayoutFlags</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="bindable" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -321,7 +321,7 @@
         <summary>Gets the layout flags that were specified when <paramref name="bindable" /> was added to an <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" />.</summary>
         <returns>The layout flags of the object.</returns>
         <remarks>
-          <para>This method supports the <c>AbsoluteLayout.LayoutFlags</c> XAML attached property. In XAML, Application developers can specify the following <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> enumeration value names for the value of this property on the children of a <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" />:</para>
+          <para>This method supports the <c>AbsoluteLayout.LayoutFlags</c> XAML attached property. In XAML, Application developers can specify the following <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> enumeration value names for the value of this property on the children of a <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" />:</para>
           <list type="bullet">
             <item>
               <term>
@@ -452,8 +452,8 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Implements the attached property that contains the <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> values for child elements.</summary>
-        <remarks>The interface for this property is defined by the <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutFlags(Microsoft.Maui.Controls.BindableObject)" /> and <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.AbsoluteLayoutFlags)" /> methods.
+        <summary>Implements the attached property that contains the <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> values for child elements.</summary>
+        <remarks>The interface for this property is defined by the <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutFlags(Microsoft.Maui.Controls.BindableObject)" /> and <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Layouts.AbsoluteLayoutFlags)" /> methods.
         </remarks>
       </Docs>
     </Member>
@@ -656,10 +656,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetLayoutFlags">
-      <MemberSignature Language="C#" Value="public static void SetLayoutFlags (Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.AbsoluteLayoutFlags flags);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetLayoutFlags(class Microsoft.Maui.Controls.BindableObject bindable, valuetype Microsoft.Maui.Controls.AbsoluteLayoutFlags flags) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.AbsoluteLayoutFlags)" />
-      <MemberSignature Language="F#" Value="static member SetLayoutFlags : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.AbsoluteLayoutFlags -&gt; unit" Usage="Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags (bindable, flags)" />
+      <MemberSignature Language="C#" Value="public static void SetLayoutFlags (Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Layouts.AbsoluteLayoutFlags flags);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetLayoutFlags(class Microsoft.Maui.Controls.BindableObject bindable, valuetype Microsoft.Maui.Layouts.AbsoluteLayoutFlags flags) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Layouts.AbsoluteLayoutFlags)" />
+      <MemberSignature Language="F#" Value="static member SetLayoutFlags : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Layouts.AbsoluteLayoutFlags -&gt; unit" Usage="Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags (bindable, flags)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -677,14 +677,14 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="bindable" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="flags" Type="Microsoft.Maui.Controls.AbsoluteLayoutFlags" />
+        <Parameter Name="flags" Type="Microsoft.Maui.Layouts.AbsoluteLayoutFlags" />
       </Parameters>
       <Docs>
         <param name="bindable">The view on which to set the layout flags.</param>
-        <param name="flags">A <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> that describes the how to interpret the layout bounds for <paramref name="bindable" />.</param>
+        <param name="flags">A <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> that describes the how to interpret the layout bounds for <paramref name="bindable" />.</param>
         <summary>Sets the layout flags of a view that will be used to interpret the layout bounds set on it when it is added to the layout.</summary>
         <remarks>
-          <para>This method supports the <c>AbsoluteLayout.LayoutFlags</c> XAML attached property. In XAML, Application developers can specify the following <see cref="T:Microsoft.Maui.Controls.AbsoluteLayoutFlags" /> enumeration value names for the value of this property on the children of a <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" />:</para>
+          <para>This method supports the <c>AbsoluteLayout.LayoutFlags</c> XAML attached property. In XAML, Application developers can specify the following <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> enumeration value names for the value of this property on the children of a <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" />:</para>
           <list type="bullet">
             <item>
               <term>
