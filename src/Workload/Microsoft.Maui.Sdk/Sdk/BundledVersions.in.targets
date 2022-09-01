@@ -75,7 +75,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Graphics" Version="@MicrosoftMauiGraphicsVersion@" IsImplicitlyDefined="true">
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
@@ -118,7 +118,7 @@
     <PackageReference Include="Tizen.UIExtensions.NUI" Version="@TizenUIExtensionsVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="@MicrosoftMauiGraphicsVersion@" IsImplicitlyDefined="true">
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
@@ -128,7 +128,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') ">
-    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" Version="@MicrosoftMauiGraphicsVersion@" IsImplicitlyDefined="true">
+    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="@MicrosoftWindowsAppSDKPackageVersion@" IsImplicitlyDefined="true">
