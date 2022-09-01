@@ -226,6 +226,14 @@ namespace Microsoft.Maui.Platform
 			throw new NotImplementedException();
 		}
 
+		public static bool IsLoaded(this Widget? platformView)
+		{
+			if (platformView is not { })
+				return false;
+
+			return platformView.IsRealized;
+		}
+
 	}
 
 }

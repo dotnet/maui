@@ -16,6 +16,16 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateText(label, label.TextType);
 		}
 
+		public static void MapLineBreakMode(LabelHandler handler, Label label)
+		{
+			handler.PlatformView?.UpdateLineBreakMode(label);
+		}
+
+		public static void MapMaxLines(LabelHandler handler, Label label)
+		{
+			handler.PlatformView?.UpdateText(label, label.TextType);
+		}
+
 	}
 
 }

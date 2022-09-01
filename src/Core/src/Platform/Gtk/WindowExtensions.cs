@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Platform
 {
@@ -41,6 +42,9 @@ namespace Microsoft.Maui.Platform
 			if (handler.VirtualView != window)
 				handler.SetVirtualView(window);
 		}
+
+		internal static DisplayOrientation GetOrientation(this IWindow? window) =>
+			DeviceDisplay.Current.MainDisplayInfo.Orientation;
 
 	}
 

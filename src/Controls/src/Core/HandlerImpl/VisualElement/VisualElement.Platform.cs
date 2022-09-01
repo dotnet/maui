@@ -10,6 +10,8 @@ using PlatformView = Android.Views.View;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 using PlatformView = ElmSharp.EvasObject;
+#elif GTK
+using PlatformView = Gtk.Widget;
 #endif
 
 namespace Microsoft.Maui.Controls
