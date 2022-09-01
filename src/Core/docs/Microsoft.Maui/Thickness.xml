@@ -27,7 +27,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>Struct defining thickness around the edges of a <see cref="T:Microsoft.Maui.Rectangle" /> using doubles.</summary>
+    <summary>Struct defining thickness around the edges of a <see cref="T:Microsoft.Maui.Controls.Shapes.Rectangle" /> using doubles.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
