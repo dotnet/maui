@@ -273,11 +273,11 @@
     },
     "Microsoft.Maui.Graphics": {
       "kind": "library",
-      "version": "@MAUI_GRAPHICS_VERSION@"
+      "version": "@VERSION@"
     },
     "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop": {
       "kind": "library",
-      "version": "@MAUI_GRAPHICS_VERSION@"
+      "version": "@VERSION@"
     },
     "Microsoft.Maui.Sdk.@MAUI_DOTNET_TFM@": {
       "kind": "sdk",
