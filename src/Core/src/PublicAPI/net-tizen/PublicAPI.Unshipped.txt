@@ -2641,7 +2641,7 @@ static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateFlyoutBehavior(this Ti
 static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateFlyoutWidth(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
 static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateIsGestureEnabled(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
 static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateIsPresented(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
-static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Tizen.UIExtensions.NUI.GraphicsView.SkiaGraphicsView! platformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
+static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView! platformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Platform.ImageExtensions.Clear(this Tizen.UIExtensions.NUI.Image! platformImage) -> void
 static Microsoft.Maui.Platform.ImageExtensions.UpdateAspect(this Tizen.UIExtensions.NUI.Image! platformImage, Microsoft.Maui.IImage! image) -> void
 static Microsoft.Maui.Platform.ImageExtensions.UpdateIsAnimationPlaying(this Tizen.UIExtensions.NUI.Image! platformImage, Microsoft.Maui.IImageSourcePart! image) -> void
