@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditingChanged += OnEditingChanged;
 			platformView.EditingDidEnd += OnEditingEnded;
 			platformView.TextPropertySet += OnTextPropertySet;
-			platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
+			platformView.ShouldChangeCharacters += OnShouldChangeCharacters;			
 		}
 
 		protected override void DisconnectHandler(MauiTextField platformView)

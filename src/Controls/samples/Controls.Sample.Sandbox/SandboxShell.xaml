@@ -4,7 +4,10 @@
     x:Class="Maui.Controls.Sample.SandboxShell"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Name="shell">
-    <FlyoutItem Title="Flyout Item Title">
-        <ShellContent ContentTemplate="{DataTemplate local:MainPage}"></ShellContent>
+    <FlyoutItem Title="OH! Hi There!" FlyoutIcon="dotnet_bot.png">
+        <ShellContent FlyoutIcon="dotnet_bot.png" ContentTemplate="{DataTemplate local:MainPage}"></ShellContent>
+    </FlyoutItem>
+    <FlyoutItem Title="Did you want to see more Context Menus?" FlyoutIcon="dotnet_bot.png">
+        <ShellContent FlyoutIcon="dotnet_bot.png" ContentTemplate="{DataTemplate local:ContextFlyoutPage}"></ShellContent>
     </FlyoutItem>
 </Shell>
