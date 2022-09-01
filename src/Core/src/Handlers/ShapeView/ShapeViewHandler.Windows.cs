@@ -7,10 +7,17 @@ namespace Microsoft.Maui.Handlers
 		protected override W2DGraphicsView CreatePlatformView()
 			=> new W2DGraphicsView();
 
-		public override bool NeedsContainer =>
-			VirtualView?.Background != null ||
-			base.NeedsContainer;
-
+		public override bool NeedsContainer
+		{
+			get
+			{
+				if (VirtualView is IBoxView)
+					return base.NeedsContainer;
+				else
+					return VirtualView?.Background != null || base.NeedsContainer;
+			}
+		}
+	
 		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
