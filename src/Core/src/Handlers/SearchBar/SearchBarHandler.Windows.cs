@@ -114,6 +114,7 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateHorizontalTextAlignment(VirtualView);
 				PlatformView?.UpdateMaxLength(VirtualView);
 				PlatformView?.UpdateIsReadOnly(VirtualView);
+				PlatformView?.UpdateKeyboard(VirtualView);
 			}
 		}
 
