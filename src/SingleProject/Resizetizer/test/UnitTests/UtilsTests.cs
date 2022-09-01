@@ -23,6 +23,10 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData("Red", 0xFFFF0000)]
 			[InlineData("Green", 0xFF008000)]
 			[InlineData("Blue", 0xFF0000FF)]
+			[InlineData("Grey", 0xFF808080)]
+			[InlineData("Gray", 0xFF808080)]
+			[InlineData("LightSlateGrey", 0xFF778899)]
+			[InlineData("LightSlateGray", 0xFF778899)]
 			public void ParsesNamedColors(string name, uint argb)
 			{
 				var parsed = Utils.ParseColorString(name);

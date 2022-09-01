@@ -1,5 +1,5 @@
-﻿using Tizen.UIExtensions.Common;
-using EColor = ElmSharp.Color;
+﻿using Tizen.UIExtensions.NUI;
+using TColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -8,20 +8,25 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IPageHandler handler, IContentView page)
 		{
 			handler.UpdateValue(nameof(handler.ContainerView));
-			if (page.Background != null && handler.PlatformView.BackgroundColor != EColor.Transparent)
+			if (page.Background != null && handler.PlatformView.BackgroundColor != Tizen.NUI.Color.Transparent)
 			{
-				handler.PlatformView.BackgroundColor = EColor.Transparent;
+				handler.PlatformView.UpdateBackgroundColor(TColor.Transparent);
 			}
 			handler.ToPlatform()?.UpdateBackground(page);
+		}
+
+		public override void PlatformArrange(Graphics.Rect frame)
+		{
+			// empty on purpose
 		}
 
 		[MissingMapper]
 		public static void MapTitle(IPageHandler handler, IContentView page) { }
 
-		protected override ContentCanvas CreatePlatformView()
+		protected override ContentViewGroup CreatePlatformView()
 		{
 			var view = base.CreatePlatformView();
-			view.BackgroundColor = (DeviceInfo.GetDeviceType() == DeviceType.TV) ? EColor.Transparent : EColor.White;
+			view.UpdateBackgroundColor(TColor.White);
 
 			return view;
 		}

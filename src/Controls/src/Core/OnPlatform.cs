@@ -40,14 +40,14 @@ namespace Microsoft.Maui.Controls
 						continue;
 					if (!onPlat.Platform.Contains(DeviceInfo.Platform.ToString()))
 						continue;
-					return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), typeof(T).GetTypeConverter, null);
+					return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), null, null);
 				}
 
 				// fallback for UWP
 				foreach (var onPlat in onPlatform.Platforms)
 				{
 					if (onPlat.Platform != null && onPlat.Platform.Contains("UWP") && DeviceInfo.Platform == DevicePlatform.WinUI)
-						return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), typeof(T).GetTypeConverter, null);
+						return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), null, null);
 				}
 			}
 

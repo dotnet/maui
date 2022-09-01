@@ -1,23 +1,23 @@
-using ElmSharp;
-using ESize = ElmSharp.Size;
+using Microsoft.Maui.Graphics;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	public delegate ESize? MeasureDelegate(NativeViewWrapperRenderer renderer, int availableWidth, int availableHeight);
-
 #pragma warning disable CS0618 // Type or member is obsolete
+	public delegate Size? MeasureDelegate(NativeViewWrapperRenderer renderer, int availableWidth, int availableHeight);
+
 	public class NativeViewWrapper : View
 #pragma warning disable CS0618 // Type or member is obsolete
 	{
-		public NativeViewWrapper(EvasObject obj, MeasureDelegate measureDelegate = null)
+		public NativeViewWrapper(NView obj, MeasureDelegate measureDelegate = null)
 		{
-			EvasObject = obj;
+			NativeView = obj;
 			MeasureDelegate = measureDelegate;
 
 			obj.TransferBindablePropertiesToWrapper(this);
 		}
 
-		public EvasObject EvasObject
+		public NView NativeView
 		{
 			get;
 			private set;
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			// TODO: we should provide a delegate to obtain children of a Container object,
 			//       however currently there is no way to get the list of children
-			EvasObject.SetBindingContext(BindingContext);
+			NativeView.SetBindingContext(BindingContext);
 			base.OnBindingContextChanged();
 		}
 	}

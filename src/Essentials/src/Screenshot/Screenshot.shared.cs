@@ -25,6 +25,9 @@ namespace Microsoft.Maui.Media
 #elif WINDOWS
 		Task<IScreenshotResult> CaptureAsync(UI.Xaml.Window window);
 		Task<IScreenshotResult> CaptureAsync(UI.Xaml.UIElement element);
+#elif TIZEN
+		Task<IScreenshotResult> CaptureAsync(Tizen.NUI.Window window);
+		Task<IScreenshotResult> CaptureAsync(Tizen.NUI.BaseComponents.View view);
 #endif
 	}
 
@@ -110,10 +113,10 @@ namespace Microsoft.Maui.Media
 
 #elif TIZEN
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, ElmSharp.Window window) =>
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.Window window) =>
 			screenshot.AsPlatform().CaptureAsync(window);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, ElmSharp.EvasObject view) =>
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.BaseComponents.View view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
 
 #endif

@@ -34,7 +34,7 @@
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen'" >
-    <PackageReference Include="Tizen.UIExtensions.ElmSharp" />
+    <PackageReference Include="Tizen.UIExtensions.NUI" />
     <ProjectReference Include="..\..\..\src\Graphics\src\Graphics.Skia\Graphics.Skia.csproj" />
   </ItemGroup>
 

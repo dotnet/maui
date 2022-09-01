@@ -6,7 +6,7 @@ using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
@@ -50,10 +50,14 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.AnchorY)] = MapAnchorY,
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IBorder.Border)] = MapBorderView,
-#if ANDROID || WINDOWS
+#if ANDROID || WINDOWS || TIZEN
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,
+				[nameof(IToolTipElement.ToolTip)] = MapToolTip,
+#if WINDOWS || MACCATALYST
+				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
+#endif
 			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
@@ -341,6 +345,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapUnfocus(IViewHandler handler, IView view, object? args)
 		{
 			((PlatformView?)handler.PlatformView)?.Unfocus(view);
+		}
+
+		public static void MapToolTip(IViewHandler handler, IView view)
+		{
+#if PLATFORM
+			if (view is IToolTipElement tooltipContainer)
+				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
+#endif
 		}
 
 		static void UpdateHasContainer(IViewHandler handler, bool definitelyNeedsContainer)
