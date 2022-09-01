@@ -55,7 +55,7 @@ MainPage = new ContentPage
     Content = new ScrollView { Content = stack }
 };]]></code>
       </example>
-      <block type="note">Application developers should not nest one <see cref="T:Microsoft.Maui.Controls.ScrollView" /> within another. Additionally, they should refrain from nesting them  other elements that can scroll, such as <see cref="T:Microsoft.Maui.Controls.WebView" />.</block>
+      Note: application developers should not nest one <see cref="T:Microsoft.Maui.Controls.ScrollView" /> within another. Additionally, they should refrain from nesting them other elements that can scroll, such as <see cref="T:Microsoft.Maui.Controls.WebView" />.
       <para>
         <img href="~/xml/Microsoft.Maui.Controls/_images/ScrollView.TripleScreenShot.png" />
       </para>

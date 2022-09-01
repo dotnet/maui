@@ -349,7 +349,7 @@
       </ReturnValue>
       <Docs>
         <summary>Whether the <see cref="P:Microsoft.Maui.Controls.SearchHandler.ClearPlaceholderCommand" /> can be executed.</summary>
-        <value>The default value is <see langword="true" />.</value>
+        <value>The default value is `true`.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -882,7 +882,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets whether the search box is enabled.</summary>
-        <value>The default value is <see landword="true" />.</value>
+        <value>The default value is `true`.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -919,7 +919,7 @@
       </ReturnValue>
       <Docs>
         <summary>The collection of items to be displayed in the suggestion area. Default is <see langword="null" />.</summary>
-        <value>The default value is <see langword="null" />.</value>
+        <value>The default value is `null`.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -1557,7 +1557,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets whether search results should be expected in the suggestion area on text entry.</summary>
-        <value>The default value is <see langword="false" />.</value>
+        <value>The default value is `false`.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
