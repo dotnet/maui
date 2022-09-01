@@ -1,6 +1,6 @@
 <Type Name="AbsoluteLayout" FullName="Microsoft.Maui.Controls.AbsoluteLayout">
   <TypeSignature Language="C#" Value="public class AbsoluteLayout : Microsoft.Maui.Controls.Layout&lt;Microsoft.Maui.Controls.View&gt;, Microsoft.Maui.Controls.IElementConfiguration&lt;Microsoft.Maui.Controls.AbsoluteLayout&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit AbsoluteLayout extends Microsoft.Maui.Controls.Layout`1&lt;class Microsoft.Maui.Controls.View&gt; implements class Microsoft.Maui.Controls.IElementConfiguration`1&lt;class Microsoft.Maui.Controls.AbsoluteLayout&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit AbsoluteLayout extends Microsoft.Maui.Controls.Layout&lt;class Microsoft.Maui.Controls.View&gt; implements class Microsoft.Maui.Controls.IElementConfiguration`1&lt;class Microsoft.Maui.Controls.AbsoluteLayout&gt;" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.AbsoluteLayout" />
   <TypeSignature Language="F#" Value="type AbsoluteLayout = class&#xA;    inherit Layout&lt;View&gt;&#xA;    interface IElementConfiguration&lt;AbsoluteLayout&gt;" />
   <AssemblyInfo>
@@ -172,8 +172,8 @@
     </AbsoluteLayout>
     ]]></code>
       </example>
-      <para>The <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" /> class can lay its child elements out in proportional units, device units, or a combination of both. Application developers should remember the following points when specifying a <see cref="T:Microsoft.Maui.Controls.Rectangle" /> structure that will define the layout bounds of a child element:
-            <list type="bullet"><item><term>For elements whose height and width fit on the screen, proportional position dimensions in the range [0,1] represent elements that are completely on the screen, regardless of whether the height, width, or both are specified in device or proportional units.</term></item><item><term>The above point means that, to specify an element in the lower right hand corner of the screen and that is half as wide and half as all as the screen, with a  <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> value of <c>All</c>, the application developer would specify "1.0, 1.0, 0.5, 0.5".</term></item><item><term>The app developer can inadvertently cause child elements for which one or both size dimensions were specified proportionally to be displayed partially off the screen, or hidden altogether, by specifying device-unit positions that do not leave enough room for the calculated size of the child.</term></item><item><term>Each part of the bounding <see cref="T:Microsoft.Maui.Controls.Rectangle" /> structure is interpreted according to the <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> value that controls it. A given rectangle might, for example, have an X-coordinate that is in device units, a Y-coordinate that is in proportional units, a height that is in proportional units, and a width that is in device units, or any other combination of device and proportional units. </term></item><item><term>Rectangles that, when interpreted by using the current <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> set on the child, represent bounding boxes that are partially or wholly off-screen—for example, by having a width that is larger than the screen width—may give unexpected results.</term></item></list></para>
+      <para>The <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" /> class can lay its child elements out in proportional units, device units, or a combination of both. Application developers should remember the following points when specifying a <see cref="T:Microsoft.Maui.Controls.Shapes.Rectangle" /> structure that will define the layout bounds of a child element:
+            <list type="bullet"><item><term>For elements whose height and width fit on the screen, proportional position dimensions in the range [0,1] represent elements that are completely on the screen, regardless of whether the height, width, or both are specified in device or proportional units.</term></item><item><term>The above point means that, to specify an element in the lower right hand corner of the screen and that is half as wide and half as all as the screen, with a  <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> value of <c>All</c>, the application developer would specify "1.0, 1.0, 0.5, 0.5".</term></item><item><term>The app developer can inadvertently cause child elements for which one or both size dimensions were specified proportionally to be displayed partially off the screen, or hidden altogether, by specifying device-unit positions that do not leave enough room for the calculated size of the child.</term></item><item><term>Each part of the bounding <see cref="T:Microsoft.Maui.Controls.Shapes.Rectangle" /> structure is interpreted according to the <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> value that controls it. A given rectangle might, for example, have an X-coordinate that is in device units, a Y-coordinate that is in proportional units, a height that is in proportional units, and a width that is in device units, or any other combination of device and proportional units. </term></item><item><term>Rectangles that, when interpreted by using the current <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> set on the child, represent bounding boxes that are partially or wholly off-screen—for example, by having a width that is larger than the screen width—may give unexpected results.</term></item></list></para>
     </remarks>
   </Docs>
   <Members>
@@ -257,10 +257,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetLayoutBounds">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Rectangle GetLayoutBounds (Microsoft.Maui.Controls.BindableObject bindable);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Rectangle GetLayoutBounds(class Microsoft.Maui.Controls.BindableObject bindable) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Shapes.Rectangle GetLayoutBounds (Microsoft.Maui.Controls.BindableObject bindable);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Shapes.Rectangle GetLayoutBounds(class Microsoft.Maui.Controls.BindableObject bindable) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetLayoutBounds : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Rectangle" Usage="Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds bindable" />
+      <MemberSignature Language="F#" Value="static member GetLayoutBounds : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Shapes.Rectangle" Usage="Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds bindable" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -275,11 +275,11 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.BoundsTypeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.BoundsTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Rectangle</ReturnType>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Rectangle</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="bindable" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -581,10 +581,10 @@
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
-      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.Controls.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.AbsoluteLayout.OnSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="absoluteLayout.OnSizeRequest (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="absoluteLayout.OnSizeRequest (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -606,7 +606,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -616,17 +616,17 @@
         <param name="widthConstraint">The available width for the AbsoluteLayout to use.</param>
         <param name="heightConstraint">The available height for the AbsoluteLayout to use.</param>
         <summary>Called during the measure pass of a layout cycle to get the desired size of the AbsoluteLayout.</summary>
-        <returns>A <see cref="T:Microsoft.Maui.Controls.SizeRequest" /> which contains the desired size of the AbsoluteLayout.</returns>
+        <returns>A <see cref="T:Microsoft.Maui.SizeRequest" /> which contains the desired size of the AbsoluteLayout.</returns>
         <remarks>
           <para>Application developers can override <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.OnSizeRequest(System.Double,System.Double)" /> to change the default behavior thata is triggered when a child is removed. When doing so, it is recommended to call the base <see cref="M:Microsoft.Maui.Controls.AbsoluteLayout.OnSizeRequest(System.Double,System.Double)" /> method and then modify the dimensions and locations of the children directly.</para>
         </remarks>
       </Docs>
     </Member>
     <Member MemberName="SetLayoutBounds">
-      <MemberSignature Language="C#" Value="public static void SetLayoutBounds (Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.Rectangle bounds);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetLayoutBounds(class Microsoft.Maui.Controls.BindableObject bindable, valuetype Microsoft.Maui.Controls.Rectangle bounds) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutBounds(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Rectangle)" />
-      <MemberSignature Language="F#" Value="static member SetLayoutBounds : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Rectangle -&gt; unit" Usage="Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutBounds (bindable, bounds)" />
+      <MemberSignature Language="C#" Value="public static void SetLayoutBounds (Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.Shapes.Rectangle bounds);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetLayoutBounds(class Microsoft.Maui.Controls.BindableObject bindable, valuetype Microsoft.Maui.Controls.Shapes.Rectangle bounds) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutBounds(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Shapes.Rectangle)" />
+      <MemberSignature Language="F#" Value="static member SetLayoutBounds : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Shapes.Rectangle -&gt; unit" Usage="Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutBounds (bindable, bounds)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -644,7 +644,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="bindable" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="bounds" Type="Microsoft.Maui.Controls.Rectangle" />
+        <Parameter Name="bounds" Type="Microsoft.Maui.Controls.Shapes.Rectangle" />
       </Parameters>
       <Docs>
         <param name="bindable">The view to delimit by <paramref name="bounds" />.</param>

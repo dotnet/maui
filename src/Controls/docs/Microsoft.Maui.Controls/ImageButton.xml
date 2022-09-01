@@ -62,17 +62,17 @@
       </Docs>
     </Member>
     <Member MemberName="Aspect">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Aspect Aspect { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Aspect Aspect" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Aspect Aspect { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Aspect Aspect" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ImageButton.Aspect" />
-      <MemberSignature Language="F#" Value="member this.Aspect : Microsoft.Maui.Controls.Aspect with get, set" Usage="Microsoft.Maui.Controls.ImageButton.Aspect" />
+      <MemberSignature Language="F#" Value="member this.Aspect : Microsoft.Maui.Aspect with get, set" Usage="Microsoft.Maui.Controls.ImageButton.Aspect" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Aspect</ReturnType>
+        <ReturnType>Microsoft.Maui.Aspect</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -485,17 +485,17 @@
       </Docs>
     </Member>
     <Member MemberName="OnMeasure">
-      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.Controls.SizeRequest OnMeasure (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnMeasure(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.SizeRequest OnMeasure (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.SizeRequest OnMeasure(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ImageButton.OnMeasure(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.OnMeasure : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="imageButton.OnMeasure (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.OnMeasure : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="imageButton.OnMeasure (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -520,7 +520,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Thickness</ReturnType>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -811,7 +811,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

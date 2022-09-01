@@ -138,10 +138,10 @@
       </Docs>
     </Member>
     <Member MemberName="Keyboard">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Keyboard Keyboard { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Controls.Keyboard Keyboard" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Keyboard Keyboard { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Keyboard Keyboard" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.InputView.Keyboard" />
-      <MemberSignature Language="F#" Value="member this.Keyboard : Microsoft.Maui.Controls.Keyboard with get, set" Usage="Microsoft.Maui.Controls.InputView.Keyboard" />
+      <MemberSignature Language="F#" Value="member this.Keyboard : Microsoft.Maui.Keyboard with get, set" Usage="Microsoft.Maui.Controls.InputView.Keyboard" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -155,11 +155,11 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Keyboard</ReturnType>
+        <ReturnType>Microsoft.Maui.Keyboard</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the Keyboard for the InputView. This is a bindable property.</summary>
-        <value>The <see cref="T:Microsoft.Maui.Controls.Keyboard" /> to use for the InputView.</value>
+        <value>The <see cref="T:Microsoft.Maui.Keyboard" /> to use for the InputView.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

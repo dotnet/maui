@@ -57,14 +57,13 @@
       <format type="text/html">
         <h1>Button Appearance</h1>
       </format>
-      <para>In addition to the appearance properties common to all <see cref="T:Microsoft.Maui.Controls.View" /> objects, the Button class provides the <see cref="P:Microsoft.Maui.Controls.Button.BorderColor" />, <see cref="P:Microsoft.Maui.Controls.Button.BorderWidth" />, <see cref="P:Microsoft.Maui.Controls.Button.BorderRadius" />, and <see cref="P:Microsoft.Maui.Controls.Button.Image" /> properties.</para>
+      <para>In addition to the appearance properties common to all <see cref="T:Microsoft.Maui.Controls.View" /> objects, the Button class provides the <see cref="P:Microsoft.Maui.Controls.Button.BorderColor" />, <see cref="P:Microsoft.Maui.Controls.Button.BorderWidth" />, and <see cref="P:Microsoft.Maui.Controls.Button.ImageSource" /> properties.</para>
       <example>
         <para>The XAML code snippet below demonstrates how to use these properties to create a basic button with the text "Press me!" The image that the button displays appears on the start side of the layout, which is the left side for left-to-right languages.</para>
         <code lang="XAML"><![CDATA[
 <Button Text="Press me!"
         Image="icon.png"
         BackgroundColor="White"
-        BorderRadius="10"
         BorderWidth="2"
         BorderColor="Black"
         HorizontalOptions="Center"/>
@@ -198,73 +197,6 @@ void IncrementLabel()
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Button.BorderColor" /> bindable property.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="BorderRadius">
-      <MemberSignature Language="C#" Value="public int BorderRadius { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance int32 BorderRadius" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Button.BorderRadius" />
-      <MemberSignature Language="F#" Value="member this.BorderRadius : int with get, set" Usage="Microsoft.Maui.Controls.Button.BorderRadius" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.1.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Obsolete("BorderRadius is obsolete as of 2.5.0. Please use CornerRadius instead.")</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets the corner radius of the border. This is a bindable property.</summary>
-        <value>The corner radius of the button border; the default is 5.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="BorderRadiusProperty">
-      <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.BindableProperty BorderRadiusProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.BindableProperty BorderRadiusProperty" />
-      <MemberSignature Language="DocId" Value="F:Microsoft.Maui.Controls.Button.BorderRadiusProperty" />
-      <MemberSignature Language="F#" Value=" staticval mutable BorderRadiusProperty : Microsoft.Maui.Controls.BindableProperty" Usage="Microsoft.Maui.Controls.Button.BorderRadiusProperty" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.1.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Obsolete("BorderRadiusProperty is obsolete as of 2.5.0. Please use CornerRadius instead.")</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Button.BorderRadius" /> bindable property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -737,7 +669,7 @@ void IncrementLabel()
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -768,70 +700,6 @@ void IncrementLabel()
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Button.FontSize" /> bindable property.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Image">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.FileImageSource Image { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Controls.FileImageSource Image" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Button.Image" />
-      <MemberSignature Language="F#" Value="member this.Image : Microsoft.Maui.Controls.FileImageSource with get, set" Usage="Microsoft.Maui.Controls.Button.Image" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Obsolete("Image is obsolete as of 4.0.0. Please use ImageSource instead.")</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.FileImageSource</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets the optional image source to display next to the text in the Button. This is a bindable property.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ImageProperty">
-      <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.BindableProperty ImageProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.BindableProperty ImageProperty" />
-      <MemberSignature Language="DocId" Value="F:Microsoft.Maui.Controls.Button.ImageProperty" />
-      <MemberSignature Language="F#" Value=" staticval mutable ImageProperty : Microsoft.Maui.Controls.BindableProperty" Usage="Microsoft.Maui.Controls.Button.ImageProperty" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.2.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Obsolete("ImageProperty is obsolete as of 4.0.0. Please use ImageSourceProperty instead.")</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Button.Image" /> bindable property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -979,7 +847,7 @@ void IncrementLabel()
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Thickness</ReturnType>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the padding for the button.</summary>
@@ -1549,10 +1417,10 @@ void IncrementLabel()
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IImageElement.Aspect">
-      <MemberSignature Language="C#" Value="Microsoft.Maui.Controls.Aspect Microsoft.Maui.Controls.IImageElement.Aspect { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Aspect Microsoft.Maui.Controls.IImageElement.Aspect" />
+      <MemberSignature Language="C#" Value="Microsoft.Maui.Aspect Microsoft.Maui.Controls.IImageElement.Aspect { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Aspect Microsoft.Maui.Controls.IImageElement.Aspect" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Button.Xamarin#Forms#IImageElement#Aspect" />
-      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IImageElement.Aspect : Microsoft.Maui.Controls.Aspect" Usage="Microsoft.Maui.Controls.IImageElement.Aspect" />
+      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IImageElement.Aspect : Microsoft.Maui.Aspect" Usage="Microsoft.Maui.Controls.IImageElement.Aspect" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IImageElement.Aspect</InterfaceMember>
@@ -1562,7 +1430,7 @@ void IncrementLabel()
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Aspect</ReturnType>
+        <ReturnType>Microsoft.Maui.Aspect</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>

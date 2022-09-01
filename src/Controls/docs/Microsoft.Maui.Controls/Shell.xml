@@ -328,7 +328,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -341,17 +341,17 @@
       </Docs>
     </Member>
     <Member MemberName="FlyoutBackgroundImageAspect">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Aspect FlyoutBackgroundImageAspect { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Aspect FlyoutBackgroundImageAspect" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Aspect FlyoutBackgroundImageAspect { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Aspect FlyoutBackgroundImageAspect" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shell.FlyoutBackgroundImageAspect" />
-      <MemberSignature Language="F#" Value="member this.FlyoutBackgroundImageAspect : Microsoft.Maui.Controls.Aspect with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBackgroundImageAspect" />
+      <MemberSignature Language="F#" Value="member this.FlyoutBackgroundImageAspect : Microsoft.Maui.Aspect with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBackgroundImageAspect" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Aspect</ReturnType>
+        <ReturnType>Microsoft.Maui.Aspect</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -414,20 +414,20 @@
       </Docs>
     </Member>
     <Member MemberName="FlyoutBehavior">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.FlyoutBehavior FlyoutBehavior { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.FlyoutBehavior FlyoutBehavior" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.FlyoutBehavior FlyoutBehavior { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.FlyoutBehavior FlyoutBehavior" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shell.FlyoutBehavior" />
-      <MemberSignature Language="F#" Value="member this.FlyoutBehavior : Microsoft.Maui.Controls.FlyoutBehavior with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBehavior" />
+      <MemberSignature Language="F#" Value="member this.FlyoutBehavior : Microsoft.Maui.FlyoutBehavior with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBehavior" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.FlyoutBehavior</ReturnType>
+        <ReturnType>Microsoft.Maui.FlyoutBehavior</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Setting the <see cref="T:Microsoft.Maui.Controls.FlyoutBehavior" /> property to Disabled hides the flyout, which is useful when you only have one ShellItem. The other valid FlyoutBehavior values are Flyout (default), and Locked.</summary>
+        <summary>Setting the <see cref="T:Microsoft.Maui.FlyoutBehavior" /> property to Disabled hides the flyout, which is useful when you only have one ShellItem. The other valid FlyoutBehavior values are Flyout (default), and Locked.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -783,17 +783,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetFlyoutBehavior">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.FlyoutBehavior GetFlyoutBehavior (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.FlyoutBehavior GetFlyoutBehavior(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.FlyoutBehavior GetFlyoutBehavior (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.FlyoutBehavior GetFlyoutBehavior(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetFlyoutBehavior(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetFlyoutBehavior : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.FlyoutBehavior" Usage="Microsoft.Maui.Controls.Shell.GetFlyoutBehavior obj" />
+      <MemberSignature Language="F#" Value="static member GetFlyoutBehavior : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.FlyoutBehavior" Usage="Microsoft.Maui.Controls.Shell.GetFlyoutBehavior obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.FlyoutBehavior</ReturnType>
+        <ReturnType>Microsoft.Maui.FlyoutBehavior</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -1637,10 +1637,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetFlyoutBehavior">
-      <MemberSignature Language="C#" Value="public static void SetFlyoutBehavior (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.FlyoutBehavior value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetFlyoutBehavior(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.FlyoutBehavior value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetFlyoutBehavior(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.FlyoutBehavior)" />
-      <MemberSignature Language="F#" Value="static member SetFlyoutBehavior : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.FlyoutBehavior -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetFlyoutBehavior (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetFlyoutBehavior (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.FlyoutBehavior value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetFlyoutBehavior(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.FlyoutBehavior value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetFlyoutBehavior(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.FlyoutBehavior)" />
+      <MemberSignature Language="F#" Value="static member SetFlyoutBehavior : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.FlyoutBehavior -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetFlyoutBehavior (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1651,7 +1651,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.FlyoutBehavior" />
+        <Parameter Name="value" Type="Microsoft.Maui.FlyoutBehavior" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>

@@ -726,7 +726,7 @@ namespace FormsGallery
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.WebViewSourceTypeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.WebViewSourceTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

@@ -86,7 +86,7 @@ Device.BeginInvokeOnMainThread (() => {
       <MemberSignature Language="C#" Value="public static Microsoft.Maui.FlowDirection FlowDirection { get; }" />
       <MemberSignature Language="ILAsm" Value=".property valuetype Microsoft.Maui.FlowDirection FlowDirection" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Device.FlowDirection" />
-      <MemberSignature Language="F#" Value="member this.FlowDirection : Microsoft.Maui.Controls.FlowDirection" Usage="Microsoft.Maui.Controls.Device.FlowDirection" />
+      <MemberSignature Language="F#" Value="member this.FlowDirection : Microsoft.Maui.FlowDirection" Usage="Microsoft.Maui.Controls.Device.FlowDirection" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>

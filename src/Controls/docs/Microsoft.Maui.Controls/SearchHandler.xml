@@ -740,7 +740,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -771,17 +771,17 @@
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignment">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment HorizontalTextAlignment { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment HorizontalTextAlignment" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment HorizontalTextAlignment { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment HorizontalTextAlignment" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.SearchHandler.HorizontalTextAlignment" />
-      <MemberSignature Language="F#" Value="member this.HorizontalTextAlignment : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.SearchHandler.HorizontalTextAlignment" />
+      <MemberSignature Language="F#" Value="member this.HorizontalTextAlignment : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.SearchHandler.HorizontalTextAlignment" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -1032,17 +1032,17 @@
       </Docs>
     </Member>
     <Member MemberName="Keyboard">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Keyboard Keyboard { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Controls.Keyboard Keyboard" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Keyboard Keyboard { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Keyboard Keyboard" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.SearchHandler.Keyboard" />
-      <MemberSignature Language="F#" Value="member this.Keyboard : Microsoft.Maui.Controls.Keyboard with get, set" Usage="Microsoft.Maui.Controls.SearchHandler.Keyboard" />
+      <MemberSignature Language="F#" Value="member this.Keyboard : Microsoft.Maui.Keyboard with get, set" Usage="Microsoft.Maui.Controls.SearchHandler.Keyboard" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Keyboard</ReturnType>
+        <ReturnType>Microsoft.Maui.Keyboard</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -1716,17 +1716,17 @@
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignment">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment VerticalTextAlignment { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment VerticalTextAlignment" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment VerticalTextAlignment { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment VerticalTextAlignment" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.SearchHandler.VerticalTextAlignment" />
-      <MemberSignature Language="F#" Value="member this.VerticalTextAlignment : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.SearchHandler.VerticalTextAlignment" />
+      <MemberSignature Language="F#" Value="member this.VerticalTextAlignment : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.SearchHandler.VerticalTextAlignment" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
