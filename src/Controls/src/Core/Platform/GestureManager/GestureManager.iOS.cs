@@ -14,6 +14,7 @@ using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 using PlatformView = UIKit.UIView;
+using PreserveAttribute = Microsoft.Maui.Controls.Internals.PreserveAttribute;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -230,6 +231,37 @@ namespace Microsoft.Maui.Controls.Platform
 				return tapGestureRecognizer;
 			}
 
+			var pointerGestureRecognizer = recognizer as PointerGestureRecognizer;
+			if (pointerGestureRecognizer != null)
+			{
+				var uiRecognizer = CreatePointerRecognizer(r =>
+				{
+					if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
+						weakEventTracker.Target is GestureManager eventTracker &&
+						eventTracker._handler?.VirtualView is View view &&
+						UIApplication.SharedApplication.GetKeyWindow() is UIWindow window)
+					{
+						var originPoint = r.LocationInView(eventTracker?._handler?.PlatformView);
+
+						switch (r.State)
+						{
+							case UIGestureRecognizerState.Began:
+								pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+								break;
+							case UIGestureRecognizerState.Changed:
+								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+								break;
+							case UIGestureRecognizerState.Cancelled:
+							case UIGestureRecognizerState.Failed:
+							case UIGestureRecognizerState.Ended:
+								pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+								break;
+						}
+					}
+				});
+				return uiRecognizer;
+			}
+
 			var swipeRecognizer = recognizer as SwipeGestureRecognizer;
 			if (swipeRecognizer != null)
 			{
@@ -380,6 +412,37 @@ namespace Microsoft.Maui.Controls.Platform
 			result.ShouldRecognizeSimultaneously = (g, o) => true;
 			result.AddTarget(() => action(direction));
 			return result;
+		}
+
+		CustomHover CreatePointerRecognizer(Action<UIHoverGestureRecognizer> action)
+		{
+			var result = new CustomHover(action);
+			return result;
+		}
+
+		class CustomHover : UIHoverGestureRecognizer
+		{
+#pragma warning disable CA1416
+			public CustomHover(Action<UIHoverGestureRecognizer> action)
+				: base(new Callback(action), Selector.FromHandle(Selector.GetHandle("target:"))!) { }
+#pragma warning restore CA1416
+
+			[Register("__UIHoverGestureRecognizer")]
+			class Callback : Token
+			{
+				Action<UIHoverGestureRecognizer> action;
+				internal Callback(Action<UIHoverGestureRecognizer> action)
+				{
+					this.action = action;
+				}
+				[Export("target:")]
+				[Preserve(Conditional = true)]
+				public void Activated(UIHoverGestureRecognizer sender)
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(13))
+						action(sender);
+				}
+			}
 		}
 
 		UITapGestureRecognizer? CreateTapRecognizer(
