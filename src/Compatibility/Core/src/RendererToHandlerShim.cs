@@ -25,12 +25,13 @@ using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform;
 using PlatformView = ElmSharp.EvasObject;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, ElmSharp.EvasObject>;
+#elif GTK
+using PlatformView = Gtk.Widget;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Gtk.Widget>;
+using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, System.Object>;
-#elif GTK
-using NativeView = Gtk.Widget;
-using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Gtk.Widget>;
 #elif WINDOWS
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Microsoft.UI.Xaml.FrameworkElement>;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;

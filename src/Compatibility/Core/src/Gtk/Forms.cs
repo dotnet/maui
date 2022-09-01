@@ -9,8 +9,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state)
 		{
-			var gtkServices = new GtkPlatformServices();
-			Device.PlatformServices = gtkServices;
+			// var gtkServices = new GtkPlatformServices();
+			// Device.PlatformServices = gtkServices;
 		}
 
 	}
