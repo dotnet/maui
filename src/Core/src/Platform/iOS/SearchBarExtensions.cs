@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateIsTextPredictionEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
+		public static void UpdateIsTextPredictionEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField = null)
 		{
 			textField ??= uiSearchBar.FindDescendantView<UITextField>();
 
@@ -125,6 +125,18 @@ namespace Microsoft.Maui.Platform
 				textField.AutocorrectionType = UITextAutocorrectionType.Yes;
 			else
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
+		}
+
+		public static void UpdateKeyboard(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			var keyboard = searchBar.Keyboard;
+
+			uiSearchBar.ApplyKeyboard(keyboard);
+
+			if (keyboard is not CustomKeyboard)
+				uiSearchBar.UpdateIsTextPredictionEnabled(searchBar);
+
+			uiSearchBar.ReloadInputViews();
 		}
 	}
 }

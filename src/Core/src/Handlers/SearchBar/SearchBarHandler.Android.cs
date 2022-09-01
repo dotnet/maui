@@ -108,6 +108,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
+		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateKeyboard(searchBar);
+		}
+
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
 			VirtualView.SearchButtonPressed();

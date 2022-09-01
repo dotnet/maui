@@ -400,6 +400,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return newLength <= Element?.MaxLength;
 		}
 
+		[PortHandler]
 		void UpdateKeyboard()
 		{
 			var keyboard = Element.Keyboard;

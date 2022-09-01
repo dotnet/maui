@@ -132,5 +132,15 @@ namespace Microsoft.Maui.Platform
 		{
 			// AutoSuggestBox does not support this property
 		}
+
+		public static void UpdateKeyboard(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			var queryTextBox = platformControl.GetFirstDescendant<TextBox>();
+
+			if (queryTextBox == null)
+				return;
+
+			queryTextBox.UpdateInputScope(searchBar);
+		}
 	}
 }

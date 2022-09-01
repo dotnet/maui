@@ -1,1 +1,2 @@
 ﻿#nullable enable
+static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void

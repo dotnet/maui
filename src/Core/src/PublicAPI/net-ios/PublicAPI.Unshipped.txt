@@ -13,3 +13,6 @@ override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.get -> UIKit.UITextRange?
 override Microsoft.Maui.Platform.MauiTextField.SelectedTextRange.set -> void
 *REMOVED* override Microsoft.Maui.Handlers.PickerSource.Dispose(bool disposing) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsTextPredictionEnabled(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar, UIKit.UITextField? textField = null) -> void
+static Microsoft.Maui.Platform.SearchBarExtensions.UpdateKeyboard(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
