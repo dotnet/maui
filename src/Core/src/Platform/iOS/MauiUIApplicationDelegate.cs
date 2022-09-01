@@ -48,7 +48,12 @@ namespace Microsoft.Maui
 
 			// if there is no scene delegate or support for scene delegates, then we set up the window here
 			if (!this.HasSceneManifest())
+			{
 				this.CreatePlatformWindow(Application, application, launchOptions);
+
+				if (Window != null)
+					Services?.InvokeLifecycleEvents<iOSLifecycle.OnPlatformWindowCreated>(del => del(Window));
+			}
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
 

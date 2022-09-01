@@ -16,7 +16,7 @@ using NativeApplication = Android.App.Application;
 using NativeWindow = Android.App.Activity;
 #elif TIZEN
 using NativeApplication = Tizen.Applications.CoreApplication;
-using NativeWindow =  ElmSharp.Window;
+using NativeWindow = Tizen.NUI.Window;
 #elif GTK
 using NativeApplication = Gtk.Application;
 using NativeWindow =  Gtk.Window;

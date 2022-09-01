@@ -1,5 +1,4 @@
 using System;
-using TImage = Tizen.UIExtensions.ElmSharp.Image;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -7,11 +6,13 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiImageButton CreatePlatformView()
 		{
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a ImageButton");
-
-			var view = new MauiImageButton(PlatformParent);
-			return view;
+			return new MauiImageButton
+			{
+				Focusable = true,
+			};
 		}
+
+		public override bool NeedsContainer => false;
 
 		protected override void ConnectHandler(MauiImageButton platformView)
 		{
@@ -23,42 +24,54 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiImageButton platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			platformView.Clicked -= OnClicked;
 			platformView.Pressed -= OnPressed;
 			platformView.Released -= OnReleased;
 			base.DisconnectHandler(platformView);
 		}
 
-		[MissingMapper]
-		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateStrokeColor(buttonStroke);
+		}
 
-		[MissingMapper]
-		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateStrokeThickness(buttonStroke);
+		}
 
-		[MissingMapper]
-		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateCornerRadius(buttonStroke);
+		}
 
 		[MissingMapper]
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton) { }
 
-		private void OnReleased(object? sender, EventArgs e)
+		void OnReleased(object? sender, EventArgs e)
 		{
 			VirtualView?.Released();
 		}
 
-		private void OnPressed(object? sender, EventArgs e)
+		void OnPressed(object? sender, EventArgs e)
 		{
 			VirtualView?.Pressed();
 		}
 
-		private void OnClicked(object? sender, EventArgs e)
+		void OnClicked(object? sender, EventArgs e)
 		{
 			VirtualView?.Clicked();
 		}
 
-		void OnSetImageSource(TImage? img)
+		void OnSetImageSource(MauiImageSource? img)
 		{
-			//Empty on purpose
+			if (img == null)
+				return;
+
+			PlatformView.ResourceUrl = img.ResourceUrl;
 		}
 	}
 }

@@ -5,7 +5,7 @@ using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBlock;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.Label;
+using PlatformView = Tizen.UIExtensions.NUI.Label;
 #elif GTK
 using PlatformView = Microsoft.Maui.Platform.LabelView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !TIZEN)

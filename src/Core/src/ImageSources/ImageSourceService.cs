@@ -48,9 +48,8 @@ namespace Microsoft.Maui
 			float scale = 1,
 			CancellationToken cancellationToken = default);
 #elif TIZEN || __TIZEN__
-		public abstract Task<IImageSourceServiceResult<Tizen.UIExtensions.ElmSharp.Image>?> GetImageAsync(
+		public abstract Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(
 			IImageSource imageSource,
-			Tizen.UIExtensions.ElmSharp.Image image,
 			CancellationToken cancellationToken = default);
 #elif GTK
 		public abstract Task<IImageSourceServiceResult<Gdk.Pixbuf>?> GetImageAsync(

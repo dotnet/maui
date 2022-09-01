@@ -10,9 +10,7 @@ using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
-using ElmSharp;
-using ElmSharp.Accessible;
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif GTK
 using PlatformView = Gtk.Widget;
 #elif (NETSTANDARD || !PLATFORM)
@@ -32,8 +30,6 @@ namespace Microsoft.Maui
 			platformView.SendAccessibilityEvent(EventTypes.ViewHoverEnter);
 #elif __IOS__ || MACCATALYST
 			UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, platformView);
-#elif TIZEN
-			(platformView as IAccessibleObject)?.Highlight();
 #endif
 		}
 	}

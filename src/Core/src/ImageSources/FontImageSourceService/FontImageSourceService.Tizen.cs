@@ -3,32 +3,24 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<Image>?> GetImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
-			GetImageAsync((IFontImageSource)imageSource, image, cancellationToken);
+		public override Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(IImageSource imageSource, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IFontImageSource)imageSource, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<Image>?> GetImageAsync(IFontImageSource imageSource, Image image, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(IFontImageSource imageSource, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
-				return null;
+				return FromResult(null);
 
 			try
 			{
-				//TODO : Fix me correctly later.
-				var isLoadComplated = await image.LoadAsync(string.Empty, cancellationToken);
-
-				if (!isLoadComplated)
-				{
-					throw new InvalidOperationException("Unable to load image file.");
-				}
-
-				var result = new ImageSourceServiceResult(image);
-				return result;
+				//TODO : Font Image not support
+				var image = new MauiImageSource();
+				return FromResult(new ImageSourceServiceResult(image, () => image.Dispose()));
 			}
 			catch (Exception ex)
 			{
@@ -36,5 +28,8 @@ namespace Microsoft.Maui
 				throw;
 			}
 		}
+
+		static Task<IImageSourceServiceResult<MauiImageSource>?> FromResult(IImageSourceServiceResult<MauiImageSource>? result) =>
+			Task.FromResult(result);
 	}
 }

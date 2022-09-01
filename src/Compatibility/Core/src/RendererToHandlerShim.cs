@@ -21,10 +21,9 @@ using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UI
 #elif TIZEN
 #pragma warning disable CS0612 // Type or member is obsolete
 using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform;
-#pragma warning disable CS0612 // Type or member is obsolete
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
-using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, ElmSharp.EvasObject>;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Tizen.NUI.BaseComponents.View>;
 #elif GTK
 using PlatformView = Gtk.Widget;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Gtk.Widget>;

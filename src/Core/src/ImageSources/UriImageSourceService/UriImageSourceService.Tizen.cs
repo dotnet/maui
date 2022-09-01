@@ -3,30 +3,31 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<Image>?> GetImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
-			GetImageAsync((IUriImageSource)imageSource, image, cancellationToken);
+		public override Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(IImageSource imageSource, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IUriImageSource)imageSource, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<Image>?> GetImageAsync(IUriImageSource imageSource, Image image, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
-				return null;
+				return FromResult(null);
 
 			var uri = imageSource.Uri;
 
 			try
 			{
-				var isLoadComplated = await image.LoadAsync(uri, cancellationToken);
+				var image = new MauiImageSource
+				{
+					ResourceUrl = uri.AbsoluteUri
+				};
 
-				if (!isLoadComplated)
-					throw new InvalidOperationException($"Unable to load image URI '{uri}'.");
-
-				return new ImageSourceServiceResult(image);
+				var result = new ImageSourceServiceResult(image, image.Dispose);
+				return FromResult(result);
 			}
 			catch (Exception ex)
 			{
@@ -34,5 +35,7 @@ namespace Microsoft.Maui
 				throw;
 			}
 		}
+		static Task<IImageSourceServiceResult<MauiImageSource>?> FromResult(IImageSourceServiceResult<MauiImageSource>? result) =>
+			Task.FromResult(result);
 	}
 }

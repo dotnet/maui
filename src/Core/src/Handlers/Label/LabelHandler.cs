@@ -6,7 +6,7 @@ using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBlock;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.Label;
+using PlatformView = Tizen.UIExtensions.NUI.Label;
 #elif GTK
 using PlatformView = Microsoft.Maui.Platform.LabelView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !TIZEN)
@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.Height)] = MapHeight,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #endif
+#if TIZEN
+			[nameof(ILabel.Shadow)] = MapShadow,
+#endif
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
@@ -44,9 +47,6 @@ namespace Microsoft.Maui.Handlers
 
 		static LabelHandler()
 		{
-#if __IOS__
-			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
-#endif
 		}
 
 		public LabelHandler() : base(Mapper)

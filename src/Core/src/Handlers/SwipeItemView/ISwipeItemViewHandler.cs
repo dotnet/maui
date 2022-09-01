@@ -5,7 +5,7 @@ using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
-using PlatformView = Microsoft.Maui.Platform.ContentCanvas;
+using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 #elif GTK
 using PlatformView = Gtk.Widget;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)

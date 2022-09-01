@@ -16,10 +16,10 @@ using BasePlatformType = WinRT.IWinRTObject;
 using PlatformWindow = Microsoft.UI.Xaml.Window;
 using PlatformApplication = Microsoft.UI.Xaml.Application;
 #elif TIZEN
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
 using BasePlatformType = System.Object;
-using PlatformWindow = ElmSharp.Window;
-using PlatformApplication = Tizen.Applications.CoreUIApplication;
+using PlatformWindow = Tizen.NUI.Window;
+using PlatformApplication = Tizen.Applications.CoreApplication;
 #elif GTK
 using PlatformView = Gtk.Widget;
 using BasePlatformType = System.Object;
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Platform
 		public static void SetWindowHandler(this PlatformWindow platformWindow, IWindow window, IMauiContext context) =>
 			SetHandler(platformWindow, window, context);
 
-#if WINDOWS || IOS || ANDROID
+#if WINDOWS || IOS || ANDROID || TIZEN || GTK
 		internal static IWindow GetWindow(this IElement element) =>
 			element.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow() ??
 			throw new InvalidOperationException("IWindow not found");

@@ -7,7 +7,7 @@ using PlatformView = Android.Graphics.Drawables.Drawable;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Media.ImageSource;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.Image;
+using PlatformView = Microsoft.Maui.Platform.MauiImageSource;
 #elif GTK
 using PlatformView = Gdk.Pixbuf;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)

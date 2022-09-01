@@ -111,7 +111,7 @@
           BeforeTargets="_MauiInjectXamlCssAdditionalFiles;GenerateMSBuildEditorConfigFileShouldRun"
           Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
 
-    <!-- Removals -->
+  <!-- Removals -->
     <ItemGroup>
       <!-- Remove everything that isn't part of this platform -->
       <Compile

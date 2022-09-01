@@ -7,6 +7,7 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
@@ -340,6 +341,12 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static void UpdateToolTip(this AView view, ToolTip? tooltip)
+		{
+			string? text = tooltip?.Content?.ToString();
+			TooltipCompat.SetTooltipText(view, text);
+		}
+
 		public static void RemoveFromParent(this AView view)
 		{
 			if (view != null)
@@ -441,8 +448,16 @@ namespace Microsoft.Maui.Platform
 				context.FromPixels((float)rect.Height()));
 		}
 
-		internal static bool IsLoaded(this View frameworkElement) =>
-			frameworkElement.IsAttachedToWindow;
+		internal static bool IsLoaded(this View frameworkElement)
+		{
+			if (frameworkElement == null)
+				return false;
+
+			if (frameworkElement.IsDisposed())
+				return false;
+
+			return frameworkElement.IsAttachedToWindow;
+		}
 
 		internal static IDisposable OnLoaded(this View frameworkElement, Action action)
 		{

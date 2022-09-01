@@ -12,8 +12,8 @@ using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 using PlatformImageView = Microsoft.UI.Xaml.Controls.Image;
 using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif TIZEN
-using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
-using PlatformImageView = Tizen.UIExtensions.ElmSharp.Image;
+using PlatformImage = Microsoft.Maui.Platform.MauiImageSource;
+using PlatformImageView = Tizen.UIExtensions.NUI.Image;
 using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
 #elif GTK
 using PlatformImage = Gtk.Image;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 		IImage IImageHandler.VirtualView => VirtualView;
 
 		PlatformImageView IImageHandler.PlatformView =>
-#if __IOS__ || TIZEN || GTK
+#if __IOS__ || GTK
 			PlatformView.ImageView;
 #elif WINDOWS
 			PlatformView.GetContent<PlatformImageView>() ?? throw new InvalidOperationException("ImageButton did not contain an Image element.");

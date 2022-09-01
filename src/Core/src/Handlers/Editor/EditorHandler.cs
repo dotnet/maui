@@ -6,7 +6,7 @@ using PlatformView = AndroidX.AppCompat.Widget.AppCompatEditText;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBox;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.Entry;
+using PlatformView = Tizen.UIExtensions.NUI.Editor;
 #elif GTK
 using PlatformView = Gtk.TextView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)

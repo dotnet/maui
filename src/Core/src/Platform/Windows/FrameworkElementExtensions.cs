@@ -197,8 +197,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static bool IsLoaded(this FrameworkElement frameworkElement) =>
-			frameworkElement.IsLoaded;
+		internal static bool IsLoaded(this FrameworkElement frameworkElement)
+		{
+			if (frameworkElement == null)
+				return false;
+
+			return frameworkElement.IsLoaded;
+		}
 
 		internal static IDisposable OnLoaded(this FrameworkElement frameworkElement, Action action)
 		{

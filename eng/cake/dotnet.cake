@@ -15,6 +15,8 @@ Exception pendingException = null;
 var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Controls.Foldable.*.nupkg",
     "Microsoft.Maui.Graphics.*.nupkg",
+    "Microsoft.Maui.Controls.Maps.*.nupkg",
+    "Microsoft.Maui.Maps.*.nupkg",
 };
 
 ProcessTFMSwitches();
@@ -711,5 +713,10 @@ void ProcessTFMSwitches()
         {
             ReplaceTextInFiles("Directory.Build.Override.props", $"<{replaceWith}></{replaceWith}>", $"<{replaceWith}>true</{replaceWith}>");
         }
+    }
+    else
+    {
+        if (FileExists("Directory.Build.Override.props"))
+            DeleteFile("Directory.Build.Override.props");
     }
 }

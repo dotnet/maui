@@ -7,7 +7,7 @@
     "Microsoft.Build.NoTargets": "3.3.0"
   },
   "sdk": {
-    "version": "6.0.302",
+    "version": "6.0.400",
     "allowPrerelease": true,
     "rollForward": "latestMinor"
   }
