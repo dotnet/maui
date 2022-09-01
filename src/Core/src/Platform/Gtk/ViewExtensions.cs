@@ -212,7 +212,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void Unfocus(this Widget? platformView, IView view) { }
 
-		public static void UpdateInputTransparent(this Widget? nativeView, IViewHandler handler, IView view) { }
+		public static void UpdateInputTransparent(this Widget? platformView, IViewHandler handler, IView view) { }
+
+		public static void UpdateToolTip(this Widget? platformView, ToolTip? tooltip)
+		{ }
 
 		[MissingMapper]
 		internal static IDisposable OnLoaded(this Widget? platformView, Action action)

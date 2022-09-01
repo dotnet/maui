@@ -42,28 +42,81 @@ namespace Microsoft.Maui
 
 		}
 
-		public static async Task<IImageSourceServiceResult<Gdk.Pixbuf>?> UpdateImageSourceAsync(this IImageSourcePart? image, float scale, IImageSourceServiceProvider provider, Action<Gdk.Pixbuf?> onResult, CancellationToken cancellationToken = default)
+		public static async Task<IImageSourceServiceResult<Gdk.Pixbuf>?> UpdateSourceAsync(this IImageSourcePart? part,
+			Gtk.Image? image, IImageSourceServiceProvider provider, Action<Gdk.Pixbuf?> onResult, CancellationToken cancellationToken = default)
 		{
-			if (image == null)
+			if (part == null)
 				return null;
 
-			image.UpdateIsLoading(false);
+			part.UpdateIsLoading(false);
 
-			var imageSource = image.Source;
+			var imageSource = part.Source;
 
 			if (imageSource == null)
 				return null;
 
-			var events = image as IImageSourcePartEvents;
+			part.UpdateIsLoading(true);
 
-			image.UpdateIsLoading(true);
+			try
+			{
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				var result = await service.GetImageAsync(imageSource, 1, cancellationToken);
+				var pixbuf = result?.Value;
+				var applied = !cancellationToken.IsCancellationRequested && imageSource == part.Source;
+
+				// only set the image if we are still on the same one
+				if (applied)
+				{
+					onResult(pixbuf);
+
+				}
+
+				return result;
+			}
+			catch (OperationCanceledException)
+			{
+				// no-op
+
+			}
+#pragma warning disable CS0168
+			catch (Exception ex)
+#pragma warning restore CS0168
+			{ }
+			finally
+			{
+				// only mark as finished if we are still working on the same image
+				if (imageSource == part.Source)
+				{
+					part.UpdateIsLoading(false);
+				}
+			}
+
+			return null;
+		}
+
+		// TODO: merge with UpdateSourceAsync
+		public static async Task<IImageSourceServiceResult<Gdk.Pixbuf>?> UpdateImageSourceAsync(this IImageSourcePart? part, float scale, IImageSourceServiceProvider provider, Action<Gdk.Pixbuf?> onResult, CancellationToken cancellationToken = default)
+		{
+			if (part == null)
+				return null;
+
+			part.UpdateIsLoading(false);
+
+			var imageSource = part.Source;
+
+			if (imageSource == null)
+				return null;
+
+			var events = part as IImageSourcePartEvents;
+
+			part.UpdateIsLoading(true);
 
 			try
 			{
 				var service = provider.GetRequiredImageSourceService(imageSource);
 				var result = await service.GetImageAsync(imageSource, scale, cancellationToken);
 				var pixbuf = result?.Value;
-				var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
+				var applied = !cancellationToken.IsCancellationRequested && imageSource == part.Source;
 
 				// only set the image if we are still on the same one
 				if (applied)
@@ -89,9 +142,9 @@ namespace Microsoft.Maui
 			finally
 			{
 				// only mark as finished if we are still working on the same image
-				if (imageSource == image.Source)
+				if (imageSource == part.Source)
 				{
-					image.UpdateIsLoading(false);
+					part.UpdateIsLoading(false);
 				}
 			}
 

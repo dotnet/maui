@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Handlers
 					nativeView.Vadjustment.Value = request.VerticalOffset;
 
 				if (nativeView.HScrollbar?.Visible ?? false)
-					nativeView.Hadjustment.Value = request.HoriztonalOffset;
+					nativeView.Hadjustment.Value = request.HorizontalOffset;
 
 			}
 		}

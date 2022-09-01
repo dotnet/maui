@@ -70,5 +70,5 @@
     <Compile Include="**\*.Gtk.cs" />
     <Compile Include="**\*.Gtk.*.cs" />
   </ItemGroup>
-  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+<!--  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />-->
 </Project>
