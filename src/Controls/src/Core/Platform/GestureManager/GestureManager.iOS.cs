@@ -9,12 +9,12 @@ using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform.iOS;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 using PlatformView = UIKit.UIView;
-using PreserveAttribute = Microsoft.Maui.Controls.Internals.PreserveAttribute;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -414,35 +414,10 @@ namespace Microsoft.Maui.Controls.Platform
 			return result;
 		}
 
-		CustomHover CreatePointerRecognizer(Action<UIHoverGestureRecognizer> action)
+		CustomHoverGestureRecognizer CreatePointerRecognizer(Action<UIHoverGestureRecognizer> action)
 		{
-			var result = new CustomHover(action);
+			var result = new CustomHoverGestureRecognizer(action);
 			return result;
-		}
-
-		class CustomHover : UIHoverGestureRecognizer
-		{
-#pragma warning disable CA1416
-			public CustomHover(Action<UIHoverGestureRecognizer> action)
-				: base(new Callback(action), Selector.FromHandle(Selector.GetHandle("target:"))!) { }
-#pragma warning restore CA1416
-
-			[Register("__UIHoverGestureRecognizer")]
-			class Callback : Token
-			{
-				Action<UIHoverGestureRecognizer> action;
-				internal Callback(Action<UIHoverGestureRecognizer> action)
-				{
-					this.action = action;
-				}
-				[Export("target:")]
-				[Preserve(Conditional = true)]
-				public void Activated(UIHoverGestureRecognizer sender)
-				{
-					if (OperatingSystem.IsIOSVersionAtLeast(13))
-						action(sender);
-				}
-			}
 		}
 
 		UITapGestureRecognizer? CreateTapRecognizer(
