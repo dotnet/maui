@@ -120,8 +120,8 @@ steps:
       arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
     env:
       Token: $(dn-bot-dnceng-artifact-feeds-rw)
-  - pwsh: dotnet nuget locals all --clear
-    displayName: 'Clear all NuGet caches'
+  # - pwsh: dotnet nuget locals all --clear
+  #   displayName: 'Clear all NuGet caches'
 
 
   # Prepare for Reunion packages
