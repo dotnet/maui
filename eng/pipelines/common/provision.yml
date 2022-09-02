@@ -112,27 +112,27 @@ steps:
   #   displayName: 'Cake Provision'
   #   condition: eq(variables['provisioningCake'], 'true')
 
-  - task: PowerShell@2
-    condition: eq(variables['PrivateBuild'], 'true')
-    displayName: Setup Private Feeds Credentials
-    inputs:
-      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
-      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
-    env:
-      Token: $(dn-bot-dnceng-artifact-feeds-rw)
+  # - task: PowerShell@2
+  #   condition: eq(variables['PrivateBuild'], 'true')
+  #   displayName: Setup Private Feeds Credentials
+  #   inputs:
+  #     filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
+  #     arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
+  #   env:
+  #     Token: $(dn-bot-dnceng-artifact-feeds-rw)
   # - pwsh: dotnet nuget locals all --clear
   #   displayName: 'Clear all NuGet caches'
 
 
   # Prepare for Reunion packages
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - task: NuGetAuthenticate@0
-      displayName: 'Authenticate Reunion NuGet sources'
-      inputs:
-        nuGetServiceConnections: Project.Reunion.nuget.internal
-    - pwsh: |
-        $path = '$(Build.SourcesDirectory)\NuGet.config'
-        [xml]$xml = Get-Content $path
-        $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
-        $xml.Save($path)
-      displayName: 'Add "wasdk-internal" to NuGet.config'
+  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  #   - task: NuGetAuthenticate@0
+  #     displayName: 'Authenticate Reunion NuGet sources'
+  #     inputs:
+  #       nuGetServiceConnections: Project.Reunion.nuget.internal
+  #   - pwsh: |
+  #       $path = '$(Build.SourcesDirectory)\NuGet.config'
+  #       [xml]$xml = Get-Content $path
+  #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
+  #       $xml.Save($path)
+  #     displayName: 'Add "wasdk-internal" to NuGet.config'
