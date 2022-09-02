@@ -9,6 +9,7 @@ using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform.iOS;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -230,6 +231,37 @@ namespace Microsoft.Maui.Controls.Platform
 				return tapGestureRecognizer;
 			}
 
+			var pointerGestureRecognizer = recognizer as PointerGestureRecognizer;
+			if (pointerGestureRecognizer != null)
+			{
+				var uiRecognizer = CreatePointerRecognizer(r =>
+				{
+					if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
+						weakEventTracker.Target is GestureManager eventTracker &&
+						eventTracker._handler?.VirtualView is View view &&
+						eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
+					{
+						var originPoint = r.LocationInView(eventTracker?._handler?.PlatformView);
+
+						switch (r.State)
+						{
+							case UIGestureRecognizerState.Began:
+								pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+								break;
+							case UIGestureRecognizerState.Changed:
+								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+								break;
+							case UIGestureRecognizerState.Cancelled:
+							case UIGestureRecognizerState.Failed:
+							case UIGestureRecognizerState.Ended:
+								pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+								break;
+						}
+					}
+				});
+				return uiRecognizer;
+			}
+
 			var swipeRecognizer = recognizer as SwipeGestureRecognizer;
 			if (swipeRecognizer != null)
 			{
@@ -379,6 +411,12 @@ namespace Microsoft.Maui.Controls.Platform
 			result.Direction = (UISwipeGestureRecognizerDirection)direction;
 			result.ShouldRecognizeSimultaneously = (g, o) => true;
 			result.AddTarget(() => action(direction));
+			return result;
+		}
+
+		CustomHoverGestureRecognizer CreatePointerRecognizer(Action<UIHoverGestureRecognizer> action)
+		{
+			var result = new CustomHoverGestureRecognizer(action);
 			return result;
 		}
 
