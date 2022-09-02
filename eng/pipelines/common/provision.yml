@@ -84,33 +84,33 @@ steps:
 
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
-    - powershell: |
-        if (-not $(where.exe pwsh)) {
-          $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
-          $output = "$env:TEMP\PowerShell.msi"
-          Remove-Item -Force $output -ErrorAction Ignore
-          Invoke-WebRequest -Uri $url -OutFile $output
-          msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
-        }
-      displayName: 'Install PowerShell Core'
-    - task: xamops.azdevex.provisionator-task.provisionator@1
-      displayName: 'Provision Visual Studio'
-      condition: eq(variables['provisioningVS'], 'true')
-      inputs:
-        provisioning_script: $(provisionator.vs)
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+    # - powershell: |
+    #     if (-not $(where.exe pwsh)) {
+    #       $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
+    #       $output = "$env:TEMP\PowerShell.msi"
+    #       Remove-Item -Force $output -ErrorAction Ignore
+    #       Invoke-WebRequest -Uri $url -OutFile $output
+    #       msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
+    #     }
+    #   displayName: 'Install PowerShell Core'
+    # - task: xamops.azdevex.provisionator-task.provisionator@1
+    #   displayName: 'Provision Visual Studio'
+    #   condition: eq(variables['provisioningVS'], 'true')
+    #   inputs:
+    #     provisioning_script: $(provisionator.vs)
+    #   env:
+    #     PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
 
-    - pwsh: |
-        $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
-        echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
-      displayName: 'Setup MSBuild Paths'
-      condition: eq(variables['provisioningVS'], 'true')
+    # - pwsh: |
+    #     $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+    #     echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
+    #   displayName: 'Setup MSBuild Paths'
+    #   condition: eq(variables['provisioningVS'], 'true')
 
   # Prepare Both
-  - pwsh: ./build.ps1 --target provision
-    displayName: 'Cake Provision'
-    condition: eq(variables['provisioningCake'], 'true')
+  # - pwsh: ./build.ps1 --target provision
+  #   displayName: 'Cake Provision'
+  #   condition: eq(variables['provisioningCake'], 'true')
 
   - task: PowerShell@2
     condition: eq(variables['PrivateBuild'], 'true')
