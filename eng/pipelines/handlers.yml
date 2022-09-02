@@ -157,7 +157,8 @@ stages:
                   poolName: ${{ BuildPlatform.poolName }}
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - task: PowerShell@2
-                script: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                inputs:
+                  script: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
                 env:
