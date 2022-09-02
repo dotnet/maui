@@ -139,6 +139,8 @@ stages:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
               demands:
+                demands:
+                - ImageOverride -equals vs2022
                 - macOS.Name -equals Monterey
                 - macOS.Architecture -equals x64
                 - Agent.HasDevices -equals False
