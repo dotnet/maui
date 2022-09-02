@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Platform
 					if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
 						weakEventTracker.Target is GestureManager eventTracker &&
 						eventTracker._handler?.VirtualView is View view &&
-						UIApplication.SharedApplication.GetKeyWindow() is UIWindow window)
+						eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
 					{
 						var originPoint = r.LocationInView(eventTracker?._handler?.PlatformView);
 
