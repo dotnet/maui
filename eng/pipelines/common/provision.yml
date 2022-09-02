@@ -32,7 +32,7 @@ steps:
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Additional Software'
-      condition: and(eq(variables['provisioning'], 'true'),ne('${{ parameters.poolName }}', 'Azure Pipelines'))
+      condition: eq(variables['provisioning'], 'true')
       inputs:
         provisioning_script: $(provisionator.path)
         provisioning_extra_args: $(provisionator.extraArguments)
@@ -41,11 +41,11 @@ steps:
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
     # Setup SDK Paths
-    - bash: |
-        echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
-        echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
-      displayName: 'Setup SDK Paths'
-      condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
+    # - bash: |
+    #     echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+    #     echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+    #   displayName: 'Setup SDK Paths'
+    #   condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
     # Setup JDK Paths
     - bash: |
         echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
