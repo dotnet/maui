@@ -6,9 +6,10 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CheckBoxRenderer : ViewRenderer<CheckBox, FormsCheckBox>
 	{
-		static WBrush _tintDefaultBrush = Colors.Blue.ToNative();
+		static WBrush _tintDefaultBrush = Colors.Blue.ToPlatform();
 		bool _disposed = false;
 
 		protected virtual FormsCheckBox CreateNativeControl()
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				UpdateFlowDirection();
 			}
-			else if(e.PropertyName == CheckBox.ColorProperty.PropertyName)
+			else if (e.PropertyName == CheckBox.ColorProperty.PropertyName)
 			{
 				UpdateTintColor();
 			}
@@ -96,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			BrushHelpers.UpdateColor(Element.Color, ref _tintDefaultBrush,
 				() => Control.TintBrush, brush => Control.TintBrush = brush);
-			
+
 		}
 	}
 }

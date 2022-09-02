@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_canvas = canvas;
 		}
 
+		[PortHandler]
 		public override bool DispatchTouchEvent(MotionEvent e)
 		{
 			if (e.Action == MotionEventActions.Down)
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				float x = e.RawX + currentView.Left - location[0];
 				float y = e.RawY + currentView.Top - location[1];
 
-				var rect = new Rectangle(currentView.Left, currentView.Top, currentView.Width, currentView.Height);
+				var rect = new Rect(currentView.Left, currentView.Top, currentView.Width, currentView.Height);
 
 				if (rect.Contains(x, y))
 					break;

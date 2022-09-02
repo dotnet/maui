@@ -1,6 +1,6 @@
 using System;
-using ElmSharp;
-using ERect = ElmSharp.Rect;
+using Microsoft.Maui.Controls.Platform;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -22,10 +22,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// Gets the native view associated with this renderer.
 		/// </summary>
 		/// <value>The native view.</value>
-		EvasObject NativeView
+		NView NativeView
 		{
 			get;
 		}
+
+		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		/// <summary>
 		/// Sets the VisualElement associated with this renderer.
@@ -36,7 +38,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint);
 
 		void UpdateLayout();
-
-		ERect GetNativeContentGeometry();
 	}
 }

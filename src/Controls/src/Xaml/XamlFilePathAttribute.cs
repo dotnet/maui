@@ -12,6 +12,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public string FilePath { get; }
 
-		internal static string GetFilePathForObject(object view) => (view?.GetType().GetTypeInfo().GetCustomAttributes(typeof(XamlFilePathAttribute), false).FirstOrDefault() as XamlFilePathAttribute)?.FilePath;
+		internal static string GetFilePathForObject(object view) => (view?.GetType().GetCustomAttributes(typeof(XamlFilePathAttribute), false).FirstOrDefault() as XamlFilePathAttribute)?.FilePath;
 	}
 }

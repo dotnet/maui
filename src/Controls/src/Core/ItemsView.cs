@@ -1,13 +1,13 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsView']/Docs" />
-	public abstract class ItemsView<TVisual> : View, ITemplatedItemsView<TVisual> where TVisual : BindableObject
+	public abstract class ItemsView<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] TVisual> : View, ITemplatedItemsView<TVisual> where TVisual : BindableObject
 	{
 		/*
 		public static readonly BindableProperty InfiniteScrollingProperty =

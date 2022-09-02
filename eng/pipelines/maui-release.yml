@@ -1,0 +1,93 @@
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+
+
+variables:
+  - template: /eng/pipelines/common/variables.yml
+  - template: templates/common/vs-release-vars.yml@sdk-insertions
+
+parameters:
+  - name: provisionatorChannel
+    displayName: 'Provisionator channel'
+    type: string
+    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+
+  - name: PackPlatforms
+    type: object
+    default:
+      - name: Windows
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)
+        bootsAndroid: $(Android.Msi)
+        bootsiOS: $(iOS.Msi)
+        artifact: nuget
+        libraryPacksArtifact: library-packs
+
+resources:
+  repositories:
+    - repository: xamarin-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+      ref: refs/heads/main
+    - repository: sdk-insertions
+      type: github
+      name: xamarin/sdk-insertions
+      ref: refs/heads/main
+      endpoint: xamarin
+
+stages:
+
+  - stage: pack_net6
+    displayName: Pack .NET MAUI
+    dependsOn: []
+    jobs:
+      - ${{ each PackPlatform in parameters.PackPlatforms }}:
+        - job: pack_net6_${{ PackPlatform.name }}
+          workspace:
+            clean: all
+          displayName: ${{ PackPlatform.name }}
+          timeoutInMinutes: 120
+          pool:
+            name: ${{ PackPlatform.poolName }}
+            vmImage: ${{ PackPlatform.vmImage }}
+            ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+              demands:
+                - macOS.Name -equals Monterey
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
+          steps:
+            - template: common/pack.yml
+              parameters:
+                platform: ${{ PackPlatform.name }}
+                poolName: ${{ PackPlatform.poolName }}
+                provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                artifact:  ${{ PackPlatform.artifact }}
+                libraryPacksArtifact:  ${{ PackPlatform.libraryPacksArtifact }}
+
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - template: common/sign.yml                                     # Sign only using the private server
+    - template: common/insertion.yml                                # Insert on VS and SDK
+      parameters:
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)

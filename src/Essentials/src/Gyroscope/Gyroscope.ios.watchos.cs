@@ -1,31 +1,39 @@
+#nullable enable
 using CoreMotion;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Gyroscope
+	partial class GyroscopeImplementation : IGyroscope
 	{
-		internal static bool IsSupported =>
-			Platform.MotionManager?.GyroAvailable ?? false;
+		static CMMotionManager? motionManager;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		static CMMotionManager MotionManager =>
+			motionManager ??= new CMMotionManager();
+
+		bool PlatformIsSupported =>
+			MotionManager.GyroAvailable;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
-			var manager = Platform.MotionManager;
-			manager.GyroUpdateInterval = sensorSpeed.ToPlatform();
-			manager.StartGyroUpdates(Platform.GetCurrentQueue(), DataUpdated);
+			MotionManager.GyroUpdateInterval = sensorSpeed.ToPlatform();
+			MotionManager.StartGyroUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
-		static void DataUpdated(CMGyroData data, NSError error)
+		void DataUpdated(CMGyroData data, NSError error)
 		{
 			if (data == null)
 				return;
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var field = data.RotationRate;
+#pragma warning restore CA1416
 			var gyroData = new GyroscopeData(field.x, field.y, field.z);
-			OnChanged(gyroData);
+			RaiseReadingChanged(gyroData);
 		}
 
-		internal static void PlatformStop() =>
-			Platform.MotionManager?.StopGyroUpdates();
+		void PlatformStop() =>
+			MotionManager.StopGyroUpdates();
 	}
 }

@@ -1,14 +1,13 @@
+using System;
 using Android.App;
 using Android.Content;
-using Android.OS;
 using Android.Telephony;
 using Java.Net;
-using Java.Util;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials.Implementations
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public partial class PhoneDialerImplementation : IPhoneDialer
+	partial class PhoneDialerImplementation : IPhoneDialer
 	{
 		const string intentCheck = "00000000000";
 
@@ -17,7 +16,7 @@ namespace Microsoft.Maui.Essentials.Implementations
 			get
 			{
 				var dialIntent = ResolveDialIntent(intentCheck);
-				return Platform.IsIntentSupported(dialIntent);
+				return PlatformUtils.IsIntentSupported(dialIntent);
 			}
 		}
 
@@ -26,23 +25,23 @@ namespace Microsoft.Maui.Essentials.Implementations
 			ValidateOpen(number);
 
 			var phoneNumber = string.Empty;
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.GetDefault(Java.Util.Locale.Category.Format).Country) ?? phoneNumber;
 			else
 				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.Default.Country) ?? phoneNumber;
 
 			// if we are an extension then we need to encode
-			if (phoneNumber.Contains(',') || phoneNumber.Contains(';'))
+			if (phoneNumber.Contains(',', StringComparison.Ordinal) || phoneNumber.Contains(';', StringComparison.Ordinal))
 				phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8") ?? phoneNumber;
 
 			var dialIntent = ResolveDialIntent(phoneNumber);
 
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 			dialIntent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(dialIntent);
+			Application.Context.StartActivity(dialIntent);
 		}
 
 		static Intent ResolveDialIntent(string number)

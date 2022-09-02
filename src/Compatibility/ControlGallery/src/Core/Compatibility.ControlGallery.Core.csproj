@@ -11,13 +11,13 @@
     <DefineConstants>TRACE;DEBUG;PERF;APP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429;0618</NoWarn>
+    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429;0618;0612</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DefineConstants>TRACE;APP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429;0618</NoWarn>
+    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429;0618;0612</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.StartsWith('uap10.0'))">
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
@@ -38,9 +38,9 @@
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
     <EmbeddedResource Include="coffee.png" />
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
-    <PackageReference Include="NUnit" Version="3.13.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
     <EmbeddedResource Include="Fonts\CuteFont-Regular.ttf">
       <SubType></SubType>
       <Generator></Generator>
@@ -150,5 +150,7 @@
   </Target>
 
   <Import Project="..\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems" Label="Shared" />
+
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

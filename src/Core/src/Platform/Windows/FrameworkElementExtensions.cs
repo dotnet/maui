@@ -11,7 +11,7 @@ using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using System.Threading.Tasks;
-using System.Threading;
+using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.Platform
 {
@@ -79,6 +79,11 @@ namespace Microsoft.Maui.Platform
 				throw new ArgumentNullException(nameof(element));
 
 			element.SetBinding(GetForegroundProperty(element), binding);
+		}
+
+		public static void UpdateVerticalTextAlignment(this Control platformControl, ITextAlignment textAlignment)
+		{
+			platformControl.VerticalAlignment = textAlignment.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		internal static IEnumerable<T?> GetDescendantsByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
@@ -192,54 +197,71 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static Task LoadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		internal static bool IsLoaded(this FrameworkElement frameworkElement)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			if (frameworkElement == null)
+				return false;
 
-			if (frameworkElement.IsLoaded)
+			return frameworkElement.IsLoaded;
+		}
+
+		internal static IDisposable OnLoaded(this FrameworkElement frameworkElement, Action action)
+		{
+			if (frameworkElement.IsLoaded())
 			{
-				taskCompletionSource.SetResult(true);
-				return taskCompletionSource.Task;
+				action();
+				return new ActionDisposable(() => { });
 			}
 
-			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
-			routedEventHandler = (_, __) =>
+			RoutedEventHandler? routedEventHandler = null;
+			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					frameworkElement.Loaded -= routedEventHandler;
+			});
 
-				taskCompletionSource.SetResult(true);
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
+				action();
 			};
 
 			frameworkElement.Loaded += routedEventHandler;
-
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			return disposable;
 		}
 
-		internal static Task UnloadedAsync(this FrameworkElement frameworkElement, TimeSpan? timeOut = null)
+		internal static IDisposable OnUnloaded(this FrameworkElement frameworkElement, Action action)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-
-			if (!frameworkElement.IsLoaded)
+			if (!frameworkElement.IsLoaded())
 			{
-				taskCompletionSource.SetResult(true);
-				return taskCompletionSource.Task;
+				action();
+				return new ActionDisposable(() => { });
 			}
 
-			UI.Xaml.RoutedEventHandler? routedEventHandler = null;
-			routedEventHandler = (_, __) =>
+			RoutedEventHandler? routedEventHandler = null;
+			ActionDisposable disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					frameworkElement.Unloaded -= routedEventHandler;
+			});
 
-				taskCompletionSource.SetResult(true);
+			routedEventHandler = (_, __) =>
+			{
+				disposable.Dispose();
+				action();
 			};
 
 			frameworkElement.Unloaded += routedEventHandler;
 
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			return disposable;
+		}
+
+		internal static void Arrange(this IView view, FrameworkElement frameworkElement)
+		{
+			var rect = new Graphics.Rect(0, 0, frameworkElement.ActualWidth, frameworkElement.ActualHeight);
+
+			if (!view.Frame.Equals(rect))
+				view.Arrange(rect);
 		}
 
 
@@ -260,6 +282,66 @@ namespace Microsoft.Maui.Platform
 			{
 				frameworkElement.Resources[propertyKey] = value;
 			}
+		}
+
+		internal static WPoint? GetLocationOnScreen(this UIElement element)
+		{
+			var ttv = element.TransformToVisual(element.XamlRoot.Content);
+			WPoint screenCoords = ttv.TransformPoint(new WPoint(0, 0));
+			return new WPoint(screenCoords.X, screenCoords.Y);
+		}
+
+		internal static WPoint? GetLocationOnScreen(this IElement element)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			var view = element.ToPlatform();
+			return
+				view.GetLocationRelativeTo(view.XamlRoot.Content);
+		}
+
+		internal static WPoint? GetLocationRelativeTo(this UIElement element, UIElement relativeTo)
+		{
+			var ttv = element.TransformToVisual(relativeTo);
+			WPoint screenCoords = ttv.TransformPoint(new WPoint(0, 0));
+			return new WPoint(screenCoords.X, screenCoords.Y);
+		}
+
+		internal static WPoint? GetLocationRelativeTo(this IElement element, UIElement relativeTo)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return
+				element
+					.ToPlatform()
+					.GetLocationRelativeTo(relativeTo);
+		}
+
+		internal static WPoint? GetLocationRelativeTo(this IElement element, IElement relativeTo)
+		{
+			if (element.Handler?.MauiContext == null)
+				return null;
+
+			return
+				element
+					.ToPlatform()
+					.GetLocationRelativeTo(relativeTo.ToPlatform());
+		}
+
+		internal static void RefreshThemeResources(this FrameworkElement nativeView)
+		{
+			var previous = nativeView.RequestedTheme;
+
+			// Workaround for https://github.com/dotnet/maui/issues/7820
+			nativeView.RequestedTheme = nativeView.ActualTheme switch
+			{
+				ElementTheme.Dark => ElementTheme.Light,
+				_ => ElementTheme.Dark
+			};
+
+			nativeView.RequestedTheme = previous;
 		}
 	}
 }

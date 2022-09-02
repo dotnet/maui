@@ -11,6 +11,7 @@ using ATimePicker = Android.Widget.TimePicker;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class TimePickerRendererBase<TControl> : ViewRenderer<TimePicker, TControl>, TimePickerDialog.IOnTimeSetListener, IPickerRenderer
 		where TControl : global::Android.Views.View
 	{
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		bool Is24HourView
 		{
-			get => (DateFormat.Is24HourFormat(Context) && Element.Format == (string)TimePicker.FormatProperty.DefaultValue) || Element.Format?.Contains('H') == true;
+			get => (DateFormat.Is24HourFormat(Context) && Element.Format == (string)TimePicker.FormatProperty.DefaultValue) || Element.Format?.Contains('H', StringComparison.Ordinal) == true;
 		}
 
 		public TimePickerRendererBase(Context context) : base(context)
@@ -143,8 +144,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_dialog.Show();
 		}
 
+		[PortHandler]
 		void OnCancelButtonClicked(object sender, EventArgs e)
 		{
+			// I would say the original bugzilla issue that added this code is wrong
+			// https://bugzilla.xamarin.com/42/42074/bug.html
+			// I don't see why cancelling the popup would cause the focus to remove from the control
+			// That's the control the user clicked on
+			// I'm pretty sure this was initially done to match the iOS behavior but we shouldn't just
+			// match focus behavior for no good reason.
+			// On WinUI when the calendar control opens the TextBox loses focus then gains it back when you close
+			// Which is also how Android works
 			Element.Unfocus();
 		}
 
@@ -182,6 +192,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		abstract protected void UpdateTextColor();
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TimePickerRenderer : TimePickerRendererBase<EditText>
 	{
 		TextColorSwitcher _textColorSwitcher;

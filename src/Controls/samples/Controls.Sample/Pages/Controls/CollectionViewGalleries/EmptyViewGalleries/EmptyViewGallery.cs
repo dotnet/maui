@@ -21,6 +21,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 						descriptionLabel,
 						GalleryBuilder.NavButton("EmptyView (null ItemsSource)", () =>
 							new EmptyViewNullGallery(), Navigation),
+						GalleryBuilder.NavButton("EmptyView (null ItemsSource) View", () =>
+							new EmptyViewNullGallery(false), Navigation),
 						GalleryBuilder.NavButton("EmptyView (String)", () =>
 							new EmptyViewStringGallery(), Navigation),
 						GalleryBuilder.NavButton("EmptyView (View)", () =>

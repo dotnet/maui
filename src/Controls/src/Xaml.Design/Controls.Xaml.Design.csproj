@@ -4,7 +4,7 @@
 		<AssemblyName>Microsoft.Maui.Controls.Xaml.DesignTools</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
 		<IsPackable>False</IsPackable>
-		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
+		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
 		<Reference Include="System.Xaml" />
@@ -12,7 +12,7 @@
 		<Compile Include="Properties\AssemblyInfo.cs" />
 		<Compile Include="RegisterMetadata.cs" />
     <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
-      <Version>16.9.31025.104</Version>
+      <Version>17.3.32804.24</Version>
     </PackageReference>
 	</ItemGroup>
 </Project>

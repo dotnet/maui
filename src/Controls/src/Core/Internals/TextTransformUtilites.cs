@@ -28,22 +28,22 @@ namespace Microsoft.Maui.Controls.Internals
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/TextTransformUtilites.xml" path="//Member[@MemberName='SetPlainText']/Docs" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetPlainText(InputView inputView, string nativeText)
+		public static void SetPlainText(InputView inputView, string platformText)
 		{
 			if (inputView == null)
 				return;
 
 			var textTransform = inputView.TextTransform;
-			var nativeTextWithTransform = inputView.UpdateFormsText(nativeText, textTransform);
+			var platformTextWithTransform = inputView.UpdateFormsText(platformText, textTransform);
 			var formsText = inputView.UpdateFormsText(inputView.Text, textTransform);
 
-			if ((string.IsNullOrEmpty(formsText) && nativeText.Length == 0))
+			if ((string.IsNullOrEmpty(formsText) && platformText.Length == 0))
 				return;
 
-			if (formsText == nativeTextWithTransform)
+			if (formsText == platformTextWithTransform)
 				return;
 
-			inputView.SetValueFromRenderer(InputView.TextProperty, nativeText);
+			inputView.SetValueFromRenderer(InputView.TextProperty, platformText);
 		}
 	}
 }

@@ -5,26 +5,26 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadialGradientBrush']/Docs" />
 	public class RadialGradientBrush : GradientBrush
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public RadialGradientBrush()
 		{
 
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public RadialGradientBrush(GradientStopCollection gradientStops)
 		{
 			GradientStops = gradientStops;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public RadialGradientBrush(GradientStopCollection gradientStops, double radius)
 		{
 			GradientStops = gradientStops;
 			Radius = radius;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][4]/Docs" />
 		public RadialGradientBrush(GradientStopCollection gradientStops, Point center, double radius)
 		{
 			GradientStops = gradientStops;

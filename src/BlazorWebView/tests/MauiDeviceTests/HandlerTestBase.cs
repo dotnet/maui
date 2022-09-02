@@ -24,13 +24,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 			_isCreated = true;
 			var appBuilder = MauiApp
-				.CreateBuilder()
-				.ConfigureMauiHandlers(handlers =>
-				{
-					//handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
-					//handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
-					//handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-				});
+				.CreateBuilder();
 
 			additionalCreationActions?.Invoke(appBuilder);
 
@@ -65,8 +59,9 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			handler.SetVirtualView(view);
 			view.Handler = handler;
 
-			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
-			handler.NativeArrange(view.Frame);
+			var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			view.Arrange(new Rect(0, 0, size.Width, size.Height));
+			handler.PlatformArrange(view.Frame);
 
 			return handler;
 		}

@@ -18,13 +18,13 @@ namespace Microsoft.Maui.DeviceTests
 				.CreateBuilder()
 				.Build();
 
-			_mauiContext = new MauiContext(_mauiApp.Services, Platform.DefaultContext);
+			_mauiContext = new MauiContext(_mauiApp.Services, MauiProgram.DefaultContext);
 		}
 
 		[Fact(DisplayName = "Correct Layout Inflater pulled from Activity")]
 		public void ScopedMauiContextReturnsActivityInflator()
 		{
-			var globalInflator = LayoutInflater.FromContext(Platform.DefaultContext);
+			var globalInflator = LayoutInflater.FromContext(MauiProgram.DefaultContext);
 
 			var context = _mauiContext.MakeScoped();
 
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Correct Fragment Manager pulled from Activity")]
 		public void ScopedMauiContextReturnsActivityFragmentManager()
 		{
-			var globalManager = Platform.DefaultContext.GetFragmentManager();
+			var globalManager = MauiProgram.DefaultContext.GetFragmentManager();
 
 			var context = _mauiContext.MakeScoped();
 
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 		public void ScopedMauiContextReturnsChildFragmentManager()
 		{
 			var manager = new TestFragmentManager();
-			var globalManager = Platform.DefaultContext.GetFragmentManager();
+			var globalManager = MauiProgram.DefaultContext.GetFragmentManager();
 
 			var context = _mauiContext.MakeScoped(fragmentManager: manager);
 
@@ -56,8 +56,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Scoped Layout Manager Returned")]
 		public void ScopedMauiContextReturnsChildLayoutInflater()
 		{
-			var globalInflator = LayoutInflater.FromContext(Platform.DefaultContext);
-			var layoutInflater = new TestLayoutInflater(Platform.DefaultContext);
+			var globalInflator = LayoutInflater.FromContext(MauiProgram.DefaultContext);
+			var layoutInflater = new TestLayoutInflater(MauiProgram.DefaultContext);
 
 			var context = _mauiContext.MakeScoped(layoutInflater: layoutInflater);
 

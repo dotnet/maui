@@ -59,7 +59,7 @@
       </Parameters>
       <Docs>
         <param name="element">The <see cref="T:Microsoft.Maui.Controls.BindableObject" /> whose modal presentation style is being retrieved.</param>
-        <summary>Gets the <see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle" /> for <param name="element" />.</summary>
+        <summary>Gets the <see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle" /> for <paramref name="element" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -512,7 +512,7 @@
           <c>this</c>
         </param>
         <param name="value">The desired <see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle" />.</param>
-        <summary>Sets the modal presentation style to <param name="value" />.</summary>
+        <summary>Sets the modal presentation style to <paramref name="value" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

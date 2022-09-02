@@ -57,8 +57,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var layout = new AbsoluteLayout { Children = { _list, _button } };
 
-			AbsoluteLayout.SetLayoutBounds(_list, new Rectangle(0, 0, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
-			AbsoluteLayout.SetLayoutBounds(_button, new Rectangle(0, 300, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
+			AbsoluteLayout.SetLayoutBounds(_list, new Rect(0, 0, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
+			AbsoluteLayout.SetLayoutBounds(_button, new Rect(0, 300, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
 
 			return layout;
 		}
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			// Comment this delay out to see the bug
 			// await Task.Delay(500);
 
-			await _button.LayoutTo(new Rectangle(100, 100, 100, 100), 1000);
+			await _button.LayoutTo(new Rect(100, 100, 100, 100), 1000);
 		}
 	}
 }

@@ -1,17 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Maui.Controls.Compatibility.Internals;
-using Microsoft.Maui.Controls.Compatibility.Xaml.Internals;
+using Microsoft.Maui.Controls.Xaml.Internals;
 
-using EObject = ElmSharp.EvasObject;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	class NativeBindingService : INativeBindingService
 	{
-		[UnconditionalSuppressMessage ("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
+		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
-			var view = target as EObject;
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
+			var view = target as NView;
 			if (view == null)
 				return false;
 			if (target.GetType().GetProperty(propertyName)?.GetMethod == null)
@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public bool TrySetBinding(object target, BindableProperty property, BindingBase binding)
 		{
-			var view = target as EObject;
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
+			var view = target as NView;
 			if (view == null)
 				return false;
 			view.SetBinding(property, binding);
@@ -31,7 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public bool TrySetValue(object target, BindableProperty property, object value)
 		{
-			var view = target as EObject;
+			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
+			var view = target as NView;
 			if (view == null)
 				return false;
 			view.SetValue(property, value);

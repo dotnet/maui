@@ -2,14 +2,15 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
-using NUnit.Framework;
+using NSubstitute;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
-	[TestFixture, Category("Layout")]
+	[Category("Layout")]
 	public class LayoutTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void UsingIndexUpdatesParent()
 		{
 			var layout = new VerticalStackLayout();
@@ -22,16 +23,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			layout.Add(child0);
 
-			Assert.AreEqual(layout, child0.Parent);
+			Assert.Equal(layout, child0.Parent);
 			Assert.Null(child1.Parent);
 
 			layout[0] = child1;
 
 			Assert.Null(child0.Parent);
-			Assert.AreEqual(layout, child1.Parent);
+			Assert.Equal(layout, child1.Parent);
 		}
 
-		[Test]
+		[Fact]
 		public void ClearUpdatesParent()
 		{
 			var layout = new VerticalStackLayout();
@@ -42,8 +43,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			layout.Add(child0);
 			layout.Add(child1);
 
-			Assert.AreEqual(layout, child0.Parent);
-			Assert.AreEqual(layout, child1.Parent);
+			Assert.Equal(layout, child0.Parent);
+			Assert.Equal(layout, child1.Parent);
 
 			layout.Clear();
 
@@ -51,65 +52,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Null(child1.Parent);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void AddCallsCorrectHandlerMethod(Type TLayout)
 		{
-			var events = new List<(string Name, LayoutHandlerUpdate? Args)>();
-
 			var layout = CreateLayout(TLayout);
-			layout.Handler = CreateLayoutHandler((n, h, l, a) => events.Add((n, a)));
-
-			events.Clear();
+			var handler = Substitute.For<ILayoutHandler>();
+			layout.Handler = handler;
 
 			var child0 = new Button();
-
 			layout.Add(child0);
 
-			Assert.AreEqual(1, events.Count);
-			var (name, args) = events[0];
-			Assert.AreEqual(nameof(ILayoutHandler.Add), name);
-			Assert.AreEqual(0, args!.Index);
-			Assert.AreEqual(child0, args!.View);
+			var command = Arg.Is(nameof(ILayoutHandler.Add));
+			var args = Arg.Is<LayoutHandlerUpdate>(lhu => lhu.Index == 0 && lhu.View == child0);
+
+			handler.Received().Invoke(command, args);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void RemoveCallsCorrectHandlerMethod(Type TLayout)
 		{
-			var events = new List<(string Name, LayoutHandlerUpdate? Args)>();
-
 			var layout = CreateLayout(TLayout);
-			layout.Handler = CreateLayoutHandler((n, h, l, a) => events.Add((n, a)));
+			var handler = Substitute.For<ILayoutHandler>();
+			layout.Handler = handler;
 
 			var child0 = new Button();
 			layout.Add(child0);
-
-			events.Clear();
-
 			layout.Remove(child0);
 
-			Assert.AreEqual(1, events.Count);
-			var (name, args) = events[0];
-			Assert.AreEqual(nameof(ILayoutHandler.Remove), name);
-			Assert.AreEqual(0, args!.Index);
-			Assert.AreEqual(child0, args!.View);
+			var command = Arg.Is(nameof(ILayoutHandler.Remove));
+			var args = Arg.Is<LayoutHandlerUpdate>(lhu => lhu.Index == 0 && lhu.View == child0);
+
+			handler.Received().Invoke(command, args);
 		}
 
-		[TestCase(typeof(VerticalStackLayout))]
-		[TestCase(typeof(HorizontalStackLayout))]
-		[TestCase(typeof(Grid))]
-		[TestCase(typeof(StackLayout))]
+		[Theory]
+		[InlineData(typeof(VerticalStackLayout))]
+		[InlineData(typeof(HorizontalStackLayout))]
+		[InlineData(typeof(Grid))]
+		[InlineData(typeof(StackLayout))]
 		public void InsertCallsCorrectHandlerMethod(Type TLayout)
 		{
 			var events = new List<(string Name, LayoutHandlerUpdate? Args)>();
 
 			var layout = CreateLayout(TLayout);
-			layout.Handler = CreateLayoutHandler((n, h, l, a) => events.Add((n, a)));
+			var handler = Substitute.For<ILayoutHandler>();
+			layout.Handler = handler;
 
 			var child0 = new Button();
 			var child1 = new Button();
@@ -117,49 +112,75 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			layout.Add(child0);
 			layout.Add(child2);
-
-			events.Clear();
-
 			layout.Insert(1, child1);
 
-			Assert.AreEqual(1, events.Count);
-			var (name, args) = events[0];
-			Assert.AreEqual(nameof(ILayoutHandler.Insert), name);
-			Assert.AreEqual(1, args!.Index);
-			Assert.AreEqual(child1, args!.View);
+			var command = Arg.Is(nameof(ILayoutHandler.Insert));
+			var args = Arg.Is<LayoutHandlerUpdate>(lhu => lhu.Index == 1 && lhu.View == child1);
+
+			handler.Received().Invoke(command, args);
 		}
 
-		Layout CreateLayout(Type TLayout)
+		static Layout CreateLayout(Type TLayout)
 		{
 			var layout = (Layout)Activator.CreateInstance(TLayout)!;
-			layout.IsPlatformEnabled = true;
 			return layout;
 		}
 
-		LayoutHandler CreateLayoutHandler(Action<string, ILayoutHandler, Maui.ILayout, LayoutHandlerUpdate?>? action)
+		[Fact]
+		public void AddRespectsCascadeInputTransparent()
 		{
-			var handler = new NonThrowingLayoutHandler(
-				LayoutHandler.LayoutMapper,
-				new CommandMapper<Maui.ILayout, ILayoutHandler>(LayoutHandler.LayoutCommandMapper)
-				{
-					[nameof(ILayoutHandler.Add)] = (h, l, a) => action?.Invoke(nameof(ILayoutHandler.Add), h, l, (LayoutHandlerUpdate?)a),
-					[nameof(ILayoutHandler.Remove)] = (h, l, a) => action?.Invoke(nameof(ILayoutHandler.Remove), h, l, (LayoutHandlerUpdate?)a),
-					[nameof(ILayoutHandler.Clear)] = (h, l, a) => action?.Invoke(nameof(ILayoutHandler.Clear), h, l, (LayoutHandlerUpdate?)a),
-					[nameof(ILayoutHandler.Insert)] = (h, l, a) => action?.Invoke(nameof(ILayoutHandler.Insert), h, l, (LayoutHandlerUpdate?)a),
-					[nameof(ILayoutHandler.Update)] = (h, l, a) => action?.Invoke(nameof(ILayoutHandler.Update), h, l, (LayoutHandlerUpdate?)a),
-				});
+			var layout = new VerticalStackLayout()
+			{
+				InputTransparent = true,
+				CascadeInputTransparent = true
+			};
 
-			return handler;
+			var handler = Substitute.For<IViewHandler>();
+			layout.Handler = handler;
+
+			var child0 = new Button() { InputTransparent = false };
+			layout.Add(child0);
+
+			handler.Received().UpdateValue(Arg.Is(nameof(Layout.CascadeInputTransparent)));
 		}
 
-		class NonThrowingLayoutHandler : LayoutHandler
+		[Fact]
+		public void InsertRespectsCascadeInputTransparent()
 		{
-			public NonThrowingLayoutHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
-				: base(mapper, commandMapper)
+			var layout = new VerticalStackLayout()
 			{
-			}
+				InputTransparent = true,
+				CascadeInputTransparent = true
+			};
 
-			protected override object CreateNativeView() => new object();
+			var handler = Substitute.For<IViewHandler>();
+			layout.Handler = handler;
+
+			var child0 = new Button() { InputTransparent = false };
+			layout.Insert(0, child0);
+
+			handler.Received().UpdateValue(Arg.Is(nameof(Layout.CascadeInputTransparent)));
+		}
+
+		[Fact]
+		public void UpdateRespectsCascadeInputTransparent()
+		{
+			var layout = new VerticalStackLayout()
+			{
+				InputTransparent = true,
+				CascadeInputTransparent = true
+			};
+
+			var handler = Substitute.For<IViewHandler>();
+			layout.Handler = handler;
+
+			var child0 = new Button() { InputTransparent = false };
+			layout.Add(child0);
+
+			var child1 = new Button() { InputTransparent = false };
+			layout[0] = child1;
+
+			handler.Received(2).UpdateValue(Arg.Is(nameof(Layout.CascadeInputTransparent)));
 		}
 	}
 }

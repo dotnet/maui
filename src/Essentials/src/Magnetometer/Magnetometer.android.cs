@@ -1,31 +1,43 @@
+#nullable enable
+using System;
+using Android.App;
+using Android.Content;
 using Android.Hardware;
 using Android.Runtime;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Magnetometer
+	partial class MagnetometerImplementation : IMagnetometer
 	{
-		internal static bool IsSupported =>
-			   Platform.SensorManager?.GetDefaultSensor(SensorType.MagneticField) != null;
+		static SensorManager? _sensorManager;
+		static Sensor? magnetometer;
 
-		static MagnetometerListener listener;
-		static Sensor magnetometer;
+		static SensorManager? SensorManager =>
+			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		static Sensor? Sensor =>
+			magnetometer ??= SensorManager?.GetDefaultSensor(SensorType.MagneticField);
+
+		bool PlatformIsSupported =>
+			Sensor is not null;
+
+		MagnetometerListener? listener;
+
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			var delay = sensorSpeed.ToPlatform();
 
-			listener = new MagnetometerListener();
-			magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
-			Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
+			listener = new MagnetometerListener(RaiseReadingChanged);
+			SensorManager!.RegisterListener(listener, Sensor, delay);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
-			if (listener == null || magnetometer == null)
+			if (listener == null || Sensor == null)
 				return;
 
-			Platform.SensorManager.UnregisterListener(listener, magnetometer);
+			SensorManager!.UnregisterListener(listener, Sensor);
 			listener.Dispose();
 			listener = null;
 		}
@@ -33,21 +45,25 @@ namespace Microsoft.Maui.Essentials
 
 	class MagnetometerListener : Java.Lang.Object, ISensorEventListener
 	{
-		internal MagnetometerListener()
+		internal MagnetometerListener(Action<MagnetometerData> callback)
+		{
+			DataCallback = callback;
+		}
+
+		readonly Action<MagnetometerData> DataCallback;
+
+		void ISensorEventListener.OnAccuracyChanged(Sensor? sensor, SensorStatus accuracy)
 		{
 		}
 
-		void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+		void ISensorEventListener.OnSensorChanged(SensorEvent? e)
 		{
-		}
-
-		void ISensorEventListener.OnSensorChanged(SensorEvent e)
-		{
-			if ((e?.Values?.Count ?? 0) < 3)
+			var values = e?.Values ?? Array.Empty<float>();
+			if (values.Count < 3)
 				return;
 
-			var data = new MagnetometerData(e.Values[0], e.Values[1], e.Values[2]);
-			Magnetometer.OnChanged(data);
+			var data = new MagnetometerData(values[0], values[1], values[2]);
+			DataCallback?.Invoke(data);
 		}
 	}
 }

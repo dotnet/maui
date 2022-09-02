@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				.AddWindows(windows => windows
 					.OnLaunching((_, e) =>
 					{
-						if (!string.IsNullOrWhiteSpace(e.Arguments) && e.Arguments.Contains("RunningAsUITests"))
+						if (!string.IsNullOrWhiteSpace(e.Arguments) && e.Arguments.Contains("RunningAsUITests", StringComparison.Ordinal))
 						{
 							App.RunningAsUITests = true;
 							ControlGallery.App.PreloadTestCasesIssuesList = false;

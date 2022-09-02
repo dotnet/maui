@@ -37,7 +37,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var mauiApp = builder.Build();
 
 			var ex = Assert.Throws<InvalidOperationException>(() => mauiApp.Services.GetService<IFooService>());
-			Assert.Contains("suitable constructor", ex.Message);
+			Assert.Contains("suitable constructor", ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]

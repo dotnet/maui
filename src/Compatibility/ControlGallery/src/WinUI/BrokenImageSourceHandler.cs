@@ -8,7 +8,9 @@ using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Platform;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(_51173Image), typeof(_51173CustomImageRenderer))]
+#pragma warning restore CS0612 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public sealed class BrokenImageSourceHandler : IImageSourceHandler
@@ -19,6 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		}
 	}
 
+	[System.Obsolete]
 	public class _51173CustomImageRenderer : ImageRenderer
 	{
 		protected override async Task TryUpdateSource()

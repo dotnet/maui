@@ -30,6 +30,9 @@ namespace Microsoft.Maui.Controls.Design
 			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "Visual",
 			   new TypeConverterAttribute(typeof(VisualDesignTypeConverter)));
 
+			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "FlowDirection",
+			   new TypeConverterAttribute(typeof(FlowDirectionDesignTypeConverter)));
+
 			AddMemberAttributes("Microsoft.Maui.Controls.ItemsView", "ItemsLayout",
 			   new TypeConverterAttribute(typeof(ItemsLayoutDesignTypeConverter)));
 
@@ -48,17 +51,18 @@ namespace Microsoft.Maui.Controls.Design
 			// though, since its visibility in the markup is controlled by the EditorBrowsableAttribute.
 			// Make OnPlatform/OnIdiom visible for intellisense, and set as markup extension. 
 			AddTypeAttributes("Microsoft.Maui.Controls.OnPlatform<>",
-				new EditorBrowsableAttribute (EditorBrowsableState.Always)
-				//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),
-				//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
+				new EditorBrowsableAttribute(EditorBrowsableState.Always)
+			//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),
+			//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
 			);
 			AddTypeAttributes("Microsoft.Maui.Controls.OnIdiom<>",
 				new EditorBrowsableAttribute(EditorBrowsableState.Always)
-				//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),
-				//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
+			//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),
+			//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
 			);
 
 			AddTypeAttributes("Microsoft.Maui.Graphics.Color", new TypeConverterAttribute(typeof(ColorDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.GridLength", new TypeConverterAttribute(typeof(GridLengthDesignTypeConverter)));
 
 			AddTypeAttributes("Microsoft.Maui.Controls.ConstraintExpression", new MarkupExtensionReturnTypeAttribute());
 			AddTypeAttributes("Microsoft.Maui.Controls.LayoutOptions", new TypeConverterAttribute(typeof(LayoutOptionsDesignTypeConverter)));
@@ -77,6 +81,16 @@ namespace Microsoft.Maui.Controls.Design
 			AddMemberAttributes("Microsoft.Maui.Controls.SearchHandler", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
 			AddMemberAttributes("Microsoft.Maui.Controls.Span", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
 
+			AddMemberAttributes("Microsoft.Maui.Controls.Grid", "RowDefinitions", new TypeConverterAttribute(typeof(GridLengthCollectionDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.Grid", "ColumnDefinitions", new TypeConverterAttribute(typeof(GridLengthCollectionDesignTypeConverter)));
+
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexJustify", new TypeConverterAttribute(typeof(FlexJustifyDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexDirection", new TypeConverterAttribute(typeof(FlexDirectionDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexAlignContent", new TypeConverterAttribute(typeof(FlexAlignContentDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexAlignItems", new TypeConverterAttribute(typeof(FlexAlignItemsDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexAlignSelf", new TypeConverterAttribute(typeof(FlexAlignSelfDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexWrap", new TypeConverterAttribute(typeof(FlexWrapDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Layouts.FlexBasis", new TypeConverterAttribute(typeof(FlexBasisDesignTypeConverter)));
 		}
 
 		private void AddTypeAttributes(string typeName, params Attribute[] attribs)

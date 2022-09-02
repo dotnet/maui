@@ -1,3 +1,4 @@
+using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				Content = new Label { Text = "Hello" }
 			};
 
-			Device.InvokeOnMainThreadAsync(() =>
+			root.Dispatcher.DispatchAsync(() =>
 			{
 				var navPage = new NavigationPage(root);
 				var renderer = GetRenderer(navPage);

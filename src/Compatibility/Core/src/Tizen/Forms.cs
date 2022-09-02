@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using ElmSharp;
-using ElmSharp.Wearable;
-using Tizen.Applications;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
-using Microsoft.Maui.Controls.Compatibility.Shapes;
-using DeviceOrientation = Microsoft.Maui.Controls.Compatibility.Internals.DeviceOrientation;
-using ELayout = ElmSharp.Layout;
-using TSystemInfo = Tizen.System.Information;
+using Microsoft.Maui.Controls.Internals;
+using Tizen.Applications;
+using Microsoft.Maui.Devices;
+using Color = Microsoft.Maui.Graphics.Color;
+using NView = Tizen.NUI.BaseComponents.View;
+using TDeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -29,11 +27,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 		Lightweight,
 	}
 
+	[Obsolete]
 	public class InitializationOptions
 	{
 		public CoreApplication Context { get; set; }
 		public bool UseDeviceIndependentPixel { get; set; }
-		public bool UseSkiaSharp { get; set; }
 		public HandlerAttribute[] Handlers { get; set; }
 		public Dictionary<Type, Func<IRegisterable>> CustomHandlers { get; set; } // for static registers
 		public Assembly[] Assemblies { get; set; }
@@ -42,7 +40,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public StaticRegistrarStrategy StaticRegistarStrategy { get; set; }
 		public PlatformType PlatformType { get; set; }
 		public bool UseMessagingCenter { get; set; } = true;
-		public bool UseFastLayout { get; set; } = false;
+
+		public bool UseSkiaSharp { get; set; }
+
 
 		public DisplayResolutionUnit DisplayResolutionUnit { get; set; }
 
@@ -52,21 +52,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public ExportEffectAttribute[] Effects;
 		}
 
-		public InitializationOptions(CoreApplication application)
+		public InitializationOptions()
 		{
-			Context = application;
 		}
 
-		public InitializationOptions(CoreApplication application, bool useDeviceIndependentPixel, HandlerAttribute[] handlers)
+		public InitializationOptions(bool useDeviceIndependentPixel, HandlerAttribute[] handlers)
 		{
-			Context = application;
 			UseDeviceIndependentPixel = useDeviceIndependentPixel;
 			Handlers = handlers;
 		}
 
-		public InitializationOptions(CoreApplication application, bool useDeviceIndependentPixel, params Assembly[] assemblies)
+		public InitializationOptions(bool useDeviceIndependentPixel, params Assembly[] assemblies)
 		{
-			Context = application;
 			UseDeviceIndependentPixel = useDeviceIndependentPixel;
 			Assemblies = assemblies;
 		}
@@ -80,205 +77,33 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
 	public static class Forms
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 	{
-		static Lazy<string> s_profile = new Lazy<string>(() =>
-		{
-			//TODO : Fix me if elm_config_profile_get() unavailable
-			return Elementary.GetProfile();
-		});
-
-		static Lazy<int> s_dpi = new Lazy<int>(() =>
-		{
-			int dpi = 0;
-			if (s_profile.Value == "tv")
-			{
-				// Use fixed DPI value (72) if TV profile
-				return 72;
-			}
-			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.dpi", out dpi);
-			return dpi;
-		});
-
-		static Lazy<double> s_elmScale = new Lazy<double>(() =>
-		{
-			return s_deviceScale.Value / Elementary.GetScale();
-		});
-
-		static Lazy<string> s_deviceType = new Lazy<string>(() =>
-		{
-			if (!TSystemInfo.TryGetValue("http://tizen.org/system/device_type", out string deviceType))
-			{
-				// Since, above key("http://tizen.org/system/device_type") is not available on Tizen 4.0, we uses profile to decide the type of device on 4.0.
-				var profile = GetProfile();
-				if (profile == "mobile")
-				{
-					deviceType = "Mobile";
-				}
-				else if (profile == "tv")
-				{
-					deviceType = "TV";
-				}
-				else if (profile == "wearable")
-				{
-					deviceType = "Wearable";
-				}
-				else
-				{
-					deviceType = "Unknown";
-				}
-			}
-			return deviceType;
-		});
-
-		static Lazy<double> s_deviceScale = new Lazy<double>(() =>
-		{
-			// This is the base scale value and varies from profile
-			return ThemeManager.GetBaseScale(s_deviceType.Value);
-		});
-
-		class TizenDeviceInfo : DeviceInfo
-		{
-			readonly Size pixelScreenSize;
-
-			readonly Size scaledScreenSize;
-
-			readonly double scalingFactor;
-
-			readonly string profile;
-
-			public override Size PixelScreenSize
-			{
-				get
-				{
-					return this.pixelScreenSize;
-				}
-			}
-
-			public override Size ScaledScreenSize
-			{
-				get
-				{
-					return this.scaledScreenSize;
-				}
-			}
-
-			public Size PhysicalScreenSize { get; }
-
-			public override double ScalingFactor
-			{
-				get
-				{
-					return this.scalingFactor;
-				}
-			}
-
-			public string Profile
-			{
-				get
-				{
-					return this.profile;
-				}
-			}
-
-			public TizenDeviceInfo()
-			{
-				int width = 0;
-				int height = 0;
-
-				TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out width);
-				TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out height);
-
-				var physicalScale = s_dpi.Value / 160.0;
-				PhysicalScreenSize = new Size(width / physicalScale, height / physicalScale);
-
-				scalingFactor = 1.0;  // scaling is disabled, we're using pixels as Xamarin's geometry units
-				if (DisplayResolutionUnit.UseVP && DisplayResolutionUnit.ViewportWidth > 0)
-				{
-					scalingFactor = width / DisplayResolutionUnit.ViewportWidth;
-				}
-				else
-				{
-					if (DisplayResolutionUnit.UseDP)
-					{
-						scalingFactor = s_dpi.Value / 160.0;
-					}
-
-					if (DisplayResolutionUnit.UseDeviceScale)
-					{
-						var portraitSize = Math.Min(PhysicalScreenSize.Width, PhysicalScreenSize.Height);
-						if (portraitSize > 2000)
-						{
-							scalingFactor *= 4;
-						}
-						else if (portraitSize > 1000)
-						{
-							scalingFactor *= 2.5;
-						}
-					}
-				}
-
-				pixelScreenSize = new Size(width, height);
-				scaledScreenSize = new Size(width / scalingFactor, height / scalingFactor);
-				profile = s_profile.Value;
-			}
-		}
-
-		static StaticRegistrarStrategy s_staticRegistrarStrategy = StaticRegistrarStrategy.None;
-
-		static PlatformType s_platformType = PlatformType.Defalut;
-
-		static bool s_useMessagingCenter = true;
+		static IReadOnlyList<string> s_flags;
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
-		public static CoreApplication Context
-		{
-			get;
-			internal set;
-		}
+		public static bool IsInitialized { get; private set; }
 
-		public static EvasObject NativeParent
-		{
-			get; internal set;
-		}
+		public static StaticRegistrarStrategy StaticRegistrarStrategy { get; private set; }
 
-		public static ELayout BaseLayout => NativeParent as ELayout;
+		public static PlatformType PlatformType { get; private set; }
 
-		public static CircleSurface CircleSurface
-		{
-			get; internal set;
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Element RotaryFocusObject
-		{
-			get; internal set;
-		}
-
-		public static bool IsInitialized
-		{
-			get;
-			private set;
-		}
-
-		public static DeviceOrientation NaturalOrientation { get; } = GetDeviceOrientation();
-
-		public static StaticRegistrarStrategy StaticRegistrarStrategy => s_staticRegistrarStrategy;
-
-		public static PlatformType PlatformType => s_platformType;
-
-		public static bool UseMessagingCenter => s_useMessagingCenter;
-
-		public static bool UseSkiaSharp { get; private set; }
-
-		public static bool UseFastLayout { get; private set; }
+		public static bool UseMessagingCenter { get; private set; }
 
 		public static DisplayResolutionUnit DisplayResolutionUnit { get; private set; }
 
-		public static int ScreenDPI => s_dpi.Value;
+		public static int ScreenDPI => TDeviceInfo.DPI;
 
-		public static Size PhysicalScreenSize => (Device.info as TizenDeviceInfo).PhysicalScreenSize;
+		public static Size PhysicalScreenSize => DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
+
+		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
+
+		public static IMauiContext MauiContext { get; internal set; }
 
 		internal static TizenTitleBarVisibility TitleBarVisibility
 		{
@@ -286,24 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			private set;
 		}
 
-		static DeviceOrientation GetDeviceOrientation()
-		{
-			int width = 0;
-			int height = 0;
-			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.width", out width);
-			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.height", out height);
-
-			if (height >= width)
-			{
-				return DeviceOrientation.Portrait;
-			}
-			else
-			{
-				return DeviceOrientation.Landscape;
-			}
-		}
-
-		internal static void SendViewInitialized(this VisualElement self, EvasObject nativeView)
+		internal static void SendViewInitialized(this VisualElement self, NView nativeView)
 		{
 			EventHandler<ViewInitializedEventArgs> viewInitialized = Forms.ViewInitialized;
 			if (viewInitialized != null)
@@ -316,6 +124,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		public static bool IsInitializedRenderers { get; private set; }
+
 		public static void SetTitleBarVisibility(TizenTitleBarVisibility visibility)
 		{
 			TitleBarVisibility = visibility;
@@ -323,7 +133,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static TOut GetHandler<TOut>(Type type, params object[] args) where TOut : class, IRegisterable
 		{
-			if (s_staticRegistrarStrategy == StaticRegistrarStrategy.None)
+			if (StaticRegistrarStrategy == StaticRegistrarStrategy.None)
 			{
 				// Find hander in internal registrar, that is using reflection (default).
 				return Registrar.Registered.GetHandler<TOut>(type, args);
@@ -334,7 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				TOut ret = StaticRegistrar.Registered.GetHandler<TOut>(type, args);
 
 				// 2. If there is no handler, try to find hander in internal registrar, that is using reflection.
-				if (ret == null && s_staticRegistrarStrategy == StaticRegistrarStrategy.All)
+				if (ret == null && StaticRegistrarStrategy == StaticRegistrarStrategy.All)
 				{
 					ret = Registrar.Registered.GetHandler<TOut>(type, args);
 				}
@@ -344,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static TOut GetHandlerForObject<TOut>(object obj) where TOut : class, IRegisterable
 		{
-			if (s_staticRegistrarStrategy == StaticRegistrarStrategy.None)
+			if (StaticRegistrarStrategy == StaticRegistrarStrategy.None)
 			{
 				// Find hander in internal registrar, that is using reflection (default).
 				return Registrar.Registered.GetHandlerForObject<TOut>(obj);
@@ -355,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				TOut ret = StaticRegistrar.Registered.GetHandlerForObject<TOut>(obj);
 
 				// 2. If there is no handler, try to find hander in internal registrar, that is using reflection.
-				if (ret == null && s_staticRegistrarStrategy == StaticRegistrarStrategy.All)
+				if (ret == null && StaticRegistrarStrategy == StaticRegistrarStrategy.All)
 				{
 					ret = Registrar.Registered.GetHandlerForObject<TOut>(obj);
 				}
@@ -365,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static TOut GetHandlerForObject<TOut>(object obj, params object[] args) where TOut : class, IRegisterable
 		{
-			if (s_staticRegistrarStrategy == StaticRegistrarStrategy.None)
+			if (StaticRegistrarStrategy == StaticRegistrarStrategy.None)
 			{
 				// Find hander in internal registrar, that is using reflection (default).
 				return Registrar.Registered.GetHandlerForObject<TOut>(obj, args);
@@ -376,7 +186,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				TOut ret = StaticRegistrar.Registered.GetHandlerForObject<TOut>(obj, args);
 
 				// 2. If there is no handler, try to find hander in internal registrar, that is using reflection.
-				if (ret == null && s_staticRegistrarStrategy == StaticRegistrarStrategy.All)
+				if (ret == null && StaticRegistrarStrategy == StaticRegistrarStrategy.All)
 				{
 					ret = StaticRegistrar.Registered.GetHandlerForObject<TOut>(obj, args);
 				}
@@ -384,140 +194,78 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		public static void Init(CoreApplication application)
-		{
-			Init(application, false);
-		}
+		[Obsolete]
+		public static void Init(IActivationState activationState) => Init(activationState.Context);
 
-		public static void Init(CoreApplication application, bool useDeviceIndependentPixel)
-		{
-			DisplayResolutionUnit = DisplayResolutionUnit.FromInit(useDeviceIndependentPixel);
-			SetupInit(application);
-		}
+		[Obsolete]
+		public static void Init(IActivationState activationState, InitializationOptions options) => Init(activationState.Context, options);
 
-		public static void Init(CoreApplication application, DisplayResolutionUnit unit)
+		[Obsolete]
+		public static void Init(IMauiContext context, InitializationOptions options = null)
 		{
-			DisplayResolutionUnit = unit ?? DisplayResolutionUnit.Pixel();
-			SetupInit(application);
-		}
-
-		public static void Init(InitializationOptions options)
-		{
-			if (options == null)
+			if (options != null && options.DisplayResolutionUnit != null)
 			{
-				throw new ArgumentException("Must be set options", nameof(options));
+				DisplayResolutionUnit = options.DisplayResolutionUnit;
 			}
-
-			DisplayResolutionUnit = options.DisplayResolutionUnit ?? DisplayResolutionUnit.FromInit(options.UseDeviceIndependentPixel);
-			SetupInit(options.Context, options);
+			SetupInit(context, options);
 		}
 
-		static void SetupInit(CoreApplication application, InitializationOptions options = null)
+		[Obsolete]
+		static void SetupInit(IMauiContext context, InitializationOptions options = null)
 		{
-			Context = application;
+			MauiContext = context;
+			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			if (!IsInitialized)
 			{
-				Internals.Log.Listeners.Add(new XamarinLogListener());
 				if (System.Threading.SynchronizationContext.Current == null)
 				{
 					TizenSynchronizationContext.Initialize();
 				}
 
-				Elementary.Initialize();
-				Elementary.ThemeOverlay();
-				Utility.AppendGlobalFontPath(@"/usr/share/fonts");
+				Tizen.NUI.FontClient.Instance.AddCustomFontDirectory(@"/usr/share/fonts");
 			}
 
-			Device.PlatformServices = new TizenPlatformServices();
-			if (Device.info != null)
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
+
+			if (options?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
+				RegisterCompatRenderers(options);
+
+			if (options != null)
 			{
-				((TizenDeviceInfo)Device.info).Dispose();
-				Device.info = null;
+				PlatformType = options.PlatformType;
+				UseMessagingCenter = options.UseMessagingCenter;
 			}
 
-			Device.Info = new Forms.TizenDeviceInfo();
+			Application.AccentColor = GetAccentColor();
+			ExpressionSearch.Default = new TizenExpressionSearch();
 
-			string profile = ((TizenDeviceInfo)Device.Info).Profile;
-			if (profile == "mobile")
-			{
-				Device.SetIdiom(TargetIdiom.Phone);
-			}
-			else if (profile == "tv")
-			{
-				Device.SetIdiom(TargetIdiom.TV);
-			}
-			else if (profile == "desktop")
-			{
-				Device.SetIdiom(TargetIdiom.Desktop);
-			}
-			else if (profile == "wearable")
-			{
-				Device.SetIdiom(TargetIdiom.Watch);
-			}
-			else
-			{
-				Device.SetIdiom(TargetIdiom.Unsupported);
-			}
+			IsInitialized = true;
+		}
 
-			if (!Forms.IsInitialized)
+		[Obsolete]
+		internal static void RegisterCompatRenderers(InitializationOptions maybeOptions = null)
+		{
+			if (!IsInitializedRenderers)
 			{
-				if (options != null)
+				IsInitializedRenderers = true;
+				if (maybeOptions != null)
 				{
-					s_platformType = options.PlatformType;
-					s_useMessagingCenter = options.UseMessagingCenter;
-					UseSkiaSharp = options.UseSkiaSharp;
-					UseFastLayout = options.UseFastLayout;
+					var options = maybeOptions;
+					var handlers = options.Handlers;
+					var flags = options.Flags;
+					var effectScopes = options.EffectScopes;
+
+					//TODO: ExportCell?
+					//TODO: ExportFont
 
 					// renderers
-					if (options.Handlers != null)
+					if (handlers != null)
 					{
-						Registrar.RegisterRenderers(options.Handlers);
-					}
-					else
-					{
-						// static registrar
-						if (options.StaticRegistarStrategy != StaticRegistrarStrategy.None)
-						{
-							s_staticRegistrarStrategy = options.StaticRegistarStrategy;
-							StaticRegistrar.RegisterHandlers(options.CustomHandlers);
-
-							if (options.StaticRegistarStrategy == StaticRegistrarStrategy.All)
-							{
-								Registrar.RegisterAll(new Type[]
-								{
-										typeof(ExportRendererAttribute),
-										typeof(ExportImageSourceHandlerAttribute),
-										typeof(ExportCellAttribute),
-										typeof(ExportHandlerAttribute),
-										typeof(ExportFontAttribute)
-								});
-
-								if (UseSkiaSharp)
-									RegisterSkiaSharpRenderers();
-							}
-						}
-						else
-						{
-							Registrar.RegisterAll(new Type[]
-							{
-								typeof(ExportRendererAttribute),
-								typeof(ExportImageSourceHandlerAttribute),
-								typeof(ExportCellAttribute),
-								typeof(ExportHandlerAttribute),
-								typeof(ExportFontAttribute)
-							});
-
-							if (UseSkiaSharp)
-								RegisterSkiaSharpRenderers();
-
-							if (UseFastLayout)
-								Registrar.Registered.Register(typeof(Layout), typeof(FastLayoutRenderer));
-						}
+						Registrar.RegisterRenderers(handlers);
 					}
 
 					// effects
-					var effectScopes = options.EffectScopes;
 					if (effectScopes != null)
 					{
 						for (var i = 0; i < effectScopes.Length; i++)
@@ -528,65 +276,38 @@ namespace Microsoft.Maui.Controls.Compatibility
 					}
 
 					// css
-					Registrar.RegisterStylesheets(options.Flags);
+					Registrar.RegisterStylesheets(flags);
 				}
 				else
 				{
-					Registrar.RegisterAll(new Type[]
-					{
+					// Only need to do this once
+					Registrar.RegisterAll(new[] {
 						typeof(ExportRendererAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
 						typeof(ExportCellAttribute),
-						typeof(ExportHandlerAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
 						typeof(ExportFontAttribute)
 					});
 				}
 			}
-
-			Color.SetAccent(GetAccentColor(profile));
-			ExpressionSearch.Default = new TizenExpressionSearch();
-
-			if (application is WatchApplication)
-				s_platformType = PlatformType.Lightweight;
-
-			IsInitialized = true;
 		}
 
-		static void RegisterSkiaSharpRenderers()
-		{
-			// Register all skiasharp-based rednerers here.
-			Registrar.Registered.Register(typeof(Frame), typeof(Platform.Tizen.SkiaSharp.FrameRenderer));
-			Registrar.Registered.Register(typeof(BoxView), typeof(Platform.Tizen.SkiaSharp.BoxViewRenderer));
-			Registrar.Registered.Register(typeof(Image), typeof(Platform.Tizen.SkiaSharp.ImageRenderer));
-
-			Registrar.Registered.Register(typeof(Ellipse), typeof(Platform.Tizen.SkiaSharp.EllipseRenderer));
-			Registrar.Registered.Register(typeof(Line), typeof(Platform.Tizen.SkiaSharp.LineRenderer));
-			Registrar.Registered.Register(typeof(Path), typeof(Platform.Tizen.SkiaSharp.PathRenderer));
-			Registrar.Registered.Register(typeof(Shapes.Polygon), typeof(Platform.Tizen.SkiaSharp.PolygonRenderer));
-			Registrar.Registered.Register(typeof(Polyline), typeof(Platform.Tizen.SkiaSharp.PolylineRenderer));
-			Registrar.Registered.Register(typeof(Shapes.Rectangle), typeof(Platform.Tizen.SkiaSharp.RectangleRenderer));
-		}
-
-		static Color GetAccentColor(string profile)
+		static Color GetAccentColor()
 		{
 			// On Windows Phone, this is the complementary color chosen by the user.
 			// Good Windows Phone applications use this as part of their styling to provide a native look and feel.
 			// On iOS and Android this instance is set to a contrasting color that is visible on the default
 			// background but is not the same as the default text color.
 
-			switch (profile)
-			{
-				case "mobile":
-					// [Tizen_3.0]Basic_Interaction_GUI_[REF].xlsx Theme 001 (Default) 1st HSB: 188 70 80
-					return Color.FromRgba(61, 185, 204, 255);
-				case "tv":
-					return Color.FromRgba(15, 15, 15, 230);
-				case "wearable":
-					// Theme A (Default) 1st HSB: 207 75 16
-					return Color.FromRgba(10, 27, 41, 255);
-				default:
-					return Color.Black;
-			}
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				// [Tizen_3.0]Basic_Interaction_GUI_[REF].xlsx Theme 001 (Default) 1st HSB: 188 70 80
+				return Color.FromRgba(61, 185, 204, 255);
+			else if (DeviceInfo.Idiom == DeviceIdiom.TV)
+				return Color.FromRgba(15, 15, 15, 230);
+			else if (DeviceInfo.Idiom == DeviceIdiom.Watch)
+				// Theme A (Default) 1st HSB: 207 75 16
+				return Color.FromRgba(10, 27, 41, 255);
+			else
+				return Color.FromRgb(0, 0, 0);
 		}
 
 		/// <summary>
@@ -599,7 +320,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static int ConvertToPixel(double dp)
 		{
-			return (int)Math.Round(dp * s_dpi.Value / 160.0);
+			return (int)Math.Round(dp * TDeviceInfo.DPI / 160.0);
 		}
 
 		/// <summary>
@@ -613,7 +334,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static int ConvertToScaledPixel(double dp)
 		{
-			return (int)Math.Round(dp * Device.Info.ScalingFactor);
+			return (int)Math.Round(dp * TDeviceInfo.ScalingFactor);
 		}
 
 		/// <summary>
@@ -626,7 +347,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static double ConvertToScaledDP(int pixel)
 		{
-			return pixel / Device.Info.ScalingFactor;
+			if (pixel == int.MaxValue)
+				return double.PositiveInfinity;
+			return pixel / TDeviceInfo.ScalingFactor;
 		}
 
 		/// <summary>
@@ -639,7 +362,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static double ConvertToScaledDP(double pixel)
 		{
-			return pixel / Device.Info.ScalingFactor;
+			if (pixel == double.PositiveInfinity)
+				return double.PositiveInfinity;
+			return pixel / TDeviceInfo.ScalingFactor;
 		}
 
 		/// <summary>
@@ -649,7 +374,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static int ConvertToEflFontPoint(double sp)
 		{
-			return (int)Math.Round(ConvertToScaledPixel(sp) * s_elmScale.Value);
+			if (sp == -1)
+				return -1;
+			return (int)sp.ToScaledPoint();
 		}
 
 		/// <summary>
@@ -659,7 +386,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static double ConvertToDPFont(int eflPt)
 		{
-			return ConvertToScaledDP(eflPt / s_elmScale.Value);
+			return eflPt.ToScaledDP();
 		}
 
 		/// <summary>
@@ -668,23 +395,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <returns></returns>
 		public static string GetProfile()
 		{
-			return s_profile.Value;
+			return TDeviceInfo.Profile;
 		}
 
 		public static string GetDeviceType()
 		{
-			return s_deviceType.Value;
-		}
-
-		// for internal use only
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void Preload()
-		{
-			Elementary.Initialize();
-			Elementary.ThemeOverlay();
-			var window = new PreloadedWindow();
-			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out int width);
-			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out int height);
+			return TDeviceInfo.DeviceType.ToString();
 		}
 	}
 

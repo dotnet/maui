@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			if (_defaultBackColor == null)
 				_defaultBackColor = Control.BackgroundColor;
 
-			Control.BackgroundColor = Colors.Cornsilk.ToUIColor();
+			Control.BackgroundColor = Colors.Cornsilk.ToPlatform();
 
 			if (Control is UISearchBar searchBar)
 			{
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				if (_defaultBackImage == null)
 					_defaultBackImage = searchBar.BackgroundImage;
 
-				searchBar.BarTintColor = Colors.Goldenrod.ToUIColor();
+				searchBar.BarTintColor = Colors.Goldenrod.ToPlatform();
 				searchBar.BackgroundImage = new UIImage();
 			}
 		}

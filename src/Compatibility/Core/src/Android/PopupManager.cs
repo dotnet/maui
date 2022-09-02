@@ -13,6 +13,7 @@ using AWindow = Android.Views.Window;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	internal static class PopupManager
 	{
 		static readonly List<PopupRequestHelper> s_subscriptions = new List<PopupRequestHelper>();

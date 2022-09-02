@@ -3,20 +3,12 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Platform
 {
 	internal static partial class MauiContextExtensions
 	{
-		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
-		{
-			var config = mauiContext?.Context?.Resources?.Configuration;
-			if (config == null)
-				return FlowDirection.LeftToRight;
-
-			return config.LayoutDirection.ToFlowDirection();
-		}
-
 		public static NavigationRootManager GetNavigationRootManager(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<NavigationRootManager>();
 
@@ -70,17 +62,9 @@ namespace Microsoft.Maui.Platform
 				if (fragmentManager == null)
 					throw new InvalidOperationException("If you're creating a new Navigation Root you need to use a new Fragment Manager");
 
-				scopedContext.AddWeakSpecific(new NavigationRootManager(scopedContext));
+				scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
 			}
 
-			return scopedContext;
-		}
-
-		public static IMauiContext MakeScopededArgs<TArgs>(this IMauiContext mauiContext, TArgs args)
-			where TArgs : class
-		{
-			var scopedContext = new MauiContext(mauiContext.Services);
-			scopedContext.AddWeakSpecific(args);
 			return scopedContext;
 		}
 
@@ -92,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			throw new InvalidOperationException("Unable to find Application Services");
 		}
 
-		public static Android.App.Activity GetNativeWindow(this IMauiContext mauiContext) =>
+		public static Android.App.Activity GetPlatformWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<Android.App.Activity>();
 	}
 }

@@ -7,10 +7,13 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(CustomSwitch), typeof(CustomSwitchRenderer))]
+#pragma warning restore CS0612 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	// Used in Issue7253.cs
+	[System.Obsolete]
 	public class CustomSwitchRenderer : SwitchRenderer
 	{
 		protected CustomSwitch CustomSwitch => Element as CustomSwitch;

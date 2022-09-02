@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public class TemplatedItemViewHolder : SelectableViewHolder
 	{
 		readonly ItemContentView _itemContentView;

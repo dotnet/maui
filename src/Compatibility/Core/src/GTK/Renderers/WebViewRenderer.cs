@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK.Renderers
 				{
 					try
 					{
-						// On Linux and MacOS use C#/CLI bindings to WebKit/Gtk+: https://github.com/mono/webkit-sharp
+						// On Linux and macOS use C#/CLI bindings to WebKit/Gtk+: https://github.com/mono/webkit-sharp
 						// On Windows, use the WebBrowser class from System.Windows.Forms.
 						Control = new Controls.WebView();
 					}

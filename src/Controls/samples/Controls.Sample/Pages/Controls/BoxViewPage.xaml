@@ -26,7 +26,25 @@
                 HeightRequest="160"
                 VerticalOptions="Center"
                 HorizontalOptions="Center" />
-
+            
+            <Label
+                Text="Background"
+                Style="{StaticResource Headline}" />
+            <BoxView 
+                WidthRequest="160"
+                HeightRequest="160"
+                VerticalOptions="Center"
+                HorizontalOptions="Center">
+                <BoxView.Background>
+                    <LinearGradientBrush EndPoint="1,0">
+                        <GradientStop Color="Yellow" 
+                                      Offset="0.1" />
+                        <GradientStop Color="Green"                                   
+                                      Offset="1.0" />
+                    </LinearGradientBrush>
+                </BoxView.Background>
+            </BoxView>
+            
             <Label
                 Text="Using CornerRadius"
                 Style="{StaticResource Headline}"/>

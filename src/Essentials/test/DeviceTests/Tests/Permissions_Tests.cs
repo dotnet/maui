@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Permissions")]
 	public class Permissions_Tests
 	{
 		[Theory]

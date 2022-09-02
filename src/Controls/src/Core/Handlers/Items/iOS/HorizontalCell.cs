@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal sealed class HorizontalCell : HeightConstrainedTemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.Compatibility.Platform.iOS.HorizontalCell");
+		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.HorizontalCell");
 
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override CGSize Measure()
 		{
-			var measure = NativeHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
+			var measure = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
 
 			return new CGSize(measure.Width, ConstrainedDimension);
 		}

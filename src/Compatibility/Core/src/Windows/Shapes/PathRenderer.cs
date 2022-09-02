@@ -12,6 +12,7 @@ using WPath = System.Windows.Shapes.Path;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class PathRenderer : ShapeRenderer<Path, WPath>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Path> args)
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 
 		void UpdateData()
 		{
-			Control.Data = Element.Data.ToNative();
+			Control.Data = Element.Data.ToPlatform();
 		}
 
 		void UpdateRenderTransform()

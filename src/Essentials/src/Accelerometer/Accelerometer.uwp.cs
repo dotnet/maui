@@ -1,20 +1,20 @@
 using Windows.Devices.Sensors;
 using WindowsAccelerometer = Windows.Devices.Sensors.Accelerometer;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Accelerometer
+	partial class AccelerometerImplementation
 	{
 		// keep around a reference so we can stop this same instance
-		static WindowsAccelerometer sensor;
+		WindowsAccelerometer sensor;
 
 		internal static WindowsAccelerometer DefaultSensor =>
 			WindowsAccelerometer.GetDefault();
 
-		internal static bool IsSupported =>
+		public bool IsSupported =>
 			DefaultSensor != null;
 
-		internal static void PlatformStart(SensorSpeed sensorSpeed)
+		void PlatformStart(SensorSpeed sensorSpeed)
 		{
 			sensor = DefaultSensor;
 
@@ -24,14 +24,14 @@ namespace Microsoft.Maui.Essentials
 			sensor.ReadingChanged += DataUpdated;
 		}
 
-		static void DataUpdated(object sender, AccelerometerReadingChangedEventArgs e)
+		void DataUpdated(object sender, AccelerometerReadingChangedEventArgs e)
 		{
 			var reading = e.Reading;
 			var data = new AccelerometerData(reading.AccelerationX * -1, reading.AccelerationY * -1, reading.AccelerationZ * -1);
 			OnChanged(data);
 		}
 
-		internal static void PlatformStop()
+		void PlatformStop()
 		{
 			sensor.ReadingChanged -= DataUpdated;
 			sensor.ReportInterval = 0;

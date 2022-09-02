@@ -41,9 +41,6 @@ namespace Microsoft.Maui
 
 		void FrameAction(Foundation.NSObservedChange obj)
 		{
-			if (WindowElements.Count > 0)
-				RemoveAdorners();
-
 			Invalidate();
 		}
 	}

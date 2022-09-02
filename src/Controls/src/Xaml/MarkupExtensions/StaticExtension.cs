@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw new ArgumentNullException(nameof(serviceProvider));
 			if (!(serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver))
 				throw new ArgumentException("No IXamlTypeResolver in IServiceProvider");
-			if (string.IsNullOrEmpty(Member) || !Member.Contains("."))
+			if (string.IsNullOrEmpty(Member) || Member.IndexOf(".", StringComparison.Ordinal) == -1)
 				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", serviceProvider);
 
 			var dotIdx = Member.LastIndexOf('.');

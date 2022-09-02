@@ -10,8 +10,6 @@
 
   <!-- Android-only files -->
   <ItemGroup Condition=" '$(MauiPlatformName)' == 'android' ">
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.dll" />
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.pdb" />
     <None Include="@(_AndroidFiles)" FullTfm="$(_MauiDotNetTfm)-android30.0" Tfm="$(_MauiDotNetTfm)-android" Profile="Android" />
   </ItemGroup>
 
@@ -30,7 +28,6 @@
     <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Core/Controls.Core.csproj" />
     <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Xaml/Controls.Xaml.csproj" />
     <ProjectReference Include="$(MauiRootDirectory)src/Compatibility/Core/src/Compatibility.csproj" />
-    <ProjectReference Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
 
 </Project>

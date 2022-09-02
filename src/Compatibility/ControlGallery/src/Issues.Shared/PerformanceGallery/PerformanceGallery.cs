@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			try
 			{
-				var assembly = typeof(PerformanceGallery).GetTypeInfo().Assembly;
+				var assembly = typeof(PerformanceGallery).Assembly;
 				var txt = "Microsoft.Maui.Controls.ControlGallery.BuildNumber.txt";
 
 				using (Stream s = assembly.GetManifestResourceStream(txt))
@@ -126,8 +126,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		static IEnumerable<Type> FindPerformanceScenarios()
 		{
-			return typeof(PerformanceGallery).GetTypeInfo().Assembly.DefinedTypes.Select(o => o.AsType())
-													.Where(type => typeof(PerformanceScenario).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()));
+			return typeof(PerformanceGallery).Assembly.GetTypes()
+				.Where(type => typeof(PerformanceScenario).IsAssignableFrom(type));
 		}
 
 		static IEnumerable<PerformanceScenario> InflatePerformanceScenarios()

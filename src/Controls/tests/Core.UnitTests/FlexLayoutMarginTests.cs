@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class FlexLayoutMarginTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestMarginLeft()
 		{
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(10, 0, 0, 0), };
@@ -26,12 +26,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Row,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(10, 0, 10, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(10, 0, 10, 100));
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarginTop()
 		{
 			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 10, 0, 0), };
@@ -45,12 +45,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 10, 100, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 10, 100, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarginRight()
 		{
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(0, 0, 10, 0), };
@@ -65,12 +65,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				JustifyContent = FlexJustify.End,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(80, 0, 10, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(80, 0, 10, 100));
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarginBottom()
 		{
 			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 0, 0, 10), };
@@ -85,12 +85,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				JustifyContent = FlexJustify.End,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 80, 100, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 80, 100, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarginAndFlexRow()
 		{
 			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(10, 0, 10, 0), };
@@ -104,12 +104,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				Direction = FlexDirection.Row,
 			};
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(10, 0, 80, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(10, 0, 80, 100));
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarginAndFlexColumn()
 		{
 			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
@@ -123,12 +123,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				Direction = FlexDirection.Column,
 			};
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 10, 100, 80)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 10, 100, 80));
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarginAndStretchRow()
 		{
 			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
@@ -143,12 +143,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Row,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 10, 100, 80)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 10, 100, 80));
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarginAndStretchColumn()
 		{
 
@@ -163,15 +163,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(10, 0, 80, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(10, 0, 80, 100));
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarginWithSiblingRow()
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (visual, width, height) => new SizeRequest(new Size(0, 0)));
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(0, 0));
 
 			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 10, 0) };
 			FlexLayout.SetGrow(view0, 1);
@@ -188,13 +188,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Row,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 45, 100)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(55, 0, 45, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 45, 100));
+			Assert.Equal(view1.Bounds, new Rect(55, 0, 45, 100));
 		}
 
-		[Test]
+		[Fact]
 		public void TestMarginWithSiblingColumn()
 		{
 			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 0, 10) };
@@ -213,10 +213,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 45)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(0, 55, 100, 45)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 100, 45));
+			Assert.Equal(view1.Bounds, new Rect(0, 55, 100, 45));
 		}
 	}
 }

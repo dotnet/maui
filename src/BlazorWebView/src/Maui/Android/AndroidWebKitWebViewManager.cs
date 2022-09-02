@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Android.Webkit;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using AUri = Android.Net.Uri;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -12,15 +16,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// An implementation of <see cref="WebViewManager"/> that uses the Android WebKit WebView browser control
 	/// to render web content.
 	/// </summary>
-	public class AndroidWebKitWebViewManager : WebViewManager
+	[SupportedOSPlatform("android23.0")]
+	internal class AndroidWebKitWebViewManager : WebViewManager
 	{
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
-		private const string AppOrigin = "https://0.0.0.0/";
-		private static readonly Android.Net.Uri AndroidAppOriginUri = Android.Net.Uri.Parse(AppOrigin)!;
-		private readonly BlazorWebViewHandler _blazorWebViewHandler;
+		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
+		private static readonly Uri AppOriginUri = new(AppOrigin);
+		private static readonly AUri AndroidAppOriginUri = AUri.Parse(AppOrigin)!;
 		private readonly AWebView _webview;
+		private readonly string _contentRootRelativeToAppRoot;
 
 		/// <summary>
 		/// Constructs an instance of <see cref="AndroidWebKitWebViewManager"/>.
@@ -29,12 +35,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="services">A service provider containing services to be used by this class and also by application code.</param>
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
+		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		public AndroidWebKitWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, AWebView webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
+		public AndroidWebKitWebViewManager(AWebView webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
+			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
-			_blazorWebViewHandler = blazorMauiWebViewHandler ?? throw new ArgumentNullException(nameof(blazorMauiWebViewHandler));
-			_webview = webview ?? throw new ArgumentNullException(nameof(webview));
+			ArgumentNullException.ThrowIfNull(webview);
+
+#if WEBVIEW2_MAUI
+			if (services.GetService<MauiBlazorMarkerService>() is null)
+			{
+				throw new InvalidOperationException(
+					"Unable to find the required services. " +
+					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
+			}
+#endif
+			_webview = webview;
+			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
 		}
 
 		/// <inheritdoc />
@@ -49,21 +66,26 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webview.PostWebMessage(new WebMessage(message), AndroidAppOriginUri);
 		}
 
-		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers) =>
-			TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
+		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
+		{
+			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
+			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
+			return defaultResult || hotReloadedResult;
+		}
 
 		internal void SetUpMessageChannel()
 		{
-			var nativeToJsPorts = _webview.CreateWebMessageChannel();
+			// These ports will be closed automatically when the webview gets disposed.
+			var nativeToJSPorts = _webview.CreateWebMessageChannel();
 
 			var nativeToJs = new BlazorWebMessageCallback(message =>
 			{
-				MessageReceived(new Uri(AppOrigin), message!);
+				MessageReceived(AppOriginUri, message!);
 			});
 
-			var destPort = new[] { nativeToJsPorts[1] };
+			var destPort = new[] { nativeToJSPorts[1] };
 
-			nativeToJsPorts[0].SetWebMessageCallback(nativeToJs);
+			nativeToJSPorts[0].SetWebMessageCallback(nativeToJs);
 
 			_webview.PostWebMessage(new WebMessage("capturePort", destPort), AndroidAppOriginUri);
 		}

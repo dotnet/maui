@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Primitives;
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			public bool ClipsToBounds { get; set; }
 
+
 			#region IView stuff
 
 			public string AutomationId { get; }
@@ -26,10 +28,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public IShape Clip { get; }
 			public IShadow Shadow { get; }
 			public bool IsEnabled { get; }
+			public bool IsFocused { get; set; }
 			public Visibility Visibility { get; }
 			public double Opacity { get; }
 			public Paint Background { get; }
-			public Rectangle Frame { get; set; }
+			public Rect Frame { get; set; }
 			public double Width { get; }
 			public double MinimumWidth { get; }
 			public double MaximumWidth { get; }
@@ -53,6 +56,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public double AnchorY { get; }
 			public bool IgnoreSafeArea { get; }
 			public Thickness Padding { get; }
+			public bool InputTransparent { get; set; }
+
 			IElementHandler IElement.Handler { get; set; }
 
 			public void InvalidateArrange()
@@ -68,6 +73,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public Size Measure(double widthConstraint, double heightConstraint)
 			{
 				throw new System.NotImplementedException();
+			}
+
+			public bool Focus() => false;
+
+			public void Unfocus()
+			{
 			}
 
 			#endregion
@@ -87,7 +98,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				_views.Add(item);
 			}
 
-			public Size Arrange(Rectangle bounds)
+			public Size Arrange(Rect bounds)
 			{
 				throw new System.NotImplementedException();
 			}
@@ -107,7 +118,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				_views.CopyTo(array, arrayIndex);
 			}
 
-			public Size CrossPlatformArrange(Rectangle bounds)
+			public Size CrossPlatformArrange(Rect bounds)
 			{
 				throw new System.NotImplementedException();
 			}
@@ -200,7 +211,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			layout.Add(view0);
 			layout.Add(view1);
 
-			var zordered = layout.OrderByZIndex();
+			var zordered = layout.OrderByZIndex().ToArray();
 			Assert.Equal(view1, zordered[0]);
 			Assert.Equal(view0, zordered[1]);
 		}
@@ -219,7 +230,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			layout.Add(view2);
 			layout.Add(view3);
 
-			var zordered = layout.OrderByZIndex();
+			var zordered = layout.OrderByZIndex().ToArray();
 			Assert.Equal(view0, zordered[0]);
 			Assert.Equal(view1, zordered[1]);
 			Assert.Equal(view2, zordered[2]);
@@ -228,11 +239,43 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Fake an update
 			view3.ZIndex.Returns(5);
 
-			zordered = layout.OrderByZIndex();
+			zordered = layout.OrderByZIndex().ToArray();
 			Assert.Equal(view0, zordered[0]);
 			Assert.Equal(view1, zordered[1]);
 			Assert.Equal(view2, zordered[2]);
 			Assert.Equal(view3, zordered[3]);
+		}
+
+		[Fact]
+		public void ZIndexUpdatePreservesAddOrderLotsOfEqualZIndexes()
+		{
+			// This tests the same thing as ZIndexUpdatePreservesAddOrderForEqualZIndexes,
+			// but for more views - since the sorting algorithm can change when the arrays 
+			// are larger, we were running into situations where layouts with more controls
+			// were _not_ preserving the Add() order when sorting by z-index.
+
+			var layout = new FakeLayout();
+
+			int views = 100;
+			int iterations = 10;
+
+			var toAdd = new IView[views];
+
+			for (int n = 0; n < views; n++)
+			{
+				toAdd[n] = CreateTestView(zIndex: 0);
+				layout.Add(toAdd[n]);
+			}
+
+			for (int i = 0; i < iterations; i++)
+			{
+				var zordered = layout.OrderByZIndex().ToArray();
+
+				for (int n = 0; n < zordered.Length; n++)
+				{
+					Assert.Equal(toAdd[n], zordered[n]);
+				}
+			}
 		}
 	}
 }

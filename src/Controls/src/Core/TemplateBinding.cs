@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		BindingExpression _expression;
 		string _path;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public TemplateBinding()
 		{
 		}

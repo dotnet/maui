@@ -104,8 +104,9 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			object actual = targetObject.GetValue(Property);
-			if (!Equals(actual, Value) && !(Value is Binding) && !(Value is DynamicResource))
+			if (!Equals(actual, Value) && Value is not BindingBase && Value is not DynamicResource)
 			{
+
 				//Do not reset default value if the value has been changed
 				_originalValues.Remove(targetObject);
 				return;

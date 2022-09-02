@@ -7,7 +7,7 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBase : ElementStub, IView, IVisualTreeElement
+	public class StubBase : ElementStub, IView, IVisualTreeElement, IToolTipElement
 	{
 		IElementHandler IElement.Handler
 		{
@@ -17,6 +17,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsEnabled { get; set; } = true;
 
+		public bool IsFocused { get; set; }
+
 		public List<StubBase> Children { get; set; }
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
@@ -25,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Paint Background { get; set; }
 
-		public Rectangle Frame { get; set; }
+		public Rect Frame { get; set; }
 
 		public new IViewHandler Handler
 		{
@@ -85,7 +87,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public int ZIndex { get; set; }
 
-		public Size Arrange(Rectangle bounds)
+		public bool InputTransparent { get; set; }
+
+		public ToolTip ToolTip { get; set; }
+
+		public Size Arrange(Rect bounds)
 		{
 			Frame = bounds;
 			DesiredSize = bounds.Size;
@@ -114,8 +120,19 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 		}
 
+		public bool Focus() => false;
+
+		public void Unfocus()
+		{
+		}
+
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
+			if (Handler != null)
+			{
+				return Handler.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
 			return new Size(widthConstraint, heightConstraint);
 		}
 

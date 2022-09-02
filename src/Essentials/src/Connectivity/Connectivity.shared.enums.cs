@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Networking
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectionProfile.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ConnectionProfile']/Docs" />
 	public enum ConnectionProfile

@@ -31,13 +31,13 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
 
-			(var gravity, var textAlignment) = values.NativeViewValue;
+			(var gravity, var textAlignment) = values.PlatformViewValue;
 
 			// Device Tests runner has RTL support enabled, so we expect TextAlignment values
 			// (If it didn't, we'd have to fall back to gravity)
@@ -56,9 +56,9 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var handler = await CreateHandlerAsync(label);
-			var (left, top, right, bottom) = GetNativePadding((TextView)handler.NativeView);
+			var (left, top, right, bottom) = GetNativePadding((TextView)handler.PlatformView);
 
-			var context = handler.NativeView.Context;
+			var context = handler.PlatformView.Context;
 
 			var expectedLeft = context.ToPixels(5);
 			var expectedTop = context.ToPixels(10);
@@ -86,33 +86,30 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = labelHandler.TextDecorations,
-					NativeViewValue = GetNativeTextDecorations(handler)
+					PlatformViewValue = GetNativeTextDecorations(handler)
 				};
 			});
 
 			PaintFlags expectedValue = PaintFlags.UnderlineText;
 
 			Assert.Equal(xplatTextDecorations, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
-		TextView GetNativeLabel(LabelHandler labelHandler) =>
-			labelHandler.NativeView;
+		TextView GetPlatformLabel(LabelHandler labelHandler) =>
+			labelHandler.PlatformView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Text;
+			GetPlatformLabel(labelHandler).Text;
 
 		Color GetNativeTextColor(LabelHandler labelHandler) =>
-			((uint)GetNativeLabel(labelHandler).CurrentTextColor).ToColor();
+			((uint)GetPlatformLabel(labelHandler).CurrentTextColor).ToColor();
 
 		(GravityFlags gravity, ATextAlignemnt alignment) GetNativeHorizontalTextAlignment(LabelHandler labelHandler)
 		{
-			var textView = GetNativeLabel(labelHandler);
+			var textView = GetPlatformLabel(labelHandler);
 			return (textView.Gravity, textView.TextAlignment);
 		}
-
-		int GetNativeMaxLines(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).MaxLines;
 
 		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view)
 		{
@@ -120,24 +117,21 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		double GetNativeCharacterSpacing(LabelHandler labelHandler) =>
-			Math.Round(GetNativeLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, EmCoefficientPrecision);
-
-		TextUtils.TruncateAt GetNativeLineBreakMode(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Ellipsize;
+			Math.Round(GetPlatformLabel(labelHandler).LetterSpacing / UnitExtensions.EmCoefficient, EmCoefficientPrecision);
 
 		PaintFlags GetNativeTextDecorations(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).PaintFlags;
+			GetPlatformLabel(labelHandler).PaintFlags;
 
 		float GetNativeLineHeight(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).LineSpacingMultiplier;
+			GetPlatformLabel(labelHandler).LineSpacingMultiplier;
 
 		Task ValidateHasColor(ILabel label, Color color, Action action = null)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeLabel = GetNativeLabel(CreateHandler(label));
+				var platformLabel = GetPlatformLabel(CreateHandler(label));
 				action?.Invoke();
-				nativeLabel.AssertContainsColor(color);
+				platformLabel.AssertContainsColor(color);
 			});
 		}
 	}

@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			// BindableProperty used to clean property values
 			var bindableProperties = elementType
 				.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-				.Where(p => p.FieldType.GetTypeInfo().IsAssignableFrom(typeof(BindableProperty).GetTypeInfo()))
+				.Where(p => p.FieldType.IsAssignableFrom(typeof(BindableProperty)))
 				.Select(p => (BindableProperty)p.GetValue(element));
 
 			foreach (var property in publicProperties)
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				{
 					propertyLayout.Children.Add(CreateThicknessPicker(property, element));
 				}
-				else if (property.PropertyType.GetTypeInfo().IsEnum)
+				else if (property.PropertyType.IsEnum)
 				{
 					propertyLayout.Children.Add(CreateEnumPicker(property, element));
 				}

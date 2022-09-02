@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 
 using Foundation;
@@ -11,10 +12,11 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
+	[SupportedOSPlatform("ios11.0")]
 	class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
-		INativeViewHandler _viewHandler;
-		public DragAndDropDelegate(INativeViewHandler viewHandler)
+		IPlatformViewHandler _viewHandler;
+		public DragAndDropDelegate(IPlatformViewHandler viewHandler)
 		{
 			_viewHandler = viewHandler;
 		}
@@ -130,7 +132,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public UIDragItem[] HandleDragStarting(View element, INativeViewHandler handler)
+		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler)
 		{
 			UIDragItem[] returnValue = null;
 			SendEventArgs<DragGestureRecognizer>(rec =>
@@ -149,10 +151,10 @@ namespace Microsoft.Maui.Controls.Platform
 					string clipDescription = String.Empty;
 					NSItemProvider itemProvider = null;
 
-					if (handler.NativeView is UIImageView iv)
+					if (handler.PlatformView is UIImageView iv)
 						uIImage = iv.Image;
 
-					if (handler.NativeView is UIButton b && b.ImageView != null)
+					if (handler.PlatformView is UIButton b && b.ImageView != null)
 						uIImage = b.ImageView.Image;
 
 					if (uIImage != null)
@@ -171,7 +173,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 						if (String.IsNullOrWhiteSpace(text))
 						{
-							itemProvider = new NSItemProvider(handler.NativeView.ConvertToImage());
+							itemProvider = new NSItemProvider(handler.PlatformView.ConvertToImage());
 						}
 						else
 						{

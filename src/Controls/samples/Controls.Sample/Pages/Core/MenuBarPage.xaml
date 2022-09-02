@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.MenuBarPage"    
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    <views:BasePage.MenuBarItems>
+        <MenuBarItem Text="Before File">
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action"></MenuFlyoutItem>
+            <MenuFlyoutItem Text="Cool item 1"></MenuFlyoutItem>
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem Text="Cool item 2"></MenuFlyoutItem>
+        </MenuBarItem>
+        <MenuBarItem Text="File">
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Custom File">
+                <MenuFlyoutItem.IconImageSource>
+                        <FontImageSource
+                            FontAutoScalingEnabled="False"
+                            FontFamily = "Ionicons" 
+                            Glyph = "&#xf30c;">
+                        </FontImageSource>
+                    </MenuFlyoutItem.IconImageSource>
+            </MenuFlyoutItem>
+        </MenuBarItem>
+        <MenuBarItem Text="Custom Menu">
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1"></MenuFlyoutItem>
+            <MenuFlyoutSubItem Clicked="ItemClicked" Text="Sub Menu 1">
+                <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1"></MenuFlyoutItem>
+                <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2"></MenuFlyoutItem>
+            </MenuFlyoutSubItem>
+        </MenuBarItem>
+    </views:BasePage.MenuBarItems>
+    <views:BasePage.Content>
+        <VerticalStackLayout Margin="12">
+            <Label x:Name="menuLabel" Text="You clicked on Menu Item:"></Label>
+            <Button Text="Toggle Menu Bar Item" Clicked="ToggleMenuBarItem"></Button>
+        </VerticalStackLayout>
+    </views:BasePage.Content>
+</views:BasePage>

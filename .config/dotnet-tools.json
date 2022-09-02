@@ -9,13 +9,13 @@
       ]
     },
     "powershell": {
-      "version": "7.1.2",
+      "version": "7.2.1",
       "commands": [
         "pwsh"
       ]
     },
     "microsoft.dotnet.xharness.cli": {
-      "version": "1.0.0-prerelease.21558.2",
+      "version": "1.0.0-prerelease.22429.1",
       "commands": [
         "xharness"
       ]

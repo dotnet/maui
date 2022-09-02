@@ -10,16 +10,14 @@ namespace Microsoft.Maui.UnitTests.Hosting
 	public class HostBuilderAppConfigurationTests
 	{
 		[Fact]
-		public void ConfigureAppConfigurationConfiguresValues()
+		public void CanConfigureAppConfiguration()
 		{
 			var builder = MauiApp.CreateBuilder();
-			builder.Host
-				.ConfigureAppConfiguration((_, builder) =>
+			builder
+				.Configuration
+				.AddInMemoryCollection(new Dictionary<string, string>
 				{
-					builder.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "key 1", "value 1" },
-					});
+					{ "key 1", "value 1" },
 				});
 			var mauiApp = builder.Build();
 
@@ -29,25 +27,24 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void ConfigureAppConfigurationOverwritesValues()
+		public void AppConfigurationOverwritesValues()
 		{
 			var builder = MauiApp.CreateBuilder();
-			builder.Host
-				.ConfigureAppConfiguration((_, builder) =>
+			builder
+				.Configuration
+				.AddInMemoryCollection(new Dictionary<string, string>
 				{
-					builder.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "key 1", "value 1" },
-						{ "key 2", "value 2" },
-					});
-				})
-				.ConfigureAppConfiguration((_, builder) =>
-				{
-					builder.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "key 1", "value a" },
-					});
+					{ "key 1", "value 1" },
+					{ "key 2", "value 2" },
 				});
+
+			builder
+				.Configuration
+				.AddInMemoryCollection(new Dictionary<string, string>
+				{
+					{ "key 1", "value a" },
+				});
+
 			var mauiApp = builder.Build();
 
 			var configuration = mauiApp.Services.GetRequiredService<IConfiguration>();
@@ -59,26 +56,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public void ConfigureServicesCanUseConfig()
 		{
-			string value = null;
-
 			var builder = MauiApp.CreateBuilder();
-			builder.Host
-				.ConfigureAppConfiguration((_, builder) =>
+			builder
+				.Configuration
+				.AddInMemoryCollection(new Dictionary<string, string>
 				{
-					builder.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "key 1", "value 1" },
-					});
+					{ "key 1", "value 1" },
 				});
 
-			builder.Host
-				.ConfigureServices((context, services) =>
-				{
-					value = context.Configuration["key 1"];
-				});
-			var mauiApp = builder.Build();
-
-			Assert.Equal("value 1", value);
+			Assert.Equal("value 1", builder.Configuration["key 1"]);
 		}
 	}
 }

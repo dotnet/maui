@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			return (bool)element.GetValue(HasBreadCrumbsBarProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHasBreadCrumbsBar'][0]/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHasBreadCrumbsBar'][1]/Docs" />
 		public static void SetHasBreadCrumbsBar(BindableObject element, bool value)
 		{
 			element.SetValue(HasBreadCrumbsBarProperty, value);
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			return GetHasBreadCrumbsBar(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHasBreadCrumbsBar']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHasBreadCrumbsBar'][2]/Docs" />
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetHasBreadCrumbsBar(this IPlatformElementConfiguration<Tizen, FormsElement> config, bool value)
 		{
 			SetHasBreadCrumbsBar(config.Element, value);

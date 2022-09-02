@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
@@ -18,7 +19,6 @@ using AndroidX.Core.Content;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using Microsoft.Maui.Controls.DualScreen.Android;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -28,6 +28,7 @@ using Trace = System.Diagnostics.Trace;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	[Obsolete]
 	public struct InitializationOptions
 	{
 		public struct EffectScope
@@ -65,8 +66,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static Color _ColorButtonNormal = null;
 		public static Color ColorButtonNormalOverride { get; set; }
 
+		[SupportedOSPlatformGuard("android23.0")]
 		internal static readonly bool IsMarshmallowOrNewer = OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M);
 
+		[SupportedOSPlatformGuard("android24.0")]
 		internal static readonly bool IsNougatOrNewer = OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.N);
 
 		public static float GetFontSizeNormal(Context context)
@@ -97,9 +100,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return _ColorButtonNormal;
 		}
 
+		[Obsolete]
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
 			Init(activationState.Context, options);
 
+		[Obsolete]
 		public static void Init(IMauiContext context, InitializationOptions? options = null)
 		{
 			Assembly resourceAssembly;
@@ -113,6 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
+		[Obsolete]
 		public static void Init(IMauiContext context, Assembly resourceAssembly)
 		{
 			Profile.FrameBegin();
@@ -143,15 +149,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
 		}
 
+		[Obsolete]
 		static bool IsInitializedRenderers;
 
 		// Once we get essentials/cg converted to using startup.cs
 		// we will delete all the renderer code inside this file
+		[Obsolete]
 		internal static void RenderersRegistered()
 		{
 			IsInitializedRenderers = true;
 		}
 
+		[Obsolete]
 		internal static void RegisterCompatRenderers(IMauiContext context, InitializationOptions? maybeOptions)
 		{
 			if (!IsInitializedRenderers)
@@ -196,6 +205,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		[Obsolete]
 		static void SetupInit(
 			IMauiContext context,
 			Assembly resourceAssembly,
@@ -227,10 +237,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			// because AndroidPlatformServices needs a current activity to launch URIs from
 			Profile.FramePartition("Device.PlatformServices");
 
-			var androidServices = new AndroidPlatformServices(activity);
-
-			Device.PlatformServices = androidServices;
-			Device.PlatformInvalidator = androidServices;
+			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			Profile.FramePartition("RegisterAll");
 
@@ -239,71 +246,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Profile.FramePartition("Epilog");
 
-			var currentIdiom = TargetIdiom.Unsupported;
-
-			// First try UIModeManager
-			using (var uiModeManager = UiModeManager.FromContext(ApplicationContext))
-			{
-				try
-				{
-					var uiMode = uiModeManager?.CurrentModeType ?? UiMode.TypeUndefined;
-					currentIdiom = DetectIdiom(uiMode);
-				}
-				catch (Exception ex)
-				{
-					System.Diagnostics.Debug.WriteLine($"Unable to detect using UiModeManager: {ex.Message}");
-				}
-			}
-
-			// Then try Configuration
-			if (TargetIdiom.Unsupported == currentIdiom)
-			{
-				var configuration = activity.Resources.Configuration;
-
-				if (configuration != null)
-				{
-					var minWidth = configuration.SmallestScreenWidthDp;
-					var isWide = minWidth >= TabletCrossover;
-					currentIdiom = isWide ? TargetIdiom.Tablet : TargetIdiom.Phone;
-				}
-				else
-				{
-					// Start clutching at straws
-					var metrics = activity.Resources?.DisplayMetrics;
-
-					if (metrics != null)
-					{
-						var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
-						var isWide = minSize * metrics.Density >= TabletCrossover;
-						currentIdiom = isWide ? TargetIdiom.Tablet : TargetIdiom.Phone;
-					}
-				}
-			}
-
-			Device.SetIdiom(currentIdiom);
-			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
-
 			if (ExpressionSearch.Default == null)
 				ExpressionSearch.Default = new AndroidExpressionSearch();
 
 			IsInitialized = true;
 			Profile.FrameEnd();
-		}
-
-		static TargetIdiom DetectIdiom(UiMode uiMode)
-		{
-			var returnValue = TargetIdiom.Unsupported;
-			if (uiMode == UiMode.TypeNormal)
-				returnValue = TargetIdiom.Unsupported;
-			else if (uiMode == UiMode.TypeTelevision)
-				returnValue = TargetIdiom.TV;
-			else if (uiMode == UiMode.TypeDesk)
-				returnValue = TargetIdiom.Desktop;
-			else if (uiMode == UiMode.TypeWatch)
-				returnValue = TargetIdiom.Watch;
-
-			Device.SetIdiom(returnValue);
-			return returnValue;
 		}
 
 		static Color GetAccentColor(Context context)
@@ -374,205 +321,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 						_results.Add(value);
 				}
 				return base.VisitMember(node);
-			}
-		}
-
-		class AndroidPlatformServices : IPlatformServices, IPlatformInvalidate
-		{
-			double _buttonDefaultSize;
-			double _editTextDefaultSize;
-			double _labelDefaultSize;
-			double _largeSize;
-			double _mediumSize;
-
-			double _microSize;
-			double _smallSize;
-
-			readonly Context _context;
-
-			public AndroidPlatformServices(Context context)
-			{
-				_context = context;
-			}
-
-			public Assembly[] GetAssemblies()
-			{
-				return AppDomain.CurrentDomain.GetAssemblies();
-			}
-
-			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
-			{
-				if (_smallSize == 0)
-				{
-					_smallSize = ConvertTextAppearanceToSize(AndroidResource.Attribute.TextAppearanceSmall, AndroidResource.Style.TextAppearanceDeviceDefaultSmall, 12);
-					_mediumSize = ConvertTextAppearanceToSize(AndroidResource.Attribute.TextAppearanceMedium, AndroidResource.Style.TextAppearanceDeviceDefaultMedium, 14);
-					_largeSize = ConvertTextAppearanceToSize(AndroidResource.Attribute.TextAppearanceLarge, AndroidResource.Style.TextAppearanceDeviceDefaultLarge, 18);
-					_buttonDefaultSize = ConvertTextAppearanceToSize(AndroidResource.Attribute.TextAppearanceButton, AndroidResource.Style.TextAppearanceDeviceDefaultWidgetButton, 14);
-					_editTextDefaultSize = ConvertTextAppearanceToSize(AndroidResource.Style.TextAppearanceWidgetEditText, AndroidResource.Style.TextAppearanceDeviceDefaultWidgetEditText, 18);
-					_labelDefaultSize = _smallSize;
-					// as decreed by the android docs, ALL HAIL THE ANDROID DOCS, ALL GLORY TO THE DOCS, PRAISE HYPNOTOAD
-					_microSize = Math.Max(1, _smallSize - (_mediumSize - _smallSize));
-				}
-
-				if (useOldSizes)
-				{
-					switch (size)
-					{
-						case NamedSize.Default:
-							if (typeof(Button).IsAssignableFrom(targetElementType))
-								return _buttonDefaultSize;
-							if (typeof(Label).IsAssignableFrom(targetElementType))
-								return _labelDefaultSize;
-							if (typeof(Editor).IsAssignableFrom(targetElementType) || typeof(Entry).IsAssignableFrom(targetElementType) || typeof(SearchBar).IsAssignableFrom(targetElementType))
-								return _editTextDefaultSize;
-							return 14;
-						case NamedSize.Micro:
-							return 10;
-						case NamedSize.Small:
-							return 12;
-						case NamedSize.Medium:
-							return 14;
-						case NamedSize.Large:
-							return 18;
-						case NamedSize.Body:
-							return 16;
-						case NamedSize.Caption:
-							return 12;
-						case NamedSize.Header:
-							return 96;
-						case NamedSize.Subtitle:
-							return 16;
-						case NamedSize.Title:
-							return 24;
-						default:
-							throw new ArgumentOutOfRangeException("size");
-					}
-				}
-				switch (size)
-				{
-					case NamedSize.Default:
-						if (typeof(Button).IsAssignableFrom(targetElementType))
-							return _buttonDefaultSize;
-						if (typeof(Label).IsAssignableFrom(targetElementType))
-							return _labelDefaultSize;
-						if (typeof(Editor).IsAssignableFrom(targetElementType) || typeof(Entry).IsAssignableFrom(targetElementType))
-							return _editTextDefaultSize;
-						return _mediumSize;
-					case NamedSize.Micro:
-						return _microSize;
-					case NamedSize.Small:
-						return _smallSize;
-					case NamedSize.Medium:
-						return _mediumSize;
-					case NamedSize.Large:
-						return _largeSize;
-					case NamedSize.Body:
-						return 16;
-					case NamedSize.Caption:
-						return 12;
-					case NamedSize.Header:
-						return 96;
-					case NamedSize.Subtitle:
-						return 16;
-					case NamedSize.Title:
-						return 24;
-					default:
-						throw new ArgumentOutOfRangeException("size");
-				}
-			}
-
-			public string RuntimePlatform => Device.Android;
-
-			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				var handler = new Handler(Looper.MainLooper);
-				handler.PostDelayed(() =>
-				{
-					if (callback())
-						StartTimer(interval, callback);
-
-					handler.Dispose();
-					handler = null;
-				}, (long)interval.TotalMilliseconds);
-			}
-
-			double ConvertTextAppearanceToSize(int themeDefault, int deviceDefault, double defaultValue)
-			{
-				double myValue;
-
-				if (TryGetTextAppearance(themeDefault, out myValue) && myValue > 0)
-					return myValue;
-				if (TryGetTextAppearance(deviceDefault, out myValue) && myValue > 0)
-					return myValue;
-				return defaultValue;
-			}
-
-			static int Hex(int v)
-			{
-				if (v < 10)
-					return '0' + v;
-				return 'a' + v - 10;
-			}
-
-			bool TryGetTextAppearance(int appearance, out double val)
-			{
-				val = 0;
-				try
-				{
-					using (var value = new TypedValue())
-					{
-						if (_context.Theme.ResolveAttribute(appearance, value, true))
-						{
-							var textSizeAttr = new[] { AndroidResource.Attribute.TextSize };
-							const int indexOfAttrTextSize = 0;
-							using (TypedArray array = _context.ObtainStyledAttributes(value.Data, textSizeAttr))
-							{
-								val = _context.FromPixels(array.GetDimensionPixelSize(indexOfAttrTextSize, -1));
-								return true;
-							}
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Application.Current?.FindMauiContext()?.CreateLogger<AndroidPlatformServices>()?
-						.LogWarning(ex, "Error retrieving text appearance");
-				}
-				return false;
-			}
-
-			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-			{
-				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
-			}
-
-			public void Invalidate(VisualElement visualElement)
-			{
-				var renderer = visualElement.GetRenderer();
-				if (renderer == null || renderer.View.IsDisposed())
-				{
-					return;
-				}
-
-				renderer.View.Invalidate();
-				renderer.View.RequestLayout();
-			}
-
-			public OSAppTheme RequestedTheme
-			{
-				get
-				{
-					var nightMode = _context.Resources.Configuration.UiMode & UiMode.NightMask;
-					switch (nightMode)
-					{
-						case UiMode.NightYes:
-							return OSAppTheme.Dark;
-						case UiMode.NightNo:
-							return OSAppTheme.Light;
-						default:
-							return OSAppTheme.Unspecified;
-					};
-				}
 			}
 		}
 	}

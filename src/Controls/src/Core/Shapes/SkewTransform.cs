@@ -5,20 +5,20 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.SkewTransform']/Docs" />
 	public class SkewTransform : Transform
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public SkewTransform()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public SkewTransform(double angleX, double angleY)
 		{
 			AngleX = angleX;
 			AngleY = angleY;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public SkewTransform(double angleX, double angleY, double centerX, double centerY)
 		{
 			AngleX = angleX;

@@ -2,7 +2,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Authentication
 {
 	public abstract class WebAuthenticatorCallbackActivity : Activity
 	{

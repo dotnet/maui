@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 
 				var image = new BitmapImage();
 
-				using var ras = stream.AsRandomAccessStream();
+				var ras = stream.AsRandomAccessStream();
 				await image.SetSourceAsync(ras);
 
 				var result = new ImageSourceServiceResult(image);

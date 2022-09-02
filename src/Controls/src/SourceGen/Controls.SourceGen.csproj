@@ -23,6 +23,12 @@
     <Compile Include="..\Xaml\XmlName.cs" Link="XmlName.cs" />
     <Compile Include="..\Xaml\XmlnsHelper.cs" Link="XmlnsHelper.cs" />
     <Compile Include="..\Xaml\XmlTypeXamlExtensions.cs" Link="XmlTypeXamlExtensions.cs" />
+    <Compile Include="..\..\..\Core\src\Services\Crc64.cs">
+      <Link>Crc64.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Core\src\Services\Crc64HashAlgorithm.cs">
+      <Link>Crc64HashAlgorithm.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-4.final" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

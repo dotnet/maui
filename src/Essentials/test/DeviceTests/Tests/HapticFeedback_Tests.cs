@@ -1,9 +1,10 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("HapticFeedback")]
 	public class HapticFeedback_Tests
 	{
 		[Fact]

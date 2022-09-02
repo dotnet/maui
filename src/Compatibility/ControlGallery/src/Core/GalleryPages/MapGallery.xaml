@@ -15,8 +15,7 @@
         </Grid.RowDefinitions>
 
         <SearchBar Grid.Row="0"
-                   Placeholder="Search Address"
-                   SearchButtonPressed="SearchForAddress" />
+                   Placeholder="Search Address"/>
 
         <Label
             x:Name="LastMarkerClickLabel"
@@ -37,7 +36,7 @@
                         Text="Zoom In" />
                 <Button Clicked="ZoomOutClicked"
                         Text="Zoom Out" />
-                <Button Clicked="ReverseGeocodeClicked"
+                <Button 
                         Text="Address From Position" />
                 <Button Clicked="HomeClicked"
                         Text="Home" />
@@ -47,13 +46,6 @@
                         Text="Edit Pin" />
                 <Button Clicked="RemovePinClicked"
                         Text="Remove Pin" />
-                <StackLayout Orientation="Horizontal">
-                    <Label Text="Move to Last Region On Layout Change"
-                           VerticalOptions="Center" />
-                    <Button x:Name="_btnToggleMoveToLastRegionOnLayoutChange"
-                            Clicked="ToggleMoveToLastRegionOnLayoutChange"
-                            VerticalOptions="Center" />
-                </StackLayout>
                 <StackLayout Orientation="Horizontal">
                     <Label Text="Show traffic"
                            VerticalOptions="Center" />

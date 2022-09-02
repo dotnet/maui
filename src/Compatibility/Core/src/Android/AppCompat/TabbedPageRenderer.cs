@@ -26,6 +26,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class TabbedPageRenderer : VisualElementRenderer<TabbedPage>,
 #pragma warning disable CS0618 // Type or member is obsolete
 		TabLayout.IOnTabSelectedListener,
@@ -393,7 +394,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 				if (width > 0 && height > 0)
 				{
-					PageController.ContainerArea = new Rectangle(0, 0, context.FromPixels(width), context.FromPixels(height - _bottomNavigationView.MeasuredHeight));
+					PageController.ContainerArea = new Graphics.Rect(0, 0, context.FromPixels(width), context.FromPixels(height - _bottomNavigationView.MeasuredHeight));
 
 					SetNavigationRendererPadding(0, _bottomNavigationView.MeasuredHeight);
 
@@ -421,7 +422,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 				if (width > 0 && height > 0)
 				{
-					PageController.ContainerArea = new Rectangle(0, context.FromPixels(tabsHeight), context.FromPixels(width), context.FromPixels(height - tabsHeight));
+					PageController.ContainerArea = new Graphics.Rect(0, context.FromPixels(tabsHeight), context.FromPixels(width), context.FromPixels(height - tabsHeight));
 
 					SetNavigationRendererPadding(tabsHeight, 0);
 
@@ -1010,7 +1011,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			states[1] = GetEmptyStateSet();
 			colors[1] = defaultColor;
 
+#pragma warning disable RS0030
+			//TODO: port this usage to Java, if this becomes a performance concern
 			return new ColorStateList(states, colors);
+#pragma warning restore RS0030
 		}
 	}
 }

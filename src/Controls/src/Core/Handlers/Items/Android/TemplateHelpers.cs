@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	internal static class TemplateHelpers
 	{
 
-		public static INativeViewHandler GetHandler(View view, IMauiContext context)
+		public static IPlatformViewHandler GetHandler(View view, IMauiContext context)
 		{
 			if (view == null)
 			{
@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var handler = view.Handler;
 
 			if (handler == null)
-				handler = (INativeViewHandler)view.ToHandler(context);
+				handler = (IPlatformViewHandler)view.ToHandler(context);
 
-			return (INativeViewHandler)handler;
+			return (IPlatformViewHandler)handler;
 		}
 	}
 }

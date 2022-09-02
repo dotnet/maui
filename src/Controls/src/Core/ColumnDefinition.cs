@@ -6,14 +6,16 @@ namespace Microsoft.Maui.Controls
 	public sealed class ColumnDefinition : BindableObject, IDefinition, IGridColumnDefinition
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinition.xml" path="//Member[@MemberName='WidthProperty']/Docs" />
-		public static readonly BindableProperty WidthProperty = BindableProperty.Create("Width", typeof(GridLength), typeof(ColumnDefinition), new GridLength(1, GridUnitType.Star),
+		public static readonly BindableProperty WidthProperty = BindableProperty.Create(nameof(Width), typeof(GridLength), typeof(ColumnDefinition), GridLength.Star,
 			propertyChanged: (bindable, oldValue, newValue) => ((ColumnDefinition)bindable).OnSizeChanged());
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinition.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public ColumnDefinition()
 		{
-			MinimumWidth = -1;
 		}
+
+		public ColumnDefinition(GridLength width)
+			=> SetValue(WidthProperty, width);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinition.xml" path="//Member[@MemberName='Width']/Docs" />
 		[System.ComponentModel.TypeConverter(typeof(GridLengthTypeConverter))]
@@ -25,15 +27,10 @@ namespace Microsoft.Maui.Controls
 
 		internal double ActualWidth { get; set; }
 
-		internal double MinimumWidth { get; set; }
+		internal double MinimumWidth { get; set; } = -1;
 
 		public event EventHandler SizeChanged;
 
-		void OnSizeChanged()
-		{
-			EventHandler eh = SizeChanged;
-			if (eh != null)
-				eh(this, EventArgs.Empty);
-		}
+		void OnSizeChanged() => SizeChanged?.Invoke(this, EventArgs.Empty);
 	}
 }

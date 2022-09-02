@@ -8,7 +8,7 @@ using UWPSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChanged
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SelectableItemsViewRenderer<TItemsView> : StructuredItemsViewRenderer<TItemsView>
 		where TItemsView : SelectableItemsView
 	{
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			UpdateFormsSelection();
 		}
-			
+
 		void UpdateFormsSelection()
 		{
 			if (_ignoreNativeSelectionChange || ItemsView == null)

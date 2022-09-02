@@ -2,8 +2,10 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui;
+using Microsoft.Maui.ApplicationModel.Communication;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Media;
+using Microsoft.Maui.Storage;
 
 namespace Samples.ViewModel
 {

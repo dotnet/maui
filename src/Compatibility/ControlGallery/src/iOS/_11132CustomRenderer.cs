@@ -13,7 +13,7 @@ using Microsoft.Maui.Platform;
 [assembly: ExportRenderer(typeof(Issue11132Control), typeof(_11132CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
-	public class _11132CustomRenderer : VisualElementRenderer<Issue11132Control>
+	public class _11132CustomRenderer : Handlers.Compatibility.VisualElementRenderer<Issue11132Control>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Issue11132Control> e)
 		{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				layer.Mask = clipShapeLayer;
 				layer.Mask.Name = null;
 
-				Debug.WriteLine($"_11132CustomRenderer Layer Name { layer.Mask.Name}");
+				Debug.WriteLine($"_11132CustomRenderer Layer Name {layer.Mask.Name}");
 			}
 		}
 	}

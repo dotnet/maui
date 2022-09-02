@@ -12,7 +12,7 @@ using UIKit;
 [assembly: ExportRenderer(typeof(Issue9767NavigationPage), typeof(_9767CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
-	public class _9767CustomRenderer : NavigationRenderer
+	public class _9767CustomRenderer : Handlers.Compatibility.NavigationRenderer
 	{
 		public _9767CustomRenderer() : base()
 		{

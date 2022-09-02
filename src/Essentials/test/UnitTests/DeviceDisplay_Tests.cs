@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Tests
@@ -93,24 +93,6 @@ namespace Tests
 		}
 
 		[Fact]
-		public void Setting_Custom_Invokes_Correct_Members()
-		{
-			var display = new MyDisplay();
-
-			DeviceDisplay.SetCurrent(display);
-
-			Assert.Equal(0, display.StartedCount);
-			Assert.Equal(0, display.StoppedCount);
-			Assert.Equal(1, display.AddedCount);
-			Assert.Equal(0, display.RemovedCount);
-			Assert.Equal(0, display.SetKeepScreenOnCount);
-			Assert.Equal(0, display.GetKeepScreenOnCount);
-			Assert.Equal(1, display.GetMainDisplayInfoCount);
-
-			Assert.False(display.KeepScreenOn);
-		}
-
-		[Fact]
 		public void Setting_KeepScreenOn_Invokes_Correct_Members()
 		{
 			var display = new MyDisplay();
@@ -167,7 +149,7 @@ namespace Tests
 
 			Assert.Equal(1, display.StartedCount);
 			Assert.Equal(0, display.StoppedCount);
-			Assert.Equal(0, display.AddedCount);
+			Assert.Equal(1, display.AddedCount);
 			Assert.Equal(0, display.RemovedCount);
 			Assert.Equal(0, display.SetKeepScreenOnCount);
 			Assert.Equal(0, display.GetKeepScreenOnCount);
@@ -198,7 +180,7 @@ namespace Tests
 
 			Assert.Equal(0, display.StartedCount);
 			Assert.Equal(0, display.StoppedCount);
-			Assert.Equal(0, display.AddedCount);
+			Assert.Equal(1, display.AddedCount);
 			Assert.Equal(0, display.RemovedCount);
 			Assert.Equal(0, display.SetKeepScreenOnCount);
 			Assert.Equal(0, display.GetKeepScreenOnCount);
@@ -230,7 +212,7 @@ namespace Tests
 			Assert.Equal(0, display.StartedCount);
 			Assert.Equal(0, display.StoppedCount);
 			Assert.Equal(0, display.AddedCount);
-			Assert.Equal(0, display.RemovedCount);
+			Assert.Equal(1, display.RemovedCount);
 			Assert.Equal(0, display.SetKeepScreenOnCount);
 			Assert.Equal(0, display.GetKeepScreenOnCount);
 			Assert.Equal(0, display.GetMainDisplayInfoCount);
@@ -259,7 +241,7 @@ namespace Tests
 			Assert.Equal(0, display.StartedCount);
 			Assert.Equal(1, display.StoppedCount);
 			Assert.Equal(0, display.AddedCount);
-			Assert.Equal(0, display.RemovedCount);
+			Assert.Equal(1, display.RemovedCount);
 			Assert.Equal(0, display.SetKeepScreenOnCount);
 			Assert.Equal(0, display.GetKeepScreenOnCount);
 			Assert.Equal(0, display.GetMainDisplayInfoCount);
@@ -289,7 +271,7 @@ namespace Tests
 			Assert.Equal(0, display.StartedCount);
 			Assert.Equal(0, display.StoppedCount);
 			Assert.Equal(0, display.AddedCount);
-			Assert.Equal(0, display.RemovedCount);
+			Assert.Equal(1, display.RemovedCount);
 			Assert.Equal(0, display.SetKeepScreenOnCount);
 			Assert.Equal(0, display.GetKeepScreenOnCount);
 			Assert.Equal(0, display.GetMainDisplayInfoCount);
@@ -306,82 +288,7 @@ namespace Tests
 			}
 		}
 
-		[Fact]
-		public void Swapping_With_KeepScreenOn_Invokes_Correct_Members()
-		{
-			var onChangedInvokeCount = 0;
-			var display1 = new MyDisplay();
-			var display2 = new MyDisplay();
-
-			DeviceDisplay.SetCurrent(display1);
-			DeviceDisplay.KeepScreenOn = true;
-			display1.ResetCounts();
-
-			DeviceDisplay.SetCurrent(display2);
-
-			// old
-			Assert.Equal(0, display1.StartedCount);
-			Assert.Equal(0, display1.StoppedCount);
-			Assert.Equal(0, display1.AddedCount);
-			Assert.Equal(1, display1.RemovedCount);
-			Assert.Equal(1, display1.GetKeepScreenOnCount);
-			Assert.Equal(0, display1.GetMainDisplayInfoCount);
-			Assert.Equal(0, onChangedInvokeCount);
-			Assert.False(display1.KeepScreenOn);
-
-			// new
-			Assert.Equal(0, display2.StartedCount);
-			Assert.Equal(0, display2.StoppedCount);
-			Assert.Equal(1, display2.AddedCount);
-			Assert.Equal(0, display2.RemovedCount);
-			Assert.Equal(1, display2.SetKeepScreenOnCount);
-			Assert.Equal(0, display2.GetKeepScreenOnCount);
-			Assert.Equal(1, display2.GetMainDisplayInfoCount);
-			Assert.Equal(0, onChangedInvokeCount);
-			Assert.True(display2.KeepScreenOn);
-		}
-
-		[Fact]
-		public void Swapping_With_MainDisplayInfoChanged_Invokes_Correct_Members()
-		{
-			var onChangedInvokeCount = 0;
-			var display1 = new MyDisplay();
-			var display2 = new MyDisplay();
-
-			DeviceDisplay.SetCurrent(display1);
-			DeviceDisplay.MainDisplayInfoChanged += OnChanged;
-			display1.ResetCounts();
-
-			DeviceDisplay.SetCurrent(display2);
-
-			// old
-			Assert.Equal(0, display1.StartedCount);
-			Assert.Equal(1, display1.StoppedCount);
-			Assert.Equal(0, display1.AddedCount);
-			Assert.Equal(1, display1.RemovedCount);
-			Assert.Equal(1, display1.GetKeepScreenOnCount);
-			Assert.Equal(0, display1.GetMainDisplayInfoCount);
-			Assert.Equal(0, onChangedInvokeCount);
-			Assert.False(display1.KeepScreenOn);
-
-			// new
-			Assert.Equal(1, display2.StartedCount);
-			Assert.Equal(0, display2.StoppedCount);
-			Assert.Equal(1, display2.AddedCount);
-			Assert.Equal(0, display2.RemovedCount);
-			Assert.Equal(0, display2.SetKeepScreenOnCount);
-			Assert.Equal(0, display2.GetKeepScreenOnCount);
-			Assert.Equal(1, display2.GetMainDisplayInfoCount);
-			Assert.Equal(0, onChangedInvokeCount);
-			Assert.False(display2.KeepScreenOn);
-
-			void OnChanged(object sender, DisplayInfoChangedEventArgs e)
-			{
-				onChangedInvokeCount++;
-			}
-		}
-
-		class MyDisplay : IDeviceDisplay
+		class MyDisplay : DeviceDisplayImplementationBase, IDeviceDisplay
 		{
 			private bool _keepScreenOn;
 			private DisplayInfo _displayInfo;
@@ -405,38 +312,44 @@ namespace Tests
 
 			public int GetMainDisplayInfoCount { get; private set; }
 
-			public bool KeepScreenOn
+			event EventHandler<DisplayInfoChangedEventArgs> IDeviceDisplay.MainDisplayInfoChanged
 			{
-				get
+				add
 				{
-					GetKeepScreenOnCount++;
-					return _keepScreenOn;
+					MainDisplayInfoChanged += value;
+					AddedCount++;
 				}
-				set
+				remove
 				{
-					SetKeepScreenOnCount++;
-					_keepScreenOn = value;
+					MainDisplayInfoChanged -= value;
+					RemovedCount++;
 				}
 			}
 
-			public event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
+			protected override bool GetKeepScreenOn()
 			{
-				add => AddedCount++;
-				remove => RemovedCount++;
+				GetKeepScreenOnCount++;
+				return _keepScreenOn;
 			}
 
-			public DisplayInfo GetMainDisplayInfo()
+			protected override void SetKeepScreenOn(bool keepScreenOn)
+			{
+				SetKeepScreenOnCount++;
+				_keepScreenOn = keepScreenOn;
+			}
+
+			protected override DisplayInfo GetMainDisplayInfo()
 			{
 				GetMainDisplayInfoCount++;
 				return _displayInfo;
 			}
 
-			public void StartScreenMetricsListeners()
+			protected override void StartScreenMetricsListeners()
 			{
 				StartedCount++;
 			}
 
-			public void StopScreenMetricsListeners()
+			protected override void StopScreenMetricsListeners()
 			{
 				StoppedCount++;
 			}

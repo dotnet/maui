@@ -6,13 +6,17 @@ namespace Microsoft.Maui.Controls
 	public sealed class RowDefinition : BindableObject, IDefinition, IGridRowDefinition
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='HeightProperty']/Docs" />
-		public static readonly BindableProperty HeightProperty = BindableProperty.Create("Height", typeof(GridLength), typeof(RowDefinition), new GridLength(1, GridUnitType.Star),
+		public static readonly BindableProperty HeightProperty = BindableProperty.Create(nameof(Height), typeof(GridLength), typeof(RowDefinition), GridLength.Star,
 			propertyChanged: (bindable, oldValue, newValue) => ((RowDefinition)bindable).OnSizeChanged());
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public RowDefinition()
 		{
-			MinimumHeight = -1;
+		}
+
+		public RowDefinition(GridLength height)
+		{
+			SetValue(HeightProperty, height);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='Height']/Docs" />
@@ -25,15 +29,10 @@ namespace Microsoft.Maui.Controls
 
 		internal double ActualHeight { get; set; }
 
-		internal double MinimumHeight { get; set; }
+		internal double MinimumHeight { get; set; } = -1;
 
 		public event EventHandler SizeChanged;
 
-		void OnSizeChanged()
-		{
-			EventHandler eh = SizeChanged;
-			if (eh != null)
-				eh(this, EventArgs.Empty);
-		}
+		void OnSizeChanged() => SizeChanged?.Invoke(this, EventArgs.Empty);
 	}
 }

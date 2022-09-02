@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 
 			FontAttributes attributes = FontAttributes.None;
 			strValue = strValue.Trim();
-			if (strValue.Contains(","))
+			if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
 			{ //Xaml
 				foreach (var part in strValue.Split(','))
 					attributes |= ParseSingleAttribute(part, strValue);

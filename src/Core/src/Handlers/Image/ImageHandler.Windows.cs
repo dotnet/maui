@@ -8,11 +8,11 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, Image>
 	{
-		protected override Image CreateNativeView() => new Image();
+		protected override Image CreatePlatformView() => new Image();
 
-		protected override void DisconnectHandler(Image nativeView)
+		protected override void DisconnectHandler(Image platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 			SourceLoader.Reset();
 		}
 
@@ -27,26 +27,18 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapAspect(IImageHandler handler, IImage image) =>
-			handler.TypedNativeView?.UpdateAspect(image);
+			handler.PlatformView?.UpdateAspect(image);
 
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
-			handler.TypedNativeView?.UpdateIsAnimationPlaying(image);
+			handler.PlatformView?.UpdateIsAnimationPlaying(image);
 
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapSourceAsync(IImageHandler handler, IImage image)
-		{
-			if (handler.NativeView == null)
-				return Task.CompletedTask;
+		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
+			handler.SourceLoader.UpdateImageSourceAsync();
 
-			handler.TypedNativeView.Clear();
-			return handler.SourceLoader.UpdateImageSourceAsync();
-		}
-
-		void OnSetImageSource(ImageSource? obj)
-		{
-			NativeView.Source = obj;
-		}
+		void OnSetImageSource(ImageSource? obj) =>
+			PlatformView.Source = obj;
 	}
 }

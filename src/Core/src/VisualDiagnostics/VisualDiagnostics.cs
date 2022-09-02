@@ -3,7 +3,10 @@
 
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui
 {
@@ -16,8 +19,17 @@ namespace Microsoft.Maui
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void RegisterSourceInfo(object target, Uri uri, int lineNumber, int linePosition)
 		{
-			if (target != null && DebuggerHelper.DebuggerIsAttached && !sourceInfos.TryGetValue(target, out _))
+#if !NETSTANDARD2_0
+			if (target != null && DebuggerHelper.DebuggerIsAttached)
+				sourceInfos.AddOrUpdate(target, new SourceInfo(uri, lineNumber, linePosition));
+#else
+			if (target != null && DebuggerHelper.DebuggerIsAttached)
+			{
+				if (sourceInfos.TryGetValue(target, out _))
+					sourceInfos.Remove(target);
 				sourceInfos.Add(target, new SourceInfo(uri, lineNumber, linePosition));
+			}
+#endif
 		}
 
 		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='GetXamlSourceInfo']/Docs" />
@@ -25,7 +37,7 @@ namespace Microsoft.Maui
 		public static SourceInfo? GetSourceInfo(object obj) =>
 			sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
 
-		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='OnChildAdded']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='OnChildAdded'][1]/Docs" />
 		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -39,7 +51,7 @@ namespace Microsoft.Maui
 			OnChildAdded(parent, child, index);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='OnChildAdded']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='OnChildAdded'][2]/Docs" />
 		public static void OnChildAdded(IVisualTreeElement? parent, IVisualTreeElement child, int newLogicalIndex)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -65,6 +77,41 @@ namespace Microsoft.Maui
 		static void OnVisualTreeChanged(VisualTreeChangeEventArgs e)
 		{
 			VisualTreeChanged?.Invoke(e.Parent, e);
+		}
+
+		public static async Task<byte[]?> CaptureAsPngAsync(IView view)
+		{
+			var result = await view.CaptureAsync();
+			return await ScreenshotResultToArray(result, ScreenshotFormat.Png, 100);
+		}
+
+		public static async Task<byte[]?> CaptureAsJpegAsync(IView view, int quality = 80)
+		{
+			var result = await view.CaptureAsync();
+			return await ScreenshotResultToArray(result, ScreenshotFormat.Jpeg, quality);
+		}
+
+		public static async Task<byte[]?> CaptureAsPngAsync(IWindow window)
+		{
+			var result = await window.CaptureAsync();
+			return await ScreenshotResultToArray(result, ScreenshotFormat.Png, 100);
+		}
+
+		public static async Task<byte[]?> CaptureAsJpegAsync(IWindow window, int quality = 80)
+		{
+			var result = await window.CaptureAsync();
+			return await ScreenshotResultToArray(result, ScreenshotFormat.Jpeg, quality);
+		}
+
+		static async Task<byte[]?> ScreenshotResultToArray(IScreenshotResult? result, ScreenshotFormat format, int quality)
+		{
+			if (result is null)
+				return null;
+
+			using var ms = new MemoryStream();
+			await result.CopyToAsync(ms, format, quality);
+
+			return ms.ToArray();
 		}
 	}
 }

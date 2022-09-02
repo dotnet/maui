@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateMenu()
 		{
-			if (Handler.NativeView is not WindowHeader wh)
+			if (Handler.PlatformView is not MauiToolbar wh)
 				return;
 
 			var commandBar = wh.CommandBar;
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 			commandBar.PrimaryCommands.Clear();
 			commandBar.SecondaryCommands.Clear();
 
-			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(ToolbarItems ?? new ToolbarItem[0]);
+			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
 
 			foreach (ToolbarItem item in toolbarItems)
 			{
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 				{
 					button.SetBinding(AppBarButton.IconProperty, "IconImageSource", _imageSourceIconElementConverter);
 				}
-				else
+				else if (!item.IconImageSource.IsNullOrEmpty())
 				{
 					var img = new WImage();
 					img.SetBinding(WImage.SourceProperty, "Value");
@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls
 				button.SetAutomationPropertiesName(item);
 				button.SetAutomationPropertiesAccessibilityView(item);
 				button.SetAutomationPropertiesHelpText(item);
+				button.UpdateTextColor(BarTextColor);
 
 				button.SetAutomationPropertiesLabeledBy(item, null);
 
@@ -81,27 +82,22 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapToolbarDynamicOverflowEnabled(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateToolbarDynamicOverflowEnabled(arg2);
+			arg1.PlatformView.UpdateToolbarDynamicOverflowEnabled(arg2);
 		}
 
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateBarTextColor(arg2);
+			arg1.PlatformView.UpdateBarTextColor(arg2);
 		}
 
 		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateBarBackground(arg2);
-		}
-
-		public static void MapBarBackgroundColor(ToolbarHandler arg1, Toolbar arg2)
-		{
-			arg1.NativeView.UpdateBarBackgroundColor(arg2);
+			arg1.PlatformView.UpdateBarBackground(arg2);
 		}
 
 		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateBackButton(arg2);
+			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2)
@@ -109,34 +105,38 @@ namespace Microsoft.Maui.Controls
 			arg2.UpdateMenu();
 		}
 
-		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2)
-		{
-			arg1.NativeView.UpdateTitle(arg2);
-		}
-
 		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateIconColor(arg2);
+			arg1.PlatformView.UpdateIconColor(arg2);
+		}
+
+		public static void MapIcon(ToolbarHandler arg1, Toolbar arg2)
+		{
 		}
 
 		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateTitleView(arg2);
+			arg1.PlatformView.UpdateTitleView(arg2);
 		}
 
 		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateTitleIcon(arg2);
+			arg1.PlatformView.UpdateTitleIcon(arg2);
 		}
 
 		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateBackButton(arg2);
+			arg1.PlatformView.UpdateBackButton(arg2);
+		}
+
+		public static void MapBackButtonEnabled(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
 		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.NativeView.UpdateIsVisible(arg2);
+			arg1.PlatformView.UpdateIsVisible(arg2);
 		}
 	}
 }

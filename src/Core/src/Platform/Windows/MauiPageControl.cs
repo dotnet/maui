@@ -40,9 +40,9 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			if (_indicatorView.IndicatorColor is SolidPaint solidPaint)
-				_fillColor = solidPaint?.ToNative();
+				_fillColor = solidPaint?.ToPlatform();
 			if (_indicatorView.SelectedIndicatorColor is SolidPaint selectedSolidPaint)
-				_selectedColor = selectedSolidPaint.ToNative();
+				_selectedColor = selectedSolidPaint.ToPlatform();
 			var position = _indicatorView.Position;
 			int i = 0;
 			foreach (var item in Items)
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 				for (int i = 0; i < indicatorCount; i++)
 				{
 					var shape = CreateIndicator(i, position);
-					
+
 					if (shape != null)
 					{
 						indicators.Add(shape);
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Platform
 				};
 			}
 			shape.Tag = i;
-			shape.PointerPressed += (s,e) =>
+			shape.PointerPressed += (s, e) =>
 			{
 				if (_indicatorView == null)
 					return;

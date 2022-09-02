@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using System.ComponentModel;
+
+namespace Microsoft.Maui
 {
 	/// <include file="../../docs/Microsoft.Maui/FlowDirection.xml" path="Type[@FullName='Microsoft.Maui.FlowDirection']/Docs" />
 	public enum FlowDirection

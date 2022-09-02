@@ -7,11 +7,12 @@ using Android.Content;
 using Android.Text;
 using Android.Text.Style;
 using Android.Util;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class PickerRendererBase<TControl> : ViewRenderer<Picker, TControl>, IPickerRenderer
 		where TControl : global::Android.Views.View
 	{
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			AutoPackage = false;
 		}
 
-		protected abstract EditText EditText { get; }
+		protected abstract AppCompatEditText EditText { get; }
 
 		protected override void Dispose(bool disposing)
 		{
@@ -125,7 +126,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					else
 					{
 						var title = new SpannableString(model.Title ?? "");
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 						title.SetSpan(new ForegroundColorSpan(model.TitleColor.ToAndroid()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
+#pragma warning restore CA1416
 
 						builder.SetTitle(title);
 					}
@@ -189,7 +192,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		abstract protected void UpdateGravity();
 	}
 
-	public class PickerRenderer : PickerRendererBase<EditText>
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	public class PickerRenderer : PickerRendererBase<AppCompatEditText>
 	{
 		TextColorSwitcher _textColorSwitcher;
 		TextColorSwitcher _hintColorSwitcher;
@@ -198,12 +202,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 		}
 
-		protected override EditText CreateNativeControl()
+		protected override AppCompatEditText CreateNativeControl()
 		{
 			return new PickerEditText(Context);
 		}
 
-		protected override EditText EditText => Control;
+		protected override AppCompatEditText EditText => Control;
 
 		[PortHandler]
 		protected override void UpdateTitleColor()

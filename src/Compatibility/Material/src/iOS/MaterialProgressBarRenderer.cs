@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.iOS
 
 			if (progressColor.IsDefault)
 			{
-				if(backgroundColor.IsDefault)
+				if (backgroundColor.IsDefault)
 				{
 					// reset everything to defaults
 					_colorScheme = CreateSemanticColorScheme();

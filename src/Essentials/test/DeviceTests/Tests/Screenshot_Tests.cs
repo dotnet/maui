@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Media;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Screenshot")]
 	public class Screenshot_Tests
 	{
 		[Fact]
@@ -13,10 +15,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			return Utils.OnMainThread(async () =>
 			{
-				await Task.Delay(100);
-				ScreenshotResult mediaFile = await Screenshot.CaptureAsync();
-				var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Png);
-				Assert.True(png.Length > 0);
+				if (CanExecuteTest())
+				{
+					await Task.Delay(100);
+					IScreenshotResult mediaFile = await Screenshot.CaptureAsync();
+					var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Png);
+					Assert.True(png.Length > 0);
+				}
 			});
 		}
 
@@ -25,11 +30,23 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			return Utils.OnMainThread(async () =>
 			{
-				await Task.Delay(100);
-				ScreenshotResult mediaFile = await Screenshot.CaptureAsync();
-				var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Jpeg);
-				Assert.True(png.Length > 0);
+				if (CanExecuteTest())
+				{
+					await Task.Delay(100);
+					IScreenshotResult mediaFile = await Screenshot.CaptureAsync();
+					var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Jpeg);
+					Assert.True(png.Length > 0);
+				}
 			});
+		}
+
+		static bool CanExecuteTest()
+		{
+#if __IOS__
+			return OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13);
+#else
+			return true;
+#endif
 		}
 	}
 }

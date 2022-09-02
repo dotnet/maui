@@ -1,7 +1,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -9,21 +9,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class MarginTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
+
+		public MarginTests()
 		{
-			base.Setup();
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (b, d, e) => new SizeRequest(new Size(100, 50)));
+
+			MockPlatformSizeService.Current.GetPlatformSizeFunc = (b, d, e) => new SizeRequest(new Size(100, 50));
 		}
 
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-			Device.PlatformServices = null;
-		}
-
-		[Test]
+		[Fact]
 		public void GetSizeRequestIncludesMargins()
 		{
 			var parent = new ContentView
@@ -41,10 +34,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			parent.Content = child;
 
 			var result = parent.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Assert.AreEqual(new Size(140, 110), result.Request);
+			Assert.Equal(new Size(140, 110), result.Request);
 		}
 
-		[Test]
+		[Fact]
 		public void MarginsAffectPositionInContentView()
 		{
 			var parent = new ContentView
@@ -61,11 +54,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			child.Margin = new Thickness(10, 20, 30, 40);
 			parent.Content = child;
 
-			parent.Layout(new Rectangle(0, 0, 140, 110));
-			Assert.AreEqual(new Rectangle(10, 20, 100, 50), child.Bounds);
+			parent.Layout(new Rect(0, 0, 140, 110));
+			Assert.Equal(new Rect(10, 20, 100, 50), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void ChangingMarginCausesRelayout()
 		{
 			var parent = new ContentView
@@ -84,11 +77,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			child.Margin = new Thickness(10, 20, 30, 40);
 			parent.Content = child;
 
-			parent.Layout(new Rectangle(0, 0, 1000, 1000));
-			Assert.AreEqual(new Rectangle(10, 20, 100, 50), child.Bounds);
+			parent.Layout(new Rect(0, 0, 1000, 1000));
+			Assert.Equal(new Rect(10, 20, 100, 50), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void IntegrationTest()
 		{
 			var parent = new StackLayout
@@ -119,10 +112,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			parent.Children.Add(child1);
 			parent.Children.Add(child2);
 
-			parent.Layout(new Rectangle(0, 0, 1000, 1000));
+			parent.Layout(new Rect(0, 0, 1000, 1000));
 
-			Assert.AreEqual(new Rectangle(0, 0, 100, 50), child1.Bounds);
-			Assert.AreEqual(new Rectangle(5, 60, 980, 50), child2.Bounds);
+			Assert.Equal(new Rect(0, 0, 100, 50), child1.Bounds);
+			Assert.Equal(new Rect(5, 60, 980, 50), child2.Bounds);
 
 			child1.Margin = new Thickness(10, 20, 30, 40);
 
@@ -130,8 +123,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			AssertInvalidated(handler);
 			parent.ForceLayout();
 
-			Assert.AreEqual(new Rectangle(10, 20, 100, 50), child1.Bounds);
-			Assert.AreEqual(new Rectangle(5, 120, 980, 50), child2.Bounds);
+			Assert.Equal(new Rect(10, 20, 100, 50), child1.Bounds);
+			Assert.Equal(new Rect(5, 120, 980, 50), child2.Bounds);
 		}
 
 		void AssertInvalidated(IViewHandler handler)

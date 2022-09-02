@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls
 						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 				_implicitStyles.Add(implicitStyleProperty);
 				Target.SetDynamicResource(implicitStyleProperty, type.FullName);
-				type = type.GetTypeInfo().BaseType;
+				type = type.BaseType;
 				if (s_stopAtTypes.Contains(type))
 					return;
 			}

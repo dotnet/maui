@@ -111,26 +111,6 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		}
 
 		[Test]
-		[UiTest(typeof(Button), "Font")]
-		[Category(UITestCategories.UwpIgnore)]
-		public void Font()
-		{
-			//TODO iOS
-			var remote = new ViewContainerRemote(App, Test.Button.Font, PlatformViewType);
-			remote.GoTo();
-
-#if __ANDROID__
-			var isBold = remote.GetProperty<bool>(FontElement.FontProperty);
-			Assert.True(isBold);
-#elif __MACOS__
-			Assert.Inconclusive("needs testing");
-#else
-			var font = remote.GetProperty<Font>(FontElement.FontProperty);
-			Assert.AreEqual (FontWeight.Bold, font.Weight);
-#endif
-		}
-
-		[Test]
 		[UiTest(typeof(Button), "Image")]
 		[UiTestExempt(ExemptReason.TimeConsuming, "Need way to check Android resources")]
 		public void Image()

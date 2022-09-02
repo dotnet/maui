@@ -22,19 +22,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var size = Size.Zero;
 
-			if (NativeHandler?.VirtualView == null)
+			if (PlatformHandler?.VirtualView == null)
 			{
 				return (false, size);
 			}
 
-			var bounds = NativeHandler.VirtualView.Frame;
+			var bounds = PlatformHandler.VirtualView.Frame;
 
 			if (bounds.Width <= 0 || bounds.Height <= 0)
 			{
 				return (false, size);
 			}
 
-			var desiredBounds = NativeHandler.VirtualView.Measure(double.PositiveInfinity, bounds.Height);
+			var desiredBounds = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, bounds.Height);
 
 			if (desiredBounds.Width == currentSize.Width)
 			{

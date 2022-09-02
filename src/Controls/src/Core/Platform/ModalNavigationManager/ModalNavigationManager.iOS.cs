@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -13,16 +14,19 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		UIViewController? RootViewController
+		UIViewController? WindowViewController
 		{
 			get
 			{
-				if (_window?.Page?.Handler?.NativeView is UIView view)
+				if (_window?.Page?.Handler is IPlatformViewHandler pvh &&
+					pvh.ViewController != null)
 				{
-					return view.Window.RootViewController;
+					return pvh.ViewController;
 				}
 
-				return null;
+				return WindowMauiContext.
+						GetPlatformWindow()?
+						.RootViewController;
 			}
 		}
 
@@ -30,6 +34,7 @@ namespace Microsoft.Maui.Controls.Platform
 		static void HandleChildRemoved(object? sender, ElementEventArgs e)
 		{
 			var view = e.Element;
+			// TODO MAUI
 			//view?.DisposeModalAndChildRenderers();
 		}
 
@@ -38,14 +43,14 @@ namespace Microsoft.Maui.Controls.Platform
 			var modal = _navModel.PopModal();
 			modal.DescendantRemoved -= HandleChildRemoved;
 
-			var controller = (modal.Handler as INativeViewHandler)?.ViewController;
+			var controller = (modal.Handler as IPlatformViewHandler)?.ViewController;
 
 			if (ModalStack.Count >= 1 && controller != null)
 				await controller.DismissViewControllerAsync(animated);
-			else if (RootViewController != null)
-				await RootViewController.DismissViewControllerAsync(animated);
+			else if (WindowViewController != null)
+				await WindowViewController.DismissViewControllerAsync(animated);
 
-			// Yes?
+			// TODO MAUI
 			//modal.DisposeModalAndChildRenderers();
 
 			return modal;
@@ -61,7 +66,7 @@ namespace Microsoft.Maui.Controls.Platform
 				elementConfiguration?
 					.On<PlatformConfiguration.iOS>()?
 					.ModalPresentationStyle()
-					.ToNativeModalPresentationStyle();
+					.ToPlatformModalPresentationStyle();
 
 			_navModel.PushModal(modal);
 
@@ -75,13 +80,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			modal.ToPlatform(MauiContext);
-			var wrapper = new ModalWrapper(modal.Handler as INativeViewHandler);
+			modal.ToPlatform(WindowMauiContext);
+			var wrapper = new ModalWrapper(modal.Handler as IPlatformViewHandler);
 
 			if (ModalStack.Count > 1)
 			{
 				var topPage = ModalStack[ModalStack.Count - 2];
-				var controller = (topPage?.Handler as INativeViewHandler)?.ViewController;
+				var controller = (topPage?.Handler as IPlatformViewHandler)?.ViewController;
 				if (controller != null)
 				{
 					await controller.PresentViewControllerAsync(wrapper, animated);
@@ -94,9 +99,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// presentation is complete before it really is. It does not however inform you when it is really done (and thus 
 			// would be safe to dismiss the VC). Fortunately this is almost never an issue
 
-			if (RootViewController != null)
+			if (WindowViewController != null)
 			{
-				await RootViewController.PresentViewControllerAsync(wrapper, animated);
+				await WindowViewController.PresentViewControllerAsync(wrapper, animated);
 				await Task.Delay(5);
 			}
 		}
@@ -111,7 +116,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// editing that's going on 
 			if (ModalStack.Count > 0)
 			{
-				var uiViewController = (ModalStack[ModalStack.Count - 1].Handler as INativeViewHandler)?.ViewController;
+				var uiViewController = (ModalStack[ModalStack.Count - 1].Handler as IPlatformViewHandler)?.ViewController;
 				uiViewController?.View?.Window?.EndEditing(true);
 				return;
 			}

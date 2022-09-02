@@ -1,31 +1,55 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Android.App;
+using Android.Content;
 using Android.Graphics;
 using Android.Views;
+using Java.Nio;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Media
 {
-	public static partial class Screenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
 	{
-		static bool PlatformIsCaptureSupported =>
-			true;
+		static IWindowManager windowManager;
 
-		static Task<ScreenshotResult> PlatformCaptureAsync()
+		static IWindowManager WindowManager =>
+			windowManager ??= Application.Context.GetSystemService(Context.WindowService) as IWindowManager;
+
+		public bool IsCaptureSupported => true;
+
+		public Task<IScreenshotResult> CaptureAsync()
 		{
-			if (Platform.WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
+			if (WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
 				throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
 
-			var view = Platform.GetCurrentActivity(true)?.Window?.DecorView?.RootView;
-			if (view == null)
-				throw new NullReferenceException("Unable to find the main window.");
+			var activity = ActivityStateManager.Default.GetCurrentActivity(true);
 
-			var result = new ScreenshotResult(view.Render());
-
-			return Task.FromResult(result);
+			return CaptureAsync(activity);
 		}
 
-		public static Bitmap Render(this View view)
+		public Task<IScreenshotResult> CaptureAsync(Activity activity)
+		{
+			var view = activity?.Window?.DecorView?.RootView;
+			if (view == null)
+				throw new InvalidOperationException("Unable to find the main window.");
+
+			return CaptureAsync(view);
+		}
+
+		public Task<IScreenshotResult> CaptureAsync(View view)
+		{
+			_ = view ?? throw new ArgumentNullException(nameof(view));
+
+			var bitmap = Render(view);
+			var result = new ScreenshotResult(bitmap);
+
+			return Task.FromResult<IScreenshotResult>(result);
+		}
+
+		static Bitmap Render(View view)
 		{
 			var bitmap = RenderUsingCanvasDrawing(view);
 
@@ -35,40 +59,7 @@ namespace Microsoft.Maui.Essentials
 			return bitmap;
 		}
 
-		public static byte[] RenderAsJPEG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Jpeg, quality);
-
-		public static byte[] RenderAsPNG(this View view, int quality = 100) => view?.RenderAsImage(Bitmap.CompressFormat.Png, quality);
-
-		public static byte[] RenderAsImage(this View view, Bitmap.CompressFormat format, int quality = 100)
-		{
-			byte[] imageBytes = null;
-
-			using (var bitmap = Render(view))
-			{
-				if (bitmap != null)
-				{
-					imageBytes = bitmap.AsImageBytes(format, quality);
-					if (!bitmap.IsRecycled)
-						bitmap.Recycle();
-				}
-			}
-
-			return imageBytes;
-		}
-
-		public static byte[] AsImageBytes(this Bitmap bitmap, Bitmap.CompressFormat format, int quality = 100)
-		{
-			byte[] byteArray = null;
-			using (var mem = new MemoryStream())
-			{
-				bitmap.Compress(format, quality, mem);
-				byteArray = mem.ToArray();
-			}
-
-			return byteArray;
-		}
-
-		public static Bitmap RenderUsingCanvasDrawing(this View view)
+		static Bitmap RenderUsingCanvasDrawing(View view)
 		{
 			try
 			{
@@ -92,7 +83,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static Bitmap RenderUsingDrawingCache(this View view)
+		static Bitmap RenderUsingDrawingCache(View view)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
 			try
@@ -112,11 +103,10 @@ namespace Microsoft.Maui.Essentials
 				return null;
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
-
 		}
 	}
 
-	public partial class ScreenshotResult
+	partial class ScreenshotResult
 	{
 		readonly Bitmap bmp;
 
@@ -129,16 +119,36 @@ namespace Microsoft.Maui.Essentials
 			Height = bmp.Height;
 		}
 
-		internal Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format)
+		Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format, int quality)
 		{
-			var f = format switch
-			{
-				ScreenshotFormat.Jpeg => Bitmap.CompressFormat.Jpeg,
-				_ => Bitmap.CompressFormat.Png,
-			};
-
-			var result = new MemoryStream(bmp.AsImageBytes(f, 100)) as Stream;
-			return Task.FromResult(result);
+			var result = new MemoryStream();
+			PlatformCopyToAsync(result, format, quality);
+			result.Position = 0;
+			return Task.FromResult<Stream>(result);
 		}
+
+		Task PlatformCopyToAsync(Stream destination, ScreenshotFormat format, int quality)
+		{
+			var f = ToCompressFormat(format);
+			bmp.Compress(f, quality, destination);
+			return Task.CompletedTask;
+		}
+
+		Task<byte[]> PlatformToPixelBufferAsync()
+		{
+			var byteBuffer = ByteBuffer.AllocateDirect(bmp.ByteCount);
+			bmp.CopyPixelsToBuffer(byteBuffer);
+			byte[] byt = new byte[bmp.ByteCount];
+			Marshal.Copy(byteBuffer.GetDirectBufferAddress(), byt, 0, bmp.ByteCount);
+			return Task.FromResult(byt);
+		}
+
+		static Bitmap.CompressFormat ToCompressFormat(ScreenshotFormat format) =>
+			format switch
+			{
+				ScreenshotFormat.Png => Bitmap.CompressFormat.Png!,
+				ScreenshotFormat.Jpeg => Bitmap.CompressFormat.Jpeg!,
+				_ => throw new ArgumentOutOfRangeException(nameof(format)),
+			};
 	}
 }

@@ -49,8 +49,14 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
+  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
+  - name: provisionatorChannel
+    displayName: 'Provisionator channel'
+    type: string
+    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+
   - name: BuildEverything
     type: boolean
     default: false
@@ -67,14 +73,14 @@ parameters:
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
-        artifact: net6-windows
+        artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
-        artifact: net6-macos
+        artifact: build-macos
   - name: PackPlatforms
     type: object
     default:
@@ -91,11 +97,18 @@ parameters:
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: nuget-macos
+  - name: TestTargetFrameworks
+    type: object
+    default:
+      - name: default
+        tfm: default
+      - name: net6
+        tfm: net6.0
 
 stages:
 
   - stage: build_net6
-    displayName: Build .NET 6
+    displayName: Build .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
@@ -112,24 +125,29 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
-                demands:
-                  - macOS.Name -equals BigSur
-                  - macOS.Architecture -equals x64
-                  - Agent.HasDevices -equals False
-                  - Agent.IsPaired -equals False
+              demands:
+                - macOS.Name -equals Monterey
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml
                   parameters:
                     UninstallMono: false
                     UninstallXamarinMac: false
+                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
+                retryCountOnTaskFailure: 3
+                env:
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -146,75 +164,28 @@ stages:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
   - stage: pack_net6
-    displayName: Pack .NET 6
+    displayName: Pack .NET MAUI
     dependsOn: []
     jobs:
-      - ${{ each BuildPlatform in parameters.PackPlatforms }}:
-        - job: pack_net6_${{ BuildPlatform.name }}
+      - ${{ each PackPlatform in parameters.PackPlatforms }}:
+        - job: pack_net6_${{ PackPlatform.name }}
           workspace:
             clean: all
-          displayName: ${{ BuildPlatform.name }}
+          displayName: ${{ PackPlatform.name }}
           timeoutInMinutes: 120
           pool:
-            name: ${{ BuildPlatform.poolName }}
-            vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
-              demands:
-                - macOS.Name -equals BigSur
-                - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
+            name: ${{ PackPlatform.poolName }}
+            vmImage: ${{ PackPlatform.vmImage }}
+            demands:
+              - macOS.Name -equals Monterey
+              - macOS.Architecture -equals x64
+              - Agent.HasDevices -equals False
+              - Agent.IsPaired -equals False
           steps:
-            - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-              - template: agent-cleanser/v1.yml
-                parameters:
-                  UninstallMono: false
-                  UninstallXamarinMac: false
-            - template: common/provision.yml
-              parameters:
-                platform: ${{ BuildPlatform.name }}
-                poolName: ${{ BuildPlatform.poolName }}
-            - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
-              displayName: 'Pack .NET Maui'
-            - ${{ if eq(BuildPlatform.name, 'Windows') }}:
-              - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
-                displayName: 'Diff .NET Maui artifacts with NuGet'
-            - task: CopyFiles@2
-              condition: always()
-              displayName: 'Copy files to staging'
-              inputs:
-                Contents: |
-                  artifacts/**/*.*nupkg
-                  artifacts/**/*.zip
-                  artifacts/vs-workload.props
-                  eng/automation/SignList.xml
-                TargetFolder: $(build.artifactstagingdirectory)
-                flattenFolders: true
-            - task: CopyFiles@2
-              condition: always()
-              displayName: 'Copy metadata to staging'
-              inputs:
-                SourceFolder: artifacts
-                Contents: |
-                  metadata/**
-                  api-diff/**
-                TargetFolder: $(build.artifactstagingdirectory)
-            - task: CopyFiles@2
-              displayName: 'Copy Log Files'
-              condition: always()
-              inputs:
-                Contents: |
-                  artifacts/logs/**
-                TargetFolder: $(build.artifactstagingdirectory)/logs
-                flattenFolders: true
-            - task: PublishBuildArtifacts@1
-              condition: always()
-              displayName: publish artifacts
-              inputs:
-                ArtifactName: ${{ BuildPlatform.artifact }}
+            - template: common/pack.yml
 
   - stage: samples_net6
-    displayName: Build .NET 6 Samples
+    displayName: Build .NET MAUI Samples
     dependsOn: pack_net6
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
@@ -231,22 +202,23 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
-                demands:
-                  - macOS.Name -equals BigSur
-                  - macOS.Architecture -equals x64
-                  - Agent.HasDevices -equals False
-                  - Agent.IsPaired -equals False
+              demands:
+                - macOS.Name -equals Monterey
+                - macOS.Architecture -equals x64
+                - Agent.HasDevices -equals False
+                - Agent.IsPaired -equals False
             steps:
               - ${{ if eq(BuildPlatform.name, 'macOS') }}:
                 - template: agent-cleanser/v1.yml
                   parameters:
                     UninstallMono: false
                     UninstallXamarinMac: false
+                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -257,8 +229,12 @@ stages:
                 displayName: Move the downloaded artifacts
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
+                retryCountOnTaskFailure: 3
+                env:
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                displayName: 'Build .NET 6 Samples'
+                displayName: 'Build .NET MAUI Samples'
               - task: PublishBuildArtifacts@1
                 condition: always()
                 displayName: publish artifacts
@@ -266,53 +242,55 @@ stages:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
   - stage: templates_net6
-    displayName: Build .NET 6 Templates
+    displayName: Build .NET MAUI Templates
     dependsOn: pack_net6
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
-            workspace:
-              clean: all
-            displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 120
-            condition: or(
-              ${{ parameters.BuildEverything }},
-              ne(variables['Build.Reason'], 'PullRequest'),
-              eq('${{ BuildConfiguration }}', 'Release'))
-            pool:
-              name: ${{ BuildPlatform.poolName }}
-              vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if startsWith(BuildPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+          - ${{ each TestTFM in parameters.TestTargetFrameworks }}:
+            - job: build_${{ TestTFM.name }}_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+              workspace:
+                clean: all
+              displayName: ${{ BuildPlatform.name }} ${{ TestTFM.tfm }} (${{ BuildConfiguration }})
+              timeoutInMinutes: 120
+              condition: or(
+                ${{ parameters.BuildEverything }},
+                ne(variables['Build.Reason'], 'PullRequest'),
+                eq('${{ BuildConfiguration }}', 'Release'))
+              pool:
+                name: ${{ BuildPlatform.poolName }}
+                vmImage: ${{ BuildPlatform.vmImage }}
                 demands:
-                  - macOS.Name -equals BigSur
+                  - macOS.Name -equals Monterey
                   - macOS.Architecture -equals x64
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
-            steps:
-              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml
-                  parameters:
-                    UninstallMono: false
-                    UninstallXamarinMac: false
-              - template: common/provision.yml
-                parameters:
-                  platform: ${{ BuildPlatform.name }}
-                  poolName: ${{ BuildPlatform.poolName }}
-              - task: DownloadBuildArtifacts@0
-                displayName: 'Download Packages'
-                inputs:
-                  artifactName: nuget
-                  itemPattern: '**/*.nupkg'
-                  downloadPath: $(System.DefaultWorkingDirectory)/artifacts
-              - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
-                displayName: Move the downloaded artifacts
-              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                displayName: 'Install .NET (Local Workloads)'
-              - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                displayName: 'Build .NET 6 Templates'
-              - task: PublishBuildArtifacts@1
-                condition: always()
-                displayName: publish artifacts
-                inputs:
-                  ArtifactName: ${{ BuildPlatform.artifact }}
+              steps:
+                - task: DownloadBuildArtifacts@0
+                  displayName: 'Download Packages'
+                  inputs:
+                    artifactName: nuget
+                    itemPattern: '**/*.nupkg'
+                    downloadPath: $(System.DefaultWorkingDirectory)/artifacts
+                - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+                  displayName: Move the downloaded artifacts
+                - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                  displayName: 'Install .NET (Local Workloads)'
+                  retryCountOnTaskFailure: 3
+                  env:
+                    DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                    PRIVATE_BUILD: $(PrivateBuild)
+                - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --testtfm="${{ TestTFM.tfm }}" --verbosity=diagnostic
+                  displayName: 'Build .NET MAUI Templates'
+                - task: PublishBuildArtifacts@1
+                  condition: always()
+                  displayName: publish artifacts
+                  inputs:
+                    ArtifactName: ${{ BuildPlatform.artifact }}
+
+  - template: common/security-compliance.yml
+
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+    - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]

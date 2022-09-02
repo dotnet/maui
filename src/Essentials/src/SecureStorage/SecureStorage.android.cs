@@ -4,14 +4,13 @@ using Android.Content;
 using AndroidX.Security.Crypto;
 using Javax.Crypto;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Storage
 {
-	public static partial class SecureStorage
+	partial class SecureStorageImplementation : ISecureStorage
 	{
+		readonly object locker = new object();
 
-		static readonly object locker = new object();
-
-		static Task<string> PlatformGetAsync(string key)
+		Task<string> PlatformGetAsync(string key)
 		{
 			return Task.Run(() =>
 			{
@@ -39,29 +38,25 @@ namespace Microsoft.Maui.Essentials
 			});
 		}
 
-		static Task PlatformSetAsync(string key, string data)
+		Task PlatformSetAsync(string key, string data)
 		{
 			return Task.Run(() =>
 			{
 				lock (locker)
 				{
-					using (var editor = GetEncryptedSharedPreferences().Edit())
-					{
-						if (data == null)
-						{
-							editor.Remove(key);
-						}
-						else
-						{
-							editor.PutString(key, data);
-						}
-						editor.Apply();
-					}
+					using var editor = GetEncryptedSharedPreferences().Edit();
+
+					if (data == null)
+						editor.Remove(key);
+					else
+						editor.PutString(key, data);
+
+					editor.Apply();
 				}
 			});
 		}
 
-		static bool PlatformRemove(string key)
+		bool PlatformRemove(string key)
 		{
 			lock (locker)
 			{
@@ -74,14 +69,12 @@ namespace Microsoft.Maui.Essentials
 			return true;
 		}
 
-		static void PlatformRemoveAll()
+		void PlatformRemoveAll()
 		{
 			lock (locker)
 			{
-				using (var editor = Preferences.GetSharedPreferences(Alias).Edit())
-				{
-					editor.Clear().Apply();
-				}
+				using var editor = PreferencesImplementation.GetSharedPreferences(Alias).Edit();
+				editor.Clear().Apply();
 			}
 		}
 
@@ -98,8 +91,7 @@ namespace Microsoft.Maui.Essentials
 				Alias,
 				prefsMainKey,
 				EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
-				EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm
-			);
+				EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm);
 
 			return sharedPreferences;
 		}

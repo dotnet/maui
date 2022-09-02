@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 {
 	internal static class AlignmentExtensions
 	{
-		internal static NSTextAlignment ToNativeTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection)
+		internal static NSTextAlignment ToPlatformTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection)
 		{
 			var isLtr = flowDirection.IsLeftToRight();
 			switch (alignment)

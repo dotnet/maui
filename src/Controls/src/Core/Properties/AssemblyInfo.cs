@@ -10,6 +10,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.iOS")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Windows")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Tizen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Design")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UnitTests")]
@@ -20,6 +21,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.iOS")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.iOS.Classic")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.Android")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.Tizen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.FlexLayout.UnitTests")]
@@ -40,8 +42,8 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Pages")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Pages.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.CarouselView")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Foldable")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Foldable.UnitTests")]
 [assembly: InternalsVisibleTo("WinUI.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 
@@ -87,7 +89,6 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("text-transform", typeof(ITextElement), nameof(TextElement.TextTransformProperty), Inherited = true)]
 [assembly: StyleProperty("color", typeof(ProgressBar), nameof(ProgressBar.ProgressColorProperty))]
 [assembly: StyleProperty("color", typeof(Switch), nameof(Switch.OnColorProperty))]
-[assembly: StyleProperty("column-gap", typeof(Compatibility.Grid), nameof(Compatibility.Grid.ColumnSpacingProperty))]
 [assembly: StyleProperty("column-gap", typeof(Grid), nameof(Grid.ColumnSpacingProperty))]
 [assembly: StyleProperty("direction", typeof(VisualElement), nameof(VisualElement.FlowDirectionProperty), Inherited = true)]
 [assembly: StyleProperty("font-family", typeof(IFontElement), nameof(FontElement.FontFamilyProperty), Inherited = true)]
@@ -108,7 +109,6 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("padding-top", typeof(IPaddingElement), nameof(PaddingElement.PaddingTopProperty), PropertyOwnerType = typeof(PaddingElement))]
 [assembly: StyleProperty("padding-right", typeof(IPaddingElement), nameof(PaddingElement.PaddingRightProperty), PropertyOwnerType = typeof(PaddingElement))]
 [assembly: StyleProperty("padding-bottom", typeof(IPaddingElement), nameof(PaddingElement.PaddingBottomProperty), PropertyOwnerType = typeof(PaddingElement))]
-[assembly: StyleProperty("row-gap", typeof(Compatibility.Grid), nameof(Compatibility.Grid.RowSpacingProperty))]
 [assembly: StyleProperty("row-gap", typeof(Grid), nameof(Grid.RowSpacingProperty))]
 [assembly: StyleProperty("text-align", typeof(ITextAlignmentElement), nameof(TextAlignmentElement.HorizontalTextAlignmentProperty), Inherited = true)]
 [assembly: StyleProperty("text-decoration", typeof(IDecorableTextElement), nameof(DecorableTextElement.TextDecorationsProperty))]
@@ -133,19 +133,6 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("order", typeof(VisualElement), nameof(FlexLayout.OrderProperty), PropertyOwnerType = typeof(FlexLayout))]
 [assembly: StyleProperty("position", typeof(FlexLayout), nameof(FlexLayout.PositionProperty))]
 
-// compatibility flex
-[assembly: StyleProperty("align-content", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.AlignContentProperty))]
-[assembly: StyleProperty("align-items", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.AlignItemsProperty))]
-[assembly: StyleProperty("align-self", typeof(VisualElement), nameof(Compatibility.FlexLayout.AlignSelfProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
-[assembly: StyleProperty("flex-direction", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.DirectionProperty))]
-[assembly: StyleProperty("flex-basis", typeof(VisualElement), nameof(Compatibility.FlexLayout.BasisProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
-[assembly: StyleProperty("flex-grow", typeof(VisualElement), nameof(Compatibility.FlexLayout.GrowProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
-[assembly: StyleProperty("flex-shrink", typeof(VisualElement), nameof(Compatibility.FlexLayout.ShrinkProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
-[assembly: StyleProperty("flex-wrap", typeof(VisualElement), nameof(Compatibility.FlexLayout.WrapProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
-[assembly: StyleProperty("justify-content", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.JustifyContentProperty))]
-[assembly: StyleProperty("order", typeof(VisualElement), nameof(Compatibility.FlexLayout.OrderProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
-[assembly: StyleProperty("position", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.PositionProperty))]
-
 //xf specific
 [assembly: StyleProperty("-maui-placeholder", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderProperty))]
 [assembly: StyleProperty("-maui-placeholder-color", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderColorProperty))]
@@ -158,9 +145,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("-maui-min-track-color", typeof(Slider), nameof(Slider.MinimumTrackColorProperty))]
 [assembly: StyleProperty("-maui-max-track-color", typeof(Slider), nameof(Slider.MaximumTrackColorProperty))]
 [assembly: StyleProperty("-maui-thumb-color", typeof(Slider), nameof(Slider.ThumbColorProperty))]
-[assembly: StyleProperty("-maui-spacing", typeof(Compatibility.StackLayout), nameof(Compatibility.StackLayout.SpacingProperty))]
 [assembly: StyleProperty("-maui-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
-[assembly: StyleProperty("-maui-orientation", typeof(Compatibility.StackLayout), nameof(Compatibility.StackLayout.OrientationProperty))]
 [assembly: StyleProperty("-maui-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
 
 // TODO ezhart 2021-07-16 When we fix #1634, we'll need to enable this so the CSS applies 

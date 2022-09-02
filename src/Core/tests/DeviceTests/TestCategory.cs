@@ -10,9 +10,14 @@
 		public const string BoxView = "BoxView";
 		public const string Button = "Button";
 		public const string CheckBox = "CheckBox";
+		public const string ContentView = "ContentView";
 		public const string DatePicker = "DatePicker";
+		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";
+		public const string FlowDirection = "FlowDirection";
+		public const string FlyoutView = "FlyoutView";
+		public const string Fonts = "Fonts";
 		public const string GraphicsView = "GraphicsView";
 		public const string Image = "Image";
 		public const string ImageButton = "ImageButton";
@@ -33,6 +38,7 @@
 		public const string TimePicker = "TimePicker";
 		public const string View = "View";
 		public const string WebView = "WebView";
+		public const string Window = "Window";
 		public const string WindowOverlay = "WindowOverlay";
 	}
 }

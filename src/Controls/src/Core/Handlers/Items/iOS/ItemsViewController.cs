@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public TItemsView ItemsView { get; }
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
 		bool _initialized;
-		bool _isEmpty;
+		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
@@ -134,8 +134,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ItemsSource = CreateItemsViewSource();
 
-			if (!NativeVersion.IsAtLeast(11))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+			{
 				AutomaticallyAdjustsScrollViewInsets = false;
+			}
 			else
 			{
 				// We set this property to keep iOS from trying to be helpful about insetting all the 
@@ -211,6 +213,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_measurementCells.Clear();
 			ItemsViewLayout?.ClearCellSizeCache();
+			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
@@ -338,7 +341,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		UICollectionViewCell GetPrototype()
 		{
-			if (ItemsSource.ItemCount == 0)
+			if (ItemsSource == null || ItemsSource.ItemCount == 0)
 			{
 				return null;
 			}
@@ -385,12 +388,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (IsHorizontal)
 			{
 				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height, MeasureFlags.IncludeMargins);
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(0, 0, request.Request.Width, CollectionView.Frame.Height));
+				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rect(0, 0, request.Request.Width, CollectionView.Frame.Height));
 			}
 			else
 			{
 				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rectangle(0, 0, CollectionView.Frame.Width, request.Request.Height));
+				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rect(0, 0, CollectionView.Frame.Width, request.Request.Height));
 			}
 		}
 
@@ -472,7 +475,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			bool isRtl;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
+				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
+			else
+				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
+
+			if (isRtl)
 			{
 				if (_emptyUIView.Transform.A == -1)
 				{
@@ -623,6 +633,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (CollectionView.Hidden)
 				{
+					CollectionView.ReloadData();
 					CollectionView.Hidden = false;
 					Layout.InvalidateLayout();
 					CollectionView.LayoutIfNeeded();

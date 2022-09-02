@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (brush == null)
 				return null;
-			
+
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				if (solidColorBrush.Color == null)
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return null;
 				}
 
-				return solidColorBrush.Color.ToNative();
+				return solidColorBrush.Color.ToPlatform();
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var wRadialGradientBrush = new WRadialGradientBrush()
 				{
+					GradientOrigin = new WPoint(radialGradientBrush.Center.X, radialGradientBrush.Center.Y),
 					Center = new WPoint(radialGradientBrush.Center.X, radialGradientBrush.Center.Y),
 					RadiusX = radialGradientBrush.Radius,
 					RadiusY = radialGradientBrush.Radius

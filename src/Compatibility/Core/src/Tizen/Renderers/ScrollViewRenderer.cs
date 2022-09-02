@@ -1,38 +1,22 @@
 using System;
 using System.ComponentModel;
-using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using EContainer = ElmSharp.Container;
-using ERect = ElmSharp.Rect;
-using NBox = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Box;
-using NScroller = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Scroller;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.ScrollView;
+using System.Linq;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
+using NScrollView = Tizen.UIExtensions.NUI.ScrollView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	public class ScrollViewRenderer : ViewRenderer<ScrollView, NScroller>
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
+	public class ScrollViewRenderer : ViewRenderer<ScrollView, NScrollView>
 	{
-		EContainer _scrollCanvas;
-		int _defaultVerticalStepSize;
-		int _defaultHorizontalStepSize;
-
-		EvasBox EvasFormsCanvas => _scrollCanvas as EvasBox;
-
-		NBox Canvas => _scrollCanvas as NBox;
-
 		public ScrollViewRenderer()
 		{
 			RegisterPropertyHandler("Content", FillContent);
 			RegisterPropertyHandler(ScrollView.OrientationProperty, UpdateOrientation);
 			RegisterPropertyHandler(ScrollView.VerticalScrollBarVisibilityProperty, UpdateVerticalScrollBarVisibility);
 			RegisterPropertyHandler(ScrollView.HorizontalScrollBarVisibilityProperty, UpdateHorizontalScrollBarVisibility);
-			RegisterPropertyHandler(Specific.VerticalScrollStepProperty, UpdateVerticalScrollStep);
-			RegisterPropertyHandler(Specific.HorizontalScrollStepProperty, UpdateHorizontalScrollStep);
-		}
-
-		public override ERect GetNativeContentGeometry()
-		{
-			return Forms.UseFastLayout ? EvasFormsCanvas.Geometry : Canvas.Geometry;
+			RegisterPropertyHandler(ScrollView.ContentSizeProperty, UpdateContentSize);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ScrollView> e)
@@ -40,22 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (Control == null)
 			{
 				SetNativeControl(CreateNativeControl());
-				Control.Scrolled += OnScrolled;
-
-				if (Forms.UseFastLayout)
-				{
-					_scrollCanvas = new EvasBox(Control);
-					EvasFormsCanvas.LayoutUpdated += OnContentLayoutUpdated;
-				}
-				else
-				{
-					_scrollCanvas = new NBox(Control);
-					Canvas.LayoutUpdated += OnContentLayoutUpdated;
-				}
-
-				Control.SetContent(_scrollCanvas);
-				_defaultVerticalStepSize = Control.VerticalStepSize;
-				_defaultHorizontalStepSize = Control.HorizontalStepSize;
+				Control.Scrolling += OnScrolled;
 			}
 
 			if (e.OldElement != null)
@@ -83,16 +52,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 		}
 
-		protected virtual NScroller CreateNativeControl()
+		protected virtual NScrollView CreateNativeControl()
 		{
-			if (Device.Idiom == TargetIdiom.Watch)
-			{
-				return new Native.Watch.WatchScroller(Forms.NativeParent, Forms.CircleSurface);
-			}
-			else
-			{
-				return new NScroller(Forms.NativeParent);
-			}
+			return new NScrollView();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -106,93 +68,44 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 				if (Control != null)
 				{
-					Control.Scrolled -= OnScrolled;
-				}
-				if (Canvas != null)
-				{
-					Canvas.LayoutUpdated -= OnContentLayoutUpdated;
-				}
-				if (EvasFormsCanvas != null)
-				{
-					EvasFormsCanvas.LayoutUpdated -= OnContentLayoutUpdated;
+					Control.Scrolling -= OnScrolled;
 				}
 			}
-
 			base.Dispose(disposing);
 		}
 
 		void FillContent()
 		{
-			if (Forms.UseFastLayout)
+			foreach (var child in Control.ContentContainer.Children.ToList())
 			{
-				EvasFormsCanvas.UnPackAll();
-				if (Element.Content != null)
-				{
-					EvasFormsCanvas.PackEnd(Platform.GetOrCreateRenderer(Element.Content).NativeView);
-					UpdateContentSize();
-				}
+				Control.ContentContainer.Remove(child);
 			}
-			else
-			{
-				Canvas.UnPackAll();
-				if (Element.Content != null)
-				{
-					Canvas.PackEnd(Platform.GetOrCreateRenderer(Element.Content).NativeView);
-					UpdateContentSize();
-				}
-			}
-		}
-
-		void OnContentLayoutUpdated(object sender, Native.LayoutEventArgs e)
-		{
+			Control.ContentContainer.Add(Platform.GetOrCreateRenderer(Element.Content).NativeView);
 			UpdateContentSize();
 		}
 
 		void UpdateOrientation()
 		{
-			switch (Element.Orientation)
-			{
-				case ScrollOrientation.Horizontal:
-					Control.ScrollBlock = ScrollBlock.Vertical;
-					Control.HorizontalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Auto;
-					Control.VerticalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Invisible;
-					break;
-				case ScrollOrientation.Vertical:
-					Control.ScrollBlock = ScrollBlock.Horizontal;
-					Control.HorizontalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Invisible;
-					Control.VerticalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Auto;
-					break;
-				default:
-					Control.ScrollBlock = ScrollBlock.None;
-					Control.HorizontalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Auto;
-					Control.VerticalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Auto;
-					break;
-			}
+			Control.ScrollOrientation = (global::Tizen.UIExtensions.Common.ScrollOrientation)Element.Orientation;
+
 		}
 
 		void UpdateContentSize()
 		{
-			_scrollCanvas.MinimumWidth = Forms.ConvertToScaledPixel(Element.ContentSize.Width + Element.Padding.HorizontalThickness);
-			_scrollCanvas.MinimumHeight = Forms.ConvertToScaledPixel(Element.ContentSize.Height + Element.Padding.VerticalThickness);
-
-			// elm-scroller updates the CurrentRegion after render
-			Device.BeginInvokeOnMainThread(() =>
+			if (Control.ContentContainer.Children.Count > 0)
 			{
-				if (Control != null)
-				{
-					OnScrolled(Control, EventArgs.Empty);
-				}
-			});
+				Control.ContentContainer.Children[0].SizeWidth = Forms.ConvertToScaledPixel(Element.ContentSize.Width + Element.Padding.HorizontalThickness);
+				Control.ContentContainer.Children[0].SizeHeight = Forms.ConvertToScaledPixel(Element.ContentSize.Height + Element.Padding.VerticalThickness);
+			}
 		}
-
 
 		protected void OnScrolled(object sender, EventArgs e)
 		{
-			var region = Control.CurrentRegion.ToDP();
+			var region = Control.ScrollBound.ToDP();
 			((IScrollViewController)Element).SetScrolledPosition(region.X, region.Y);
 		}
 
-		async void OnScrollRequested(object sender, ScrollToRequestedEventArgs e)
+		void OnScrollRequested(object sender, ScrollToRequestedEventArgs e)
 		{
 			var x = e.ScrollX;
 			var y = e.ScrollY;
@@ -203,57 +116,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				y = itemPosition.Y;
 			}
 
-			ERect region = new Rectangle(x, y, Element.Width, Element.Height).ToPixel();
-			await Control.ScrollToAsync(region, e.ShouldAnimate);
+			var region = new Rect(x, y, Element.Width, Element.Height).ToPixel();
+			Control.ScrollTo((float)(Element.Orientation == ScrollOrientation.Horizontal ? region.X : region.Y), e.ShouldAnimate);
 			Element.SendScrollFinished();
 		}
 
 		void UpdateVerticalScrollBarVisibility()
 		{
-			Control.VerticalScrollBarVisiblePolicy = Element.VerticalScrollBarVisibility.ToNative();
+			Control.VerticalScrollBarVisibility = (global::Tizen.UIExtensions.Common.ScrollBarVisibility)Element.VerticalScrollBarVisibility;
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
 			var orientation = Element.Orientation;
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
-				Control.HorizontalScrollBarVisiblePolicy = Element.HorizontalScrollBarVisibility.ToNative();
-		}
-
-		void UpdateVerticalScrollStep(bool initialize)
-		{
-			var step = Specific.GetVerticalScrollStep(Element);
-			if (initialize && step == -1)
-				return;
-
-			Control.VerticalStepSize = step != -1 ? Forms.ConvertToScaledPixel(step) : _defaultVerticalStepSize;
-		}
-
-		void UpdateHorizontalScrollStep(bool initialize)
-		{
-			var step = Specific.GetHorizontalScrollStep(Element);
-			if (initialize && step == -1)
-				return;
-
-			Control.HorizontalStepSize = step != -1 ? Forms.ConvertToScaledPixel(step) : _defaultHorizontalStepSize;
-		}
-	}
-
-	static class ScrollBarExtensions
-	{
-		public static ScrollBarVisiblePolicy ToNative(this ScrollBarVisibility visibility)
-		{
-			switch (visibility)
-			{
-				case ScrollBarVisibility.Default:
-					return ScrollBarVisiblePolicy.Auto;
-				case ScrollBarVisibility.Always:
-					return ScrollBarVisiblePolicy.Visible;
-				case ScrollBarVisibility.Never:
-					return ScrollBarVisiblePolicy.Invisible;
-				default:
-					return ScrollBarVisiblePolicy.Auto;
-			}
+				Control.HorizontalScrollBarVisibility = (global::Tizen.UIExtensions.Common.ScrollBarVisibility)Element.HorizontalScrollBarVisibility;
 		}
 	}
 }

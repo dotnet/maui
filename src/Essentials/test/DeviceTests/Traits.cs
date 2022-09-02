@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using RuntimeDeviceType = Microsoft.Maui.Essentials.DeviceType;
+using Microsoft.Maui.Devices;
+using RuntimeDeviceType = Microsoft.Maui.Devices.DeviceType;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {

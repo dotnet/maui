@@ -13,6 +13,7 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -27,21 +28,25 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedPageHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
 			});
 		}
 
-		[Fact(DisplayName = "Header Visible When Pushing To TabbedPage")]
-		public async Task HeaderVisibleWhenPushingToTabbedPage()
+		[Fact(DisplayName = "Toolbar Visible When Pushing To TabbedPage")]
+		public async Task ToolbarVisibleWhenPushingToTabbedPage()
 		{
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
+				// When the current active page is a TabbedPage then
+				// we put to toolbar inside the PaneFooter so it's
+				// to the right of the tabs
+
 				await navPage.PushAsync(CreateBasicTabbedPage());
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var header = (WFrameworkElement)navView.PaneFooter;
@@ -62,12 +67,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "TabbedPage Disconnects")]
-		public async Task TabbedPageHandlerDisconnects()
+		public async Task TabbedViewHandlerDisconnects()
 		{
 			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage();
 
-			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, (handler) =>
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, (handler) =>
 			{
 				// Validate that no exceptions are thrown
 				((IElementHandler)handler).DisconnectHandler();
@@ -85,7 +90,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), (handler) =>
 			{
 				var navView = GetMauiNavigationView(tabbedPage.Handler.MauiContext);
-				var platformBrush = (WSolidColorBrush)((Paint)tabbedPage.BarBackground).ToNative();
+				var platformBrush = (WSolidColorBrush)((Paint)tabbedPage.BarBackground).ToPlatform();
 				Assert.Equal(platformBrush.Color, ((WSolidColorBrush)navView.TopNavArea.Background).Color);
 				return Task.CompletedTask;
 			});
@@ -108,7 +113,7 @@ namespace Microsoft.Maui.DeviceTests
 				window.Page = CreateBasicTabbedPage();
 
 				// wait for new handler to finish loading
-				await ((INativeViewHandler)window.Page.Handler).NativeView.LoadedAsync();
+				await ((IPlatformViewHandler)window.Page.Handler).PlatformView.OnLoadedAsync();
 				var navView = GetMauiNavigationView(window.Page.Handler.MauiContext);
 
 				// make sure root view is displaying as top tabs
@@ -123,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage();
 			tabbedPage.BarTextColor = Colors.Red;
-			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, handler =>
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var navItem = GetNavigationViewItems(navView).ToList()[0];
@@ -140,12 +145,12 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task TabTitle()
 		{
 			SetupBuilder();
-			await CreateHandlerAndAddToWindow<TabbedPageHandler>(CreateBasicTabbedPage(), handler =>
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(CreateBasicTabbedPage(), handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var navItem = GetNavigationViewItems(navView).ToList()[0];
 				Assert.Equal("Page 1", navItem.Content);
-				handler.VirtualView.Children[0].Title = "New Page Name";
+				(handler.VirtualView as TabbedPage).Children[0].Title = "New Page Name";
 				Assert.Equal("New Page Name", navItem.Content);
 				return Task.CompletedTask;
 			});
@@ -161,7 +166,7 @@ namespace Microsoft.Maui.DeviceTests
 			tabbedPage.SelectedTabColor = Colors.Red;
 			tabbedPage.UnselectedTabColor = Colors.Purple;
 
-			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, handler =>
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var navItem1 = GetNavigationViewItems(navView).ToList()[0];
@@ -183,18 +188,18 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task AddingAndRemovingPagesPropagatesCorrectly()
 		{
 			SetupBuilder();
-			await CreateHandlerAndAddToWindow<TabbedPageHandler>(CreateBasicTabbedPage(), async handler =>
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(CreateBasicTabbedPage(), async handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var items = GetNavigationViewItems(navView).ToList();
 				Assert.Single(items);
-				handler.VirtualView.Children.Add(new ContentPage());
+				(handler.VirtualView as TabbedPage).Children.Add(new ContentPage());
 
 				// Wait for the navitem to propagate
 				await Task.Delay(100);
 				items = GetNavigationViewItems(navView).ToList();
 				Assert.Equal(2, items.Count);
-				handler.VirtualView.Children.RemoveAt(1);
+				(handler.VirtualView as TabbedPage).Children.RemoveAt(1);
 
 				// Wait for the navitem to propagate
 				await Task.Delay(100);
@@ -213,7 +218,7 @@ namespace Microsoft.Maui.DeviceTests
 
 
 
-			await CreateHandlerAndAddToWindow<TabbedPageHandler>(tabbedPage, handler =>
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
 				var secondItem = (navView.MenuItemsSource as IEnumerable<NavigationViewItemViewModel>).Skip(1).FirstOrDefault();

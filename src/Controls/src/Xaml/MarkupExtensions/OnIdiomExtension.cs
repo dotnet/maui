@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -52,8 +53,7 @@ namespace Microsoft.Maui.Controls.Xaml
 							  ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
 
 			var value = GetValue();
-			var info = propertyType.GetTypeInfo();
-			if (value == null && info.IsValueType)
+			if (value == null && propertyType.IsValueType)
 				return Activator.CreateInstance(propertyType);
 
 			if (Converter != null)
@@ -101,21 +101,17 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		object GetValue()
 		{
-			switch (Device.Idiom)
-			{
-				case TargetIdiom.Phone:
-					return Phone ?? Default;
-				case TargetIdiom.Tablet:
-					return Tablet ?? Default;
-				case TargetIdiom.Desktop:
-					return Desktop ?? Default;
-				case TargetIdiom.TV:
-					return TV ?? Default;
-				case TargetIdiom.Watch:
-					return Watch ?? Default;
-				default:
-					return Default;
-			}
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				return Phone ?? Default;
+			if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
+				return Tablet ?? Default;
+			if (DeviceInfo.Idiom == DeviceIdiom.Desktop)
+				return Desktop ?? Default;
+			if (DeviceInfo.Idiom == DeviceIdiom.TV)
+				return TV ?? Default;
+			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
+				return Watch ?? Default;
+			return Default;
 		}
 	}
 }

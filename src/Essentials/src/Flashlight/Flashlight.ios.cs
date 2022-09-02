@@ -1,26 +1,28 @@
 using System.Threading.Tasks;
 using AVFoundation;
+using Microsoft.Maui.ApplicationModel;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class Flashlight
+	class FlashlightImplementation : IFlashlight
 	{
-		static Task PlatformTurnOnAsync()
+		public Task TurnOnAsync()
 		{
 			Toggle(true);
 
 			return Task.CompletedTask;
 		}
 
-		static Task PlatformTurnOffAsync()
+		public Task TurnOffAsync()
 		{
 			Toggle(false);
 
 			return Task.CompletedTask;
 		}
 
-		static void Toggle(bool on)
+		void Toggle(bool on)
 		{
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var captureDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
 			if (captureDevice == null || !(captureDevice.HasFlash || captureDevice.HasTorch))
 				throw new FeatureNotSupportedException();
@@ -46,6 +48,7 @@ namespace Microsoft.Maui.Essentials
 			}
 
 			captureDevice.UnlockForConfiguration();
+#pragma warning restore CA1416
 			captureDevice.Dispose();
 			captureDevice = null;
 		}

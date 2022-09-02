@@ -162,13 +162,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			public AsyncDelegateCommand(Func<T, Task> executeMethod, Func<T, bool> canExecuteMethod)
 			{
-				var genericTypeInfo = typeof(T).GetTypeInfo();
+				var genericType = typeof(T);
 
 				// DelegateCommand allows object or Nullable<>.  
 				// note: Nullable<> is a struct so we cannot use a class constraint.
-				if (genericTypeInfo.IsValueType)
+				if (genericType.IsValueType)
 				{
-					if (!genericTypeInfo.IsGenericType || !typeof(Nullable<>).GetTypeInfo().IsAssignableFrom(genericTypeInfo.GetGenericTypeDefinition().GetTypeInfo()))
+					if (!genericType.IsGenericType || !typeof(Nullable<>).IsAssignableFrom(genericType.GetGenericTypeDefinition()))
 						throw new InvalidCastException("T for DelegateCommand<T> is not an object nor Nullable.");
 				}
 

@@ -7,11 +7,22 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
-		protected override ImageView CreateNativeView() => new AppCompatImageView(Context);
-
-		protected override void DisconnectHandler(ImageView nativeView)
+		protected override ImageView CreatePlatformView()
 		{
-			base.DisconnectHandler(nativeView);
+			var imageView = new AppCompatImageView(Context);
+
+			// Enable view bounds adjustment on measure.
+			// This allows the ImageView's OnMeasure method to account for the image's intrinsic
+			// aspect ratio during measurement, which gives us more useful values during constrained
+			// measurement passes.
+			imageView.SetAdjustViewBounds(true);
+
+			return imageView;
+		}
+
+		protected override void DisconnectHandler(ImageView platformView)
+		{
+			base.DisconnectHandler(platformView);
 			SourceLoader.Reset();
 		}
 
@@ -24,26 +35,41 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			handler.ToPlatform().UpdateBackground(image);
+			handler.ToPlatform().UpdateOpacity(image);
 		}
 
 		public static void MapAspect(IImageHandler handler, IImage image) =>
-			handler.TypedNativeView?.UpdateAspect(image);
+			handler.PlatformView?.UpdateAspect(image);
 
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
-			handler.TypedNativeView?.UpdateIsAnimationPlaying(image);
+			handler.PlatformView?.UpdateIsAnimationPlaying(image);
 
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapSourceAsync(IImageHandler handler, IImage image)
-		{
-			handler.TypedNativeView.Clear();
-			return handler.SourceLoader.UpdateImageSourceAsync();
-		}
+		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
+			handler.SourceLoader.UpdateImageSourceAsync();
 
-		void OnSetImageSource(Drawable? obj)
+		void OnSetImageSource(Drawable? obj) =>
+			PlatformView.SetImageDrawable(obj);
+
+		public override void PlatformArrange(Graphics.Rect frame)
 		{
-			NativeView.SetImageDrawable(obj);
+			if (PlatformView.GetScaleType() == ImageView.ScaleType.CenterCrop)
+			{
+				// If the image is center cropped (AspectFill), then the size of the image likely exceeds
+				// the view size in some dimension. So we need to clip to the view's bounds.
+
+				var (left, top, right, bottom) = PlatformView.Context!.ToPixels(frame);
+				var clipRect = new Android.Graphics.Rect(0, 0, right - left, bottom - top);
+				PlatformView.ClipBounds = clipRect;
+			}
+			else
+			{
+				PlatformView.ClipBounds = null;
+			}
+
+			base.PlatformArrange(frame);
 		}
 	}
 }

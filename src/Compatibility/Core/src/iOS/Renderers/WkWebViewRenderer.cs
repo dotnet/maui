@@ -21,6 +21,7 @@ using Uri = System.Uri;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class WkWebViewRenderer : WKWebView, IVisualElementRenderer, IWebViewDelegate, IEffectControlProvider, ITabStop
 	{
 		EventTracker _events;
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Layout.LayoutChildIntoBoundingRegion(Element, new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public void LoadHtml(string html, string baseUrl)
@@ -169,6 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		public async void LoadUrl(string url)
 		{
 			try
@@ -207,6 +209,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		bool LoadFile(string url)
 		{
 			try
@@ -233,6 +236,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return false;
 		}
 
+		[PortHandler]
 		bool HasCookiesToLoad(string url)
 		{
 			var uri = CreateUriForCookies(url);
@@ -251,6 +255,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return cookies.Count > 0;
 		}
 
+		[PortHandler]
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
@@ -298,8 +303,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e) =>
 			ElementChanged?.Invoke(this, e);
 
+		[PortHandler]
 		HashSet<string> _loadedCookies = new HashSet<string>();
 
+		[PortHandler]
 		Uri CreateUriForCookies(string url)
 		{
 			if (url == null)
@@ -321,6 +328,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return null;
 		}
 
+		[PortHandler]
 		async Task<List<NSHttpCookie>> GetCookiesFromNativeStore(string url)
 		{
 			NSHttpCookie[] _initialCookiesLoaded = null;
@@ -358,7 +366,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				// we don't care that much about this being accurate
 				// the cookie container will split the cookies up more correctly
-				if (!cookie.Domain.Contains(domain) && !domain.Contains(cookie.Domain))
+				if (!cookie.Domain.Contains(domain, StringComparison.Ordinal) && !domain.Contains(cookie.Domain, StringComparison.Ordinal))
 					continue;
 
 				existingCookies.Add(cookie);
@@ -367,6 +375,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return existingCookies;
 		}
 
+		[PortHandler]
 		async Task InitialCookiePreloadIfNecessary(string url)
 		{
 			var myCookieJar = WebView.Cookies;
@@ -397,6 +406,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		internal async Task SyncNativeCookiesToElement(string url)
 		{
 			if (String.IsNullOrWhiteSpace(url))
@@ -445,6 +455,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			await SyncNativeCookies(url);
 		}
 
+		[PortHandler]
 		async Task SyncNativeCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);
@@ -507,6 +518,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			await DeleteCookies(deleteCookies);
 		}
 
+		[PortHandler]
 		async Task SetCookie(List<Cookie> cookies)
 		{
 			if (Forms.IsiOS11OrNewer)
@@ -527,6 +539,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		async Task DeleteCookies(List<NSHttpCookie> cookies)
 		{
 			if (Forms.IsiOS11OrNewer)
@@ -551,7 +564,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 						foreach (var deleteme in cookies)
 						{
-							if (record.DisplayName.Contains(deleteme.Domain) || deleteme.Domain.Contains(record.DisplayName))
+							if (record.DisplayName.Contains(deleteme.Domain, StringComparison.Ordinal) || deleteme.Domain.Contains(record.DisplayName, StringComparison.Ordinal))
 							{
 								WKWebsiteDataStore.DefaultDataStore.RemoveDataOfTypes(record.DataTypes,
 									  new[] { record }, () => { });
@@ -615,6 +628,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateCanGoBackForward();
 		}
 
+		[PortHandler]
 		async void OnReloadRequested(object sender, EventArgs eventArgs)
 		{
 			try
@@ -637,6 +651,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			((IWebViewController)WebView).CanGoForward = CanGoForward;
 		}
 
+		[PortHandler]
 		string GetCookieString(List<Cookie> existingCookies)
 		{
 			StringBuilder cookieBuilder = new StringBuilder();
@@ -695,6 +710,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			WebView WebView => _renderer.WebView;
 			IWebViewController WebViewController => WebView;
 
+			[PortHandler]
 			public override void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 			{
 				var url = GetCurrentUrl();
@@ -705,6 +721,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_renderer.UpdateCanGoBackForward();
 			}
 
+			[PortHandler]
 			public override void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 			{
 				var url = GetCurrentUrl();
@@ -715,6 +732,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_renderer.UpdateCanGoBackForward();
 			}
 
+			[PortHandler("Partially ported")]
 			public override void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 			{
 				if (webView.IsLoading)
@@ -730,6 +748,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				ProcessNavigated(url);
 			}
 
+			[PortHandler]
 			async void ProcessNavigated(string url)
 			{
 				try
@@ -752,6 +771,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 			}
 
+			[PortHandler]
 			// https://stackoverflow.com/questions/37509990/migrating-from-uiwebview-to-wkwebview
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
@@ -793,12 +813,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				decisionHandler(args.Cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
 			}
 
+			[PortHandler]
 			string GetCurrentUrl()
 			{
 				return _renderer?.Url?.AbsoluteUrl?.ToString();
 			}
 		}
 
+		[PortHandler]
 		class CustomWebViewUIDelegate : WKUIDelegate
 		{
 			static string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");

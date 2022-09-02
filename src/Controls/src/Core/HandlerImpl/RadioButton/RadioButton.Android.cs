@@ -1,7 +1,4 @@
 ﻿#nullable enable
-using System;
-using Android.Views;
-using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls
@@ -12,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (radioButton.ResolveControlTemplate() != null)
 			{
-				if (handler.NativeView is ContentViewGroup vg && handler.MauiContext != null)
+				if (handler.PlatformView is ContentViewGroup vg && handler.MauiContext != null)
 				{
 					// Cleanup the old view when reused
 					vg.RemoveAllViews();

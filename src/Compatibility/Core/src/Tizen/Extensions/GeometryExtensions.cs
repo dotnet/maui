@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using SkiaSharp;
-using Microsoft.Maui.Controls.Compatibility.Shapes;
-using FormsRectangle = Microsoft.Maui.Controls.Compatibility.Rectangle;
+using Microsoft.Maui.Controls.Shapes;
+using Rect = Microsoft.Maui.Graphics.Rect;
+using Point = Microsoft.Maui.Graphics.Point;
+
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -9,7 +11,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	{
 		public static SKPath ToSKPath(this Geometry geometry)
 		{
+#pragma warning disable IL2026
 			return geometry == null ? MakePath(geometry) : MakePath((dynamic)geometry);
+#pragma warning disable IL2026
 		}
 
 		static SKPath MakePath(Geometry geometry)
@@ -34,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		static SKPath MakePath(RectangleGeometry rectangleGeometry)
 		{
 			var path = new SKPath();
-			FormsRectangle rect = rectangleGeometry.Rect;
+			Rect rect = rectangleGeometry.Rect;
 
 			path.AddRect(new SKRect(
 				Forms.ConvertToScaledPixel(rect.Left),
@@ -66,7 +70,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			foreach (Geometry child in geometryGroup.Children)
 			{
+#pragma warning disable IL2026
 				SKPath childPath = MakePath((dynamic)child);
+#pragma warning disable IL2026
 				path.AddPath(childPath);
 			}
 

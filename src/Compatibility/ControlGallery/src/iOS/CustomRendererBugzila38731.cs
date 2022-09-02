@@ -4,13 +4,16 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using ObjCRuntime;
 using UIKit;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(Bugzilla38731), typeof(CustomRendererBugzila38731))]
 [assembly: ExportRenderer(typeof(Bugzilla38731.PageTwo), typeof(CustomRendererBugzila38731))]
 [assembly: ExportRenderer(typeof(Bugzilla38731.PageThree), typeof(CustomRendererBugzila38731))]
 [assembly: ExportRenderer(typeof(Bugzilla38731.PageFour), typeof(CustomRendererBugzila38731))]
+#pragma warning restore CS0612 // Type or member is obsolete
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 {
+	[System.Obsolete]
 	public class CustomRendererBugzila38731 : Platform.iOS.PageRenderer
 	{
 		public override void ViewWillAppear(bool animated)

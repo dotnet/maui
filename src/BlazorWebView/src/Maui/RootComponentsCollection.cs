@@ -3,15 +3,21 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
+	/// <summary>
+	/// A collection of <see cref="RootComponent"/> items.
+	/// </summary>
 	public class RootComponentsCollection : ObservableCollection<RootComponent>, IJSComponentConfiguration
 	{
-		private readonly JSComponentConfigurationStore _jSComponents;
-
-		public RootComponentsCollection(JSComponentConfigurationStore jSComponents)
+		/// <summary>
+		/// Initializes a new instance of <see cref="RootComponentsCollection"/>.
+		/// </summary>
+		/// <param name="jsComponents">Configuration to enable JS component support.</param>
+		public RootComponentsCollection(JSComponentConfigurationStore jsComponents)
 		{
-			_jSComponents = jSComponents;
+			JSComponents = jsComponents;
 		}
 
-		public JSComponentConfigurationStore JSComponents => _jSComponents;
+		/// <inheritdoc />
+		public JSComponentConfigurationStore JSComponents { get; }
 	}
 }

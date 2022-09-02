@@ -1,0 +1,110 @@
+﻿#nullable enable
+Microsoft.Maui.Handlers.MenuFlyoutHandler
+Microsoft.Maui.Handlers.MenuFlyoutHandler.Add(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.Clear() -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.MenuFlyoutHandler() -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.MenuFlyoutHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.Insert(int index, Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.MenuFlyoutHandler.Remove(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(int Index, Microsoft.Maui.IMenuElement! MenuElement) -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Index.get -> int
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Index.init -> void
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.MenuElement.get -> Microsoft.Maui.IMenuElement!
+Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.MenuElement.init -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.Add(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.Clear() -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.Insert(int index, Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.PlatformView.get -> object!
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.Remove(Microsoft.Maui.IMenuElement! view) -> void
+Microsoft.Maui.Handlers.IMenuFlyoutHandler.VirtualView.get -> Microsoft.Maui.IMenuFlyout!
+Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler
+Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler.PlatformView.get -> object!
+Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler.VirtualView.get -> Microsoft.Maui.IMenuFlyoutSeparator!
+Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler
+Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler() -> void
+Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.MenuFlyoutSeparatorHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.IContextFlyoutElement.ContextFlyout.get -> Microsoft.Maui.IFlyout?
+Microsoft.Maui.IFlyout
+Microsoft.Maui.IMenuFlyout
+Microsoft.Maui.IContextFlyoutElement
+Microsoft.Maui.IMenuFlyoutSeparator
+Microsoft.Maui.IToolTipElement
+Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
+Microsoft.Maui.IWindow.FrameChanged(Microsoft.Maui.Graphics.Rect frame) -> void
+Microsoft.Maui.ToolTip
+Microsoft.Maui.ToolTip.Content.get -> object?
+Microsoft.Maui.ToolTip.Content.set -> void
+Microsoft.Maui.ToolTip.ToolTip() -> void
+Microsoft.Maui.IWindow.Height.get -> double
+Microsoft.Maui.IWindow.Width.get -> double
+Microsoft.Maui.IWindow.MaximumHeight.get -> double
+Microsoft.Maui.IWindow.MaximumWidth.get -> double
+Microsoft.Maui.IWindow.MinimumHeight.get -> double
+Microsoft.Maui.IWindow.MinimumWidth.get -> double
+Microsoft.Maui.IWindow.X.get -> double
+Microsoft.Maui.IWindow.Y.get -> double
+override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> object!
+override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> object!
+override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.EntryHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
+*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiPicker.MauiPicker(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiPickerBase.MauiPickerBase(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View! host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat?
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle? args) -> bool
+override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+override Microsoft.Maui.Platform.NavigationViewFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyout!, Microsoft.Maui.Handlers.IMenuFlyoutHandler!>!
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapAdd(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapClear(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapInsert(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyout!, Microsoft.Maui.Handlers.IMenuFlyoutHandler!>!
+static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapRemove(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
+static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
+static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Handlers.ViewHandler.MapContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchThumbDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable?
+static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchTrackDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable?
+static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this Android.Views.View! view, Microsoft.Maui.ToolTip? tooltip) -> void
+virtual Microsoft.Maui.Handlers.EntryHandler.GetClearButtonDrawable() -> Android.Graphics.Drawables.Drawable?
+*REMOVED*virtual Microsoft.Maui.Handlers.EntryHandler.GetClearButtonDrawable() -> Android.Graphics.Drawables.Drawable!
+*REMOVED*static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchTrackDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable!
+*REMOVED*override Microsoft.Maui.Platform.NavigationViewFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup! container, Android.OS.Bundle! savedInstanceState) -> Android.Views.View!
+*REMOVED*override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle! args) -> bool
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+*REMOVED*override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View! host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat!
+*REMOVED*static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchThumbDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable!
+*REMOVED*Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context? context) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiPickerBase.MauiPickerBase(Android.Content.Context? context) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiPicker.MauiPicker(Android.Content.Context? context) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.OnDestinationChanged(AndroidX.Navigation.NavController! navController, AndroidX.Navigation.NavDestination! navDestination, Android.OS.Bundle? bundle) -> void
+*REMOVED*virtual Microsoft.Maui.Platform.StackNavigationManager.OnDestinationChanged(AndroidX.Navigation.NavController! navController, AndroidX.Navigation.NavDestination! navDestination, Android.OS.Bundle! bundle) -> void
+*REMOVED* override Microsoft.Maui.Platform.MauiDatePicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
+*REMOVED* override Microsoft.Maui.Platform.MauiTimePicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
+*REMOVED*Microsoft.Maui.ScrollToRequest.HoriztonalOffset.get -> double
+*REMOVED*Microsoft.Maui.ScrollToRequest.HoriztonalOffset.init -> void
+*REMOVED*Microsoft.Maui.ScrollToRequest.ScrollToRequest(double HoriztonalOffset, double VerticalOffset, bool Instant) -> void
+Microsoft.Maui.ScrollToRequest.HorizontalOffset.get -> double
+Microsoft.Maui.ScrollToRequest.HorizontalOffset.init -> void
+Microsoft.Maui.ScrollToRequest.ScrollToRequest(double HorizontalOffset, double VerticalOffset, bool Instant) -> void
+*REMOVED*static Microsoft.Maui.IViewExtensions.GetEffectiveFlowDirection(this Microsoft.Maui.IView! view) -> Microsoft.Maui.FlowDirection
+*REMOVED*Microsoft.Maui.IViewExtensions
+*REMOVED*static Microsoft.Maui.Layouts.LayoutExtensions.ShouldArrangeLeftToRight(this Microsoft.Maui.IView! view) -> bool

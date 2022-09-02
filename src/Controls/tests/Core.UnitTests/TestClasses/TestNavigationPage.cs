@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public void ValidateNavigationCompleted()
 		{
-			Assert.IsNull(CurrentNavigationTask);
+			Assert.Null(CurrentNavigationTask);
 			if (Handler is TestNavigationHandler nh)
-				Assert.IsNull(nh.CurrentNavigationRequest);
+				Assert.Null(nh.CurrentNavigationRequest);
 		}
 
 		public async Task<bool> SendBackButtonPressedAsync()
@@ -44,13 +44,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class TestNavigationHandler : ViewHandler<NavigationPage, object>
 	{
-		public static CommandMapper<INavigationView, TestNavigationHandler> NavigationViewCommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IStackNavigationView, TestNavigationHandler> NavigationViewCommandMapper = new(ViewCommandMapper)
 		{
-			[nameof(INavigationView.RequestNavigation)] = RequestNavigation
+			[nameof(IStackNavigation.RequestNavigation)] = RequestNavigation
 		};
 
-		public static PropertyMapper<INavigationView, TestNavigationHandler> NavigationViewMapper
-			   = new PropertyMapper<INavigationView, TestNavigationHandler>();
+		public static PropertyMapper<IStackNavigationView, TestNavigationHandler> NavigationViewMapper
+			   = new PropertyMapper<IStackNavigationView, TestNavigationHandler>();
 
 		public NavigationRequest CurrentNavigationRequest { get; private set; }
 
@@ -62,8 +62,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var newStack = CurrentNavigationRequest.NavigationStack.ToList();
 			CurrentNavigationRequest = null;
-			(VirtualView as INavigationView)
-				.NavigationFinished(newStack);
+
+			if ((this as IElementHandler).VirtualView is IStackNavigation sn)
+				sn.NavigationFinished(newStack);
 		}
 
 		async void RequestNavigation(NavigationRequest navigationRequest)
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			CompleteCurrentNavigation();
 		}
 
-		public static void RequestNavigation(TestNavigationHandler arg1, INavigationView arg2, object arg3)
+		public static void RequestNavigation(TestNavigationHandler arg1, IStackNavigationView arg2, object arg3)
 		{
 			arg1.RequestNavigation((NavigationRequest)arg3);
 		}
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 		}
 
-		protected override object CreateNativeView()
+		protected override object CreatePlatformView()
 		{
 			return new object();
 		}

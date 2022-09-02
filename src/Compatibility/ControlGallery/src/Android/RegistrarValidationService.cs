@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using AndroidX.Fragment.App;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Platform;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
@@ -22,14 +24,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			if (element == null)
 				return true;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			object renderer = Platform.Android.Platform.CreateRendererWithContext(element, _context);
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{
-				var sp = MauiApplication.Current.Services.GetRequiredService<IMauiHandlersFactory>();
-				renderer = sp.GetHandler(element.GetType());
+				var activity =
+					DependencyService.Resolve<global::Android.Content.Context>() as MauiAppCompatActivity;
+				var mc = activity.GetWindow().Handler.MauiContext;
+
+				renderer = (element as IElement).ToHandler(mc);
+				if (renderer is IElementHandler vh)
+					vh.DisconnectHandler();
 			}
 
 			if (renderer == null

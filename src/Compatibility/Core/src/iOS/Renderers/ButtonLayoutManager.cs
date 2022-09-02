@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	// TODO: The entire layout system. iOS buttons were not designed for
 	//       anything but image left, text right, single line layouts.
 
+	[Obsolete]
 	public class ButtonLayoutManager : IDisposable
 	{
 		bool _disposed;
@@ -104,6 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateLineBreakMode();
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 			var control = Control;
@@ -267,6 +269,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+#pragma warning disable CA1416 // TOD0: UIButton.ContentEdgeInsets, UIButton.ImageEdgeInsets is unsupported on: 'ios' 15.0 and later
 		[PortHandler]
 		void UpdatePadding()
 		{
@@ -440,5 +443,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			control.ImageEdgeInsets = imageInsets;
 			control.TitleEdgeInsets = titleInsets;
 		}
+#pragma warning restore CA1416 // UIButton.ContentEdgeInsets, UIButton.ImageEdgeInsets is unsupported on: 'ios' 15.0 and later
 	}
 }

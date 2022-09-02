@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 			}
 			catch (Exception ex)
 			{
-				_logger?.LogWarning(ex, "Unable copy font {Font} to local file system.", font.FontName);
+				_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable copy font {Font} to local file system.", font.FontName);
 
 				if (newFile != null)
 					newFile.DeleteAsync().AsTask().Wait();

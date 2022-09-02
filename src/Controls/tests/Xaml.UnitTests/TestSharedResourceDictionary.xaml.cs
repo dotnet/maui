@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
 				Application.Current = new MockApplication
 				{
 					Resources = new ResourceDictionary
@@ -35,7 +34,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TearDown]
 			public void TearDown()
 			{
-				Device.PlatformServices = null;
 				Application.ClearCurrent();
 			}
 

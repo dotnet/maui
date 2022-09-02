@@ -1,13 +1,43 @@
+using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Tizen.Applications;
+using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Map
+	class MapImplementation : IMap
 	{
-		internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			var appControl = GetAppControlData(latitude, longitude, options);
+			return Launch(appControl);
+		}
+
+		public Task OpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			var appControl = GetAppControlData(placemark, options);
+			return Launch(appControl);
+		}
+
+		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		{
+			var appControl = GetAppControlData(latitude, longitude, options);
+			return TryLaunch(appControl);
+		}
+
+		public Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			var appControl = GetAppControlData(placemark, options);
+			return TryLaunch(appControl);
+		}
+
+		internal static AppControl GetAppControlData(double latitude, double longitude, MapLaunchOptions options)
+		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
 			var appControl = new AppControl
@@ -18,13 +48,17 @@ namespace Microsoft.Maui.Essentials
 
 			appControl.Uri += $"{latitude.ToString(CultureInfo.InvariantCulture)},{longitude.ToString(CultureInfo.InvariantCulture)}";
 
-			AppControl.SendLaunchRequest(appControl);
-
-			return Task.CompletedTask;
+			return appControl;
 		}
 
-		internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		internal static AppControl GetAppControlData(Placemark placemark, MapLaunchOptions options)
 		{
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			Permissions.EnsureDeclared<Permissions.LaunchApp>();
 
 			var appControl = new AppControl
@@ -34,10 +68,26 @@ namespace Microsoft.Maui.Essentials
 			};
 
 			appControl.Uri += $"0,0?q={placemark.GetEscapedAddress()}";
+			return appControl;
+		}
 
+		internal static Task Launch(AppControl appControl)
+		{
 			AppControl.SendLaunchRequest(appControl);
 
 			return Task.CompletedTask;
+		}
+
+		internal static Task<bool> TryLaunch(AppControl appControl)
+		{
+			var canLaunch = AppControl.GetMatchedApplicationIds(appControl).Any();
+
+			if (canLaunch)
+			{
+				Launch(appControl);
+			}
+
+			return Task.FromResult(canLaunch);
 		}
 	}
 }

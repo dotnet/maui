@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
-			=> (handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateLayoutManager();
+			=> (handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateLayoutManager();
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
-			=> (handler.NativeView as IMauiRecyclerView<TItemsView>)?.UpdateAdapter();
+			=> (handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateAdapter();
 	}
 }

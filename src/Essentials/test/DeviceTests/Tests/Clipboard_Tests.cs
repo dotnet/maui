@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Clipboard")]
 	public class Clipboard_Tests
 	{
 		[Theory]

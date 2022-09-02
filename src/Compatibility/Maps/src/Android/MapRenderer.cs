@@ -19,6 +19,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Maps;
 using Microsoft.Maui.Platform;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
@@ -27,10 +28,11 @@ using Circle = Microsoft.Maui.Controls.Maps.Circle;
 using Math = System.Math;
 using Polygon = Microsoft.Maui.Controls.Maps.Polygon;
 using Polyline = Microsoft.Maui.Controls.Maps.Polyline;
+using IList = System.Collections.IList;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 {
-	public class MapRenderer : ViewRenderer<Map, MapView>, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
+	public class MapRenderer : Handlers.Compatibility.ViewRenderer<Map, MapView>, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
 	{
 		const string MoveMessageName = "MapMoveToRegion";
 
@@ -59,9 +61,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			set { s_bundle = value; }
 		}
 
-		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
+
+		protected override Size MinimumSize()
 		{
-			return new SizeRequest(new Size(Context.ToPixels(40), Context.ToPixels(40)));
+			return new Size(40);
+		}
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return new SizeRequest(new Size(40), new Size(40));
 		}
 
 		protected override MapView CreateNativeControl()
@@ -184,18 +191,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			{
 				SetUserVisible();
 			}
-			else if (e.PropertyName == Map.HasScrollEnabledProperty.PropertyName)
+			else if (e.PropertyName == Map.IsScrollEnabledProperty.PropertyName)
 			{
-				gmap.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
+				gmap.UiSettings.ScrollGesturesEnabled = Map.IsScrollEnabled;
 			}
-			else if (e.PropertyName == Map.HasZoomEnabledProperty.PropertyName)
+			else if (e.PropertyName == Map.IsZoomEnabledProperty.PropertyName)
 			{
-				gmap.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
-				gmap.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
+				gmap.UiSettings.ZoomControlsEnabled = Map.IsZoomEnabled;
+				gmap.UiSettings.ZoomGesturesEnabled = Map.IsZoomEnabled;
 			}
-			else if (e.PropertyName == Map.TrafficEnabledProperty.PropertyName)
+			else if (e.PropertyName == Map.IsTrafficEnabledProperty.PropertyName)
 			{
-				gmap.TrafficEnabled = Map.TrafficEnabled;
+				gmap.TrafficEnabled = Map.IsTrafficEnabled;
 			}
 		}
 
@@ -207,7 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			{
 				if (NativeMap != null)
 				{
-					MoveToRegion(Element.LastMoveToRegion, false);
+					//	MoveToRegion(Element.LastMoveToRegion, false);
 					OnPinCollectionChanged(Element.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 					OnMapElementCollectionChanged(Element.MapElements, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 					_init = false;
@@ -215,8 +222,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			}
 			else if (changed)
 			{
-				if (Element.MoveToLastRegionOnLayoutChange)
-					MoveToRegion(Element.LastMoveToRegion, false);
+				//if (Element.MoveToLastRegionOnLayoutChange)
+				//	MoveToRegion(Element.LastMoveToRegion, false);
 			}
 
 			if (NativeMap != null)
@@ -238,10 +245,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
 
-			map.TrafficEnabled = Map.TrafficEnabled;
-			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
-			map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
-			map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
+			map.TrafficEnabled = Map.IsTrafficEnabled;
+			map.UiSettings.ZoomControlsEnabled = Map.IsZoomEnabled;
+			map.UiSettings.ZoomGesturesEnabled = Map.IsZoomEnabled;
+			map.UiSettings.ScrollGesturesEnabled = Map.IsScrollEnabled;
 			SetUserVisible();
 			SetMapType();
 		}
@@ -249,7 +256,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 		protected virtual MarkerOptions CreateMarker(Pin pin)
 		{
 			var opts = new MarkerOptions();
-			opts.SetPosition(new LatLng(pin.Position.Latitude, pin.Position.Longitude));
+			opts.SetPosition(new LatLng(pin.Location.Latitude, pin.Location.Longitude));
 			opts.SetTitle(pin.Label);
 			opts.SetSnippet(pin.Address);
 
@@ -301,9 +308,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			{
 				marker.Snippet = pin.Address;
 			}
-			else if (e.PropertyName == Pin.PositionProperty.PropertyName)
+			else if (e.PropertyName == Pin.LocationProperty.PropertyName)
 			{
-				marker.Position = new LatLng(pin.Position.Latitude, pin.Position.Longitude);
+				marker.Position = new LatLng(pin.Location.Latitude, pin.Location.Longitude);
 			}
 		}
 
@@ -333,7 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 			for (int i = 0; i < Map.Pins.Count; i++)
 			{
-				var pin = Map.Pins[i];
+				var pin = (Pin)Map.Pins[i];
 				if ((string)pin.MarkerId == marker.Id)
 				{
 					targetPin = pin;
@@ -381,7 +388,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 		void OnMapClick(object sender, GoogleMap.MapClickEventArgs e)
 		{
-			Map.SendMapClicked(new Position(e.Point.Latitude, e.Point.Longitude));
+			(Map as IMap)?.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
 		}
 
 		void MoveToRegion(MapSpan span, bool animate)
@@ -418,14 +425,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 		void OnPinCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => PinCollectionChanged(e));
-			}
-			else
-			{
-				PinCollectionChanged(e);
-			}
+			Post(() => PinCollectionChanged(e));
 		}
 
 		void PinCollectionChanged(NotifyCollectionChangedEventArgs e)
@@ -530,7 +530,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			LatLng lr = projection.FromScreenLocation(new global::Android.Graphics.Point(width, height));
 			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
 			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
-			Element.SetVisibleRegion(new MapSpan(new Position(pos.Latitude, pos.Longitude), dlat, dlong));
+			(Element as IMap).VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
 		}
 
 		void MapElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -557,14 +557,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 		void OnMapElementCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(() => MapElementCollectionChanged(e));
-			}
-			else
-			{
-				MapElementCollectionChanged(e);
-			}
+			Post(() => MapElementCollectionChanged(e));
 		}
 
 		void MapElementCollectionChanged(NotifyCollectionChangedEventArgs e)
@@ -606,7 +599,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 						_circles = null;
 					}
 
-					AddMapElements(Element.MapElements);
+					AddMapElements((IEnumerable<MapElement>)Element.MapElements);
 					break;
 			}
 		}

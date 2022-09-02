@@ -4,54 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.StartScreen;
-
-#if WINDOWS_UWP
-using Windows.ApplicationModel.Activation;
-#elif WINDOWS
 using Microsoft.UI.Xaml;
-#endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class AppActions
+	class AppActionsImplementation : IAppActions, IPlatformAppActions
 	{
-		const string appActionPrefix = "XE_APP_ACTIONS-";
+		public bool IsSupported => true;
 
-		public static string IconDirectory { get; set; } = "";
-
-		public static string IconExtension { get; set; } = "png";
-
-		internal static bool PlatformIsSupported
-		   => true;
-
-		internal static async Task OnLaunched(LaunchActivatedEventArgs e)
-		{
-			var args = e?.Arguments;
-#if !WINDOWS_UWP
-			if (string.IsNullOrEmpty(args))
-			{
-				var cliArgs = Environment.GetCommandLineArgs();
-				if (cliArgs?.Length > 1)
-					args = cliArgs[1];
-			}
-#endif
-
-			if (args?.StartsWith(appActionPrefix) ?? false)
-			{
-				var id = ArgumentsToId(args);
-
-				if (!string.IsNullOrEmpty(id))
-				{
-					var actions = await PlatformGetAsync();
-					var appAction = actions.FirstOrDefault(a => a.Id == id);
-
-					if (appAction != null)
-						AppActions.InvokeOnAppAction(null, appAction);
-				}
-			}
-		}
-
-		static async Task<IEnumerable<AppAction>> PlatformGetAsync()
+		public async Task<IEnumerable<AppAction>> GetAsync()
 		{
 			// Load existing items
 			var jumpList = await JumpList.LoadCurrentAsync();
@@ -63,7 +24,7 @@ namespace Microsoft.Maui.Essentials
 			return actions;
 		}
 
-		static async Task PlatformSetAsync(IEnumerable<AppAction> actions)
+		public async Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			// Load existing items
 			var jumpList = await JumpList.LoadCurrentAsync();
@@ -82,20 +43,57 @@ namespace Microsoft.Maui.Essentials
 			await jumpList.SaveAsync();
 		}
 
-		static AppAction ToAction(this JumpListItem item)
-			=> new AppAction(ArgumentsToId(item.Arguments), item.DisplayName, item.Description);
+		public event EventHandler<AppActionEventArgs> AppActionActivated;
 
-		static string ArgumentsToId(string arguments)
+		public async Task OnLaunched(LaunchActivatedEventArgs e)
 		{
-			if (arguments?.StartsWith(appActionPrefix) ?? false)
-				return Encoding.Default.GetString(Convert.FromBase64String(arguments.Substring(appActionPrefix.Length)));
+			var args = e?.Arguments;
+#if !WINDOWS_UWP
+			if (string.IsNullOrEmpty(args))
+			{
+				var cliArgs = Environment.GetCommandLineArgs();
+				if (cliArgs?.Length > 1)
+					args = cliArgs[1];
+			}
+#endif
+
+			if (args?.StartsWith(AppActionsExtensions.AppActionPrefix) ?? false)
+			{
+				var id = AppActionsExtensions.ArgumentsToId(args);
+
+				if (!string.IsNullOrEmpty(id))
+				{
+					var actions = await GetAsync();
+					var appAction = actions.FirstOrDefault(a => a.Id == id);
+
+					if (appAction != null)
+						AppActionActivated?.Invoke(null, new AppActionEventArgs(appAction));
+				}
+			}
+		}
+	}
+
+	static partial class AppActionsExtensions
+	{
+		internal const string AppActionPrefix = "XE_APP_ACTIONS-";
+
+		internal const string iconDirectory = "";
+		internal const string iconExtension = ".png";
+
+		internal static string ArgumentsToId(this string arguments)
+		{
+			if (arguments?.StartsWith(AppActionPrefix) ?? false)
+				return Encoding.Default.GetString(Convert.FromBase64String(arguments.Substring(AppActionPrefix.Length)));
 
 			return default;
 		}
 
-		static JumpListItem ToJumpListItem(this AppAction action)
+		internal static AppAction ToAction(this JumpListItem item)
+			=> new AppAction(ArgumentsToId(item.Arguments), item.DisplayName, item.Description);
+
+		internal static JumpListItem ToJumpListItem(this AppAction action)
 		{
-			var id = appActionPrefix + Convert.ToBase64String(Encoding.Default.GetBytes(action.Id));
+			var id = AppActionPrefix + Convert.ToBase64String(Encoding.Default.GetBytes(action.Id));
 			var item = JumpListItem.CreateWithArguments(id, action.Title);
 
 			if (!string.IsNullOrEmpty(action.Subtitle))
@@ -103,11 +101,11 @@ namespace Microsoft.Maui.Essentials
 
 			if (!string.IsNullOrEmpty(action.Icon))
 			{
-				var dir = IconDirectory.Trim('/', '\\').Replace('\\', '/');
+				var dir = iconDirectory?.Trim('/', '\\').Replace('\\', '/');
 				if (!string.IsNullOrEmpty(dir))
 					dir += "/";
 
-				var ext = IconExtension;
+				var ext = iconExtension;
 				if (!string.IsNullOrEmpty(ext) && !ext.StartsWith("."))
 					ext = "." + ext;
 

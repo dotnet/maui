@@ -1,8 +1,11 @@
 using System;
+using System.ComponentModel;
+using Microsoft.Maui.Converters;
 
 namespace Microsoft.Maui
 {
 	/// <include file="../../docs/Microsoft.Maui/Easing.xml" path="Type[@FullName='Microsoft.Maui.Easing']/Docs" />
+	[TypeConverter(typeof(EasingTypeConverter))]
 	public class Easing
 	{
 		/// <include file="../../docs/Microsoft.Maui/Easing.xml" path="//Member[@MemberName='Default']/Docs" />

@@ -17,11 +17,11 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 
 			var renderer = Platform.MacOS.Platform.CreateRenderer(element);
 
-			if (renderer == null 
+			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{
-				message = $"Failed to load proper MacOS renderer for {element.GetType().Name}";
+				message = $"Failed to load proper macOS renderer for {element.GetType().Name}";
 				return false;
 			}
 

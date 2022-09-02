@@ -2,32 +2,34 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 {
 	public static class TestDispatcher
 	{
 		static IDispatcher? s_dispatcher;
+		static IDispatcherProvider? s_provider;
+
+		public static IDispatcherProvider Provider
+		{
+			get
+			{
+				if (s_provider is null)
+					s_provider = TestServices.Services.GetService<IDispatcherProvider>();
+
+				if (s_provider is null)
+					throw new InvalidOperationException($"Test app did not provide a dispatcher.");
+
+				return s_provider;
+			}
+		}
 
 		public static IDispatcher Current
 		{
 			get
 			{
 				if (s_dispatcher is null)
-				{
-					IServiceProvider? services = null;
-
-#if __ANDROID__
-					services = MauiTestInstrumentation.Current?.Services ?? MauiApplication.Current.Services;
-#elif __IOS__
-					services = MauiTestApplicationDelegate.Current?.Services ?? MauiUIApplicationDelegate.Current.Services;
-#elif WINDOWS
-					services = MauiWinUIApplication.Current.Services;
-#endif
-
-					s_dispatcher = services?.GetService<IDispatcher>();
-				}
+					s_dispatcher = TestServices.Services.GetService<IDispatcher>();
 
 				if (s_dispatcher is null)
 					throw new InvalidOperationException($"Test app did not provide a dispatcher.");

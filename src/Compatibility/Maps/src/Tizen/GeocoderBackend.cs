@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Maps;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Tizen
 {

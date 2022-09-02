@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SearchBarRenderer : ViewRenderer<SearchBar, AutoSuggestBox>
 	{
 		WBrush _defaultPlaceholderColorBrush;
@@ -89,9 +90,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateHorizontalTextAlignment();
 			else if (e.PropertyName == Specifics.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateIsSpellCheckEnabled();
-			else if(e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
 				UpdateMaxLength();
-			else if(e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateInputScope();
 		}
 
@@ -162,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_queryTextBox == null)
 				return;
 
-			_queryTextBox.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			_queryTextBox.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
 		void UpdateVerticalTextAlignment()
@@ -170,7 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_queryTextBox == null)
 				return;
 
-			_queryTextBox.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
+			_queryTextBox.VerticalContentAlignment = Element.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
 		void UpdateCancelButtonColor()
@@ -207,7 +208,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (searchBar == null)
 				return;
 
-			bool searchBarIsDefault = searchBar.FontFamily == null && searchBar.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(SearchBar), true) && searchBar.FontAttributes == FontAttributes.None;
+			bool searchBarIsDefault =
+				searchBar.FontFamily == null &&
+#pragma warning disable CS0612 // Type or member is obsolete
+				searchBar.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(SearchBar), true) &&
+#pragma warning restore CS0612 // Type or member is obsolete
+				searchBar.FontAttributes == FontAttributes.None;
 
 			if (searchBarIsDefault && !_fontApplied)
 				return;
@@ -246,10 +252,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			Color placeholderColor = Element.PlaceholderColor;
 
-			BrushHelpers.UpdateColor(placeholderColor, ref _defaultPlaceholderColorBrush, 
+			BrushHelpers.UpdateColor(placeholderColor, ref _defaultPlaceholderColorBrush,
 				() => _queryTextBox.PlaceholderForegroundBrush, brush => _queryTextBox.PlaceholderForegroundBrush = brush);
 
-			BrushHelpers.UpdateColor(placeholderColor, ref _defaultPlaceholderColorFocusBrush, 
+			BrushHelpers.UpdateColor(placeholderColor, ref _defaultPlaceholderColorFocusBrush,
 				() => _queryTextBox.PlaceholderForegroundFocusBrush, brush => _queryTextBox.PlaceholderForegroundFocusBrush = brush);
 		}
 
@@ -267,13 +273,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			Color textColor = Element.TextColor;
 
-			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorBrush, 
+			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorBrush,
 				() => _queryTextBox.Foreground, brush => _queryTextBox.Foreground = brush);
 
-			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush, 
+			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush,
 				() => _queryTextBox.ForegroundFocusBrush, brush => _queryTextBox.ForegroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void UpdateIsSpellCheckEnabled()
 		{
 			if (_queryTextBox == null)
@@ -299,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		[PortHandler("Partially ported")]
 		void UpdateInputScope()
 		{
-			if(_queryTextBox == null)
+			if (_queryTextBox == null)
 				return;
 
 			InputView model = Element;
@@ -328,10 +335,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			Color backgroundColor = Element.BackgroundColor;
-			
+
 			if (!backgroundColor.IsDefault())
 			{
-				_queryTextBox.Background = backgroundColor.ToNative();
+				_queryTextBox.Background = backgroundColor.ToPlatform();
 			}
 			else
 			{

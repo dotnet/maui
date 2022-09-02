@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Devices;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -18,27 +19,29 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
+			MockDeviceInfo mockDeviceInfo;
+
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
+				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				Device.PlatformServices = null;
+				DeviceInfo.SetCurrent(null);
 			}
 
 			[TestCase(true)]
 			[TestCase(false)]
 			public void BindingInOnPlatform(bool useCompiledXaml)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
 				var p = new Bz44213(useCompiledXaml);
 				p.BindingContext = new { Foo = "Foo", Bar = "Bar" };
 				Assert.AreEqual("Foo", p.label.Text);
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				mockDeviceInfo.Platform = DevicePlatform.Android;
 				p = new Bz44213(useCompiledXaml);
 				p.BindingContext = new { Foo = "Foo", Bar = "Bar" };
 				Assert.AreEqual("Bar", p.label.Text);

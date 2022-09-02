@@ -1,17 +1,19 @@
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Rect = Microsoft.Maui.Graphics.Rectangle;
+using Rect = Microsoft.Maui.Graphics.Rect;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.RoundRectangleGeometry']/Docs" />
 	public class RoundRectangleGeometry : GeometryGroup
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public RoundRectangleGeometry()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public RoundRectangleGeometry(CornerRadius cornerRadius, Rect rect)
 		{
 			CornerRadius = cornerRadius;
@@ -108,6 +110,21 @@ namespace Microsoft.Maui.Controls.Shapes
 			roundedRectGeometry.Children.Add(new PathGeometry(pathFigureCollection, FillRule.Nonzero));
 
 			return roundedRectGeometry;
+		}
+
+		public override void AppendPath(Graphics.PathF path)
+		{
+			float x = (float)Rect.X;
+			float y = (float)Rect.Y;
+			float w = (float)Rect.Width;
+			float h = (float)Rect.Height;
+
+			float tl = (float)CornerRadius.TopLeft;
+			float tr = (float)CornerRadius.TopRight;
+			float bl = (float)CornerRadius.BottomLeft;
+			float br = (float)CornerRadius.BottomRight;
+
+			path.AppendRoundedRectangle(x, y, w, h, tl, tr, bl, br);
 		}
 	}
 }

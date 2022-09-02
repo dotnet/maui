@@ -13,6 +13,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class RefreshViewRenderer : ViewRenderer<RefreshView, RefreshContainer>
 	{
 		bool _isDisposed;
@@ -121,9 +122,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			if (Element.BackgroundColor.IsNotDefault())
-				Control.Visualizer.Background = Element.BackgroundColor.ToNative();
+				Control.Visualizer.Background = Element.BackgroundColor.ToPlatform();
 			else
-				Control.Visualizer.Background = Colors.White.ToNative();
+				Control.Visualizer.Background = Colors.White.ToPlatform();
 		}
 
 		void UpdateContent()
@@ -145,7 +146,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!_isLoaded)
 				return;
 
-			if (!Element?.IsRefreshing??false)
+			if (!Element?.IsRefreshing ?? false)
 			{
 				CompleteRefresh();
 			}
@@ -161,12 +162,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			Control.Visualizer.Foreground = Element.RefreshColor.IsNotDefault()
-				? Element.RefreshColor.ToNative()
+				? Element.RefreshColor.ToPlatform()
 				: (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
 
 			UpdateBackgroundColor();
 		}
 
+		[PortHandler]
 		void UpdateRefreshPullDirection()
 		{
 			if (Element.IsSet(Specifics.RefreshPullDirectionProperty))

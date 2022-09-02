@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.UnitTests
 {
-	class NativeViewStub
+	class PlatformViewStub
 	{
 
 	}

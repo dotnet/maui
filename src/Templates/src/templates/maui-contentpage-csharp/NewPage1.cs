@@ -4,10 +4,11 @@ public class NewPage1 : ContentPage
 {
 	public NewPage1()
 	{
-		Content = new StackLayout
+		Content = new VerticalStackLayout
 		{
 			Children = {
-				new Label { Text = "Welcome to .NET MAUI!" }
+				new Label { HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, Text = "Welcome to .NET MAUI!"
+				}
 			}
 		};
 	}

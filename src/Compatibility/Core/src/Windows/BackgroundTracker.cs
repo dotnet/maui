@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (backgroundImage != null)
 			{
-				element.SetValue(_backgroundProperty, new ImageBrush { ImageSource = backgroundImage });
+				element.SetValue(_backgroundProperty, new UI.Xaml.Media.ImageBrush { ImageSource = backgroundImage });
 			}
 			else
 			{
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Color backgroundColor = Element.BackgroundColor;
 					if (!backgroundColor.IsDefault())
 					{
-						element.SetValue(_backgroundProperty, backgroundColor.ToNative());
+						element.SetValue(_backgroundProperty, backgroundColor.ToPlatform());
 					}
 					else
 					{

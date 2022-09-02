@@ -1,4 +1,4 @@
-using FormsDevice = Microsoft.Maui.Controls.Device;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs" />
 		public DeviceStateTrigger()
 		{
-			UpdateState();
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="//Member[@MemberName='Device']/Docs" />
@@ -20,28 +19,32 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="//Member[@MemberName='DeviceProperty']/Docs" />
 		public static readonly BindableProperty DeviceProperty =
-		BindableProperty.Create(nameof(Device), typeof(string), typeof(DeviceStateTrigger), string.Empty,
-			propertyChanged: OnDeviceChanged);
+			BindableProperty.Create(nameof(Device), typeof(string), typeof(DeviceStateTrigger), string.Empty,
+				propertyChanged: OnDeviceChanged);
 
 		static void OnDeviceChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
-			((DeviceStateTrigger)bindable).UpdateState();
+			(bindable as DeviceStateTrigger)?.UpdateState();
+		}
+
+		protected override void OnAttached()
+		{
+			base.OnAttached();
+
+			UpdateState();
 		}
 
 		void UpdateState()
 		{
-			switch (Device)
-			{
-				case FormsDevice.Android:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.Android);
-					break;
-				case FormsDevice.iOS:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.iOS);
-					break;
-				case FormsDevice.UWP:
-					SetActive(FormsDevice.RuntimePlatform == FormsDevice.UWP);
-					break;
-			}
+			if (string.IsNullOrEmpty(Device))
+				return;
+
+			var device = DevicePlatform.Create(Device);
+
+			if (device == DevicePlatform.Create("UWP"))
+				SetActive(DeviceInfo.Platform == DevicePlatform.WinUI);
+			else
+				SetActive(DeviceInfo.Platform == device);
 		}
 	}
 }

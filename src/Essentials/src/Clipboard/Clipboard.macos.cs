@@ -3,16 +3,16 @@ using System.Threading.Tasks;
 using AppKit;
 using Foundation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public static partial class Clipboard
+	partial class ClipboardImplementation : IClipboard
 	{
-		static readonly string pasteboardType = NSPasteboard.NSPasteboardTypeString;
-		static readonly string[] pasteboardTypes = { pasteboardType };
+		readonly string pasteboardType = NSPasteboard.NSPasteboardTypeString;
+		readonly string[] pasteboardTypes = { pasteboardType };
 
-		static NSPasteboard Pasteboard => NSPasteboard.GeneralPasteboard;
+		NSPasteboard Pasteboard => NSPasteboard.GeneralPasteboard;
 
-		static Task PlatformSetTextAsync(string text)
+		public Task SetTextAsync(string text)
 		{
 			Pasteboard.DeclareTypes(pasteboardTypes, null);
 			Pasteboard.ClearContents();
@@ -21,21 +21,21 @@ namespace Microsoft.Maui.Essentials
 			return Task.CompletedTask;
 		}
 
-		static bool PlatformHasText =>
+		public bool HasText =>
 			!string.IsNullOrEmpty(GetPasteboardText());
 
-		static Task<string> PlatformGetTextAsync()
+		public Task<string> GetTextAsync()
 			=> Task.FromResult(GetPasteboardText());
 
-		static string GetPasteboardText()
+		string GetPasteboardText()
 			=> Pasteboard.ReadObjectsForClasses(
 				new ObjCRuntime.Class[] { new ObjCRuntime.Class(typeof(NSString)) },
 				null)?[0]?.ToString();
 
-		static void StartClipboardListeners()
+		void StartClipboardListeners()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		static void StopClipboardListeners()
+		void StopClipboardListeners()
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

@@ -665,51 +665,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Transform">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Shapes.Vector2 Transform (Microsoft.Maui.Controls.Shapes.Vector2 vector);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Microsoft.Maui.Controls.Shapes.Vector2 Transform(valuetype Microsoft.Maui.Controls.Shapes.Vector2 vector) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Matrix.Transform(Microsoft.Maui.Controls.Shapes.Vector2)" />
-      <MemberSignature Language="F#" Value="member this.Transform : Microsoft.Maui.Controls.Shapes.Vector2 -&gt; Microsoft.Maui.Controls.Shapes.Vector2" Usage="matrix.Transform vector" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Shapes.Vector2</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="vector" Type="Microsoft.Maui.Controls.Shapes.Vector2" />
-      </Parameters>
-      <Docs>
-        <param name="vector">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Transform">
-      <MemberSignature Language="C#" Value="public void Transform (Microsoft.Maui.Controls.Shapes.Vector2[] vectors);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Transform(valuetype Microsoft.Maui.Controls.Shapes.Vector2[] vectors) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.Matrix.Transform(Microsoft.Maui.Controls.Shapes.Vector2[])" />
-      <MemberSignature Language="F#" Value="member this.Transform : Microsoft.Maui.Controls.Shapes.Vector2[] -&gt; unit" Usage="matrix.Transform vectors" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="vectors" Type="Microsoft.Maui.Controls.Shapes.Vector2[]" />
-      </Parameters>
-      <Docs>
-        <param name="vectors">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Translate">
       <MemberSignature Language="C#" Value="public void Translate (double offsetX, double offsetY);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Translate(float64 offsetX, float64 offsetY) cil managed" />

@@ -5,6 +5,12 @@
     <Compile Remove="**\iOS\**\*.cs" />
     <None Include="**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+   <ItemGroup Condition=" '$(_MauiTargetPlatformIsMacCatalyst)' != 'True' ">
+    <Compile Remove="**\**\*.MacCatalyst.cs" />
+    <None Include="**\**\*.MacCatalyst.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\MacCatalyst\**\*.cs" />
+    <None Include="**\MacCatalyst\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsmacOS)' != 'True' ">
     <Compile Remove="**\*.Mac.cs" />
     <None Include="**\*.Mac.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -29,6 +35,10 @@
     <Compile Remove="**\Standard\**\*.cs" />
     <None Include="**\Standard\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+  <ItemGroup Condition="'$(_MauiNoTargetPlatform)' == 'True'">
+    <Compile Remove="**\*.Platform.cs" />
+    <None Include="**\*.Platform.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' != 'True' ">
     <Compile Remove="**\*.Windows.cs" />
     <None Include="**\*.Windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -49,11 +59,17 @@
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsTizen)' != 'True' ">
+    <Compile Remove="**\**\*.Tizen.cs" />
+    <None Include="**\**\*.Tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Tizen\**\*.cs" />
+    <None Include="**\Tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Remove="bin\**;obj\**" />
     <None Remove="bin\**;obj\**" />
   </ItemGroup>
-  
+
   <PropertyGroup>
     <!-- Windows -->
     <WindowsProjectFolder>Platform\Windows\</WindowsProjectFolder>
@@ -63,16 +79,13 @@
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
   </PropertyGroup>
 
-  <!-- .NET Standard or .NET 6 -->
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net$(_MauiDotNetVersion)' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD</DefineConstants>
-  </PropertyGroup>
-
   <!-- Android -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <DefineConstants>$(DefineConstants);MONOANDROID</DefineConstants>
   </PropertyGroup>
-
+  <PropertyGroup Condition="'$(_MauiNoTargetPlatform)' != 'True'">
+    <DefineConstants>$(DefineConstants);PLATFORM</DefineConstants>
+  </PropertyGroup>
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.xml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)\*\*.axml" />
@@ -83,29 +96,21 @@
     <DefineConstants>$(DefineConstants);IOS</DefineConstants>
   </PropertyGroup>
 
+  <!-- Mac Catalyst -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsMacCatalyst)' == 'True' ">
     <DefineConstants>$(DefineConstants);MACCATALYST;IOS</DefineConstants>
   </PropertyGroup>
 
-  <!-- If this becomes part of the product we will remove these but for now it's useful having them all in one place -->
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
-    <PackageReference Include="Xamarin.Google.Android.Material" />
-    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
-  </ItemGroup>
+  <!-- Tizen -->
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsTizen)' == 'True' ">
+    <DefineConstants>$(DefineConstants);TIZEN</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Windows -->
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' ">
     <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
     <DefineConstants>WINDOWS_UWP;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' ">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" />
-    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
-  </ItemGroup>
 </Project>

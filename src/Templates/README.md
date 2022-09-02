@@ -6,7 +6,7 @@
 Add the local artifacts to the NuGet.config:
 
 ```xml
-<add key="asdf" value="./artifacts" />
+<add key="LocalMauiTemplates" value="./artifacts" />
 ```
 
 ```dotnetcli

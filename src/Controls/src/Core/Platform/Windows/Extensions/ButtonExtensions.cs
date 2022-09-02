@@ -53,5 +53,13 @@ namespace Microsoft.Maui.Controls.Platform
 					break;
 			}
 		}
+
+		public static void UpdateLineBreakMode(this Microsoft.UI.Xaml.Controls.Button platformButton, Button button)
+		{
+			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
+			{
+				textBlock?.UpdateLineBreakMode(button.LineBreakMode);
+			}
+		}
 	}
 }

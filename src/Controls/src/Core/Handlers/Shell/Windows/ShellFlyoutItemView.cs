@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,13 +16,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		View _content;
 		object _previousDataContext;
-		double _previousWidth;
-		FrameworkElement FrameworkElement { get; set; }
 		Shell _shell;
+		ShellView ShellView => _shell.Handler?.PlatformView as ShellView;
+
 		public ShellFlyoutItemView()
 		{
 			this.DataContextChanged += OnDataContextChanged;
-			this.LayoutUpdated += OnLayoutUpdated;
 		}
 
 		public bool IsSelected
@@ -41,7 +35,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_previousDataContext == args.NewValue)
 				return;
 
-			_previousWidth = -1;
 			_previousDataContext = args.NewValue;
 			if (_content != null)
 			{
@@ -50,7 +43,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_shell?.RemoveLogicalChild(_content);
 				_content.Cleanup();
-				_content.MeasureInvalidated -= OnMeasureInvalidated;
 				_content.BindingContext = null;
 				_content.Parent = null;
 				_content = null;
@@ -69,27 +61,11 @@ namespace Microsoft.Maui.Controls.Platform
 				_content = (View)dataTemplate.CreateContent();
 				_content.BindingContext = bo;
 				_shell.AddLogicalChild(_content);
-				
-				_content.MeasureInvalidated += OnMeasureInvalidated;
-				var renderer = _content.ToPlatform(_shell.Handler.MauiContext);
 
-				Content = renderer;
-				FrameworkElement = renderer;
+				var platformView = _content.ToPlatform(_shell.Handler.MauiContext);
 
-				// make sure we re-measure once the template is applied
-				if (FrameworkElement != null)
-				{
-					FrameworkElement.Loaded += OnFrameworkElementLoaded;
-
-					void OnFrameworkElementLoaded(object _, RoutedEventArgs __)
-					{
-						OnMeasureInvalidated();
-						FrameworkElement.Loaded -= OnFrameworkElementLoaded;
-					}
-				}
-
+				Content = platformView;
 				UpdateVisualState();
-				OnMeasureInvalidated();
 			}
 		}
 
@@ -97,58 +73,50 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (e.Is(BaseShellItem.IsCheckedProperty))
 				UpdateVisualState();
-
 		}
 
-		void OnMeasureInvalidated(object sender, EventArgs e)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
-			OnMeasureInvalidated();
-		}
+			if (ShellView == null)
+				return base.MeasureOverride(availableSize);
 
-		private void OnLayoutUpdated(object sender, object e)
-		{
-			if (this.ActualWidth > 0 && this.ActualWidth != _content.Width && _previousWidth != this.ActualWidth)
+			if (!ShellView.IsPaneOpen)
+				return base.MeasureOverride(availableSize);
+
+			if (ShellView.OpenPaneLength < availableSize.Width)
+				return base.MeasureOverride(availableSize);
+
+			if (_content is IView view)
 			{
-				_previousWidth = this.ActualWidth;
-				OnMeasureInvalidated();
-			}
-		}
-
-		void OnMeasureInvalidated()
-		{
-			if (this.ActualWidth <= 0)
-				return;
-
-			if (Parent is FrameworkElement fe)
-			{
-				if (!_content.IsVisible)
+				if (Parent is FrameworkElement fe)
 				{
-					fe.Visibility = WVisibility.Collapsed;
+					if (!_content.IsVisible)
+					{
+						fe.Visibility = WVisibility.Collapsed;
+					}
+					else
+					{
+						fe.Visibility = WVisibility.Visible;
+					}
 				}
-				else
-				{
-					fe.Visibility = WVisibility.Visible;
-				}
+
+				var request = view.Measure(availableSize.Width, availableSize.Height);
+				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
+				return request.ToPlatform();
 			}
 
+			return base.MeasureOverride(availableSize);
+		}
 
-			double height = (_content.HeightRequest < -1) ? _content.HeightRequest : double.PositiveInfinity;
-			double width = this.ActualWidth;
-
-			Size request = _content.Measure(width, height, MeasureFlags.IncludeMargins).Request;
-
-			var minSize = (double)Microsoft.UI.Xaml.Application.Current.Resources["NavigationViewItemOnLeftMinHeight"];
-
-			if (request.Height < minSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+		{
+			if (this.ActualWidth > 0 && _content is IView view)
 			{
-				request.Height = minSize;
+				view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+				return finalSize;
 			}
 
-			if (this.ActualWidth > request.Width)
-				request.Width = this.ActualWidth;
-
-			Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_content, new Rectangle(0, 0, request.Width, request.Height));
-			Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
+			return base.ArrangeOverride(finalSize);
 		}
 
 		void UpdateVisualState()

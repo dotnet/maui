@@ -1,13 +1,15 @@
+#nullable enable
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Devices.Geolocation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Geolocation
+	partial class GeolocationImplementation : IGeolocation
 	{
-		static async Task<Location> PlatformLastKnownLocationAsync()
+		public async Task<Location?> GetLastKnownLocationAsync()
 		{
 			// no need for permissions as AllowFallbackToConsentlessPositions
 			// will allow the device to return a location regardless
@@ -23,8 +25,10 @@ namespace Microsoft.Maui.Essentials
 			return location?.Coordinate?.ToLocation();
 		}
 
-		static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
+			_ = request ?? throw new ArgumentNullException(nameof(request));
+
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
 			var geolocator = new Geolocator
@@ -40,7 +44,7 @@ namespace Microsoft.Maui.Essentials
 
 			return location?.Coordinate?.ToLocation();
 
-			void CheckStatus(PositionStatus status)
+			static void CheckStatus(PositionStatus status)
 			{
 				switch (status)
 				{

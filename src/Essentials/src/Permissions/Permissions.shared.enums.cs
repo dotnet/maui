@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/PermissionStatus.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PermissionStatus']/Docs" />
 	public enum PermissionStatus

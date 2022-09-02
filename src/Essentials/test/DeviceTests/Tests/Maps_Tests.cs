@@ -1,10 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
+	[Category("Maps")]
 	public class Maps_Tests
 	{
 		const double testLatitude = 47.645160;

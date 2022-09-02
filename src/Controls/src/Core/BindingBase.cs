@@ -105,7 +105,9 @@ namespace Microsoft.Maui.Controls
 			SynchronizedCollections.Remove(collection);
 		}
 
+#pragma warning disable CS1734 // XML comment on 'BindingBase.EnableCollectionSynchronization(IEnumerable, object, CollectionSynchronizationCallback)' has a paramref tag for 'writeAccess', but there is no parameter by that name
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindingBase.xml" path="//Member[@MemberName='EnableCollectionSynchronization']/Docs" />
+#pragma warning restore CS1734
 		public static void EnableCollectionSynchronization(IEnumerable collection, object context, CollectionSynchronizationCallback callback)
 		{
 			if (collection == null)

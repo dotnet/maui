@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 			for (int i = 0; i < attrList.Count; i++)
 			{
 				styleAttribute = attrList[i];
-				if (styleAttribute.TargetType.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
+				if (styleAttribute.TargetType.IsAssignableFrom(GetType()))
 					break;
 				styleAttribute = null;
 			}
@@ -34,15 +34,11 @@ namespace Microsoft.Maui.Controls
 				return styleAttribute.BindableProperty;
 
 			var propertyOwnerType = styleAttribute.PropertyOwnerType ?? GetType();
-#if NETSTANDARD1_0
-			var bpField = propertyOwnerType.GetField(styleAttribute.BindablePropertyName);
-#else
 			var bpField = propertyOwnerType.GetField(styleAttribute.BindablePropertyName,
 															  BindingFlags.Public
 															| BindingFlags.NonPublic
 															| BindingFlags.Static
 															| BindingFlags.FlattenHierarchy);
-#endif
 			if (bpField == null)
 				return null;
 

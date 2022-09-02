@@ -11,6 +11,7 @@ using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Google.Android.Material.AppBar;
+using Kotlin.Collections;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Platform
 		NavGraph? _navGraph;
 		IView? _currentPage;
 		internal IView? VirtualView { get; private set; }
-		internal INavigationView? NavigationView { get; private set; }
+		internal IStackNavigation? NavigationView { get; private set; }
 		internal bool IsNavigating => ActiveRequestedArgs != null;
 		internal bool IsInitialNavigation { get; private set; }
 		internal bool? IsPopping { get; private set; }
@@ -45,6 +46,9 @@ namespace Microsoft.Maui.Platform
 
 		public IMauiContext MauiContext { get; }
 
+		internal IToolbarElement? ToolbarElement =>
+			MauiContext.GetNavigationRootManager().ToolbarElement;
+
 		public StackNavigationManager(IMauiContext mauiContext)
 		{
 			var currentInflater = mauiContext.GetLayoutInflater();
@@ -61,16 +65,16 @@ namespace Microsoft.Maui.Platform
 		/*
 		 * The important thing to know going into reading this method is that it's not possible to
 		 * modify the backstack. You can only push and pop to and from the top of the stack.
-		 * So if a user uses an API like `RemovePage` or `InsertPage` we will typically ignore processing those natively
+		 * So if a user uses an API like `RemovePage` or `InsertPage` we will typically ignore processing those here
 		 * unless it requires changes to the NavBar (i.e removing the first page with only 2 pages on the stack).
 		 * Once the user performs an operation that changes the currently visible page then we process any stack changes
 		 * that have occurred.
 		 * Let's say the user has pages A,B,C,D on the stack 
 		 * If they remove Page B and Page C then we don't do anything. Then if the user pushes E onto the stack
 		 * we just transform A,B,C,D into A,D,E.
-		 * Natively that's a "pop" but we use the correct animation for a "push" so visually it looks like a push.
+		 * Platform wise that's a "pop" but we use the correct animation for a "push" so visually it looks like a push.
 		 * This is also the reason why we aren't using the custom animation features on the navigation component itself.
-		 * Because we might be natively popping but visually pushing.
+		 * Because we might be popping but visually pushing.
 		 * 
 		 * The Fragments that are on the stack also do not have a hard connection to the page they originally rendereded.
 		 * Whenever a fragment is the "visible" fragment it just figures out what the current page is and displays that.
@@ -113,15 +117,18 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// If the new stack isn't changing the visible page or the app bar then we just ignore
-			// the changes because there's no point to applying these to the native back stack
+			// the changes because there's no point to applying these to the platform back stack
 			// We only apply changes when the currently visible page changes and/or the appbar
 			// will change (gain a back button)
-			if (newPageStack[newPageStack.Count - 1] == previousNavigationStack[previousNavigationStackCount - 1] &&
-				newPageStack.Count > 1 &&
-				previousNavigationStackCount > 1)
+			if (newPageStack[newPageStack.Count - 1] == previousNavigationStack[previousNavigationStackCount - 1])
 			{
-
 				NavigationFinished(NavigationView);
+
+				// There's only one page on the stack then we trigger back button visibility logic
+				// so that it can add a back button if it needs to
+				if (previousNavigationStackCount == 1 || newPageStack.Count == 1)
+					TriggerBackButtonVisibleUpdate();
+
 				return;
 			}
 
@@ -139,7 +146,7 @@ namespace Microsoft.Maui.Platform
 
 			IsAnimated = animated;
 
-			var iterator = NavHost.NavController.BackStack.Iterator();
+			var iterator = NavHost.NavController.BackQueue.Iterator();
 			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
 
 			while (iterator.HasNext)
@@ -182,7 +189,7 @@ namespace Microsoft.Maui.Platform
 			// We only keep destinations around that are on the backstack
 			// This iterates over the new backstack and removes any destinations
 			// that are no longer apart of the back stack
-			var iterateNewStack = NavHost.NavController.BackStack.Iterator();
+			var iterateNewStack = NavHost.NavController.BackQueue.Iterator();
 			int startId = -1;
 			while (iterateNewStack.HasNext)
 			{
@@ -208,23 +215,31 @@ namespace Microsoft.Maui.Platform
 
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
 			// point in time that we can setup toolbar colors for the incoming page
-			if (NavigationView is INavigationView te && te.Toolbar?.Handler != null)
+			TriggerBackButtonVisibleUpdate();
+		}
+
+		void TriggerBackButtonVisibleUpdate()
+		{
+			if (NavigationView != null)
 			{
-				te.Toolbar.Handler.UpdateValue(nameof(IToolbar.BackButtonVisible));
+				ToolbarElement?.Toolbar?.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
 			}
 		}
 
 		public virtual FragmentNavigator.Destination AddFragmentDestination()
 		{
 			var destination = new FragmentNavigator.Destination(FragmentNavigator);
+			var canonicalName = Java.Lang.Class.FromType(typeof(NavigationViewFragment)).CanonicalName;
 
-			destination.SetClassName(Java.Lang.Class.FromType(typeof(NavigationViewFragment)).CanonicalName);
+			if (canonicalName != null)
+				destination.SetClassName(canonicalName);
+
 			destination.Id = AView.GenerateViewId();
 			NavGraph.AddDestination(destination);
 			return destination;
 		}
 
-		internal void NavigationFinished(INavigationView? navigationView)
+		internal void NavigationFinished(IStackNavigation? navigationView)
 		{
 			IsInitialNavigation = false;
 			IsPopping = null;
@@ -233,18 +248,18 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// This occurs when the navigation page is first being renderer so we sync up the
-		// Navigation Stack on the INavigationView to our native stack
+		// Navigation Stack on the INavigationView to our platform stack
 		List<int> Initialize(IReadOnlyList<IView> pages)
 		{
 			var navController = NavHost.NavController;
 
 			// We are subtracting one because the navgraph itself is the first item on the stack
-			int NativeNavigationStackCount = navController.BackStack.Size() - 1;
+			int PlatformNavigationStackCount = navController.BackQueue.Size() - 1;
 
 			// set this to one because when the graph is first attached to the controller
 			// it will add the graph and the first destination
-			if (NativeNavigationStackCount < 0)
-				NativeNavigationStackCount = 1;
+			if (PlatformNavigationStackCount < 0)
+				PlatformNavigationStackCount = 1;
 
 			List<int> destinations = new List<int>();
 
@@ -259,7 +274,7 @@ namespace Microsoft.Maui.Platform
 			NavGraph.StartDestination = destinations[0];
 			navController.SetGraph(NavGraph, null);
 
-			for (var i = NativeNavigationStackCount; i < pages.Count; i++)
+			for (var i = PlatformNavigationStackCount; i < pages.Count; i++)
 			{
 				var dest = destinations[i];
 				navController.Navigate(dest);
@@ -277,19 +292,26 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			VirtualView = null;
+			NavigationView = null;
+			_navHost = null;
+			_fragmentNavigator = null;
 		}
 
 		public virtual void Connect(IView navigationView)
 		{
 			VirtualView = navigationView;
-			NavigationView = (INavigationView)navigationView;
+			NavigationView = (IStackNavigation)navigationView;
 
 			var fragmentManager = MauiContext?.GetFragmentManager();
 			_ = fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
 			_ = NavigationView ?? throw new InvalidOperationException($"VirtualView cannot be null");
 
 			var navHostFragment = fragmentManager.FindFragmentById(Resource.Id.nav_host);
-			_navHost = (NavHostFragment)navHostFragment;
+			_navHost = navHostFragment as NavHostFragment;
+
+			if (_navHost == null)
+				throw new InvalidOperationException($"No NavHostFragment found");
 
 			System.Diagnostics.Debug.WriteLine($"_navHost: {_navHost} {_navHost.GetHashCode()}");
 
@@ -322,7 +344,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Fragments are always destroyed if they aren't visible
-		// The Handler/NativeView associated with the visible IView remain intact
+		// The Handler/PlatformView associated with the visible IView remain intact
 		// The performance hit of destorying/recreating fragments should be negligible
 		// Hopefully this behavior survives implementation
 		// This will need to be tested with Maps and WebViews to make sure they behave efficiently
@@ -349,7 +371,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle bundle)
+		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle? bundle)
 		{
 		}
 
@@ -400,7 +422,7 @@ namespace Microsoft.Maui.Platform
 			#region IOnDestinationChangedListener
 
 			void NavController.IOnDestinationChangedListener.OnDestinationChanged(
-				NavController p0, NavDestination p1, Bundle p2)
+				NavController p0, NavDestination p1, Bundle? p2)
 			{
 				_stackNavigationManager.OnDestinationChanged(p0, p1, p2);
 			}
@@ -409,16 +431,19 @@ namespace Microsoft.Maui.Platform
 			#region FragmentLifecycleCallbacks
 			public override void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f)
 			{
+				if (_stackNavigationManager.VirtualView == null)
+					return;
+
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);
 
-				AToolbar? nativeToolbar = null;
+				AToolbar? platformToolbar = null;
 				IToolbar? toolbar = null;
 
-				if (_stackNavigationManager.NavigationView?.Toolbar is IToolbar tb &&
-					tb?.Handler?.NativeView is AToolbar ntb)
+				if (_stackNavigationManager.ToolbarElement?.Toolbar is IToolbar tb &&
+					tb?.Handler?.PlatformView is AToolbar ntb)
 				{
-					nativeToolbar = ntb;
+					platformToolbar = ntb;
 					toolbar = tb;
 				}
 
@@ -428,7 +453,7 @@ namespace Microsoft.Maui.Platform
 					new AppBarConfiguration
 						.Builder(_stackNavigationManager.NavGraph);
 
-				if (nativeToolbar != null && toolbar != null && toolbar.Handler?.MauiContext != null)
+				if (platformToolbar != null && toolbar != null && toolbar.Handler?.MauiContext != null)
 				{
 					if (toolbar.Handler is ToolbarHandler th)
 					{

@@ -7,6 +7,6 @@ namespace Microsoft.Maui.Controls.Design
 		}
 
 		protected override string[] KnownValues
-			=> new [] { "VerticalList", "HorizontalList", "VerticalGrid", "HorizontalGrid" };
+			=> new[] { "VerticalList", "HorizontalList", "VerticalGrid", "HorizontalGrid" };
 	}
 }

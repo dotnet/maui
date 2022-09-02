@@ -12,11 +12,11 @@ namespace Microsoft.Maui.Platform
 			var color = (Graphics.Color)value;
 			var defaultColorKey = (string)parameter;
 
-			WBrush defaultBrush = defaultColorKey != null ? 
-				(WBrush)UI.Xaml.Application.Current.Resources[defaultColorKey] : 
+			WBrush defaultBrush = defaultColorKey != null ?
+				(WBrush)UI.Xaml.Application.Current.Resources[defaultColorKey] :
 				new WSolidColorBrush(Colors.Transparent);
 
-			return color.IsDefault() ? defaultBrush : color.ToNative();
+			return color.IsDefault() ? defaultBrush : color.ToPlatform();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

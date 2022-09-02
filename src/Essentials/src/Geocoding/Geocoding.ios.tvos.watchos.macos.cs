@@ -1,28 +1,30 @@
+#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CoreLocation;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
-	public static partial class Geocoding
+	class GeocodingImplementation : IGeocoding
 	{
-		static async Task<IEnumerable<Placemark>> PlatformGetPlacemarksAsync(double latitude, double longitude)
+		public async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
 		{
 			using (var geocoder = new CLGeocoder())
 			{
 				var addressList = await geocoder.ReverseGeocodeLocationAsync(new CLLocation(latitude, longitude));
 
-				return addressList?.ToPlacemarks();
+				return addressList?.ToPlacemarks() ?? Array.Empty<Placemark>();
 			}
 		}
 
-		static async Task<IEnumerable<Location>> PlatformGetLocationsAsync(string address)
+		public async Task<IEnumerable<Location>> GetLocationsAsync(string address)
 		{
 			using (var geocoder = new CLGeocoder())
 			{
 				var positionList = await geocoder.GeocodeAddressAsync(address);
 
-				return positionList?.ToLocations();
+				return positionList?.ToLocations() ?? Array.Empty<Location>();
 			}
 		}
 	}

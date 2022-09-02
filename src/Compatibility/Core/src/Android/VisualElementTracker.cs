@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var height = Math.Max(0, (int)_context.ToPixels(view.Height));
 
 
-			if (aview is FormsViewGroup formsViewGroup)
+			if (aview is MauiViewGroup formsViewGroup)
 			{
 				Performance.Start(reference, "MeasureAndLayout");
 				formsViewGroup.MeasureAndLayout(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly), x, y, x + width, y + height);
@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
 
-			if (aview is FormsViewGroup formsViewGroup)
+			if (aview is MauiViewGroup formsViewGroup)
 			{
 				formsViewGroup.SendBatchUpdate((float)(view.AnchorX * _context.ToPixels(view.Width)),
 											   (float)(view.AnchorY * _context.ToPixels(view.Height)),
@@ -348,7 +348,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			else
 			{
-				FormsViewGroup.SendViewBatchUpdate(aview,
+				MauiViewGroup.SendViewBatchUpdate(aview,
 												   (float)(view.AnchorX * _context.ToPixels(view.Width)),
 												   (float)(view.AnchorY * _context.ToPixels(view.Height)),
 												   (int)(view.IsVisible ? ViewStates.Visible : ViewStates.Invisible),
@@ -412,8 +412,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
 
-			aview.ScaleX = (float)view.Scale * (float)view.ScaleX;
-			aview.ScaleY = (float)view.Scale * (float)view.ScaleY;
+			var scale = view.Scale;
+
+			if (double.IsNaN(scale))
+				return;
+
+			aview.ScaleX = (float)scale * (float)view.ScaleX;
+			aview.ScaleY = (float)scale * (float)view.ScaleY;
 		}
 
 		[PortHandler]

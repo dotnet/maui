@@ -18,6 +18,11 @@ namespace Microsoft.Maui.Controls
 
 		double ITextStyle.CharacterSpacing => 0;
 
+		void IMenuElement.Clicked()
+		{
+			((IMenuItemController)this).Activate();
+		}
+
 		void IImageSourcePart.UpdateIsLoading(bool isLoading)
 		{
 		}

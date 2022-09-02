@@ -7,6 +7,7 @@ using AProgressBar = Android.Widget.ProgressBar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, AProgressBar>
 	{
 		public ActivityIndicatorRenderer(Context context) : base(context)

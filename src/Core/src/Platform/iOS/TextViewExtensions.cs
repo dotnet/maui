@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 			if (textColor == null)
 				textView.TextColor = ColorExtensions.LabelColor;
 			else
-				textView.TextColor = textColor.ToNative();
+				textView.TextColor = textColor.ToPlatform();
 		}
 
 		public static void UpdateCharacterSpacing(this UITextView textView, ITextStyle textStyle)
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this UITextView textView, IEditor editor)
 		{
-			textView.UserInteractionEnabled = !editor.IsReadOnly;
+			textView.UserInteractionEnabled = !(editor.IsReadOnly || editor.InputTransparent);
 		}
 
 		public static void UpdateKeyboard(this UITextView textView, IEditor editor)
@@ -95,26 +95,26 @@ namespace Microsoft.Maui.Platform
 				UpdateCursorSelection(textView, editor);
 		}
 
-		public static void UpdateHorizontalTextAlignment(this UITextView textView, ITextAlignment textAlignment)
+		public static void UpdateHorizontalTextAlignment(this UITextView textView, IEditor editor)
 		{
-			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
-			// TODO ezhart Update this when FlowDirection is available 
-			// (or update the extension to take an IEditor instead of an alignment and work it out from there) 
-			textView.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(true);
+			textView.TextAlignment = editor.HorizontalTextAlignment.ToPlatformHorizontal(textView.EffectiveUserInterfaceLayoutDirection);
+		}
+
+		public static void UpdateVerticalTextAlignment(this MauiTextView textView, IEditor editor)
+		{
+			textView.VerticalTextAlignment = editor.VerticalTextAlignment;
 		}
 
 		public static void UpdatePlaceholder(this MauiTextView textView, IEditor editor) =>
 			textView.PlaceholderText = editor.Placeholder;
 
 		public static void UpdatePlaceholderColor(this MauiTextView textView, IEditor editor) =>
-			textView.PlaceholderTextColor = editor.PlaceholderColor?.ToNative() ?? ColorExtensions.PlaceholderColor;
+			textView.PlaceholderTextColor = editor.PlaceholderColor?.ToPlatform() ?? ColorExtensions.PlaceholderColor;
 
 		static void UpdateCursorSelection(this UITextView textView, IEditor editor)
 		{
 			if (!editor.IsReadOnly)
 			{
-				if (!textView.IsFirstResponder)
-					textView.BecomeFirstResponder();
 				UITextPosition start = GetSelectionStart(textView, editor, out int startOffset);
 				UITextPosition end = GetSelectionEnd(textView, editor, start, startOffset);
 

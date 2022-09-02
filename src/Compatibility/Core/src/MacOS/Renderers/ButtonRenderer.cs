@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					var btn = new FormsNSButton();
 					btn.SetButtonType(NSButtonType.MomentaryPushIn);
 					btn.BezelStyle = NSBezelStyle.TexturedSquare;
-			
+
 					btn.Pressed += HandleButtonPressed;
 					btn.Released += HandleButtonReleased;
 					SetNativeControl(btn);

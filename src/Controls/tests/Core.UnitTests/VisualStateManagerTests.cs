@@ -1,14 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Microsoft.Maui.Graphics;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
-	public class VisualStateManagerTests
+
+	public class VisualStateManagerTests : IDisposable
 	{
 		const string NormalStateName = "Normal";
 		const string InvalidStateName = "Invalid";
@@ -48,7 +50,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return stateGroups;
 		}
 
-		[Test]
+		[Fact]
 		public void InitialStateIsNormalIfAvailable()
 		{
 			var label1 = new Label();
@@ -57,10 +59,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
 
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(NormalStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
 		}
 
-		[Test]
+		[Fact]
 		public void InitialStateIsNullIfNormalNotAvailable()
 		{
 			var label1 = new Label();
@@ -72,7 +74,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(groups1[0].CurrentState);
 		}
 
-		[Test]
+		[Fact]
 		public void VisualElementsStateGroupsAreDistinct()
 		{
 			var label1 = new Label();
@@ -84,18 +86,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
 			var groups2 = VisualStateManager.GetVisualStateGroups(label2);
 
-			Assert.AreNotSame(groups1, groups2);
+			Assert.NotSame(groups1, groups2);
 
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(NormalStateName));
-			Assert.That(groups2[0].CurrentState.Name, Is.EqualTo(NormalStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(groups2[0].CurrentState.Name, NormalStateName);
 
 			VisualStateManager.GoToState(label1, InvalidStateName);
 
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(InvalidStateName));
-			Assert.That(groups2[0].CurrentState.Name, Is.EqualTo(NormalStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, InvalidStateName);
+			Assert.Equal(groups2[0].CurrentState.Name, NormalStateName);
 		}
 
-		[Test]
+		[Fact]
 		public void VisualStateGroupsFromSettersAreDistinct()
 		{
 			var x = new Setter();
@@ -114,18 +116,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(groups1);
 			Assert.NotNull(groups2);
 
-			Assert.AreNotSame(groups1, groups2);
+			Assert.NotSame(groups1, groups2);
 
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(NormalStateName));
-			Assert.That(groups2[0].CurrentState.Name, Is.EqualTo(NormalStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(groups2[0].CurrentState.Name, NormalStateName);
 
 			VisualStateManager.GoToState(label1, InvalidStateName);
 
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(InvalidStateName));
-			Assert.That(groups2[0].CurrentState.Name, Is.EqualTo(NormalStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, InvalidStateName);
+			Assert.Equal(groups2[0].CurrentState.Name, NormalStateName);
 		}
 
-		[Test]
+		[Fact]
 		public void ElementsDoNotHaveVisualStateGroupsCollectionByDefault()
 		{
 			var label1 = new Label();
@@ -136,7 +138,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(label1.HasVisualStateGroups());
 		}
 
-		[Test]
+		[Fact]
 		public void StateNamesMustBeUniqueWithinGroup()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
@@ -146,7 +148,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => vsgs[0].States.Add(duplicate));
 		}
 
-		[Test]
+		[Fact]
 		public void StateNamesMustBeUniqueWithinGroupList()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
@@ -161,7 +163,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => secondGroup.States.Add(duplicate));
 		}
 
-		[Test]
+		[Fact]
 		public void StateNamesMustBeUniqueWithinGroupListWhenAddingGroup()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
@@ -176,7 +178,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => vsgs.Add(secondGroup));
 		}
 
-		[Test]
+		[Fact]
 		public void GroupNamesMustBeUniqueWithinGroupList()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
@@ -185,7 +187,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => vsgs.Add(secondGroup));
 		}
 
-		[Test]
+		[Fact]
 		public void StateNamesInGroupMayNotBeNull()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
@@ -195,7 +197,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => vsgs[0].States.Add(nullStateName));
 		}
 
-		[Test]
+		[Fact]
 		public void StateNamesInGroupMayNotBeEmpty()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
@@ -205,37 +207,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => vsgs[0].States.Add(emptyStateName));
 		}
 
-		[Test]
+		[Fact]
 		public void VerifyVisualStateChanges()
 		{
 			var label1 = new Label();
 			VisualStateManager.SetVisualStateGroups(label1, CreateTestStateGroups());
 
 			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(NormalStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
 
 			label1.IsEnabled = false;
 
 			groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(DisabledStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, DisabledStateName);
 
 
 			label1.SetValue(VisualElement.IsFocusedPropertyKey, true);
 			groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(DisabledStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, DisabledStateName);
 
 			label1.IsEnabled = true;
 			groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(FocusedStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, FocusedStateName);
 
 
 			label1.SetValue(VisualElement.IsFocusedPropertyKey, false);
 			groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(NormalStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
 
 		}
 
-		[Test]
+		[Fact]
 		public void VisualElementGoesToCorrectStateWhenAvailable()
 		{
 			var label = new Label();
@@ -252,10 +254,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			VisualStateManager.SetVisualStateGroups(label, list);
 
-			Assert.That(label.Margin.Bottom, Is.EqualTo(targetBottomMargin));
+			Assert.Equal(label.Margin.Bottom, targetBottomMargin);
 		}
 
-		[Test]
+		[Fact]
 		public void VisualElementGoesToCorrectStateWhenAvailableFromSetter()
 		{
 			double targetBottomMargin = 1.5;
@@ -281,11 +283,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			x.Apply(label1);
 			x.Apply(label2);
 
-			Assert.That(label1.Margin.Bottom, Is.EqualTo(targetBottomMargin));
-			Assert.That(label2.Margin.Bottom, Is.EqualTo(targetBottomMargin));
+			Assert.Equal(label1.Margin.Bottom, targetBottomMargin);
+			Assert.Equal(label2.Margin.Bottom, targetBottomMargin);
 		}
 
-		[Test]
+		[Fact]
 		public void VisualElementGoesToCorrectStateWhenSetterHasTarget()
 		{
 			double defaultMargin = default(double);
@@ -320,15 +322,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			VisualStateManager.SetVisualStateGroups(label1, list);
 
-			Assert.That(label1.Margin.Top, Is.EqualTo(defaultMargin));
-			Assert.That(label1.Margin.Bottom, Is.EqualTo(targetMargin));
-			Assert.That(label1.Margin.Left, Is.EqualTo(defaultMargin));
+			Assert.Equal(label1.Margin.Top, defaultMargin);
+			Assert.Equal(label1.Margin.Bottom, targetMargin);
+			Assert.Equal(label1.Margin.Left, defaultMargin);
 
-			Assert.That(label2.Margin.Top, Is.EqualTo(targetMargin));
-			Assert.That(label2.Margin.Bottom, Is.EqualTo(defaultMargin));
+			Assert.Equal(label2.Margin.Top, targetMargin);
+			Assert.Equal(label2.Margin.Bottom, defaultMargin);
 		}
 
-		[Test]
+		[Fact]
 		public void CanRemoveAStateAndAddANewStateWithTheSameName()
 		{
 			var stateGroups = new VisualStateGroupList();
@@ -347,7 +349,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			visualStateGroup.States.Add(new VisualState { Name = name });
 		}
 
-		[Test]
+		[Fact]
 		public void CanRemoveAGroupAndAddANewGroupWithTheSameName()
 		{
 			var stateGroups = new VisualStateGroupList();
@@ -369,12 +371,203 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			stateGroups.Add(new VisualStateGroup { Name = name });
 		}
 
-		[Test]
-		[Explicit("This test was created to check performance characteristics; leaving it in because it may be useful again.")]
-		[TestCase(1, 10)]
-		[TestCase(1, 10000)]
-		[TestCase(10, 100)]
-		[TestCase(10, 10000)]
+
+		public VisualStateManagerTests()
+		{
+			AppInfo.SetCurrent(new MockAppInfo() { RequestedTheme = AppTheme.Light });
+			Application.Current = new Application();
+		}
+
+
+		public void Dispose()
+		{
+			Application.Current = null;
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/6251
+		public void AppThemeBindingInVSM()
+		{
+
+			var label = new Label() { BackgroundColor = Colors.Red };
+			var list = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState { Name = NormalStateName},
+						new VisualState
+						{
+							Name = DisabledStateName,
+							Setters =
+							{
+								new Setter { Property = View.BackgroundColorProperty, Value = new AppThemeBinding{ Light=Colors.Purple, Dark=Colors.Purple, Default=Colors.Purple } },
+							}
+						}
+					}
+				}
+			};
+
+			VisualStateManager.SetVisualStateGroups(label, list);
+
+			Assert.Equal(label.BackgroundColor, Colors.Red);
+			VisualStateManager.GoToState(label, DisabledStateName);
+			Assert.Equal(label.BackgroundColor, Colors.Purple);
+			VisualStateManager.GoToState(label, NormalStateName);
+			Assert.Equal(label.BackgroundColor, Colors.Red);
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/4139
+		public void ChangingStyleContainingVSMShouldResetStateValue()
+		{
+			var label = new Label();
+			var SelectedStateName = "Selected";
+
+			var style0 = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextColorProperty, Value = Colors.Black},
+					new Setter {
+						Property = VisualStateManager.VisualStateGroupsProperty,
+						Value = new VisualStateGroupList {
+							new VisualStateGroup {
+								States = {
+									new VisualState { Name = NormalStateName },
+									new VisualState {
+										Name = SelectedStateName,
+										Setters = { new Setter { Property = Label.TextColorProperty, Value=Colors.Red } }
+									}
+								}
+							}
+						}
+					},
+				}
+			};
+
+			var style1 = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextColorProperty, Value = Colors.Black},
+					new Setter {
+						Property = VisualStateManager.VisualStateGroupsProperty,
+						Value = new VisualStateGroupList {
+							new VisualStateGroup {
+								States = {
+									new VisualState { Name = NormalStateName },
+									new VisualState {
+										Name = SelectedStateName,
+										Setters = { new Setter { Property = Label.TextColorProperty, Value=Colors.Cyan } }
+									}
+								}
+							}
+						}
+					},
+				}
+			};
+
+			label.Style = style0;
+			Assert.Equal(label.TextColor, Colors.Black);
+			VisualStateManager.GoToState(label, SelectedStateName);
+			Assert.Equal(label.TextColor, Colors.Red);
+			label.Style = style1;
+			Assert.Equal(label.TextColor, Colors.Black);
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/6857
+		public void VSMFromStyleAreUnApplied()
+		{
+			var label = new Label
+			{
+				Style = new Style(typeof(Label))
+				{
+					Setters = {
+						new Setter {
+							Property = VisualStateManager.VisualStateGroupsProperty,
+							Value = new VisualStateGroupList {
+								new VisualStateGroup {
+									States = {
+										new VisualState { Name = NormalStateName },
+									}
+								}
+							}
+						},
+					}
+				}
+			};
+
+			Assert.NotNull(VisualStateManager.GetVisualStateGroups(label));
+			Assert.Equal(1, VisualStateManager.GetVisualStateGroups(label).Count); //the list applied by style has one group			
+			label.ClearValue(Label.StyleProperty); //clear the style
+			Assert.Equal(0, VisualStateManager.GetVisualStateGroups(label).Count); //default style (created by defaultValueCreator) has no groups
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/6885
+		public void UnapplyingVSMShouldUnapplySetters()
+		{
+			var label = new Label();
+			var SelectedStateName = "Selected";
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList {
+				new VisualStateGroup {
+					States = {
+						new VisualState {
+							Name = SelectedStateName,
+							Setters = { new Setter { Property=Label.TextColorProperty, Value=Colors.HotPink} }
+						}
+					}
+				}
+			});
+
+			VisualStateManager.GoToState(label, SelectedStateName);
+			Assert.Equal(label.TextColor, Colors.HotPink);
+			label.ClearValue(VisualStateManager.VisualStateGroupsProperty);
+			Assert.Equal(0, VisualStateManager.GetVisualStateGroups(label).Count); //default style (created by defaultValueCreator) has no groups
+			Assert.False(label.TextColor == Colors.HotPink); //setter should be unapplied
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/6856
+		public void VSMInStyleShouldHaveStylePriority()
+		{
+			var label = new Label { TextColor = Colors.HotPink };//Setting the color manually should prevents style override
+			var SelectedStateName = "Selected";
+
+			Assert.Equal(label.TextColor, Colors.HotPink);
+
+			label.Style = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextColorProperty, Value = Colors.AliceBlue },
+					new Setter {
+						Property = VisualStateManager.VisualStateGroupsProperty,
+						Value = new VisualStateGroupList {
+							new VisualStateGroup {
+								States = {
+									new VisualState {
+										Name = SelectedStateName,
+										Setters = { new Setter { Property = Label.TextColorProperty, Value=Colors.OrangeRed} }
+									},
+								}
+							}
+						}
+					},
+				}
+			};
+
+			Assert.Equal(label.TextColor, Colors.HotPink); //textcolor from Style isn't applied
+			VisualStateManager.GoToState(label, SelectedStateName);
+			Assert.Equal(label.TextColor, Colors.HotPink); //textcolor Style's VSM isn't applied
+		}
+
+		[Theory(Skip = "This test was created to check performance characteristics; leaving it in because it may be useful again.")]
+		[InlineData(1, 10)]
+		[InlineData(1, 10000)]
+		[InlineData(10, 100)]
+		[InlineData(10, 10000)]
 		public void ValidatePerformance(int groups, int states)
 		{
 			IList<VisualStateGroup> vsgs = new VisualStateGroupList();

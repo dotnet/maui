@@ -21,17 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>
 			TestDispatcher.Current.DispatchAsync(func);
 
-		protected async Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000)
-		{
-			while ((timeout -= 100) > 0)
-			{
-				if (!exitCondition.Invoke())
-					await Task.Delay(rnd.Next(100, 200));
-				else
-					break;
-			}
-
-			return exitCondition.Invoke();
-		}
+		protected Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
+			AssertionExtensions.Wait(exitCondition, timeout);
 	}
 }

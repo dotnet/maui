@@ -1,17 +1,27 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Contacts;
 using CoreLocation;
 using Foundation;
 using MapKit;
+using Microsoft.Maui.Devices.Sensors;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
-	public static partial class Map
+	class MapImplementation : IMap
 	{
-		internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
+		public Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
+			return TryOpenAsync(latitude, longitude, options);
+		}
+
+		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
+		{
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 			if (string.IsNullOrWhiteSpace(options.Name))
 				options.Name = string.Empty;
 
@@ -20,8 +30,21 @@ namespace Microsoft.Maui.Essentials
 			return OpenPlacemark(placemark, options);
 		}
 
-		internal static async Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
+		public async Task OpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
+			await TryOpenAsync(placemark, options);
+		}
+
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
+		public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
+		{
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+				throw new ArgumentNullException(nameof(options));
+
 #if __IOS__
 			var address = new MKPlacemarkAddress
 			{
@@ -47,7 +70,7 @@ namespace Microsoft.Maui.Essentials
 			var resolvedPlacemarks = await GetPlacemarksAsync(address);
 			if (resolvedPlacemarks?.Length > 0)
 			{
-				await OpenPlacemark(new MKPlacemark(resolvedPlacemarks[0].Location.Coordinate, address), options);
+				return await OpenPlacemark(new MKPlacemark(resolvedPlacemarks[0].Location.Coordinate, address), options);
 			}
 			else
 			{
@@ -56,13 +79,14 @@ namespace Microsoft.Maui.Essentials
 				var uri = $"http://maps.apple.com/?q={placemark.GetEscapedAddress()}";
 				var nsurl = NSUrl.FromString(uri);
 
-				await Launcher.PlatformOpenAsync(nsurl);
+				return await Launcher.Default.TryOpenAsync(nsurl);
 #else
-				await OpenPlacemark(new MKPlacemark(default, address), options);
+				return await OpenPlacemark(new MKPlacemark(default, address), options);
 #endif
 			}
 		}
 
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
 		static async Task<CLPlacemark[]> GetPlacemarksAsync(NSDictionary address)
 		{
 			using var geocoder = new CLGeocoder();

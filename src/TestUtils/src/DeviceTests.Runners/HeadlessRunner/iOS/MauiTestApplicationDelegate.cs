@@ -81,6 +81,21 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
+			Runtime.MarshalManagedException += (object sender, MarshalManagedExceptionEventArgs args) =>
+			{
+				Console.WriteLine("Marshaling managed exception");
+				Console.WriteLine("    Exception: {0}", args.Exception);
+				Console.WriteLine("    Mode: {0}", args.ExceptionMode);
+
+			};
+
+			Runtime.MarshalObjectiveCException += (object sender, MarshalObjectiveCExceptionEventArgs args) =>
+			{
+				Console.WriteLine("Marshaling Objective-C exception");
+				Console.WriteLine("    Exception: {0}", args.Exception);
+				Console.WriteLine("    Mode: {0}", args.ExceptionMode);
+			};
+
 			var mauiApp = CreateMauiApp();
 			Services = mauiApp.Services;
 

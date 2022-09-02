@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public Color FillColor { get; set; }
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			canvas.FillColor = FillColor;
 			canvas.FillRectangle(dirtyRect);

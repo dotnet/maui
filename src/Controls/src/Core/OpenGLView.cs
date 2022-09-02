@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/OpenGLView.xml" path="Type[@FullName='Microsoft.Maui.Controls.OpenGLView']/Docs" />
+	[Obsolete("OpenGLView is obsolete as of .NET 7. To enable this view you will need to call `builder.UseMauiCompatibility` but it is currently untested and unsupported.")]
 	public sealed class OpenGLView : View, IOpenGlViewController, IElementConfiguration<OpenGLView>
 	{
 		#region Statics
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/OpenGLView.xml" path="//Member[@MemberName='OnDisplay']/Docs" />
-		public Action<Rectangle> OnDisplay { get; set; }
+		public Action<Rect> OnDisplay { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/OpenGLView.xml" path="//Member[@MemberName='Display']/Docs" />
 		public void Display()

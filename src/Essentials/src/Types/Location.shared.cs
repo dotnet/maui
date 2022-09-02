@@ -1,8 +1,7 @@
 using System;
+using Microsoft.Maui.Media;
 
-using static System.Math;
-
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DistanceUnits']/Docs" />
 	public enum DistanceUnits
@@ -31,20 +30,20 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Location']/Docs" />
 	public class Location
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public Location()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
 		public Location(double latitude, double longitude)
 		{
-			Latitude = latitude;
-			Longitude = longitude;
+			Latitude = Math.Min(Math.Max(latitude, -90.0), 90.0);
+			Longitude = Math.Min(Math.Max(longitude, -180.0), 180.0);
 			Timestamp = DateTimeOffset.UtcNow;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][4]/Docs" />
 		public Location(double latitude, double longitude, DateTimeOffset timestamp)
 		{
 			Latitude = latitude;
@@ -52,7 +51,7 @@ namespace Microsoft.Maui.Essentials
 			Timestamp = timestamp;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][4]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][5]/Docs" />
 		public Location(double latitude, double longitude, double altitude)
 		{
 			Latitude = latitude;
@@ -61,7 +60,7 @@ namespace Microsoft.Maui.Essentials
 			Timestamp = DateTimeOffset.UtcNow;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public Location(Location point)
 		{
 			if (point == null)
@@ -73,6 +72,7 @@ namespace Microsoft.Maui.Essentials
 			Altitude = point.Altitude;
 			Accuracy = point.Accuracy;
 			VerticalAccuracy = point.VerticalAccuracy;
+			ReducedAccuracy = point.ReducedAccuracy;
 			Speed = point.Speed;
 			Course = point.Course;
 			IsFromMockProvider = point.IsFromMockProvider;
@@ -96,6 +96,9 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='VerticalAccuracy']/Docs" />
 		public double? VerticalAccuracy { get; set; }
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='ReducedAccuracy']/Docs" />
+		public bool ReducedAccuracy { get; set; }
+
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Speed']/Docs" />
 		public double? Speed { get; set; }
 
@@ -108,19 +111,19 @@ namespace Microsoft.Maui.Essentials
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='AltitudeReferenceSystem']/Docs" />
 		public AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][2]/Docs" />
 		public static double CalculateDistance(double latitudeStart, double longitudeStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(latitudeStart, longitudeStart, locationEnd.Latitude, locationEnd.Longitude, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][3]/Docs" />
 		public static double CalculateDistance(Location locationStart, double latitudeEnd, double longitudeEnd, DistanceUnits units) =>
-		   CalculateDistance(locationStart.Latitude, locationStart.Longitude, latitudeEnd, longitudeEnd, units);
+			CalculateDistance(locationStart.Latitude, locationStart.Longitude, latitudeEnd, longitudeEnd, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][1]/Docs" />
 		public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(locationStart.Latitude, locationStart.Longitude, locationEnd.Latitude, locationEnd.Longitude, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][4]/Docs" />
 		public static double CalculateDistance(
 			double latitudeStart,
 			double longitudeStart,
@@ -149,5 +152,35 @@ namespace Microsoft.Maui.Essentials
 			$"{nameof(Speed)}: {Speed}, " +
 			$"{nameof(Course)}: {Course}, " +
 			$"{nameof(Timestamp)}: {Timestamp}";
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj))
+				return false;
+			if (obj.GetType() != GetType())
+				return false;
+			var other = (Location)obj;
+			return Latitude == other.Latitude && Longitude == other.Longitude;
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hashCode = Latitude.GetHashCode();
+				hashCode = (hashCode * 397) ^ Longitude.GetHashCode();
+				return hashCode;
+			}
+		}
+
+		public static bool operator ==(Location left, Location right)
+		{
+			return Equals(left, right);
+		}
+
+		public static bool operator !=(Location left, Location right)
+		{
+			return !Equals(left, right);
+		}
 	}
 }

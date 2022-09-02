@@ -5,32 +5,32 @@ namespace Microsoft.Maui.Platform
 {
 	public static class StepperExtensions
 	{
-		public static void UpdateMinimum(this LinearLayout linearLayout, IStepper stepper)
+		public static void UpdateMinimum(this MauiStepper linearLayout, IStepper stepper)
 		{
 			UpdateButtons(linearLayout, stepper);
 		}
 
-		public static void UpdateMaximum(this LinearLayout linearLayout, IStepper stepper)
+		public static void UpdateMaximum(this MauiStepper linearLayout, IStepper stepper)
 		{
 			UpdateButtons(linearLayout, stepper);
 		}
 
-		public static void UpdateIncrement(this LinearLayout linearLayout, IStepper stepper)
+		public static void UpdateIncrement(this MauiStepper linearLayout, IStepper stepper)
 		{
 			UpdateButtons(linearLayout, stepper);
 		}
 
-		public static void UpdateValue(this LinearLayout linearLayout, IStepper stepper)
+		public static void UpdateValue(this MauiStepper linearLayout, IStepper stepper)
 		{
 			UpdateButtons(linearLayout, stepper);
 		}
 
-		public static void UpdateIsEnabled(this LinearLayout linearLayout, IStepper stepper)
+		public static void UpdateIsEnabled(this MauiStepper linearLayout, IStepper stepper)
 		{
 			UpdateButtons(linearLayout, stepper);
 		}
 
-		internal static void UpdateButtons(this LinearLayout linearLayout, IStepper stepper)
+		internal static void UpdateButtons(this MauiStepper linearLayout, IStepper stepper)
 		{
 			AButton? downButton = null;
 			AButton? upButton = null;

@@ -40,9 +40,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new HorizontalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
-			var expectedRectangle = new Rectangle(0, 0, 100, 100);
+			var expectedRectangle = new Rect(0, 0, 100, 100);
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle));
 		}
 
@@ -57,12 +57,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new HorizontalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
-			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
+			var expectedRectangle0 = new Rect(0, 0, 100, 100);
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
 
-			var expectedRectangle1 = new Rectangle(100 + spacing, 0, 100, 100);
+			var expectedRectangle1 = new Rect(100 + spacing, 0, 100, 100);
 			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
 		}
 
@@ -90,31 +90,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
 			// We expect that the starting view (0) should be arranged on the left,
 			// and the next rectangle (1) should be on the right
-			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
-			var expectedRectangle1 = new Rectangle(100, 0, 100, 100);
-
-			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
-			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
-		}
-
-		[Fact(DisplayName = "First View in RTL Horizontal Stack is on the right")]
-		public void RtlShouldHaveFirstItemOnTheRight()
-		{
-			var stack = BuildStack(viewCount: 2, viewWidth: 100, viewHeight: 100);
-			stack.FlowDirection.Returns(FlowDirection.RightToLeft);
-
-			var manager = new HorizontalStackLayoutManager(stack);
-			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
-
-			// We expect that the starting view (0) should be arranged on the right,
-			// and the next rectangle (1) should be on the left
-			var expectedRectangle0 = new Rectangle(100, 0, 100, 100);
-			var expectedRectangle1 = new Rectangle(0, 0, 100, 100);
+			var expectedRectangle0 = new Rect(0, 0, 100, 100);
+			var expectedRectangle1 = new Rect(100, 0, 100, 100);
 
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
 			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
@@ -131,15 +112,15 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measure = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+			manager.ArrangeChildren(new Rect(Point.Zero, measure));
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
-			view.Received().Arrange(Arg.Any<Rectangle>());
+			view.Received().Arrange(Arg.Any<Rect>());
 
 			// View is collapsed, so we expect it not to be measured or arranged
 			collapsedView.DidNotReceive().Measure(Arg.Any<double>(), Arg.Any<double>());
-			collapsedView.DidNotReceive().Arrange(Arg.Any<Rectangle>());
+			collapsedView.DidNotReceive().Arrange(Arg.Any<Rect>());
 		}
 
 		[Fact]
@@ -153,15 +134,15 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measure = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+			manager.ArrangeChildren(new Rect(Point.Zero, measure));
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
-			view.Received().Arrange(Arg.Any<Rectangle>());
+			view.Received().Arrange(Arg.Any<Rect>());
 
 			// View is hidden, so we expect it to be measured and arranged (since it'll need to take up space)
 			hiddenView.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
-			hiddenView.Received().Arrange(Arg.Any<Rectangle>());
+			hiddenView.Received().Arrange(Arg.Any<Rect>());
 		}
 
 		IStackLayout BuildPaddedStack(Thickness padding, double viewWidth, double viewHeight)
@@ -211,7 +192,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rect(Point.Zero, measuredSize));
 
 			AssertArranged(stack[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}
@@ -223,9 +204,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(new Point(10, 15), measuredSize));
+			manager.ArrangeChildren(new Rect(new Point(10, 15), measuredSize));
 
-			var expectedRectangle0 = new Rectangle(10, 15, 100, 100);
+			var expectedRectangle0 = new Rect(10, 15, 100, 100);
 
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
 		}
@@ -369,7 +350,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var arrangedWidth = 1000;
 			var arrangedHeight = 1000;
 
-			var target = new Rectangle(Point.Zero, new Size(arrangedWidth, arrangedHeight));
+			var target = new Rect(Point.Zero, new Size(arrangedWidth, arrangedHeight));
 
 			var actual = layoutManager.ArrangeChildren(target);
 
@@ -377,6 +358,113 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// we expect the returned actual arrangement size to be as large as the target space
 			Assert.Equal(arrangedWidth, actual.Width);
 			Assert.Equal(arrangedHeight, actual.Height);
+		}
+
+		public static IEnumerable<object[]> ChildMeasureAccountsForPaddingTestCases()
+		{
+			var measureSpace = new Size(100, 100);
+			var viewSize = new Size(50, 50);
+
+			yield return new object[] { viewSize, new Thickness(0), measureSpace, new Size(double.PositiveInfinity, 100) };
+			yield return new object[] { viewSize, new Thickness(10), measureSpace, new Size(double.PositiveInfinity, 80) };
+			yield return new object[] { viewSize, new Thickness(10, 0, 10, 0), measureSpace, new Size(double.PositiveInfinity, 100) };
+			yield return new object[] { viewSize, new Thickness(0, 7, 0, 14), measureSpace, new Size(double.PositiveInfinity, 79) };
+		}
+
+		[Theory]
+		[MemberData(nameof(ChildMeasureAccountsForPaddingTestCases))]
+		public void ChildMeasureAccountsForPadding(Size viewSize, Thickness padding, Size measureConstraints, Size expectedMeasureConstraint)
+		{
+			var view = LayoutTestHelpers.CreateTestView(new Size(viewSize.Width, viewSize.Height));
+			var stack = CreateTestLayout(new List<IView>() { view });
+			stack.Padding.Returns(padding);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(measureConstraints.Width, measureConstraints.Height);
+
+			view.Received().Measure(Arg.Is(expectedMeasureConstraint.Width), Arg.Is(expectedMeasureConstraint.Height));
+		}
+
+		[Fact]
+		public void CollapsedItemsDoNotIncurSpacingInMiddle()
+		{
+			var viewWidth = 5;
+			var viewHeight = 7;
+			var spacing = 10;
+
+			var stack = SetUpVisibilityTestStack(viewWidth, viewHeight, spacing);
+			stack.Spacing.Returns(spacing);
+
+			stack[1].Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var expectedWidth = viewWidth + spacing + viewWidth;
+
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Fact]
+		public void CollapsedItemsDoNotIncurSpacingAtEnd()
+		{
+			var viewWidth = 5;
+			var viewHeight = 7;
+			var spacing = 10;
+
+			var stack = SetUpVisibilityTestStack(viewWidth, viewHeight, spacing);
+			stack.Spacing.Returns(spacing);
+
+			stack[2].Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var expectedWidth = viewWidth + spacing + viewWidth;
+
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Fact]
+		public void CollapsedItemsDoNotIncurSpacingAtStart()
+		{
+			var viewWidth = 5;
+			var viewHeight = 7;
+			var spacing = 10;
+
+			var stack = SetUpVisibilityTestStack(viewWidth, viewHeight, spacing);
+			stack.Spacing.Returns(spacing);
+
+			stack[0].Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var expectedWidth = viewWidth + spacing + viewWidth;
+
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Fact]
+		public void LayoutWithAllCollapsedItemsHasNoSpacing()
+		{
+			var viewWidth = 5;
+			var viewHeight = 7;
+			var spacing = 10;
+
+			var stack = SetUpVisibilityTestStack(viewWidth, viewHeight, spacing);
+			stack.Spacing.Returns(spacing);
+
+			stack[0].Visibility.Returns(Visibility.Collapsed);
+			stack[1].Visibility.Returns(Visibility.Collapsed);
+			stack[2].Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var expectedWidth = 0;
+
+			Assert.Equal(expectedWidth, measuredSize.Width);
 		}
 	}
 }

@@ -1,271 +1,283 @@
 #nullable enable
-using System;
-using System.Numerics;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
-using Microsoft.Graphics.Canvas;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Win2D;
-using Microsoft.Maui.Handlers;
-using Microsoft.UI.Composition;
+using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
+using Microsoft.Maui.Media;
+using System;
 
 namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		public static void TryMoveFocus(this FrameworkElement nativeView, FocusNavigationDirection direction)
+		internal static Page? ContainingPage; // Cache of containing page used for unfocusing
+
+		public static void TryMoveFocus(this FrameworkElement platformView, FocusNavigationDirection direction)
 		{
-			if (nativeView?.XamlRoot?.Content is UIElement elem)
+			if (platformView?.XamlRoot?.Content is UIElement elem)
 				FocusManager.TryMoveFocus(direction, new FindNextElementOptions { SearchRoot = elem });
 		}
 
-		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
-			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
+		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view) =>
+			(platformView as Control)?.UpdateIsEnabled(view.IsEnabled);
 
-		public static void UpdateVisibility(this FrameworkElement nativeView, IView view)
+		public static void Focus(this FrameworkElement platformView, FocusRequest request)
+		{
+			request.IsFocused = platformView.Focus(FocusState.Programmatic);
+		}
+
+		public static void Unfocus(this FrameworkElement platformView, IView view)
+		{
+			if (platformView is Control control)
+				UnfocusControl(control);
+		}
+
+		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
 		{
 			double opacity = view.Opacity;
-			var wasCollapsed = nativeView.Visibility == UI.Xaml.Visibility.Collapsed;
+			var wasCollapsed = platformView.Visibility == UI.Xaml.Visibility.Collapsed;
 
 			switch (view.Visibility)
 			{
 				case Visibility.Visible:
-					nativeView.Opacity = opacity;
-					nativeView.Visibility = UI.Xaml.Visibility.Visible;
+					platformView.Opacity = opacity;
+					platformView.Visibility = UI.Xaml.Visibility.Visible;
 					break;
 				case Visibility.Hidden:
-					nativeView.Opacity = 0;
-					nativeView.Visibility = UI.Xaml.Visibility.Visible;
+					platformView.Opacity = 0;
+					platformView.Visibility = UI.Xaml.Visibility.Visible;
 					break;
 				case Visibility.Collapsed:
-					nativeView.Opacity = opacity;
-					nativeView.Visibility = UI.Xaml.Visibility.Collapsed;
+					platformView.Opacity = opacity;
+					platformView.Visibility = UI.Xaml.Visibility.Collapsed;
 					break;
 			}
 
 			if (view.Visibility != Visibility.Collapsed && wasCollapsed)
 			{
 				// We may need to force the parent layout (if any) to re-layout to accomodate the new size
-				(nativeView.Parent as FrameworkElement)?.InvalidateMeasure();
+				(platformView.Parent as FrameworkElement)?.InvalidateMeasure();
 			}
 		}
 
-		public static void UpdateClip(this FrameworkElement nativeView, IView view)
+		public static void UpdateClip(this FrameworkElement platformView, IView view)
 		{
-			if (nativeView is WrapperView wrapper)
+			if (platformView is WrapperView wrapper)
 			{
 				wrapper.Clip = view.Clip;
 			}
 		}
 
-		public static void UpdateShadow(this FrameworkElement nativeView, IView view)
+		public static void UpdateShadow(this FrameworkElement platformView, IView view)
 		{
-			if (nativeView is WrapperView wrapper)
+			if (platformView is WrapperView wrapper)
 			{
 				wrapper.Shadow = view.Shadow;
 			}
 		}
 
-		public static void UpdateBorder(this FrameworkElement nativeView, IView view)
+		public static void UpdateBorder(this FrameworkElement platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;
-			if (nativeView is WrapperView wrapperView)
+			if (platformView is WrapperView wrapperView)
 				wrapperView.Border = border;
 		}
 
-		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
+		public static void UpdateOpacity(this FrameworkElement platformView, IView view)
 		{
-			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
+			platformView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
 		}
 
-		public static void UpdateBackground(this ContentPanel nativeView, IBorderStroke border) 
+		public static void UpdateBackground(this ContentPanel platformView, IBorderStroke border)
 		{
-			var hasBorder = border.Shape != null && border.Stroke != null;
+			var hasBorder = border.Shape != null;
 
 			if (hasBorder)
 			{
-				nativeView?.UpdateBorderBackground(border);
+				platformView?.UpdateBorderBackground(border);
 			}
-			else if(border is IView v)
+			else if (border is IView v)
 			{
-				nativeView?.UpdateNativeViewBackground(v);
+				platformView?.UpdatePlatformViewBackground(v);
 			}
 		}
 
-		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
+		public static void UpdateBackground(this FrameworkElement platformView, IView view)
 		{
-			nativeView?.UpdateNativeViewBackground(view);
+			platformView?.UpdatePlatformViewBackground(view);
 		}
 
-		public static WFlowDirection ToNative(this FlowDirection flowDirection)
-		{
-			if (flowDirection == FlowDirection.RightToLeft)
-				return WFlowDirection.RightToLeft;
-			else if (flowDirection == FlowDirection.LeftToRight)
-				return WFlowDirection.LeftToRight;
-
-			throw new InvalidOperationException($"Invalid FlowDirection: {flowDirection}");
-		}
-
-		public static void UpdateFlowDirection(this FrameworkElement nativeView, IView view)
+		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
 		{
 			var flowDirection = view.FlowDirection;
-
-			if (flowDirection == FlowDirection.MatchParent ||
-				view.FlowDirection == FlowDirection.MatchParent)
+			switch (flowDirection)
 			{
-				flowDirection = view?.Handler?.MauiContext?.GetFlowDirection()
-					?? FlowDirection.LeftToRight;
+				case FlowDirection.MatchParent:
+					platformView.ClearValue(FrameworkElement.FlowDirectionProperty);
+					break;
+				case FlowDirection.LeftToRight:
+					platformView.FlowDirection = WFlowDirection.LeftToRight;
+					break;
+				case FlowDirection.RightToLeft:
+					platformView.FlowDirection = WFlowDirection.RightToLeft;
+					break;
 			}
-			if (flowDirection == FlowDirection.MatchParent)
-			{
-				flowDirection = FlowDirection.LeftToRight;
-			}
-
-			nativeView.FlowDirection = flowDirection.ToNative();
 		}
 
-		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
-			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
+		public static void UpdateAutomationId(this FrameworkElement platformView, IView view) =>
+			AutomationProperties.SetAutomationId(platformView, view.AutomationId);
 
-		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)
+		public static void UpdateSemantics(this FrameworkElement platformView, IView view)
 		{
 			var semantics = view.Semantics;
+
+			if (view is IPicker picker && string.IsNullOrEmpty(semantics?.Description))
+				AutomationProperties.SetName(platformView, picker.Title);
+			else if (semantics != null)
+				AutomationProperties.SetName(platformView, semantics.Description);
 
 			if (semantics == null)
 				return;
 
-			AutomationProperties.SetName(nativeView, semantics.Description);
-			AutomationProperties.SetHelpText(nativeView, semantics.Hint);
-			AutomationProperties.SetHeadingLevel(nativeView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
+			AutomationProperties.SetHelpText(platformView, semantics.Hint);
+			AutomationProperties.SetHeadingLevel(platformView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
 		}
 
-		internal static void UpdateProperty(this FrameworkElement nativeControl, DependencyProperty property, Color color)
+		internal static void UpdateProperty(this FrameworkElement platformControl, DependencyProperty property, Color color)
 		{
 			if (color.IsDefault())
-				nativeControl.ClearValue(property);
+				platformControl.ClearValue(property);
 			else
-				nativeControl.SetValue(property, color.ToNative());
+				platformControl.SetValue(property, color.ToPlatform());
 		}
 
-		internal static void UpdateProperty(this FrameworkElement nativeControl, DependencyProperty property, object? value)
+		internal static void UpdateProperty(this FrameworkElement platformControl, DependencyProperty property, object? value)
 		{
 			if (value == null)
-				nativeControl.ClearValue(property);
+				platformControl.ClearValue(property);
 			else
-				nativeControl.SetValue(property, value);
+				platformControl.SetValue(property, value);
 		}
 
-		public static void InvalidateMeasure(this FrameworkElement nativeView, IView view)
+		public static void InvalidateMeasure(this FrameworkElement platformView, IView view)
 		{
-			nativeView.InvalidateMeasure();
+			platformView.InvalidateMeasure();
 		}
 
-		public static void UpdateWidth(this FrameworkElement nativeView, IView view)
-		{
-			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
-			// we can just propagate the value straight through
-			nativeView.Width = view.Width;
-		}
-
-		public static void UpdateHeight(this FrameworkElement nativeView, IView view)
+		public static void UpdateWidth(this FrameworkElement platformView, IView view)
 		{
 			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
 			// we can just propagate the value straight through
-			nativeView.Height = view.Height;
+			platformView.Width = view.Width;
 		}
 
-		public static void UpdateMinimumHeight(this FrameworkElement nativeView, IView view)
+		public static void UpdateHeight(this FrameworkElement platformView, IView view)
 		{
-			nativeView.MinHeight = view.MinimumHeight;
+			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
+			// we can just propagate the value straight through
+			platformView.Height = view.Height;
 		}
 
-		public static void UpdateMinimumWidth(this FrameworkElement nativeView, IView view)
+		public static void UpdateMinimumHeight(this FrameworkElement platformView, IView view)
 		{
-			nativeView.MinWidth = view.MinimumWidth;
+			var minHeight = view.MinimumHeight;
+
+			if (Dimension.IsMinimumSet(minHeight))
+			{
+				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
+				// because the platform/theme may have a minimum height for this control
+				platformView.MinHeight = minHeight;
+			}
 		}
 
-		public static void UpdateMaximumHeight(this FrameworkElement nativeView, IView view)
+		public static void UpdateMinimumWidth(this FrameworkElement platformView, IView view)
 		{
-			nativeView.MaxHeight = view.MaximumHeight;
+			var minWidth = view.MinimumWidth;
+
+			if (Dimension.IsMinimumSet(minWidth))
+			{
+				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
+				// because the platform/theme may have a minimum width for this control
+				platformView.MinWidth = minWidth;
+			}
 		}
 
-		public static void UpdateMaximumWidth(this FrameworkElement nativeView, IView view)
+		public static void UpdateMaximumHeight(this FrameworkElement platformView, IView view)
 		{
-			nativeView.MaxWidth = view.MaximumWidth;
+			platformView.MaxHeight = view.MaximumHeight;
 		}
 
-		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IBorderStroke border)
+		public static void UpdateMaximumWidth(this FrameworkElement platformView, IView view)
 		{
+			platformView.MaxWidth = view.MaximumWidth;
+		}
 
-			if(border is IView v)
-			(nativeView as ContentPanel)?.UpdateBackground(v.Background);
+		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
+		{
+			if (border is IView view)
+				(platformView as ContentPanel)?.UpdateBackground(view.Background);
 
-			if (nativeView is Control control)
+			if (platformView is Control control)
 				control.UpdateBackground((Paint?)null);
-			else if (nativeView is Border b)
+			else if (platformView is Border b)
 				b.UpdateBackground(null);
-			else if (nativeView is Panel panel)
+			else if (platformView is Panel panel)
 				panel.UpdateBackground(null);
 		}
 
-		internal static void UpdateNativeViewBackground(this FrameworkElement nativeView, IView view)
+		internal static void UpdatePlatformViewBackground(this FrameworkElement platformView, IView view)
 		{
-			(nativeView as ContentPanel)?.UpdateBackground(null);
+			(platformView as ContentPanel)?.UpdateBackground(null);
 
-			if (nativeView is Control control)
+			if (platformView is Control control)
 				control.UpdateBackground(view.Background);
-			else if (nativeView is Border border)
+			else if (platformView is Border border)
 				border.UpdateBackground(view.Background);
-			else if (nativeView is Panel panel)
+			else if (platformView is Panel panel)
 				panel.UpdateBackground(view.Background);
 		}
 
-		public static async Task<byte[]?> RenderAsPNG(this IView view)
+		public static async Task UpdateBackgroundImageSourceAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
-				return null;
-
-			return await nativeView.RenderAsPNG();
+			if (platformView is Control control)
+				await control.UpdateBackgroundImageSourceAsync(imageSource, provider);
+			else if (platformView is Panel panel)
+				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
 		}
 
-		public static async Task<byte[]?> RenderAsJPEG(this IView view)
+		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
-				return null;
-
-			return await nativeView.RenderAsJPEG();
+			ToolTipService.SetToolTip(platformView, tooltip?.Content);
 		}
 
-		public static Task<byte[]?> RenderAsPNG(this FrameworkElement view) => view != null ? view.RenderAsPNGAsync() : Task.FromResult<byte[]?>(null);
-
-		public static Task<byte[]?> RenderAsJPEG(this FrameworkElement view) => view != null ? view.RenderAsJPEGAsync() : Task.FromResult<byte[]?>(null);
+		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
+		{
+			// Background and InputTransparent for Windows layouts are heavily intertwined, so setting one
+			// usuall requires setting the other at the same time
+			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
+		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView == null)
+			var platformView = view?.ToPlatform();
+			if (platformView == null)
 				return new Matrix4x4();
-			return GetViewTransform(nativeView);
+			return GetViewTransform(platformView);
 		}
 
 		internal static Matrix4x4 GetViewTransform(this FrameworkElement element)
 		{
-			var root = element?.Parent as UIElement;
-			if (root == null)
-				return new Matrix4x4();
-			var offset = element?.TransformToVisual(root) as MatrixTransform;
+			var root = element?.XamlRoot;
+			var offset = element?.TransformToVisual(root?.Content ?? element) as MatrixTransform;
 			if (offset == null)
 				return new Matrix4x4();
 			Matrix matrix = offset.Matrix;
@@ -279,56 +291,146 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		internal static Rectangle GetNativeViewBounds(this IView view)
+		internal static Rect GetPlatformViewBounds(this IView view)
 		{
-			var nativeView = view?.ToPlatform();
-			if (nativeView != null)
-				return nativeView.GetNativeViewBounds();
-			return new Rectangle();
+			var platformView = view?.ToPlatform();
+			if (platformView != null)
+				return platformView.GetPlatformViewBounds();
+			return new Rect();
 		}
 
-		internal static Rectangle GetNativeViewBounds(this FrameworkElement nativeView)
+		internal static Rect GetPlatformViewBounds(this FrameworkElement platformView)
 		{
-			if (nativeView == null)
-				return new Rectangle();
+			if (platformView == null)
+				return new Rect();
 
-			var root = nativeView.XamlRoot;
-			var offset = nativeView.TransformToVisual(root.Content) as UI.Xaml.Media.MatrixTransform;
+			var root = platformView.XamlRoot;
+			var offset = platformView.TransformToVisual(root.Content) as UI.Xaml.Media.MatrixTransform;
 			if (offset != null)
-				return new Rectangle(offset.Matrix.OffsetX, offset.Matrix.OffsetY, nativeView.ActualWidth, nativeView.ActualHeight);
+				return new Rect(offset.Matrix.OffsetX, offset.Matrix.OffsetY, platformView.ActualWidth, platformView.ActualHeight);
 
-			return new Rectangle();
+			return new Rect();
 		}
 
-		internal static Graphics.Rectangle GetBoundingBox(this IView view) 
+		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
 
-		internal static Graphics.Rectangle GetBoundingBox(this FrameworkElement? nativeView)
+		internal static Graphics.Rect GetBoundingBox(this FrameworkElement? platformView)
 		{
-			if (nativeView == null)
-				return new Rectangle();
+			if (platformView == null)
+				return new Rect();
 
-			var rootView = nativeView.XamlRoot.Content;
-			if (nativeView == rootView)
+			var rootView = platformView.XamlRoot.Content;
+			if (platformView == rootView)
 			{
 				if (rootView is not FrameworkElement el)
-					return new Rectangle();
+					return new Rect();
 
-				return new Rectangle(0, 0, el.ActualWidth, el.ActualHeight);
+				return new Rect(0, 0, el.ActualWidth, el.ActualHeight);
 			}
 
 
-			var topLeft = nativeView.TransformToVisual(rootView).TransformPoint(new WinPoint());
-			var topRight = nativeView.TransformToVisual(rootView).TransformPoint(new WinPoint(nativeView.ActualWidth, 0));
-			var bottomLeft = nativeView.TransformToVisual(rootView).TransformPoint(new WinPoint(0, nativeView.ActualHeight));
-			var bottomRight = nativeView.TransformToVisual(rootView).TransformPoint(new WinPoint(nativeView.ActualWidth, nativeView.ActualHeight));
+			var topLeft = platformView.TransformToVisual(rootView).TransformPoint(new WinPoint());
+			var topRight = platformView.TransformToVisual(rootView).TransformPoint(new WinPoint(platformView.ActualWidth, 0));
+			var bottomLeft = platformView.TransformToVisual(rootView).TransformPoint(new WinPoint(0, platformView.ActualHeight));
+			var bottomRight = platformView.TransformToVisual(rootView).TransformPoint(new WinPoint(platformView.ActualWidth, platformView.ActualHeight));
 
 
 			var x1 = new[] { topLeft.X, topRight.X, bottomLeft.X, bottomRight.X }.Min();
 			var x2 = new[] { topLeft.X, topRight.X, bottomLeft.X, bottomRight.X }.Max();
 			var y1 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Min();
 			var y2 = new[] { topLeft.Y, topRight.Y, bottomLeft.Y, bottomRight.Y }.Max();
-			return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+			return new Rect(x1, y1, x2 - x1, y2 - y1);
+		}
+
+		internal static DependencyObject? GetParent(this FrameworkElement? view)
+		{
+			return view?.Parent;
+		}
+
+		internal static DependencyObject? GetParent(this DependencyObject? view)
+		{
+			if (view is FrameworkElement pv)
+				return pv.Parent;
+
+			return null;
+		}
+
+		internal static void UnfocusControl(Control control)
+		{
+			if (control == null || !control.IsEnabled)
+				return;
+
+			// "Unfocusing" doesn't really make sense on Windows; for accessibility reasons,
+			// something always has focus. So forcing the unfocusing of a control would normally 
+			// just move focus to the next control, or leave it on the current control if no other
+			// focus targets are available. This is what happens if you use the "disable/enable"
+			// hack. What we *can* do is set the focus to the Page which contains Control;
+			// this will cause Control to lose focus without shifting focus to, say, the next Entry 
+
+			if (ContainingPage == null)
+			{
+				// Work our way up the tree to find the containing Page
+				DependencyObject parent = control;
+
+				while (parent != null && parent is not Page)
+				{
+					parent = VisualTreeHelper.GetParent(parent);
+				}
+
+				ContainingPage = parent as Page;
+			}
+
+			if (ContainingPage != null)
+			{
+				// Cache the tabstop setting
+				var wasTabStop = ContainingPage.IsTabStop;
+
+				// Controls can only get focus if they're a tabstop
+				ContainingPage.IsTabStop = true;
+				ContainingPage.Focus(FocusState.Programmatic);
+
+				// Restore the tabstop setting; that may cause the Page to lose focus,
+				// but it won't restore the focus to Control
+				ContainingPage.IsTabStop = wasTabStop;
+			}
+		}
+
+		internal static IWindow? GetHostedWindow(this IView? view)
+			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
+
+		internal static IWindow? GetHostedWindow(this FrameworkElement? view)
+			=> GetWindowForXamlRoot(view?.XamlRoot);
+
+		internal static IWindow? GetWindowForXamlRoot(XamlRoot? root)
+		{
+			if (root is null)
+				return null;
+
+			var windows = WindowExtensions.GetWindows();
+			foreach (var window in windows)
+			{
+				if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window win)
+				{
+					if (win.Content?.XamlRoot == root)
+						return window;
+				}
+			}
+
+			return null;
+		}
+
+		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view)
+		{
+			if (nativeView is UIElement element)
+			{
+				element.IsHitTestVisible = !view.InputTransparent;
+			}
+		}
+
+		public static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
+		{
+			// Nothing to do yet, but we might need to adjust the wrapper view 
 		}
 	}
 }

@@ -7,12 +7,12 @@ namespace Microsoft.Maui.Controls
 	public sealed class RenderWithAttribute : Attribute
 	{
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public RenderWithAttribute(Type type) : this(type, new[] { typeof(VisualMarker.DefaultVisual) })
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public RenderWithAttribute(Type type, Type[] supportedVisuals)
 		{
 			Type = type;

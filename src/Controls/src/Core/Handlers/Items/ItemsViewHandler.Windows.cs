@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, ListViewBase>  where TItemsView : ItemsView
+	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, ListViewBase> where TItemsView : ItemsView
 	{
 		protected CollectionViewSource CollectionViewSource;
 		ScrollViewer _scrollViewer;
@@ -31,34 +31,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		double _previousHorizontalOffset;
 		double _previousVerticalOffset;
-		protected ListViewBase ListViewBase => NativeView;
+		protected ListViewBase ListViewBase => PlatformView;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
 		protected WASDKDataTemplate ViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["View"];
 		protected WASDKDataTemplate ItemsViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["ItemsViewDefaultTemplate"];
 
-		UIElement Control => NativeView;
+		UIElement Control => PlatformView;
 
 		protected abstract IItemsLayout Layout { get; }
 
-		protected override ListViewBase CreateNativeView()
+		protected override ListViewBase CreatePlatformView()
 		{
 			return SelectListViewBase();
 		}
 
-		protected override void ConnectHandler(ListViewBase nativeView)
+		protected override void ConnectHandler(ListViewBase platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 			VirtualView.ScrollToRequested += ScrollToRequested;
 		}
 
-		protected override void DisconnectHandler(ListViewBase nativeView)
+		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
-			base.DisconnectHandler(nativeView);
+			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView) 
+		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateItemsSource();
 		}
@@ -90,17 +90,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateFlowDirection(itemsView);
+			handler.PlatformView.UpdateFlowDirection(itemsView);
 		}
 
 		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.NativeView.UpdateVisibility(itemsView);
+			handler.PlatformView.UpdateVisibility(itemsView);
 		}
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			
+
 		}
 
 		protected abstract ListViewBase SelectListViewBase();
@@ -154,8 +154,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					emptyView.EmptyViewVisibility = WVisibility.Visible;
 
-					if (NativeView.ActualWidth >= 0 && NativeView.ActualHeight >= 0)
-						_formsEmptyView?.Layout(new Rectangle(0, 0, NativeView.ActualWidth, NativeView.ActualHeight));
+					if (PlatformView.ActualWidth >= 0 && PlatformView.ActualHeight >= 0)
+						_formsEmptyView?.Layout(new Rect(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
 				}
 
 				_emptyViewDisplayed = true;
@@ -384,9 +384,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_formsEmptyView = view ?? throw new ArgumentNullException(nameof(view));
 
 			var handler = view.ToHandler(MauiContext);
-			var nativeView = handler.ContainerView ?? handler.NativeView;
+			var platformView = handler.ContainerView ?? handler.PlatformView;
 
-			return nativeView as FrameworkElement;
+			return platformView as FrameworkElement;
 		}
 
 		internal void HandleScroll(ScrollViewer scrollViewer)

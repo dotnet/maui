@@ -17,6 +17,7 @@ namespace Maui.Controls.Sample.Pages
 			BorderLineCapPicker.SelectedIndex = 0;
 
 			UpdateBackground();
+			UpdateContentBackground();
 			UpdateBorder();
 			UpdateCornerRadius();
 		}
@@ -66,6 +67,11 @@ namespace Maui.Controls.Sample.Pages
 			UpdateCornerRadius();
 		}
 
+		void OnContentBackgroundCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+		{
+			UpdateContentBackground();
+		}
+
 		void UpdateBorderShape()
 		{
 			CornerRadiusLayout.IsVisible = BorderShapePicker.SelectedIndex == 1;
@@ -91,6 +97,11 @@ namespace Maui.Controls.Sample.Pages
 					new Microsoft.Maui.Controls.GradientStop { Color = endColor, Offset = 0.9f }
 				}
 			};
+		}
+
+		void UpdateContentBackground()
+		{
+			BorderContent.BackgroundColor = ContentBackgroundCheckBox.IsChecked ? Color.FromArgb("#99FF0000") : Colors.Transparent;
 		}
 
 		void UpdateBorder()

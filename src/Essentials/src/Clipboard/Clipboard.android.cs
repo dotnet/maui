@@ -1,37 +1,56 @@
-using System;
+#nullable enable
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using static Android.Content.ClipboardManager;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	public static partial class Clipboard
+	partial class ClipboardImplementation : IClipboard
 	{
-		static readonly Lazy<ClipboardChangeListener> clipboardListener
-			= new Lazy<ClipboardChangeListener>(() => new ClipboardChangeListener());
+		static ClipboardManager? clipboardManager;
 
-		static Task PlatformSetTextAsync(string text)
+		static ClipboardManager? ClipboardManager =>
+			clipboardManager ??= Application.Context.GetSystemService(Context.ClipboardService) as ClipboardManager;
+
+		ClipboardChangeListener? clipboardListener;
+
+		ClipboardChangeListener ClipboardListener =>
+			clipboardListener ??= new ClipboardChangeListener(this);
+
+		public Task SetTextAsync(string? text)
 		{
-			Platform.ClipboardManager.PrimaryClip = ClipData.NewPlainText("Text", text);
+			if (ClipboardManager is not null)
+				ClipboardManager.PrimaryClip = ClipData.NewPlainText("Text", text ?? string.Empty);
+
 			return Task.CompletedTask;
 		}
 
-		static bool PlatformHasText
-			=> Platform.ClipboardManager.HasPrimaryClip && !string.IsNullOrEmpty(Platform.ClipboardManager.PrimaryClip?.GetItemAt(0)?.Text);
+		public bool HasText =>
+			ClipboardManager is not null &&
+			ClipboardManager.HasPrimaryClip &&
+			!string.IsNullOrEmpty(ClipboardManager.PrimaryClip?.GetItemAt(0)?.Text);
 
-		static Task<string> PlatformGetTextAsync()
-			=> Task.FromResult(Platform.ClipboardManager.PrimaryClip?.GetItemAt(0)?.Text);
+		public Task<string?> GetTextAsync() =>
+			Task.FromResult(ClipboardManager?.PrimaryClip?.GetItemAt(0)?.Text);
 
-		static void StartClipboardListeners()
-			=> Platform.ClipboardManager.AddPrimaryClipChangedListener(clipboardListener.Value);
+		void StartClipboardListeners()
+			=> ClipboardManager?.AddPrimaryClipChangedListener(ClipboardListener);
 
-		static void StopClipboardListeners()
-			=> Platform.ClipboardManager.RemovePrimaryClipChangedListener(clipboardListener.Value);
+		void StopClipboardListeners()
+			=> ClipboardManager?.RemovePrimaryClipChangedListener(ClipboardListener);
 	}
 
 	class ClipboardChangeListener : Java.Lang.Object, IOnPrimaryClipChangedListener
 	{
+		ClipboardImplementation clipboard;
+
+		public ClipboardChangeListener(ClipboardImplementation clipboard)
+		{
+			this.clipboard = clipboard;
+		}
+
 		void IOnPrimaryClipChangedListener.OnPrimaryClipChanged() =>
-			Clipboard.ClipboardChangedInternal();
+			clipboard.OnClipboardContentChanged();
 	}
 }

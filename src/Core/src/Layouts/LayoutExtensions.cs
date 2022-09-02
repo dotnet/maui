@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Layouts
 				measureWithMargins.Height + margin.VerticalThickness);
 		}
 
-		public static Rectangle ComputeFrame(this IView view, Rectangle bounds)
+		public static Rect ComputeFrame(this IView view, Rect bounds)
 		{
 			Thickness margin = view.Margin;
 
@@ -63,34 +64,23 @@ namespace Microsoft.Maui.Layouts
 			var frameX = AlignHorizontal(view, bounds, margin);
 			var frameY = AlignVertical(view, bounds, margin);
 
-			return new Rectangle(frameX, frameY, frameWidth, frameHeight);
+			return new Rect(frameX, frameY, frameWidth, frameHeight);
 		}
 
-		static double AlignHorizontal(IView view, Rectangle bounds, Thickness margin)
+		static double AlignHorizontal(IView view, Rect bounds, Thickness margin)
 		{
 			var alignment = view.HorizontalLayoutAlignment;
+
+			if (alignment == LayoutAlignment.Fill && IsExplicitSet(view.Width))
+			{
+				// If the view has an explicit width set and the layout alignment is Fill,
+				// we just treat the view as centered within the space it "fills"
+				alignment = LayoutAlignment.Center;
+			}
+
 			var desiredWidth = view.DesiredSize.Width;
-			var startX = bounds.X;
 
-			if (view.FlowDirection == FlowDirection.LeftToRight)
-			{
-				return AlignHorizontal(startX, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
-			}
-
-			// If the flowdirection is RTL, then we can use the same logic to determine the X position of the Frame;
-			// we just have to flip a few parameters. First we flip the alignment if it's start or end:
-
-			if (alignment == LayoutAlignment.End)
-			{
-				alignment = LayoutAlignment.Start;
-			}
-			else if (alignment == LayoutAlignment.Start)
-			{
-				alignment = LayoutAlignment.End;
-			}
-
-			// And then we swap the left and right margins: 
-			return AlignHorizontal(startX, margin.Right, margin.Left, bounds.Width, desiredWidth, alignment);
+			return AlignHorizontal(bounds.X, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
 		}
 
 		static double AlignHorizontal(double startX, double startMargin, double endMargin, double boundsWidth,
@@ -112,11 +102,20 @@ namespace Microsoft.Maui.Layouts
 			return frameX;
 		}
 
-		static double AlignVertical(IView view, Rectangle bounds, Thickness margin)
+		static double AlignVertical(IView view, Rect bounds, Thickness margin)
 		{
+			var alignment = view.VerticalLayoutAlignment;
+
+			if (alignment == LayoutAlignment.Fill && IsExplicitSet(view.Height))
+			{
+				// If the view has an explicit height set and the layout alignment is Fill,
+				// we just treat the view as centered within the space it "fills"
+				alignment = LayoutAlignment.Center;
+			}
+
 			double frameY = bounds.Y + margin.Top;
 
-			switch (view.VerticalLayoutAlignment)
+			switch (alignment)
 			{
 				case LayoutAlignment.Center:
 					frameY += (bounds.Height - view.DesiredSize.Height) / 2;
@@ -139,6 +138,16 @@ namespace Microsoft.Maui.Layouts
 		{
 			var content = contentView.PresentedContent;
 
+			if (Dimension.IsExplicitSet(contentView.Width))
+			{
+				widthConstraint = contentView.Width;
+			}
+
+			if (Dimension.IsExplicitSet(contentView.Height))
+			{
+				heightConstraint = contentView.Height;
+			}
+
 			var contentSize = Size.Zero;
 
 			if (content != null)
@@ -150,7 +159,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
 		}
 
-		public static void ArrangeContent(this IContentView contentView, Rectangle bounds)
+		public static void ArrangeContent(this IContentView contentView, Rect bounds)
 		{
 			if (contentView.PresentedContent == null)
 			{
@@ -159,13 +168,13 @@ namespace Microsoft.Maui.Layouts
 
 			var padding = contentView.Padding;
 
-			var targetBounds = new Rectangle(bounds.Left + padding.Left, bounds.Top + padding.Top,
+			var targetBounds = new Rect(bounds.Left + padding.Left, bounds.Top + padding.Top,
 				bounds.Width - padding.HorizontalThickness, bounds.Height - padding.VerticalThickness);
 
 			_ = contentView.PresentedContent.Arrange(targetBounds);
 		}
 
-		public static Size AdjustForFill(this Size size, Rectangle bounds, IView view)
+		public static Size AdjustForFill(this Size size, Rect bounds, IView view)
 		{
 			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill)
 			{

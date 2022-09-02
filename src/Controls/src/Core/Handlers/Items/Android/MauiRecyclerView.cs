@@ -21,14 +21,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected TAdapter ItemsViewAdapter;
 
 		protected TItemsView ItemsView;
-		protected IItemsLayout ItemsLayout { get; private set; }
+		public IItemsLayout ItemsLayout { get; private set; }
 
-		Func<IItemsLayout> GetItemsLayout;
-		Func<TAdapter> CreateAdapter;
+		readonly Func<IItemsLayout> _getItemsLayout;
+		protected Func<TAdapter> CreateAdapter;
 
 		SnapManager _snapManager;
 		ScrollHelper _scrollHelper;
-		RecyclerViewScrollListener<TItemsView, TItemsViewSource> _recyclerViewScrollListener;
+		protected RecyclerView.OnScrollListener RecyclerViewScrollListener;
 
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(context)
 		{
-			GetItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
+			_getItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
 			CreateAdapter = getAdapter ?? throw new ArgumentNullException(nameof(getAdapter));
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			HorizontalScrollBarEnabled = false;
 		}
 
-		public void TearDownOldElement(TItemsView oldElement)
+		public virtual void TearDownOldElement(TItemsView oldElement)
 		{
 			// Stop listening for layout property changes
 			if (ItemsLayout != null)
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public void SetUpNewElement(TItemsView newElement)
+		public virtual void SetUpNewElement(TItemsView newElement)
 		{
 			if (newElement == null)
 			{
@@ -114,6 +114,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			ItemsView = newElement;
+
+			UpdateLayoutManager();
 
 			UpdateBackgroundColor();
 			UpdateBackground();
@@ -223,11 +225,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var oldItemViewAdapter = ItemsViewAdapter;
 
+			_emptyCollectionObserver.Stop(oldItemViewAdapter);
+
 			ItemsViewAdapter = CreateAdapter();
+
+			(RecyclerViewScrollListener as RecyclerViewScrollListener<TItemsView, TItemsViewSource>)?.UpdateAdapter(ItemsViewAdapter);
 
 			if (GetAdapter() != _emptyViewAdapter)
 			{
-				_emptyCollectionObserver.Stop(oldItemViewAdapter);
 				_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
 
 				SetAdapter(null);
@@ -280,7 +285,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsLayout != null)
 				ItemsLayout.PropertyChanged -= LayoutPropertyChanged;
 
-			ItemsLayout = GetItemsLayout();
+			ItemsLayout = _getItemsLayout();
 
 			// Keep track of the ItemsLayout's property changes
 			if (ItemsLayout != null)
@@ -292,9 +297,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateItemSpacing();
 		}
 
+		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener() => new(ItemsView, ItemsViewAdapter);
 
-		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener()
-			=> new(ItemsView, ItemsViewAdapter);
 
 		protected virtual void UpdateSnapBehavior()
 		{
@@ -321,7 +325,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (backgroundColor == null)
 				return;
 
-			SetBackgroundColor(backgroundColor.ToNative());
+			SetBackgroundColor(backgroundColor.ToPlatform());
 		}
 
 		protected virtual void UpdateBackground(Brush brush = null)
@@ -375,7 +379,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		protected virtual void ScrollTo(ScrollToRequestEventArgs args)
+		public virtual void ScrollTo(ScrollToRequestEventArgs args)
 		{
 			if (ItemsView == null)
 				return;
@@ -540,6 +544,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
 				SetLayoutManager(new LinearLayoutManager(Context));
+				UpdateEmptyView();
 			}
 			else if (!showEmptyView && currentAdapter != ItemsViewAdapter)
 			{
@@ -579,18 +584,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			RemoveScrollListener();
 
-			_recyclerViewScrollListener = CreateScrollListener();
-			AddOnScrollListener(_recyclerViewScrollListener);
+			RecyclerViewScrollListener = CreateScrollListener();
+			AddOnScrollListener(RecyclerViewScrollListener);
 		}
 
 		void RemoveScrollListener()
 		{
-			if (_recyclerViewScrollListener == null)
+			if (RecyclerViewScrollListener == null)
 				return;
 
-			_recyclerViewScrollListener.Dispose();
+			RecyclerViewScrollListener.Dispose();
 			ClearOnScrollListeners();
-			_recyclerViewScrollListener = null;
+			RecyclerViewScrollListener = null;
 		}
 	}
 }

@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls
 {
@@ -100,11 +100,23 @@ namespace Microsoft.Maui.Controls
 				newItems.PropertyChanged += SwipeItemsPropertyChanged;
 			}
 
-			void SwipeItemsPropertyChanged(object sender, PropertyChangedEventArgs e) =>
-				SendChange((SwipeItems)sender);
+			void SwipeItemsPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (sender is SwipeItems swipeItems)
+					SendChange(swipeItems);
 
-			void SwipeItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
-				SendChange((SwipeItems)sender);
+				if (sender is IEnumerable<ISwipeItem> enumerable)
+					SendChange(new SwipeItems(enumerable));
+			}
+
+			void SwipeItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+			{
+				if (sender is SwipeItems swipeItems)
+					SendChange(swipeItems);
+
+				if (sender is IEnumerable<ISwipeItem> enumerable)
+					SendChange(new SwipeItems(enumerable));
+			}
 
 			void SendChange(SwipeItems swipeItems)
 			{
@@ -133,7 +145,9 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<CloseRequestedEventArgs> CloseRequested;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='Open']/Docs" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public void Open(OpenSwipeItem openSwipeItem, bool animated = true)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			OpenRequested?.Invoke(this, new OpenRequestedEventArgs(openSwipeItem, animated));
 			((ISwipeView)this).RequestOpen(new SwipeViewOpenRequest(openSwipeItem, animated));

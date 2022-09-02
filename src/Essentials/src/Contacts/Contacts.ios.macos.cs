@@ -8,19 +8,17 @@ using Contacts;
 using ContactsUI;
 #endif
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public static partial class Contacts
+	class ContactsImplementation : IContacts
 	{
 #if __MACOS__
-        static Task<Contact> PlatformPickContactAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
-
+		public Task<Contact> PickContactAsync() =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 #elif __IOS__
-		static Task<Contact> PlatformPickContactAsync()
+		public Task<Contact> PickContactAsync()
 		{
-			var uiView = Platform.GetCurrentViewController();
-			if (uiView == null)
-				throw new ArgumentNullException($"The View Controller can't be null.");
+			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 
 			var source = new TaskCompletionSource<Contact>();
 
@@ -42,16 +40,16 @@ namespace Microsoft.Maui.Essentials
 			if (picker.PresentationController != null)
 			{
 				picker.PresentationController.Delegate =
-					new Platform.UIPresentationControllerDelegate(() => source?.TrySetResult(null));
+					new UIPresentationControllerDelegate(() => source?.TrySetResult(null));
 			}
 
-			uiView.PresentViewController(picker, true, null);
+			vc.PresentViewController(picker, true, null);
 
 			return source.Task;
 		}
-
 #endif
-		static Task<IEnumerable<Contact>> PlatformGetAllAsync(CancellationToken cancellationToken)
+
+		public Task<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			var keys = new[]
 			{
@@ -123,7 +121,7 @@ namespace Microsoft.Maui.Essentials
 			}
 
 			public Action<CNContact> DidSelectContactHandler { get; }
-
+#pragma warning disable CA1416 // picker.DismissModalViewController(bool) has UnsupportedOSPlatform("ios6.0")]. (Deprecated but still works)
 			public override void ContactPickerDidCancel(CNContactPickerViewController picker)
 			{
 				DidSelectContactHandler?.Invoke(default);
@@ -138,6 +136,7 @@ namespace Microsoft.Maui.Essentials
 
 			public override void DidSelectContactProperty(CNContactPickerViewController picker, CNContactProperty contactProperty) =>
 				picker.DismissModalViewController(true);
+#pragma warning restore CA1416
 		}
 #endif
 	}

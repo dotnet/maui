@@ -9,9 +9,12 @@ using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue6368;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(RoundedLabel), typeof(RoundedLabelRenderer))]
+#pragma warning restore CS0612 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers
 {
+	[System.Obsolete]
 	public class RoundedLabelRenderer : LabelRenderer
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Label> e)

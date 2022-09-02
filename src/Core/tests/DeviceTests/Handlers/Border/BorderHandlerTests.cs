@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			var border = new BorderStub()
 			{
 				Content = new LabelStub { Text = "Background", TextColor = Colors.White },
-				Shape = new RectangleStub(),
+				Shape = new RectangleShapeStub(),
 				Background = new SolidPaintStub(expected),
 				Stroke = new SolidPaintStub(Colors.Black),
 				StrokeThickness = 2,
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 			var border = new BorderStub()
 			{
 				Content = new LabelStub { Text = "Stroke", TextColor = Colors.Black },
-				Shape = new RectangleStub(),
+				Shape = new RectangleShapeStub(),
 				Background = new SolidPaintStub(Colors.White),
 				Stroke = new SolidPaintStub(expected),
 				StrokeThickness = 6,
@@ -70,12 +70,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (shape == "Rectangle")
 			{
-				border.Shape = new RectangleStub();
+				border.Shape = new RectangleShapeStub();
 			}
 
 			if (shape == "RoundRectangle")
 			{
-				border.Shape = new RoundRectangleStub { CornerRadius = new CornerRadius(12, 0, 0, 24) };
+				border.Shape = new RoundRectangleShapeStub { CornerRadius = new CornerRadius(12, 0, 0, 24) };
 			}
 
 			await ValidateHasColor(border, Colors.Red);

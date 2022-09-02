@@ -5,6 +5,7 @@ using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[Obsolete]
 	public static class AccessibilityExtensions
 	{
 		public static string SetContentDescription(this global::Android.Views.View Control, Element Element, string _defaultContentDescription = null)

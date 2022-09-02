@@ -2,16 +2,16 @@ using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using FlexLayout = Microsoft.Maui.Controls.Compatibility.FlexLayout;
 
-	[TestFixture]
+
 	public class FlexLayoutFlexDirectionTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestFlexDirectionColumnWithoutHeight()
 		{
 			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
@@ -30,14 +30,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var sizeRequest = layout.Measure(100, double.PositiveInfinity);
-			layout.Layout(new Rectangle(0, 0, sizeRequest.Request.Width, sizeRequest.Request.Height));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 30)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 10)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(0, 10, 100, 10)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rectangle(0, 20, 100, 10)));
+			layout.Layout(new Rect(0, 0, sizeRequest.Request.Width, sizeRequest.Request.Height));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 30));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 100, 10));
+			Assert.Equal(view1.Bounds, new Rect(0, 10, 100, 10));
+			Assert.Equal(view2.Bounds, new Rect(0, 20, 100, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlexDirectionRowNoWidth()
 		{
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
@@ -57,14 +57,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 			var measure = layout.Measure(double.PositiveInfinity, 100);
-			layout.Layout(new Rectangle(0, 0, measure.Request.Width, measure.Request.Height));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 30, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 10, 100)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(10, 0, 10, 100)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rectangle(20, 0, 10, 100)));
+			layout.Layout(new Rect(0, 0, measure.Request.Width, measure.Request.Height));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 30, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 10, 100));
+			Assert.Equal(view1.Bounds, new Rect(10, 0, 10, 100));
+			Assert.Equal(view2.Bounds, new Rect(20, 0, 10, 100));
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlexDirectionColumn()
 		{
 			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
@@ -82,14 +82,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 10)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(0, 10, 100, 10)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rectangle(0, 20, 100, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 100, 10));
+			Assert.Equal(view1.Bounds, new Rect(0, 10, 100, 10));
+			Assert.Equal(view2.Bounds, new Rect(0, 20, 100, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlexDirectionRow()
 		{
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
@@ -107,14 +107,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Row,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 0, 10, 100)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(10, 0, 10, 100)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rectangle(20, 0, 10, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 10, 100));
+			Assert.Equal(view1.Bounds, new Rect(10, 0, 10, 100));
+			Assert.Equal(view2.Bounds, new Rect(20, 0, 10, 100));
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlexDirectionColumnReverse()
 		{
 			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
@@ -132,14 +132,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.ColumnReverse,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(0, 90, 100, 10)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(0, 80, 100, 10)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rectangle(0, 70, 100, 10)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 90, 100, 10));
+			Assert.Equal(view1.Bounds, new Rect(0, 80, 100, 10));
+			Assert.Equal(view2.Bounds, new Rect(0, 70, 100, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestFlexDirectionRowReverse()
 		{
 			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
@@ -158,11 +158,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.RowReverse,
 			};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rectangle(90, 0, 10, 100)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rectangle(80, 0, 10, 100)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rectangle(70, 0, 10, 100)));
+			layout.Layout(new Rect(0, 0, 100, 100));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(90, 0, 10, 100));
+			Assert.Equal(view1.Bounds, new Rect(80, 0, 10, 100));
+			Assert.Equal(view2.Bounds, new Rect(70, 0, 10, 100));
 		}
 	}
 }

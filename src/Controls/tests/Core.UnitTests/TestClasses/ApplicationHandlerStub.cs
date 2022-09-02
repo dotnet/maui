@@ -13,6 +13,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		protected override object CreateNativeElement() => default(object);
+		protected override object CreatePlatformElement() => default(object);
 	}
 }

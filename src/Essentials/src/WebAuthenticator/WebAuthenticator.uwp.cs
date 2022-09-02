@@ -1,20 +1,20 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Storage;
 using Windows.Security.Authentication.Web;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Authentication
 {
-	public static partial class WebAuthenticator
+	partial class WebAuthenticatorImplementation : IWebAuthenticator
 	{
-		static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
@@ -48,10 +48,11 @@ namespace Microsoft.Maui.Essentials
 
 		static bool IsUriProtocolDeclared(string scheme)
 		{
-			var doc = XDocument.Load(Platform.AppManifestFilename, LoadOptions.None);
+			var docPath = FileSystemUtils.PlatformGetFullAppPackageFilePath(PlatformUtils.AppManifestFilename);
+			var doc = XDocument.Load(docPath, LoadOptions.None);
 			var reader = doc.CreateReader();
 			var namespaceManager = new XmlNamespaceManager(reader.NameTable);
-			namespaceManager.AddNamespace("x", Platform.AppManifestXmlns);
+			namespaceManager.AddNamespace("x", PlatformUtils.AppManifestXmlns);
 			namespaceManager.AddNamespace("uap", "http://schemas.microsoft.com/appx/manifest/uap/windows10");
 
 			// Check if the protocol was declared

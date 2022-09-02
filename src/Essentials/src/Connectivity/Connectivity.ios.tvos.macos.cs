@@ -4,28 +4,28 @@ using CoreTelephony;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Networking
 {
-	public static partial class Connectivity
+	partial class ConnectivityImplementation : IConnectivity
 	{
 #if !(MACCATALYST || MACOS)
 		// TODO: Use NWPathMonitor on > iOS 12
-#pragma warning disable BI1234
+#pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 		static readonly Lazy<CTCellularData> cellularData = new Lazy<CTCellularData>(() => new CTCellularData());
 
 		internal static CTCellularData CellularData => cellularData.Value;
-#pragma warning restore BI1234
+#pragma warning restore BI1234, CA1416
 #endif
 
 		static ReachabilityListener listener;
 
-		static void StartListeners()
+		void StartListeners()
 		{
 			listener = new ReachabilityListener();
 			listener.ReachabilityChanged += OnConnectivityChanged;
 		}
 
-		static void StopListeners()
+		void StopListeners()
 		{
 			if (listener == null)
 				return;
@@ -35,16 +35,16 @@ namespace Microsoft.Maui.Essentials
 			listener = null;
 		}
 
-		static NetworkAccess PlatformNetworkAccess
+		public NetworkAccess NetworkAccess
 		{
 			get
 			{
 				var restricted = false;
 #if !(MACCATALYST || MACOS)
 				// TODO: Use NWPathMonitor on > iOS 12
-#pragma warning disable BI1234
+#pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 				restricted = CellularData.RestrictedState == CTCellularDataRestrictedState.Restricted;
-#pragma warning restore BI1234
+#pragma warning restore BI1234, CA1416
 #endif
 				var internetStatus = Reachability.InternetConnectionStatus();
 				if ((internetStatus == NetworkStatus.ReachableViaCarrierDataNetwork && !restricted) || internetStatus == NetworkStatus.ReachableViaWiFiNetwork)
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
+		public IEnumerable<ConnectionProfile> ConnectionProfiles
 		{
 			get
 			{

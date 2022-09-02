@@ -18,6 +18,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class CheckBoxRendererBase :
 		AppCompatCheckBox,
 		IVisualElementRenderer,
@@ -31,15 +32,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		VisualElementRenderer _visualElementRenderer;
 		IPlatformElementConfiguration<PlatformConfiguration.Android, CheckBox> _platformElementConfiguration;
 		CheckBox _checkBox;
-
-		[PortHandler]
-		static int[][] _checkedStates = new int[][]
-					{
-						new int[] { AAttribute.StateEnabled, AAttribute.StateChecked },
-						new int[] { AAttribute.StateEnabled, -AAttribute.StateChecked },
-						new int[] { -AAttribute.StateEnabled, AAttribute.StateChecked },
-						new int[] { -AAttribute.StateEnabled, -AAttribute.StatePressed },
-					};
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -201,18 +193,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual ColorStateList GetColorStateList()
 		{
 			var tintColor = Element.Color == null ? Application.AccentColor.ToAndroid() : Element.Color.ToAndroid();
-
-			var list = new ColorStateList(
-					_checkedStates,
-					new int[]
-					{
-						tintColor,
-						tintColor,
-						tintColor,
-						tintColor
-					});
-
-			return list;
+			return ColorStateListExtensions.CreateCheckBox(tintColor);
 		}
 
 		[PortHandler]
@@ -244,6 +225,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			CompoundButtonCompat.SetButtonTintMode(Control, mode);
 		}
 
+		[PortHandler]
 		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
 		{
 			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);

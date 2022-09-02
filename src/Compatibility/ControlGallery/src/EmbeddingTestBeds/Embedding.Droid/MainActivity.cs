@@ -33,8 +33,8 @@ namespace Embedding.Droid
 
 			Forms.Init(this, null);
 
-			SetContentView (Resource.Layout.Main);
-			
+			SetContentView(Resource.Layout.Main);
+
 			var ft = SupportFragmentManager.BeginTransaction();
 			ft.Replace(Resource.Id.fragment_frame_layout, new MainFragment(), "main");
 			ft.Commit();
@@ -54,7 +54,7 @@ namespace Embedding.Droid
 		{
 			if (_webview == null)
 			{
-				_webview= new WebViewExample().CreateSupportFragment(this);
+				_webview = new WebViewExample().CreateSupportFragment(this);
 			}
 
 			ShowEmbeddedPageFragment(_webview);
@@ -66,12 +66,12 @@ namespace Embedding.Droid
 				_openUri = new OpenUri().CreateSupportFragment(this);
 			}
 
-			ShowEmbeddedPageFragment(_openUri );
+			ShowEmbeddedPageFragment(_openUri);
 		}
 
 		public void ShowAlertsAndActionSheets()
 		{
-			if (_alertsAndActionSheets== null)
+			if (_alertsAndActionSheets == null)
 			{
 				_alertsAndActionSheets = new AlertsAndActionSheets().CreateSupportFragment(this);
 			}
@@ -85,7 +85,7 @@ namespace Embedding.Droid
 
 			ft.AddToBackStack(null);
 			ft.Replace(Resource.Id.fragment_frame_layout, fragment, "hello");
-			
+
 			ft.Commit();
 		}
 
@@ -99,7 +99,7 @@ namespace Embedding.Droid
 	{
 		public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
-			var view =  inflater.Inflate(Resource.Layout.MainFragment, container, false);
+			var view = inflater.Inflate(Resource.Layout.MainFragment, container, false);
 			var showEmbeddedButton = view.FindViewById<Button>(Resource.Id.showEmbeddedButton);
 			var showAlertsActionSheets = view.FindViewById<Button>(Resource.Id.showAlertsActionSheets);
 			var showWebView = view.FindViewById<Button>(Resource.Id.showWebView);

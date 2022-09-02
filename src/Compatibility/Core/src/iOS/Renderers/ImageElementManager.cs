@@ -18,6 +18,7 @@ using NativeImage = AppKit.NSImage;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete]
 	public static class ImageElementManager
 	{
 		public static void Init(IImageVisualElementRenderer renderer)
@@ -246,7 +247,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					imageController?.SetIsLoading(false);
 			}
 
-			(imageElement as IViewController)?.NativeSizeChanged();
+			(imageElement as IViewController)?.PlatformSizeChanged();
 		}
 
 #if __MOBILE__
@@ -294,15 +295,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return null;
 		}
 
-#if __MOBILE__
-		internal static Task ApplyNativeImageAsync(this IShellContext shellContext, BindableObject bindable, BindableProperty imageSourceProperty, Action<UIImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			_ = shellContext ?? throw new ArgumentNullException(nameof(shellContext));
-			var renderer = shellContext as IVisualElementRenderer ?? throw new InvalidOperationException($"The shell context {shellContext.GetType()} must be a {typeof(IVisualElementRenderer)}.");
-
-			return renderer.ApplyNativeImageAsync(bindable, imageSourceProperty, onSet, onLoading, cancellationToken);
-		}
-#endif
 		internal static Task ApplyNativeImageAsync(this IVisualElementRenderer renderer, BindableProperty imageSourceProperty, Action<NativeImage> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return renderer.ApplyNativeImageAsync(null, imageSourceProperty, onSet, onLoading, cancellationToken);

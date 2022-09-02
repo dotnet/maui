@@ -20,12 +20,12 @@ namespace Microsoft.Maui
 		/// <include file="../../docs/Microsoft.Maui/CornerRadius.xml" path="//Member[@MemberName='BottomRight']/Docs" />
 		public double BottomRight { get; }
 
-		/// <include file="../../docs/Microsoft.Maui/CornerRadius.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/CornerRadius.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public CornerRadius(double uniformRadius) : this(uniformRadius, uniformRadius, uniformRadius, uniformRadius)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/CornerRadius.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/CornerRadius.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public CornerRadius(double topLeft, double topRight, double bottomLeft, double bottomRight)
 		{
 			_isParameterized = true;

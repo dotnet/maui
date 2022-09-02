@@ -1,13 +1,15 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel.Communication;
+using Microsoft.Maui.Storage;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	// TEST NOTES:
 	//   - a human needs to close the email composer window
+	[Category("Email")]
 	public class Email_Tests
 	{
 		[Fact]

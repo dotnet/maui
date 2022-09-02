@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ScrollToRequestEventArgs.xml" path="//Member[@MemberName='Group']/Docs" />
 		public object Group { get; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ScrollToRequestEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ScrollToRequestEventArgs.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public ScrollToRequestEventArgs(int index, int groupIndex,
 			ScrollToPosition scrollToPosition, bool isAnimated)
 		{
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 			IsAnimated = isAnimated;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ScrollToRequestEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ScrollToRequestEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ScrollToRequestEventArgs(object item, object group,
 			ScrollToPosition scrollToPosition, bool isAnimated)
 		{

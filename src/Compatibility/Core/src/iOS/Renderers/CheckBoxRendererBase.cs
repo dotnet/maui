@@ -8,6 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class CheckBoxRendererBase<T> : ViewRenderer<CheckBox, T>
 		where T : FormsCheckBox
 	{

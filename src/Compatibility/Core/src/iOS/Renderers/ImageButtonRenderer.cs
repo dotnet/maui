@@ -13,6 +13,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ImageButtonRenderer : ViewRenderer<ImageButton, UIButton>, IImageVisualElementRenderer
 	{
 		bool _isDisposed;
@@ -91,18 +92,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		void UpdatePadding(UIButton button = null)
 		{
 			var uiElement = button ?? Control;
 			if (uiElement == null)
 				return;
 
+#pragma warning disable CA1416 // TOOO:  UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later
 			uiElement.ContentEdgeInsets = new UIEdgeInsets(
 				(float)(Element.Padding.Top),
 				(float)(Element.Padding.Left),
 				(float)(Element.Padding.Bottom),
 				(float)(Element.Padding.Right)
 			);
+#pragma warning restore CA1416
 		}
 		async Task UpdateImage()
 		{

@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
@@ -24,37 +25,62 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<LabelHandler>(label);
-				Assert.True(handler.NativeView.UserInteractionEnabled);
+				Assert.True(handler.PlatformView.UserInteractionEnabled);
 			});
 		}
 
+#if MACCATALYST
 		[Fact]
-		public async Task UserInteractionEnabledSetAfterAddingGestureRecognizer()
+		public async Task InteractionsAreRemovedWhenGestureIsRemoved()
 		{
 			var label = new Label();
+			label.GestureRecognizers.Add(new TapGestureRecognizer() { Buttons = ButtonsMask.Secondary });
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<LabelHandler>(label);
-				Assert.False(handler.NativeView.UserInteractionEnabled);
-				label.GestureRecognizers.Add(new TapGestureRecognizer() { NumberOfTapsRequired = 1 });
-				Assert.True(handler.NativeView.UserInteractionEnabled);
+
+				var interactions =
+					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
+						.ToList();
+
+				Assert.Single(interactions);
+
+				label.GestureRecognizers.RemoveAt(0);
+
+				interactions =
+					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
+						.ToList();
+
+				Assert.Empty(interactions);
 			});
 		}
 
 		[Fact]
-		public async Task UserInteractionEnabledUnsetAfterRemovingGestureRecognizer()
+		public async Task InteractionsAreRemovedWhenGestureButtonMaskChanged()
 		{
 			var label = new Label();
-			label.GestureRecognizers.Add(new TapGestureRecognizer() { NumberOfTapsRequired = 1 });
+			label.GestureRecognizers.Add(new TapGestureRecognizer() { Buttons = ButtonsMask.Secondary });
 
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<LabelHandler>(label);
-				Assert.True(handler.NativeView.UserInteractionEnabled);
-				label.GestureRecognizers.Clear();
-				Assert.False(handler.NativeView.UserInteractionEnabled);
+
+				var interactions =
+					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
+						.ToList();
+
+				Assert.Single(interactions);
+
+				(label.GestureRecognizers[0] as TapGestureRecognizer).Buttons = ButtonsMask.Primary;
+
+				interactions =
+					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
+						.ToList();
+
+				Assert.Empty(interactions);
 			});
 		}
+#endif
 	}
 }

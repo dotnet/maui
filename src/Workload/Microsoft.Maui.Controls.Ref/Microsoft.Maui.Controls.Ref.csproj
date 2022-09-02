@@ -10,8 +10,6 @@
 
   <!-- Android-only files -->
   <ItemGroup Condition=" '$(MauiPlatformName)' == 'android' ">
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/ref/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.dll" />
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.aar" />
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.Compatibility.aar" />
     <_AndroidFiles Include="$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/$(_MauiDotNetTfm)-android/Microsoft.Maui.Controls.aar" />
     <None Include="@(_AndroidFiles)" FullTfm="$(_MauiDotNetTfm)-android30.0" Tfm="$(_MauiDotNetTfm)-android" Profile="Android" />
@@ -19,8 +17,11 @@
 
   <ItemGroup>
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.Compatibility.dll')" />
+    <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/%(Tfm)/Microsoft.Maui.Controls.Compatibility.xml')" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.dll')" />
+    <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/%(Tfm)/Microsoft.Maui.Controls.xml')" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Xaml/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.Controls.Xaml.dll')" />
+    <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Xaml/bin/$(Configuration)/%(Tfm)/Microsoft.Maui.Controls.Xaml.xml')" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Core.Design/bin/$(Configuration)/net472/Microsoft.Maui.Controls.DesignTools.dll')" SubFolder="/Design" />
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Controls/src/Xaml.Design/bin/$(Configuration)/net472/Microsoft.Maui.Controls.Xaml.DesignTools.dll')" SubFolder="/Design" />
     <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="ref/%(FullTfm)%(SubFolder)/%(FileName)%(Extension)" />
@@ -33,7 +34,6 @@
     <ProjectReference Include="../../../src/Controls/src/Core.Design/Controls.Core.Design.csproj" />
     <ProjectReference Include="../../../src/Controls/src/Xaml.Design/Controls.Xaml.Design.csproj" />
     <ProjectReference Include="../../../src/Compatibility/Core/src/Compatibility.csproj" />
-    <ProjectReference Include="../../../src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
 
 </Project>

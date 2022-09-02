@@ -13,21 +13,25 @@ namespace Microsoft.Maui.Platform
 	{
 		const int MaximumRadius = 100;
 
-		readonly Rect _viewBounds;
+		readonly Android.Graphics.Rect _viewBounds;
 
 		APath _currentPath;
 		SizeF _lastPathSize;
+		bool _invalidateClip;
 
 		Bitmap _shadowBitmap;
 		Canvas _shadowCanvas;
 		Android.Graphics.Paint _shadowPaint;
 		bool _invalidateShadow;
-		AView BorderView;
+
+		AView _borderView;
+
+		public bool InputTransparent { get; set; }
 
 		public WrapperView(Context context)
 			: base(context)
 		{
-			_viewBounds = new Rect();
+			_viewBounds = new Android.Graphics.Rect();
 
 			SetClipChildren(false);
 			SetWillNotDraw(true);
@@ -36,6 +40,8 @@ namespace Microsoft.Maui.Platform
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
+
+			_invalidateShadow = true;
 
 			if (_shadowBitmap != null)
 			{
@@ -46,8 +52,9 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-			BorderView?.BringToFront();
-			if (ChildCount == 0 || GetChildAt(0) is not View child)
+			_borderView?.BringToFront();
+
+			if (ChildCount == 0 || GetChildAt(0) is not AView child)
 				return;
 
 			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
@@ -55,7 +62,7 @@ namespace Microsoft.Maui.Platform
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
-			BorderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
+			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -105,9 +112,19 @@ namespace Microsoft.Maui.Platform
 			base.DispatchDraw(canvas);
 		}
 
+		public override bool DispatchTouchEvent(MotionEvent e)
+		{
+			if (InputTransparent)
+			{
+				return false;
+			}
+
+			return base.DispatchTouchEvent(e);
+		}
+
 		partial void ClipChanged()
 		{
-			_invalidateShadow = true;
+			_invalidateClip = _invalidateShadow = true;
 			PostInvalidate();
 		}
 
@@ -121,28 +138,33 @@ namespace Microsoft.Maui.Platform
 		{
 			if (Border == null)
 			{
-				if (BorderView != null)
-					this.RemoveView(BorderView);
-				BorderView = null;
+				if (_borderView != null)
+					RemoveView(_borderView);
+				_borderView = null;
 				return;
 			}
 
-			if (BorderView == null)
+			if (_borderView == null)
 			{
-				this.AddView(BorderView = new AView(Context));
+				AddView(_borderView = new AView(Context));
 			}
-			BorderView.UpdateMauiDrawable(Border);
+
+			_borderView.UpdateBorderStroke(Border);
 		}
 
 		void ClipChild(Canvas canvas)
 		{
-			var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+			var density = Context.GetDisplayDensity();
+			var newSize = new SizeF(canvas.Width, canvas.Height);
+			var bounds = new Graphics.RectF(Graphics.Point.Zero, newSize / density);
 
-			if (_lastPathSize != bounds.Size || _currentPath == null)
+			if (_invalidateClip || _lastPathSize != newSize || _currentPath == null)
 			{
+				_invalidateClip = false;
+
 				var path = Clip.PathForBounds(bounds);
-				_currentPath = path?.AsAndroidPath();
-				_lastPathSize = bounds.Size;
+				_currentPath = path?.AsAndroidPath(scaleX: density, scaleY: density);
+				_lastPathSize = newSize;
 			}
 
 			if (_currentPath != null)
@@ -167,11 +189,23 @@ namespace Microsoft.Maui.Platform
 			// If need to redraw shadow
 			if (_invalidateShadow)
 			{
-				// If bounds is zero
-				if (_viewBounds.Width() != 0 && _viewBounds.Height() != 0)
+				var viewHeight = _viewBounds.Height();
+				var viewWidth = _viewBounds.Width();
+
+				if (GetChildAt(0) is AView child)
 				{
-					var bitmapHeight = _viewBounds.Height() + MaximumRadius;
-					var bitmapWidth = _viewBounds.Width() + MaximumRadius;
+					if (viewHeight == 0)
+						viewHeight = child.MeasuredHeight;
+
+					if (viewWidth == 0)
+						viewWidth = child.MeasuredWidth;
+				}
+
+				// If bounds is zero
+				if (viewHeight != 0 && viewWidth != 0)
+				{
+					var bitmapHeight = viewHeight + MaximumRadius;
+					var bitmapWidth = viewWidth + MaximumRadius;
 
 					// Reset bitmap to bounds
 					_shadowBitmap = Bitmap.CreateBitmap(
@@ -197,18 +231,20 @@ namespace Microsoft.Maui.Platform
 
 					if (Shadow.Paint is LinearGradientPaint linearGradientPaint)
 					{
-						var linearGradientShaderFactory = PaintExtensions.GetLinearGradientShaderFactory(linearGradientPaint);
+						var linearGradientShaderFactory = PaintExtensions.GetLinearGradientShaderFactory(linearGradientPaint, shadowOpacity);
 						_shadowPaint.SetShader(linearGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
 					if (Shadow.Paint is RadialGradientPaint radialGradientPaint)
 					{
-						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint);
+						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint, shadowOpacity);
 						_shadowPaint.SetShader(radialGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
 					if (Shadow.Paint is SolidPaint solidPaint)
 					{
 						solidColor = solidPaint.ToColor();
-						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToNative();
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
+#pragma warning restore CA1416
 					}
 
 					// Apply the shadow radius 
@@ -231,7 +267,7 @@ namespace Microsoft.Maui.Platform
 					}
 					else
 					{
-						var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+						var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
 						var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
 
 						path.Offset(shadowOffsetX, shadowOffsetY);
@@ -251,7 +287,9 @@ namespace Microsoft.Maui.Platform
 
 			// Reset alpha to draw child with full alpha
 			if (solidColor != null)
-				_shadowPaint.Color = solidColor.ToNative();
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+				_shadowPaint.Color = solidColor.ToPlatform();
+#pragma warning restore CA1416
 
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)

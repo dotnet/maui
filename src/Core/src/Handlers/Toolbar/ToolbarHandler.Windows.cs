@@ -2,14 +2,27 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ToolbarHandler : ElementHandler<IToolbar, WindowHeader>
+	public partial class ToolbarHandler : ElementHandler<IToolbar, MauiToolbar>
 	{
-		NavigationRootManager? NavigationRootManager =>
-			MauiContext?.GetNavigationRootManager();
-
-		protected override WindowHeader CreateNativeElement()
+		protected override MauiToolbar CreatePlatformElement()
 		{
-			return new WindowHeader();
+			return new MauiToolbar();
+		}
+
+		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
+		{
+			arg1.PlatformView.UpdateTitle(arg2);
+		}
+
+		private protected override void OnDisconnectHandler(object platformView)
+		{
+			base.OnDisconnectHandler(platformView);
+			if (platformView is MauiToolbar mauiToolbar)
+			{
+				var navRootManager = MauiContext?.GetNavigationRootManager();
+				if (navRootManager != null && navRootManager.Toolbar == mauiToolbar)
+					navRootManager.SetToolbar(null);
+			}
 		}
 	}
 }

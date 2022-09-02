@@ -47,18 +47,25 @@ namespace Microsoft.Maui.Controls
 			unchecked
 			{
 				IAnimatable target;
+#if NETSTANDARD2_0
 				if (!Animatable.TryGetTarget(out target))
 				{
 					return Handle?.GetHashCode() ?? 0;
 				}
-
 				return ((target?.GetHashCode() ?? 0) * 397) ^ (Handle?.GetHashCode() ?? 0);
+#else
+				if (!Animatable.TryGetTarget(out target))
+				{
+					return Handle?.GetHashCode(StringComparison.Ordinal) ?? 0;
+				}
+				return ((target?.GetHashCode() ?? 0) * 397) ^ (Handle?.GetHashCode(StringComparison.Ordinal) ?? 0);
+#endif
 			}
 		}
 
 		protected bool Equals(AnimatableKey other)
 		{
-			if (!string.Equals(Handle, other.Handle))
+			if (!string.Equals(Handle, other.Handle, StringComparison.Ordinal))
 			{
 				return false;
 			}

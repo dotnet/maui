@@ -1,73 +1,53 @@
-﻿using Android.Widget;
+﻿using Android.Views;
+using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using Google.Android.Material.CheckBox;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class CheckBoxHandler : ViewHandler<ICheckBox, AppCompatCheckBox>
 	{
-		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
-
-		protected override AppCompatCheckBox CreateNativeView()
+		protected override AppCompatCheckBox CreatePlatformView()
 		{
-			var nativeCheckBox = new AppCompatCheckBox(Context)
+			var platformCheckBox = new MaterialCheckBox(Context)
 			{
 				SoundEffectsEnabled = false
 			};
 
-			nativeCheckBox.SetClipToOutline(true);
-
-			return nativeCheckBox;
+			platformCheckBox.SetClipToOutline(true);
+			return platformCheckBox;
 		}
 
-		protected override void ConnectHandler(AppCompatCheckBox nativeView)
+		protected override void ConnectHandler(AppCompatCheckBox platformView)
 		{
-			ChangeListener.Handler = this;
-			nativeView.SetOnCheckedChangeListener(ChangeListener);
+			platformView.CheckedChange += OnCheckedChange;
 		}
 
-		protected override void DisconnectHandler(AppCompatCheckBox nativeView)
+		protected override void DisconnectHandler(AppCompatCheckBox platformView)
 		{
-			ChangeListener.Handler = null;
-			nativeView.SetOnCheckedChangeListener(null);
+			platformView.CheckedChange -= OnCheckedChange;
 		}
 
 		// This is an Android-specific mapping
-		public static void MapBackground(CheckBoxHandler handler, ICheckBox check)
+		public static void MapBackground(ICheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateBackground(check);
+			handler.PlatformView?.UpdateBackground(check);
 		}
 
-		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
+		public static void MapIsChecked(ICheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateIsChecked(check);
+			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
-		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		public static void MapForeground(ICheckBoxHandler handler, ICheckBox check)
 		{
-			handler.NativeView?.UpdateForeground(check);
+			handler.PlatformView?.UpdateForeground(check);
 		}
 
-		void OnCheckedChanged(bool isChecked)
+		void OnCheckedChange(object? sender, CompoundButton.CheckedChangeEventArgs e)
 		{
 			if (VirtualView != null)
-				VirtualView.IsChecked = isChecked;
-		}
-
-		internal class CheckedChangeListener : Java.Lang.Object, CompoundButton.IOnCheckedChangeListener
-		{
-			public CheckBoxHandler? Handler { get; set; }
-
-			public CheckedChangeListener()
-			{
-			}
-
-			public void OnCheckedChanged(CompoundButton? nativeCheckBox, bool isChecked)
-			{
-				if (Handler == null || nativeCheckBox == null)
-					return;
-
-				Handler.OnCheckedChanged(isChecked);
-			}
+				VirtualView.IsChecked = e.IsChecked;
 		}
 	}
 }

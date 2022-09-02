@@ -1,45 +1,51 @@
-﻿using ObjCRuntime;
-using UIKit;
+﻿using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class TextAlignmentExtensions
 	{
-		public static UITextAlignment ToNative(this TextAlignment alignment, IView view)
-			=> alignment.ToNative(view.FlowDirection == FlowDirection.LeftToRight);
-
-		public static UITextAlignment ToNative(this TextAlignment alignment, bool isLtr)
+		internal static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment, UIUserInterfaceLayoutDirection layoutDirection)
 		{
-			switch (alignment)
+			var platformAlignment = alignment.ToPlatformHorizontal();
+
+			if (layoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 			{
-				case TextAlignment.Center:
-					return UITextAlignment.Center;
-				case TextAlignment.End:
-					if (isLtr)
-						return UITextAlignment.Right;
-					else
-						return UITextAlignment.Left;
-				default:
-					if (isLtr)
-						return UITextAlignment.Left;
-					else
-						return UITextAlignment.Right;
+				if (platformAlignment == UITextAlignment.Left)
+				{
+					return UITextAlignment.Right;
+				}
+				else if (platformAlignment == UITextAlignment.Right)
+				{
+					return UITextAlignment.Left;
+				}
 			}
+
+			return platformAlignment;
 		}
 
-		public static UIControlContentVerticalAlignment ToNative(this TextAlignment alignment)
+		public static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment, IView view)
+			=> alignment.ToPlatformHorizontal();
+
+		public static UITextAlignment ToPlatformHorizontal(this TextAlignment alignment)
 		{
-			switch (alignment)
+			return alignment switch
 			{
-				case TextAlignment.Center:
-					return UIControlContentVerticalAlignment.Center;
-				case TextAlignment.End:
-					return UIControlContentVerticalAlignment.Bottom;
-				case TextAlignment.Start:
-					return UIControlContentVerticalAlignment.Top;
-				default:
-					return UIControlContentVerticalAlignment.Top;
-			}
+				TextAlignment.Center => UITextAlignment.Center,
+				TextAlignment.End => UITextAlignment.Right,
+				TextAlignment.Start => UITextAlignment.Left,
+				_ => UITextAlignment.Left,
+			};
+		}
+
+		public static UIControlContentVerticalAlignment ToPlatformVertical(this TextAlignment alignment)
+		{
+			return alignment switch
+			{
+				TextAlignment.Center => UIControlContentVerticalAlignment.Center,
+				TextAlignment.End => UIControlContentVerticalAlignment.Bottom,
+				TextAlignment.Start => UIControlContentVerticalAlignment.Top,
+				_ => UIControlContentVerticalAlignment.Top,
+			};
 		}
 	}
 }

@@ -3,13 +3,13 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyQuadraticBezierSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PolyQuadraticBezierSegment']/Docs" />
 	public class PolyQuadraticBezierSegment : PathSegment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyQuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyQuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public PolyQuadraticBezierSegment()
 		{
 			Points = new PointCollection();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyQuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyQuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public PolyQuadraticBezierSegment(PointCollection points)
 		{
 			Points = points;

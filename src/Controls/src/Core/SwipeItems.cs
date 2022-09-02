@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='.ctor'][0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
 		public SwipeItems() : this(Enumerable.Empty<ISwipeItem>())
 		{
 
@@ -44,11 +44,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SwipeBehaviorOnInvokedProperty, value); }
 		}
 
-		public event NotifyCollectionChangedEventHandler CollectionChanged
-		{
-			add { _swipeItems.CollectionChanged += value; }
-			remove { _swipeItems.CollectionChanged -= value; }
-		}
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
 		public ISwipeItem this[int index]
 		{
@@ -129,13 +125,13 @@ namespace Microsoft.Maui.Controls
 
 		void OnSwipeItemsChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
-			if (notifyCollectionChangedEventArgs.NewItems == null)
-				return;
-
-			object bc = BindingContext;
-
-			foreach (BindableObject item in notifyCollectionChangedEventArgs.NewItems)
-				SetInheritedBindingContext(item, bc);
+			if (notifyCollectionChangedEventArgs.NewItems != null)
+			{
+				object bc = BindingContext;
+				foreach (BindableObject item in notifyCollectionChangedEventArgs.NewItems)
+					SetInheritedBindingContext(item, bc);
+			}
+			CollectionChanged?.Invoke(this, notifyCollectionChangedEventArgs);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

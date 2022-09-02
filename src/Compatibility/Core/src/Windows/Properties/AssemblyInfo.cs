@@ -7,5 +7,5 @@ using Microsoft.Maui.Controls.Shapes;
 using Rectangle = Microsoft.Maui.Controls.Shapes.Rectangle;
 
 // Views
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Controls.Foldable")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests")]

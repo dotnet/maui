@@ -21,5 +21,9 @@
 		public static void MapAnchorX(IViewHandler handler, IView view) { }
 
 		public static void MapAnchorY(IViewHandler handler, IView view) { }
+
+		public static void MapContextFlyout(IViewHandler handler, IView view) { }
+
+		public virtual bool NeedsContainer => false;
 	}
 }

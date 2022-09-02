@@ -2,26 +2,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Maui.Handlers;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, UIView>, INativeViewHandler
+	public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, UIView>, IPlatformViewHandler
 	{
 		ControlsNavigationController? _controlsNavigationController;
-		UIViewController? INativeViewHandler.ViewController => _controlsNavigationController;
+		UIViewController? IPlatformViewHandler.ViewController => _controlsNavigationController;
 
-		public INavigationView NavigationView => ((INavigationView)VirtualView);
+		public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
 
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
-		protected override UIView CreateNativeView()
+		protected override UIView CreatePlatformView()
 		{
 			_controlsNavigationController = new ControlsNavigationController(this);
 
@@ -31,9 +26,13 @@ namespace Microsoft.Maui.Handlers
 			return _controlsNavigationController.View;
 		}
 
-		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
+		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
-			arg1.NavigationStack = (arg3 as NavigationRequest)!.NavigationStack;
+			if (arg1 is NavigationViewHandler platformHandler && arg3 is NavigationRequest navigationRequest)
+			{
+				platformHandler.NavigationStack = navigationRequest.NavigationStack;
+			}
+
 			//if (arg3 is NavigationRequest args)
 			//	arg1.OnPushRequested(args);
 		}
@@ -65,9 +64,9 @@ namespace Microsoft.Maui.Handlers
 			//	});
 		}
 
-		//protected override void ConnectHandler(UIView nativeView)
+		//protected override void ConnectHandler(UIView platformView)
 		//{
-		//	base.ConnectHandler(nativeView);
+		//	base.ConnectHandler(platformView);
 
 		//	if (VirtualView == null || MauiContext == null || _controlsNavigationController == null)
 		//		return;
@@ -96,7 +95,7 @@ namespace Microsoft.Maui.Handlers
 		////	var navController = handler._controlsNavigationController;
 		////	var NavigationBar = navController.NavigationBar;
 
-		////	if (NativeVersion.IsAtLeast(13))
+		////	if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 		////	{
 		////		var navigationBarAppearance = NavigationBar.StandardAppearance;
 
@@ -110,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 		////		//	parentingViewController?.SetupDefaultNavigationBarAppearance();
 		////		//}
 		////		//else
-		////		//	navigationBarAppearance.BackgroundColor = barBackgroundColor.ToUIColor();
+		////		//	navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
 
 		////		var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
 		////		navigationBarAppearance.BackgroundImage = backgroundImage;
@@ -141,24 +140,24 @@ namespace Microsoft.Maui.Handlers
 		////	var globalTitleTextAttributes = UINavigationBar.Appearance.TitleTextAttributes;
 		////	var titleTextAttributes = new UIStringAttributes
 		////	{
-		////		ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToNative(),
+		////		ForegroundColor = barTextColor == null ? globalTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 		////		Font = globalTitleTextAttributes?.Font
 		////	};
 
 		////	// Determine new large title text attributes via global static data
 		////	var largeTitleTextAttributes = titleTextAttributes;
-		////	if (NativeVersion.IsAtLeast(11))
+		////	if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 		////	{
 		////		var globalLargeTitleTextAttributes = UINavigationBar.Appearance.LargeTitleTextAttributes;
 
 		////		largeTitleTextAttributes = new UIStringAttributes
 		////		{
-		////			ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToNative(),
+		////			ForegroundColor = barTextColor == null ? globalLargeTitleTextAttributes?.ForegroundColor : barTextColor.ToPlatform(),
 		////			Font = globalLargeTitleTextAttributes?.Font
 		////		};
 		////	}
 
-		////	if (NativeVersion.IsAtLeast(13))
+		////	if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
 		////	{
 		////		if (NavigationBar.CompactAppearance != null)
 		////		{
@@ -179,7 +178,7 @@ namespace Microsoft.Maui.Handlers
 		////	{
 		////		NavigationBar.TitleTextAttributes = titleTextAttributes;
 
-		////		if (NativeVersion.IsAtLeast(11))
+		////		if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 		////			NavigationBar.LargeTitleTextAttributes = largeTitleTextAttributes;
 		////	}
 
@@ -190,13 +189,13 @@ namespace Microsoft.Maui.Handlers
 
 		////	//NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 		////	//	? UINavigationBar.Appearance.TintColor
-		////	//	: iconColor.ToUIColor();
+		////	//	: iconColor.ToPlatform();
 		////}
 
 
-		//protected override void ConnectHandler(UIView nativeView)
+		//protected override void ConnectHandler(UIView platformView)
 		//{
-		//	base.ConnectHandler(nativeView);
+		//	base.ConnectHandler(platformView);
 
 		//	if (VirtualView == null)
 		//		return;
@@ -210,9 +209,9 @@ namespace Microsoft.Maui.Handlers
 		//	//VirtualView.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 		//}
 
-		//protected override void DisconnectHandler(UIView nativeView)
+		//protected override void DisconnectHandler(UIView platformView)
 		//{
-		//	base.DisconnectHandler(nativeView);
+		//	base.DisconnectHandler(platformView);
 
 		//	if (VirtualView == null)
 		//		return;

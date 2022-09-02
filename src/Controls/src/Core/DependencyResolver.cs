@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -10,13 +11,13 @@ namespace Microsoft.Maui.Controls.Internals
 		static Type _defaultVisualType = typeof(VisualMarker.DefaultVisual);
 		static Func<Type, object[], object> Resolver { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DependencyResolver.xml" path="//Member[@MemberName='ResolveUsing']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DependencyResolver.xml" path="//Member[@MemberName='ResolveUsing'][1]/Docs" />
 		public static void ResolveUsing(Func<Type, object[], object> resolver)
 		{
 			Resolver = resolver;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DependencyResolver.xml" path="//Member[@MemberName='ResolveUsing']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DependencyResolver.xml" path="//Member[@MemberName='ResolveUsing'][2]/Docs" />
 		public static void ResolveUsing(Func<Type, object> resolver)
 		{
 			Resolver = (type, objects) => resolver.Invoke(type);
@@ -37,9 +38,15 @@ namespace Microsoft.Maui.Controls.Internals
 			return result;
 		}
 
-		internal static object ResolveOrCreate(Type type) => ResolveOrCreate(type, null, null);
+		internal static object ResolveOrCreate(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type type)
+				=> ResolveOrCreate(type, null, null);
 
-		internal static object ResolveOrCreate(Type type, object source, Type visualType, params object[] args)
+		internal static object ResolveOrCreate(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type type,
+			object source,
+			Type visualType,
+			params object[] args)
 		{
 			visualType = visualType ?? _defaultVisualType;
 

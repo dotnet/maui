@@ -5,14 +5,14 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ShapesExtensions
 	{
-		public static void UpdateShape(this W2DGraphicsView nativeView, IShapeView shapeView)
+		public static void UpdateShape(this W2DGraphicsView platformView, IShapeView shapeView)
 		{
-			nativeView.Drawable = new ShapeDrawable(shapeView);
+			platformView.Drawable = new ShapeDrawable(shapeView);
 		}
 
-		public static void InvalidateShape(this W2DGraphicsView nativeView, IShapeView shapeView)
+		public static void InvalidateShape(this W2DGraphicsView platformView, IShapeView shapeView)
 		{
-			nativeView.Invalidate();
+			platformView.Invalidate();
 		}
 	}
 }

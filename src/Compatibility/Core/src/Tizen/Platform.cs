@@ -4,21 +4,29 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
+using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
 
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Material")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Material")]
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	[Obsolete]
 	public static class Platform
 	{
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				var ve = bindable as VisualElement;
-				if (ve != null && newvalue == null)
-					ve.IsPlatformEnabled = false;
+				var view = bindable as VisualElement;
+				if (view != null)
+					view.IsPlatformEnabled = newvalue != null;
+
+				if (bindable is IView mauiView)
+				{
+					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
+						mauiView.Handler = new RendererToHandlerShim(ver);
+				}
 			});
 
 		public static IVisualElementRenderer GetRenderer(BindableObject bindable)
@@ -43,19 +51,54 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			IVisualElementRenderer renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+			IVisualElementRenderer renderer = null;
+
+			if (renderer == null)
+			{
+				IViewHandler handler = null;
+
+				//TODO: Handle this with AppBuilderHost
+				try
+				{
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
+					handler.SetMauiContext(Forms.MauiContext);
+				}
+				catch
+				{
+					// TODO define better catch response or define if this is needed?
+				}
+
+				if (handler == null)
+				{
+					renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+				}
+				// This means the only thing registered is the RendererToHandlerShim
+				// Which is only used when you are running a .NET MAUI app
+				// This indicates that the user hasn't registered a specific handler for this given type
+				else if (handler is RendererToHandlerShim shim)
+				{
+					renderer = shim.VisualElementRenderer;
+
+					if (renderer == null)
+					{
+						renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+					}
+				}
+				else if (handler is IVisualElementRenderer ver)
+					renderer = ver;
+				else if (handler is IPlatformViewHandler vh)
+				{
+					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
+				}
+			}
 			renderer.SetElement(element);
 			return renderer;
 		}
 
-		internal static ITizenPlatform CreatePlatform(EvasObject parent)
+		internal static ITizenPlatform CreatePlatform()
 		{
-			if (Forms.PlatformType == PlatformType.Lightweight || Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
-			{
-				return new LightweightPlatform(parent);
-			}
-
-			return new DefaultPlatform(parent);
+			return new DefaultPlatform();
 		}
 
 		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
@@ -63,10 +106,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			widthConstraint = widthConstraint <= -1 ? double.PositiveInfinity : widthConstraint;
 			heightConstraint = heightConstraint <= -1 ? double.PositiveInfinity : heightConstraint;
 
-			double width = !double.IsPositiveInfinity(widthConstraint) ? widthConstraint : Int32.MaxValue;
-			double height = !double.IsPositiveInfinity(heightConstraint) ? heightConstraint : Int32.MaxValue;
+			var renderView = GetRenderer(view);
+			if (renderView == null || renderView.NativeView == null)
+			{
+				return (view is IView iView) ? new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint)) : new SizeRequest(Graphics.Size.Zero);
+			}
 
-			return Platform.GetRenderer(view).GetDesiredSize(width, height);
+			return renderView.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 	}
 
@@ -75,44 +121,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	{
 		void SetPage(Page page);
 		bool SendBackButtonPressed();
-		EvasObject GetRootNativeView();
-		bool HasAlpha { get; set; }
-		event EventHandler<RootNativeViewChangedEventArgs> RootNativeViewChanged;
+		NView GetRootNativeView();
+
 		bool PageIsChildOfPlatform(Page page);
 	}
 
-	public class RootNativeViewChangedEventArgs : EventArgs
-	{
-		public RootNativeViewChangedEventArgs(EvasObject view) => RootNativeView = view;
-		public EvasObject RootNativeView { get; private set; }
-	}
-
+	[Obsolete]
 	public class DefaultPlatform : BindableObject, ITizenPlatform, INavigation
 	{
 		NavigationModel _navModel = new NavigationModel();
 		bool _disposed;
-		readonly Naviframe _internalNaviframe;
+		readonly NavigationStack _viewStack;
 		readonly PopupManager _popupManager;
 
-		readonly HashSet<EvasObject> _alerts = new HashSet<EvasObject>();
+		readonly Dictionary<NView, Page> _pageMap = new Dictionary<NView, Page>();
 
-#pragma warning disable 0067
-		public event EventHandler<RootNativeViewChangedEventArgs> RootNativeViewChanged;
-#pragma warning restore 0067
 
-		internal DefaultPlatform(EvasObject parent)
+		internal DefaultPlatform()
 		{
-			Forms.NativeParent = parent;
-
-			_internalNaviframe = new Naviframe(Forms.NativeParent)
+			_viewStack = new NavigationStack
 			{
-				PreserveContentOnPop = true,
-				DefaultBackButtonEnabled = false,
+				BackgroundColor = global::Tizen.NUI.Color.White,
+				WidthResizePolicy = global::Tizen.NUI.ResizePolicyType.FillToParent,
+				HeightResizePolicy = global::Tizen.NUI.ResizePolicyType.FillToParent,
 			};
-			_internalNaviframe.SetAlignment(-1, -1);
-			_internalNaviframe.SetWeight(1.0, 1.0);
-			_internalNaviframe.Show();
-			_internalNaviframe.AnimationFinished += NaviAnimationFinished;
 
 			if (Forms.UseMessagingCenter)
 			{
@@ -127,11 +159,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public Page Page { get; private set; }
 
-		public bool HasAlpha { get; set; }
+		Page CurrentPage
+		{
+			get
+			{
+				if (_viewStack.Top != null && _pageMap.ContainsKey(_viewStack.Top))
+				{
+					return _pageMap[_viewStack.Top];
+				}
+				return null;
+			}
+		}
 
-		Task CurrentModalNavigationTask { get; set; }
-		TaskCompletionSource<bool> CurrentTaskCompletionSource { get; set; }
-		IPageController CurrentPageController => _navModel.CurrentPage as IPageController;
+		IPageController CurrentPageController => CurrentPage;
 		IReadOnlyList<Page> INavigation.ModalStack => _navModel.Modals.ToList();
 		IReadOnlyList<Page> INavigation.NavigationStack => new List<Page>();
 
@@ -145,73 +185,44 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Page != null)
 			{
-				var copyOfStack = new List<NaviItem>(_internalNaviframe.NavigationStack);
-				for (var i = 0; i < copyOfStack.Count; i++)
+				foreach (var child in _viewStack.Children.ToList())
 				{
-					copyOfStack[i].Delete();
+					child.Dispose();
 				}
-				foreach (Page page in _navModel.Roots)
-				{
-					var renderer = Platform.GetRenderer(page);
-					renderer?.Dispose();
-				}
-				_navModel = new NavigationModel();
+				_viewStack.Clear();
+				_pageMap.Clear();
 			}
+			_navModel = new NavigationModel();
 
 			if (newRoot == null)
 				return;
 
-			_navModel.Push(newRoot, null);
-
 			Page = newRoot;
-
-			IVisualElementRenderer pageRenderer = Platform.CreateRenderer(Page);
-			var naviItem = _internalNaviframe.Push(pageRenderer.NativeView);
-			naviItem.TitleBarVisible = false;
-
-			// Make naviitem transparent if parent window is transparent.
-			// Make sure that this is only for _navModel._naviTree. (not for _navModel._modalStack)
-			// In addtion, the style of naviItem is only decided before the naviItem pushed into Naviframe. (not on-demand).
-			if (HasAlpha)
-			{
-				naviItem.Style = "default/transparent";
-			}
+			_navModel.Push(newRoot, null);
 
 			((Application)Page.RealParent).NavigationProxy.Inner = this;
 
-			Device.StartTimer(TimeSpan.Zero, () =>
-			{
-				CurrentPageController?.SendAppearing();
-				return false;
-			});
+			IVisualElementRenderer pageRenderer = Platform.CreateRenderer(Page);
+			_pageMap[pageRenderer.NativeView] = newRoot;
+			_viewStack.Push(pageRenderer.NativeView, false);
+
+			Application.Current.Dispatcher.Dispatch(() => CurrentPageController?.SendAppearing());
 		}
 
 		public bool SendBackButtonPressed()
 		{
-			bool handled = false;
-			if (_navModel.CurrentPage != null)
-			{
-				if (CurrentModalNavigationTask != null && !CurrentModalNavigationTask.IsCompleted)
-				{
-					handled = true;
-				}
-				else
-				{
-					handled = _navModel.CurrentPage.SendBackButtonPressed();
-				}
-			}
-			return handled;
+			return _navModel.CurrentPage?.SendBackButtonPressed() ?? false;
 		}
 
-		public EvasObject GetRootNativeView()
+		public NView GetRootNativeView()
 		{
-			return _internalNaviframe as EvasObject;
+			return _viewStack;
 		}
 
 		public bool PageIsChildOfPlatform(Page page)
 		{
 			var parent = page.AncestorToRoot();
-			return Page == parent || _navModel.Roots.Contains(parent);
+			return _navModel.Modals.FirstOrDefault() == page || _navModel.Roots.Contains(parent);
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -222,7 +233,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				_popupManager?.Dispose();
 				SetPage(null);
-				_internalNaviframe.Unrealize();
+				_viewStack.Unparent();
+				_viewStack.Dispose();
 			}
 			_disposed = true;
 		}
@@ -281,15 +293,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		async Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
 			var previousPage = CurrentPageController;
-			Device.BeginInvokeOnMainThread(() => previousPage?.SendDisappearing());
+			previousPage?.SendDisappearing();
 
 			_navModel.PushModal(modal);
 
-			await PushModalInternal(modal, animated);
-
-			// Verify that the modal is still on the stack
-			if (_navModel.CurrentPage == modal)
-				CurrentPageController.SendAppearing();
+			var renderer = Platform.GetOrCreateRenderer(modal);
+			_pageMap[renderer.NativeView] = modal;
+			await _viewStack.Push(renderer.NativeView, animated);
+			CurrentPageController.SendAppearing();
 		}
 
 		Task<Page> INavigation.PopModalAsync()
@@ -299,95 +310,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		async Task<Page> INavigation.PopModalAsync(bool animated)
 		{
-			Page modal = _navModel.PopModal();
+			Page page = _navModel.PopModal();
+			(page as IPageController)?.SendDisappearing();
 
-			IVisualElementRenderer modalRenderer = Platform.GetRenderer(modal);
-			if (modalRenderer != null)
-			{
-				await PopModalInternal(animated);
-				modalRenderer.Dispose();
-			}
+			IVisualElementRenderer modalRenderer = Platform.GetRenderer(page);
+
+			await _viewStack.Pop(animated);
+			_pageMap.Remove(modalRenderer.NativeView);
+
+			modalRenderer?.Dispose();
 
 			CurrentPageController?.SendAppearing();
-			return modal;
-		}
 
-		async Task PushModalInternal(Page modal, bool animated)
-		{
-			TaskCompletionSource<bool> tcs = null;
-			if (CurrentModalNavigationTask != null && !CurrentModalNavigationTask.IsCompleted)
-			{
-				var previousTask = CurrentModalNavigationTask;
-				tcs = new TaskCompletionSource<bool>();
-				CurrentModalNavigationTask = tcs.Task;
-				await previousTask;
-			}
-
-			var after = _internalNaviframe.NavigationStack.LastOrDefault();
-			NaviItem pushed = null;
-			if (animated || after == null)
-			{
-				pushed = _internalNaviframe.Push(Platform.GetOrCreateRenderer(modal).NativeView, modal.Title);
-			}
-			else
-			{
-				pushed = _internalNaviframe.InsertAfter(after, Platform.GetOrCreateRenderer(modal).NativeView, modal.Title);
-			}
-			pushed.TitleBarVisible = false;
-
-			bool shouldWait = animated && after != null;
-			await WaitForCompletion(shouldWait, tcs);
-		}
-
-		async Task PopModalInternal(bool animated)
-		{
-			TaskCompletionSource<bool> tcs = null;
-			if (CurrentModalNavigationTask != null && !CurrentModalNavigationTask.IsCompleted)
-			{
-				var previousTask = CurrentModalNavigationTask;
-				tcs = new TaskCompletionSource<bool>();
-				CurrentModalNavigationTask = tcs.Task;
-				await previousTask;
-			}
-
-			if (animated)
-			{
-				_internalNaviframe.Pop();
-			}
-			else
-			{
-				_internalNaviframe.NavigationStack.LastOrDefault()?.Delete();
-			}
-
-			bool shouldWait = animated && (_internalNaviframe.NavigationStack.Count != 0);
-			await WaitForCompletion(shouldWait, tcs);
-		}
-
-		async Task WaitForCompletion(bool shouldWait, TaskCompletionSource<bool> tcs)
-		{
-			if (shouldWait)
-			{
-				tcs = tcs ?? new TaskCompletionSource<bool>();
-				CurrentTaskCompletionSource = tcs;
-				if (CurrentModalNavigationTask == null || CurrentModalNavigationTask.IsCompleted)
-				{
-					CurrentModalNavigationTask = CurrentTaskCompletionSource.Task;
-				}
-			}
-			else
-			{
-				tcs?.SetResult(true);
-			}
-
-			if (tcs != null)
-				await tcs.Task;
-		}
-
-		void NaviAnimationFinished(object sender, EventArgs e)
-		{
-			var tcs = CurrentTaskCompletionSource;
-			CurrentTaskCompletionSource = null;
-			tcs?.SetResult(true);
+			return page;
 		}
 	}
 }

@@ -9,6 +9,7 @@ using static Microsoft.Maui.Controls.IndicatorView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class IndicatorViewRenderer : ViewRenderer<IndicatorView, UIView>
 	{
 		UIColor _defaultPagesIndicatorTintColor;
@@ -165,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			AddSubview(control);
 
 			var indicatorLayoutSizeRequest = indicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			indicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
+			indicatorLayout.Layout(new Rect(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
 		}
 
 		void UIPagerValueChanged(object sender, System.EventArgs e)
@@ -214,7 +215,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			var color = Element.IndicatorColor;
-			UIPager.PageIndicatorTintColor = color?.ToUIColor() ?? _defaultPagesIndicatorTintColor;
+			UIPager.PageIndicatorTintColor = color?.ToPlatform() ?? _defaultPagesIndicatorTintColor;
 		}
 
 		void UpdateCurrentPagesIndicatorTintColor()
@@ -223,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			var color = Element.SelectedIndicatorColor;
-			UIPager.CurrentPageIndicatorTintColor = color?.ToUIColor() ?? _defaultCurrentPagesIndicatorTintColor;
+			UIPager.CurrentPageIndicatorTintColor = color?.ToPlatform() ?? _defaultCurrentPagesIndicatorTintColor;
 		}
 
 		void UpdateMaximumVisible()

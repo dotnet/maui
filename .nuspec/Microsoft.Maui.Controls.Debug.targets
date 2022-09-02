@@ -4,18 +4,23 @@
 		<_MauiForceXamlCForDebug>True</_MauiForceXamlCForDebug>
 	</PropertyGroup>
 
+	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.targets" />
 	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.targets" />
 	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
 	
 	<PropertyGroup>
 		<CompileDependsOn>
 			$(CompileDependsOn);
-			GenerateDebugCode;
+			_GenerateDebugCode;
 		</CompileDependsOn>
 	</PropertyGroup>
 
 	<!-- duplicate legacy InitializeComponent, create a ctor with bool param -->
-	<Target Name="GenerateDebugCode" AfterTargets="AfterCompile">
+	<Target
+		Condition=" '$(DesignTimeBuild)' != 'True'"
+		Name="_GenerateDebugCode"
+		BeforeTargets="XamlC"
+		AfterTargets="AfterCompile">
 		<DebugXamlCTask 
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"

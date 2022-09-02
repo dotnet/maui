@@ -1,10 +1,11 @@
 using System;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Storage;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
 
+	[Category("Preferences")]
 	[Collection("UsesPreferences")]
 	public class Preferences_Tests
 	{
@@ -108,6 +109,78 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Preferences.Remove("RemoveKey1", sharedName);
 
 			Assert.Null(Preferences.Get("RemoveKey1", null, sharedName));
+		}
+
+		[Theory]
+		[InlineData(null, true)]
+		[InlineData(sharedNameTestData, true)]
+		[InlineData(null, false)]
+		[InlineData(sharedNameTestData, false)]
+		public void Remove_Get_Bool(string sharedName, bool defaultValue)
+		{
+			Preferences.Remove("RemoveGetKey1", sharedName);
+
+			Assert.Equal(defaultValue, Preferences.Get("RemoveGetKey1", defaultValue, sharedName));
+		}
+
+		[Theory]
+		[InlineData(null, 5)]
+		[InlineData(sharedNameTestData, 5)]
+		[InlineData(null, 0)]
+		[InlineData(sharedNameTestData, 0)]
+		public void Remove_Get_Double(string sharedName, double defaultValue)
+		{
+			Preferences.Remove("RemoveGetKey1", sharedName);
+
+			Assert.Equal(defaultValue, Preferences.Get("RemoveGetKey1", defaultValue, sharedName));
+		}
+
+		[Theory]
+		[InlineData(null, 5)]
+		[InlineData(sharedNameTestData, 5)]
+		[InlineData(null, 0)]
+		[InlineData(sharedNameTestData, 0)]
+		public void Remove_Get_Float(string sharedName, float defaultValue)
+		{
+			Preferences.Remove("RemoveGetKey1", sharedName);
+
+			Assert.Equal(defaultValue, Preferences.Get("RemoveGetKey1", defaultValue, sharedName));
+		}
+
+		[Theory]
+		[InlineData(null, 5)]
+		[InlineData(sharedNameTestData, 5)]
+		[InlineData(null, 0)]
+		[InlineData(sharedNameTestData, 0)]
+		public void Remove_Get_Int(string sharedName, int defaultValue)
+		{
+			Preferences.Remove("RemoveGetKey1", sharedName);
+
+			Assert.Equal(defaultValue, Preferences.Get("RemoveGetKey1", defaultValue, sharedName));
+		}
+
+		[Theory]
+		[InlineData(null, 5)]
+		[InlineData(sharedNameTestData, 5)]
+		[InlineData(null, 0)]
+		[InlineData(sharedNameTestData, 0)]
+		public void Remove_Get_Long(string sharedName, long defaultValue)
+		{
+			Preferences.Remove("RemoveGetKey1", sharedName);
+
+			Assert.Equal(defaultValue, Preferences.Get("RemoveGetKey1", defaultValue, sharedName));
+		}
+
+		[Theory]
+		[InlineData(null, "text")]
+		[InlineData(sharedNameTestData, "text")]
+		[InlineData(null, null)]
+		[InlineData(sharedNameTestData, null)]
+		public void Remove_Get_String(string sharedName, string defaultValue)
+		{
+			Preferences.Remove("RemoveGetKey1", sharedName);
+
+			Assert.Equal(defaultValue, Preferences.Get("RemoveGetKey1", defaultValue, sharedName));
 		}
 
 		[Theory]

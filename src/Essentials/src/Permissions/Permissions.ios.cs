@@ -7,12 +7,13 @@ using AVFoundation;
 using MediaPlayer;
 using Speech;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
 		internal static partial class AVPermissions
 		{
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619			
 			internal static PermissionStatus CheckPermissionsStatus(AVAuthorizationMediaType mediaType)
 			{
 				var status = AVCaptureDevice.GetAuthorizationStatus(mediaType);
@@ -38,6 +39,7 @@ namespace Microsoft.Maui.Essentials
 					return PermissionStatus.Unknown;
 				}
 			}
+#pragma warning restore CA1416
 		}
 
 		public partial class Camera : BasePlatformPermission
@@ -168,10 +170,6 @@ namespace Microsoft.Maui.Essentials
 
 			internal static PermissionStatus GetMediaPermissionStatus()
 			{
-				// Only available in 9.3+
-				if (!Platform.HasOSVersion(9, 3))
-					return PermissionStatus.Unknown;
-
 				var status = MPMediaLibrary.AuthorizationStatus;
 				return status switch
 				{
@@ -184,10 +182,6 @@ namespace Microsoft.Maui.Essentials
 
 			internal static Task<PermissionStatus> RequestMediaPermission()
 			{
-				// Only available in 9.3+
-				if (!Platform.HasOSVersion(9, 3))
-					return Task.FromResult(PermissionStatus.Unknown);
-
 				var tcs = new TaskCompletionSource<PermissionStatus>();
 
 				MPMediaLibrary.RequestAuthorization(s =>
@@ -264,6 +258,7 @@ namespace Microsoft.Maui.Essentials
 				return RequestSpeechPermission();
 			}
 
+#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			internal static PermissionStatus GetSpeechPermissionStatus()
 			{
 				var status = SFSpeechRecognizer.AuthorizationStatus;
@@ -278,9 +273,6 @@ namespace Microsoft.Maui.Essentials
 
 			internal static Task<PermissionStatus> RequestSpeechPermission()
 			{
-				if (!Platform.HasOSVersion(10, 0))
-					return Task.FromResult(PermissionStatus.Unknown);
-
 				var tcs = new TaskCompletionSource<PermissionStatus>();
 
 				SFSpeechRecognizer.RequestAuthorization(s =>
@@ -304,6 +296,7 @@ namespace Microsoft.Maui.Essentials
 
 				return tcs.Task;
 			}
+#pragma warning restore CA1416
 		}
 	}
 }

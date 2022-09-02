@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Storage;
 using Xunit;
 
 namespace Tests
@@ -34,7 +35,7 @@ namespace Tests
 		[InlineData("******.......txt", ".txt")]
 		public void Extensions_Clean_Correctly_Cleans_Extensions(string input, string output)
 		{
-			var cleaned = FileSystem.Extensions.Clean(input);
+			var cleaned = FileExtensions.Clean(input);
 
 			Assert.Equal(output, cleaned);
 		}

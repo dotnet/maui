@@ -9,13 +9,10 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class SliderRenderer : ViewRenderer<Slider, SeekBar>, SeekBar.IOnSeekBarChangeListener
 	{
 		double _max, _min;
-		ColorStateList defaultprogresstintlist, defaultprogressbackgroundtintlist;
-		ColorFilter defaultthumbcolorfilter;
-		Drawable defaultthumb;
-		PorterDuff.Mode defaultprogresstintmode, defaultprogressbackgroundtintmode;
 		bool _isDisposed;
 
 		public SliderRenderer(Context context) : base(context)
@@ -66,13 +63,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				seekBar.Max = 1000;
 				seekBar.SetOnSeekBarChangeListener(this);
-
-				defaultthumbcolorfilter = seekBar.Thumb.GetColorFilter();
-				defaultprogresstintmode = seekBar.ProgressTintMode;
-				defaultprogressbackgroundtintmode = seekBar.ProgressBackgroundTintMode;
-				defaultprogresstintlist = seekBar.ProgressTintList;
-				defaultprogressbackgroundtintlist = seekBar.ProgressBackgroundTintList;
-				defaultthumb = seekBar.Thumb;
 			}
 
 			Slider slider = e.NewElement;
@@ -142,12 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Element != null)
 			{
-				if (Element.MinimumTrackColor == null)
-				{
-					Control.ProgressTintList = defaultprogresstintlist;
-					Control.ProgressTintMode = defaultprogresstintmode;
-				}
-				else
+				if (Element.MinimumTrackColor != null)
 				{
 					Control.ProgressTintList = ColorStateList.ValueOf(Element.MinimumTrackColor.ToAndroid());
 					Control.ProgressTintMode = PorterDuff.Mode.SrcIn;
@@ -160,12 +145,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Element != null)
 			{
-				if (Element.MaximumTrackColor == null)
-				{
-					Control.ProgressBackgroundTintList = defaultprogressbackgroundtintlist;
-					Control.ProgressBackgroundTintMode = defaultprogressbackgroundtintmode;
-				}
-				else
+				if (Element.MaximumTrackColor != null)
 				{
 					Control.ProgressBackgroundTintList = ColorStateList.ValueOf(Element.MaximumTrackColor.ToAndroid());
 					Control.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
@@ -176,14 +156,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		void UpdateThumbColor()
 		{
-			Control.Thumb.SetColorFilter(Element.ThumbColor, FilterMode.SrcIn, defaultthumbcolorfilter);
+			Control.Thumb.SetColorFilter(Element.ThumbColor, FilterMode.SrcIn);
 		}
 
 		void UpdateThumbImage()
 		{
 			this.ApplyDrawableAsync(Slider.ThumbImageSourceProperty, Context, drawable =>
 			{
-				Control.SetThumb(drawable ?? defaultthumb);
+				if (drawable != null)
+					Control.SetThumb(drawable);
 			});
 		}
 

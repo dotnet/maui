@@ -30,12 +30,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = entry.HorizontalTextAlignment,
-					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+					PlatformViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
@@ -56,12 +56,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = entry.VerticalTextAlignment,
-					NativeViewValue = GetNativeVerticalTextAlignment(handler)
+					PlatformViewValue = GetNativeVerticalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
-			values.NativeViewValue.AssertHasFlag(expectedValue);
+			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
 		[Fact(DisplayName = "ReturnType Initializes Correctly")]
@@ -81,12 +81,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = entry.ReturnType,
-					NativeViewValue = GetNativeReturnType(handler)
+					PlatformViewValue = GetNativeReturnType(handler)
 				};
 			});
 
 			Assert.Equal(xplatReturnType, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
@@ -106,12 +106,12 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = entry.CharacterSpacing,
-					NativeViewValue = GetNativeCharacterSpacing(handler)
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
-			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
 		double GetNativeCharacterSpacing(EntryHandler entryHandler)
@@ -121,21 +121,21 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static UITextField GetNativeEntry(EntryHandler entryHandler) =>
-			(UITextField)entryHandler.NativeView;
+			(UITextField)entryHandler.PlatformView;
 
 		static string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		static void SetNativeText(EntryHandler entryHandler, string text) =>
+		internal static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
-		static int GetCursorStartPosition(EntryHandler entryHandler)
+		internal static int GetCursorStartPosition(EntryHandler entryHandler)
 		{
 			var control = GetNativeEntry(entryHandler);
 			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
 		}
 
-		static void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
+		internal static void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
 		{
 			var control = GetNativeEntry(entryHandler);
 			var endPosition = control.GetPosition(control.BeginningOfDocument, position);

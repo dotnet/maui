@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -18,17 +19,21 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
 		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
-			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
+			handler.PlatformView?.RequestNewWindow(application, args as OpenWindowRequest);
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
 		public static void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
 			if (args is IWindow window)
 			{
 				// See if the window's handler has an associated UIWindowScene and UISceneSession
-				var sceneSession = (window.Handler?.NativeView as UIWindow)?.WindowScene?.Session;
+				var sceneSession = (window.Handler?.PlatformView as UIWindow)?.WindowScene?.Session;
 
 				if (sceneSession != null)
 				{

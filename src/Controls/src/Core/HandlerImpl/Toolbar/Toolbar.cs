@@ -17,23 +17,21 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<Toolbar, ToolbarHandler> ControlsToolbarMapper =
 			   new PropertyMapper<Toolbar, ToolbarHandler>(ToolbarHandler.Mapper)
 			   {
-#if ANDROID || WINDOWS
+#if ANDROID || WINDOWS || TIZEN
 				   [nameof(IToolbar.IsVisible)] = MapIsVisible,
-				   [nameof(IToolbar.BackButtonVisible)] = MapBackButtonVisible,				   
+				   [nameof(IToolbar.BackButtonVisible)] = MapBackButtonVisible,
 				   [nameof(Toolbar.TitleIcon)] = MapTitleIcon,
 				   [nameof(Toolbar.TitleView)] = MapTitleView,
 				   [nameof(Toolbar.IconColor)] = MapIconColor,
-				   [nameof(Toolbar.Title)] = MapTitle,
 				   [nameof(Toolbar.ToolbarItems)] = MapToolbarItems,
 				   [nameof(Toolbar.BackButtonTitle)] = MapBackButtonTitle,
-				   [nameof(Toolbar.BarBackgroundColor)] = MapBarBackgroundColor,
 				   [nameof(Toolbar.BarBackground)] = MapBarBackground,
 				   [nameof(Toolbar.BarTextColor)] = MapBarTextColor,
-				   [nameof(Toolbar.IconColor)] = MapIconColor,
+#endif
 #if WINDOWS
+				   [nameof(Toolbar.BackButtonEnabled)] = MapBackButtonEnabled,
 				   [PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName] = MapToolbarPlacement,
 				   [PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName] = MapToolbarDynamicOverflowEnabled,
-#endif
 #endif
 			   };
 

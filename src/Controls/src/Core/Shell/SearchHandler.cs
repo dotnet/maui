@@ -242,10 +242,6 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
-		{
-		}
-
 		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='PlaceholderColor']/Docs" />
 		public Color PlaceholderColor
 		{

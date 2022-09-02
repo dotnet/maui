@@ -31,12 +31,20 @@ namespace Microsoft.Maui.DeviceTests
 
 				var scrollViewHandler = CreateHandler(scrollView);
 
-				for (int n = 0; n < scrollViewHandler.NativeView.ChildCount; n++)
+				for (int n = 0; n < scrollViewHandler.PlatformView.ChildCount; n++)
 				{
-					var nativeView = scrollViewHandler.NativeView.GetChildAt(n);
-					if (nativeView is AppCompatEditText)
+					var platformView = scrollViewHandler.PlatformView.GetChildAt(n);
+
+					// ScrollView on Android uses an intermediate ContentViewGroup to handle measurement/arrangement/padding
+					if (platformView is ContentViewGroup contentViewGroup)
 					{
-						return true;
+						for (int i = 0; i < contentViewGroup.ChildCount; i++)
+						{
+							if (contentViewGroup.GetChildAt(i) is AppCompatEditText)
+							{
+								return true;
+							}
+						}
 					}
 				}
 
@@ -60,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 				var scrollViewHandler = CreateHandler(scrollView);
 
 
-				return ((MauiHorizontalScrollView)scrollViewHandler.NativeView.GetChildAt(0)).HorizontalScrollBarEnabled;
+				return ((MauiHorizontalScrollView)scrollViewHandler.PlatformView.GetChildAt(0)).HorizontalScrollBarEnabled;
 			});
 
 			Assert.False(result, $"Expected HorizontalScrollBarEnabled to be false.");

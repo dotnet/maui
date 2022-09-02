@@ -7,6 +7,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TestBase
 	{
+		public const int EmCoefficientPrecision = 4;
+
 		protected Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			TestDispatcher.Current.DispatchAsync(func);
 

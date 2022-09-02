@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 {
 	internal static class AlignmentExtensions
 	{
-		internal static System.Windows.TextAlignment ToNativeTextAlignment(this TextAlignment alignment)
+		internal static System.Windows.TextAlignment ToPlatformTextAlignment(this TextAlignment alignment)
 		{
 			switch (alignment)
 			{
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			}
 		}
 
-		internal static VerticalAlignment ToNativeVerticalAlignment(this TextAlignment alignment)
+		internal static VerticalAlignment ToPlatformHorizontalAlignment(this TextAlignment alignment)
 		{
 			switch (alignment)
 			{
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			}
 		}
 
-		internal static VerticalAlignment ToNativeVerticalAlignment(this LayoutOptions alignment)
+		internal static VerticalAlignment ToPlatformHorizontalAlignment(this LayoutOptions alignment)
 		{
 			switch (alignment.Alignment)
 			{

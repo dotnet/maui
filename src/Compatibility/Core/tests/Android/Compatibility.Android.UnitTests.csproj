@@ -10,14 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.13.1" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\..\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
     <ProjectReference Include="..\..\..\..\Compatibility\Core\src\Compatibility.csproj" />
   </ItemGroup>
 

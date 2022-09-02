@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[System.Obsolete]
 	public sealed class RendererPool
 	{
 		readonly Dictionary<Type, Stack<IVisualElementRenderer>> _freeRenderers =

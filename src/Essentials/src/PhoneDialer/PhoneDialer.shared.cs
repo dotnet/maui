@@ -1,10 +1,7 @@
 #nullable enable
 using System;
-using System.ComponentModel;
-using Microsoft.Maui.Essentials;
-using Microsoft.Maui.Essentials.Implementations;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	public interface IPhoneDialer
 	{
@@ -16,29 +13,27 @@ namespace Microsoft.Maui.Essentials
 	/// <include file="../../docs/Microsoft.Maui.Essentials/PhoneDialer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PhoneDialer']/Docs" />
 	public static class PhoneDialer
 	{
-		public static bool IsSupported => Current.IsSupported;
+		public static bool IsSupported =>
+			Current.IsSupported;
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/PhoneDialer.xml" path="//Member[@MemberName='Open']/Docs" />
 		public static void Open(string number)
 			=> Current.Open(number);
 
-		static IPhoneDialer? currentImplementation;
+		public static IPhoneDialer Current => ApplicationModel.Communication.PhoneDialer.Default;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IPhoneDialer Current =>
-			currentImplementation ??= new PhoneDialerImplementation();
+		static IPhoneDialer? defaultImplementation;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetCurrent(IPhoneDialer? implementation) =>
-			currentImplementation = implementation;
+		public static IPhoneDialer Default =>
+			defaultImplementation ??= new PhoneDialerImplementation();
+
+		internal static void SetDefault(IPhoneDialer? implementation) =>
+			defaultImplementation = implementation;
 	}
-}
 
-namespace Microsoft.Maui.Essentials.Implementations
-{
-	partial class PhoneDialerImplementation
+	partial class PhoneDialerImplementation : IPhoneDialer
 	{
-		internal void ValidateOpen(string number)
+		void ValidateOpen(string number)
 		{
 			if (string.IsNullOrWhiteSpace(number))
 				throw new ArgumentNullException(nameof(number));

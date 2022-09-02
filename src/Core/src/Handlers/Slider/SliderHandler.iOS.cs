@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using ObjCRuntime;
 using UIKit;
 
@@ -6,81 +6,78 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SliderHandler : ViewHandler<ISlider, UISlider>
 	{
-		static UIColor? DefaultMinTrackColor;
-		static UIColor? DefaultMaxTrackColor;
-		static UIColor? DefaultThumbColor;
-
-		protected override UISlider CreateNativeView() => new UISlider { Continuous = true };
-
-		protected override void ConnectHandler(UISlider nativeView)
+		protected override UISlider CreatePlatformView()
 		{
-			base.ConnectHandler(nativeView);
+			var platformSlider = new UISlider { Continuous = true };
 
-			nativeView.ValueChanged += OnControlValueChanged;
-			nativeView.AddTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
-			nativeView.AddTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15) && platformSlider.TraitCollection.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+				platformSlider.PreferredBehavioralStyle = UIBehavioralStyle.Pad;
+
+			return platformSlider;
 		}
 
-		protected override void DisconnectHandler(UISlider nativeView)
+		protected override void ConnectHandler(UISlider platformView)
 		{
-			base.DisconnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.ValueChanged -= OnControlValueChanged;
-			nativeView.RemoveTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
-			nativeView.RemoveTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
+			platformView.ValueChanged += OnControlValueChanged;
+			platformView.AddTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
+			platformView.AddTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
 		}
 
-		void SetupDefaults(UISlider nativeView)
+		protected override void DisconnectHandler(UISlider platformView)
 		{
-			DefaultMinTrackColor = nativeView.MinimumTrackTintColor;
-			DefaultMaxTrackColor = nativeView.MaximumTrackTintColor;
-			DefaultThumbColor = nativeView.ThumbTintColor;
+			base.DisconnectHandler(platformView);
+
+			platformView.ValueChanged -= OnControlValueChanged;
+			platformView.RemoveTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
+			platformView.RemoveTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
 		}
 
-		public static void MapMinimum(SliderHandler handler, ISlider slider)
+		public static void MapMinimum(ISliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimum(slider);
+			handler.PlatformView?.UpdateMinimum(slider);
 		}
 
-		public static void MapMaximum(SliderHandler handler, ISlider slider)
+		public static void MapMaximum(ISliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximum(slider);
+			handler.PlatformView?.UpdateMaximum(slider);
 		}
 
-		public static void MapValue(SliderHandler handler, ISlider slider)
+		public static void MapValue(ISliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateValue(slider);
+			handler.PlatformView?.UpdateValue(slider);
 		}
 
-		public static void MapMinimumTrackColor(SliderHandler handler, ISlider slider)
+		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMinimumTrackColor(slider, DefaultMinTrackColor);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider);
 		}
 
-		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider)
+		public static void MapMaximumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateMaximumTrackColor(slider, DefaultMaxTrackColor);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider);
 		}
 
-		public static void MapThumbColor(SliderHandler handler, ISlider slider)
+		public static void MapThumbColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(slider);
 		}
 
-		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
+		public static void MapThumbImageSource(ISliderHandler handler, ISlider slider)
 		{
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			handler.NativeView?.UpdateThumbImageSourceAsync(slider, provider)
+			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider)
 				.FireAndForget(handler);
 		}
 
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)
 		{
-			if (NativeView == null || VirtualView == null)
+			if (PlatformView == null || VirtualView == null)
 				return;
 
-			VirtualView.Value = NativeView.Value;
+			VirtualView.Value = PlatformView.Value;
 		}
 
 		void OnTouchDownControlEvent(object? sender, EventArgs e)

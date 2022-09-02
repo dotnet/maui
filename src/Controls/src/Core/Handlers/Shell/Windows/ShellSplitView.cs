@@ -1,23 +1,31 @@
+#nullable enable
+
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using Microsoft.UI.Xaml;
-using Microsoft.Maui.Controls.Platform;
+using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellSplitView : SplitView
+	class ShellSplitView
 	{
-		Brush _flyoutBackdrop;
-		WBrush _flyoutPlatformBrush;
-		WBrush _defaultBrush;
+		Brush? _flyoutBackdrop;
+		WBrush? _flyoutPlatformBrush;
+		WBrush? _defaultBrush;
+		WRectangle? _dismissLayer;
+		FrameworkElement? _paneRoot;
+		WRectangle? _HCPaneBorder;
+
 		LightDismissOverlayMode? _defaultLightDismissOverlayMode;
 		double _height = -1d;
 		double _width = -1d;
-		double _defaultOpenPaneLength = -1d;
+		//double _defaultOpenPaneLength = -1d;
+		SplitView _splitView;
 
-		public ShellSplitView()
+		public ShellSplitView(SplitView splitView)
 		{
+			_splitView = splitView;
 		}
 
 		internal void SetFlyoutSizes(double height, double width)
@@ -28,62 +36,67 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void RefreshFlyoutPosition()
 		{
-			var paneRoot = (Microsoft.UI.Xaml.FrameworkElement)GetTemplateChild("PaneRoot");
-			if (paneRoot == null)
+			_paneRoot ??= _splitView.GetDescendantByName<FrameworkElement>("PaneRoot");
+			if (_paneRoot == null)
 				return;
 
-			var HCPaneBorder = (Microsoft.UI.Xaml.Shapes.Rectangle)GetTemplateChild("HCPaneBorder");
+			_HCPaneBorder ??= _splitView.GetDescendantByName<WRectangle>("HCPaneBorder");
 
-			if (paneRoot != null)
+			if (_paneRoot != null)
 			{
 				if (_height == -1)
 				{
-					paneRoot.Height = double.NaN;
-					paneRoot.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
+					_paneRoot.Height = double.NaN;
+					_paneRoot.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 
-					if (HCPaneBorder != null)
-						HCPaneBorder.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+					if (_HCPaneBorder != null)
+						_HCPaneBorder.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 				}
 				else
 				{
-					paneRoot.Height = _height;
-					paneRoot.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top;
+					_paneRoot.Height = _height;
+					_paneRoot.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top;
 
-					if (HCPaneBorder != null)
-						HCPaneBorder.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+					if (_HCPaneBorder != null)
+						_HCPaneBorder.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 				}
-			}
-
-			if (_width != -1)
-			{
-				if(_defaultOpenPaneLength == -1)
-					_defaultOpenPaneLength = OpenPaneLength;
-
-				OpenPaneLength = _width;
-			}
-			else if(_defaultOpenPaneLength != -1)
-			{
-				OpenPaneLength = _defaultOpenPaneLength;
 			}
 		}
 
 		internal void RefreshFlyoutBackdrop()
 		{
-			var dismissLayer = ((WRectangle)GetTemplateChild("LightDismissLayer"));
-			
-			if (dismissLayer == null)
+			// Because shell is currently Nesting Navigation Views we have to be careful and make sure to retrive the correct one
+			// If we just do a straight search for "LightDismissLayer it will return the wrong one.
+			if (_dismissLayer == null)
+			{
+				var contentRoot = _splitView.GetDescendantByName<WGrid>("ContentRoot");
+				if (contentRoot != null)
+				{
+					foreach (var child in contentRoot.Children)
+					{
+						if (child is WRectangle maybe &&
+							$"{child.GetValue(FrameworkElement.NameProperty)}" == "LightDismissLayer")
+						{
+							_dismissLayer = maybe;
+							break;
+						}
+					}
+				}
+			}
+
+			if (_dismissLayer == null)
 				return;
 
 			if (_defaultBrush == null)
-				_defaultBrush = dismissLayer.Fill;
+				_defaultBrush = _dismissLayer.Fill;
 
 			if (Brush.IsNullOrEmpty(_flyoutBackdrop))
 			{
-				dismissLayer.Fill = _defaultBrush;
+				_dismissLayer.Fill = _defaultBrush;
 			}
 			else
 			{
-				dismissLayer.Fill = _flyoutPlatformBrush ?? _defaultBrush;
+				_dismissLayer.Fill = _flyoutPlatformBrush ?? _defaultBrush;
 			}
 		}
 
@@ -97,15 +110,15 @@ namespace Microsoft.Maui.Controls.Platform
 				_flyoutBackdrop = value;
 
 				if (_defaultLightDismissOverlayMode == null)
-					_defaultLightDismissOverlayMode = LightDismissOverlayMode;
+					_defaultLightDismissOverlayMode = _splitView.LightDismissOverlayMode;
 
 				if (value == Brush.Default)
 				{
-					LightDismissOverlayMode = _defaultLightDismissOverlayMode ?? LightDismissOverlayMode.Auto;
+					_splitView.LightDismissOverlayMode = _defaultLightDismissOverlayMode ?? LightDismissOverlayMode.Auto;
 				}
 				else
 				{
-					LightDismissOverlayMode = LightDismissOverlayMode.On;
+					_splitView.LightDismissOverlayMode = LightDismissOverlayMode.On;
 				}
 
 				if (_flyoutBackdrop != null)

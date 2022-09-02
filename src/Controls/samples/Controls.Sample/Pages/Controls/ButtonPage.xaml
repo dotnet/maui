@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.ButtonPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     Title="Button">
     <views:BasePage.Content>
         <ScrollView>
@@ -10,11 +11,16 @@
                 <Label
                     Text="Default"
                     Style="{StaticResource Headline}"/>
-                <Button Text="Button"/>
+                <Button
+                    Text="Button"/>
+                <Button
+                    Text="Button with Tooltip" ToolTipProperties.Text="This is a tooltip!" />
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>
-                <Button Text="Button"/>
+                <Button
+                    Text="Button"
+                    IsEnabled="false"/>
                 <Label
                     Text="Clicked"
                     Style="{StaticResource Headline}"/>
@@ -33,6 +39,20 @@
                 <Button
                     BackgroundColor="Blue"
                     Text="Button"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Button 
+                    Text="Background">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"
+                                          Offset="0.1" />
+                            <GradientStop Color="Green"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
                 <Label
                     Text="TextColor"
                     Style="{StaticResource Headline}"/>
@@ -118,7 +138,7 @@
                 <Button
                     Text="Button"
                     HorizontalOptions="Start"
-                    Background="LightGrey"
+                    Background="LightGray"
                     Padding="NaN"/>
                 <Label
                     Text="Padding = 0"
@@ -126,7 +146,7 @@
                 <Button
                     Text="Button"
                     HorizontalOptions="Start"
-                    Background="LightGrey"
+                    Background="LightGray"
                     Padding="0"/>
                 <Label
                     Text="Padding"
@@ -138,8 +158,22 @@
                 <Button
                     Text="Button"
                     HorizontalOptions="Start"
-                    Background="LightGrey"
+                    Background="LightGray"
                     Padding="{Binding Text, Source={Reference paddingEntry}, Converter={StaticResource ThicknessConverter}}"/>
+                <Label
+                    Text="LineBreakMode"
+                    Style="{StaticResource Headline}"/>
+                <Button 
+                    x:Name="LineBreakModeButton"
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
+                <Button
+                    Text="Update LineBreakMode"
+                    Clicked="OnLineBreakModeButtonClicked"/>
+                <Label
+                    Text="Using Custom Button"
+                    Style="{StaticResource Headline}"/>
+                <local:CustomButton
+                    Text="Custom Button" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

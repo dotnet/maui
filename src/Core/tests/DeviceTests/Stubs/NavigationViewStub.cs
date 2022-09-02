@@ -7,7 +7,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class NavigationViewStub : StubBase, INavigationView
+	public partial class NavigationViewStub : StubBase, IStackNavigationView
 	{
 		TaskCompletionSource<IReadOnlyList<IView>> _onNavigationFinished;
 		public Task<IReadOnlyList<IView>> OnNavigationFinished => _onNavigationFinished.Task.WaitAsync(TimeSpan.FromSeconds(2));
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public void RequestNavigation(NavigationRequest eventArgs)
 		{
 			_onNavigationFinished = new TaskCompletionSource<IReadOnlyList<IView>>();
-			Handler?.Invoke(nameof(INavigationView.RequestNavigation), eventArgs);
+			Handler?.Invoke(nameof(IStackNavigationView.RequestNavigation), eventArgs);
 		}
 
 		public List<IView> NavigationStack { get; set; }

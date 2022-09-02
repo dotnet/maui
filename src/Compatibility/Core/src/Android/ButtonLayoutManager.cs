@@ -372,6 +372,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode()
 		{
 			AButton view = View;

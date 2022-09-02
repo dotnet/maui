@@ -1,25 +1,56 @@
 using System;
 using System.Threading.Tasks;
-using Android.Graphics.Drawables;
-using Android.Widget;
-using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
-using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageButtonHandlerTests
 	{
-		Google.Android.Material.ImageView.ShapeableImageView GetNativeImageButton(ImageButtonHandler buttonHandler) =>
-			buttonHandler.NativeView;
+		[Fact(DisplayName = "Clip ImageButton with Background works Correctly")]
+		public async Task ClipImageButtonWithBackgroundWorks()
+		{
+			Color expected = Colors.Yellow;
 
-		Task PerformClick(IButton button)
+			var brush = new LinearGradientPaintStub(Colors.Blue, expected);
+
+			var imageButton = new ImageButtonStub
+			{
+				Background = brush,
+				Clip = new EllipseShapeStub()
+			};
+
+			await ValidateHasColor(imageButton, expected);
+		}
+
+		Google.Android.Material.ImageView.ShapeableImageView GetPlatformImageButton(ImageButtonHandler buttonHandler) =>
+			buttonHandler.PlatformView;
+
+		Task PerformClick(IImageButton button)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				GetNativeImageButton(CreateHandler(button)).PerformClick();
+				GetPlatformImageButton(CreateHandler(button)).PerformClick();
+			});
+		}
+
+		Thickness GetNativePadding(ImageButtonHandler imageButtonHandler)
+		{
+			var shapeableImageView = GetPlatformImageButton(imageButtonHandler);
+
+			return new Thickness(
+				shapeableImageView.ContentPaddingLeft,
+				shapeableImageView.ContentPaddingTop,
+				shapeableImageView.ContentPaddingRight,
+				shapeableImageView.ContentPaddingBottom);
+		}
+
+		Task ValidateHasColor(IImageButton imageButton, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var platformImageButton = GetPlatformImageButton(CreateHandler(imageButton));
+				action?.Invoke();
+				platformImageButton.AssertContainsColor(color);
 			});
 		}
 	}

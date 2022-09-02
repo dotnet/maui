@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class SearchBarUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestConstructor()
 		{
 			SearchBar searchBar = new SearchBar();
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(searchBar.Text);
 		}
 
-		[Test]
+		[Fact]
 		public void TestContentsChanged()
 		{
 			SearchBar searchBar = new SearchBar();
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(thrown);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSearchButtonPressed()
 		{
 			SearchBar searchBar = new SearchBar();
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(thrown);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSearchCommandParameter()
 		{
 			var searchBar = new SearchBar();
@@ -57,12 +57,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((ISearchBarController)searchBar).OnSearchButtonPressed();
 
-			Assert.AreEqual(param, result);
+			Assert.Equal(param, result);
 		}
 
-		[TestCase(null, "Text Changed")]
-		[TestCase("Initial Text", null)]
-		[TestCase("Initial Text", "Text Changed")]
+		[Theory]
+		[InlineData(null, "Text Changed")]
+		[InlineData("Initial Text", null)]
+		[InlineData("Initial Text", "Text Changed")]
 		public void SearchBarTextChangedEventArgs(string initialText, string finalText)
 		{
 			var searchBar = new SearchBar
@@ -83,12 +84,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			searchBar.Text = finalText;
 
-			Assert.AreEqual(searchBar, searchBarFromSender);
-			Assert.AreEqual(initialText, oldText);
-			Assert.AreEqual(finalText, newText);
+			Assert.Equal(searchBar, searchBarFromSender);
+			Assert.Equal(initialText, oldText);
+			Assert.Equal(finalText, newText);
 		}
 
-		[Test]
+		[Fact]
 		public void CommandCanExecuteUpdatesEnabled()
 		{
 			var searchBar = new SearchBar();
@@ -126,11 +127,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public event EventHandler CanExecuteChanged;
 		}
 
-		[Test]
+		[Fact]
 		public void DoesNotCrashWithNonCommandICommand()
 		{
 			var searchBar = new SearchBar();
-			Assert.DoesNotThrow(() => searchBar.SearchCommand = new MyCommand());
+			searchBar.SearchCommand = new MyCommand();
 		}
 	}
 }

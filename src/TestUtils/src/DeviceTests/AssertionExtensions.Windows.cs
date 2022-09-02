@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
@@ -19,7 +18,13 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<string> CreateColorAtPointError(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
-		public static async Task<string> CreateColorError(this CanvasBitmap bitmap, string message)
+		public static async Task<string> CreateColorError(this CanvasBitmap bitmap, string message) =>
+			$"{message} This is what it looked like:<img>{await bitmap.ToBase64String()}</img>";
+
+		public static async Task<string> CreateEqualError(this CanvasBitmap bitmap, CanvasBitmap other, string message) =>
+			$"{message} This is what it looked like: <img>{await bitmap.ToBase64String()}</img> and <img>{await other.ToBase64String()}</img>";
+
+		public static async Task<string> ToBase64String(this CanvasBitmap bitmap)
 		{
 			using var ms = new InMemoryRandomAccessStream();
 			await bitmap.SaveAsync(ms, CanvasBitmapFileFormat.Png);
@@ -27,9 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 			using var ms2 = new MemoryStream();
 			await ms.AsStreamForRead().CopyToAsync(ms2);
 
-			var imageAsString = Convert.ToBase64String(ms2.ToArray());
-
-			return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
+			return Convert.ToBase64String(ms2.ToArray());
 		}
 
 		public static WColor ColorAtPoint(this CanvasBitmap bitmap, int x, int y, bool includeAlpha = false)
@@ -47,6 +50,13 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.FromResult(true);
 			});
 
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action) =>
+			view.AttachAndRun(() =>
+			{
+				var result = action();
+				return Task.FromResult(result);
+			});
+
 		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
 			view.AttachAndRun(async () =>
 			{
@@ -59,34 +69,82 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
-			// TODO
+			TaskCompletionSource? tcs = null;
+			TaskCompletionSource? unloadedTcs = null;
+			Window? window = null;
 
-			//var layout = new FrameLayout(view.Context)
-			//{
-			//	LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-			//};
-			//view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
-			//{
-			//	Gravity = GravityFlags.Center
-			//};
-
-			//var act = view.Context.GetActivity();
-			//var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content);
-
-			//layout.AddView(view);
-			//rootView.AddView(layout);
-
-			//await Task.Delay(100);
-
-			try
+			if (view.Parent == null)
 			{
-				var result = await action();
+				// prepare to wait for element to be in the UI
+				tcs = new TaskCompletionSource();
+				unloadedTcs = new TaskCompletionSource();
+
+				view.Loaded += OnViewLoaded;
+
+				// attach to the UI
+				Grid grid;
+				window = new Window
+				{
+					Content = new Grid
+					{
+						HorizontalAlignment = HorizontalAlignment.Center,
+						VerticalAlignment = VerticalAlignment.Center,
+						Children =
+						{
+							(grid = new Grid
+							{
+								Width = view.Width,
+								Height = view.Height,
+								Children =
+								{
+									view
+								}
+							})
+						}
+					}
+				};
+				window.Activate();
+
+				// wait for element to be loaded
+				await tcs.Task;
+				view.Unloaded += OnViewUnloaded;
+
+				// continue with the run
+				T result;
+				try
+				{
+					result = await Run(action);
+					grid.Children.Clear();
+				}
+				finally
+				{
+					await unloadedTcs.Task;
+					await Task.Delay(10);
+					window.Close();
+				}
+
 				return result;
 			}
-			finally
+			else
 			{
-				//rootView.RemoveView(layout);
-				//layout.RemoveView(view);
+				return await Run(action);
+			}
+
+			static async Task<T> Run(Func<Task<T>> action)
+			{
+				return await action();
+			}
+
+			void OnViewLoaded(object sender, RoutedEventArgs e)
+			{
+				view.Loaded -= OnViewLoaded;
+				tcs?.SetResult();
+			}
+
+			void OnViewUnloaded(object sender, RoutedEventArgs e)
+			{
+				view.Unloaded -= OnViewUnloaded;
+				unloadedTcs?.SetResult();
 			}
 		}
 
@@ -196,21 +254,38 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		//public static TextUtils.TruncateAt ToNative(this LineBreakMode mode) =>
-		//	mode switch
-		//	{
-		//		LineBreakMode.NoWrap => null,
-		//		LineBreakMode.WordWrap => null,
-		//		LineBreakMode.CharacterWrap => null,
-		//		LineBreakMode.HeadTruncation => TextUtils.TruncateAt.Start,
-		//		LineBreakMode.TailTruncation => TextUtils.TruncateAt.End,
-		//		LineBreakMode.MiddleTruncation => TextUtils.TruncateAt.Middle,
-		//		_ => throw new ArgumentOutOfRangeException(nameof(mode))
-		//	};
+		public static async Task AssertEqual(this CanvasBitmap bitmap, CanvasBitmap other)
+		{
+			Assert.NotNull(bitmap);
+			Assert.NotNull(other);
 
-		//public static FontWeight GetFontWeight(this Typeface typeface) =>
-		//	NativeVersion.IsAtLeast(28)
-		//		? (FontWeight)typeface.Weight
-		//		: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
+			Assert.Equal(bitmap.SizeInPixels, other.SizeInPixels);
+
+			Assert.True(IsMatching(), await CreateEqualError(bitmap, other, $"Images did not match."));
+
+			bool IsMatching()
+			{
+				var first = bitmap.GetPixelColors();
+				var second = other.GetPixelColors();
+				for (int i = 0; i < first.Length; i++)
+				{
+					if (first[i] != second[i])
+						return false;
+				}
+				return true;
+			}
+		}
+
+		public static TextTrimming ToPlatform(this LineBreakMode mode) =>
+			mode switch
+			{
+				LineBreakMode.NoWrap => TextTrimming.Clip,
+				LineBreakMode.WordWrap => TextTrimming.None,
+				LineBreakMode.CharacterWrap => TextTrimming.WordEllipsis,
+				LineBreakMode.HeadTruncation => TextTrimming.WordEllipsis,
+				LineBreakMode.TailTruncation => TextTrimming.CharacterEllipsis,
+				LineBreakMode.MiddleTruncation => TextTrimming.WordEllipsis,
+				_ => throw new ArgumentOutOfRangeException(nameof(mode))
+			};
 	}
 }

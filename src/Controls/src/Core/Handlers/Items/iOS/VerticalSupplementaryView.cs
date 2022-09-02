@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal sealed class VerticalSupplementaryView : WidthConstrainedTemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.Compatibility.Platform.iOS.VerticalSupplementaryView");
+		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.VerticalSupplementaryView");
 
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -17,15 +17,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override CGSize Measure()
 		{
-			if (NativeHandler?.VirtualView == null)
+			if (PlatformHandler?.VirtualView == null)
 			{
 				return CGSize.Empty;
 			}
 
-			var measure = NativeHandler.VirtualView.Measure(ConstrainedDimension, double.PositiveInfinity);
+			var measure = PlatformHandler.VirtualView.Measure(ConstrainedDimension, double.PositiveInfinity);
 
-			var height = NativeHandler.VirtualView.Height > 0
-				? NativeHandler.VirtualView.Height : measure.Height;
+			var height = PlatformHandler.VirtualView.Height > 0
+				? PlatformHandler.VirtualView.Height : measure.Height;
 
 			return new CGSize(ConstrainedDimension, height);
 		}

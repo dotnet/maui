@@ -13,6 +13,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entr
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class EntryRenderer : EntryRendererBase<UITextField>
 	{
 		[Preserve(Conditional = true)]
@@ -23,13 +24,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected override UITextField CreateNativeControl()
 		{
-			var textField = new UITextField(RectangleF.Zero);
+			var textField = new UITextField(CGRect.Empty);
 			textField.BorderStyle = UITextBorderStyle.RoundedRect;
 			textField.ClipsToBounds = true;
 			return textField;
 		}
 	}
 
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class EntryRendererBase<TControl> : ViewRenderer<Entry, TControl>
 		where TControl : UITextField
 	{
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		// Placeholder default color is 70% gray
 		// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
-		readonly Color _defaultPlaceholderColor = ColorExtensions.SeventyPercentGrey.ToColor();
+		readonly Color _defaultPlaceholderColor = Maui.Platform.ColorExtensions.SeventyPercentGrey.ToColor();
 		UIColor _defaultCursorColor;
 		bool _useLegacyColorManagement;
 
@@ -213,6 +215,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 		}
 
+		[PortHandler("Pending to port setting the IsFocused property")]
 		void OnEditingBegan(object sender, EventArgs e)
 		{
 			if (!_cursorPositionChangePending && !_selectionLengthChangePending)
@@ -230,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateCursorFromControl(null);
 		}
 
-		[PortHandler("Ported Text setter")]
+		[PortHandler("Pending to port setting the IsFocused property")]
 		void OnEditingEnded(object sender, EventArgs e)
 		{
 			// Typing aid changes don't always raise EditingChanged event
@@ -259,13 +262,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
 		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
+			Control.VerticalAlignment = Element.VerticalTextAlignment.ToPlatformTextAlignment();
 		}
 
 		[PortHandler]
@@ -275,14 +278,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (_useLegacyColorManagement)
 			{
-				Control.TextColor = textColor == null || !Element.IsEnabled ? _defaultTextColor : textColor.ToUIColor();
+				Control.TextColor = textColor == null || !Element.IsEnabled ? _defaultTextColor : textColor.ToPlatform();
 			}
 			else
 			{
-				Control.TextColor = textColor == null ? _defaultTextColor : textColor.ToUIColor();
+				Control.TextColor = textColor == null ? _defaultTextColor : textColor.ToPlatform();
 			}
 		}
 
+		[PortHandler]
 		void UpdateAdjustsFontSizeToFitWidth()
 		{
 			Control.AdjustsFontSizeToFitWidth = Element.OnThisPlatform().AdjustsFontSizeToFitWidth();
@@ -294,7 +298,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (initialSize == CGSize.Empty)
 			{
 				NSString testString = new NSString("Tj");
+#pragma warning disable CA1416 // TODO: API has [UnsupportedOSPlatform("ios7.0")]
 				initialSize = testString.StringSize(Control.Font);
+#pragma warning restore CA1416
 			}
 
 			Control.Font = Element.ToUIFont();
@@ -506,6 +512,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return start;
 		}
 
+		[PortHandler]
 		void UpdateCursorColor()
 		{
 			var control = Control;
@@ -518,7 +525,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (color == null)
 					control.TintColor = _defaultCursorColor;
 				else
-					control.TintColor = color.ToUIColor();
+					control.TintColor = color.ToPlatform();
 			}
 		}
 

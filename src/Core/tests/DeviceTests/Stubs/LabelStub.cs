@@ -20,11 +20,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public TextAlignment VerticalTextAlignment { get; set; }
 
-		public LineBreakMode LineBreakMode { get; set; } = LineBreakMode.WordWrap;
-
 		public TextDecorations TextDecorations { get; set; }
-
-		public int MaxLines { get; set; } = -1;
 
 		public double LineHeight { get; set; } = -1;
 	}

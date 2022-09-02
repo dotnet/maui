@@ -1,43 +1,50 @@
 using System;
 using System.Threading.Tasks;
+using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
 using Android.Hardware.Camera2;
 using Android.OS;
-
+using Microsoft.Maui.ApplicationModel;
 using Camera = Android.Hardware.Camera;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.Devices
 {
-	public static partial class Flashlight
+	class FlashlightImplementation : IFlashlight
 	{
+		static CameraManager cameraManager;
+
+		static CameraManager CameraManager =>
+			cameraManager ??= Application.Context.GetSystemService(Context.CameraService) as CameraManager;
+
 		static readonly object locker = new object();
 
 #pragma warning disable CS0618
-		static Camera camera;
+		Camera camera;
 #pragma warning restore CS0618
-		static SurfaceTexture surface;
+		SurfaceTexture surface;
 
-		internal static bool IsSupported
-			=> Platform.HasSystemFeature(PackageManager.FeatureCameraFlash);
+		internal bool IsSupported
+			=> PlatformUtils.HasSystemFeature(PackageManager.FeatureCameraFlash);
 
-		internal static bool AlwaysUseCameraApi { get; set; } = false;
+		internal bool AlwaysUseCameraApi { get; set; } = false;
 
-		static async Task PlatformTurnOnAsync()
+		public async Task TurnOnAsync()
 		{
 			await CheckSupportAsync();
 
 			await ToggleTorchAsync(true);
 		}
 
-		static async Task PlatformTurnOffAsync()
+		public async Task TurnOffAsync()
 		{
 			await CheckSupportAsync();
 
 			await ToggleTorchAsync(false);
 		}
 
-		static async Task CheckSupportAsync()
+		async Task CheckSupportAsync()
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException();
@@ -45,23 +52,22 @@ namespace Microsoft.Maui.Essentials
 			await Permissions.EnsureGrantedAsync<Permissions.Flashlight>();
 		}
 
-		static Task ToggleTorchAsync(bool switchOn)
+		Task ToggleTorchAsync(bool switchOn)
 		{
 			return Task.Run(() =>
 			{
 				lock (locker)
 				{
-					if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M) && !AlwaysUseCameraApi)
+					if (OperatingSystem.IsAndroidVersionAtLeast(23) && !AlwaysUseCameraApi)
 					{
-						var cameraManager = Platform.CameraManager;
-						foreach (var id in cameraManager.GetCameraIdList())
+						foreach (var id in CameraManager.GetCameraIdList())
 						{
-							var hasFlash = cameraManager.GetCameraCharacteristics(id).Get(CameraCharacteristics.FlashInfoAvailable);
+							var hasFlash = CameraManager.GetCameraCharacteristics(id).Get(CameraCharacteristics.FlashInfoAvailable);
 							if (Java.Lang.Boolean.True.Equals(hasFlash))
 							{
 								try
 								{
-									cameraManager.SetTorchMode(id, switchOn);
+									CameraManager.SetTorchMode(id, switchOn);
 									break;
 								}
 								catch (Exception ex)

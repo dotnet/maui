@@ -1,33 +1,34 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Text;
-using Android.Webkit;
+using Microsoft.Maui.Storage;
 using Uri = Android.Net.Uri;
 
-namespace Microsoft.Maui.Essentials
+namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	public static partial class Email
+	partial class EmailImplementation : IEmail
 	{
-		static readonly EmailMessage testEmail =
-			new EmailMessage("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");
+		static EmailMessage testEmail =>
+			new("Testing Microsoft.Maui.Essentials", "This is a test email.", "Microsoft.Maui.Essentials@example.org");
 
-		internal static bool IsComposeSupported
-			=> Platform.IsIntentSupported(CreateIntent(testEmail));
+		public bool IsComposeSupported
+			=> PlatformUtils.IsIntentSupported(CreateIntent(testEmail));
 
-		static Task PlatformComposeAsync(EmailMessage message)
+		Task PlatformComposeAsync(EmailMessage message)
 		{
 			var intent = CreateIntent(message);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-			if (Platform.HasApiLevelN)
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			intent.SetFlags(flags);
 
-			Platform.AppContext.StartActivity(intent);
+			Application.Context.StartActivity(intent);
 
 			return Task.FromResult(true);
 		}
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Essentials
 			if (action == Intent.ActionSendto)
 				intent.SetData(Uri.Parse("mailto:"));
 			else
-				intent.SetType(FileSystem.MimeTypes.EmailMessage);
+				intent.SetType(FileMimeTypes.EmailMessage);
 
 			if (!string.IsNullOrEmpty(message?.Body))
 			{
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Essentials
 				{
 					ISpanned html;
 #if __ANDROID_24__
-					if (Platform.HasApiLevelN)
+					if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					{
 						html = Html.FromHtml(message.Body, FromHtmlOptions.ModeLegacy);
 					}
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Essentials
 				var uris = new List<IParcelable>();
 				foreach (var attachment in message.Attachments)
 				{
-					uris.Add(Platform.GetShareableFileUri(attachment));
+					uris.Add(FileSystemUtils.GetShareableFileUri(attachment));
 				}
 
 				if (uris.Count > 1)

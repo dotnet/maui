@@ -72,10 +72,10 @@
                     <Frame.Background>
                         <!-- StartPoint defaults to (0,0) -->
                         <LinearGradientBrush EndPoint="1,0">
-                            <GradientStop Color="Yellow"
-                                      Offset="0.1" />
+                            <GradientStop Color="Yellow"   
+                                          Offset="0.1" />
                             <GradientStop Color="Green"
-                                      Offset="1.0" />
+                                          Offset="1.0" />
                         </LinearGradientBrush>
                     </Frame.Background>
                 </Frame>

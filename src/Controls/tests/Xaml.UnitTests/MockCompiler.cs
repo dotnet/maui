@@ -9,15 +9,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public static class MockCompiler
 	{
-		public static void Compile(Type type)
+		public static void Compile(Type type, string targetFramework = null)
 		{
 			MethodDefinition _;
-			Compile(type, out _);
+			Compile(type, out _, targetFramework);
 		}
 
-		public static void Compile(Type type, out MethodDefinition methdoDefinition)
+		public static void Compile(Type type, out MethodDefinition methodDefinition, string targetFramework = null)
 		{
-			methdoDefinition = null;
+			methodDefinition = null;
 			var assembly = type.Assembly.Location;
 			var refs = from an in type.Assembly.GetReferencedAssemblies()
 					   let a = System.Reflection.Assembly.Load(an)
@@ -32,12 +32,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				DebugSymbols = false,
 				ValidateOnly = true,
 				Type = type.FullName,
+				TargetFramework = targetFramework,
 				BuildEngine = new MSBuild.UnitTests.DummyBuildEngine()
 			};
 
 			if (xamlc.Execute(out IList<Exception> exceptions) || exceptions == null || !exceptions.Any())
 			{
-				methdoDefinition = xamlc.InitCompForType;
+				methodDefinition = xamlc.InitCompForType;
 				return;
 			}
 			if (exceptions.Count > 1)

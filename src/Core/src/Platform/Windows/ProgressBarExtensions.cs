@@ -5,29 +5,16 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ProgressBarExtensions
 	{
-		public static void UpdateProgress(this ProgressBar nativeProgressBar, IProgress progress)
+		public static void UpdateProgress(this ProgressBar platformProgressBar, IProgress progress)
 		{
-			nativeProgressBar.Value = progress.Progress;
+			platformProgressBar.Value = progress.Progress;
 		}
 
-		public static void UpdateProgressColor(this ProgressBar nativeProgressBar, IProgress progress)
-		{
-			nativeProgressBar.UpdateProgressColor(progress, null);
-		}		
-
-		public static void UpdateProgressColor(this ProgressBar nativeProgressBar, IProgress progress, object? foregroundDefault)
+		public static void UpdateProgressColor(this ProgressBar platformProgressBar, IProgress progress)
 		{
 			Color progressColor = progress.ProgressColor;
-
-			if (progressColor.IsDefault())
-			{
-				if (foregroundDefault != null)
-					nativeProgressBar.RestoreForegroundCache(foregroundDefault);
-			}
-			else
-			{
-				nativeProgressBar.Foreground = progressColor.ToNative();
-			}
+			if (progressColor != null)
+				platformProgressBar.Foreground = progressColor.ToPlatform();
 		}
 	}
 }

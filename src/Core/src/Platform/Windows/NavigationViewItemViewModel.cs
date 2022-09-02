@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
-using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WIconElement = Microsoft.UI.Xaml.Controls.IconElement;
+using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Platform
 {
 	internal static class NotifyPropertyChangedExtensions
 	{
 		public static bool SetProperty<T>(
-			this INotifyPropertyChanged _, 
-			ref T 
-			backingStore, 
+			this INotifyPropertyChanged _,
+			ref T
+			backingStore,
 			T value,
 			Action<PropertyChangedEventArgs> onChanged,
 			[CallerMemberName] string propertyName = "")
@@ -27,20 +27,55 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
+	internal static class NavigationViewItemViewModelExtensions
+	{
+		public static void SyncItems<T>(
+			this ObservableCollection<NavigationViewItemViewModel> dest,
+			IList<T> source,
+			Action<NavigationViewItemViewModel, T> updateItem)
+		{
+			while (dest.Count < source.Count)
+			{
+				dest.Add(new NavigationViewItemViewModel());
+			}
+
+			while (source.Count < dest.Count)
+			{
+				dest.RemoveAt(0);
+			}
+
+			for (var i = 0; i < source.Count; i++)
+			{
+				T page = source[i];
+				var navItem = dest[i];
+				updateItem(navItem, page);
+				navItem.Data = page;
+			}
+		}
+	}
+
 	internal class NavigationViewItemViewModel : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler? PropertyChanged;
 
 		object? _content;
 		WBrush? _foreground;
-		private bool _isSelected;
-		private WBrush? _selectedBackground;
-		private WBrush? _unselectedBackground;
+		bool _isSelected;
+		WBrush? _selectedBackground;
+		WBrush? _unselectedBackground;
+		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
+		WIconElement? _icon;
 
 		public object? Content
 		{
 			get { return _content; }
 			set { this.SetProperty(ref _content, value, OnPropertyChanged); }
+		}
+
+		public WIconElement? Icon
+		{
+			get { return _icon; }
+			set { this.SetProperty(ref _icon, value, OnPropertyChanged); }
 		}
 
 		public WBrush? Foreground
@@ -55,9 +90,16 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public object? Data { get; set; }
+
+		public ObservableCollection<NavigationViewItemViewModel>? MenuItemsSource
+		{
+			get { return _menuItemsSource; }
+			set { this.SetProperty(ref _menuItemsSource, value, OnPropertyChanged); }
+		}
+
 		public WBrush? SelectedBackground
 		{
-			get => _selectedBackground; 
+			get => _selectedBackground;
 			set
 			{
 				_selectedBackground = value;
@@ -67,7 +109,7 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? UnselectedBackground
 		{
-			get => _unselectedBackground; 
+			get => _unselectedBackground;
 			set
 			{
 				_unselectedBackground = value;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
@@ -8,39 +7,98 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DatePickerExtensions
 	{
-		public static void UpdateDate(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker)
+		public static void UpdateDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			var date = datePicker.Date;
-			nativeDatePicker.UpdateDate(date);
+			platformDatePicker.UpdateDate(date);
+
+			var format = datePicker.Format;
+			var dateFormat = format.ToDateFormat();
+
+			if (!string.IsNullOrEmpty(dateFormat))
+				platformDatePicker.DateFormat = dateFormat;
+
+			platformDatePicker.UpdateTextColor(datePicker);
 		}
 
-		public static void UpdateDate(this CalendarDatePicker nativeDatePicker, DateTime dateTime)
+		public static void UpdateDate(this CalendarDatePicker platformDatePicker, DateTime dateTime)
 		{
-			nativeDatePicker.Date = dateTime;
+			platformDatePicker.Date = dateTime;
 		}
-	
-		public static void UpdateMinimumDate(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker)
+
+		public static void UpdateMinimumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			nativeDatePicker.MinDate = datePicker.MinimumDate;
+			platformDatePicker.MinDate = datePicker.MinimumDate;
 		}
 
-		public static void UpdateMaximumDate(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker)
+		public static void UpdateMaximumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			nativeDatePicker.MaxDate = datePicker.MaximumDate;
+			platformDatePicker.MaxDate = datePicker.MaximumDate;
 		}
 
-		public static void UpdateCharacterSpacing(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker)
+		public static void UpdateCharacterSpacing(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			nativeDatePicker.CharacterSpacing = datePicker.CharacterSpacing.ToEm();
+			platformDatePicker.CharacterSpacing = datePicker.CharacterSpacing.ToEm();
 		}
 
-		public static void UpdateFont(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
-			nativeDatePicker.UpdateFont(datePicker.Font, fontManager);
+		public static void UpdateFont(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
+			platformDatePicker.UpdateFont(datePicker.Font, fontManager);
 
-		public static void UpdateTextColor(this CalendarDatePicker nativeDatePicker, IDatePicker datePicker, WBrush? defaultForeground)
+		public static void UpdateTextColor(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			Color textColor = datePicker.TextColor;
-			nativeDatePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToNative()) : textColor.ToNative();
+
+			WBrush? brush = textColor?.ToPlatform();
+
+			if (brush is null)
+			{
+				platformDatePicker.Resources.RemoveKeys(TextColorResourceKeys);
+				platformDatePicker.ClearValue(CalendarDatePicker.ForegroundProperty);
+			}
+			else
+			{
+				platformDatePicker.Resources.SetValueForAllKey(TextColorResourceKeys, brush);
+				platformDatePicker.Foreground = brush;
+			}
+
+			platformDatePicker.RefreshThemeResources();
 		}
+
+		// ResourceKeys controlling the foreground color of the CalendarDatePicker.
+		// https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.calendardatepicker?view=windows-app-sdk-1.1
+		static readonly string[] TextColorResourceKeys =
+		{
+			"CalendarDatePickerTextForeground",
+			"CalendarDatePickerTextForegroundDisabled",
+			"CalendarDatePickerTextForegroundSelected"
+		};
+
+		// TODO NET7 add to public API
+		internal static void UpdateBackground(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			var brush = datePicker?.Background?.ToPlatform();
+
+			if (brush is null)
+			{
+				platformDatePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
+				platformDatePicker.ClearValue(CalendarDatePicker.BackgroundProperty);
+			}
+			else
+			{
+				platformDatePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
+				platformDatePicker.Background = brush;
+			}
+
+			platformDatePicker.RefreshThemeResources();
+		}
+
+		static readonly string[] BackgroundColorResourceKeys =
+		{
+			"CalendarDatePickerBackground",
+			"CalendarDatePickerBackgroundPointerOver",
+			"CalendarDatePickerBackgroundPressed",
+			"CalendarDatePickerBackgroundDisabled",
+			"CalendarDatePickerBackgroundFocused",
+		};
 	}
 }

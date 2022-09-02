@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ItemTappedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemTappedEventArgs']/Docs" />
 	public class ItemTappedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ItemTappedEventArgs.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ItemTappedEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
 		public ItemTappedEventArgs(object group, object item, int itemIndex)
 		{
 			Group = group;

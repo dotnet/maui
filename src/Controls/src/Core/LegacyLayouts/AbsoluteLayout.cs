@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -14,13 +14,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		public static readonly BindableProperty LayoutFlagsProperty = BindableProperty.CreateAttached("LayoutFlags", typeof(AbsoluteLayoutFlags), typeof(AbsoluteLayout), AbsoluteLayoutFlags.None);
 
-		public static readonly BindableProperty LayoutBoundsProperty = BindableProperty.CreateAttached("LayoutBounds", typeof(Rectangle), typeof(AbsoluteLayout), new Rectangle(0, 0, AutoSize, AutoSize));
+		public static readonly BindableProperty LayoutBoundsProperty = BindableProperty.CreateAttached("LayoutBounds", typeof(Rect), typeof(AbsoluteLayout), new Rect(0, 0, AutoSize, AutoSize));
 
 		readonly AbsoluteElementCollection _children;
 		readonly Lazy<PlatformConfigurationRegistry<AbsoluteLayout>> _platformConfigurationRegistry;
 
 		public AbsoluteLayout()
 		{
+			Hosting.CompatibilityCheck.CheckForCompatibility();
 			_children = new AbsoluteElementCollection(InternalChildren, this);
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<AbsoluteLayout>>(() =>
 				new PlatformConfigurationRegistry<AbsoluteLayout>(this));
@@ -39,9 +40,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		[System.ComponentModel.TypeConverter(typeof(BoundsTypeConverter))]
-		public static Rectangle GetLayoutBounds(BindableObject bindable)
+		public static Rect GetLayoutBounds(BindableObject bindable)
 		{
-			return (Rectangle)bindable.GetValue(LayoutBoundsProperty);
+			return (Rect)bindable.GetValue(LayoutBoundsProperty);
 		}
 
 		public static AbsoluteLayoutFlags GetLayoutFlags(BindableObject bindable)
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return (AbsoluteLayoutFlags)bindable.GetValue(LayoutFlagsProperty);
 		}
 
-		public static void SetLayoutBounds(BindableObject bindable, Rectangle bounds)
+		public static void SetLayoutBounds(BindableObject bindable, Rect bounds)
 		{
 			bindable.SetValue(LayoutBoundsProperty, bounds);
 		}
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			foreach (View child in LogicalChildrenInternal)
 			{
-				Rectangle rect = ComputeLayoutForRegion(child, new Size(width, height));
+				Rect rect = ComputeLayoutForRegion(child, new Size(width, height));
 				rect.X += x;
 				rect.Y += y;
 
@@ -114,7 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			var result = LayoutConstraint.None;
-			Rectangle layoutBounds = GetLayoutBounds(view);
+			Rect layoutBounds = GetLayoutBounds(view);
 			if ((layoutFlags & AbsoluteLayoutFlags.HeightProportional) != 0)
 			{
 				bool widthLocked = layoutBounds.Width != AutoSize;
@@ -156,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			var sizeRequest = new Lazy<SizeRequest>(() => view.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins));
 
-			Rectangle bounds = GetLayoutBounds(view);
+			Rect bounds = GetLayoutBounds(view);
 			AbsoluteLayoutFlags absFlags = GetLayoutFlags(view);
 			bool widthIsProportional = (absFlags & AbsoluteLayoutFlags.WidthProportional) != 0;
 			bool heightIsProportional = (absFlags & AbsoluteLayoutFlags.HeightProportional) != 0;
@@ -218,12 +219,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new SizeRequest(new Size(width, height), new Size(minWidth, minHeight));
 		}
 
-		static Rectangle ComputeLayoutForRegion(View view, Size region)
+		static Rect ComputeLayoutForRegion(View view, Size region)
 		{
-			var result = new Rectangle();
+			var result = new Rect();
 
 			SizeRequest sizeRequest;
-			Rectangle bounds = GetLayoutBounds(view);
+			Rect bounds = GetLayoutBounds(view);
 			AbsoluteLayoutFlags absFlags = GetLayoutFlags(view);
 			bool widthIsProportional = (absFlags & AbsoluteLayoutFlags.WidthProportional) != 0;
 			bool heightIsProportional = (absFlags & AbsoluteLayoutFlags.HeightProportional) != 0;
@@ -294,7 +295,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public interface IAbsoluteList<T> : IList<T> where T : View
 		{
-			void Add(View view, Rectangle bounds, AbsoluteLayoutFlags flags = AbsoluteLayoutFlags.None);
+			void Add(View view, Rect bounds, AbsoluteLayoutFlags flags = AbsoluteLayoutFlags.None);
 
 			void Add(View view, Point position);
 		}
@@ -308,7 +309,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			internal AbsoluteLayout Parent { get; set; }
 
-			public void Add(View view, Rectangle bounds, AbsoluteLayoutFlags flags = AbsoluteLayoutFlags.None)
+			public void Add(View view, Rect bounds, AbsoluteLayoutFlags flags = AbsoluteLayoutFlags.None)
 			{
 				SetLayoutBounds(view, bounds);
 				SetLayoutFlags(view, flags);
@@ -317,7 +318,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public void Add(View view, Point position)
 			{
-				SetLayoutBounds(view, new Rectangle(position.X, position.Y, AutoSize, AutoSize));
+				SetLayoutBounds(view, new Rect(position.X, position.Y, AutoSize, AutoSize));
 				Add(view);
 			}
 		}

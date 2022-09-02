@@ -84,8 +84,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// we want the list returned from here to remain point in time accurate
-		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() =>
-			new ReadOnlyCollection<ShellSection>(((ShellSectionCollection)Items).VisibleItemsReadOnly.ToList());
+		ReadOnlyCollection<ShellSection> IShellItemController.GetItems() => ((ShellSectionCollection)Items).VisibleItemsReadOnly;
 
 		event NotifyCollectionChangedEventHandler IShellItemController.ItemsCollectionChanged
 		{
@@ -97,18 +96,29 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				var displayedPage = CurrentItem?.DisplayedPage;
-				if (displayedPage == null)
-					return true;
-
 				Shell shell = Parent as Shell;
 				if (shell == null)
 					return true;
 
-				if (ShellItemController.GetItems().Count <= 1)
-					return false;
+				var displayedPage = shell.GetCurrentShellPage();
 
-				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => true, null, displayedPage);
+				bool defaultShowTabs = true;
+
+#if WINDOWS
+				// Windows supports nested tabs so we want the tabs to display
+				// if the current shell section has multiple contents
+				if (ShellItemController.GetItems().Count > 1 ||
+					(CurrentItem as IShellSectionController).GetItems().Count > 1)
+					defaultShowTabs = true;
+				else
+					defaultShowTabs = false;
+#else
+
+				if (ShellItemController.GetItems().Count <= 1)
+					defaultShowTabs = false;
+#endif
+
+				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => defaultShowTabs, null, displayedPage);
 			}
 		}
 
@@ -328,6 +338,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList().AsReadOnly();
+		protected override void OnParentSet()
+		{
+			base.OnParentSet();
+			if (this.IsVisibleItem && CurrentItem != null)
+				((IShellController)Parent)?.AppearanceChanged(CurrentItem, false);
+		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList();
 	}
 }

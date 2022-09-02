@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
@@ -14,13 +14,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 	public class LayoutCompatTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void BasicContentPage()
 		{
 			var page = new ContentPage() { IsPlatformEnabled = true };
 			var button = new Button() { IsPlatformEnabled = true };
 			var expectedSize = new Size(100, 100);
-			var expectedRect = new Rectangle(Point.Zero, expectedSize);
+			var expectedRect = new Rect(Point.Zero, expectedSize);
 
 			var buttonHandler = Substitute.For<IViewHandler>();
 			buttonHandler.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
@@ -30,11 +30,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			(page as IContentView).CrossPlatformMeasure(expectedSize.Width, expectedSize.Height);
 			(page as IContentView).CrossPlatformArrange(expectedRect);
 
-			buttonHandler.Received().NativeArrange(expectedRect);
-			Assert.AreEqual(expectedSize, button.Bounds.Size);
+			buttonHandler.Received().PlatformArrange(expectedRect);
+			Assert.Equal(expectedSize, button.Bounds.Size);
 		}
 
-		[Test]
+		[Fact]
 		public void GridInsideStackLayout()
 		{
 			ContentPage contentPage = new ContentPage();
@@ -51,12 +51,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			grid.Children.Add(label);
 			contentPage.Content = stackLayout;
 
-			var rect = new Rectangle(Point.Zero, expectedSize);
+			var rect = new Rect(Point.Zero, expectedSize);
 
 			(contentPage as Microsoft.Maui.IContentView).CrossPlatformMeasure(expectedSize.Width, expectedSize.Height);
 			(contentPage as Microsoft.Maui.IContentView).CrossPlatformArrange(rect);
 
-			Assert.AreEqual(expectedSize, grid.Bounds.Size);
+			Assert.Equal(expectedSize, grid.Bounds.Size);
 		}
 	}
 }

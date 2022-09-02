@@ -26,7 +26,6 @@ The idea, is a project to be able to set `$(UseMaui)`:
 * `Microsoft.Maui.Dependencies`
 * `Microsoft.Maui.Essentials.Ref.[platform]`
 * `Microsoft.Maui.Essentials.Runtime.[platform]`
-* `Microsoft.Maui.Extensions`
 * `Microsoft.Maui.Templates`
 
 BlazorWebView is an addition to MAUI, project can currently opt into
@@ -93,9 +92,10 @@ installed:
 * `maui-maccatalyst`
 * `maui-macos`
 * `maui-windows`
+* `maui-tizen`
 
-Android has an `android` workload id that excludes AOT compilers, so
-`maui-android` will extend this. `android-aot` includes AOT support.
+`maui-android` simply extends the `android` workload, adding the
+Android-specific platform implementation for MAUI.
 
 These ids will not map exactly to the Visual Studio Installer's
 concept of a "workload". Consider the following diagram for what .NET

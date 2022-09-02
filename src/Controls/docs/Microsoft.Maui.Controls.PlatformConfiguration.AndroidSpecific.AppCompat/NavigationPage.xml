@@ -79,7 +79,7 @@
       </Parameters>
       <Docs>
         <param name="config">The platform configuration for the element whose bar height to get.</param>
-        <summary>Gets the navigation bar height for the specified <paramref name="element" />.</summary>
+        <summary>Gets the navigation bar height for the specified element.</summary>
         <returns>The new bar height.</returns>
         <remarks>To be added.</remarks>
       </Docs>

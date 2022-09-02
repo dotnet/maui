@@ -48,8 +48,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				HeightRequest = 170,
 				BackgroundColor = Colors.Black,
 				Children = {
-					{image, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All},
-					{name, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All}
+					{image, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All},
+					{name, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All}
 				},
 			};
 

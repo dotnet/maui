@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -21,19 +22,19 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<SliderHandler>(slider);
 				await Task.Delay(1000);
-				await handler.NativeView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
 			});
 		}
 
 		SeekBar GetNativeSlider(SliderHandler sliderHandler) =>
-			sliderHandler.NativeView;
+			sliderHandler.PlatformView;
 
 		double GetNativeProgress(SliderHandler sliderHandler) =>
 			GetNativeSlider(sliderHandler).Progress;
 
 		double GetNativeMinimum(SliderHandler sliderHandler)
 		{
-			if (NativeVersion.Supports(NativeApis.SeekBarSetMin))
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
 				return GetNativeSlider(sliderHandler).Min;
 			}
@@ -61,19 +62,19 @@ namespace Microsoft.Maui.DeviceTests
 				Maximum = xplatMaximum
 			};
 
-			double expectedValue = SliderExtensions.NativeMaxValue;
+			double expectedValue = SliderExtensions.PlatformMaxValue;
 
 			var values = await GetValueAsync(slider, (handler) =>
 			{
 				return new
 				{
 					ViewValue = slider.Maximum,
-					NativeViewValue = GetNativeMaximum(handler)
+					PlatformViewValue = GetNativeMaximum(handler)
 				};
 			});
 
 			Assert.Equal(xplatMaximum, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
 		[Fact(DisplayName = "Value Initializes Correctly")]
@@ -87,19 +88,19 @@ namespace Microsoft.Maui.DeviceTests
 				Value = xplatValue
 			};
 
-			int expectedValue = (int)(SliderExtensions.NativeMaxValue / 2);
+			int expectedValue = (int)(SliderExtensions.PlatformMaxValue / 2);
 
 			var values = await GetValueAsync(slider, (handler) =>
 			{
 				return new
 				{
 					ViewValue = slider.Value,
-					NativeViewValue = GetNativeProgress(handler)
+					PlatformViewValue = GetNativeProgress(handler)
 				};
 			});
 
 			Assert.Equal(xplatValue, values.ViewValue);
-			Assert.Equal(expectedValue, values.NativeViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 	}
 }

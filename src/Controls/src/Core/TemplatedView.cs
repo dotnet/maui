@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 				Element element = LogicalChildrenInternal[i];
 				var child = element as View;
 				if (child != null)
-					LayoutChildIntoBoundingRegion(child, new Rectangle(x, y, width, height));
+					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
 			}
 		}
 
@@ -87,7 +87,10 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnApplyTemplate()
 		{
+			OnApplyTemplateImpl();
 		}
+
+		partial void OnApplyTemplateImpl();
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{

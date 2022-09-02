@@ -1,69 +1,73 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class WebViewExtensions
 	{
-		public static void UpdateSource(this WebView2 nativeWebView, IWebView webView)
+		public static void UpdateSource(this WebView2 platformWebView, IWebView webView)
 		{
-			nativeWebView.UpdateSource(webView, null);
+			platformWebView.UpdateSource(webView, null);
 		}
 
-		public static void UpdateSource(this WebView2 nativeWebView, IWebView webView, IWebViewDelegate? webViewDelegate)
+		public static void UpdateSource(this WebView2 platformWebView, IWebView webView, IWebViewDelegate? webViewDelegate)
 		{
 			if (webViewDelegate != null)
 			{
 				webView.Source?.Load(webViewDelegate);
 
-				nativeWebView.UpdateCanGoBackForward(webView);
+				platformWebView.UpdateCanGoBackForward(webView);
 			}
 		}
 
-		public static void UpdateGoBack(this WebView2 nativeWebView, IWebView webView)
+		public static void UpdateGoBack(this WebView2 platformWebView, IWebView webView)
 		{
-			if (nativeWebView == null)
+			if (platformWebView == null)
 				return;
 
-			if (nativeWebView.CanGoBack)
-				nativeWebView.GoBack();
+			if (platformWebView.CoreWebView2.CanGoBack)
+				platformWebView.CoreWebView2.GoBack();
 
-			nativeWebView.UpdateCanGoBackForward(webView);
+			platformWebView.UpdateCanGoBackForward(webView);
 		}
-		
-		public static void UpdateGoForward(this WebView2 nativeWebView, IWebView webView)
+
+		public static void UpdateGoForward(this WebView2 platformWebView, IWebView webView)
 		{
-			if (nativeWebView == null)
+			if (platformWebView == null)
 				return;
 
-			if (nativeWebView.CanGoForward)
-				nativeWebView.GoForward();
+			if (platformWebView.CoreWebView2.CanGoForward)
+				platformWebView.CoreWebView2.GoForward();
 
-			nativeWebView.UpdateCanGoBackForward(webView);
+			platformWebView.UpdateCanGoBackForward(webView);
 		}
 
-		public static void UpdateReload(this WebView2 nativeWebView, IWebView webView)
+		public static void UpdateReload(this WebView2 platformWebView, IWebView webView)
 		{
-			// TODO: Sync Cookies
-
-			nativeWebView?.Reload();
+			platformWebView?.Reload();
 		}
-				
-		internal static void UpdateCanGoBackForward(this WebView2 nativeWebView, IWebView webView)
+
+		internal static void UpdateCanGoBackForward(this WebView2 platformWebView, IWebView webView)
 		{
-			webView.CanGoBack = nativeWebView.CanGoBack;
-			webView.CanGoForward = nativeWebView.CanGoForward;
+			webView.CanGoBack = platformWebView.CanGoBack;
+			webView.CanGoForward = platformWebView.CanGoForward;
 		}
 
-		public static void Eval(this WebView2 nativeWebView, IWebView webView, string script)
-		{ 
-			if (nativeWebView == null)
+		public static void Eval(this WebView2 platformWebView, IWebView webView, string script)
+		{
+			if (platformWebView == null)
 				return;
 
-			nativeWebView.DispatcherQueue.TryEnqueue(async () =>
+			platformWebView.DispatcherQueue.TryEnqueue(async () =>
 			{
-				await nativeWebView.ExecuteScriptAsync(script);
+				await platformWebView.ExecuteScriptAsync(script);
 			});
+		}
+
+		public static void EvaluateJavaScript(this WebView2 webView, EvaluateJavaScriptAsyncRequest request)
+		{
+			request.RunAndReport(webView.ExecuteScriptAsync(request.Script));
 		}
 	}
 }

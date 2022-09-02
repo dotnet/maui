@@ -6,7 +6,7 @@
 //       Stephane Delcroix <stephane@mi8.be>
 //
 // Copyright (c) 2013 Mobile Inception
-// Copyright (c) 2013-2014 Microsoft.Maui.Controls, Inc
+// Copyright (c) 2013-2014 Xamarin, Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			for (var i = 0; i < lookupNames.Count; i++)
 			{
 				var name = lookupNames[i];
-				if (name.Contains(":"))
+				if (name.IndexOf(":", StringComparison.Ordinal) != -1)
 					name = name.Substring(name.LastIndexOf(':') + 1);
 				if (typeArguments != null)
 					name += "`" + typeArguments.Count; //this will return an open generic Type

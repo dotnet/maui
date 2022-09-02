@@ -16,12 +16,21 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		ViewGroup _rootDecorView => (_window?.NativeActivity?.Window?.DecorView as ViewGroup) ??
-			throw new InvalidOperationException("Root View Needs to be set");
+		ViewGroup GetModalParentView()
+		{
+			var currentRootView = GetCurrentRootView() as ViewGroup;
+
+			if (_window?.PlatformActivity?.GetWindow() == _window)
+			{
+				currentRootView = _window?.PlatformActivity?.Window?.DecorView as ViewGroup;
+			}
+
+			return currentRootView ??
+				throw new InvalidOperationException("Root View Needs to be set");
+		}
 
 		bool _navAnimationInProgress;
 		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
-		IPageController CurrentPageController => _navModel.CurrentPage;
 		Page CurrentPage => _navModel.CurrentPage;
 
 		// AFAICT this is specific to ListView and Context Items
@@ -43,15 +52,15 @@ namespace Microsoft.Maui.Controls.Platform
 			Page modal = _navModel.PopModal();
 			var source = new TaskCompletionSource<Page>();
 
-			var modalHandler = modal.Handler as INativeViewHandler;
+			var modalHandler = modal.Handler as IPlatformViewHandler;
 			if (modalHandler != null)
 			{
 				ModalContainer? modalContainer = null;
 
 
-				for (int i = 0; i <= _rootDecorView.ChildCount; i++)
+				for (int i = 0; i <= GetModalParentView().ChildCount; i++)
 				{
-					if (_rootDecorView.GetChildAt(i) is ModalContainer mc &&
+					if (GetModalParentView().GetChildAt(i) is ModalContainer mc &&
 						mc.Modal == modal)
 					{
 						modalContainer = mc;
@@ -63,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (animated)
 				{
 					modalContainer
-						.Animate()?.TranslationY(_rootDecorView.Height)?
+						.Animate()?.TranslationY(GetModalParentView().Height)?
 						.SetInterpolator(new AccelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
 						{
 							OnEnd = a =>
@@ -85,17 +94,14 @@ namespace Microsoft.Maui.Controls.Platform
 			return source.Task;
 		}
 
-		// The CurrentPage doesn't represent the root of the native hierarchy.
+		// The CurrentPage doesn't represent the root of the platform hierarchy.
 		// So we need to retrieve the root view the page is part of if we want
 		// to be sure to disable all focusability
 		AView GetCurrentRootView()
 		{
-			return CurrentPage
-					.Handler
-					?.MauiContext
+			return WindowMauiContext
 					?.GetNavigationRootManager()
-					.RootView ??
-					CurrentPage.ToPlatform() ??
+					?.RootView ??
 					throw new InvalidOperationException("Current Root View cannot be null");
 		}
 
@@ -111,20 +117,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 			await presentModal;
 
-			GetCurrentRootView().SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
+			GetCurrentRootView()
+				.SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
 		}
 
 		Task PresentModal(Page modal, bool animated)
 		{
-			var modalContainer = new ModalContainer(_window, modal);
-
-			_rootDecorView.AddView(modalContainer);
+			var parentView = GetModalParentView();
+			var modalContainer = new ModalContainer(WindowMauiContext, modal, parentView);
 
 			var source = new TaskCompletionSource<bool>();
 			NavAnimationInProgress = true;
 			if (animated)
 			{
-				modalContainer.TranslationY = _rootDecorView.Height;
+				modalContainer.TranslationY = GetModalParentView().Height;
 				modalContainer?.Animate()?.TranslationY(0)?.SetInterpolator(new DecelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
 				{
 					OnEnd = a =>
@@ -147,26 +153,26 @@ namespace Microsoft.Maui.Controls.Platform
 			return source.Task.ContinueWith(task => NavAnimationInProgress = false);
 		}
 
-		void RestoreFocusability(AView nativeView)
+		void RestoreFocusability(AView platformView)
 		{
-			nativeView.ImportantForAccessibility = ImportantForAccessibility.Auto;
+			platformView.ImportantForAccessibility = ImportantForAccessibility.Auto;
 
-			if (NativeVersion.IsAtLeast(26))
-				nativeView.SetFocusable(ViewFocusability.FocusableAuto);
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				platformView.SetFocusable(ViewFocusability.FocusableAuto);
 
-			if (nativeView is ViewGroup vg)
+			if (platformView is ViewGroup vg)
 				vg.DescendantFocusability = DescendantFocusability.BeforeDescendants;
 		}
 
-		void RemoveFocusability(AView nativeView)
+		void RemoveFocusability(AView platformView)
 		{
-			nativeView.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
+			platformView.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
 
-			if (NativeVersion.IsAtLeast(26))
-				nativeView.SetFocusable(ViewFocusability.NotFocusable);
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				platformView.SetFocusable(ViewFocusability.NotFocusable);
 
 			// Without setting this the keyboard will still navigate to components behind the modal page
-			if (nativeView is ViewGroup vg)
+			if (platformView is ViewGroup vg)
 				vg.DescendantFocusability = DescendantFocusability.BlockDescendants;
 		}
 
@@ -188,12 +194,21 @@ namespace Microsoft.Maui.Controls.Platform
 			public Page? Modal { get; private set; }
 			ModalFragment _modalFragment;
 			FragmentManager? _fragmentManager;
-
 			NavigationRootManager? NavigationRootManager => _modalFragment.NavigationRootManager;
 
-			public ModalContainer(IWindow window, Page modal) : base(window.Handler?.MauiContext?.Context ?? throw new ArgumentNullException($"{nameof(window.Handler.MauiContext.Context)}"))
+			AView GetWindowRootView() =>
+				 _windowMauiContext
+						?.GetNavigationRootManager()
+						?.RootView ??
+						throw new InvalidOperationException("Current Root View cannot be null");
+
+			public ModalContainer(
+				IMauiContext windowMauiContext,
+				Page modal,
+				ViewGroup parentView)
+				: base(windowMauiContext?.Context ?? throw new ArgumentNullException($"{nameof(windowMauiContext.Context)}"))
 			{
-				_windowMauiContext = window.Handler.MauiContext;
+				_windowMauiContext = windowMauiContext;
 				Modal = modal;
 
 				_backgroundView = new AView(_windowMauiContext.Context);
@@ -202,15 +217,38 @@ namespace Microsoft.Maui.Controls.Platform
 
 				Id = AView.GenerateViewId();
 
-				Modal.PropertyChanged += OnModalPagePropertyChanged;
-
 				_modalFragment = new ModalFragment(_windowMauiContext, modal);
 				_fragmentManager = _windowMauiContext.GetFragmentManager();
+
+				parentView.AddView(this);
 
 				_fragmentManager
 					.BeginTransaction()
 					.Add(this.Id, _modalFragment)
 					.Commit();
+
+				UpdateMargin();
+			}
+
+			void UpdateMargin()
+			{
+				// This sets up the modal container to be offset from the top of window the same
+				// amount as the view it's covering. This will make it so the
+				// ModalContainer takes into account the statusbar or lack thereof
+				var rootView = GetWindowRootView();
+				int y = (int)rootView.GetLocationOnScreenPx().Y;
+
+				if (this.LayoutParameters is ViewGroup.MarginLayoutParams mlp &&
+					mlp.TopMargin != y)
+				{
+					mlp.TopMargin = y;
+				}
+			}
+
+			public override bool OnTouchEvent(MotionEvent? e)
+			{
+				// Don't let touch events pass through to the view being covered up
+				return true;
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -221,13 +259,17 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				var rootView =
-					NavigationRootManager.RootView;
+				var rootView = GetWindowRootView();
+				UpdateMargin();
 
-				rootView.Measure(widthMeasureSpec, heightMeasureSpec);
+				widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(rootView.MeasuredWidth);
+				heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(rootView.MeasuredHeight);
+				NavigationRootManager
+					.RootView
+					.Measure(widthMeasureSpec, heightMeasureSpec);
+
 				SetMeasuredDimension(rootView.MeasuredWidth, rootView.MeasuredHeight);
 			}
-
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
@@ -235,7 +277,8 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 
 				NavigationRootManager
-					.RootView.Layout(l, t, r, b);
+					.RootView
+					.Layout(0, 0, r - l, b - t);
 
 				_backgroundView.Layout(0, 0, r - l, b - t);
 			}
@@ -255,7 +298,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (modalBkgndColor == null)
 					_backgroundView.SetWindowBackground();
 				else
-					_backgroundView.SetBackgroundColor(modalBkgndColor.ToNative());
+					_backgroundView.SetBackgroundColor(modalBkgndColor.ToPlatform());
 			}
 
 			public void Destroy()
@@ -267,7 +310,6 @@ namespace Microsoft.Maui.Controls.Platform
 					Modal.Toolbar.Handler = null;
 
 				Modal.Handler = null;
-
 
 				_fragmentManager
 					.BeginTransaction()
@@ -298,7 +340,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_mauiWindowContext = mauiContext;
 				}
 
-				public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+				public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 				{
 					var modalContext = _mauiWindowContext
 						.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);

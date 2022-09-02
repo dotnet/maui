@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		Window _window;
 		public IReadOnlyList<Page> ModalStack => _navModel.Modals;
-		IMauiContext MauiContext => _window.MauiContext;
+		IMauiContext WindowMauiContext => _window.MauiContext;
 		NavigationModel _navModel = new NavigationModel();
 		NavigationModel? _previousNavModel = null;
 		Page? _previousPage;

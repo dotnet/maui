@@ -7,6 +7,7 @@ using AButton = Android.Widget.Button;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class StepperRenderer : ViewRenderer<Stepper, LinearLayout>, IStepperRenderer
 	{
 		AButton _downButton;

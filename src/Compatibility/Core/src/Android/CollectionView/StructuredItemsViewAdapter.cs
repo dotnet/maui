@@ -7,6 +7,7 @@ using ViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[System.Obsolete]
 	public class StructuredItemsViewAdapter<TItemsView, TItemsViewSource> : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsView : StructuredItemsView
 		where TItemsViewSource : IItemsViewSource

@@ -8,8 +8,8 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {
 	public static class WebViewHelpers
 	{
-		const int MaxWaitTimes = 5;
-		const int WaitTimeInMS = 100;
+		const int MaxWaitTimes = 30;
+		const int WaitTimeInMS = 250;
 
 		public static async Task WaitForWebViewReady(WebView2 wv2)
 		{

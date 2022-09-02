@@ -61,20 +61,20 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='LayoutTo']/Docs" />
-		public static Task<bool> LayoutTo(this VisualElement view, Rectangle bounds, uint length = 250, Easing? easing = null)
+		public static Task<bool> LayoutTo(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
 
-			Rectangle start = view.Bounds;
-			Func<double, Rectangle> computeBounds = progress =>
+			Rect start = view.Bounds;
+			Func<double, Rect> computeBounds = progress =>
 			{
 				double x = start.X + (bounds.X - start.X) * progress;
 				double y = start.Y + (bounds.Y - start.Y) * progress;
 				double w = start.Width + (bounds.Width - start.Width) * progress;
 				double h = start.Height + (bounds.Height - start.Height) * progress;
 
-				return new Rectangle(x, y, w, h);
+				return new Rect(x, y, w, h);
 			};
 
 			return AnimateTo(view, 0, 1, nameof(LayoutTo), (v, value) => v.Layout(computeBounds(value)), length, easing);
@@ -184,8 +184,14 @@ namespace Microsoft.Maui.Controls
 
 		internal static IAnimationManager GetAnimationManager(this IAnimatable animatable)
 		{
-			if (animatable is Element e && e.FindMauiContext() is IMauiContext mauiContext)
-				return mauiContext.GetAnimationManager();
+			if (animatable is Element element)
+			{
+				if (element.FindMauiContext() is IMauiContext viewMauiContext)
+					return viewMauiContext.GetAnimationManager();
+
+				if (Application.Current?.FindMauiContext() is IMauiContext applicationMauiContext)
+					return applicationMauiContext.GetAnimationManager();
+			}
 
 			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
 		}

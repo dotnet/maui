@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ShellFlyoutItemGroupTests : ShellTestBase
 	{
-		[Test]
+		[Fact]
 		public void FlyoutCreatesCorrectNumberOfGroupsForAsMultipleItems()
 		{
 			var shell = new Shell();
@@ -27,12 +27,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			IShellController shellController = shell;
 			var groups = shellController.GenerateFlyoutGrouping();
 
-			Assert.AreEqual(groups.Count, 2);
-			Assert.AreEqual(groups[0].Count, 2);
-			Assert.AreEqual(groups[1].Count, 1);
+			Assert.Equal(2, groups.Count);
+			Assert.Equal(2, groups[0].Count);
+			Assert.Single(groups[1]);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutCreatesCorrectNumberOfGroupsForNestedAsMultipleItems()
 		{
 			var shell = new Shell();
@@ -51,12 +51,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			IShellController shellController = shell;
 			var groups = shellController.GenerateFlyoutGrouping();
 
-			Assert.AreEqual(2, groups.Count);
-			Assert.AreEqual(groups[0].Count, 2);
-			Assert.AreEqual(groups[1].Count, 2);
+			Assert.Equal(2, groups.Count);
+			Assert.Equal(2, groups[0].Count);
+			Assert.Equal(2, groups[1].Count);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutCreatesCorrectNumberOfGroupsForAsSingleItem()
 		{
 			var shell = new Shell();
@@ -74,11 +74,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			IShellController shellController = shell;
 			var groups = shellController.GenerateFlyoutGrouping();
 
-			Assert.AreEqual(groups.Count, 1);
-			Assert.AreEqual(groups[0].Count, 2);
+			Assert.Single(groups);
+			Assert.Equal(2, groups[0].Count);
 		}
 
-		[Test]
+		[Fact]
 		public void MenuItemGeneratesForShellContent()
 		{
 			var shell = new TestShell();
@@ -89,11 +89,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			IShellController shellController = (IShellController)shell;
 			var groups = shellController.GenerateFlyoutGrouping();
-			Assert.AreEqual(groups.SelectMany(x => x.OfType<IMenuItemController>()).Count(), 1);
+			Assert.Single(groups.SelectMany(x => x.OfType<IMenuItemController>()));
 		}
 
 
-		[Test]
+		[Fact]
 		public void MenuItemGeneratesForShellSection()
 		{
 			var shell = new TestShell();
@@ -105,11 +105,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			IShellController shellController = (IShellController)shell;
 			var groups = shellController.GenerateFlyoutGrouping();
-			Assert.AreEqual(1, groups.SelectMany(x => x.OfType<IMenuItemController>()).Count());
+			Assert.Single(groups.SelectMany(x => x.OfType<IMenuItemController>()));
 		}
 
 
-		[Test]
+		[Fact]
 		public void FlyoutItemVisibleWorksForMenuItemsAddedAsShellItem()
 		{
 			var shell = new TestShell();
@@ -117,17 +117,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item);
 
 			var itemsAreEquals = item.Equals(shell.Items[0]);
-			Assert.IsTrue(itemsAreEquals);
+			Assert.True(itemsAreEquals);
 
 			IShellController shellController = (IShellController)shell;
 			var groups = shellController.GenerateFlyoutGrouping();
 
 			var r = groups.SelectMany(x => x.OfType<IMenuItemController>());
 
-			Assert.AreEqual(r.Count(), 0);
+			Assert.Empty(r);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemVisibleWorksForMenuItemsAddedAsTab()
 		{
 			var shell = new TestShell();
@@ -138,10 +138,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			IShellController shellController = (IShellController)shell;
 			var groups = shellController.GenerateFlyoutGrouping();
-			Assert.AreEqual(groups.SelectMany(x => x.OfType<IMenuItemController>()).Count(), 0);
+			Assert.Empty(groups.SelectMany(x => x.OfType<IMenuItemController>()));
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemVisibleWorksForMenuItemsAddedAsShellContent()
 		{
 			var shell = new TestShell();
@@ -152,10 +152,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			IShellController shellController = (IShellController)shell;
 			var groups = shellController.GenerateFlyoutGrouping();
-			Assert.AreEqual(groups.SelectMany(x => x.OfType<IMenuItemController>()).Count(), 0);
+			Assert.Empty(groups.SelectMany(x => x.OfType<IMenuItemController>()));
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemVisibleWorksForMenuItemsFlyoutItemAsMultipleItems()
 		{
 			var shell = new TestShell();
@@ -166,10 +166,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(flyoutItem);
 
 			var groups = shell.Controller.GenerateFlyoutGrouping();
-			Assert.AreEqual(groups.SelectMany(x => x.OfType<IMenuItemController>()).Count(), 0);
+			Assert.Empty(groups.SelectMany(x => x.OfType<IMenuItemController>()));
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemVisibleWorksForMenuItemsTabAsMultipleItems()
 		{
 			var shell = new TestShell();
@@ -182,10 +182,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			IShellController shellController = (IShellController)shell;
 			var groups = shellController.GenerateFlyoutGrouping();
-			Assert.AreEqual(0, groups.SelectMany(x => x.OfType<IMenuItemController>()).Count());
+			Assert.Empty(groups.SelectMany(x => x.OfType<IMenuItemController>()));
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemNotVisibleWhenShellContentSetToNotVisible()
 		{
 			var shell = new TestShell();
@@ -197,11 +197,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			IShellController shellController = (IShellController)shell;
 			var groups = shellController.GenerateFlyoutGrouping();
-			Assert.AreEqual(1, groups.Count);
-			Assert.AreEqual(1, groups[0].Count);
+			Assert.Single(groups);
+			Assert.Single(groups[0]);
 		}
 
-		[Test]
+		[Fact]
 		public void ReturnTheSameGroupingInstanceIfStructureHasntChanged()
 		{
 			var shell = new TestShell();
@@ -211,15 +211,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var flyoutItems = shell.Controller.GenerateFlyoutGrouping();
 			var flyoutItems2 = shell.Controller.GenerateFlyoutGrouping();
 
-			Assert.AreSame(flyoutItems, flyoutItems2);
+			Assert.Same(flyoutItems, flyoutItems2);
 
 			shell.Items.Add(CreateShellItem<FlyoutItem>());
 			flyoutItems2 = shell.Controller.GenerateFlyoutGrouping();
 
-			Assert.AreNotSame(flyoutItems, flyoutItems2);
+			Assert.NotSame(flyoutItems, flyoutItems2);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemsBasicSyncTest()
 		{
 			var shell = new TestShell();
@@ -230,14 +230,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items[3].IsVisible = false;
 
 			var flyoutItems = shell.GenerateTestFlyoutItems();
-			Assert.AreEqual(shell.Items[0], flyoutItems[0][0]);
-			Assert.AreEqual(shell.Items[1], flyoutItems[0][1]);
-			Assert.AreEqual(shell.Items[2], flyoutItems[0][2]);
-			Assert.AreEqual(3, flyoutItems[0].Count);
-			Assert.AreEqual(1, flyoutItems.Count);
+			Assert.Equal(shell.Items[0], flyoutItems[0][0]);
+			Assert.Equal(shell.Items[1], flyoutItems[0][1]);
+			Assert.Equal(shell.Items[2], flyoutItems[0][2]);
+			Assert.Equal(3, flyoutItems[0].Count);
+			Assert.Single(flyoutItems);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemsGroupTest()
 		{
 			var shell = new TestShell();
@@ -252,13 +252,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items[0].Items.Add(sec3);
 
 			var flyoutItems = shell.GenerateTestFlyoutItems();
-			Assert.AreEqual(sec1, flyoutItems[0][0]);
-			Assert.AreEqual(sec2, flyoutItems[0][1]);
-			Assert.AreEqual(sec3, flyoutItems[0][2]);
-			Assert.AreEqual(shell.Items[1], flyoutItems[1][0]);
+			Assert.Equal(sec1, flyoutItems[0][0]);
+			Assert.Equal(sec2, flyoutItems[0][1]);
+			Assert.Equal(sec3, flyoutItems[0][2]);
+			Assert.Equal(shell.Items[1], flyoutItems[1][0]);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemsGroupTestWithRemove()
 		{
 			var shell = new TestShell();
@@ -274,11 +274,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.RemoveAt(0);
 
 			var flyoutItems = shell.GenerateTestFlyoutItems();
-			Assert.AreEqual(shell.Items[0], flyoutItems[0][0]);
-			Assert.AreEqual(1, flyoutItems.Count);
+			Assert.Equal(shell.Items[0], flyoutItems[0][0]);
+			Assert.Single(flyoutItems);
 		}
 
-		[Test]
+		[Fact]
 		public void FlyoutItemsGroupTestMoveGroup()
 		{
 			var shell = new TestShell();
@@ -296,10 +296,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.RemoveAt(0);
 			shell.Items.Add(item1);
 			var flyoutItems = shell.GenerateTestFlyoutItems();
-			Assert.AreEqual(sec1, flyoutItems[1][0]);
-			Assert.AreEqual(sec2, flyoutItems[1][1]);
-			Assert.AreEqual(sec3, flyoutItems[1][2]);
-			Assert.AreEqual(shell.Items[0], flyoutItems[0][0]);
+			Assert.Equal(sec1, flyoutItems[1][0]);
+			Assert.Equal(sec2, flyoutItems[1][1]);
+			Assert.Equal(sec3, flyoutItems[1][2]);
+			Assert.Equal(shell.Items[0], flyoutItems[0][0]);
 		}
 
 		MenuItem CreateNonVisibleMenuItem()

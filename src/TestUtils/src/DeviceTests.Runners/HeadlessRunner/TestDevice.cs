@@ -2,7 +2,8 @@
 using System;
 using System.Globalization;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
-using Microsoft.Maui.Essentials;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {

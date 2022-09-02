@@ -6,35 +6,35 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Blazor">
 
-    <!--
-    xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
-
-    <VerticalStackLayout
-        Margin="12"
-        Spacing="5"
+    <Grid
+        VerticalOptions="Fill"
         BackgroundColor="Purple">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Label
+            Grid.Row="0"
             Text="The content below is brought to you by Blazor!"
             FontSize="24"
             TextColor="BlanchedAlmond"
             HorizontalOptions="Center" />
-        <b:BlazorWebView
+        <BlazorWebView
+            x:Name="bwv"
+            Grid.Row="1"
             HostPage="wwwroot/index.html"
-            BackgroundColor="Orange"
-            HeightRequest="400"
-            MinimumHeightRequest="400"
-            VerticalOptions="FillAndExpand">
-            <b:BlazorWebView.RootComponents>
-                <b:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
-            </b:BlazorWebView.RootComponents>
-        </b:BlazorWebView>
+            BackgroundColor="Orange">
+            <BlazorWebView.RootComponents>
+                <RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
+            </BlazorWebView.RootComponents>
+        </BlazorWebView>
         <Label
+            Grid.Row="2"
             Text="Thank you for using Blazor and .NET MAUI!"
             FontSize="24"
             TextColor="BlanchedAlmond"
             HorizontalOptions="Center" />
-    </VerticalStackLayout>
-
-    -->
+    </Grid>
 
 </views:BasePage>

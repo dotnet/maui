@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			// Logger.LogLine ("TEST PARSING");
 
-			if (font.Contains("font-weight: bold;"))
+			if (font.IndexOf("font-weight: bold;", StringComparison.Ordinal) != -1)
 			{
 				// Logger.LogLine ("Found Bold");
 				fontAttrs = FontAttributes.Bold;

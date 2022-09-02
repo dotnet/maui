@@ -19,6 +19,8 @@ namespace Microsoft.Maui.UnitTests
 
 		public Thickness Padding { get; set; }
 
+		public LineBreakMode LineBreakMode { get; set; }
+
 		public void Clicked() { }
 
 		public void Pressed() { }

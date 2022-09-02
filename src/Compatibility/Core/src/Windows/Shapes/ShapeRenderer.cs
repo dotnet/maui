@@ -25,6 +25,7 @@ using WStretch = System.Windows.Media.Stretch;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
+	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class ShapeRenderer<TShape, TNativeShape> : ViewRenderer<TShape, TNativeShape>
 		  where TShape : Shape
 		  where TNativeShape : WShape

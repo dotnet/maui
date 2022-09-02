@@ -387,9 +387,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					var defaultContext = base.GetInvalidationContext(preferredAttributes, originalAttributes);
 					return defaultContext;
 				}
-				catch (MonoTouchException ex) when (ex.Name == "NSRangeException")
+				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSRangeException")
 				{
-					Forms.MauiContext?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeExceptiond");
+					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
 				}
 
 				UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();

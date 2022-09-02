@@ -11,29 +11,33 @@ namespace Microsoft.Maui
 	{
 		W2DGraphicsView? _graphicsView;
 		Frame? _frame;
-		Panel? _panel;
-		FrameworkElement? _nativeElement;
+		WindowRootViewContainer? _panel;
+		FrameworkElement? _platformElement;
 
 		/// <inheritdoc/>
 		public virtual bool Initialize()
 		{
-			if (IsNativeViewInitialized)
+			if (IsPlatformViewInitialized)
 				return true;
 
 			if (Window?.Content == null)
 				return false;
 
-			_nativeElement = Window.Content.ToPlatform();
-			if (_nativeElement == null)
-				return false;
-			var handler = Window.Handler as WindowHandler;
-			if (handler?.NativeView is not Window _window)
+			_platformElement = Window.Content.ToPlatform();
+			if (_platformElement == null)
 				return false;
 
-			_panel = _window.Content as Panel;
+			var handler = Window.Handler as WindowHandler;
+			if (handler?.PlatformView is not Window _window)
+				return false;
+
+			_panel = _window.Content as WindowRootViewContainer;
+			if (_panel is null)
+				return false;
+
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
-			if (_nativeElement is Frame frame)
+			if (_platformElement is Frame frame)
 			{
 				_frame = frame;
 				_frame.Navigating += FrameNavigating;
@@ -43,8 +47,8 @@ namespace Microsoft.Maui
 			if (_graphicsView == null)
 				return false;
 
-			_nativeElement.Tapped += ViewTapped;
-			_nativeElement.PointerMoved += PointerMoved;
+			_platformElement.Tapped += ViewTapped;
+			_platformElement.PointerMoved += PointerMoved;
 			_graphicsView.Tapped += ViewTapped;
 			_graphicsView.PointerMoved += PointerMoved;
 
@@ -52,10 +56,10 @@ namespace Microsoft.Maui
 			_graphicsView.IsHitTestVisible = false;
 			_graphicsView.Visibility = UI.Xaml.Visibility.Collapsed;
 
-			_panel?.Children.Add(_graphicsView);
-			
-			IsNativeViewInitialized = true;
-			return IsNativeViewInitialized;
+			_panel.AddOverlay(_graphicsView);
+
+			IsPlatformViewInitialized = true;
+			return IsPlatformViewInitialized;
 		}
 
 		/// <inheritdoc/>
@@ -71,26 +75,26 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Deinitializes the native event hooks and handlers used to drive the overlay.
+		/// Deinitializes the platform event hooks and handlers used to drive the overlay.
 		/// </summary>
-		void DeinitializeNativeDependencies()
+		void DeinitializePlatformDependencies()
 		{
 			if (_frame != null)
 				_frame.Navigating -= FrameNavigating;
-			if (_panel != null)
-				_panel.Children.Remove(_graphicsView);
-			if (_nativeElement != null)
+			if (_platformElement != null)
 			{
-				_nativeElement.Tapped -= ViewTapped;
-				_nativeElement.PointerMoved -= PointerMoved;
+				_platformElement.Tapped -= ViewTapped;
+				_platformElement.PointerMoved -= PointerMoved;
 			}
 			if (_graphicsView != null)
 			{
 				_graphicsView.Tapped -= ViewTapped;
 				_graphicsView.PointerMoved -= PointerMoved;
+				if (_panel != null)
+					_panel.RemoveOverlay(_graphicsView);
+				_graphicsView = null;
 			}
-			_graphicsView = null;
-			IsNativeViewInitialized = false;
+			IsPlatformViewInitialized = false;
 		}
 
 		void PointerMoved(object sender, UI.Xaml.Input.PointerRoutedEventArgs e)

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Storage;
 using Xunit;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -111,9 +112,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				foreach (var assm in TestAssemblies)
 				{
 #if WINDOWS
-					var location = global::Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
 					var nameWithoutExt = assm.GetName().Name;
-					var assemblyFileName = Path.Combine(location, $"{nameWithoutExt}.dll");
+					var assemblyFileName = FileSystemUtils.PlatformGetFullAppPackageFilePath($"{nameWithoutExt}.dll");
 #elif ANDROID
 					// this is required to exist, but is not used
 					var assemblyFileName = assm.GetName().Name + ".dll";

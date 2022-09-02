@@ -1,19 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.props" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
-
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
+    <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
-
-    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>MSIX</WindowsPackageType>
+    <NoWarn>$(NoWarn),CA1416</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,14 +17,11 @@
 
   <ItemGroup>
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
-    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
+    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
     <MauiImage Include="Resources\Images\*" />
     <MauiFont Include="Resources\Fonts\*" />
+    <EmbeddedResource Include="Resources\Fonts\dokdo_regular.ttf" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,12 +35,6 @@
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
-    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
-  </PropertyGroup>
-
   <ItemGroup>
     <AndroidEnvironment Include="Platforms\Android\environment.txt" />
   </ItemGroup>
@@ -60,14 +44,11 @@
     <None Include="@(Compile)" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <Compile Remove="Handlers\*\*.cs" />
-    <Compile Include="Handlers\ActivityIndicator\*.cs" />
-    <Compile Include="Handlers\Button\*.cs" />
-    <Compile Include="Handlers\Navigation\*.cs" />
-    <Compile Include="Handlers\View\*.cs" />
-    <Compile Include="Handlers\Layout\*.cs" />
-    <Compile Include="Handlers\RadioButton\*.cs" />
-    <Compile Include="Handlers\Window\*.cs" />
+    <Compile Remove="Handlers\Fonts\*.cs" />
+    <Compile Remove="Handlers\Image\*.cs" />
+    <Compile Remove="Handlers\ImageButton\*.cs" />
+    <Compile Remove="Handlers\RefreshView\*.cs" />
+    <Compile Remove="Handlers\ShapeView\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
     <Compile Remove="**\*.Android.cs" />
@@ -79,9 +60,6 @@
     <Compile Remove="**\*.Windows.cs" />
   </ItemGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
-
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+  
 </Project>

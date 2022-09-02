@@ -16,11 +16,7 @@ namespace Microsoft.Maui.Controls
 		public ShellNavigatingEventArgs(ShellNavigationState current, ShellNavigationState target, ShellNavigationSource source, bool canCancel)
 		{
 
-#if !NETSTANDARD1_0
 			_deferralFinishedTask = () => Task.CompletedTask;
-#else
-			_deferralFinishedTask = () => Task.Delay(0);
-#endif
 			Current = current;
 			Target = target;
 			Source = source;

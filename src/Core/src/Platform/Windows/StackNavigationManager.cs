@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -14,8 +16,10 @@ namespace Microsoft.Maui.Platform
 		IView? _currentPage;
 		IMauiContext _mauiContext;
 		Frame? _navigationFrame;
+		Action? _pendingNavigationFinished;
+
 		protected NavigationRootManager WindowManager => _mauiContext.GetNavigationRootManager();
-		private protected INavigationView? NavigationView { get; private set; }
+		internal IStackNavigation? NavigationView { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; set; } = new List<IView>();
 		public IMauiContext MauiContext => _mauiContext;
 		public IView CurrentPage
@@ -28,31 +32,34 @@ namespace Microsoft.Maui.Platform
 			_mauiContext = mauiContext;
 		}
 
-		public virtual void Connect(IView navigationView, Frame navigationFrame)
+		public virtual void Connect(IStackNavigation navigationView, Frame navigationFrame)
 		{
 			if (_navigationFrame != null)
 				_navigationFrame.Navigated -= OnNavigated;
 
+			FirePendingNavigationFinished();
+
 			navigationFrame.Navigated += OnNavigated;
 			_navigationFrame = navigationFrame;
-			NavigationView = (INavigationView)navigationView;
+			NavigationView = (IStackNavigation)navigationView;
 
 			if (WindowManager?.RootView is NavigationView nv)
 				nv.IsPaneVisible = true;
 		}
 
-		public virtual void Disconnect(IView navigationView, Frame navigationFrame)
+		public virtual void Disconnect(IStackNavigation navigationView, Frame navigationFrame)
 		{
 			if (_navigationFrame != null)
 				_navigationFrame.Navigated -= OnNavigated;
 
+			FirePendingNavigationFinished();
 			_navigationFrame = null;
 			NavigationView = null;
 		}
 
 		public virtual void NavigateTo(NavigationRequest args)
 		{
-			IReadOnlyList<IView> newPageStack = args.NavigationStack;
+			IReadOnlyList<IView> newPageStack = new List<IView>(args.NavigationStack);
 			var previousNavigationStack = NavigationStack;
 			var previousNavigationStackCount = previousNavigationStack.Count;
 			bool initialNavigation = NavigationStack.Count == 0;
@@ -64,23 +71,30 @@ namespace Microsoft.Maui.Platform
 				previousNavigationStack[previousNavigationStackCount - 1])
 			{
 				SyncBackStackToNavigationStack(newPageStack);
-				NavigationStack = new List<IView>(newPageStack);
-				NavigationView?.NavigationFinished(NavigationStack);
+				NavigationStack = newPageStack;
+				FireNavigationFinished();
 				return;
 			}
 
 			NavigationTransitionInfo? transition = GetNavigationTransition(args);
 			_currentPage = newPageStack[newPageStack.Count - 1];
 
+			_ = _currentPage ?? throw new InvalidOperationException("Navigatoin Request Contains Null Elements");
 			if (previousNavigationStack.Count < args.NavigationStack.Count)
 			{
 				Type destinationPageType = GetDestinationPageType();
-				NavigationStack = new List<IView>(newPageStack);
+				NavigationStack = newPageStack;
+				NavigationFrame.Navigate(destinationPageType, null, transition);
+			}
+			else if (previousNavigationStack.Count == args.NavigationStack.Count)
+			{
+				Type destinationPageType = GetDestinationPageType();
+				NavigationStack = newPageStack;
 				NavigationFrame.Navigate(destinationPageType, null, transition);
 			}
 			else
 			{
-				NavigationStack = new List<IView>(newPageStack);
+				NavigationStack = newPageStack;
 				NavigationFrame.GoBack(transition);
 			}
 		}
@@ -138,7 +152,7 @@ namespace Microsoft.Maui.Platform
 			if (e.Content is not Page page)
 				return;
 
-
+			var nv = NavigationView;
 			ContentPresenter? presenter;
 
 			if (page.Content == null)
@@ -167,22 +181,39 @@ namespace Microsoft.Maui.Platform
 			}
 			catch (Exception)
 			{
-				NavigationView?.NavigationFinished(NavigationStack);
+				FireNavigationFinished();
 				throw;
 			}
 
-			if (fe.IsLoaded)
+			_pendingNavigationFinished = () =>
 			{
-				NavigationView?.NavigationFinished(NavigationStack);
-				return;
-			}
+				if (presenter?.Content is not FrameworkElement pc)
+				{
+					FireNavigationFinished();
+				}
+				else
+				{
+					pc.OnLoaded(FireNavigationFinished);
+				}
 
-			fe.Loaded += OnLoaded;
-			void OnLoaded(object sender, RoutedEventArgs e)
-			{
-				fe.Loaded -= OnLoaded;
-				NavigationView?.NavigationFinished(NavigationStack);
-			}
+				if (NavigationView is IView view)
+				{
+					view.Arrange(fe);
+				}
+			};
+
+			fe.OnLoaded(FirePendingNavigationFinished);
+		}
+
+		void FireNavigationFinished()
+		{
+			_pendingNavigationFinished = null;
+			NavigationView?.NavigationFinished(NavigationStack);
+		}
+
+		void FirePendingNavigationFinished()
+		{
+			Interlocked.Exchange(ref _pendingNavigationFinished, null)?.Invoke();
 		}
 	}
 }

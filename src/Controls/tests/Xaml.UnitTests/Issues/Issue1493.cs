@@ -13,14 +13,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public virtual void Setup()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
-
-			Device.PlatformServices = new MockPlatformServices();
 		}
 
 		[TearDown]
 		public virtual void TearDown()
 		{
-			Device.PlatformServices = null;
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
 		}
 

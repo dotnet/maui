@@ -40,13 +40,16 @@ namespace Maui.Controls.Sample.ViewModels
 				"A VerticalStackLayout organizes child views in a one-dimensional vertical stack."),
 
 			new SectionModel(typeof(LayoutUpdatesPage), "Layout Updates",
-				"Demonstrations of updating layouts"),
+				"Demonstrations of updating layouts."),
 
 			new SectionModel(typeof(ZIndexPage), "Z-Index",
-				"Demonstrations of the ZIndex property"),
+				"Demonstrations of the ZIndex property."),
 
 			new SectionModel(typeof(ClippingPage), "Clipping",
-				"Demonstrations of layout clipping"),
+				"Demonstrations of layout clipping."),
+
+			new SectionModel(typeof(CustomLayoutPage), "Custom Layout",
+				"Demonstrations of custom layout."),
 		};
 	}
 }

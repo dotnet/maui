@@ -7,6 +7,7 @@ using Android.Content;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Internals;
 using AButton = Android.Widget.Button;
 using AppCompatActivity = AndroidX.AppCompat.App.AppCompatActivity;
@@ -204,8 +205,16 @@ namespace Microsoft.Maui.Controls.Platform
 					return LayoutDirection.Ltr;
 				else if (flowDirection == FlowDirection.RightToLeft)
 					return LayoutDirection.Rtl;
-
-				// TODO: Check EffectiveFlowDirection
+				else
+				{
+					if (sender is IVisualElementController visualElementController)
+					{
+						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+							return LayoutDirection.Rtl;
+						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+							return LayoutDirection.Ltr;
+					}
+				}
 
 				return LayoutDirection.Ltr;
 			}
@@ -216,8 +225,16 @@ namespace Microsoft.Maui.Controls.Platform
 					return TextDirection.Ltr;
 				else if (flowDirection == FlowDirection.RightToLeft)
 					return TextDirection.Rtl;
-
-				// TODO: Check EffectiveFlowDirection
+				else
+				{
+					if (sender is IVisualElementController visualElementController)
+					{
+						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+							return TextDirection.Rtl;
+						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+							return TextDirection.Ltr;
+					}
+				}
 
 				return TextDirection.Ltr;
 			}
@@ -239,7 +256,7 @@ namespace Microsoft.Maui.Controls.Platform
 				alertDialog.SetMessage(arguments.Message);
 
 				var frameLayout = new FrameLayout(Activity);
-				var editText = new EditText(Activity) { Hint = arguments.Placeholder, Text = arguments.InitialValue };
+				var editText = new AppCompatEditText(Activity) { Hint = arguments.Placeholder, Text = arguments.InitialValue };
 				var layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent)
 				{
 					LeftMargin = (int)(22 * Activity.Resources.DisplayMetrics.Density),
@@ -297,14 +314,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool PageIsInThisContext(IView page)
 			{
-				var nativeView = page.ToPlatform(MauiContext);
+				var platformView = page.ToPlatform();
 
-				if (nativeView.Context == null)
+				if (platformView.Context == null)
 				{
 					return false;
 				}
 
-				return nativeView.Context.GetActivity()?.Equals(Activity) ?? false;
+				return platformView.Context.GetActivity()?.Equals(Activity) ?? false;
 			}
 
 			// This is a proxy dialog builder class to support both pre-appcompat and appcompat dialogs for Alert,
