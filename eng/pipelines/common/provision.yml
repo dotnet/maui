@@ -11,10 +11,10 @@ steps:
       packageType: sdk
       version: 6.0.x
 
-  - pwsh: |
-      dotnet --version
-      dotnet --list-sdks
-    displayName: 'Show .NET SDK info'
+  # - pwsh: |
+  #     dotnet --version
+  #     dotnet --list-sdks
+  #   displayName: 'Show .NET SDK info'
 
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
