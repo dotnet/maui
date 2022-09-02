@@ -54,9 +54,9 @@
       <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
       <_VersionsToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
-      <_VersionsToReplace Include="MAUI_DOTNET_TFM" PropertyName="_MauiDotNetTfm" />
+      <_VersionsToReplace Include="MAUI_DOTNET_VERSION_MAJOR" PropertyName="_MauiDotNetVersionMajor" />
       <_VersionsToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
-      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_TFM" PropertyName="_MauiPreviousDotNetTfm" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_MAJOR" PropertyName="_MauiPreviousDotNetVersionMajor" />
       <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION" PropertyName="_MauiPreviousDotNetVersion" />
       <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
       <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
