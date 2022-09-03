@@ -291,13 +291,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				color = Color.FromArgb("#03A9F4").ToPlatform();
 			}
-
-			if (!(decorView.Background is SplitDrawable splitDrawable) ||
-				splitDrawable.Color != color || splitDrawable.TopSize != statusBarHeight || splitDrawable.BottomSize != navigationBarHeight)
-			{
-				var split = new SplitDrawable(color, statusBarHeight, navigationBarHeight);
-				decorView.SetBackground(split);
-			}
 		}
 
 		bool IViewHandler.HasContainer { get => false; set { } }
@@ -371,48 +364,5 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_disposed = true;
 		}
-
-		class SplitDrawable : Drawable
-		{
-			public int BottomSize { get; }
-			public AColor Color { get; }
-			public int TopSize { get; }
-
-			public SplitDrawable(AColor color, int topSize, int bottomSize)
-			{
-				Color = color;
-				BottomSize = bottomSize;
-				TopSize = topSize;
-			}
-
-			public override int Opacity => (int)Format.Opaque;
-
-			public override void Draw(Canvas canvas)
-			{
-				var bounds = Bounds;
-
-				using (var paint = new Paint())
-				{
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
-					paint.Color = Color;
-#pragma warning restore CA1416
-
-					canvas.DrawRect(new ARect(0, 0, bounds.Right, TopSize), paint);
-
-					canvas.DrawRect(new ARect(0, bounds.Bottom - BottomSize, bounds.Right, bounds.Bottom), paint);
-
-					paint.Dispose();
-				}
-			}
-
-			public override void SetAlpha(int alpha)
-			{
-			}
-
-			public override void SetColorFilter(ColorFilter colorFilter)
-			{
-			}
-		}
-
 	}
 }
