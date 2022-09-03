@@ -85,7 +85,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			UpdateStatusBarColor(appearance);
 		}
 
 		#endregion IAppearanceObserver
@@ -267,30 +266,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		int MakeMeasureSpec(int size, MeasureSpecMode mode)
 		{
 			return size + (int)mode;
-		}
-
-		void UpdateStatusBarColor(ShellAppearance appearance)
-		{
-			var activity = AndroidContext.GetActivity();
-			var window = activity?.Window;
-			var decorView = window?.DecorView;
-
-			int statusBarHeight = AndroidContext.GetStatusBarHeight();
-			int navigationBarHeight = AndroidContext.GetNavigationBarHeight();
-
-			// we are using the split drawable here to avoid GPU overdraw.
-			// All it really is is a drawable that only draws under the statusbar/bottom bar to make sure
-			// we dont draw over areas we dont need to. This has very limited benefits considering its
-			// only saving us a flat color fill BUT it helps people not freak out about overdraw.
-			AColor color;
-			if (appearance != null)
-			{
-				color = appearance.BackgroundColor.ToPlatform(Color.FromArgb("#03A9F4"));
-			}
-			else
-			{
-				color = Color.FromArgb("#03A9F4").ToPlatform();
-			}
 		}
 
 		bool IViewHandler.HasContainer { get => false; set { } }
