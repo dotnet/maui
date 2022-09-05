@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Gtk
 {
 
 	[System.Obsolete]
-	public sealed class DefaultRenderer : IVisualElementRenderer
+	public class DefaultRenderer : IVisualElementRenderer
 	{
 
 		public void Dispose()
@@ -39,4 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Gtk
 
 	}
 
+#pragma warning disable CS0612 // Type or member is obsolete
+	public class NativeViewWrapperRenderer : DefaultRenderer { }
+#pragma warning restore CS0612 // Type or member is obsolete
 }
