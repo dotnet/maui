@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		internal const string AssetBaseUrl = "file:///android_asset/";
 
 		WebViewClient? _webViewClient;
-		MauiWebChromeClient? _webChromeClient;
+		WebChromeClient? _webChromeClient;
 
 		bool _firstRun = true;
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var platformView = new MauiWebView(this, Context!)
 			{
-				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
+				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
 			};
 
 			platformView.Settings.JavaScriptEnabled = true;
