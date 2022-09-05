@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		internal const string AssetBaseUrl = "file:///android_asset/";
 
 		WebViewClient? _webViewClient;
-		WebChromeClient? _webChromeClient;
+		MauiWebChromeClient? _webChromeClient;
 
 		bool _firstRun = true;
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
