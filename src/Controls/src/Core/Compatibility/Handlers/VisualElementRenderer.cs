@@ -1,5 +1,5 @@
 ﻿#nullable enable
-#if WINDOWS || ANDROID || IOS || TIZEN
+#if WINDOWS || ANDROID || IOS || TIZEN || GTK
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,8 @@ using PlatformView = Android.Views.View;
 using PlatformView = UIKit.UIView;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
+#elif GTK
+using PlatformView = Gtk.Widget;
 #endif
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
