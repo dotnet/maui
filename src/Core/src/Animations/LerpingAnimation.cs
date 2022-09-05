@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Animations
 	public class LerpingAnimation : Animation
 	{
 		/// <summary>
-		/// Instantiate a new <see cref="LerpingAnimation"/>
+		/// Instantiate a new <see cref="LerpingAnimation"/> object.
 		/// </summary>
 		public LerpingAnimation()
 		{
