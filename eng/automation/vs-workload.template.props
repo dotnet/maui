@@ -15,6 +15,9 @@
     <ShortNames Include="Microsoft.Maui">
       <Replacement>Maui</Replacement>
     </ShortNames>
+    <ShortNames Include="Microsoft.AspNetCore.Components">
+      <Replacement>AspNetCore</Replacement>
+    </ShortNames>
     <ComponentResources Include="maui"              Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK" Description=".NET SDK Workload for building all types of MAUI applications." />
     <ComponentResources Include="maui-mobile"       Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Mobile" Description=".NET SDK Workload for building MAUI applications that target mobile platforms." />
     <ComponentResources Include="maui-desktop"      Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Desktop" Description=".NET SDK Workload for building MAUI applications that target desktop platforms." />
