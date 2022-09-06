@@ -108,3 +108,5 @@ Microsoft.Maui.ScrollToRequest.ScrollToRequest(double HorizontalOffset, double V
 *REMOVED*static Microsoft.Maui.IViewExtensions.GetEffectiveFlowDirection(this Microsoft.Maui.IView! view) -> Microsoft.Maui.FlowDirection
 *REMOVED*Microsoft.Maui.IViewExtensions
 *REMOVED*static Microsoft.Maui.Layouts.LayoutExtensions.ShouldArrangeLeftToRight(this Microsoft.Maui.IView! view) -> bool
+*REMOVED*override Microsoft.Maui.Handlers.NavigationViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*override Microsoft.Maui.Handlers.NavigationViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void

@@ -22,7 +22,11 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
+			if (Window?.Content?.Handler == null)
+				return false;
+
 			var platformWindow = Window?.Content?.ToPlatform();
+
 			if (platformWindow == null)
 				return false;
 

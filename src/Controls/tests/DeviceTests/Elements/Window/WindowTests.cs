@@ -12,6 +12,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.DeviceTests.Stubs;
+using System;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
@@ -39,6 +40,8 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 #if WINDOWS
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
@@ -48,6 +51,54 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[ClassData(typeof(WindowPageSwapTestCases))]
+		public async Task MainPageSwapTests(WindowPageSwapTestCase swapOrder)
+		{
+			SetupBuilder();
+			var contentPage = CreateNewPage();
+			swapOrder.SetPageContent(contentPage);
+
+			var firstRootPage = swapOrder.GetNextPageType();
+			var window = new Window(firstRootPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				await OnLoadedAsync(contentPage.Content);
+				if (!swapOrder.IsFinished())
+				{
+					contentPage = CreateNewPage();
+					swapOrder.SetPageContent(contentPage);
+					var nextRootPage = swapOrder.GetNextPageType();
+					window.Page = nextRootPage;
+					try
+					{
+						await OnLoadedAsync(contentPage.Content);
+					}
+					catch (Exception exc)
+					{
+						throw new Exception($"Failed to swap to {nextRootPage}", exc);
+					}
+
+					//await Task.Delay(1000);
+				}
+			});
+
+
+			ContentPage CreateNewPage()
+			{
+				var labelToTest = new Label();
+				var contentToTest = new ContentPage()
+				{
+					Content = new VerticalStackLayout()
+					{
+						labelToTest
+					}
+				};
+
+				return contentToTest;
+			}
+		}
 
 #if !IOS && !MACCATALYST
 		// Automated Shell tests are currently broken via xharness
