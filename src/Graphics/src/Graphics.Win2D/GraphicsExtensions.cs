@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Microsoft.Maui.Graphics.Win2D
 {
-	public static class W2DExtensions
+	public static class GraphicsExtensions
 	{
 		public static global::Windows.UI.Color AsColor(this Color color, Color defaultColor, float alpha = 1)
 		{

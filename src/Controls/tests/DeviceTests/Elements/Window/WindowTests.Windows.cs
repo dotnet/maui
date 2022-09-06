@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 				var overlayView =
 					windowRootViewContainer
 						.Children
-						.OfType<W2DGraphicsView>()
+						.OfType<PlatformGraphicsView>()
 						.SingleOrDefault();
 
 				Assert.NotNull(overlayView);
