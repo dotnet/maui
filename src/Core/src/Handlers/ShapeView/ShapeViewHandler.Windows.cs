@@ -2,10 +2,10 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ShapeViewHandler : ViewHandler<IShapeView, W2DGraphicsView>
+	public partial class ShapeViewHandler : ViewHandler<IShapeView, PlatformGraphicsView>
 	{
-		protected override W2DGraphicsView CreatePlatformView()
-			=> new W2DGraphicsView();
+		protected override PlatformGraphicsView CreatePlatformView()
+			=> new PlatformGraphicsView();
 
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||

@@ -16,6 +16,6 @@
         </Grid.ColumnDefinitions>
         <ListView x:Name="List" />
         <Canvas Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Black"/>
-        <graphics:W2DGraphicsView x:Name="GraphicsView" Grid.Column="2" />
+        <graphics:PlatformGraphicsView x:Name="GraphicsView" Grid.Column="2" />
     </Grid>
 </Window>

@@ -4,7 +4,7 @@ using Windows.UI.Text;
 
 namespace Microsoft.Maui.Graphics.Win2D
 {
-	public class W2DStringSizeService : IStringSizeService
+	public class StringSizeService : IStringSizeService
 	{
 		public SizeF GetStringSize(string value, IFont font, float textSize)
 			=> GetStringSize(value, font, textSize, HorizontalAlignment.Left, VerticalAlignment.Top);
