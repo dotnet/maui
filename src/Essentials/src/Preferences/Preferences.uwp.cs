@@ -71,6 +71,8 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName)
 		{
+			Preferences.CheckIsSupportedType<T>();
+
 			lock (locker)
 			{
 				var appDataContainer = GetApplicationDataContainer(sharedName);
@@ -82,7 +84,16 @@ namespace Microsoft.Maui.Storage
 					return;
 				}
 
-				appDataContainer.Values[key] = value;
+				if (value is DateTime dt)
+				{
+					// UWP does not support DateTime directly
+					// https://docs.microsoft.com/en-us/windows/apps/design/app-settings/store-and-retrieve-app-data
+					appDataContainer.Values[key] = new DateTimeOffset(dt);
+				}
+				else
+				{
+					appDataContainer.Values[key] = value;
+				}
 			}
 		}
 
@@ -95,7 +106,16 @@ namespace Microsoft.Maui.Storage
 				{
 					var tempValue = appDataContainer.Values[key];
 					if (tempValue != null)
-						return (T)tempValue;
+					{
+						if (tempValue is DateTimeOffset dto)
+						{
+							return (T)(object)dto.DateTime;
+						}
+						else
+						{
+							return (T)tempValue;
+						}
+					}
 				}
 			}
 
