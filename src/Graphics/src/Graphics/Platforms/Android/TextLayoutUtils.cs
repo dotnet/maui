@@ -11,6 +11,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (boundedWidth > 0)
 				finalWidth = (int)boundedWidth;
 
+#pragma warning disable CA1416 // This call site is reachable on: 'Android' 21.0 and later. 'StaticLayout' is only supported on: .
+#pragma warning disable CA1422 // This call site is reachable on: 'Android' 21.0 and later. 'StaticLayout' is obsoleted on: 'Android' 28.0 and later.
+#pragma warning disable CS0618 // Type or member is obsolete
 			var layout = new StaticLayout(
 				text, // Text to layout
 				textPaint, // Text paint (font, size, etc...) to use
@@ -19,6 +22,9 @@ namespace Microsoft.Maui.Graphics.Platform
 				1.0f, // Spacing multiplier
 				0.0f, // Additional spacing
 				false); // Include padding
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CA1422 // This call site is reachable on: 'Android' 21.0 and later. 'StaticLayout' is obsoleted on: 'Android' 28.0 and later.
+#pragma warning restore CA1416 // This call site is reachable on: 'Android' 21.0 and later. 'StaticLayout' is only supported on: .
 
 			return layout;
 		}
@@ -29,6 +35,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (boundedWidth > 0)
 				finalWidth = (int)boundedWidth;
 
+#pragma warning disable CA1416 // This call site is reachable on: 'Android' 21.0 and later. 'StaticLayout' is only supported on: .
+#pragma warning disable CA1422 // This call site is reachable on: 'Android' 21.0 and later. 'StaticLayout' is obsoleted on: 'Android' 28.0 and later.
 #pragma warning disable CS0618 // Type or member is obsolete
 			var layout = new StaticLayout(
 				spannedString, // Text to layout
@@ -39,6 +47,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				0.0f, // Additional spacing
 				false); // Include padding
 #pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CA1422 // This call site is reachable on: 'Android' 21.0 and later. 'StaticLayout' is obsoleted on: 'Android' 28.0 and later.
+#pragma warning restore CA1416 // This call site is reachable on: 'Android' 21.0 and later. 'StaticLayout' is only supported on: .
 
 			return layout;
 		}
