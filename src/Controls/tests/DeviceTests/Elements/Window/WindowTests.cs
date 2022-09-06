@@ -56,48 +56,28 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task MainPageSwapTests(WindowPageSwapTestCase swapOrder)
 		{
 			SetupBuilder();
-			var contentPage = CreateNewPage();
-			swapOrder.SetPageContent(contentPage);
 
 			var firstRootPage = swapOrder.GetNextPageType();
 			var window = new Window(firstRootPage);
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
 			{
-				await OnLoadedAsync(contentPage.Content);
+				await OnLoadedAsync(swapOrder.Page);
 				if (!swapOrder.IsFinished())
 				{
-					contentPage = CreateNewPage();
-					swapOrder.SetPageContent(contentPage);
 					var nextRootPage = swapOrder.GetNextPageType();
 					window.Page = nextRootPage;
+
 					try
 					{
-						await OnLoadedAsync(contentPage.Content);
+						await OnLoadedAsync(swapOrder.Page);
 					}
 					catch (Exception exc)
 					{
 						throw new Exception($"Failed to swap to {nextRootPage}", exc);
 					}
-
-					//await Task.Delay(1000);
 				}
 			});
-
-
-			ContentPage CreateNewPage()
-			{
-				var labelToTest = new Label();
-				var contentToTest = new ContentPage()
-				{
-					Content = new VerticalStackLayout()
-					{
-						labelToTest
-					}
-				};
-
-				return contentToTest;
-			}
 		}
 
 #if !IOS && !MACCATALYST

@@ -23,11 +23,11 @@ namespace Microsoft.Maui.DeviceTests
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
 
-	public class WindowPageSwapTestCase : IEqualityComparer<WindowPageSwapTestCase>
+	public class WindowPageSwapTestCase
 	{
 
 		Type[] _pageCombinations;
-		Page _page;
+		public ContentPage Page { get; private set; }
 		int index = 0;
 
 
@@ -46,15 +46,16 @@ namespace Microsoft.Maui.DeviceTests
 			var result = _pageCombinations[index];
 			index++;
 
+			Page = CreateNewPage();
 			Page returnValue = null;
 			if (result == typeof(ContentPage))
-				returnValue = _page;
+				returnValue = Page;
 			else if (result == typeof(FlyoutPage))
 			{
-				_page.Title ??= "Details Page";
+				Page.Title ??= "Details Page";
 				returnValue = new FlyoutPage()
 				{
-					Detail = _page,
+					Detail = Page,
 					Flyout = new ContentPage() { Title = "Flyout" }
 				};
 			}
@@ -64,27 +65,36 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Children =
 					{
-						_page
+						Page
 					}
 				};
 			}
 			else if (result == typeof(NavigationPage))
 			{
-				returnValue = new NavigationPage(_page);
+				returnValue = new NavigationPage(Page);
 			}
 			else if (result == typeof(Shell))
 			{
-				returnValue = new Shell() { CurrentItem = (_page as ContentPage) };
+				returnValue = new Shell() { CurrentItem = (Page as ContentPage) };
 			}
 
-			_page = null;
 			return returnValue;
 		}
 
-		public void SetPageContent(Page page)
+		ContentPage CreateNewPage()
 		{
-			_page = page;
+			var labelToTest = new Label();
+			var contentToTest = new ContentPage()
+			{
+				Content = new VerticalStackLayout()
+					{
+						labelToTest
+					}
+			};
+
+			return contentToTest;
 		}
+
 
 		public override string ToString()
 		{
@@ -99,16 +109,6 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return debugName;
-		}
-
-		public bool Equals(WindowPageSwapTestCase x, WindowPageSwapTestCase y)
-		{
-			return Object.ReferenceEquals(x, y);
-		}
-
-		public int GetHashCode([DisallowNull] WindowPageSwapTestCase obj)
-		{
-			return obj.GetHashCode();
 		}
 	}
 
