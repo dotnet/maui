@@ -10,7 +10,13 @@
       <Replacement>@VS_COMPONENT_VERSION@</Replacement>
     </ShortNames>
     <ShortNames Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop">
-      <Replacement>Microsoft.Maui.Graphics.Win2D</Replacement>
+      <Replacement>Maui.Graphics.Win2D</Replacement>
+    </ShortNames>
+    <ShortNames Include="Microsoft.Maui">
+      <Replacement>Maui</Replacement>
+    </ShortNames>
+    <ShortNames Include="Microsoft.AspNetCore.Components">
+      <Replacement>AspNetCore</Replacement>
     </ShortNames>
     <ComponentResources Include="maui"              Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK" Description=".NET SDK Workload for building all types of MAUI applications." />
     <ComponentResources Include="maui-mobile"       Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Mobile" Description=".NET SDK Workload for building MAUI applications that target mobile platforms." />
