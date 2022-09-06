@@ -42,6 +42,12 @@ using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
 #elif GTK
 using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
+using OpenGLViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Gtk.DefaultRenderer;
+using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Gtk.DefaultRenderer;
+using FileImageSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Gtk.DefaultRenderer;
+using FontImageSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Gtk.DefaultRenderer;
+using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Gtk.DefaultRenderer;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Gtk.DefaultRenderer;
 using Microsoft.Maui.Controls.Handlers;
 #endif
 

@@ -5,7 +5,6 @@ using Gtk;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Gtk
 {
 
-	[System.Obsolete]
 	public class DefaultRenderer : IVisualElementRenderer
 	{
 
