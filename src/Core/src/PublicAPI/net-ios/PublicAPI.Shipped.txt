@@ -2167,7 +2167,7 @@ static Microsoft.Maui.Handlers.DatePickerHandler.MapMaximumDate(Microsoft.Maui.H
 static Microsoft.Maui.Handlers.DatePickerHandler.MapMinimumDate(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Handlers.DatePickerHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IDatePicker!, Microsoft.Maui.Handlers.IDatePickerHandler!>!
 static Microsoft.Maui.Handlers.DatePickerHandler.MapTextColor(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
-static Microsoft.Maui.Handlers.EditorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.IEditorHandler!>!
+static Microsoft.Maui.Handlers.EditorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IEditor!, Microsoft.Maui.Handlers.IEditorHandler!>!
 static Microsoft.Maui.Handlers.EditorHandler.MapCharacterSpacing(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EditorHandler.MapCursorPosition(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EditorHandler.MapFont(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
@@ -2227,7 +2227,7 @@ static Microsoft.Maui.Handlers.ImageHandler.MapIsAnimationPlaying(Microsoft.Maui
 static Microsoft.Maui.Handlers.ImageHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IImage!, Microsoft.Maui.Handlers.IImageHandler!>!
 static Microsoft.Maui.Handlers.ImageHandler.MapSource(Microsoft.Maui.Handlers.IImageHandler! handler, Microsoft.Maui.IImage! image) -> void
 static Microsoft.Maui.Handlers.ImageHandler.MapSourceAsync(Microsoft.Maui.Handlers.IImageHandler! handler, Microsoft.Maui.IImage! image) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Handlers.IndicatorViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.IIndicatorViewHandler!>!
+static Microsoft.Maui.Handlers.IndicatorViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IIndicatorView!, Microsoft.Maui.Handlers.IIndicatorViewHandler!>!
 static Microsoft.Maui.Handlers.IndicatorViewHandler.MapCount(Microsoft.Maui.Handlers.IIndicatorViewHandler! handler, Microsoft.Maui.IIndicatorView! indicator) -> void
 static Microsoft.Maui.Handlers.IndicatorViewHandler.MapHideSingle(Microsoft.Maui.Handlers.IIndicatorViewHandler! handler, Microsoft.Maui.IIndicatorView! indicator) -> void
 static Microsoft.Maui.Handlers.IndicatorViewHandler.MapIndicatorColor(Microsoft.Maui.Handlers.IIndicatorViewHandler! handler, Microsoft.Maui.IIndicatorView! indicator) -> void
@@ -2237,7 +2237,7 @@ static Microsoft.Maui.Handlers.IndicatorViewHandler.MapMaximumVisible(Microsoft.
 static Microsoft.Maui.Handlers.IndicatorViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IIndicatorView!, Microsoft.Maui.Handlers.IIndicatorViewHandler!>!
 static Microsoft.Maui.Handlers.IndicatorViewHandler.MapPosition(Microsoft.Maui.Handlers.IIndicatorViewHandler! handler, Microsoft.Maui.IIndicatorView! indicator) -> void
 static Microsoft.Maui.Handlers.IndicatorViewHandler.MapSelectedIndicatorColor(Microsoft.Maui.Handlers.IIndicatorViewHandler! handler, Microsoft.Maui.IIndicatorView! indicator) -> void
-static Microsoft.Maui.Handlers.LabelHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.ILabelHandler!>!
+static Microsoft.Maui.Handlers.LabelHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ILabel!, Microsoft.Maui.Handlers.ILabelHandler!>!
 static Microsoft.Maui.Handlers.LabelHandler.MapBackground(Microsoft.Maui.Handlers.ILabelHandler! handler, Microsoft.Maui.ILabel! label) -> void
 static Microsoft.Maui.Handlers.LabelHandler.MapCharacterSpacing(Microsoft.Maui.Handlers.ILabelHandler! handler, Microsoft.Maui.ILabel! label) -> void
 static Microsoft.Maui.Handlers.LabelHandler.MapFont(Microsoft.Maui.Handlers.ILabelHandler! handler, Microsoft.Maui.ILabel! label) -> void
@@ -2270,7 +2270,7 @@ static Microsoft.Maui.Handlers.MenuBarItemHandler.MapClear(Microsoft.Maui.Handle
 static Microsoft.Maui.Handlers.MenuBarItemHandler.MapInsert(Microsoft.Maui.Handlers.IMenuBarItemHandler! handler, Microsoft.Maui.IMenuBarItem! layout, object? arg) -> void
 static Microsoft.Maui.Handlers.MenuBarItemHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuBarItem!, Microsoft.Maui.Handlers.IMenuBarItemHandler!>!
 static Microsoft.Maui.Handlers.MenuBarItemHandler.MapRemove(Microsoft.Maui.Handlers.IMenuBarItemHandler! handler, Microsoft.Maui.IMenuBarItem! layout, object? arg) -> void
-static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSubItem!, Microsoft.Maui.Handlers.IMenuFlyoutItemHandler!>!
+static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutItem!, Microsoft.Maui.Handlers.IMenuFlyoutItemHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyoutItem!, Microsoft.Maui.Handlers.IMenuFlyoutItemHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSubItem!, Microsoft.Maui.Handlers.IMenuFlyoutSubItemHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandler.MapAdd(Microsoft.Maui.Handlers.IMenuFlyoutSubItemHandler! handler, Microsoft.Maui.IMenuElement! layout, object? arg) -> void
@@ -2295,7 +2295,7 @@ static Microsoft.Maui.Handlers.PickerHandler.MapTextColor(Microsoft.Maui.Handler
 static Microsoft.Maui.Handlers.PickerHandler.MapTitle(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.IPicker! picker) -> void
 static Microsoft.Maui.Handlers.PickerHandler.MapTitleColor(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.IPicker! picker) -> void
 static Microsoft.Maui.Handlers.PickerHandler.MapVerticalTextAlignment(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.IPicker! picker) -> void
-static Microsoft.Maui.Handlers.ProgressBarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.IProgressBarHandler!>!
+static Microsoft.Maui.Handlers.ProgressBarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IProgress!, Microsoft.Maui.Handlers.IProgressBarHandler!>!
 static Microsoft.Maui.Handlers.ProgressBarHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IProgress!, Microsoft.Maui.Handlers.IProgressBarHandler!>!
 static Microsoft.Maui.Handlers.ProgressBarHandler.MapProgress(Microsoft.Maui.Handlers.IProgressBarHandler! handler, Microsoft.Maui.IProgress! progress) -> void
 static Microsoft.Maui.Handlers.ProgressBarHandler.MapProgressColor(Microsoft.Maui.Handlers.IProgressBarHandler! handler, Microsoft.Maui.IProgress! progress) -> void
@@ -2369,7 +2369,7 @@ static Microsoft.Maui.Handlers.StepperHandler.MapMaximum(Microsoft.Maui.Handlers
 static Microsoft.Maui.Handlers.StepperHandler.MapMinimum(Microsoft.Maui.Handlers.IStepperHandler! handler, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Handlers.StepperHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IStepper!, Microsoft.Maui.Handlers.IStepperHandler!>!
 static Microsoft.Maui.Handlers.StepperHandler.MapValue(Microsoft.Maui.Handlers.IStepperHandler! handler, Microsoft.Maui.IStepper! stepper) -> void
-static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISwipeItemMenuItem!, Microsoft.Maui.Handlers.ISwipeViewHandler!>!
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISwipeItemMenuItem!, Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler!>!
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapBackground(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapCharacterSpacing(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ITextStyle! view) -> void
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapFont(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ITextStyle! view) -> void
