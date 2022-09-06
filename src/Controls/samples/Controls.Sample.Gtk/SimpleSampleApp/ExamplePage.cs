@@ -811,7 +811,7 @@ namespace Maui.SimpleSampleApp
 	class TextDrawable : IDrawable
 	{
 
-		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			canvas.SaveState();
 			canvas.FillColor = Colors.Red;
