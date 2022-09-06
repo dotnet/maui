@@ -64,6 +64,11 @@ namespace Microsoft.Maui
 		double MaximumHeight { get; }
 
 		/// <summary>
+		/// Direction in which the UI elements are scanned by the eye.
+		/// </summary>
+		FlowDirection FlowDirection { get; }
+
+		/// <summary>
 		/// Adds a Window Overlay to the current Window.
 		/// </summary>
 		/// <param name="overlay"><see cref="IWindowOverlay"/>.</param>
@@ -117,8 +122,6 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <returns>Whether or not the back navigation was handled.</returns>
 		bool BackButtonClicked();
-
-		FlowDirection FlowDirection { get; }
 
 		void DisplayDensityChanged(float displayDensity);
 
