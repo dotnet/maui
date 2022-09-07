@@ -2,6 +2,7 @@ using System;
 using Gtk;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
 
 namespace Maui.SimpleSampleApp
 {
