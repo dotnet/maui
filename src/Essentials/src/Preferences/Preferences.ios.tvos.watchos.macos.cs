@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName)
 		{
+			Preferences.CheckIsSupportedType<T>();
+
 			lock (locker)
 			{
 				using (var userDefaults = GetUserDefaults(sharedName))
@@ -78,6 +80,10 @@ namespace Microsoft.Maui.Storage
 							break;
 						case float f:
 							userDefaults.SetFloat(f, key);
+							break;
+						case DateTime dt:
+							var dtString = Convert.ToString(dt.ToBinary(), CultureInfo.InvariantCulture);
+							userDefaults.SetString(dtString, key);
 							break;
 					}
 				}
@@ -112,6 +118,11 @@ namespace Microsoft.Maui.Storage
 							break;
 						case float f:
 							value = userDefaults.FloatForKey(key);
+							break;
+						case DateTime dt:
+							var savedDateTime = userDefaults.StringForKey(key);
+							var dtLong = Convert.ToInt64(savedDateTime, CultureInfo.InvariantCulture);
+							value = DateTime.FromBinary(dtLong);
 							break;
 						case string s:
 							// the case when the string is not null
