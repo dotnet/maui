@@ -18,11 +18,15 @@ using System;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
+#if IOS || MACCATALYST
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+#endif
+
 namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.Window)]
-#if ANDROID
+#if ANDROID || IOS || MACCATALYST
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 #endif
 	public partial class WindowTests : HandlerTestBase
@@ -39,9 +43,17 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
+
+#if ANDROID || WINDOWS
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#else
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
+#endif
+
 #if WINDOWS
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
