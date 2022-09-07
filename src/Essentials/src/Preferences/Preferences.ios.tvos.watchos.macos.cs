@@ -82,8 +82,8 @@ namespace Microsoft.Maui.Storage
 							userDefaults.SetFloat(f, key);
 							break;
 						case DateTime dt:
-							var dtString = Convert.ToString(dt.ToBinary(), CultureInfo.InvariantCulture);
-							userDefaults.SetString(dtString, key);
+							var encodedDateTime = Convert.ToString(dt.ToBinary(), CultureInfo.InvariantCulture);
+							userDefaults.SetString(encodedDateTime, key);
 							break;
 					}
 				}
@@ -121,8 +121,8 @@ namespace Microsoft.Maui.Storage
 							break;
 						case DateTime dt:
 							var savedDateTime = userDefaults.StringForKey(key);
-							var dtLong = Convert.ToInt64(savedDateTime, CultureInfo.InvariantCulture);
-							value = DateTime.FromBinary(dtLong);
+							var encodedDateTime = Convert.ToInt64(savedDateTime, CultureInfo.InvariantCulture);
+							value = DateTime.FromBinary(encodedDateTime);
 							break;
 						case string s:
 							// the case when the string is not null

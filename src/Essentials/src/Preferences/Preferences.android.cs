@@ -140,8 +140,8 @@ namespace Microsoft.Maui.Storage
 								value = sharedPreferences.GetString(key, s);
 								break;
 							case DateTime dt:
-								var encondedValue = sharedPreferences.GetLong(key, dt.ToBinary());
-								value = DateTime.FromBinary(encondedValue);
+								var encodedValue = sharedPreferences.GetLong(key, dt.ToBinary());
+								value = DateTime.FromBinary(encodedValue);
 								break;
 						}
 					}
