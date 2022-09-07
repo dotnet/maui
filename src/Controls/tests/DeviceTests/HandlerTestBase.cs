@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 				.RemapForControls()
 				.ConfigureLifecycleEvents(lifecycle =>
 				{
-#if IOS
+#if IOS || MACCATALYST
 					lifecycle
 						.AddiOS(iOS => iOS
 							.OpenUrl((app, url, options) =>
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
 			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
-			appBuilder.Services.TryAddSingleton<IApplication>((_) => new Application());
+			appBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
 
 			additionalCreationActions?.Invoke(appBuilder);
 
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 				var size = view.Measure(view.Width, view.Height);
 				var w = size.Width;
 				var h = size.Height;
-#elif IOS
+#elif IOS || MACCATALYST
 				var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 				var w = size.Width;
 				var h = size.Height;
@@ -196,9 +196,13 @@ namespace Microsoft.Maui.DeviceTests
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
+			mauiContext ??= MauiContext;
+
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				IWindow window = null;
+
+				var application = mauiContext.Services.GetService<IApplication>();
 
 				if (view is IWindow w)
 				{
@@ -211,6 +215,14 @@ namespace Microsoft.Maui.DeviceTests
 				else
 				{
 					window = new Controls.Window(new ContentPage() { Content = (View)view });
+				}
+
+				if (application is ApplicationStub appStub)
+				{
+					appStub.SetWindow((Window)window);
+
+					// Trigger the work flow of creating a window
+					_ = application.CreateWindow(null);
 				}
 
 				try

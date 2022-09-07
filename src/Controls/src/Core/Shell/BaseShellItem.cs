@@ -325,6 +325,7 @@ namespace Microsoft.Maui.Controls
 			return new DataTemplate(() =>
 			{
 				var grid = new Grid();
+
 				if (DeviceInfo.Platform == DevicePlatform.WinUI)
 					grid.ColumnSpacing = grid.RowSpacing = 0;
 
@@ -403,6 +404,9 @@ namespace Microsoft.Maui.Controls
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 				defaultGridClass.Setters.Add(new Setter { Property = Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
 
+				Binding automationIdBinding = new Binding(Element.AutomationIdProperty.PropertyName);
+				defaultGridClass.Setters.Add(new Setter { Property = Element.AutomationIdProperty, Value = automationIdBinding });
+
 				var image = new Image();
 
 				double sizeRequest = -1;
@@ -478,13 +482,32 @@ namespace Microsoft.Maui.Controls
 				nameScope.RegisterName("FlyoutItemImage", image);
 				nameScope.RegisterName("FlyoutItemLabel", label);
 
-				grid.BindingContextChanged += (sender, __) =>
+
+				ActionDisposable previousBindingContext = null;
+				grid.BindingContextChanged += (sender, _) =>
 				{
+					previousBindingContext?.Dispose();
+					previousBindingContext = null;
+
 					if (sender is Grid g)
 					{
 						var bo = g.BindingContext as BindableObject;
 						var styleClassSource = Shell.GetBindableObjectWithFlyoutItemTemplate(bo) as IStyleSelectable;
 						UpdateFlyoutItemStyles(g, styleClassSource);
+
+						// this means they haven't changed the BaseShellItemContext so we are
+						// going to propagate the semantic properties to the default template
+						if (g.BindingContext is BaseShellItem bsi)
+						{
+							previousBindingContext = SemanticProperties.FakeBindSemanticProperties(bsi, g);
+
+							// If the user hasn't set a semantic property on the flyout item then we'll
+							// just bind the semantic description to the title
+							if (!g.IsSet(SemanticProperties.DescriptionProperty))
+							{
+								g.SetBinding(SemanticProperties.DescriptionProperty, TitleProperty.PropertyName);
+							}
+						}
 					}
 				};
 

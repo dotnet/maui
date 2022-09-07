@@ -2702,7 +2702,7 @@ Microsoft.Maui.Controls.TapGestureRecognizer
 Microsoft.Maui.Controls.TapGestureRecognizer.NumberOfTapsRequired.get -> int
 Microsoft.Maui.Controls.TapGestureRecognizer.NumberOfTapsRequired.set -> void
 Microsoft.Maui.Controls.TapGestureRecognizer.TapGestureRecognizer() -> void
-Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler
+Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
 Microsoft.Maui.Controls.TappedEventArgs
 Microsoft.Maui.Controls.TargetIdiom
 Microsoft.Maui.Controls.TargetIdiom.Desktop = 3 -> Microsoft.Maui.Controls.TargetIdiom
@@ -5215,12 +5215,12 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~Microsoft.Maui.Controls.TableView.Root.get -> Microsoft.Maui.Controls.TableRoot
 ~Microsoft.Maui.Controls.TableView.Root.set -> void
 ~Microsoft.Maui.Controls.TableView.TableView(Microsoft.Maui.Controls.TableRoot root) -> void
-~Microsoft.Maui.Controls.TapGestureRecognizer.Command.get -> System.Windows.Input.ICommand
-~Microsoft.Maui.Controls.TapGestureRecognizer.Command.set -> void
-~Microsoft.Maui.Controls.TapGestureRecognizer.CommandParameter.get -> object
-~Microsoft.Maui.Controls.TapGestureRecognizer.CommandParameter.set -> void
-~Microsoft.Maui.Controls.TappedEventArgs.Parameter.get -> object
-~Microsoft.Maui.Controls.TappedEventArgs.TappedEventArgs(object parameter) -> void
+Microsoft.Maui.Controls.TapGestureRecognizer.Command.get -> System.Windows.Input.ICommand?
+Microsoft.Maui.Controls.TapGestureRecognizer.Command.set -> void
+Microsoft.Maui.Controls.TapGestureRecognizer.CommandParameter.get -> object?
+Microsoft.Maui.Controls.TapGestureRecognizer.CommandParameter.set -> void
+Microsoft.Maui.Controls.TappedEventArgs.Parameter.get -> object?
+Microsoft.Maui.Controls.TappedEventArgs.TappedEventArgs(object? parameter) -> void
 ~Microsoft.Maui.Controls.TemplateBinding.Converter.get -> Microsoft.Maui.Controls.IValueConverter
 ~Microsoft.Maui.Controls.TemplateBinding.Converter.set -> void
 ~Microsoft.Maui.Controls.TemplateBinding.ConverterParameter.get -> object
@@ -6791,8 +6791,8 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static readonly Microsoft.Maui.Controls.AbsoluteLayout.LayoutFlagsProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ActivityIndicator.ColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ActivityIndicator.IsRunningProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.AdaptiveTrigger.MinWindowHeightProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.AdaptiveTrigger.MinWindowWidthProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.AdaptiveTrigger.MinWindowHeightProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.AdaptiveTrigger.MinWindowWidthProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static readonly Microsoft.Maui.Controls.AppLinkEntry.AppLinkUriProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.AppLinkEntry.DescriptionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.AppLinkEntry.IsLinkActiveProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -7570,9 +7570,9 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static readonly Microsoft.Maui.Controls.TableSectionBase.TitleProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TableView.HasUnevenRowsProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TableView.RowHeightProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.TapGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.TapGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.TapGestureRecognizer.NumberOfTapsRequiredProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.TapGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TapGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TapGestureRecognizer.NumberOfTapsRequiredProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~static readonly Microsoft.Maui.Controls.TemplatedPage.ControlTemplateProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TemplatedView.ControlTemplateProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TextCell.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty

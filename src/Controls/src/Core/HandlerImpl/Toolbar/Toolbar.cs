@@ -17,9 +17,9 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<Toolbar, ToolbarHandler> ControlsToolbarMapper =
 			   new PropertyMapper<Toolbar, ToolbarHandler>(ToolbarHandler.Mapper)
 			   {
-#if ANDROID || WINDOWS
+#if ANDROID || WINDOWS || TIZEN
 				   [nameof(IToolbar.IsVisible)] = MapIsVisible,
-				   [nameof(IToolbar.BackButtonVisible)] = MapBackButtonVisible,				   
+				   [nameof(IToolbar.BackButtonVisible)] = MapBackButtonVisible,
 				   [nameof(Toolbar.TitleIcon)] = MapTitleIcon,
 				   [nameof(Toolbar.TitleView)] = MapTitleView,
 				   [nameof(Toolbar.IconColor)] = MapIconColor,

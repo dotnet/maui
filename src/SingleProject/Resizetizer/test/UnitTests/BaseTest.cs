@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using SkiaSharp;
+using SkiaSharp.Extended;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 	{
 		private const string TestFolderName = "Microsoft.Maui.Resizetizer.Tests";
 		private const string TestImagesFolderName = "imageresults";
+		private const double ImageErrorThreshold = 0.0027;
 
 		private readonly string DeleteDirectory;
 		protected readonly string DestinationDirectory;
@@ -112,26 +114,30 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.DoesNotContain(color, pixels);
 		}
 
-		protected void AssertFileMatches(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null) =>
-			AssertFileMatchesReal(destinationFilename, args, methodName);
+		protected void AssertFileMatches(string actualFilename, object[] args = null, [CallerMemberName] string methodName = null) =>
+			AssertFileMatchesReal(actualFilename, args, methodName);
 
-		protected void SaveImageResultFile(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null) =>
-			SaveImageResultFileReal(destinationFilename, args, methodName);
+		protected void SaveImageResultFile(string actualFilename, object[] args = null, [CallerMemberName] string methodName = null) =>
+			SaveImageResultFileReal(actualFilename, args, methodName);
 
-		void AssertFileMatchesReal(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null)
+		void AssertFileMatchesReal(string actualFilename, object[] args = null, [CallerMemberName] string methodName = null)
 		{
-			var imagePath = GetTestImageFileName(args, methodName);
-			var expected = SKBitmap.Decode(imagePath);
-			Assert.NotNull(expected);
+			actualFilename = Path.IsPathRooted(actualFilename)
+				? actualFilename
+				: Path.Combine(DestinationDirectory, actualFilename);
 
-			var src = Path.IsPathRooted(destinationFilename)
-				? destinationFilename
-				: Path.Combine(DestinationDirectory, destinationFilename);
-			var actual = SKBitmap.Decode(src);
-			Assert.NotNull(actual);
+			var expectedFilename = GetTestImageFileName(args, methodName);
 
-			Assert.Equal(expected.Info.Size, actual.Info.Size);
-			Assert.Equal(expected.Pixels, actual.Pixels);
+			using var actual = SKImage.FromEncodedData(actualFilename);
+			using var expected = SKImage.FromEncodedData(expectedFilename);
+
+			var similarity = SKPixelComparer.Compare(actual, expected);
+
+			var isSimilar = similarity.ErrorPixelPercentage <= ImageErrorThreshold;
+
+			Assert.True(
+				isSimilar,
+				$"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels)");
 		}
 
 		void SaveImageResultFileReal(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null)

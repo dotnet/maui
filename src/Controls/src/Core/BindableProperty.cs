@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls
 		static readonly Dictionary<Type, TypeConverter> KnownTypeConverters = new Dictionary<Type, TypeConverter>
 		{
 			{ typeof(Uri), new UriTypeConverter() },
+			{ typeof(Easing), new Maui.Converters.EasingTypeConverter() },
 		};
 
 		static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>

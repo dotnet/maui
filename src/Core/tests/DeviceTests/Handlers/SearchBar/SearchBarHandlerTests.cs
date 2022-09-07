@@ -138,6 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(searchBar);
 		}
 
+#if !WINDOWS
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -170,5 +171,6 @@ namespace Microsoft.Maui.DeviceTests
 				SearchBarHandlerTests.UpdateCursorStartPosition(searchBarHandler, position);
 			}
 		}
+#endif
 	}
 }

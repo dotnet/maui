@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls
 					InternalChildren.Add(_content);
 					_content.SizeChanged += ContentSizeChanged;
 				}
-				
+
 				OnPropertyChanged();
 				Handler?.UpdateValue(nameof(Content));
 			}
@@ -163,9 +163,9 @@ namespace Microsoft.Maui.Controls
 
 			var margin = view.Margin;
 			var frameSize = view.Frame.Size;
-			
+
 			// The ContentSize includes the margins for the content
-			ContentSize = new Size(frameSize.Width + margin.HorizontalThickness, 
+			ContentSize = new Size(frameSize.Width + margin.HorizontalThickness,
 				frameSize.Height + margin.VerticalThickness);
 		}
 

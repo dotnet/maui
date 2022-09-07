@@ -19,14 +19,15 @@
 		<Compile Include="KeyboardDesignTypeConverter.cs" />
 		<Compile Include="EasingDesignTypeConverter.cs" />
 		<Compile Include="FlowDirectionDesignTypeConverter.cs" />
+	  <Compile Include="GridLengthCollectionDesignTypeConverter.cs" />
+	  <Compile Include="GridLengthDesignTypeConverter.cs" />
 		<Compile Include="KnownValuesDesignTypeConverter.cs" />
 		<Compile Include="LayoutOptionsDesignTypeConverter.cs" />
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="FontSizeDesignTypeConverter.cs" />
 		<Compile Include="FlexEnumDesignTypeConverters.cs" />
-		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.2.32505.113" />
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.3.32804.24" />
 	</ItemGroup>
-
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
 	<!-- load the toolbox metadata from.                                                           -->
 	<ItemGroup>
@@ -39,10 +40,10 @@
 	<!-- using a defined format. That format is "{platform}.{imagename}". We will look up images using   -->
 	<!-- exact-match logic so there's no guessework to figure out which image we need to load.           -->
 	<PropertyGroup>
-		<AssignTargetPathsDependsOn>
-			$(AssignTargetPathsDependsOn);
+		<PrepareResourcesDependsOn>
 			IncludeToolboxImages
-		</AssignTargetPathsDependsOn>
+			$(PrepareResourcesDependsOn);
+		</PrepareResourcesDependsOn>
 	</PropertyGroup>
 	<Target Name="IncludeToolboxImages">
 		<!-- Be explicit about the prefix rather than relying on the directory name being exactly what we need -->

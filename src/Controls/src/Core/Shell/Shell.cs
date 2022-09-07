@@ -619,6 +619,7 @@ namespace Microsoft.Maui.Controls
 					return true;
 				}
 			}
+
 			return false;
 		}
 

@@ -1,61 +1,77 @@
-﻿using System;
-using System.Collections.Generic;
-using Tizen.UIExtensions.ElmSharp;
-using TEntry = Tizen.UIExtensions.ElmSharp.Entry;
-using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
-using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
-using EcoreMainloop = ElmSharp.EcoreMainloop;
-using List = ElmSharp.List;
-using ListItem = ElmSharp.ListItem;
+﻿using Tizen.NUI;
+using Tizen.UIExtensions.NUI;
+using NColor = Tizen.NUI.Color;
+using NPosition = Tizen.NUI.Position;
+using NView = Tizen.NUI.BaseComponents.View;
+using NEntry = Tizen.UIExtensions.NUI.Entry;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : ViewHandler<IPicker, TEntry>
+	public partial class PickerHandler : ViewHandler<IPicker, NEntry>
 	{
-		List? _list;
-		Dialog? _dialog;
-		Dictionary<ListItem, int> _itemToItemNumber = new Dictionary<ListItem, int>();
+		protected override NEntry CreatePlatformView() => new MauiPicker();
 
-		protected override TEntry CreatePlatformView()
+		protected override void ConnectHandler(NEntry platformView)
 		{
-			return new EditfieldEntry(PlatformParent)
-			{
-				IsSingleLine = true,
-				InputPanelShowByOnDemand = true,
-				IsEditable = false,
-				HorizontalTextAlignment = TTextAlignment.Center
-			};
-		}
-
-		protected override void ConnectHandler(TEntry platformView)
-		{
-			platformView.SetVerticalTextAlignment(0.5);
-
-			platformView.TextBlockFocused += OnTextBlockFocused;
-			platformView.EntryLayoutFocused += OnFocused;
-			platformView.EntryLayoutUnfocused += OnUnfocused;
-
-			if (DeviceInfo.IsTV)
-			{
-				platformView.EntryLayoutFocused += OnLayoutFocused;
-				platformView.EntryLayoutUnfocused += OnLayoutUnfocused;
-			}
-
+			platformView.TouchEvent += OnTouch;
+			platformView.KeyEvent += OnKeyEvent;
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(TEntry platformView)
+		protected override void DisconnectHandler(NEntry platformView)
 		{
-			platformView.TextBlockFocused -= OnTextBlockFocused;
-			platformView.EntryLayoutFocused -= OnFocused;
-			platformView.EntryLayoutUnfocused -= OnUnfocused;
-			if (DeviceInfo.IsTV)
-			{
-				platformView.EntryLayoutFocused -= OnLayoutFocused;
-				platformView.EntryLayoutUnfocused -= OnLayoutUnfocused;
-			}
-			CleanView();
+			if (!platformView.HasBody())
+				return;
+
+			platformView.TouchEvent -= OnTouch;
+			platformView.KeyEvent -= OnKeyEvent;
 			base.DisconnectHandler(platformView);
+		}
+
+		// Uncomment me on NET7 [Obsolete]
+		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
+
+		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
+
+		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView.UpdateTitleColor(picker);
+		}
+
+		public static void MapFont(IPickerHandler handler, IPicker picker)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView.UpdateFont(picker, fontManager);
+		}
+
+		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView.UpdateHorizontalTextAlignment(picker);
+		}
+
+		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView.UpdateVerticalTextAlignment(picker);
+		}
+
+		public static void MapTextColor(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView.UpdateTextColor(picker);
+		}
+
+		public static void MapTitle(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView.UpdateTitle(picker);
+		}
+
+		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView.UpdateSelectedIndex(picker);
+		}
+
+		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView.UpdateCharacterSpacing(picker);
 		}
 
 		static void Reload(IPickerHandler handler)
@@ -66,132 +82,51 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 
-		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
-
-		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
+		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)
 		{
-			handler.PlatformView?.UpdateTitleColor(picker);
+			if (e.Touch.GetState(0) != Tizen.NUI.PointStateType.Up)
+				return false;
+
+			if (VirtualView == null)
+				return false;
+
+			OpenPopupAsync();
+			return true;
 		}
 
-		public static void MapFont(IPickerHandler handler, IPicker picker)
+		bool OnKeyEvent(object source, Tizen.NUI.BaseComponents.View.KeyEventArgs e)
 		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.PlatformView?.UpdateFont(picker, fontManager);
-		}
-
-		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
-		{
-			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
-		}
-
-		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
-		{
-			handler.PlatformView?.UpdateHorizontalTextAlignment(picker);
-		}
-
-		public static void MapTextColor(IPickerHandler handler, IPicker picker)
-		{
-			handler.PlatformView?.UpdateTextColor(picker);
-		}
-
-		public static void MapTitle(IPickerHandler handler, IPicker picker)
-		{
-			handler.PlatformView?.UpdateTitle(picker);
-		}
-
-		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
-		{
-			handler.PlatformView?.UpdateSelectedIndex(picker);
-		}
-
-		[MissingMapper]
-		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker) { }
-
-		void OnLayoutFocused(object? sender, EventArgs e)
-		{
-			if (PlatformView == null)
-				return;
-
-			PlatformView.FontSize = PlatformView.FontSize * 1.5;
-		}
-
-		void OnLayoutUnfocused(object? sender, EventArgs e)
-		{
-			if (PlatformView == null)
-				return;
-
-			PlatformView.FontSize = PlatformView.FontSize / 1.5;
-		}
-
-		void OnTextBlockFocused(object? sender, EventArgs e)
-		{
-			if (VirtualView == null || PlatformView == null)
-				return;
-
-			// For EFL Entry, the event will occur even if it is currently disabled.
-			// If the problem is resolved, no conditional statement is required.
-			if (VirtualView.IsEnabled)
+			if (e.Key.State == Tizen.NUI.Key.StateType.Up && (e.Key.KeyPressedName == "Return" || e.Key.KeyPressedName == "Enter"))
 			{
-				int i = 0;
-				_dialog = new Dialog(PlatformParent)
-				{
-					AlignmentX = -1,
-					AlignmentY = -1,
-					Title = VirtualView.Title,
-				};
-				_dialog.Dismissed += OnDialogDismissed;
-				_dialog.BackButtonPressed += (object? senders, EventArgs es) =>
-				{
-					_dialog.Dismiss();
-				};
+				OpenPopupAsync();
+				return true;
+			}
+			return false;
+		}
 
-				_list = new List(_dialog);
-				foreach (var s in VirtualView.GetItemsAsArray())
-				{
-					ListItem item = _list.Append(s);
-					_itemToItemNumber[item] = i;
-					i++;
-				}
-				_list.ItemSelected += OnItemSelected;
-				_dialog.Content = _list;
 
-				// You need to call Show() after ui thread occupation because of EFL problem.
-				// Otherwise, the content of the popup will not receive focus.
-				EcoreMainloop.Post(() =>
+		async void OpenPopupAsync()
+		{
+			if (VirtualView == null)
+				return;
+
+			var modalStack = MauiContext?.GetModalStack();
+			if (modalStack != null)
+			{
+				await modalStack.PushDummyPopupPage(async () =>
 				{
-					_dialog.Show();
-					_list.Show();
+					try
+					{
+						using var popup = new ActionSheetPopup(VirtualView.Title, "Cancel", null, VirtualView.GetItemsAsArray());
+						VirtualView.SelectedIndex = VirtualView.GetItemsAsArray().IndexOf(await popup.Open());
+					}
+					catch
+					{
+						// Cancel
+					}
 				});
 			}
 		}
 
-		void OnItemSelected(object? senderObject, EventArgs ev)
-		{
-			if (VirtualView == null || PlatformView == null || _dialog == null)
-				return;
-
-			VirtualView.SelectedIndex = _itemToItemNumber[(senderObject as List)!.SelectedItem];
-			_dialog.Dismiss();
-		}
-
-		void OnDialogDismissed(object? sender, EventArgs e)
-		{
-			CleanView();
-		}
-
-		void CleanView()
-		{
-			if (null != _list)
-			{
-				_list.Unrealize();
-				_itemToItemNumber.Clear();
-				_list = null;
-			}
-			if (null != _dialog)
-			{
-				_dialog.Unrealize();
-				_dialog = null;
-			}
-		}
 	}
 }

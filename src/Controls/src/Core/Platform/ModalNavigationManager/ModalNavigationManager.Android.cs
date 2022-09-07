@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_mauiWindowContext = mauiContext;
 				}
 
-				public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+				public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 				{
 					var modalContext = _mauiWindowContext
 						.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);

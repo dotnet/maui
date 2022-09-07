@@ -1,7 +1,6 @@
 ﻿using System;
 using Android.App;
-using Android.Content.Res;
-using Android.Graphics.Drawables;
+using Android.Views;
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Handlers
@@ -31,7 +30,21 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
+			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
+			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
+			if (platformView.IsAttachedToWindow)
+				OnViewAttachedToWindow();
+		}
+
+		void OnViewDetachedFromWindow(object? sender = null, View.ViewDetachedFromWindowEventArgs? e = null)
+		{
+			// I tested and this is called when an activity is destroyed
+			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+		}
+
+		void OnViewAttachedToWindow(object? sender = null, View.ViewAttachedToWindowEventArgs? e = null)
+		{
 			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
@@ -44,7 +57,9 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
+			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
+			OnViewDetachedFromWindow();
 
 			base.DisconnectHandler(platformView);
 		}
@@ -65,8 +80,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateBackground(datePicker);
+			handler.PlatformView?.UpdateBackground(datePicker);
 		}
 
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)

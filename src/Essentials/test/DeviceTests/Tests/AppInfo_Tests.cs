@@ -59,8 +59,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void App_Versions_Are_Correct()
 		{
-			Assert.Equal("1.0.1.0", AppInfo.VersionString);
-			Assert.Equal(new Version(1, 0, 1, 0), AppInfo.Version);
+#if WINDOWS_UWP || WINDOWS
+			Assert.Equal("1.0.0.1", AppInfo.VersionString);
+			Assert.Equal(new Version(1, 0, 0, 1), AppInfo.Version);
+#else
+			Assert.Equal("1.0", AppInfo.VersionString);
+			Assert.Equal(new Version(1, 0), AppInfo.Version);
+#endif
 		}
 	}
 }

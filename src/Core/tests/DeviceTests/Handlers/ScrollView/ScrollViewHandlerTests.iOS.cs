@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 				foreach (var platformView in scrollViewHandler.PlatformView.Subviews)
 				{
 					// ScrollView on iOS uses an intermediate ContentView to handle conetent measurement/arrangement
-					if (platformView is ContentView contentView) 
+					if (platformView is ContentView contentView)
 					{
 						foreach (var content in contentView.Subviews)
 						{

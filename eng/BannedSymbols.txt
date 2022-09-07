@@ -1,1 +1,2 @@
 M:Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton`2(Microsoft.Extensions.DependencyInjection.IServiceCollection);Use a Factory method to create the service instead
+M:Android.Content.Res.ColorStateList.#ctor(System.Int32[][],System.Int32[]);Use Microsoft.Maui.PlatformInterop.Get*ColorStateList() Java methods instead

@@ -1,86 +1,55 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
-using ElmSharp;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
-using EButton = ElmSharp.Button;
-using EToolbar = ElmSharp.Toolbar;
-using EToolbarItem = ElmSharp.ToolbarItem;
-using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.NavigationPage;
-using SpecificPage = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Page;
+using Tizen.NUI.BaseComponents;
+using Tizen.UIExtensions.Common.GraphicsView;
+using Tizen.UIExtensions.NUI;
+using NColor = Tizen.NUI.Color;
+using NShadow = Tizen.NUI.Shadow;
+using NVector2 = Tizen.NUI.Vector2;
+using NView = Tizen.NUI.BaseComponents.View;
+using TButton = Tizen.UIExtensions.NUI.Button;
+using TColor = Tizen.UIExtensions.Common.Color;
+using TDeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
+using TMaterialIconButton = Tizen.UIExtensions.NUI.GraphicsView.MaterialIconButton;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>
 	{
-		enum ToolbarButtonPosition
-		{
-			Left,
-			Right
-		};
+		const double s_toolbarItemTextSize = 16d;
+		const double s_titleViewTextSize = 20d;
 
-		readonly List<Widget> _naviItemContentPartList = new List<Widget>();
-		Naviframe _naviFrame = null;
+		Dictionary<Page, NaviPage> _pageMap = new Dictionary<Page, NaviPage>();
+
 		Page _previousPage = null;
-		TaskCompletionSource<bool> _currentTaskSource = null;
+		NavigationStack Control => NativeView as NavigationStack;
 		ToolbarTracker _toolbarTracker = null;
-		IDictionary<Page, NaviItem> _naviItemMap;
-
-		Page CurrentPage => Element.CurrentPage;
-		Page PreviousPage => Element.Navigation.NavigationStack.Count > 1 ? Element.Navigation.NavigationStack[Element.Navigation.NavigationStack.Count - 2] : null;
-		NaviItem CurrentNaviItem => _naviFrame.NavigationStack.Count > 0 ? _naviFrame.NavigationStack.Last() : null;
-		NaviItem PreviousNaviItem => _naviFrame.NavigationStack.Count > 1 ? _naviFrame.NavigationStack[_naviFrame.NavigationStack.Count - 2] : null;
-
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				if (_naviFrame != null)
-				{
-					_naviFrame.AnimationFinished -= OnAnimationFinished;
-				}
-				if (_toolbarTracker != null)
-				{
-					_toolbarTracker.CollectionChanged -= OnToolbarCollectionChanged;
-				}
-			}
-			base.Dispose(disposing);
-		}
+		TColor _accentColor = TColor.White;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<NavigationPage> e)
 		{
-			if (_naviFrame == null)
+			if (NativeView == null)
 			{
-				_naviFrame = new Naviframe(Forms.NativeParent);
-				_naviFrame.PreserveContentOnPop = true;
-				_naviFrame.DefaultBackButtonEnabled = false;
-				_naviFrame.AnimationFinished += OnAnimationFinished;
-
-				SetNativeView(_naviFrame);
-				_naviItemMap = new Dictionary<Page, NaviItem>();
+				SetNativeView(new NavigationStack
+				{
+					HeightSpecification = LayoutParamPolicies.MatchParent,
+					WidthSpecification = LayoutParamPolicies.MatchParent,
+					PushAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)p,
+					PopAnimation = (v, p) => v.Opacity = 0.5f + 0.5f * (float)(1 - p),
+				});
 			}
-
 			if (_toolbarTracker == null)
 			{
 				_toolbarTracker = new ToolbarTracker();
 				_toolbarTracker.CollectionChanged += OnToolbarCollectionChanged;
-			}
-
-			if (e.OldElement != null)
-			{
-				var navigation = e.OldElement as INavigationPageController;
-				navigation.PopRequested -= OnPopRequested;
-				navigation.PopToRootRequested -= OnPopToRootRequested;
-				navigation.PushRequested -= OnPushRequested;
-				navigation.RemovePageRequested -= OnRemovePageRequested;
-				navigation.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
-
-				var pageController = e.OldElement as IPageController;
-				pageController.InternalChildren.CollectionChanged -= OnPageCollectionChanged;
 			}
 
 			if (e.NewElement != null)
@@ -91,29 +60,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				navigation.PushRequested += OnPushRequested;
 				navigation.RemovePageRequested += OnRemovePageRequested;
 				navigation.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
+				(Element as IPageController).InternalChildren.CollectionChanged += OnPageCollectionChanged;
 
-				_toolbarTracker.Target = e.NewElement;
+				_toolbarTracker.Target = Element;
 				_previousPage = e.NewElement.CurrentPage;
 			}
 			base.OnElementChanged(e);
-		}
 
-		protected override void OnElementReady()
-		{
-			base.OnElementReady();
 			var pageController = Element as IPageController;
-			pageController.InternalChildren.CollectionChanged += OnPageCollectionChanged;
-
 			foreach (Page page in pageController.InternalChildren)
 			{
-				_naviItemMap[page] = _naviFrame.Push(CreateNavItem(page), SpanTitle(page.Title));
-				page.PropertyChanged += NavigationBarPropertyChangedHandler;
-
-				UpdateHasNavigationBar(page);
+				Control.Push(GetNavigationItem(page), false);
+				page.PropertyChanged += OnPagePropertyChanged;
 			}
 		}
 
-		protected override void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
 
@@ -121,307 +83,131 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				Application.Current.Dispatcher.Dispatch(() =>
 				{
+					if (IsDisposed)
+						return;
+
 					(_previousPage as IPageController)?.SendDisappearing();
 					_previousPage = Element.CurrentPage;
 					(_previousPage as IPageController)?.SendAppearing();
 				});
 			}
-			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
-				UpdateTitle(CurrentPage);
-			// Tizen does not support 'Tint', but only 'BarBackgroundColor'
-			else if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
-				UpdateBarBackgroundColor(CurrentNaviItem);
-			else if (e.PropertyName == Specific.HasBreadCrumbsBarProperty.PropertyName)
-				UpdateBreadCrumbsBar(CurrentNaviItem);
-
 		}
 
-		void OnPageCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (_toolbarTracker != null)
+				{
+					_toolbarTracker.CollectionChanged -= OnToolbarCollectionChanged;
+				}
+
+				var navigation = Element as INavigationPageController;
+				navigation.PopRequested -= OnPopRequested;
+				navigation.PopToRootRequested -= OnPopToRootRequested;
+				navigation.PushRequested -= OnPushRequested;
+				navigation.RemovePageRequested -= OnRemovePageRequested;
+				navigation.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
+				(Element as IPageController).InternalChildren.CollectionChanged -= OnPageCollectionChanged;
+				foreach (var child in (Element as IPageController).InternalChildren)
+				{
+					child.PropertyChanged -= OnPagePropertyChanged;
+				}
+			}
+			base.Dispose(disposing);
+		}
+
+
+		void OnPageCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.OldItems != null)
 				foreach (Page page in e.OldItems)
-					page.PropertyChanged -= NavigationBarPropertyChangedHandler;
+					page.PropertyChanged -= OnPagePropertyChanged;
 			if (e.NewItems != null)
 				foreach (Page page in e.NewItems)
-					page.PropertyChanged += NavigationBarPropertyChangedHandler;
+					page.PropertyChanged += OnPagePropertyChanged;
 		}
 
-		void OnToolbarCollectionChanged(object sender, EventArgs eventArgs)
+		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			UpdateToolbarItem(Element.CurrentPage);
-		}
-
-		void NavigationBarPropertyChangedHandler(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			// this handler is invoked only for child pages (contained on a navigation stack)
 			if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
-				UpdateHasNavigationBar(sender as Page);
-			else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName ||
-				e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
-				UpdateHasBackButton(sender as Page);
+				UpdateNavigationBar(sender as Page);
+			else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
+				UpdateNavigationBar(sender as Page);
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
-				UpdateTitle(sender as Page);
-			else if (e.PropertyName == SpecificPage.BreadCrumbProperty.PropertyName)
-				UpdateBreadCrumbsBar(GetNaviItemForPage(sender as Page));
+				UpdateNavigationBar(sender as Page);
 		}
 
-		void UpdateHasNavigationBar(Page page)
+		async void OnPopRequested(object sender, NavigationRequestedEventArgs nre)
 		{
-			NaviItem item = GetNaviItemForPage(page);
-			if (NavigationPage.GetTitleView(page) != null)
+			var tcs = new TaskCompletionSource<bool>();
+			nre.Task = tcs.Task;
+			nre.Page?.SendDisappearing();
+
+			try
 			{
-				item.TitleBarVisible = false;
-				Native.TitleViewPage tvPage = item.Content as Native.TitleViewPage;
-				if (tvPage != null)
-				{
-					tvPage.HasNavigationBar = (bool)page.GetValue(NavigationPage.HasNavigationBarProperty);
-				}
-				return;
+				await Control.Pop(nre.Animated);
+				tcs.SetResult(true);
 			}
-
-			item.SetTabBarStyle();
-			item.TitleBarVisible = (bool)page.GetValue(NavigationPage.HasNavigationBarProperty);
-			UpdateToolbarItem(page, item);
-			UpdateBarBackgroundColor(item);
-			UpdateBreadCrumbsBar(item);
-		}
-
-		void UpdateToolbarItem(Page page, NaviItem item = null)
-		{
-			if (item == null)
-				item = GetNaviItemForPage(page);
-
-			if (_naviFrame.NavigationStack.Count == 0 || item == null || item != _naviFrame.NavigationStack.Last())
-				return;
-
-			Native.Button rightButton = GetToolbarButton(ToolbarButtonPosition.Right);
-			item.SetRightToolbarButton(rightButton);
-
-			Native.Button leftButton = GetToolbarButton(ToolbarButtonPosition.Left);
-			item.SetLeftToolbarButton(leftButton);
-			UpdateHasBackButton(page, item);
-		}
-
-		void UpdateHasBackButton(Page page, NaviItem item = null)
-		{
-			if (item == null)
-				item = GetNaviItemForPage(page);
-
-			EButton button = null;
-
-			if ((bool)page.GetValue(NavigationPage.HasBackButtonProperty) && _naviFrame.NavigationStack.Count > 1)
+			catch
 			{
-				button = CreateNavigationButton((string)page.GetValue(NavigationPage.BackButtonTitleProperty));
+				tcs.SetResult(false);
 			}
-			item.SetBackButton(button);
-		}
-
-		void UpdateTitle(Page page, NaviItem item = null)
-		{
-			if (item == null)
-				item = GetNaviItemForPage(page);
-
-			item.SetTitle(SpanTitle(page.Title));
-		}
-
-		string SpanTitle(string Title)
-		{
-			Native.Span span = new Native.Span
+			finally
 			{
-				Text = Title,
-				HorizontalTextAlignment = Native.TextAlignment.Center,
-				ForegroundColor = Element.BarTextColor.ToPlatformEFL()
-			};
-			return span.GetMarkupText();
-		}
-
-		void UpdateBarBackgroundColor(NaviItem item)
-		{
-			item.TitleBarBackgroundColor = Element.BarBackgroundColor.ToPlatformEFL();
-		}
-
-		void UpdateNavigationBar(Page page, NaviItem item = null)
-		{
-			if (item == null)
-				item = GetNaviItemForPage(page);
-
-			UpdateTitle(page, item);
-			UpdateBarBackgroundColor(item);
-		}
-
-		void UpdateBreadCrumbsBar(NaviItem item)
-		{
-			if (Element.OnThisPlatform().HasBreadCrumbsBar())
-			{
-				item.SetNavigationBarStyle();
-				item.SetNavigationBar(GetBreadCrumbsBar());
-			}
-			else
-			{
-				item.SetNavigationBar(null, false);
-			}
-		}
-
-		EButton CreateNavigationButton(string text)
-		{
-			EButton button = new EButton(Forms.NativeParent)
-			{
-				Text = text
-			};
-			button.SetNavigationBackStyle();
-			button.Clicked += (sender, e) =>
-			{
-				if (!Element.SendBackButtonPressed())
-					Forms.Context.Exit();
-			};
-			_naviItemContentPartList.Add(button);
-			button.Deleted += NaviItemPartContentDeletedHandler;
-			return button;
-		}
-
-		void NaviItemPartContentDeletedHandler(object sender, EventArgs e)
-		{
-			_naviItemContentPartList.Remove(sender as Widget);
-		}
-
-		NaviItem GetNaviItemForPage(Page page)
-		{
-			NaviItem item;
-			if (_naviItemMap.TryGetValue(page, out item))
-			{
-				return item;
-			}
-			return null;
-		}
-
-		Native.Button GetToolbarButton(ToolbarButtonPosition position)
-		{
-			ToolbarItem item = _toolbarTracker.ToolbarItems.Where(
-				i => (position == ToolbarButtonPosition.Right && i.Order <= ToolbarItemOrder.Primary)
-				|| (position == ToolbarButtonPosition.Left && i.Order == ToolbarItemOrder.Secondary))
-				.OrderBy(i => i.Priority).FirstOrDefault();
-
-			if (item == default(ToolbarItem))
-				return null;
-
-			Native.ToolbarItemButton button = new Native.ToolbarItemButton(item);
-			return button;
-		}
-
-		EToolbar GetBreadCrumbsBar()
-		{
-			EToolbar toolbar = new EToolbar(Forms.NativeParent)
-			{
-				ItemAlignment = 0,
-				Homogeneous = false,
-				ShrinkMode = ToolbarShrinkMode.Scroll
-			};
-			toolbar.SetNavigationBarStyle();
-
-			foreach (var p in Element.Navigation.NavigationStack)
-			{
-				string breadCrumb = p.OnThisPlatform().GetBreadCrumb();
-				if (!string.IsNullOrEmpty(breadCrumb))
-				{
-					EToolbarItem toolbarItem = toolbar.Append(breadCrumb);
-					toolbarItem.Selected += (s, e) =>
-					{
-						var copyOfStack = Element.Navigation.NavigationStack.Reverse().Skip(1);
-						foreach (var lp in copyOfStack)
-						{
-							if (lp == p)
-								break;
-							Element.Navigation.RemovePage(lp);
-						}
-						if (Element.Navigation.NavigationStack.Last() != p)
-							Element.Navigation.PopAsync();
-					};
-				}
-			}
-
-			return toolbar;
-		}
-
-		void OnPopRequested(object sender, NavigationRequestedEventArgs nre)
-		{
-			if ((Element as IPageController).InternalChildren.Count == _naviFrame.NavigationStack.Count)
-			{
-				nre.Page?.SendDisappearing();
-				UpdateNavigationBar(PreviousPage, PreviousNaviItem);
-
-				if (nre.Animated)
-				{
-					_naviFrame.Pop();
-
-					_currentTaskSource = new TaskCompletionSource<bool>();
-					nre.Task = _currentTaskSource.Task;
-
-					// There is no TransitionFinished (AnimationFinished) event after Pop the last page
-					if (_naviFrame.NavigationStack.Count == 0)
-						CompleteCurrentNavigationTask();
-				}
-				else
-				{
-					CurrentNaviItem?.Delete();
-				}
-
-				if (_naviItemMap.ContainsKey(nre.Page))
-					_naviItemMap.Remove(nre.Page);
+				_pageMap.Remove(nre.Page);
+				Platform.GetRenderer(nre.Page)?.Dispose();
 			}
 		}
 
 		void OnPopToRootRequested(object sender, NavigationRequestedEventArgs nre)
 		{
-			List<NaviItem> copyOfStack = new List<NaviItem>(_naviFrame.NavigationStack);
-			NaviItem rootItem = copyOfStack.FirstOrDefault();
-			NaviItem topItem = copyOfStack.LastOrDefault();
-
-			foreach (NaviItem naviItem in copyOfStack)
-				if (naviItem != rootItem && naviItem != topItem)
-					naviItem.Delete();
-
-			if (topItem != rootItem)
+			if (Control.Stack.Count <= 1)
 			{
-				UpdateNavigationBar(Element.Navigation.NavigationStack.Last(), rootItem);
-				if (nre.Animated)
-				{
-					_naviFrame.Pop();
-
-					_currentTaskSource = new TaskCompletionSource<bool>();
-					nre.Task = _currentTaskSource.Task;
-				}
-				else
-					topItem?.Delete();
+				nre.Task = Task.FromResult(true);
+				return;
 			}
 
-			_naviItemMap.Clear();
-			_naviItemMap[Element.Navigation.NavigationStack.Last()] = rootItem;
+			var rootPage = nre.Page;
+			var rootNaviPage = _pageMap[rootPage];
+
+			Control.PopToRoot();
+
+			foreach (var child in _pageMap.Keys)
+			{
+				if (child != rootPage)
+				{
+					// remove popped page renderer
+					Platform.GetRenderer(child)?.Dispose();
+				}
+			}
+
+			_pageMap.Clear();
+			_pageMap[rootPage] = rootNaviPage;
+			nre.Task = Task.FromResult(true);
 		}
 
-		void OnPushRequested(object sender, NavigationRequestedEventArgs nre)
+		async void OnPushRequested(object sender, NavigationRequestedEventArgs nre)
 		{
-			if (nre.Animated || _naviFrame.NavigationStack.Count == 0)
+			var tcs = new TaskCompletionSource<bool>();
+			nre.Task = tcs.Task;
+			try
 			{
-				_naviItemMap[nre.Page] = _naviFrame.Push(CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
-				_currentTaskSource = new TaskCompletionSource<bool>();
-				nre.Task = _currentTaskSource.Task;
-
-				// There is no TransitionFinished (AnimationFinished) event after the first Push
-				if (_naviFrame.NavigationStack.Count == 1)
-					CompleteCurrentNavigationTask();
+				await Control.Push(GetNavigationItem(nre.Page), nre.Animated);
+				tcs.SetResult(true);
 			}
-			else
+			catch
 			{
-				_naviItemMap[nre.Page] = _naviFrame.InsertAfter(_naviFrame.NavigationStack.Last(), CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
+				tcs.SetResult(false);
 			}
-			UpdateHasNavigationBar(nre.Page);
 		}
 
 		void OnRemovePageRequested(object sender, NavigationRequestedEventArgs nre)
 		{
-			GetNaviItemForPage(nre.Page).Delete();
-			if (_naviItemMap.ContainsKey(nre.Page))
-				_naviItemMap.Remove(nre.Page);
+			Control.RemovePage(GetNavigationItem(nre.Page));
+			_pageMap.Remove(nre.Page);
+			Platform.GetRenderer(nre.Page)?.Dispose();
+			nre.Task = Task.FromResult(true);
 		}
 
 		void OnInsertPageBeforeRequested(object sender, NavigationRequestedEventArgs nre)
@@ -431,41 +217,202 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (nre.Page == null)
 				throw new ArgumentException("Page is null");
 
-			_naviItemMap[nre.Page] = _naviFrame.InsertBefore(GetNaviItemForPage(nre.BeforePage), CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
-			UpdateHasNavigationBar(nre.Page);
+			Control.Insert(GetNavigationItem(nre.BeforePage), GetNavigationItem(nre.Page));
+			nre.Task = Task.FromResult(true);
 		}
 
-		void OnAnimationFinished(object sender, EventArgs e)
+		NaviPage GetNavigationItem(Page page)
 		{
-			CompleteCurrentNavigationTask();
-		}
-
-		void CompleteCurrentNavigationTask()
-		{
-			if (_currentTaskSource != null)
+			if (_pageMap.ContainsKey(page))
 			{
-				var tmp = _currentTaskSource;
-				_currentTaskSource = null;
-				tmp.SetResult(true);
+				return _pageMap[page];
 			}
+
+			var content = Platform.GetOrCreateRenderer(page).NativeView;
+			content.WidthSpecification = LayoutParamPolicies.MatchParent;
+			content.HeightSpecification = LayoutParamPolicies.MatchParent;
+
+			var naviPage = new NaviPage
+			{
+				Content = content
+			};
+			_pageMap[page] = naviPage;
+			UpdateNavigationBar(page);
+			return naviPage;
 		}
 
-		EvasObject CreateNavItem(Page page)
+		void OnToolbarCollectionChanged(object sender, EventArgs eventArgs)
 		{
-			View titleView = NavigationPage.GetTitleView(page);
-			EvasObject nativeView = null;
-			if (titleView != null)
+			UpdateNavigationBar(Element.CurrentPage);
+		}
+
+		void UpdateNavigationBar(Page page)
+		{
+			var naviPage = GetNaviItemForPage(page);
+			if (naviPage == null)
+				return;
+
+			if (!NavigationPage.GetHasNavigationBar(page))
 			{
-				titleView.Parent = this.Element;
-				nativeView = new Native.TitleViewPage(Forms.NativeParent, page, titleView);
-				nativeView.Show();
+				DisposeTitleViewRenderer(page);
+				naviPage.TitleView = null;
+				return;
+			}
+
+			if (naviPage.TitleView == null)
+			{
+				naviPage.TitleView = new TitleView();
+				naviPage.TitleView.BoxShadow = new NShadow((float)20d.ToScaledDP(), NColor.Black, new NVector2(0, 0));
+				naviPage.TitleView.Label.FontSize = s_titleViewTextSize.ToScaledPoint();
+			}
+
+			var titleView = naviPage.TitleView;
+			if (Element.BarBackgroundColor.IsNotDefault())
+			{
+				titleView.UpdateBackgroundColor(Element.BarBackgroundColor.ToNative());
+			}
+
+			if (Element.BarTextColor.IsNotDefault())
+			{
+				titleView.Label.TextColor = _accentColor = Element.BarTextColor.ToNative();
 			}
 			else
 			{
-				nativeView = Platform.GetOrCreateRenderer(page).NativeView;
-
+				var grayscale = (titleView.BackgroundColor.R + titleView.BackgroundColor.G + titleView.BackgroundColor.B) / 3.0f;
+				titleView.Label.TextColor = _accentColor = grayscale > 0.5 ? TColor.Black : TColor.White;
 			}
-			return nativeView;
+
+
+			var hasBackButton = NavigationPage.GetHasBackButton(page) && Control.Stack.Count > 0 && Control.Stack.IndexOf(naviPage) != 0;
+			var leftToolbarButton = GetLeftToolbar();
+
+			if (leftToolbarButton != null)
+			{
+				titleView.Icon = leftToolbarButton;
+			}
+			else if (hasBackButton)
+			{
+				titleView.Icon = CreateBackButton();
+			}
+			else
+			{
+				titleView.Icon = null;
+			}
+
+			titleView.Actions.Clear();
+			foreach (var action in GetActions())
+			{
+				titleView.Actions.Add(action);
+			}
+
+			var titleContent = GetTitleContent(page);
+			if (titleContent != null)
+			{
+				titleView.Title = string.Empty;
+				titleView.Content = titleContent;
+			}
+			else
+			{
+				titleView.Title = page.Title;
+			}
+		}
+
+		NView GetLeftToolbar()
+		{
+			ToolbarItem item = _toolbarTracker.ToolbarItems.Where(
+				i => i.Order == ToolbarItemOrder.Secondary)
+				.OrderBy(i => i.Priority).FirstOrDefault();
+
+			if (item == default(ToolbarItem))
+				return null;
+
+			return CreateToolbarButton(item);
+		}
+
+		IEnumerable<NView> GetActions()
+		{
+			return _toolbarTracker.ToolbarItems.Where(i => i.Order <= ToolbarItemOrder.Primary).OrderBy(i => i.Priority).Select(i => CreateToolbarButton(i));
+		}
+
+		NView CreateToolbarButton(ToolbarItem item)
+		{
+			var button = new TButton
+			{
+				FontSize = s_toolbarItemTextSize.ToScaledPoint(),
+				Text = item.Text,
+				TextColor = _accentColor,
+				HeightSpecification = LayoutParamPolicies.MatchParent,
+				WidthSpecification = LayoutParamPolicies.WrapContent,
+			};
+			button.SizeWidth = (float)button.Measure(TDeviceInfo.ScalingFactor * 80, double.PositiveInfinity).Width;
+			button.UpdateBackgroundColor(TColor.Transparent);
+
+			if (item.IconImageSource != null)
+			{
+				button.Text = string.Empty;
+				button.Icon.AdjustViewSize = true;
+				button.Icon.HeightSpecification = LayoutParamPolicies.MatchParent;
+				_ = button.Icon.LoadFromImageSourceAsync(item.IconImageSource);
+				button.SizeWidth = 0;
+				button.WidthSpecification = LayoutParamPolicies.WrapContent;
+			}
+			button.Clicked += (s, e) =>
+			{
+				item.Command?.Execute(item.CommandParameter);
+			};
+			return button;
+		}
+
+		NView CreateBackButton()
+		{
+			var button = new TMaterialIconButton
+			{
+				Icon = MaterialIcons.ArrowBack,
+				Color = _accentColor,
+			};
+			button.Clicked += (s, e) =>
+			{
+				Element.SendBackButtonPressed();
+			};
+			return button;
+		}
+
+		NView GetTitleContent(Page page)
+		{
+			View titleView = NavigationPage.GetTitleView(page);
+			if (titleView != null)
+			{
+				titleView.Parent = Element;
+				return Platform.GetOrCreateRenderer(titleView).NativeView;
+			}
+			return null;
+		}
+
+		NaviPage GetNaviItemForPage(Page page)
+		{
+			NaviPage item;
+			if (_pageMap.TryGetValue(page, out item))
+			{
+				return item;
+			}
+			return null;
+		}
+
+		void DisposeTitleViewRenderer(Page page)
+		{
+			View titleView = NavigationPage.GetTitleView(page);
+			if (titleView != null)
+				Platform.GetRenderer(titleView)?.Dispose();
+		}
+	}
+	static class NavigationStackEx
+	{
+		public static void RemovePage(this NavigationStack stack, NaviPage page)
+		{
+			var property = typeof(NavigationStack).GetProperty("InternalStack", BindingFlags.NonPublic | BindingFlags.Instance);
+			List<NView> internalStack = (List<NView>)property.GetValue(stack);
+			stack.Remove(page);
+			internalStack.Remove(page);
 		}
 	}
 }

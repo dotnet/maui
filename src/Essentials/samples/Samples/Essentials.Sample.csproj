@@ -13,6 +13,7 @@
   <PropertyGroup>
     <ApplicationTitle>Essentials</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.essentials</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 

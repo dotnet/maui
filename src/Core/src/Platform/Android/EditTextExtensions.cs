@@ -6,6 +6,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -15,6 +16,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateText(this EditText editText, IEntry entry)
 		{
+			var previousTextLength = editText.Length();
+
 			// Setting the text causes the cursor to reset to position zero
 			// Therefore if:
 			// User Types => VirtualView Updated => Triggers Native Update
@@ -40,9 +43,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textColor != null)
 			{
-				var androidColor = textColor.ToPlatform();
-				if (!editText.TextColors.IsOneColor(ColorStates.EditText, androidColor))
-					editText.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
+					editText.SetTextColor(c);
 			}
 		}
 
@@ -134,9 +136,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (placeholderTextColor != null)
 			{
-				var androidColor = placeholderTextColor.ToPlatform();
-				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
-					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
+					editText.SetHintTextColor(c);
 			}
 		}
 
@@ -171,30 +172,16 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
+		// TODO: NET7 hartez - Remove this, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
 			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
 
+		// TODO: NET7 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
 		{
-			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
-			void ShowClearButton()
+			if (entry?.Handler is not EntryHandler entryHandler)
 			{
-				var drawable = getClearButtonDrawable?.Invoke();
-
-				if (entry.GetEffectiveFlowDirection() == FlowDirection.RightToLeft)
-				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-				}
-				else
-				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
-				}
-			}
-
-			// Hides clear button drawable from the control.
-			void HideClearButton()
-			{
-				editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+				return;
 			}
 
 			bool isFocused = editText.IsFocused;
@@ -206,11 +193,11 @@ namespace Microsoft.Maui.Platform
 
 			if (shouldDisplayClearButton)
 			{
-				ShowClearButton();
+				entryHandler.ShowClearButton();
 			}
 			else
 			{
-				HideClearButton();
+				entryHandler.HideClearButton();
 			}
 		}
 
@@ -292,47 +279,53 @@ namespace Microsoft.Maui.Platform
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
 		{
 			var previousCursorPosition = editText.SelectionStart;
+			var keyboard = textInput.Keyboard;
+			var nativeInputTypeToUpdate = keyboard.ToInputType();
 
-			if (textInput.IsReadOnly)
+			if (keyboard is not CustomKeyboard)
 			{
-				editText.InputType = InputTypes.Null;
+				// TODO: IsSpellCheckEnabled handling must be here.
+
+				if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+				{
+					if (!textInput.IsTextPredictionEnabled)
+						nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+				}
 			}
-			else
+
+			if (keyboard == Keyboard.Numeric)
 			{
-				
-				var keyboard = textInput.Keyboard;
-				var nativeInputTypeToUpdate = keyboard.ToInputType();
-
-				if (keyboard is not CustomKeyboard)
-				{
-					// TODO: IsSpellCheckEnabled handling must be here.
-
-					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
-					{
-						if (!textInput.IsTextPredictionEnabled)
-							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
-					}
-				}
-
-				if (keyboard == Keyboard.Numeric)
-				{
-					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
-				}
-
-				if (textInput is IEntry entry && entry.IsPassword)
-				{
-					if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
-						nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
-
-					if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
-						nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
-				}
-
-				editText.InputType = nativeInputTypeToUpdate;
+				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
+
+			bool hasPassword = false;
+
+			if (textInput is IEntry entry && entry.IsPassword)
+			{
+				if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
+					nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
+
+				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
+					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
+
+				hasPassword = true;
+			}
+
+			editText.InputType = nativeInputTypeToUpdate;
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
+
+			if (hasPassword && textInput is IElement element)
+			{
+				var services = element.Handler?.MauiContext?.Services;
+
+				if (services == null)
+					return;
+
+				var fontManager = services.GetRequiredService<IFontManager>();
+				editText.UpdateFont(textInput, fontManager);
+			}
 
 			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
 			// Let's restore the cursor position to its previous location.
@@ -354,7 +347,7 @@ namespace Microsoft.Maui.Platform
 		/// This will return True to handle OnTouch to prevent re-activating keyboard after clearing the text.
 		/// </summary>
 		/// <returns>True if clear button is clicked and Text is cleared. False if not.</returns>
-		internal static bool HandleClearButtonTouched(this EditText? platformView, FlowDirection flowDirection, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
+		internal static bool HandleClearButtonTouched(this EditText? platformView, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
 		{
 			if (platformView is null)
 				return false;
@@ -372,15 +365,17 @@ namespace Microsoft.Maui.Platform
 			if (motionEvent.Action != MotionEventActions.Up)
 				return false;
 
-			var x = motionEvent.GetX();
+			var x = motionEvent.RawX;
 			var y = motionEvent.GetY();
 
-			if ((flowDirection != FlowDirection.LeftToRight
+			var flowDirection = platformView.LayoutDirection;
+
+			if ((flowDirection != LayoutDirection.Ltr
 				|| x < platformView.Right - buttonWidth
 				|| x > platformView.Right - platformView.PaddingRight
 				|| y < platformView.PaddingTop
 				|| y > platformView.Height - platformView.PaddingBottom) &&
-				(flowDirection != FlowDirection.RightToLeft
+				(flowDirection != LayoutDirection.Rtl
 				|| x < platformView.Left + platformView.PaddingLeft
 				|| x > platformView.Left + buttonWidth
 				|| y < platformView.PaddingTop

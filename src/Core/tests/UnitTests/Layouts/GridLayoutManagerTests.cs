@@ -372,6 +372,30 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(100 + 100 + 10, measure.Height);
 		}
 
+		[Category(GridSpacing, GridAutoSizing)]
+		[Fact(DisplayName = "Auto rows with collapsed views should not incur additional row spacing")]
+		public void RowSpacingForAutoRowsWithCollapsedViews()
+		{
+			var grid = CreateGridLayout(rows: "100, auto, 100", rowSpacing: 10);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view2);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+
+			view1.Visibility.Returns(Visibility.Collapsed);
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Because the auto row has no content, we expect it to have height zero
+			// and we expect that it won't add more row spacing 
+			Assert.Equal(100 + 100 + 10, measure.Height);
+		}
+
 		[Category(GridSpacing)]
 		[Fact(DisplayName = "Column spacing shouldn't affect a single-column grid")]
 		public void SingleColumnIgnoresColumnSpacing()
@@ -453,6 +477,30 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0, view2);
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, col: 2);
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Because the auto column has no content, we expect it to have width zero
+			// and we expect that it won't add more column spacing 
+			Assert.Equal(100 + 100 + 10, measure.Width);
+		}
+
+		[Category(GridSpacing, GridAutoSizing)]
+		[Fact(DisplayName = "Auto columns with collapsed views should not incur additional column spacing")]
+		public void AutoColumnsWithCollapsedViews()
+		{
+			var grid = CreateGridLayout(columns: "100, auto, 100", colSpacing: 10);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view2);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			view1.Visibility.Returns(Visibility.Collapsed);
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
@@ -1665,26 +1713,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view1, new Rect(0, 220, 100, 100));
 		}
 
-		[Fact(DisplayName = "Grids with RTL FlowDirection should order columns from the right")]
-		public void RtlShouldReverseColumnOrder()
-		{
-			var grid = CreateGridLayout(columns: "100, 100", colSpacing: 10);
-			var view0 = CreateTestView(new Size(100, 100));
-			var view1 = CreateTestView(new Size(100, 100));
-			SubstituteChildren(grid, view0, view1);
-			SetLocation(grid, view0);
-			SetLocation(grid, view1, col: 1);
-
-			grid.FlowDirection.Returns(FlowDirection.RightToLeft);
-
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
-
-			// Because the Grid is RTL, we expect the view in column 1 to be on the left,
-			// and the view in column 0 to be on the right
-			AssertArranged(view1, 0, 0, 100, 100);
-			AssertArranged(view0, 110, 0, 100, 100);
-		}
-
 		[Fact]
 		[Category(GridStarSizing), Category(GridAutoSizing)]
 		public void AutoStarColumnSpansDoNotAffectAutoColumnSize()
@@ -1930,7 +1958,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Auto row and get the height of the view
 			var measuredSize = manager.Measure(20, double.PositiveInfinity);
 			Assert.Equal(20, measuredSize.Height);
-			
+
 			grid.DesiredSize.Returns(measuredSize);
 
 			// We arrange at a height taller than the Grid's measurement; because the Grid
@@ -1967,5 +1995,60 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, new Rect(0, 0, 100, 20));
 		}
 
+		[Theory, Category(GridStarSizing)]
+		[InlineData(LayoutAlignment.Center)]
+		[InlineData(LayoutAlignment.Start)]
+		[InlineData(LayoutAlignment.End)]
+		[InlineData(LayoutAlignment.Fill)]
+		public void StarRowsShouldFitKnownDimensions(LayoutAlignment verticalAlignment)
+		{
+			var grid = CreateGridLayout(rows: "*");
+			grid.VerticalLayoutAlignment.Returns(verticalAlignment);
+			grid.Height.Returns(100);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+
+			var manager = new GridLayoutManager(grid);
+			var gridMeasure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Because the Grid has an explicit height, we expect the single Star row
+			// to have that height.
+			Assert.Equal(100, gridMeasure.Height);
+
+			manager.ArrangeChildren(new Rect(Point.Zero, gridMeasure));
+
+			// Because the child has VerticalAlignment.Fill, we expect it to fill up the 100
+			// units in the Star row
+			AssertArranged(view0, new Rect(0, 0, 20, 100));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(LayoutAlignment.Center)]
+		[InlineData(LayoutAlignment.Start)]
+		[InlineData(LayoutAlignment.End)]
+		[InlineData(LayoutAlignment.Fill)]
+		public void StarColumnsShouldFitKnownDimensions(LayoutAlignment horizontalAlignment)
+		{
+			var grid = CreateGridLayout(columns: "*");
+			grid.HorizontalLayoutAlignment.Returns(horizontalAlignment);
+			grid.Width.Returns(100);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+
+			var manager = new GridLayoutManager(grid);
+			var gridMeasure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Because the Grid has an explicit width, we expect the single Star column
+			// to have that width.
+			Assert.Equal(100, gridMeasure.Width);
+
+			manager.ArrangeChildren(new Rect(Point.Zero, gridMeasure));
+
+			// Because the child has HorizontalAlignment.Fill, we expect it to fill up the 100
+			// units in the Star column
+			AssertArranged(view0, new Rect(0, 0, 100, 20));
+		}
 	}
 }

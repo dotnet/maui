@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
-#if IOS
+#if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
 #elif MACOS
 using PlatformView = AppKit.NSView;
@@ -21,7 +21,7 @@ using PlatformView = System.Object;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Behavior)]
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 #endif
 	public partial class PlatformBehaviorTests : HandlerTestBase
