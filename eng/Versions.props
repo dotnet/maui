@@ -9,7 +9,7 @@
     <MicrosoftExtensionsServicingPackageVersion>6.0.1</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>32.0.466</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>32.0.467</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftiOSSdkPackageVersion>15.4.453</MicrosoftiOSSdkPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.4.453</MicrosoftMacCatalystSdkPackageVersion>
