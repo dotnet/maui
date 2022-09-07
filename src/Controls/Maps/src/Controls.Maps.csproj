@@ -17,6 +17,6 @@
     <ProjectReference Include="..\..\..\Core\maps\src\Maps.csproj" />
   </ItemGroup>
   
-  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+<!--  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />-->
   
 </Project>
