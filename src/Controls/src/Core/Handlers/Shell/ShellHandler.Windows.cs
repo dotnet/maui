@@ -246,9 +246,10 @@ namespace Microsoft.Maui.Controls.Handlers
 					UpdateFlyoutHeaderTransformation(flyoutHeader, scrollHeight, scrollTranslateY);
 					break;
 				case FlyoutHeaderBehavior.CollapseOnScroll:
-					var topNavArea = (StackPanel)PlatformView.TopNavArea;
+					var topNavArea = PlatformView.TopNavArea as StackPanel;
+
 					if (_topAreaHeight == null)
-						_topAreaHeight = Math.Max(topNavArea.ActualHeight, 50.0f);
+						_topAreaHeight = Math.Max(topNavArea.ActualHeight, _headerHeight.Value);
 
 					var calculatedHeight = _headerHeight.Value - _scrollViewer.VerticalOffset;
 					var collapseOnScrollHeight = calculatedHeight < _topAreaHeight.Value ? _topAreaHeight.Value : calculatedHeight;
