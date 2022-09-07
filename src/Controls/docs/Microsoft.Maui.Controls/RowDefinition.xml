@@ -26,7 +26,7 @@
     <summary>An <see cref="T:Microsoft.Maui.Controls.IDefinition" /> that defines properties for a row in a <see cref="T:Microsoft.Maui.Controls.Grid" />.</summary>
     <remarks>
       <example>
-        <para>App developers can specify <see cref="T:Microsoft.Maui.Controls.GridUnitType" /> values for the <see cref="P:Microsoft.Maui.Controls.RowDefinition.Height" /> property in XAML. This is typically done inside tags for the <see cref="P:Microsoft.Maui.Controls.Grid.RowDefinitions" /> collection property. The following example demonstrates setting three row heights to each of the three valid <see cref="T:Microsoft.Maui.Controls.GridUnitType" /> values:</para>
+        <para>App developers can specify <see cref="T:Microsoft.Maui.GridUnitType" /> values for the <see cref="P:Microsoft.Maui.Controls.RowDefinition.Height" /> property in XAML. This is typically done inside tags for the <see cref="P:Microsoft.Maui.Controls.Grid.RowDefinitions" /> collection property. The following example demonstrates setting three row heights to each of the three valid <see cref="T:Microsoft.Maui.GridUnitType" /> values:</para>
         <code lang="XAML"><![CDATA[
 <Grid.RowDefinitions>
     <RowDefinition Height="Auto" />
@@ -61,10 +61,10 @@
       </Docs>
     </Member>
     <Member MemberName="Height">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.GridLength Height { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.GridLength Height" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.GridLength.Star Height { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.GridLength.Star Height" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.RowDefinition.Height" />
-      <MemberSignature Language="F#" Value="member this.Height : Microsoft.Maui.Controls.GridLength with get, set" Usage="Microsoft.Maui.Controls.RowDefinition.Height" />
+      <MemberSignature Language="F#" Value="member this.Height : Microsoft.Maui.GridLength.Star with get, set" Usage="Microsoft.Maui.Controls.RowDefinition.Height" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -78,7 +78,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.GridLength</ReturnType>
+        <ReturnType>Microsoft.Maui.GridLength.Star</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the height of the row.</summary>

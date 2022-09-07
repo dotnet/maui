@@ -9,25 +9,25 @@ namespace Microsoft.Maui.ApplicationModel
 		Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Browser']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Browser']/Docs/*" />
 	public static class Browser
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][1]/Docs/*" />
 		public static Task<bool> OpenAsync(string uri) => Default.OpenAsync(uri);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][3]/Docs/*" />
 		public static Task<bool> OpenAsync(string uri, BrowserLaunchMode launchMode) => Default.OpenAsync(uri, launchMode);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][4]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][4]/Docs/*" />
 		public static Task<bool> OpenAsync(string uri, BrowserLaunchOptions options) => Default.OpenAsync(uri, options);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][2]/Docs/*" />
 		public static Task<bool> OpenAsync(Uri uri) => Default.OpenAsync(uri);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][5]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][5]/Docs/*" />
 		public static Task<bool> OpenAsync(Uri uri, BrowserLaunchMode launchMode) => Default.OpenAsync(uri, launchMode);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][6]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][6]/Docs/*" />
 		public static Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options) => Default.OpenAsync(uri, options);
 
 		static IBrowser? defaultImplementation;

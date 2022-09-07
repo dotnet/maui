@@ -5,16 +5,16 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigableElement']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigableElement']/Docs/*" />
 	public class NavigableElement : Element, INavigationProxy, IStyleSelectable
 	{
 		static readonly BindablePropertyKey NavigationPropertyKey =
 			BindableProperty.CreateReadOnly("Navigation", typeof(INavigation), typeof(VisualElement), default(INavigation));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='NavigationProperty']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='NavigationProperty']/Docs/*" />
 		public static readonly BindableProperty NavigationProperty = NavigationPropertyKey.BindableProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='StyleProperty']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='StyleProperty']/Docs/*" />
 		public static readonly BindableProperty StyleProperty =
 			BindableProperty.Create("Style", typeof(Style), typeof(VisualElement), default(Style),
 				propertyChanged: (bindable, oldvalue, newvalue) => ((NavigableElement)bindable)._mergedStyle.Style = (Style)newvalue);
@@ -27,21 +27,21 @@ namespace Microsoft.Maui.Controls
 			_mergedStyle = new MergedStyle(GetType(), this);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='Navigation']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='Navigation']/Docs/*" />
 		public INavigation Navigation
 		{
 			get { return (INavigation)GetValue(NavigationProperty); }
 			internal set { SetValue(NavigationPropertyKey, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='Style']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='Style']/Docs/*" />
 		public Style Style
 		{
 			get { return (Style)GetValue(StyleProperty); }
 			set { SetValue(StyleProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='StyleClass']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='StyleClass']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> StyleClass
 		{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			set { @class = value; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='class']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='class']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> @class
 		{
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 
 		IList<string> IStyleSelectable.Classes => StyleClass;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='NavigationProxy']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='NavigationProxy']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy NavigationProxy
 		{

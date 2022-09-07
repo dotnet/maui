@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var platformView = new MauiWebView(this, Context!)
 			{
-				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
+				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
 			};
 
 			platformView.Settings.JavaScriptEnabled = true;
