@@ -75,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
 			{
 				await OnLoadedAsync(swapOrder.Page);
-				if (!swapOrder.IsFinished())
+				while (!swapOrder.IsFinished())
 				{
 					var nextRootPage = swapOrder.GetNextPageType();
 					window.Page = nextRootPage;
