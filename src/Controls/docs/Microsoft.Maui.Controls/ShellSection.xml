@@ -610,13 +610,13 @@
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged">
-      <MemberSignature Language="C#" Value="void IShellSectionController.SendInsetChanged (Microsoft.Maui.Controls.Thickness inset, double tabThickness);" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged(valuetype Microsoft.Maui.Controls.Thickness inset, float64 tabThickness) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ShellSection.Xamarin#Forms#IShellSectionController#SendInsetChanged(Microsoft.Maui.Controls.Thickness,System.Double)" />
-      <MemberSignature Language="F#" Value="abstract member Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged : Microsoft.Maui.Controls.Thickness * double -&gt; unit&#xA;override this.Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged : Microsoft.Maui.Controls.Thickness * double -&gt; unit" Usage="shellSection.Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged (inset, tabThickness)" />
+      <MemberSignature Language="C#" Value="void IShellSectionController.SendInsetChanged (Microsoft.Maui.Thickness inset, double tabThickness);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged(valuetypeMicrosoft.Maui.Thickness inset, float64 tabThickness) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ShellSection.Xamarin#Forms#IShellSectionController#SendInsetChanged(Microsoft.Maui.Thickness,System.Double)" />
+      <MemberSignature Language="F#" Value="abstract member Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged :Microsoft.Maui.Thickness * double -&gt; unit&#xA;override this.Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged :Microsoft.Maui.Thickness * double -&gt; unit" Usage="shellSection.Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged (inset, tabThickness)" />
       <MemberType>Method</MemberType>
       <Implements>
-        <InterfaceMember>M:Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged(Microsoft.Maui.Controls.Thickness,System.Double)</InterfaceMember>
+        <InterfaceMember>M:Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged(Microsoft.Maui.Thickness,System.Double)</InterfaceMember>
       </Implements>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -626,7 +626,7 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="inset" Type="Microsoft.Maui.Controls.Thickness" />
+        <Parameter Name="inset" Type="Microsoft.Maui.Thickness" />
         <Parameter Name="tabThickness" Type="System.Double" />
       </Parameters>
       <Docs>

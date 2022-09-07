@@ -114,10 +114,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetHeaderIconsSize">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Size GetHeaderIconsSize (Microsoft.Maui.Controls.BindableObject element);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Size GetHeaderIconsSize(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Size GetHeaderIconsSize (Microsoft.Maui.Controls.BindableObject element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Size GetHeaderIconsSize(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.GetHeaderIconsSize(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetHeaderIconsSize : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.GetHeaderIconsSize element" />
+      <MemberSignature Language="F#" Value="static member GetHeaderIconsSize : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.GetHeaderIconsSize element" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -125,7 +125,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -138,10 +138,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetHeaderIconsSize">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Size GetHeaderIconsSize (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage&gt; config);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Size GetHeaderIconsSize(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Windows, class Microsoft.Maui.Controls.TabbedPage&gt; config) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Size GetHeaderIconsSize (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage&gt; config);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Size GetHeaderIconsSize(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Windows, class Microsoft.Maui.Controls.TabbedPage&gt; config) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.GetHeaderIconsSize(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage})" />
-      <MemberSignature Language="F#" Value="static member GetHeaderIconsSize : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows, Microsoft.Maui.Controls.TabbedPage&gt; -&gt; Microsoft.Maui.Controls.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.GetHeaderIconsSize config" />
+      <MemberSignature Language="F#" Value="static member GetHeaderIconsSize : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows, Microsoft.Maui.Controls.TabbedPage&gt; -&gt; Microsoft.Maui.Graphics.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.GetHeaderIconsSize config" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -149,7 +149,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage&gt;" RefType="this" />
@@ -278,10 +278,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetHeaderIconsSize">
-      <MemberSignature Language="C#" Value="public static void SetHeaderIconsSize (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Controls.Size value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetHeaderIconsSize(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Controls.Size value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.SetHeaderIconsSize(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Size)" />
-      <MemberSignature Language="F#" Value="static member SetHeaderIconsSize : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Size -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.SetHeaderIconsSize (element, value)" />
+      <MemberSignature Language="C#" Value="public static void SetHeaderIconsSize (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Size value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetHeaderIconsSize(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Graphics.Size value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.SetHeaderIconsSize(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Size)" />
+      <MemberSignature Language="F#" Value="static member SetHeaderIconsSize : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Size -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.SetHeaderIconsSize (element, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -293,7 +293,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Size" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Size" />
       </Parameters>
       <Docs>
         <param name="element">The element on which to perform the operation.</param>
@@ -303,10 +303,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetHeaderIconsSize">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage&gt; SetHeaderIconsSize (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage&gt; config, Microsoft.Maui.Controls.Size value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Windows, class Microsoft.Maui.Controls.TabbedPage&gt; SetHeaderIconsSize(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Windows, class Microsoft.Maui.Controls.TabbedPage&gt; config, valuetype Microsoft.Maui.Controls.Size value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.SetHeaderIconsSize(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage},Microsoft.Maui.Controls.Size)" />
-      <MemberSignature Language="F#" Value="static member SetHeaderIconsSize : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows, Microsoft.Maui.Controls.TabbedPage&gt; * Microsoft.Maui.Controls.Size -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows, Microsoft.Maui.Controls.TabbedPage&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.SetHeaderIconsSize (config, value)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage&gt; SetHeaderIconsSize (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage&gt; config, Microsoft.Maui.Graphics.Size value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Windows, class Microsoft.Maui.Controls.TabbedPage&gt; SetHeaderIconsSize(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Windows, class Microsoft.Maui.Controls.TabbedPage&gt; config, valuetype Microsoft.Maui.Graphics.Size value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.SetHeaderIconsSize(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage},Microsoft.Maui.Graphics.Size)" />
+      <MemberSignature Language="F#" Value="static member SetHeaderIconsSize : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows, Microsoft.Maui.Controls.TabbedPage&gt; * Microsoft.Maui.Graphics.Size -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows, Microsoft.Maui.Controls.TabbedPage&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage.SetHeaderIconsSize (config, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -318,7 +318,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Windows,Microsoft.Maui.Controls.TabbedPage&gt;" RefType="this" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Size" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Size" />
       </Parameters>
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>

@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.Button']/Docs" />
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.Button']/Docs/*" />
 	public partial class Button : IButton, ITextButton, IImageButton
 	{
 		bool _wasImageLoading;

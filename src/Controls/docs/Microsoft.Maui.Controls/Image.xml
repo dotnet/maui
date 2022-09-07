@@ -88,10 +88,10 @@ var image = new Image { Source = "picture.png" };]]></code>
       </Docs>
     </Member>
     <Member MemberName="Aspect">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Aspect Aspect { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Aspect Aspect" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Aspect Aspect { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Aspect Aspect" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Image.Aspect" />
-      <MemberSignature Language="F#" Value="member this.Aspect : Microsoft.Maui.Controls.Aspect with get, set" Usage="Microsoft.Maui.Controls.Image.Aspect" />
+      <MemberSignature Language="F#" Value="member this.Aspect : Microsoft.Maui.Aspect with get, set" Usage="Microsoft.Maui.Controls.Image.Aspect" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -105,11 +105,11 @@ var image = new Image { Source = "picture.png" };]]></code>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Aspect</ReturnType>
+        <ReturnType>Microsoft.Maui.Aspect</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the scaling mode for the image. This is a bindable property.</summary>
-        <value>A <see cref="T:Microsoft.Maui.Controls.Aspect" /> representing the scaling mode of the image. Default is <see cref="F:Microsoft.Maui.Controls.Aspect.AspectFit" />.</value>
+        <value>A <see cref="T:Microsoft.Maui.Aspect" /> representing the scaling mode of the image. Default is <see cref="F:Microsoft.Maui.Aspect.AspectFit" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -360,10 +360,10 @@ indicator.BindingContext = image;]]></code>
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
-      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.Controls.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Image.OnSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="image.OnSizeRequest (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="image.OnSizeRequest (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -385,7 +385,7 @@ indicator.BindingContext = image;]]></code>
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -450,7 +450,7 @@ indicator.BindingContext = image;]]></code>
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

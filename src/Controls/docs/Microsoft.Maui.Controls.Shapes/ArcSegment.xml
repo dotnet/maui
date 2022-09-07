@@ -32,10 +32,10 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public ArcSegment (Microsoft.Maui.Controls.Point point, Microsoft.Maui.Controls.Size size, double rotationAngle, Microsoft.Maui.Controls.SweepDirection sweepDirection, bool isLargeArc);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Controls.Point point, valuetype Microsoft.Maui.Controls.Size size, float64 rotationAngle, valuetype Microsoft.Maui.Controls.SweepDirection sweepDirection, bool isLargeArc) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.ArcSegment.#ctor(Microsoft.Maui.Controls.Point,Microsoft.Maui.Controls.Size,System.Double,Microsoft.Maui.Controls.SweepDirection,System.Boolean)" />
-      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Shapes.ArcSegment : Microsoft.Maui.Controls.Point * Microsoft.Maui.Controls.Size * double * Microsoft.Maui.Controls.SweepDirection * bool -&gt; Microsoft.Maui.Controls.Shapes.ArcSegment" Usage="new Microsoft.Maui.Controls.Shapes.ArcSegment (point, size, rotationAngle, sweepDirection, isLargeArc)" />
+      <MemberSignature Language="C#" Value="public ArcSegment (Microsoft.Maui.Controls.Point point, Microsoft.Maui.Graphics.Size size, double rotationAngle, Microsoft.Maui.Controls.SweepDirection sweepDirection, bool isLargeArc);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Controls.Point point, valuetype Microsoft.Maui.Graphics.Size size, float64 rotationAngle, valuetype Microsoft.Maui.Controls.SweepDirection sweepDirection, bool isLargeArc) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shapes.ArcSegment.#ctor(Microsoft.Maui.Controls.Point,Microsoft.Maui.Graphics.Size,System.Double,Microsoft.Maui.Controls.SweepDirection,System.Boolean)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Shapes.ArcSegment : Microsoft.Maui.Controls.Point * Microsoft.Maui.Graphics.Size * double * Microsoft.Maui.Controls.SweepDirection * bool -&gt; Microsoft.Maui.Controls.Shapes.ArcSegment" Usage="new Microsoft.Maui.Controls.Shapes.ArcSegment (point, size, rotationAngle, sweepDirection, isLargeArc)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -43,7 +43,7 @@
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="point" Type="Microsoft.Maui.Controls.Point" />
-        <Parameter Name="size" Type="Microsoft.Maui.Controls.Size" />
+        <Parameter Name="size" Type="Microsoft.Maui.Graphics.Size" />
         <Parameter Name="rotationAngle" Type="System.Double" />
         <Parameter Name="sweepDirection" Type="Microsoft.Maui.Controls.SweepDirection" />
         <Parameter Name="isLargeArc" Type="System.Boolean" />
@@ -170,10 +170,10 @@
       </Docs>
     </Member>
     <Member MemberName="Size">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Size Size { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Size Size" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Size Size { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Size Size" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shapes.ArcSegment.Size" />
-      <MemberSignature Language="F#" Value="member this.Size : Microsoft.Maui.Controls.Size with get, set" Usage="Microsoft.Maui.Controls.Shapes.ArcSegment.Size" />
+      <MemberSignature Language="F#" Value="member this.Size : Microsoft.Maui.Graphics.Size with get, set" Usage="Microsoft.Maui.Controls.Shapes.ArcSegment.Size" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -181,11 +181,11 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.SizeTypeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Graphics.SizeTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

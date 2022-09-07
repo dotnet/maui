@@ -12,31 +12,31 @@ namespace Microsoft.Maui.Devices
 		event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayInfoChangedEventArgs']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayInfoChangedEventArgs']/Docs/*" />
 	public class DisplayInfoChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public DisplayInfoChangedEventArgs(DisplayInfo displayInfo) =>
 			DisplayInfo = displayInfo;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="//Member[@MemberName='DisplayInfo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="//Member[@MemberName='DisplayInfo']/Docs/*" />
 		public DisplayInfo DisplayInfo { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceDisplay']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceDisplay']/Docs/*" />
 	public static class DeviceDisplay
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='KeepScreenOn']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='KeepScreenOn']/Docs/*" />
 		public static bool KeepScreenOn
 		{
 			get => Current.KeepScreenOn;
 			set => Current.KeepScreenOn = value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfo']/Docs/*" />
 		public static DisplayInfo MainDisplayInfo => Current.MainDisplayInfo;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfoChanged']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfoChanged']/Docs/*" />
 		public static event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
 		{
 			add => Current.MainDisplayInfoChanged += value;
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Devices
 		public static IDeviceDisplay Current =>
 			currentImplementation ??= new DeviceDisplayImplementation();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='SetCurrent']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='SetCurrent']/Docs/*" />
 		internal static void SetCurrent(IDeviceDisplay? implementation) =>
 			currentImplementation = implementation;
 	}
