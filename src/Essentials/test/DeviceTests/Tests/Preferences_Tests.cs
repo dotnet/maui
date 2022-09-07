@@ -235,5 +235,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.Equal(date, get);
 			Assert.Equal(kind, get.Kind);
 		}
+
+		[Fact]
+		public void FailsWithUnsupportedType() =>
+			Assert.Throws<NotSupportedException>(() => Preferences.Default.Set("anything", new int[] { 1 }));
+
 	}
 }

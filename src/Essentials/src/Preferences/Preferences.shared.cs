@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Storage
 			var type = typeof(T);
 			if (!SupportedTypes.Contains(type))
 			{
-				throw new ArgumentException($"{type} is not supported");
+				throw new NotSupportedException($"Preferences using '{type}' type is not supported");
 			}
 		}
 	}
