@@ -35,6 +35,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
 		public object? CommandParameter
 		{
+			get { return GetValue(CommandParameterProperty); }
+			set { SetValue(CommandParameterProperty, value); }
+		}
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='NumberOfTapsRequired']/Docs/*" />
 		public int NumberOfTapsRequired
 		{
