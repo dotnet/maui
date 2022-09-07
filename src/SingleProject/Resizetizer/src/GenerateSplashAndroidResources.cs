@@ -65,7 +65,14 @@ namespace Microsoft.Maui.Resizetizer
 			writer.WriteAttributeString("xmlns", "android", ns: null, value: Namespace);
 
 			writer.WriteStartElement("item");
-			writer.WriteAttributeString("android", "drawable", Namespace, "@drawable/" + splash.OutputName);
+			writer.WriteAttributeString("android", "width", Namespace, "108dp");
+			writer.WriteAttributeString("android", "height", Namespace, "108dp");
+			writer.WriteAttributeString("android", "gravity", Namespace, "center");
+
+			writer.WriteStartElement("bitmap");
+			writer.WriteAttributeString("android", "gravity", Namespace, "fill");
+			writer.WriteAttributeString("android", "src", Namespace, "@drawable/" + splash.OutputName);
+			writer.WriteAttributeString("android", "mipMap", Namespace, "true");
 
 			writer.WriteEndDocument();
 		}

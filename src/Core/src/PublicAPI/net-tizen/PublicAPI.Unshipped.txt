@@ -1,5 +1,12 @@
 ﻿#nullable enable
+Microsoft.Maui.Platform.MauiFlyoutView
+Microsoft.Maui.Platform.MauiFlyoutView.MauiFlyoutView() -> void
 Microsoft.Maui.Platform.MauiPicker
 Microsoft.Maui.Platform.MauiPicker.MauiPicker() -> void
+Microsoft.Maui.Platform.MauiTVFlyoutView
+Microsoft.Maui.Platform.MauiTVFlyoutView.MauiTVFlyoutView() -> void
+override Microsoft.Maui.Handlers.ToolbarHandler.ConnectHandler(Microsoft.Maui.Platform.MauiToolbar! platformView) -> void
+override Microsoft.Maui.Handlers.ToolbarHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiToolbar! platformView) -> void
 override Microsoft.Maui.Platform.MauiPicker.OnEnabled(bool enabled) -> void
 override Microsoft.Maui.Platform.MauiStepper.OnEnabled(bool enabled) -> void
+static Microsoft.Maui.Handlers.ToolbarHandler.MapTitle(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.IToolbar! toolbar) -> void
