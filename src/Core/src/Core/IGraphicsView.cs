@@ -31,31 +31,31 @@ namespace Microsoft.Maui
 		void MoveHoverInteraction(PointF[] points);
 
 		/// <summary>
-		/// Which is raised when a pointer leaves the hit test area of the GraphicsView.
+		/// Raised when a pointer leaves the hit test area of the GraphicsView.
 		/// </summary>
 		void EndHoverInteraction();
 
 		/// <summary>
-		/// Which is raised when the GraphicsView is pressed.
+		/// Raised when the GraphicsView is pressed.
 		/// </summary>
 		/// <param name="points">The set of positions where there has been interaction.</param>
 		void StartInteraction(PointF[] points);
 
 		/// <summary>
-		/// Which is raised when the GraphicsView is dragged.
+		/// Raised when the GraphicsView is dragged.
 		/// </summary>
 		/// <param name="points">The set of positions where there has been interaction.</param>
 		void DragInteraction(PointF[] points);
 
 		/// <summary>
-		/// Which is raised when the press that raised the StartInteraction event is released.
+		/// Raised when the press that raised the StartInteraction event is released.
 		/// </summary>
 		/// <param name="points">The set of positions where there has been interaction.</param>
 		/// <param name="isInsideBounds">a boolean that indicates if the interaction takes place within the bounds.</param>
 		void EndInteraction(PointF[] points, bool isInsideBounds);
 
 		/// <summary>
-		/// Which is raised when the press that made contact with the GraphicsView loses contact.
+		/// Raised when the press that made contact with the GraphicsView loses contact.
 		/// </summary>
 		void CancelInteraction();
 	}
