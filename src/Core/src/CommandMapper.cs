@@ -26,6 +26,9 @@ namespace Microsoft.Maui
 
 		private protected virtual void InvokeCore(string key, IElementHandler viewHandler, IElement virtualView, object? args)
 		{
+			if (!viewHandler.CanInvokeMappers())
+				return;
+
 			var action = GetCommand(key);
 			action?.Invoke(viewHandler, virtualView, args);
 		}

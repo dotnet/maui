@@ -54,10 +54,6 @@ namespace Microsoft.Maui.Platform
 			_toolbar = toolbar;
 			Add(toolbar);
 			(toolbar.Layout as NLayoutGroup)?.ChangeLayoutSiblingOrder(0);
-			_toolbar.IconPressed += (s, e) =>
-			{
-				MauiContext?.GetPlatformWindow().GetWindow()?.BackButtonClicked();
-			};
 		}
 
 		public virtual void Connect(IView navigationView)

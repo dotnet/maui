@@ -219,6 +219,12 @@ namespace Microsoft.Maui.Controls.Platform
 			return new ShellItemTemplateAdaptor(Element!, Element!.Items);
 		}
 
+		void OnIconPressed(object? sender, EventArgs e)
+		{
+			if (!Element!.Toolbar.BackButtonVisible && ((Element!.Toolbar.IsVisible)))
+				IsOpened = true;
+		}
+
 		void UpdetDrawerToggleVisible()
 		{
 			Element!.Toolbar.DrawerToggleVisible = ((Element!.Toolbar.DrawerToggleVisible) && (Element.FlyoutBehavior == FlyoutBehavior.Flyout));
@@ -247,14 +253,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_cachedGroups = groups;
 			return false;
-		}
-
-		void OnIconPressed(object? sender, EventArgs e)
-		{
-			if (Element!.Toolbar.BackButtonVisible)
-				MauiContext?.GetPlatformWindow().GetWindow()?.BackButtonClicked();
-			else
-				IsOpened = true;
 		}
 
 		void OnTabItemSelected(object? sender, CollectionViewSelectionChangedEventArgs e)
