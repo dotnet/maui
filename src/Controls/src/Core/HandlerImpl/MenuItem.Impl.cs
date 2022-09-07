@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.MenuItem']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.MenuItem']/Docs/*" />
 	public partial class MenuItem : IMenuElement
 	{
 		IImageSource IImageSourcePart.Source => this.IconImageSource;

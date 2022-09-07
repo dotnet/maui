@@ -23,7 +23,6 @@
     <summary>An item in a toolbar or displayed on a <see cref="T:Microsoft.Maui.Controls.Page" />.</summary>
     <remarks>
       <para>Any changes made to the properties of the toolbar item after it has been added will be ignored.</para>
-      <block type="note">Windows Phone ApplicationBarButtons and MenuItems always display an associated text. Therefore, when developing for Windows Phone, application devs should provide a value for the <see cref="P:Microsoft.Maui.Controls.MenuItem.Text" /> property. Otherwise, the file name of the icon image will be dixplayed as the text of the <see cref="T:Microsoft.Maui.Controls.ToolbarItem" />. (For example, the user might see "menu.png" in the user interface.)</block>
     </remarks>
   </Docs>
   <Members>

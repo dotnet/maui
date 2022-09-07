@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Controls whether JavaScript alerts are enabled for a web view.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetIsJavaScriptAlertEnabled">
@@ -38,7 +37,6 @@
         <param name="element">The web view element whose JavaScript alert permissions to return.</param>
         <summary>Returns a Boolean value that tells whether the web view allows JavaScript alerts.</summary>
         <returns>A Boolean value that tells whether the web view allows JavaScript alerts.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsJavaScriptAlertEnabled">
@@ -62,7 +60,6 @@
         <param name="config">The platform configuration for the web view element whose JavaScript alert permissions to return.</param>
         <summary>Returns a Boolean value that tells whether the web view allows JavaScript alerts.</summary>
         <returns>A Boolean value that tells whether the web view allows JavaScript alerts.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsJavaScriptAlertEnabledProperty">
@@ -105,9 +102,8 @@
       <Docs>
         <param name="element">The web view element whose JavaScript alert permissions to set.</param>
         <param name="value">
-          <see langwor="true" /> to allow JavaScript alerts. Otherwise, <see langword="false" />.</param>
+          True to allow JavaScript alerts. Otherwise, false.</param>
         <summary>Sets a Boolean value that tells whether the web view allows JavaScript alerts.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsJavaScriptAlertEnabled">
@@ -131,10 +127,9 @@
       <Docs>
         <param name="config">The platform configuration for the web view element whose JavaScript alert permissions to set.</param>
         <param name="value">
-          <see langwor="true" /> to allow JavaScript alerts. Otherwise, <see langword="false" />.</param>
+          True to allow JavaScript alerts. Otherwise, false.</param>
         <summary>Sets a Boolean value that tells whether the web view allows JavaScript alerts.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

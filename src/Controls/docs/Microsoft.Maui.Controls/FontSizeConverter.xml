@@ -1,6 +1,6 @@
 <Type Name="FontSizeConverter" FullName="Microsoft.Maui.Controls.FontSizeConverter">
-  <TypeSignature Language="C#" Value="public class FontSizeConverter : Microsoft.Maui.Controls.TypeConverter, Microsoft.Maui.Controls.IExtendedTypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FontSizeConverter extends Microsoft.Maui.Controls.TypeConverter implements class Microsoft.Maui.Controls.IExtendedTypeConverter" />
+  <TypeSignature Language="C#" Value="public class FontSizeConverter : System.ComponentModel.TypeConverter, Microsoft.Maui.Controls.IExtendedTypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit FontSizeConverter extends System.ComponentModel.TypeConverter implements class Microsoft.Maui.Controls.IExtendedTypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.FontSizeConverter" />
   <TypeSignature Language="F#" Value="type FontSizeConverter = class&#xA;    inherit TypeConverter&#xA;    interface IExtendedTypeConverter" />
   <AssemblyInfo>
@@ -12,7 +12,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces>
     <Interface>

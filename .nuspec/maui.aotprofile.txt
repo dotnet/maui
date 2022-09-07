@@ -4125,7 +4125,7 @@ Methods:
 	void Microsoft.Maui.Controls.CheckBox/<>c:.cctor ()
 	void Microsoft.Maui.Controls.CheckBox/<>c:.ctor ()
 	void Microsoft.Maui.Controls.CollectionView:.ctor ()
-	void Microsoft.Maui.Controls.ColorElement:.cctor ()
+	void Microsoft.Maui.Graphics.ColorElement:.cctor ()
 	void Microsoft.Maui.Controls.ColumnDefinitionCollection:.ctor ()
 	void Microsoft.Maui.Controls.Compatibility.Layout:.cctor ()
 	void Microsoft.Maui.Controls.Compatibility.Layout:.ctor ()

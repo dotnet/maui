@@ -3,7 +3,7 @@ using GraphicsGradientStop = Microsoft.Maui.Graphics.PaintGradientStop;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Brush.xml" path="Type[@FullName='Microsoft.Maui.Controls.Brush']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Brush.xml" path="Type[@FullName='Microsoft.Maui.Controls.Brush']/Docs/*" />
 	public partial class Brush
 	{
 		public static implicit operator Brush(Paint paint)

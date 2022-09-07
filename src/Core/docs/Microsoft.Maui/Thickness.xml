@@ -27,7 +27,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>Struct defining thickness around the edges of a <see cref="T:Microsoft.Maui.Rectangle" /> using doubles.</summary>
+    <summary>Struct defining thickness around the edges of a <see cref="T:Microsoft.Maui.Controls.Shapes.Rectangle" /> using doubles.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -366,10 +366,10 @@
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
-      <MemberSignature Language="C#" Value="public static implicit operator Microsoft.Maui.Thickness (Microsoft.Maui.Size size);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Thickness op_Implicit(valuetype Microsoft.Maui.Size size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Thickness.op_Implicit(Microsoft.Maui.Size)~Microsoft.Maui.Thickness" />
-      <MemberSignature Language="F#" Value="static member op_Implicit : Microsoft.Maui.Size -&gt; Microsoft.Maui.Thickness" Usage="Microsoft.Maui.Thickness.op_Implicit size" />
+      <MemberSignature Language="C#" Value="public static implicit operator Microsoft.Maui.Thickness (Microsoft.Maui.Graphics.Size size);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname valuetype Microsoft.Maui.Thickness op_Implicit(valuetype Microsoft.Maui.Graphics.Size size) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Thickness.op_Implicit(Microsoft.Maui.Graphics.Size)~Microsoft.Maui.Thickness" />
+      <MemberSignature Language="F#" Value="static member op_Implicit : Microsoft.Maui.Graphics.Size -&gt; Microsoft.Maui.Thickness" Usage="Microsoft.Maui.Thickness.op_Implicit size" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -386,14 +386,14 @@
         <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="size" Type="Microsoft.Maui.Size" />
+        <Parameter Name="size" Type="Microsoft.Maui.Graphics.Size" />
       </Parameters>
       <Docs>
-        <param name="size">A <see cref="T:Microsoft.Maui.Size" /> to convert to a <see cref="T:Microsoft.Maui.Thickness" /></param>
-        <summary>Converts a <see cref="T:Microsoft.Maui.Size" /> into a <see cref="T:Microsoft.Maui.Thickness" />.</summary>
+        <param name="size">A <see cref="T:Microsoft.Maui.Graphics.Size" /> to convert to a <see cref="T:Microsoft.Maui.Thickness" /></param>
+        <summary>Converts a <see cref="T:Microsoft.Maui.Graphics.Size" /> into a <see cref="T:Microsoft.Maui.Thickness" />.</summary>
         <returns>To be added.</returns>
         <remarks>
-          <para>The <see cref="T:Microsoft.Maui.Thickness" />'s <see cref="P:Microsoft.Maui.Thickness.Left" /> and <see cref="P:Microsoft.Maui.Thickness.Right" /> are both set equal to the <paramref name="size" />'s <see cref="P:Microsoft.Maui.Size.Width" /> and the  <see cref="T:Microsoft.Maui.Thickness" />'s <see cref="P:Microsoft.Maui.Thickness.Top" /> and <see cref="P:Microsoft.Maui.Thickness.Bottom" /> are both set equal to the <paramref name="size" />'s <see cref="P:Microsoft.Maui.Size.Height" />.</para>
+          <para>The <see cref="T:Microsoft.Maui.Thickness" />'s <see cref="P:Microsoft.Maui.Thickness.Left" /> and <see cref="P:Microsoft.Maui.Thickness.Right" /> are both set equal to the <paramref name="size" />'s <see cref="P:Microsoft.Maui.Graphics.Size.Width" /> and the  <see cref="T:Microsoft.Maui.Thickness" />'s <see cref="P:Microsoft.Maui.Thickness.Top" /> and <see cref="P:Microsoft.Maui.Thickness.Bottom" /> are both set equal to the <paramref name="size" />'s <see cref="P:Microsoft.Maui.Graphics.Size.Height" />.</para>
         </remarks>
       </Docs>
     </Member>
