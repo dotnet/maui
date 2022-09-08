@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IProgress.ProgressColor)] = MapProgressColor
 		};
 
-		public static CommandMapper<IPicker, IProgressBarHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IProgress, IProgressBarHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 
