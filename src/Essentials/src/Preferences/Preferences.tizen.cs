@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Storage
 						case DateTime dt:
 							var encodedValue = Preference.Get<long>(fullKey);
 							value = (T)(object)DateTime.FromBinary(encodedValue);
+							break;
 						default:
 							// the case when the string is null
 							if (typeof(T) == typeof(string))
