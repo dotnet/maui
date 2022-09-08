@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Storage
 							break;
 						case DateTime dt:
 							var encodedValue = Preference.Get<long>(fullKey);
-							value = DateTime.FromBinary(encodedValue);
+							value = (T)(object)DateTime.FromBinary(encodedValue);
 						default:
 							// the case when the string is null
 							if (typeof(T) == typeof(string))
