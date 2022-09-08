@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 				new PropertyMetadata(null, OnAppTitleBarTemplateChanged));
 
 		double _appTitleBarHeight;
+		bool _useCustomAppTitleBar;
 		internal event EventHandler? OnAppTitleBarChanged;
 		internal event EventHandler? OnApplyTemplateFinished;
 		internal event EventHandler? ContentChanged;
@@ -101,6 +102,8 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateAppTitleBar(Graphics.Rect captionButtonRect, bool useCustomAppTitleBar)
 		{
+			_useCustomAppTitleBar = useCustomAppTitleBar;
+
 			if (AppTitleBarContentControl != null)
 			{
 				AppTitleBarContentControl.MinHeight = captionButtonRect.Height;
@@ -242,7 +245,7 @@ namespace Microsoft.Maui.Platform
 
 				if (_appTitleBarHeight > 0)
 				{
-					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight);
+					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight, _useCustomAppTitleBar);
 				}
 			}
 
