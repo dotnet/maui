@@ -17,12 +17,8 @@ namespace Controls.Sample.Gtk
 		static void Main(string[] args)
 		{
 
-			var app =
-#if UseSimpleSample
-				new SimpleSampleGtkApplication();
-#else
-				new MauiGtkApplication<Maui.Controls.Sample.Startup>();
-#endif
+			var app = new SimpleSampleGtkApplication();
+
 			app.Run();
 
 		}
