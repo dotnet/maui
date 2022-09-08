@@ -83,7 +83,7 @@
                                     <Setter Property="BorderColor" Value="Gray" />
                                 </VisualState.Setters>
                             </VisualState>
-                            <VisualState x:Name="PointerEntered">
+                            <VisualState x:Name="PointerOver">
                                 <VisualState.Setters>
                                     <Setter Property="BackgroundColor" Value="LightBlue" />
                                     <Setter Property="BorderColor" Value="Gray" />

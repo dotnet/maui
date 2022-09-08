@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls
 			get { return _gestureRecognizers; }
 		}
 
-		bool IsPointerInside = false;
+		bool IsPointerOver = false;
 
 		ObservableCollection<IGestureRecognizer> _compositeGestureRecognizers;
 
@@ -161,12 +161,12 @@ namespace Microsoft.Maui.Controls
 				PointerGestureRecognizer pgr = new PointerGestureRecognizer();
 				pgr.PointerEntered += (s, e) =>
 				{
-					IsPointerInside = true;
+					IsPointerOver = true;
 					ChangeVisualState();
 				};
 				pgr.PointerExited += (s, e) =>
 				{
-					IsPointerInside = false;
+					IsPointerOver = false;
 					ChangeVisualState();
 				};
 
@@ -223,8 +223,8 @@ namespace Microsoft.Maui.Controls
 
 		override protected internal void ChangeVisualState()
 		{
-			if (IsPointerInside)
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerEntered);
+			if (IsPointerOver)
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
 			else
 				base.ChangeVisualState();
 		}

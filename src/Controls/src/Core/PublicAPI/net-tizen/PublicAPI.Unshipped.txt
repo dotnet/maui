@@ -3557,7 +3557,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.Focused = "Focused" -> string
 ~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.Normal = "Normal" -> string
 ~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.Selected = "Selected" -> string
-~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.PointerEntered = "PointerEntered" -> string
+~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.PointerOver = "PointerOver" -> string
 ~Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(Microsoft.Maui.IView view) -> Microsoft.Maui.Graphics.Rect
 ~Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutFlags(Microsoft.Maui.IView view) -> Microsoft.Maui.Layouts.AbsoluteLayoutFlags
 ~Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutBounds(Microsoft.Maui.IView view, Microsoft.Maui.Graphics.Rect bounds) -> void
