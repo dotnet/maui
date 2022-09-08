@@ -9,12 +9,15 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class FlexJustifyTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -36,6 +39,7 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexJustify)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexJustify fj)
@@ -48,12 +52,15 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class FlexDirectionTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -71,6 +78,7 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexDirection)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexDirection fd)
@@ -83,12 +91,15 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class FlexAlignContentTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -110,6 +121,7 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexAlignContent)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexAlignContent fac)
@@ -122,12 +134,15 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class FlexAlignItemsTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -145,6 +160,7 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexAlignItems)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexAlignItems fai)
@@ -157,12 +173,15 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class FlexAlignSelfTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -180,6 +199,7 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexAlignSelf)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexAlignSelf fes)
@@ -192,12 +212,15 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class FlexWrapTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -213,6 +236,7 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexWrap)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexWrap fw)
@@ -225,12 +249,15 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class FlexBasisTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -250,6 +277,7 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexBasis)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexBasis basis)
