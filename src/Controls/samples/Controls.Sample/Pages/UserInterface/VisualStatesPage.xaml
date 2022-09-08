@@ -67,6 +67,27 @@
                 x:Name="entry3"
                 Text=""
                 Placeholder="Type something to enable 2nd Entry" />
+            <Label
+                Text="Label with PointerEntered visual state:" 
+                Style="{StaticResource Headline}" />
+            <Label Text="Hover me">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="TextColor"
+                                            Value="Blue" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="PointerEntered">
+                            <VisualState.Setters>
+                                <Setter Property="TextColor"
+                                            Value="Pink" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+            </Label>
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>

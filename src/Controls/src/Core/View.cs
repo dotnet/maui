@@ -147,11 +147,32 @@ namespace Microsoft.Maui.Controls
 			get { return _gestureRecognizers; }
 		}
 
+		bool IsPointerInside = false;
+
 		ObservableCollection<IGestureRecognizer> _compositeGestureRecognizers;
 
 		IList<IGestureRecognizer> IGestureController.CompositeGestureRecognizers
 		{
-			get { return _compositeGestureRecognizers ?? (_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>()); }
+			get
+			{
+				if (_compositeGestureRecognizers is not null)
+					return _compositeGestureRecognizers;
+
+				PointerGestureRecognizer pgr = new PointerGestureRecognizer();
+				pgr.PointerEntered += (s, e) =>
+				{
+					IsPointerInside = true;
+					ChangeVisualState();
+				};
+				pgr.PointerExited += (s, e) =>
+				{
+					IsPointerInside = false;
+					ChangeVisualState();
+				};
+
+				_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>() { pgr };
+				return _compositeGestureRecognizers;
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='GetChildElements']/Docs/*" />
@@ -198,6 +219,14 @@ namespace Microsoft.Maui.Controls
 				return;
 			if (gesture is PinchGestureRecognizer && _gestureRecognizers.GetGesturesFor<PinchGestureRecognizer>().Count() > 1)
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
+		}
+
+		override protected internal void ChangeVisualState()
+		{
+			if (IsPointerInside)
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerEntered);
+			else
+				base.ChangeVisualState();
 		}
 	}
 }
