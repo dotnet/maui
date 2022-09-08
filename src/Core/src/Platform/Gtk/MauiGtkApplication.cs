@@ -7,10 +7,8 @@ using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui
 {
-
 	public abstract class MauiGtkApplication : IPlatformApplication
 	{
-
 		protected abstract MauiApp CreateMauiApp();
 
 		// https://docs.gtk.org/gio/type_func.Application.id_is_valid.html
@@ -44,7 +42,6 @@ namespace Microsoft.Maui
 
 		protected void RegisterLifecycleEvents(Gtk.Application app)
 		{
-
 			app.Startup += OnStartup!;
 			app.Shutdown += OnShutdown!;
 			app.Opened += OnOpened;
@@ -52,7 +49,6 @@ namespace Microsoft.Maui
 			app.Activated += OnActivated!;
 			app.WindowRemoved += OnWindowRemoved;
 			app.CommandLine += OnCommandLine;
-
 		}
 
 		protected void OnStartup(object sender, EventArgs args)
@@ -77,7 +73,6 @@ namespace Microsoft.Maui
 			Services?.InvokeLifecycleEvents<GtkLifecycle.OnShutdown>(del => del(CurrentGtkApplication, args));
 
 			Dispatcher.DispatchPendingEvents();
-
 		}
 
 		protected void OnCommandLine(object o, GLib.CommandLineArgs args)
@@ -99,17 +94,19 @@ namespace Microsoft.Maui
 		{
 			IPlatformApplication.Current = this;
 
-			var startup = CreateMauiApp();
+			var mauiApp = CreateMauiApp();
 
-			Services = startup.Services;
+			Services = mauiApp.Services;
 			Services.InvokeLifecycleEvents<GtkLifecycle.OnLaunching>(del => del(this, args));
 
-			var mauiContext = new MauiContext(Services);
-			Services.InvokeLifecycleEvents<GtkLifecycle.OnMauiContextCreated>(del => del(mauiContext));
+			var rootContext = new MauiContext(Services);
+			var applicationContext = rootContext.MakeApplicationScope(CurrentGtkApplication);
+
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnMauiContextCreated>(del => del(applicationContext));
 
 			Application = Services.GetRequiredService<IApplication>();
 
-			CurrentGtkApplication.SetApplicationHandler(Application, mauiContext);
+			CurrentGtkApplication.SetApplicationHandler(Application, applicationContext);
 
 			CurrentGtkApplication.CreatePlatformWindow(Application, new PersistedState());
 
@@ -118,7 +115,6 @@ namespace Microsoft.Maui
 
 		protected void Launch(EventArgs args)
 		{
-
 			Gtk.Application.Init();
 			var app = new Gtk.Application(ApplicationId, GLib.ApplicationFlags.None);
 
@@ -129,9 +125,6 @@ namespace Microsoft.Maui
 			Current = this;
 
 			((GLib.Application)app).Run();
-
 		}
-
 	}
-
 }
