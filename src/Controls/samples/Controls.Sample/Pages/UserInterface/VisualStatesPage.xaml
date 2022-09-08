@@ -68,26 +68,38 @@
                 Text=""
                 Placeholder="Type something to enable 2nd Entry" />
             <Label
-                Text="Label with PointerEntered visual state:" 
+                Text="Label with Normal, PointerEntered, and Presed visual states:" 
                 Style="{StaticResource Headline}" />
-            <Label Text="Hover me">
+            <Button 
+                Text="Login"
+                WidthRequest="300"
+                HorizontalOptions="Center">
                 <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="TextColor"
-                                            Value="Blue" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerEntered">
-                            <VisualState.Setters>
-                                <Setter Property="TextColor"
-                                            Value="Pink" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="LightBlue" />
+                                    <Setter Property="BorderColor" Value="Gray" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="PointerEntered">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="LightBlue" />
+                                    <Setter Property="BorderColor" Value="Gray" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Blue" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
                 </VisualStateManager.VisualStateGroups>
-            </Label>
+            </Button>
+
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>
