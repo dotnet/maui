@@ -72,7 +72,15 @@ namespace Microsoft.Maui.Controls
 			if (_window is not null)
 				_window.PropertyChanged += OnWindowPropertyChanged;
 
-			_page = _window?.Page;
+			var page = _window?.Page;
+
+			if (page is Shell shell)
+				_page = shell.CurrentPage;
+			else if (page is NavigationPage navigationPage)
+				_page = navigationPage.CurrentPage;
+			else
+				_page = page;
+
 			if (_page is not null)
 				_page.SizeChanged += OnPageSizeChanged;
 		}
