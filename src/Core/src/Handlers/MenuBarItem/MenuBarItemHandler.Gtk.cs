@@ -2,12 +2,9 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, Gtk.Widget>, IMenuBarItemHandler
+	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, NotImplementedView>, IMenuBarItemHandler
 	{
-		protected override Gtk.Widget CreatePlatformElement()
-		{
-			throw new NotImplementedException();
-		}
+		protected override NotImplementedView CreatePlatformElement() => new();
 
 		public void Add(IMenuElement view)
 		{

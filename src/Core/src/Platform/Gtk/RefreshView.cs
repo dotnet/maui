@@ -1,6 +1,7 @@
 namespace Microsoft.Maui.Platform
 {
 
+	[MissingMapper]
 	public class RefreshView : Gtk.Box
 	{
 

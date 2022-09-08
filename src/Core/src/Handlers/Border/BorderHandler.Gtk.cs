@@ -2,10 +2,10 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorderView, Gtk.Widget>
+	public partial class BorderHandler : ViewHandler<IBorderView, NotImplementedView>
 	{
 		[MissingMapper]
-		protected override Gtk.Widget CreatePlatformView() => throw new NotImplementedException();
+		protected override NotImplementedView CreatePlatformView() => new();
 
 		[MissingMapper]
 		public static void MapContent(IBorderHandler handler, IBorderView border)

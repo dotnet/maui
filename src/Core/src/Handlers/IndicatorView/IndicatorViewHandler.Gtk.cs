@@ -3,9 +3,9 @@
 namespace Microsoft.Maui.Handlers
 {
 	[MissingMapper]
-	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, Gtk.Widget>
+	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, NotImplementedView>
 	{
-		protected override Gtk.Widget CreatePlatformView() => throw new NotImplementedException();
+		protected override NotImplementedView CreatePlatformView() => new();
 
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator) { }
 		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator) { }

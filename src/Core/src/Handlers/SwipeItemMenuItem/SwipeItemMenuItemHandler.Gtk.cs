@@ -4,12 +4,9 @@ using System.Text;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, Gtk.Widget>
+	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, NotImplementedView>
 	{
-		protected override Gtk.Widget CreatePlatformElement()
-		{
-			throw new NotImplementedException();
-		}
+		protected override NotImplementedView CreatePlatformElement() => new();
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ITextStyle view) { }
 
