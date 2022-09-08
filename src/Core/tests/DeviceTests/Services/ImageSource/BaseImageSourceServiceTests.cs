@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 			this IImageSourceService service,
 			IImageSource imageSource,
 			CancellationToken cancellationToken = default) =>
-			service.GetDrawableAsync(imageSource, cancellationToken: cancellationToken);
+			service.GetImageSourceAsync(imageSource, cancellationToken: cancellationToken);
 #endif
 	}
 }
