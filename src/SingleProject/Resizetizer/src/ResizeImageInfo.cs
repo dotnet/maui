@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class ResizeImageInfo
 	{
+		public static readonly List<string> ValidImageExtensions = new List<string> { ".JPG", ".JPE", ".BMP", ".GIF", ".PNG", ".TIFF", ".SVG" };
+
 		public string? Alias { get; set; }
 
 		public string? Filename { get; set; }
@@ -61,10 +63,14 @@ namespace Microsoft.Maui.Resizetizer
 			foreach (var image in images)
 			{
 				var info = new ResizeImageInfo();
-
+								
 				var fileInfo = new FileInfo(image.GetMetadata("FullPath"));
+
 				if (!fileInfo.Exists)
 					throw new FileNotFoundException("Unable to find background file: " + fileInfo.FullName, fileInfo.FullName);
+
+				if (!ValidImageExtensions.Contains(fileInfo.Extension.ToUpperInvariant()))
+					throw new FileNotFoundException("The file is not a valid image format: " + fileInfo.FullName, fileInfo.FullName);
 
 				info.Filename = fileInfo.FullName;
 

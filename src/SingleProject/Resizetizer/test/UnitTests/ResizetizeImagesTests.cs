@@ -71,6 +71,21 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
+			public void NonImageFileFails()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/textfile.txt"),
+				};
+
+				var task = GetNewTask(items);
+
+				var success = task.Execute();
+
+				Assert.False(success);
+			}
+
+			[Fact]
 			public void ValidFileSucceeds()
 			{
 				var items = new[]
