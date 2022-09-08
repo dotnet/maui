@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 		class NullLayoutManagerFactory : Controls.ILayoutManagerFactory 
 		{
-			public ILayoutManager? GetLayoutManager(Layout layout)
+			public ILayoutManager? CreateLayoutManager(Layout layout)
 			{
 				return null;
 			}
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 		class ChoosyLayoutManagerFactory : Controls.ILayoutManagerFactory
 		{
-			public ILayoutManager? GetLayoutManager(Layout layout)
+			public ILayoutManager? CreateLayoutManager(Layout layout)
 			{
 				if (layout is AbsoluteLayout)
 				{
