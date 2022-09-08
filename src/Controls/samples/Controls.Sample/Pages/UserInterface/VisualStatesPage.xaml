@@ -80,13 +80,13 @@
                             <VisualState x:Name="Normal">
                                 <VisualState.Setters>
                                     <Setter Property="BackgroundColor" Value="LightBlue" />
-                                    <Setter Property="BorderColor" Value="Gray" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="PointerOver">
                                 <VisualState.Setters>
                                     <Setter Property="BackgroundColor" Value="LightBlue" />
-                                    <Setter Property="BorderColor" Value="Gray" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Pressed">
