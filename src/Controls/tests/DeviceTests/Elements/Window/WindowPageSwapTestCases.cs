@@ -86,10 +86,18 @@ namespace Microsoft.Maui.DeviceTests
 			var labelToTest = new Label();
 			var contentToTest = new ContentPage()
 			{
-				Content = new VerticalStackLayout()
+				Title = "title",
+				ToolbarItems =
+				{
+					new ToolbarItem()
 					{
-						labelToTest
+						Text = "Item"
 					}
+				},
+				Content = new VerticalStackLayout()
+				{
+					labelToTest
+				}
 			};
 
 			return contentToTest;

@@ -221,7 +221,6 @@ namespace Microsoft.Maui.Platform
 			};
 
 			UpdateToolbarPlacement();
-			UpdateContentGridMargin();
 
 			if (Toolbar != null)
 			{
@@ -234,14 +233,6 @@ namespace Microsoft.Maui.Platform
 		void PaneContentTopPaddingChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			UpdatePaneContentGridMargin();
-		}
-
-		void UpdateContentGridMargin()
-		{
-			if (PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
-				NavigationViewContentMargin = new WThickness(0, 0, 0, 0);
-			else
-				NavigationViewContentMargin = new WThickness(0, AppBarTitleHeight, 0, 0);
 		}
 
 		internal void UpdateAppTitleBar(double appTitleBarHeight)
@@ -297,7 +288,6 @@ namespace Microsoft.Maui.Platform
 
 			UpdatePaneContentGridMargin();
 			UpdateToolbarPlacement();
-			UpdateContentGridMargin();
 		}
 
 		// This updates the amount of space between the top of the window
