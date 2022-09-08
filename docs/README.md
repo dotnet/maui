@@ -11,4 +11,5 @@ The table below outlines the different docs in this folder and what they are hel
 | Documentation        | What is it about?   | Who is it for?      |
 |--------------------------------------------------------------------------|-------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | [Issue management](IssueManagementPolicies.md) | Overview of policies in place to manage issues| Community members and collaborators looking to understand how we handle closed issue, issues that need author feedback, etc |    |
+| [Release Schedule](ReleaseSchedule.md) | Overview of .NET MAUI version releases | Anyone who is interested in .NET MAUI versions and release dates |    |
 | [Triage process](TriageProcess.md)| Overview of the issue triage process used in the repo     | Anyone looking to understand the triage process on the repo  |
