@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Same(context, parent.Background.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void TestGetGradientStopHashCode()
 		{
 			var gradientStop = new GradientStop();
