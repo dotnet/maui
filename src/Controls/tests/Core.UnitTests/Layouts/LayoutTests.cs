@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		public void CanUseFactoryForAlternateManager()
 		{
 			var layoutManagerFactory = Substitute.For<Controls.ILayoutManagerFactory>();
-			layoutManagerFactory.GetLayoutManager(Arg.Any<Layout>()).Returns(new AlternateLayoutManager(8765, 4321));
+			layoutManagerFactory.CreateLayoutManager(Arg.Any<Layout>()).Returns(new AlternateLayoutManager(8765, 4321));
 
 			var context = SetupContext(layoutManagerFactory);
 
