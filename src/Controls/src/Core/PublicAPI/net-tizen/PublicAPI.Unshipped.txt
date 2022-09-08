@@ -7426,4 +7426,4 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~virtual Microsoft.Maui.Controls.Toolbar.TitleView.set -> void
 ~virtual Microsoft.Maui.Controls.View.GetChildElements(Microsoft.Maui.Graphics.Point point) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.GestureElement>
 Microsoft.Maui.Controls.ILayoutManagerFactory
-~Microsoft.Maui.Controls.ILayoutManagerFactory.GetLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
+~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
