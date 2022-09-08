@@ -83,25 +83,7 @@ namespace Microsoft.Maui
 
 			void OnWindowMessage(object? sender, WindowMessageEventArgs e)
 			{
-				if (e.MessageId == PlatformMethods.MessageIds.WM_SETTINGCHANGE ||
-					e.MessageId == PlatformMethods.MessageIds.WM_THEMECHANGE)
-				{
-					MauiWinUIApplication.Current.Application?.ThemeChanged();
-				}
-				else if (e.MessageId == PlatformMethods.MessageIds.WM_DPICHANGED)
-				{
-					var window = this.GetWindow();
-					if (window is not null)
-					{
-						var dpiX = (short)(long)e.WParam;
-						var dpiY = (short)((long)e.WParam >> 16);
-
-						var density = dpiX / DeviceDisplay.BaseLogicalDpi;
-
-						window.DisplayDensityChanged(density);
-					}
-				}
-				else if (e.MessageId == PlatformMethods.MessageIds.WM_GETMINMAXINFO)
+				if (e.MessageId == PlatformMethods.MessageIds.WM_GETMINMAXINFO)
 				{
 					var win = this as IPlatformSizeRestrictedWindow;
 					var minSize = win.MinimumSize;
