@@ -3224,6 +3224,7 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 override Microsoft.Maui.Controls.TemplatedView.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.TextCell.OnTapped() -> void
 override Microsoft.Maui.Controls.UriImageSource.IsEmpty.get -> bool
+override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 override Microsoft.Maui.Controls.View.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.VisualElement.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.VisualState.GetHashCode() -> int
@@ -3556,6 +3557,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.Focused = "Focused" -> string
 ~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.Normal = "Normal" -> string
 ~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.Selected = "Selected" -> string
+~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.PointerEntered = "PointerEntered" -> string
 ~Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(Microsoft.Maui.IView view) -> Microsoft.Maui.Graphics.Rect
 ~Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutFlags(Microsoft.Maui.IView view) -> Microsoft.Maui.Layouts.AbsoluteLayoutFlags
 ~Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutBounds(Microsoft.Maui.IView view, Microsoft.Maui.Graphics.Rect bounds) -> void
