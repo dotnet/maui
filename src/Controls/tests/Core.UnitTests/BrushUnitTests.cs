@@ -91,8 +91,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestGetGradientStopHashCode()
 		{
 			var gradientStop = new GradientStop();
-			var hashCode = gradientStop.GetHashCode();
-			Assert.NotNull(hashCode);
+			_ = gradientStop.GetHashCode();
+			// This test is just validating that calling `GetHashCode` doesn't throw
 		}
 	}
 }
