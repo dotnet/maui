@@ -41,6 +41,34 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#000000")]
+		public async Task LoadDrawableAsyncWithFileLoadsFileInsteadOfResource(string colorHex)
+		{
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var service = new FileImageSourceService();
+
+			var filename = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, expectedColor, "blue.png");
+			var imageSource = new FileImageSourceStub(filename);
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					var result = await service.LoadDrawableAsync(imageSource, handler.PlatformView);
+
+					await handler.PlatformView.AssertColorAtCenter(expectedColor.ToPlatform());
+				});
+			});
+		}
+
 		ImageView GetPlatformImageView(IImageHandler imageHandler) =>
 			imageHandler.PlatformView;
 
