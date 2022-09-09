@@ -118,6 +118,9 @@ namespace Microsoft.Maui.Controls
 						List<IElementDefinition> remove = new List<IElementDefinition>();
 						List<IElementDefinition> add = new List<IElementDefinition>();
 
+						var _compositeGestureRecognizers = GestureController.CompositeGestureRecognizers;
+						PointerGestureRecognizer _pointerGestureRecognizerForPointerOverState = _compositeGestureRecognizers[0] as PointerGestureRecognizer;
+
 						foreach (IElementDefinition item in _gestureRecognizers.OfType<IElementDefinition>())
 						{
 							if (!_gestureRecognizers.Contains((IGestureRecognizer)item))
@@ -125,8 +128,11 @@ namespace Microsoft.Maui.Controls
 							item.Parent = this;
 						}
 
-						foreach (IElementDefinition item in GestureController.CompositeGestureRecognizers.OfType<IElementDefinition>())
+						foreach (IElementDefinition item in _compositeGestureRecognizers.OfType<IElementDefinition>())
 						{
+							if (item == _pointerGestureRecognizerForPointerOverState)
+								continue;
+
 							if (_gestureRecognizers.Contains((IGestureRecognizer)item))
 								item.Parent = this;
 							else
