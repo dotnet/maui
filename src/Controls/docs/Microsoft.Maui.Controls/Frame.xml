@@ -53,7 +53,7 @@
           ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Frame.iOS_Android_UWP.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Frame.iOS_Android_UWP.png" />
       </para>
     </remarks>
   </Docs>
@@ -81,10 +81,10 @@
       </Docs>
     </Member>
     <Member MemberName="BorderColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color BorderColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color BorderColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BorderColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BorderColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Frame.BorderColor" />
-      <MemberSignature Language="F#" Value="member this.BorderColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Frame.BorderColor" />
+      <MemberSignature Language="F#" Value="member this.BorderColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Frame.BorderColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -92,7 +92,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the border color for the frame.</summary>
@@ -244,10 +244,10 @@
       </Docs>
     </Member>
     <Member MemberName="OutlineColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color OutlineColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color OutlineColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color OutlineColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color OutlineColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Frame.OutlineColor" />
-      <MemberSignature Language="F#" Value="member this.OutlineColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Frame.OutlineColor" />
+      <MemberSignature Language="F#" Value="member this.OutlineColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Frame.OutlineColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -269,11 +269,11 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color of the border of the Frame. This is a bindable property.</summary>
-        <value>A <see cref="T:Microsoft.Maui.Controls.Color" /> representing the border Color. Default is <see cref="P:Microsoft.Maui.Controls.Color.Default" />.</value>
+        <value>A <see cref="T:Microsoft.Maui.Graphics.Color" /> representing the border Color.</value>
         <remarks>
         </remarks>
       </Docs>
@@ -313,10 +313,10 @@
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue">
-      <MemberSignature Language="C#" Value="Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue" />
+      <MemberSignature Language="C#" Value="Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Frame.Xamarin#Forms#IBorderElement#BorderColorDefaultValue" />
-      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue" />
+      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IBorderElement.BorderColorDefaultValue</InterfaceMember>
@@ -326,7 +326,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -538,13 +538,13 @@
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged">
-      <MemberSignature Language="C#" Value="void IBorderElement.OnBorderColorPropertyChanged (Microsoft.Maui.Controls.Color oldValue, Microsoft.Maui.Controls.Color newValue);" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged(valuetype Microsoft.Maui.Controls.Color oldValue, valuetype Microsoft.Maui.Controls.Color newValue) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Frame.Xamarin#Forms#IBorderElement#OnBorderColorPropertyChanged(Microsoft.Maui.Controls.Color,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="abstract member Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged : Microsoft.Maui.Controls.Color * Microsoft.Maui.Controls.Color -&gt; unit&#xA;override this.Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged : Microsoft.Maui.Controls.Color * Microsoft.Maui.Controls.Color -&gt; unit" Usage="frame.Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged (oldValue, newValue)" />
+      <MemberSignature Language="C#" Value="void IBorderElement.OnBorderColorPropertyChanged (Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged(valuetype Microsoft.Maui.Graphics.Color oldValue, valuetype Microsoft.Maui.Graphics.Color newValue) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Frame.Xamarin#Forms#IBorderElement#OnBorderColorPropertyChanged(Microsoft.Maui.Graphics.Color,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="abstract member Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged : Microsoft.Maui.Graphics.Color * Microsoft.Maui.Graphics.Color -&gt; unit&#xA;override this.Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged : Microsoft.Maui.Graphics.Color * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="frame.Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged (oldValue, newValue)" />
       <MemberType>Method</MemberType>
       <Implements>
-        <InterfaceMember>M:Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged(Microsoft.Maui.Controls.Color,Microsoft.Maui.Controls.Color)</InterfaceMember>
+        <InterfaceMember>M:Microsoft.Maui.Controls.IBorderElement.OnBorderColorPropertyChanged(Microsoft.Maui.Graphics.Color,Microsoft.Maui.Graphics.Color)</InterfaceMember>
       </Implements>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -554,8 +554,8 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="oldValue" Type="Microsoft.Maui.Controls.Color" />
-        <Parameter Name="newValue" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="oldValue" Type="Microsoft.Maui.Graphics.Color" />
+        <Parameter Name="newValue" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="oldValue">To be added.</param>

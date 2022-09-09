@@ -71,7 +71,7 @@ namespace FormsGallery
 }]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/SwitchCell.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/SwitchCell.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -150,17 +150,17 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="OnColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color OnColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color OnColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color OnColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color OnColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.SwitchCell.OnColor" />
-      <MemberSignature Language="F#" Value="member this.OnColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.SwitchCell.OnColor" />
+      <MemberSignature Language="F#" Value="member this.OnColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.SwitchCell.OnColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

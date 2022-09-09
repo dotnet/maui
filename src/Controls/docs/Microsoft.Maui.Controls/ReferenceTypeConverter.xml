@@ -1,6 +1,6 @@
 <Type Name="ReferenceTypeConverter" FullName="Microsoft.Maui.Controls.ReferenceTypeConverter">
-  <TypeSignature Language="C#" Value="public sealed class ReferenceTypeConverter : Microsoft.Maui.Controls.TypeConverter, Microsoft.Maui.Controls.IExtendedTypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit ReferenceTypeConverter extends Microsoft.Maui.Controls.TypeConverter implements class Microsoft.Maui.Controls.IExtendedTypeConverter" />
+  <TypeSignature Language="C#" Value="public sealed class ReferenceTypeConverter : System.ComponentModel.TypeConverter, Microsoft.Maui.Controls.IExtendedTypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit ReferenceTypeConverter extends System.ComponentModel.TypeConverter implements class Microsoft.Maui.Controls.IExtendedTypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.ReferenceTypeConverter" />
   <TypeSignature Language="F#" Value="type ReferenceTypeConverter = class&#xA;    inherit TypeConverter&#xA;    interface IExtendedTypeConverter" />
   <AssemblyInfo>
@@ -9,7 +9,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces>
     <Interface>

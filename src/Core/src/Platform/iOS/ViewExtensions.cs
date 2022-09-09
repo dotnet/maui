@@ -453,8 +453,13 @@ namespace Microsoft.Maui.Platform
 		internal static IWindow? GetHostedWindow(this UIView? view)
 			=> GetHostedWindow(view?.Window);
 
-		internal static bool IsLoaded(this UIView uiView) =>
-			uiView.Window != null;
+		internal static bool IsLoaded(this UIView uiView)
+		{
+			if (uiView == null)
+				return false;
+
+			return uiView.Window != null;
+		}
 
 		internal static IDisposable OnLoaded(this UIView uiView, Action action)
 		{

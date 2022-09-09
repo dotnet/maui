@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 	/// </summary>
 	/// <remarks>
 	/// Easing functions are applied to input values in the range [0,1]. The cubic easing functions are often considered to look most natural.
-    /// If developers wish to use their own easing functions, they should return a value of 0 for an input of 0 and a value of 1 for an input of 1 or the animation will have a jump.
+	/// If developers wish to use their own easing functions, they should return a value of 0 for an input of 0 and a value of 1 for an input of 1 or the animation will have a jump.
 	/// </remarks>
 	[TypeConverter(typeof(EasingTypeConverter))]
 	public class Easing

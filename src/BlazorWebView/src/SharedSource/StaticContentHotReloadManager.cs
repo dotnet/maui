@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 				if (_updatedContent.TryGetValue((assemblyName, relativePath), out var values))
 				{
 					responseStatusCode = 200;
+					responseContent.Close();
 					responseContent = new MemoryStream(values.Content);
 					if (!string.IsNullOrEmpty(values.ContentType))
 					{
