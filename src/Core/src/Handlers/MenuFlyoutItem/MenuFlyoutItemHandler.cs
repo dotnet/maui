@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 		};
 
-		public static CommandMapper<IMenuFlyoutSubItem, IMenuFlyoutItemHandler> CommandMapper = new(ElementCommandMapper)
+		public static CommandMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler> CommandMapper = new(ElementCommandMapper)
 		{
 		};
 
