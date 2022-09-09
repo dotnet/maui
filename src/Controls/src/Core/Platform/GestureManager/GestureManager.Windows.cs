@@ -284,8 +284,8 @@ namespace Microsoft.Maui.Controls.Platform
 					var view = _element as View;
 					if (view != null)
 					{
-						if (ElementGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-							oc.CollectionChanged -= _collectionChangedHandler;
+						if (ElementGestureRecognizers != null)
+							ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 					}
 				}
 
@@ -296,8 +296,8 @@ namespace Microsoft.Maui.Controls.Platform
 					var view = _element as View;
 					if (view != null)
 					{
-						if (ElementGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-							oc.CollectionChanged += _collectionChangedHandler;
+						if (ElementGestureRecognizers != null)
+							ElementGestureRecognizers.CollectionChanged += _collectionChangedHandler;
 					}
 				}
 			}
@@ -349,8 +349,8 @@ namespace Microsoft.Maui.Controls.Platform
 				var view = _element as View;
 				if (view != null)
 				{
-					if (ElementGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-						oc.CollectionChanged -= _collectionChangedHandler;
+					if (ElementGestureRecognizers != null)
+						ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 				}
 			}
 
