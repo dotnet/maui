@@ -7,6 +7,7 @@ using System.Xml;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Microsoft.Build.Utilities;
 using static Microsoft.Build.Framework.MessageImportance;
 using static Mono.Cecil.Cil.OpCodes;
 using IOPath = System.IO.Path;
@@ -168,7 +169,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Replacing {0}.InitializeComponent ()");
 							Exception e;
-							if (!TryCoreCompile(initComp, rootnode, xamlFilePath, out e))
+							if (!TryCoreCompile(initComp, rootnode, xamlFilePath, LoggingHelper, out e))
 							{
 								success = false;
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
@@ -251,7 +252,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return success;
 		}
 
-		bool TryCoreCompile(MethodDefinition initComp, ILRootNode rootnode, string xamlFilePath, out Exception exception)
+		bool TryCoreCompile(MethodDefinition initComp, ILRootNode rootnode, string xamlFilePath, TaskLoggingHelper loggingHelper, out Exception exception)
 		{
 			try
 			{
@@ -265,7 +266,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				var visitorContext = new ILContext(il, body, module)
 				{
-					XamlFilePath = xamlFilePath
+					XamlFilePath = xamlFilePath,
+					LoggingHelper = loggingHelper,
 				};
 
 

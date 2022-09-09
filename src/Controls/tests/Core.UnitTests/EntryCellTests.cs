@@ -1,13 +1,13 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class EntryCellTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void EntryCellXAlignBindingMatchesHorizontalTextAlignmentBinding()
 		{
 			var vm = new ViewModel();
@@ -16,11 +16,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var entryCellHorizontalTextAlignment = new EntryCell() { BindingContext = vm };
 			entryCellHorizontalTextAlignment.SetBinding(EntryCell.HorizontalTextAlignmentProperty, new Binding("Alignment"));
 
-			Assert.AreEqual(TextAlignment.Center, entryCellHorizontalTextAlignment.HorizontalTextAlignment);
+			Assert.Equal(TextAlignment.Center, entryCellHorizontalTextAlignment.HorizontalTextAlignment);
 
 			vm.Alignment = TextAlignment.End;
 
-			Assert.AreEqual(TextAlignment.End, entryCellHorizontalTextAlignment.HorizontalTextAlignment);
+			Assert.Equal(TextAlignment.End, entryCellHorizontalTextAlignment.HorizontalTextAlignment);
 		}
 
 		sealed class ViewModel : INotifyPropertyChanged

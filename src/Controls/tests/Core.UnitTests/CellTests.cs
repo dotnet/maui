@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class CellTests : BaseTestFixture
 	{
 		internal class TestCell : Cell
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void Selected()
 		{
 			var cell = new TestCell();
@@ -34,10 +34,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cell.Tapped += (sender, args) => tapped = true;
 
 			cell.OnTapped();
-			Assert.IsTrue(tapped);
+			Assert.True(tapped);
 		}
 
-		[Test]
+		[Fact]
 		public void AppearingEvent()
 		{
 			var cell = new TestCell();
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(cell.OnDisappearingSent);
 		}
 
-		[Test]
+		[Fact]
 		public void DisappearingEvent()
 		{
 			var cell = new TestCell();
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(cell.OnDisappearingSent);
 		}
 
-		[Test]
+		[Fact]
 		public void TestBindingContextPropagationOnImageCell()
 		{
 			var context = new object();
@@ -73,16 +73,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cell.BindingContext = context;
 			var source = new FileImageSource();
 			cell.ImageSource = source;
-			Assert.AreSame(context, source.BindingContext);
+			Assert.Same(context, source.BindingContext);
 
 			cell = new ImageCell();
 			source = new FileImageSource();
 			cell.ImageSource = source;
 			cell.BindingContext = context;
-			Assert.AreSame(context, source.BindingContext);
+			Assert.Same(context, source.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void HasContextActions()
 		{
 			bool changed = false;
@@ -94,21 +94,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					changed = true;
 			};
 
-			Assert.That(cell.HasContextActions, Is.False);
-			Assert.That(changed, Is.False);
+			Assert.False(cell.HasContextActions);
+			Assert.False(changed);
 
 			var collection = cell.ContextActions;
 
-			Assert.That(cell.HasContextActions, Is.False);
-			Assert.That(changed, Is.False);
+			Assert.False(cell.HasContextActions);
+			Assert.False(changed);
 
 			collection.Add(new MenuItem());
 
-			Assert.That(cell.HasContextActions, Is.True);
-			Assert.That(changed, Is.True);
+			Assert.True(cell.HasContextActions);
+			Assert.True(changed);
 		}
 
-		[Test]
+		[Fact]
 		public void MenuItemsGetBindingContext()
 		{
 			var cell = new TextCell
@@ -121,15 +121,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			object bc = new object();
 
 			cell.BindingContext = bc;
-			Assert.That(cell.ContextActions[0].BindingContext, Is.SameAs(bc));
+			Assert.Same(cell.ContextActions[0].BindingContext, bc);
 
 			cell = new TextCell { BindingContext = new object() };
 			cell.ContextActions.Add(new MenuItem());
 
-			Assert.That(cell.ContextActions[0].BindingContext, Is.SameAs(cell.BindingContext));
+			Assert.Same(cell.ContextActions[0].BindingContext, cell.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void RenderHeightINPCFromParent()
 		{
 			var lv = new ListView();
@@ -151,13 +151,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			lv.RowHeight = 5;
 
-			Assume.That(cell.RenderHeight, Is.EqualTo(5));
+			Assert.Equal(5, cell.RenderHeight);
 
-			Assert.That(changing, Is.EqualTo(1));
-			Assert.That(changed, Is.EqualTo(1));
+			Assert.Equal(1, changing);
+			Assert.Equal(1, changed);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ForceUpdateSizeCallsAreRateLimited()
 		{
 			var lv = new ListView { HasUnevenRows = true };
@@ -173,10 +173,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await System.Threading.Tasks.Task.Delay(TimeSpan.FromMilliseconds(150));
 
-			Assert.AreEqual(1, numberOfCalls);
+			Assert.Equal(1, numberOfCalls);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ForceUpdateSizeWillNotBeCalledIfParentIsNotAListViewWithUnevenRows()
 		{
 			var lv = new ListView { HasUnevenRows = false };
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await System.Threading.Tasks.Task.Delay(TimeSpan.FromMilliseconds(16));
 
-			Assert.AreEqual(0, numberOfCalls);
+			Assert.Equal(0, numberOfCalls);
 		}
 	}
 }

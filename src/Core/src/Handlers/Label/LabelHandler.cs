@@ -45,9 +45,6 @@ namespace Microsoft.Maui.Handlers
 
 		static LabelHandler()
 		{
-#if __IOS__
-			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
-#endif
 		}
 
 		public LabelHandler() : base(Mapper)

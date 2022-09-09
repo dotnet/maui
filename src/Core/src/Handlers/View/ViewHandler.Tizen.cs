@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			UpdateTransformation(handler, view);
 		}
+		public static void MapContextFlyout(IViewHandler handler, IView view) { }
 
 		public static void MapToolbar(IViewHandler handler, IView view)
 		{

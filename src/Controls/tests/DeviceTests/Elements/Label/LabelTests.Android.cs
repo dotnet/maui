@@ -45,8 +45,8 @@ namespace Microsoft.Maui.DeviceTests
 			GetPlatformLabel(labelHandler).Ellipsize;
 
 		int GetPlatformMaxLines(LabelHandler labelHandler) =>
-			GetPlatformLabel(labelHandler).MaxLines; 
-		
+			GetPlatformLabel(labelHandler).MaxLines;
+
 		Task ValidateHasColor(Label label, Color color, Action action = null)
 		{
 			return InvokeOnMainThreadAsync(() =>

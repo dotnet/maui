@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 			return Context.FromPixels(platformView.MeasuredWidth, platformView.MeasuredHeight);
 		}
 
-		static int AdjustSpecForAlignment(int measureSpec, Primitives.LayoutAlignment alignment) 
+		static int AdjustSpecForAlignment(int measureSpec, Primitives.LayoutAlignment alignment)
 		{
 			if (alignment == Primitives.LayoutAlignment.Fill && measureSpec.GetMode() == MeasureSpecMode.AtMost)
 			{
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var horizontalOffsetDevice = (int)context.ToPixels(request.HoriztonalOffset);
+			var horizontalOffsetDevice = (int)context.ToPixels(request.HorizontalOffset);
 			var verticalOffsetDevice = (int)context.ToPixels(request.VerticalOffset);
 
 			handler.PlatformView.ScrollTo(horizontalOffsetDevice, verticalOffsetDevice,

@@ -1,12 +1,12 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ShadowTests
 	{
-		[Test]
+		[Fact]
 		public void ShadowInitializesCorrectly()
 		{
 			// Arrange
@@ -23,9 +23,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			// Assert
-			Assert.AreEqual(expectedOffset, shadow.Offset);
-			Assert.AreEqual(expectedOpacity, shadow.Opacity);
-			Assert.AreEqual(expectedRadius, shadow.Radius);
+			Assert.Equal(expectedOffset, shadow.Offset);
+			Assert.Equal(expectedOpacity, shadow.Opacity);
+			Assert.Equal(expectedRadius, shadow.Radius);
 		}
 	}
 }

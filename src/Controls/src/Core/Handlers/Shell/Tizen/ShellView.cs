@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_navigationView.BackgroundColor = color?.ToNUIColor() ?? DefaultBackgroundCorlor;
 		}
 
-		public void UpdateCurrentItem(ShellItem newItem,  bool animate = true)
+		public void UpdateCurrentItem(ShellItem newItem, bool animate = true)
 		{
 			if (_currentItemHandler != null)
 				_currentItemHandler.Dispose();

@@ -318,6 +318,7 @@ namespace Microsoft.Maui.Controls
 			((LockableObservableListWrapper)Items).InternalClear();
 			foreach (object item in ItemsSource)
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			Handler?.UpdateValue(nameof(IPicker.Items));
 			UpdateSelectedItem(SelectedIndex);
 		}
 

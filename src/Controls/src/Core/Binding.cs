@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				object bindingContext = src ?? Context ?? context;
-				if (_expression == null && bindingContext != null)
+				if (_expression == null)
 					_expression = new BindingExpression(this, SelfPath);
 				_expression.Apply(bindingContext, bindObj, targetProperty);
 			}

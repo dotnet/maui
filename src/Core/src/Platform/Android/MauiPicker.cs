@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public bool ShowPopupOnFocus { get; set; }
 
-		public MauiPicker(Context? context) : base(context)
+		public MauiPicker(Context context) : base(context)
 		{
 			PickerManager.Init(this);
 		}
@@ -39,9 +39,10 @@ namespace Microsoft.Maui.Platform
 
 	public class MauiPickerBase : AppCompatEditText
 	{
-		public MauiPickerBase(Context? context) : base(context)
+		public MauiPickerBase(Context context) : base(context)
 		{
-			DrawableCompat.Wrap(Background);
+			if (Background != null)
+				DrawableCompat.Wrap(Background);
 		}
 	}
 }
