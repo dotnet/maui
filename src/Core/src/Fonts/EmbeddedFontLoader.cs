@@ -1,9 +1,9 @@
 #nullable enable
 using System;
-using System.IO;
 
 namespace Microsoft.Maui
 {
+	/// <inheritdoc/>
 	public partial class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
 		readonly IServiceProvider? _serviceProvider;
@@ -17,11 +17,19 @@ namespace Microsoft.Maui
 		[Foundation.Preserve]
 #endif
 #endif
+		/// <summary>
+		/// Creates a new <see cref="EmbeddedFontLoader"/> instance.
+		/// </summary>
 		public EmbeddedFontLoader()
 			: this(null)
 		{
 		}
 
+		/// <summary>
+		/// Creates a new <see cref="EmbeddedFontLoader"/> instance.
+		/// </summary>
+		/// <param name="serviceProvider">The applications <see cref="IServiceProvider"/>.
+		/// Typically this is provided through dependency injection.</param>
 		public EmbeddedFontLoader(IServiceProvider? serviceProvider = null)
 #if __ANDROID__
 			: base(Path.GetTempPath, serviceProvider)
