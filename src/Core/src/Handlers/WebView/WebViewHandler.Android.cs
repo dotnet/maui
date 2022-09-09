@@ -137,8 +137,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (url == AssetBaseUrl)
 				return false;
-
-			// TODO: Sync Cookies
+		
+			SyncPlatformCookies(url);
 			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
 			PlatformView?.UpdateCanGoBackForward(VirtualView);
 			UrlCanceled = cancel ? null : url;

@@ -88,9 +88,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this TextBlock platformControl, ILabel label)
 		{
-			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
-			// TODO: Update this when FlowDirection is available 
-			platformControl.TextAlignment = label.HorizontalTextAlignment.ToPlatform(true);
+			var effectiveFlowDirection = label.GetEffectiveFlowDirection();
+			bool isLtr = effectiveFlowDirection == FlowDirection.LeftToRight;
+
+			platformControl.TextAlignment = label.HorizontalTextAlignment.ToPlatform(isLtr);
 		}
 
 		public static void UpdateVerticalTextAlignment(this TextBlock platformControl, ILabel label)

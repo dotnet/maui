@@ -134,7 +134,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextAlignment(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
 		{
-			// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
+			var effectiveFlowDirection = datePicker.GetEffectiveFlowDirection();
+
+			if (effectiveFlowDirection == FlowDirection.RightToLeft)
+			{
+				nativeDatePicker.HorizontalAlignment = UIControlContentHorizontalAlignment.Right;
+				nativeDatePicker.TextAlignment = UITextAlignment.Right;
+			}
+			else if (effectiveFlowDirection == FlowDirection.LeftToRight)
+			{
+				nativeDatePicker.HorizontalAlignment = UIControlContentHorizontalAlignment.Left;
+				nativeDatePicker.TextAlignment = UITextAlignment.Left;
+			}
 		}
 	}
 }

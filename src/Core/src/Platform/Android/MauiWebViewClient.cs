@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Platform
 			if (_handler?.VirtualView == null || url == WebViewHandler.AssetBaseUrl)
 				return;
 
-			// TODO: Sync Cookies
+			if (!string.IsNullOrEmpty(url))
+				_handler.SyncPlatformCookiesToVirtualView(url!);
 
 			var cancel = false;
 

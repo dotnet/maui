@@ -184,10 +184,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this TextBox textBox, ITextAlignment textAlignment)
 		{
-			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
-			// TODO: Update this when FlowDirection is available 
-			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			textBox.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatform(true);
+			bool isLtr = true;
+
+			if (textAlignment is IView view)
+			{
+				var effectiveFlowDirection = view.GetEffectiveFlowDirection();
+				isLtr = effectiveFlowDirection == FlowDirection.LeftToRight;
+			}
+
+			textBox.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatform(isLtr);
 		}
 
 		public static void UpdateVerticalTextAlignment(this TextBox textBox, ITextAlignment textAlignment) =>
