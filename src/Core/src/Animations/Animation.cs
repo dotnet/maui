@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Animations
 		/// </summary>
 		/// <param name="callback">The <see cref="Action{T}"/> that is invoked after each tick of this animation.</param>
 		/// <param name="start">Specifies a delay (in seconds) taken into account before the animation starts.</param>
-		/// <param name="duration">Specifies the duration that this animation will take.</param>
+		/// <param name="duration">Specifies the duration that this animation should take in seconds.</param>
 		/// <param name="easing">The easing function to apply to this animation.</param>
 		/// <param name="finished">A callback <see cref="Action{T}"/> that is invoked after the animation has finished.</param>
 		public Animation(Action<double> callback, double start = 0.0f, double duration = 1.0f, Easing? easing = null, Action? finished = null)
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Animations
 		public double StartDelay { get; set; }
 
 		/// <summary>
-		/// The duration of this animation.
+		/// The duration of this animation in seconds.
 		/// </summary>
 		public double Duration { get; set; }
 
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Animations
 		/// Adds a new child animation to this animation with the specified parameters.
 		/// </summary>
 		/// <param name="beginAt">Specifies a delay (in seconds) taken into account before the added child animation starts.</param>
-		/// <param name="duration">Specifies the duration that the added child animation will take.</param>
+		/// <param name="duration">Specifies the duration (in seconds) that the added child animation should take.</param>
 		/// <param name="animation">The <see cref="Animation"/> object to add to this animation as a child.</param>
 		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="beginAt"/> or <paramref name="duration"/> is less than 0 or more than 1.</exception>
 		/// <exception cref="ArgumentException">Thrown when <paramref name="duration"/> is less than or equal to <paramref name="beginAt"/>.</exception>
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Animations
 		public IAnimationManager? AnimationManager => animationManger;
 
 		/// <summary>
-		/// 
+		/// A reference to the <see cref="IAnimationManager"/> that manages this animation.
 		/// </summary>
 		protected IAnimationManager? animationManger;
 
