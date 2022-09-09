@@ -1,6 +1,6 @@
 <Type Name="ColumnDefinitionCollectionTypeConverter" FullName="Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter">
-  <TypeSignature Language="C#" Value="public class ColumnDefinitionCollectionTypeConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ColumnDefinitionCollectionTypeConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public class ColumnDefinitionCollectionTypeConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ColumnDefinitionCollectionTypeConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter" />
   <TypeSignature Language="F#" Value="type ColumnDefinitionCollectionTypeConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -8,7 +8,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>

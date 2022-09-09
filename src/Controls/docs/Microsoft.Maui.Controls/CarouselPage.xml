@@ -86,7 +86,7 @@ MainPage = new CarouselPage {
       </example>
       <block subset="none" type="note">When embedding a CarouselPage into a <see cref="P:Microsoft.Maui.Controls.FlyoutPage.Detail" />, application developers should set <see cref="P:Microsoft.Maui.Controls.FlyoutPage.IsGestureEnabled" /> to <see langword="false" /> to prevent gesture conflicts between the CarouselPage and MasterDetailPage.</block>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/CarouselPage.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/CarouselPage.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>

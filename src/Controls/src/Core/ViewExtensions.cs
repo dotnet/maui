@@ -8,10 +8,10 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.ViewExtensions']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.ViewExtensions']/Docs/*" />
 	public static class ViewExtensions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='CancelAnimations']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='CancelAnimations']/Docs/*" />
 		public static void CancelAnimations(this VisualElement view)
 		{
 			if (view == null)
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='FadeTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='FadeTo']/Docs/*" />
 		public static Task<bool> FadeTo(this VisualElement view, double opacity, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.Opacity, opacity, nameof(FadeTo), (v, value) => v.Opacity = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='LayoutTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='LayoutTo']/Docs/*" />
 		public static Task<bool> LayoutTo(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, 0, 1, nameof(LayoutTo), (v, value) => v.Layout(computeBounds(value)), length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RelRotateTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RelRotateTo']/Docs/*" />
 		public static Task<bool> RelRotateTo(this VisualElement view, double drotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 			return view.RotateTo(view.Rotation + drotation, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RelScaleTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RelScaleTo']/Docs/*" />
 		public static Task<bool> RelScaleTo(this VisualElement view, double dscale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls
 			return view.ScaleTo(view.Scale + dscale, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RotateTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RotateTo']/Docs/*" />
 		public static Task<bool> RotateTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.Rotation, rotation, nameof(RotateTo), (v, value) => v.Rotation = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RotateXTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RotateXTo']/Docs/*" />
 		public static Task<bool> RotateXTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.RotationX, rotation, nameof(RotateXTo), (v, value) => v.RotationX = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RotateYTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RotateYTo']/Docs/*" />
 		public static Task<bool> RotateYTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.RotationY, rotation, nameof(RotateYTo), (v, value) => v.RotationY = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='ScaleTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='ScaleTo']/Docs/*" />
 		public static Task<bool> ScaleTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.Scale, scale, nameof(ScaleTo), (v, value) => v.Scale = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='ScaleXTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='ScaleXTo']/Docs/*" />
 		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.ScaleX, scale, nameof(ScaleXTo), (v, value) => v.ScaleX = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='ScaleYTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='ScaleYTo']/Docs/*" />
 		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.ScaleY, scale, nameof(ScaleYTo), (v, value) => v.ScaleY = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='TranslateTo']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='TranslateTo']/Docs/*" />
 		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)

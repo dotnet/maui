@@ -17,34 +17,34 @@ namespace Microsoft.Maui.ApplicationModel
 		Task<bool> TryOpenAsync(Uri uri);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Launcher']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Launcher']/Docs/*" />
 	public static partial class Launcher
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='CanOpenAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='CanOpenAsync'][1]/Docs/*" />
 		public static Task<bool> CanOpenAsync(string uri)
 			=> Current.CanOpenAsync(uri);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='CanOpenAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='CanOpenAsync'][2]/Docs/*" />
 		public static Task<bool> CanOpenAsync(Uri uri)
 			=> Current.CanOpenAsync(uri);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='OpenAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='OpenAsync'][1]/Docs/*" />
 		public static Task<bool> OpenAsync(string uri)
 			=> Current.OpenAsync(uri);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='OpenAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='OpenAsync'][2]/Docs/*" />
 		public static Task<bool> OpenAsync(Uri uri)
 			=> Current.OpenAsync(uri);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='OpenAsync'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='OpenAsync'][3]/Docs/*" />
 		public static Task<bool> OpenAsync(OpenFileRequest request)
 			=> Current.OpenAsync(request);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='TryOpenAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='TryOpenAsync'][1]/Docs/*" />
 		public static Task<bool> TryOpenAsync(string uri)
 			=> Current.TryOpenAsync(uri);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='TryOpenAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Launcher.xml" path="//Member[@MemberName='TryOpenAsync'][2]/Docs/*" />
 		public static Task<bool> TryOpenAsync(Uri uri)
 			=> Current.TryOpenAsync(uri);
 
@@ -108,35 +108,35 @@ namespace Microsoft.Maui.ApplicationModel
 			launcher.TryOpenAsync(new Uri(uri));
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OpenFileRequest']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OpenFileRequest']/Docs/*" />
 	public class OpenFileRequest
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public OpenFileRequest()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
 		public OpenFileRequest(string title, ReadOnlyFile file)
 		{
 			Title = title;
 			File = file;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public OpenFileRequest(string title, FileBase file)
 		{
 			Title = title;
 			File = new ReadOnlyFile(file);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='Title']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='Title']/Docs/*" />
 		public string? Title { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='File']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='File']/Docs/*" />
 		public ReadOnlyFile? File { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='PresentationSourceBounds']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/OpenFileRequest.xml" path="//Member[@MemberName='PresentationSourceBounds']/Docs/*" />
 		public Rect PresentationSourceBounds { get; set; } = Rect.Zero;
 	}
 }

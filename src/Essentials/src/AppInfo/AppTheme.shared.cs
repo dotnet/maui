@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppTheme']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppTheme']/Docs/*" />
 	public enum AppTheme
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="//Member[@MemberName='Unspecified']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="//Member[@MemberName='Unspecified']/Docs/*" />
 		Unspecified,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="//Member[@MemberName='Light']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="//Member[@MemberName='Light']/Docs/*" />
 		Light,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="//Member[@MemberName='Dark']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="//Member[@MemberName='Dark']/Docs/*" />
 		Dark
 	}
 }

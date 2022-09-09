@@ -24,22 +24,22 @@ namespace Microsoft.Maui.Storage
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SecureStorage']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SecureStorage']/Docs/*" />
 	public static partial class SecureStorage
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='GetAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='GetAsync'][1]/Docs/*" />
 		public static Task<string> GetAsync(string key) =>
 			Current.GetAsync(key);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='SetAsync'][0 and position()=0]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='SetAsync'][0 and position()=0]/Docs/*" />
 		public static Task SetAsync(string key, string value) =>
 			Current.SetAsync(key, value);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='Remove'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='Remove'][1]/Docs/*" />
 		public static bool Remove(string key) =>
 			Current.Remove(key);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='RemoveAll'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='RemoveAll'][1]/Docs/*" />
 		public static void RemoveAll() =>
 			Current.RemoveAll();
 

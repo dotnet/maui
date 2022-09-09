@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.BorderStyles"
+    Title="Border using Styles">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            
+            <Style TargetType="Border">
+                <Setter Property="StrokeShape" Value="RoundRectangle 10,10,10,10"/>
+                <Setter Property="Stroke" Value="Red"/>
+                <Setter Property="StrokeThickness" Value="1"/>
+                <Setter Property="HeightRequest" Value="55"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+            </Style>
+            
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <StackLayout 
+            Margin="12" 
+            Spacing="12">
+            <Border />
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

@@ -1,6 +1,6 @@
 <Type Name="TransformTypeConverter" FullName="Microsoft.Maui.Controls.Shapes.TransformTypeConverter">
-  <TypeSignature Language="C#" Value="public class TransformTypeConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit TransformTypeConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public class TransformTypeConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit TransformTypeConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.Shapes.TransformTypeConverter" />
   <TypeSignature Language="F#" Value="type TransformTypeConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -8,7 +8,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Docs>
