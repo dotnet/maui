@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageButton']/Docs/*" />
 	public partial class ImageButton : IImageButton
 	{
-		void IImageSourcePart.UpdateIsLoading(bool isLoading) { }
+		void IImageSourcePart.UpdateIsLoading(bool isLoading)
+		{
+			((IImageController)this)?.SetIsLoading(isLoading);
+		}
 
 		bool IImageSourcePart.IsAnimationPlaying => false;
 
