@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="Type[@FullName='Microsoft.Maui.Controls.MultiBinding']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="Type[@FullName='Microsoft.Maui.Controls.MultiBinding']/Docs/*" />
 	[ContentProperty(nameof(Bindings))]
 	public sealed class MultiBinding : BindingBase
 	{
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		BindableProperty[] _bpProxies;
 		bool _applying;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='Converter']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='Converter']/Docs/*" />
 		public IMultiValueConverter Converter
 		{
 			get { return _converter; }
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='ConverterParameter']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='ConverterParameter']/Docs/*" />
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='Bindings']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='Bindings']/Docs/*" />
 		public IList<BindingBase> Bindings
 		{
 			get => _bindings ?? (_bindings = new List<BindingBase>());

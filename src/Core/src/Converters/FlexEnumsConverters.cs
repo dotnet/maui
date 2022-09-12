@@ -2,19 +2,22 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Layouts;
-using Flex = Microsoft.Maui.Layouts.Flex;
 
 #nullable disable
 namespace Microsoft.Maui.Converters
 {
+	/// <inheritdoc/>
 	public class FlexJustifyTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -32,25 +35,32 @@ namespace Microsoft.Maui.Converters
 				if (strValue.Equals("space-around", StringComparison.OrdinalIgnoreCase))
 					return FlexJustify.SpaceAround;
 			}
+
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexJustify)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexJustify fj)
 				throw new NotSupportedException();
+
 			return fj.ToString();
 		}
 	}
 
+	/// <inheritdoc/>
 	public class FlexDirectionTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -64,25 +74,32 @@ namespace Microsoft.Maui.Converters
 				if (strValue.Equals("column-reverse", StringComparison.OrdinalIgnoreCase))
 					return FlexDirection.ColumnReverse;
 			}
+
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexDirection)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexDirection fd)
 				throw new NotSupportedException();
+
 			return fd.ToString();
 		}
 	}
 
+	/// <inheritdoc/>
 	public class FlexAlignContentTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -100,25 +117,32 @@ namespace Microsoft.Maui.Converters
 				if (strValue.Equals("space-around", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignContent.SpaceAround;
 			}
+
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexAlignContent)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexAlignContent fac)
 				throw new NotSupportedException();
+
 			return fac.ToString();
 		}
 	}
 
+	/// <inheritdoc/>
 	public class FlexAlignItemsTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -132,25 +156,32 @@ namespace Microsoft.Maui.Converters
 				if (strValue.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignItems.End;
 			}
+
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexAlignItems)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexAlignItems fai)
 				throw new NotSupportedException();
+
 			return fai.ToString();
 		}
 	}
 
+	/// <inheritdoc/>
 	public class FlexAlignSelfTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -164,25 +195,32 @@ namespace Microsoft.Maui.Converters
 				if (strValue.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignSelf.End;
 			}
+
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexAlignSelf)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexAlignSelf fes)
 				throw new NotSupportedException();
+
 			return fes.ToString();
 		}
 	}
 
+	/// <inheritdoc/>
 	public class FlexWrapTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -194,31 +232,40 @@ namespace Microsoft.Maui.Converters
 				if (strValue.Equals("wrap-reverse", StringComparison.OrdinalIgnoreCase))
 					return FlexWrap.Reverse;
 			}
+
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexWrap)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexWrap fw)
 				throw new NotSupportedException();
+
 			return fw.ToString();
 		}
 	}
 
+	/// <inheritdoc/>
 	public class FlexBasisTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
+
 			if (strValue != null)
 			{
 				strValue = strValue.Trim();
+
 				if (strValue.Equals("auto", StringComparison.OrdinalIgnoreCase))
 					return FlexBasis.Auto;
 				if (strValue.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(strValue.Substring(0, strValue.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
@@ -226,17 +273,21 @@ namespace Microsoft.Maui.Converters
 				if (float.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
 					return new FlexBasis(flex);
 			}
+
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexBasis)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlexBasis basis)
 				throw new NotSupportedException();
+
 			if (basis.IsAuto)
 				return "auto";
 			if (basis.IsRelative)
 				return $"{(basis.Length * 100).ToString(CultureInfo.InvariantCulture)}%";
+
 			return $"{basis.Length.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}

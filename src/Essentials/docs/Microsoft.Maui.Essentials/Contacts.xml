@@ -1,7 +1,7 @@
-<Type Name="Contacts" FullName="Microsoft.Maui.Essentials.Contacts">
+<Type Name="Contacts" FullName="Microsoft.Maui.ApplicationModel.Communications.Contacts">
   <TypeSignature Language="C#" Value="public static class Contacts" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Contacts extends System.Object" />
-  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Essentials.Contacts" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.ApplicationModel.Communications.Contacts" />
   <AssemblyInfo>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -16,16 +16,16 @@
   </Docs>
   <Members>
     <Member MemberName="GetAllAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Microsoft.Maui.Essentials.Contact&gt;&gt; GetAllAsync (System.Threading.CancellationToken cancellationToken = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Microsoft.Maui.Essentials.Contact&gt;&gt; GetAllAsync(valuetype System.Threading.CancellationToken cancellationToken) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.Contacts.GetAllAsync(System.Threading.CancellationToken)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Microsoft.Maui.ApplicationModel.Communication.Contact&gt;&gt; GetAllAsync (System.Threading.CancellationToken cancellationToken = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Microsoft.Maui.ApplicationModel.Communication.Contact&gt;&gt; GetAllAsync(valuetype System.Threading.CancellationToken cancellationToken) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.ApplicationModel.Communications.Contacts.GetAllAsync(System.Threading.CancellationToken)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Microsoft.Maui.Essentials.Contact&gt;&gt;</ReturnType>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Microsoft.Maui.ApplicationModel.Communication.Contact&gt;&gt;</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="cancellationToken" Type="System.Threading.CancellationToken" />
@@ -38,16 +38,16 @@
       </Docs>
     </Member>
     <Member MemberName="PickContactAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.Contact&gt; PickContactAsync ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Microsoft.Maui.Essentials.Contact&gt; PickContactAsync() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.Contacts.PickContactAsync" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;Microsoft.Maui.ApplicationModel.Communication.Contact&gt; PickContactAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class Microsoft.Maui.ApplicationModel.Communication.Contact&gt; PickContactAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.ApplicationModel.Communications.Contacts.PickContactAsync" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Threading.Tasks.Task&lt;Microsoft.Maui.Essentials.Contact&gt;</ReturnType>
+        <ReturnType>System.Threading.Tasks.Task&lt;Microsoft.Maui.ApplicationModel.Communication.Contact&gt;</ReturnType>
       </ReturnValue>
       <Parameters />
       <Docs>

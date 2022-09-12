@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs/*" />
 	[ContentProperty("Content")]
 	public partial class ContentPage : TemplatedPage
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="//Member[@MemberName='ContentProperty']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentPage), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="//Member[@MemberName='Content']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="//Member[@MemberName='Content']/Docs/*" />
 		public View Content
 		{
 			get { return (View)GetValue(ContentProperty); }

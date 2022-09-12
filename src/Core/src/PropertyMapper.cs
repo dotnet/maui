@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
-			if (!CanUpdateProperty(viewHandler))
+			if (!viewHandler.CanInvokeMappers())
 				return;
 
 			var action = GetProperty(key);
@@ -121,17 +121,6 @@ namespace Microsoft.Maui
 					foreach (var key in chain.GetKeys())
 						yield return key;
 			}
-		}
-
-		bool CanUpdateProperty(IElementHandler viewHandler)
-		{
-#if ANDROID
-			var platformView = viewHandler?.PlatformView;
-
-			if(platformView is PlatformView androidView && androidView.IsDisposed())
-				return false;
-#endif
-			return true;
 		}
 	}
 

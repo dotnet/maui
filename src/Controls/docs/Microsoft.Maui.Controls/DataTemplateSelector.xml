@@ -16,8 +16,8 @@
     <summary>Selects <see cref="T:Microsoft.Maui.Controls.DataTemplate" /> objects by data type and container.</summary>
     <remarks>
       <para>Application developers override the <see cref="M:Microsoft.Maui.Controls.DataTemplateSelector.OnSelectTemplate(System.Object,Microsoft.Maui.Controls.BindableObject)" /> method to return a unique <see cref="T:Microsoft.Maui.Controls.DataTemplate" /> for a data type and parent container combination. Additionally, because the same exact template instance must be returned for a given piece of data across successive calls to <see cref="M:Microsoft.Maui.Controls.DataTemplateSelector.SelectTemplate(System.Object,Microsoft.Maui.Controls.BindableObject)" />, developers should create and store these <see cref="T:Microsoft.Maui.Controls.DataTemplate" /> in their constructor overrides.</para>
-      <block subset="none" type="note">Developers should note the following items:        <list type="bullet"><item><term>OnSelectTemplate must not return another DataTemplateSelector, and
-        </term></item><item><term>The Android platform is limited to 20 templates per list view.</term></item></list></block>
+      Developers should note the following items:        <list type="bullet"><item><term>OnSelectTemplate must not return another DataTemplateSelector, and
+        </term></item><item><term>The Android platform is limited to 20 templates per list view.</term></item></list>
       <example>The following example shows a basic use:
 <code lang="c#"><![CDATA[class MyDataTemplateSelector : DataTemplateSelector
 {
@@ -111,9 +111,7 @@
           <para>A developer-defined <see cref="T:Microsoft.Maui.Controls.DataTemplate" /> that can be used to display <paramref name="item" />.</para>
         </returns>
         <remarks>
-          <block subset="none" type="note">
-            <para>Developers should note that the Android platform is limited to 20 templates per list view.</para>
-          </block>
+          <para>Developers should note that the Android platform is limited to 20 templates per list view.</para>
         </remarks>
       </Docs>
     </Member>

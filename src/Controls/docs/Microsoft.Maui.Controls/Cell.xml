@@ -54,7 +54,7 @@
       </list>
       <para>The various subclasses are shown in the following image:</para>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Cell.Gallery.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Cell.Gallery.png" />
       </para>
       <example>
         <code lang="csharp lang-csharp"><![CDATA[

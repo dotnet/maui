@@ -130,3 +130,15 @@ virtual Microsoft.Maui.MauiUISceneDelegate.DidUpdateCoordinateSpace(UIKit.UIWind
 *REMOVED*Microsoft.Maui.IViewExtensions
 *REMOVED*static Microsoft.Maui.Layouts.LayoutExtensions.ShouldArrangeLeftToRight(this Microsoft.Maui.IView! view) -> bool
 *REMOVED*static Microsoft.Maui.Platform.TextAlignmentExtensions.AdjustForFlowDirection(this UIKit.UITextAlignment textAlignment, Microsoft.Maui.IView! view) -> UIKit.UITextAlignment
+*REMOVED*static Microsoft.Maui.Handlers.EditorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.IEditorHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.IndicatorViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.IIndicatorViewHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.LabelHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.ILabelHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSubItem!, Microsoft.Maui.Handlers.IMenuFlyoutItemHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.ProgressBarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.IProgressBarHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISwipeItemMenuItem!, Microsoft.Maui.Handlers.ISwipeViewHandler!>!
+static Microsoft.Maui.Handlers.EditorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IEditor!, Microsoft.Maui.Handlers.IEditorHandler!>!
+static Microsoft.Maui.Handlers.IndicatorViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IIndicatorView!, Microsoft.Maui.Handlers.IIndicatorViewHandler!>!
+static Microsoft.Maui.Handlers.LabelHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ILabel!, Microsoft.Maui.Handlers.ILabelHandler!>!
+static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutItem!, Microsoft.Maui.Handlers.IMenuFlyoutItemHandler!>!
+static Microsoft.Maui.Handlers.ProgressBarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IProgress!, Microsoft.Maui.Handlers.IProgressBarHandler!>!
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISwipeItemMenuItem!, Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler!>!
