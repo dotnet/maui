@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IIndicatorView.IndicatorsShape)] = MapIndicatorShape
 		};
 
-		public static CommandMapper<IActivityIndicator, IIndicatorViewHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IIndicatorView, IIndicatorViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 

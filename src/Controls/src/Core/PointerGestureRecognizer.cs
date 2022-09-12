@@ -48,17 +48,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Event that is raised when the pointer enters the view.
+		/// Raised when the pointer enters the view.
 		/// </summary>
 		public event EventHandler<PointerEventArgs>? PointerEntered;
 
 		/// <summary>
-		/// Event that is raised when the pointer exits the view.
+		/// Raised when the pointer exits the view.
 		/// </summary>
 		public event EventHandler<PointerEventArgs>? PointerExited;
 
 		/// <summary>
-		/// Event that is raised when the pointer moves within the view.
+		/// Raised when the pointer moves within the view.
 		/// </summary>
 		public event EventHandler<PointerEventArgs>? PointerMoved;
 
