@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
 		};
 
-		public static CommandMapper<IActivityIndicator, ILabelHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<ILabel, ILabelHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 
