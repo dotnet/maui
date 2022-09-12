@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages
 			var descriptionLabel =
 				new Label { Text = "Border Galleries", Margin = new Thickness(2, 2, 2, 2) };
 
-		Title = "Border Galleries";
+			Title = "Border Galleries";
 
 			Content = new ScrollView
 			{
@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Pages
 						GalleryBuilder.NavButton("Border using styles", () =>
 							new BorderStyles(), Navigation),
 					}
-}
+				}
 			};
 		}
 	}
