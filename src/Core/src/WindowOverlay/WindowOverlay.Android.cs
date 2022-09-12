@@ -39,6 +39,10 @@ namespace Microsoft.Maui
 
 			_nativeActivity = activity;
 			_nativeLayer = rootManager.RootView as ViewGroup;
+			_nativeLayer = _nativeLayer?.GetFirstChildOfType<CoordinatorLayout>() ?? _nativeLayer;
+
+			if (_nativeLayer is ContainerView containerView)
+				_nativeLayer = containerView.MainView as ViewGroup;
 
 			if (_nativeLayer?.Context == null)
 				return false;
