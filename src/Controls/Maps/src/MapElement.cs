@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {
-	public class MapElement : Element
+	public partial class MapElement : Element
 	{
 		public static readonly BindableProperty StrokeColorProperty = BindableProperty.Create(
 			nameof(StrokeColor),
@@ -32,7 +33,6 @@ namespace Microsoft.Maui.Controls.Maps
 			set => SetValue(StrokeWidthProperty, value);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public object MapElementId { get; set; }
+		public object? MapElementId { get; set; }
 	}
 }

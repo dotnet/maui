@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Platform
 			okButton.TextLabel.PixelSize = 15d.ToPixel();
 			okButton.SizeWidth = okButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
 			okButton.Clicked += delegate
-			{		
+			{
 				if (dateTimePicker is TimePicker timePicker)
 				{
 					_dateTime = timePicker.Time;

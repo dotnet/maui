@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
@@ -256,7 +257,7 @@ namespace Microsoft.Maui.Controls.Platform
 			float[] offsets = new float[orderStops.Count];
 
 			int count = 0;
-			foreach (var orderStop in orderStops)
+			foreach (var orderStop in orderStops.OrderBy(s => s.Offset))
 			{
 				colors[count] = orderStop.Color.ToPlatform().ToArgb();
 				offsets[count] = orderStop.Offset;

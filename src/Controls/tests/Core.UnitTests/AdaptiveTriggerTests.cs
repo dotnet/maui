@@ -2,14 +2,14 @@ using System;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class AdaptiveTriggerTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void ResizingWindowPageActivatesTrigger()
 		{
 			var redBrush = new SolidColorBrush(Colors.Red);
@@ -54,15 +54,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.IsPlatformEnabled = true;
 			page.IsPlatformEnabled = true;
 
-			Assert.That(label.Background, Is.EqualTo(blueBrush));
+			Assert.Equal(label.Background, blueBrush);
 
 			page.Frame = new Rect(0, 0, 500, 100);
 
-			Assert.That(label.Background, Is.EqualTo(greenBrush));
+			Assert.Equal(label.Background, greenBrush);
 
 			page.Frame = new Rect(0, 0, 100, 100);
 
-			Assert.That(label.Background, Is.EqualTo(blueBrush));
+			Assert.Equal(label.Background, blueBrush);
 		}
 	}
 }

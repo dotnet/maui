@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			platformLabel.LineBreakMode = label.LineBreakMode.ToPlatform();
 		}
-		
+
 		public static void UpdateText(this TEditor editor, InputView inputView)
 		{
 			var text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);

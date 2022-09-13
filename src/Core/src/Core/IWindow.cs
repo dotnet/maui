@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using System.Collections.Generic;
 
 namespace Microsoft.Maui
@@ -21,6 +22,51 @@ namespace Microsoft.Maui
 		/// Gets the read only collection of Window Overlays on top of the Window.
 		/// </summary>
 		IReadOnlyCollection<IWindowOverlay> Overlays { get; }
+
+		/// <summary>
+		/// Gets the specified X coordinate of the IWindow.
+		/// </summary>
+		double X { get; }
+
+		/// <summary>
+		/// Gets the specified Y coordinate of the IWindow.
+		/// </summary>
+		double Y { get; }
+
+		/// <summary>
+		/// Gets the specified width of the IWindow.
+		/// </summary>
+		double Width { get; }
+
+		/// <summary>
+		/// Gets the specified minimum width constraint of the IWindow, between zero and double.PositiveInfinity.
+		/// </summary>
+		double MinimumWidth { get; }
+
+		/// <summary>
+		/// Gets the specified maximum width constraint of the IWindow, between zero and double.PositiveInfinity.
+		/// </summary>
+		double MaximumWidth { get; }
+
+		/// <summary>
+		/// Gets the specified height of the IWindow.
+		/// </summary>
+		double Height { get; }
+
+		/// <summary>
+		/// Gets the specified minimum height constraint of the IWindow, between zero and double.PositiveInfinity.
+		/// </summary>
+		double MinimumHeight { get; }
+
+		/// <summary>
+		/// Gets the specified maximum height constraint of the IWindow, between zero and double.PositiveInfinity.
+		/// </summary>
+		double MaximumHeight { get; }
+
+		/// <summary>
+		/// Direction in which the UI elements are scanned by the eye.
+		/// </summary>
+		FlowDirection FlowDirection { get; }
 
 		/// <summary>
 		/// Adds a Window Overlay to the current Window.
@@ -77,9 +123,9 @@ namespace Microsoft.Maui
 		/// <returns>Whether or not the back navigation was handled.</returns>
 		bool BackButtonClicked();
 
-		FlowDirection FlowDirection { get; }
-
 		void DisplayDensityChanged(float displayDensity);
+
+		void FrameChanged(Rect frame);
 
 		float RequestDisplayDensity();
 	}

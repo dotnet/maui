@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
-		protected virtual Drawable GetClearButtonDrawable() =>
+		protected virtual Drawable? GetClearButtonDrawable() =>
 			_clearButtonDrawable ??= ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
 		public override void SetVirtualView(IView view)
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 		void OnTouch(object? sender, TouchEventArgs e) =>
 			e.Handled =
 				_clearButtonVisible && VirtualView != null &&
-				PlatformView.HandleClearButtonTouched(VirtualView.GetEffectiveFlowDirection(), e, GetClearButtonDrawable);
+				PlatformView.HandleClearButtonTouched(e, GetClearButtonDrawable);
 
 		void OnEditorAction(object? sender, EditorActionEventArgs e)
 		{
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Handlers
 
 			var drawable = GetClearButtonDrawable();
 
-			if (VirtualView.GetEffectiveFlowDirection() == FlowDirection.RightToLeft)
+			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
 			{
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 			}

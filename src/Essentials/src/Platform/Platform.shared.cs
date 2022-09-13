@@ -82,9 +82,6 @@ namespace Microsoft.Maui.ApplicationModel
 		public static void OnActivated(UI.Xaml.Window window, UI.Xaml.WindowActivatedEventArgs args) =>
 			WindowStateManager.Default.OnActivated(window, args);
 
-		public static void OnWindowMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam) =>
-			WindowStateManager.Default.OnWindowMessage(hWnd, msg, wParam, lParam);
-
 #elif TIZEN
 		public static Tizen.Applications.Package CurrentPackage
 		{

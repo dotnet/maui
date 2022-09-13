@@ -2,23 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class FrameUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestConstructor()
 		{
 			Frame frame = new Frame();
 
 			Assert.Null(frame.Content);
-			Assert.AreEqual(new Thickness(20, 20, 20, 20), frame.Padding);
+			Assert.Equal(new Thickness(20, 20, 20, 20), frame.Padding);
 		}
 
-		[Test]
+		[Fact]
 		public void TestPackWithoutChild()
 		{
 			Frame frame = new Frame();
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(thrown);
 		}
 
-		[Test]
+		[Fact]
 		public void TestPackWithChild()
 		{
 			Frame frame = new Frame
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(thrown);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSetChild()
 		{
 			Frame frame = new Frame();
@@ -75,8 +75,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			frame.Content = child1;
 
 			Assert.True(added);
-			Assert.AreEqual(child1, frame.Content);
-			Assert.AreEqual(child1.Parent, frame);
+			Assert.Equal(child1, frame.Content);
+			Assert.Equal(child1.Parent, frame);
 
 			added = false;
 			frame.Content = child1;
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(added);
 		}
 
-		[Test]
+		[Fact]
 		public void TestReplaceChild()
 		{
 			Frame frame = new Frame();
@@ -105,10 +105,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(removed);
 			Assert.True(added);
-			Assert.AreEqual(child2, frame.Content);
+			Assert.Equal(child2, frame.Content);
 		}
 
-		[Test]
+		[Fact]
 		public void TestFrameLayout()
 		{
 			View child;
@@ -124,20 +124,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.AreEqual(new Size(140, 240), frame.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.Equal(new Size(140, 240), frame.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 
 			frame.Layout(new Rect(0, 0, 300, 300));
 
-			Assert.AreEqual(new Rect(20, 20, 260, 260), child.Bounds);
+			Assert.Equal(new Rect(20, 20, 260, 260), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void TestDoesNotThrowOnSetNullChild()
 		{
-			Assert.DoesNotThrow(() => new Frame { Content = null });
+			_ = new Frame { Content = null };
 		}
 
-		[Test]
+		[Fact]
 		public void WidthRequest()
 		{
 			var frame = new Frame
@@ -152,10 +152,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				WidthRequest = 20
 			};
 
-			Assert.AreEqual(new Size(60, 240), frame.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.Equal(new Size(60, 240), frame.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 		}
 
-		[Test]
+		[Fact]
 		public void HeightRequest()
 		{
 			var frame = new Frame
@@ -170,10 +170,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				HeightRequest = 20
 			};
 
-			Assert.AreEqual(new Size(140, 60), frame.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.Equal(new Size(140, 60), frame.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutVerticallyCenter()
 		{
 			View child;
@@ -192,10 +192,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			frame.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(20, 50, 160, 100), child.Bounds);
+			Assert.Equal(new Rect(20, 50, 160, 100), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutVerticallyBegin()
 		{
 			View child;
@@ -214,10 +214,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			frame.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(20, 20, 160, 100), child.Bounds);
+			Assert.Equal(new Rect(20, 20, 160, 100), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutVerticallyEnd()
 		{
 			View child;
@@ -236,10 +236,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			frame.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(20, 80, 160, 100), child.Bounds);
+			Assert.Equal(new Rect(20, 80, 160, 100), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutHorizontallyCenter()
 		{
 			View child;
@@ -258,10 +258,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			frame.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(50, 20, 100, 160), child.Bounds);
+			Assert.Equal(new Rect(50, 20, 100, 160), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutHorizontallyBegin()
 		{
 			View child;
@@ -280,10 +280,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			frame.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(20, 20, 100, 160), child.Bounds);
+			Assert.Equal(new Rect(20, 20, 100, 160), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void LayoutHorizontallyEnd()
 		{
 			View child;
@@ -302,10 +302,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			frame.Layout(new Rect(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rect(80, 20, 100, 160), child.Bounds);
+			Assert.Equal(new Rect(80, 20, 100, 160), child.Bounds);
 		}
 
-		[Test]
+		[Fact]
 		public void SettingPaddingThroughStyle()
 		{
 			var frame = new Frame
@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.AreEqual(new Thickness(0), frame.Padding);
+			Assert.Equal(new Thickness(0), frame.Padding);
 
 		}
 	}

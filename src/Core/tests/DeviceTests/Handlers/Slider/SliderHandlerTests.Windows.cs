@@ -16,6 +16,6 @@ namespace Microsoft.Maui.DeviceTests
 			GetNativeSlider(sliderHandler).Minimum;
 
 		double GetNativeMaximum(SliderHandler sliderHandler) =>
-			GetNativeSlider(sliderHandler).Maximum; 
+			GetNativeSlider(sliderHandler).Maximum;
 	}
 }

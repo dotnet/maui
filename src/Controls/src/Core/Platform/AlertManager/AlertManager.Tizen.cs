@@ -107,7 +107,8 @@ namespace Microsoft.Maui.Controls.Platform
 				alert = new MessagePopup(arguments.Title, arguments.Message, arguments.Cancel);
 			}
 
-			await _modalStack.PushDummyPopupPage(async () => {
+			await _modalStack.PushDummyPopupPage(async () =>
+			{
 				try
 				{
 					arguments.SetResult(await alert.Open());
@@ -127,7 +128,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!PageIsInThisWindow(sender))
 				return;
 
-			await _modalStack.PushDummyPopupPage(async () => {
+			await _modalStack.PushDummyPopupPage(async () =>
+			{
 				try
 				{
 					using var popup = new ActionSheetPopup(arguments.Title, arguments.Cancel, destruction: arguments.Destruction, buttons: arguments.Buttons);
@@ -147,7 +149,8 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 
-			await _modalStack.PushDummyPopupPage(async () => {
+			await _modalStack.PushDummyPopupPage(async () =>
+			{
 				try
 				{
 					// placeholder should not be empty string, if not layout is broken

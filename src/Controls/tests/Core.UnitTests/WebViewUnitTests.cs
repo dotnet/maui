@@ -6,15 +6,15 @@ using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class WebViewUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestSourceImplicitConversion()
 		{
 			var web = new WebView();
@@ -22,10 +22,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			web.Source = "http://www.google.com";
 			Assert.NotNull(web.Source);
 			Assert.True(web.Source is UrlWebViewSource);
-			Assert.AreEqual("http://www.google.com", ((UrlWebViewSource)web.Source).Url);
+			Assert.Equal("http://www.google.com", ((UrlWebViewSource)web.Source).Url);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSourceChangedPropagation()
 		{
 			var source = new UrlWebViewSource { Url = "http://www.google.com" };
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(signaled);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSourceDisconnected()
 		{
 			var source = new UrlWebViewSource { Url = "http://www.google.com" };
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		}
 
-		[Test]
+		[Fact]
 		public void TestBindingContextPropagatesToSource()
 		{
 			var htmlWebView = new WebView
@@ -96,11 +96,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.AreEqual("<html><body><p>This is a WebView!</p></body></html>", htmlSource.Html);
-			Assert.AreEqual("http://xamarin.com", urlSource.Url);
+			Assert.Equal("<html><body><p>This is a WebView!</p></body></html>", htmlSource.Html);
+			Assert.Equal("http://xamarin.com", urlSource.Url);
 		}
 
-		[Test]
+		[Fact]
 		public void TestAndroidMixedContent()
 		{
 			var defaultWebView = new WebView();
@@ -108,11 +108,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mixedContentWebView = new WebView();
 			mixedContentWebView.On<Android>().SetMixedContentMode(MixedContentHandling.AlwaysAllow);
 
-			Assert.AreEqual(defaultWebView.On<Android>().MixedContentMode(), MixedContentHandling.NeverAllow);
-			Assert.AreEqual(mixedContentWebView.On<Android>().MixedContentMode(), MixedContentHandling.AlwaysAllow);
+			Assert.Equal(MixedContentHandling.NeverAllow, defaultWebView.On<Android>().MixedContentMode());
+			Assert.Equal(MixedContentHandling.AlwaysAllow, mixedContentWebView.On<Android>().MixedContentMode());
 		}
 
-		[Test]
+		[Fact]
 		public void TestEnableZoomControls()
 		{
 			var defaultWebView = new WebView();
@@ -120,11 +120,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var enableZoomControlsWebView = new WebView();
 			enableZoomControlsWebView.On<Android>().SetEnableZoomControls(true);
 
-			Assert.AreEqual(defaultWebView.On<Android>().ZoomControlsEnabled(), false);
-			Assert.AreEqual(enableZoomControlsWebView.On<Android>().ZoomControlsEnabled(), true);
+			Assert.False(defaultWebView.On<Android>().ZoomControlsEnabled());
+			Assert.True(enableZoomControlsWebView.On<Android>().ZoomControlsEnabled());
 		}
 
-		[Test]
+		[Fact]
 		public void TestDisplayZoomControls()
 		{
 			var defaultWebView = new WebView();
@@ -132,11 +132,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var displayZoomControlsWebView = new WebView();
 			displayZoomControlsWebView.On<Android>().SetDisplayZoomControls(false);
 
-			Assert.AreEqual(defaultWebView.On<Android>().ZoomControlsDisplayed(), true);
-			Assert.AreEqual(displayZoomControlsWebView.On<Android>().ZoomControlsDisplayed(), false);
+			Assert.True(defaultWebView.On<Android>().ZoomControlsDisplayed());
+			Assert.False(displayZoomControlsWebView.On<Android>().ZoomControlsDisplayed());
 		}
 
-		[Test]
+		[Fact]
 		public void TestWindowsSetAllowJavaScriptAlertsFlag()
 		{
 			var defaultWebView = new WebView();
@@ -144,11 +144,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var jsAlertsAllowedWebView = new WebView();
 			jsAlertsAllowedWebView.On<WindowsOS>().SetIsJavaScriptAlertEnabled(true);
 
-			Assert.AreEqual(defaultWebView.On<WindowsOS>().IsJavaScriptAlertEnabled(), false);
-			Assert.AreEqual(jsAlertsAllowedWebView.On<WindowsOS>().IsJavaScriptAlertEnabled(), true);
+			Assert.False(defaultWebView.On<WindowsOS>().IsJavaScriptAlertEnabled());
+			Assert.True(jsAlertsAllowedWebView.On<WindowsOS>().IsJavaScriptAlertEnabled());
 		}
 
-		[Test]
+		[Fact]
 		public void TestSettingOfCookie()
 		{
 			var defaultWebView = new WebView();
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			defaultWebView.Cookies = CookieContainer;
 			defaultWebView.Source = "http://xamarin.com";
 
-			Assert.IsNotNull(defaultWebView.Cookies);
+			Assert.NotNull(defaultWebView.Cookies);
 		}
 	}
 }

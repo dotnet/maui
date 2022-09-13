@@ -261,8 +261,7 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyHandler(string action, int index, IView view)
 		{
-			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
-			Handler?.Invoke(action, args);
+			Handler?.Invoke(action, new Maui.Handlers.LayoutHandlerUpdate(index, view));
 		}
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
