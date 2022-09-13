@@ -25,10 +25,7 @@ namespace Microsoft.Maui
 			bounds = bounds ?? platformView.Bounds;
 			if (virtualView is ISafeAreaView sav && !sav.IgnoreSafeArea && (System.OperatingSystem.IsIOSVersionAtLeast(11) || System.OperatingSystem.IsTvOSVersionAtLeast(11)))
 			{
-				// TODO: warning doesn't seem correct, file an issue?
-#pragma warning disable CA1416
 				bounds = platformView.SafeAreaInsets.InsetRect(bounds.Value);
-#pragma warning restore CA1416
 			}
 
 			var rect = bounds.Value.ToRectangle();
