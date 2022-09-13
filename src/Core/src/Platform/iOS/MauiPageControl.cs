@@ -17,8 +17,11 @@ namespace Microsoft.Maui.Platform
 			ValueChanged += MauiPageControlValueChanged;
 			if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14))
 			{
+				// TODO: warning doesn't seem correct, file an issue?
+#pragma warning disable CA1416
 				AllowsContinuousInteraction = false;
 				BackgroundStyle = UIPageControlBackgroundStyle.Minimal;
+#pragma warning restore CA1416
 			}
 		}
 
