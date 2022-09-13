@@ -86,9 +86,7 @@ namespace Microsoft.Maui.Storage
 
 				if (value is DateTime dt)
 				{
-					// UWP does not support DateTime directly
-					// https://docs.microsoft.com/en-us/windows/apps/design/app-settings/store-and-retrieve-app-data
-					appDataContainer.Values[key] = new DateTimeOffset(dt);
+					appDataContainer.Values[key] = dt.ToBinary();
 				}
 				else
 				{
@@ -107,9 +105,9 @@ namespace Microsoft.Maui.Storage
 					var tempValue = appDataContainer.Values[key];
 					if (tempValue != null)
 					{
-						if (tempValue is DateTimeOffset dto)
+						if (defaultValue is DateTime dt)
 						{
-							return (T)(object)dto.DateTime;
+							return (T)(object)DateTime.FromBinary((long)tempValue);
 						}
 						else
 						{
