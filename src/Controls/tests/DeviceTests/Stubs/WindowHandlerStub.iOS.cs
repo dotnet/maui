@@ -22,12 +22,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			var view = window.Content.ToPlatform(handler.MauiContext);
 
-			if (window.Content is Shell)
+			if (window.Content is IFlyoutView)
 			{
 				var vc =
 					(window.Content.Handler as IPlatformViewHandler)
 						.ViewController;
 
+				vc.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
 				handler.PlatformView.RootViewController.PresentViewController(vc, false, null);
 			}
 			else
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			var vc = (VirtualView.Content.Handler as IPlatformViewHandler)
 							.ViewController;
 
-			if (VirtualView.Content is Shell)
+			if (VirtualView.Content is IFlyoutView)
 			{
 				platformView.RootViewController
 					.PresentedViewController.
