@@ -38,7 +38,6 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public IReadOnlyCollection<IWindowOverlayElement> WindowElements => _windowElements;
 
-		/// <inheritdoc/>
 		public PlatformView? GraphicsView => _graphicsView;
 
 		/// <inheritdoc/>
@@ -76,7 +75,6 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public event EventHandler<WindowOverlayTappedEventArgs>? Tapped;
 
-		/// <inheritdoc/>
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			if (!IsVisible)
