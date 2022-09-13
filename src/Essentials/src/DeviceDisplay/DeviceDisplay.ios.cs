@@ -18,13 +18,9 @@ namespace Microsoft.Maui.Devices
 			var bounds = UIScreen.MainScreen.Bounds;
 			var scale = UIScreen.MainScreen.Scale;
 
-			// TODO: warning doesn't seem correct, file an issue?
-			// error CA1416: This call site is reachable on: 'iOS' 10.0 and later, 'maccatalyst' 10.0 and later. 'UIScreen.MaximumFramesPerSecond' is only supported on: 'ios' 10.3 and later, 'maccatalyst' 10.3 and later, 'tvos' 10.2 and later.
-#pragma warning disable CA1416
 			var rate = (OperatingSystem.IsIOSVersionAtLeast(10, 3) || OperatingSystem.IsTvOSVersionAtLeast(10, 3))
 				? UIScreen.MainScreen.MaximumFramesPerSecond
 				: 0;
-#pragma warning restore CA1416
 
 			return new DisplayInfo(
 				width: bounds.Width * scale,
