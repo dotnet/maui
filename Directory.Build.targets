@@ -16,14 +16,20 @@
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
+    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIstvOS)' == 'True'">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
+    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
     <SupportedOSPlatformVersion>13.1</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>13.1</TargetPlatformMinVersion>
+    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
     <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>
