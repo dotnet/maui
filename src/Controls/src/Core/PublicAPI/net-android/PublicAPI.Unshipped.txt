@@ -60,6 +60,16 @@ override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitia
 override Microsoft.Maui.Controls.TemplatedView.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.Controls.RadioButton! radioButton) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBackButtonTitle(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBackButtonVisible(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBarBackground(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBarTextColor(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapIconColor(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapIsVisible(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapTitle(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapTitleIcon(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapTitleView(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 static Microsoft.Maui.Controls.ToolTipProperties.GetText(Microsoft.Maui.Controls.BindableObject! bindable) -> object!
 static Microsoft.Maui.Controls.ToolTipProperties.SetText(Microsoft.Maui.Controls.BindableObject! bindable, object! value) -> void
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -128,3 +138,13 @@ static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> 
 *REMOVED*~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
 *REMOVED*~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.LayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
 *REMOVED*~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapBackButtonTitle(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapBackButtonVisible(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapBarBackground(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapBarTextColor(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapIconColor(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapIsVisible(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapTitle(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapTitleIcon(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapTitleView(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
