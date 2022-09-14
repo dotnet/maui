@@ -70,7 +70,7 @@ steps:
   - ${{ if eq(parameters.platform, 'Windows') }}:
     - task: PublishBuildArtifacts@1
       condition: always()
-      displayName: publish docks artifacts
+      displayName: publish docs artifacts
       inputs:
         PathToPublish: artifacts/docs-packs
         ArtifactName: xml-docs
