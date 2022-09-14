@@ -21,9 +21,9 @@ namespace Microsoft.Maui.Networking
 		{
 			get
 			{
-				return 
-					MainThread.IsMainThread ? 
-					GetNetworkAccess() : 
+				return
+					MainThread.IsMainThread ?
+					GetNetworkAccess() :
 					MainThread.InvokeOnMainThreadAsync(GetNetworkAccess).GetAwaiter().GetResult();
 			}
 		}
