@@ -30,8 +30,6 @@
     <TargetPlatformMinVersion>13.1</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
-    <!-- Workaround: https://github.com/dotnet/maui/pull/9968#issuecomment-1245659789 -->
-    <RuntimeIdentifier Condition="'$(OutputType)' == 'Exe'">maccatalyst-x64</RuntimeIdentifier>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
     <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>
