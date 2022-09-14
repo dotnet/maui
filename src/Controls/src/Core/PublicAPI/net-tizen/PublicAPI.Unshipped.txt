@@ -5853,7 +5853,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static Microsoft.Maui.Controls.Label.MapText(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
 ~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
 ~static Microsoft.Maui.Controls.Layout.ControlsLayoutMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IView, Microsoft.Maui.IViewHandler>
-~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.ILayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
+~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.ILayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
 ~static Microsoft.Maui.Controls.MenuItem.GetAccelerator(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.Accelerator
 ~static Microsoft.Maui.Controls.MenuItem.SetAccelerator(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.Accelerator value) -> void
 ~static Microsoft.Maui.Controls.MessagingCenter.Instance.get -> Microsoft.Maui.Controls.IMessagingCenter
