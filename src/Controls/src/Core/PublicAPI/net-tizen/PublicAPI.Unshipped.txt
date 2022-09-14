@@ -5631,7 +5631,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static Microsoft.Maui.Controls.Button.ControlsButtonMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IButton, Microsoft.Maui.Handlers.ButtonHandler>
 ~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Button.MapLineBreakMode(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
-~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.GetLayoutBounds(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Graphics.Rect
 ~static Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.GetLayoutFlags(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Layouts.AbsoluteLayoutFlags
 ~static Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.SetLayoutBounds(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Graphics.Rect bounds) -> void
