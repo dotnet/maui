@@ -68,7 +68,7 @@
                 Text=""
                 Placeholder="Type something to enable 2nd Entry" />
             <Label
-                Text="Label with Normal, PointerEntered, and Presed visual states:" 
+                Text="Label with Normal, PointerOver, and Pressed visual states:" 
                 Style="{StaticResource Headline}" />
             <Button 
                 Text="Login"

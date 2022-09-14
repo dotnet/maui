@@ -118,9 +118,6 @@ namespace Microsoft.Maui.Controls
 						List<IElementDefinition> remove = new List<IElementDefinition>();
 						List<IElementDefinition> add = new List<IElementDefinition>();
 
-						var _compositeGestureRecognizers = GestureController.CompositeGestureRecognizers;
-						PointerGestureRecognizer _pointerGestureRecognizerForPointerOverState = _compositeGestureRecognizers[0] as PointerGestureRecognizer;
-
 						foreach (IElementDefinition item in _gestureRecognizers.OfType<IElementDefinition>())
 						{
 							if (!_gestureRecognizers.Contains((IGestureRecognizer)item))
@@ -128,9 +125,9 @@ namespace Microsoft.Maui.Controls
 							item.Parent = this;
 						}
 
-						foreach (IElementDefinition item in _compositeGestureRecognizers.OfType<IElementDefinition>())
+						foreach (IElementDefinition item in GestureController.CompositeGestureRecognizers.OfType<IElementDefinition>())
 						{
-							if (item == _pointerGestureRecognizerForPointerOverState)
+							if (item == _recognizerForPointerOverState)
 								continue;
 
 							if (_gestureRecognizers.Contains((IGestureRecognizer)item))
@@ -154,6 +151,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool IsPointerOver = false;
+		PointerGestureRecognizer _recognizerForPointerOverState = new PointerGestureRecognizer();
 
 		ObservableCollection<IGestureRecognizer> _compositeGestureRecognizers;
 
@@ -164,19 +162,19 @@ namespace Microsoft.Maui.Controls
 				if (_compositeGestureRecognizers is not null)
 					return _compositeGestureRecognizers;
 
-				PointerGestureRecognizer pgr = new PointerGestureRecognizer();
-				pgr.PointerEntered += (s, e) =>
+				_recognizerForPointerOverState.PointerEntered += (s, e) =>
 				{
 					IsPointerOver = true;
 					ChangeVisualState();
 				};
-				pgr.PointerExited += (s, e) =>
+
+				_recognizerForPointerOverState.PointerExited += (s, e) =>
 				{
 					IsPointerOver = false;
 					ChangeVisualState();
 				};
 
-				_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>() { pgr };
+				_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>() { _recognizerForPointerOverState };
 				return _compositeGestureRecognizers;
 			}
 		}
