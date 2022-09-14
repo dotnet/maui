@@ -598,12 +598,10 @@ namespace Microsoft.Maui.Platform
 			disposable = new ActionDisposable(() =>
 			{
 				disposable = null;
-				foreach (var thing in observers)
+				foreach (var observer in observers)
 				{
-					if (thing.Value is IDisposable disp)
-						disp.Dispose();
-
-					observers.Remove(thing.Key);
+					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
+					observers.Remove(observer.Key);
 				}
 			});
 
@@ -656,12 +654,10 @@ namespace Microsoft.Maui.Platform
 			disposable = new ActionDisposable(() =>
 			{
 				disposable = null;
-				foreach (var thing in observers)
+				foreach (var observer in observers)
 				{
-					if (thing.Value is IDisposable disp)
-						disp.Dispose();
-
-					observers.Remove(thing.Key);
+					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
+					observers.Remove(observer.Key);
 				}
 			});
 
