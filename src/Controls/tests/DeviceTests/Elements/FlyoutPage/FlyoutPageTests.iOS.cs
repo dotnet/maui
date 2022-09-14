@@ -21,6 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 	public partial class FlyoutPageTests
 	{
+#if MACCATALYST
 		[Fact(DisplayName = "Flyout Page Takes Into Account Safe Area by Default")]
 		public async Task FlyoutPageTakesIntoAccountSafeAreaByDefault()
 		{
@@ -49,5 +50,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(Math.Abs(offset - flyoutLocation.Y) < 1.0);
 			});
 		}
+#endif
 	}
 }
