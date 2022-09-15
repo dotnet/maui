@@ -9,13 +9,13 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button
 	{
-		public static void MapImageSource(ButtonHandler handler, Button button)
+		public static void MapImageSource(IButtonHandler handler, Button button)
 		{
 			ButtonHandler.MapImageSource(handler, button);
 			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
 		}
 
-		public static void MapText(ButtonHandler handler, Button button)
+		public static void MapText(IButtonHandler handler, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
 			handler.PlatformView?.UpdateText(text);
