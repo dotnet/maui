@@ -1087,7 +1087,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
 
-		protected internal bool IsPointerOver = false;
+		internal bool IsPointerOver = false;
 
 		protected internal virtual void ChangeVisualState()
 		{
