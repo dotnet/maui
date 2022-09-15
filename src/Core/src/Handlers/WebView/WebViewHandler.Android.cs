@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected internal bool NavigatingCanceled(string? url)
 		{
-			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
+			if (VirtualView == null || string.IsNullOrWhiteSpace(url) || _webViewClient == null)
 				return true;
 
 			if (url == AssetBaseUrl)
@@ -146,7 +146,13 @@ namespace Microsoft.Maui.Handlers
 
 			// TODO: Sync Cookies
 			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
+
+			// if the user disconnects from the handler we want to exit
+			if (_webViewClient == null)
+				return true;
+
 			PlatformView?.UpdateCanGoBackForward(VirtualView);
+
 			UrlCanceled = cancel ? null : url;
 
 			return cancel;
