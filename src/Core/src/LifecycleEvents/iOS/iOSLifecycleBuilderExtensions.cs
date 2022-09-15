@@ -67,7 +67,7 @@ namespace Microsoft.Maui.LifecycleEvents
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
-		public static IiOSLifecycleBuilder SceneRestoreInteractionState(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneWillConnect del) => lifecycle.OnEvent(del);
+		public static IiOSLifecycleBuilder SceneRestoreInteractionState(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneRestoreInteractionState del) => lifecycle.OnEvent(del);
 
 
 		internal static IiOSLifecycleBuilder OnMauiContextCreated(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.OnMauiContextCreated del) => lifecycle.OnEvent(del);
