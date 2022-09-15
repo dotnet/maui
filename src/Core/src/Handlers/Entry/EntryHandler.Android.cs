@@ -165,8 +165,6 @@ namespace Microsoft.Maui.Handlers
 
 				if (e.IsCompletedAction(currentInputImeFlag))
 				{
-					// TODO: Dismiss keyboard for hardware / physical keyboards
-
 					VirtualView?.Completed();
 				}
 			}
