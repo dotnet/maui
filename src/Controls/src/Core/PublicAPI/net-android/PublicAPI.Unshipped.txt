@@ -34,6 +34,7 @@ Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler<Micro
 Microsoft.Maui.Controls.TappedEventArgs.Buttons.get -> Microsoft.Maui.Controls.ButtonsMask
 Microsoft.Maui.Controls.ToolTipProperties
 Microsoft.Maui.Controls.ToolTipProperties.ToolTipProperties() -> void
+Microsoft.Maui.Controls.VisualElement.IsPointerOver -> bool
 Microsoft.Maui.Controls.Window.Height.get -> double
 Microsoft.Maui.Controls.Window.Height.set -> void
 Microsoft.Maui.Controls.Window.MaximumHeight.get -> double

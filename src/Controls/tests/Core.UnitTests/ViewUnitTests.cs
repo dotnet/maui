@@ -662,16 +662,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var gestureRecognizer = new TapGestureRecognizer();
 
 			view.GestureRecognizers.Add(gestureRecognizer);
-
-#if !ANDROID
-			Assert.Equal(2, (view as IGestureController).CompositeGestureRecognizers.Count);
-#endif          
+			Assert.Equal(2, (view as IGestureController).CompositeGestureRecognizers.Count);       
+			
 			view.GestureRecognizers.Clear();
-#if ANDROID
-			Assert.Equal(0, (view as IGestureController).CompositeGestureRecognizers.Count);
-#else
 			Assert.Equal(1, (view as IGestureController).CompositeGestureRecognizers.Count);
-#endif
 			Assert.Null(gestureRecognizer.Parent);
 		}
 

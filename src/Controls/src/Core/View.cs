@@ -78,6 +78,8 @@ namespace Microsoft.Maui.Controls
 
 		readonly ObservableCollection<IGestureRecognizer> _gestureRecognizers = new ObservableCollection<IGestureRecognizer>();
 
+		PointerGestureRecognizer _recognizerForPointerOverState;
+
 		protected internal View()
 		{
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
@@ -150,17 +152,13 @@ namespace Microsoft.Maui.Controls
 			get { return _gestureRecognizers; }
 		}
 
-		bool IsPointerOver = false;
-		PointerGestureRecognizer _recognizerForPointerOverState = new PointerGestureRecognizer();
-
 		ObservableCollection<IGestureRecognizer> _compositeGestureRecognizers;
 
 		IList<IGestureRecognizer> IGestureController.CompositeGestureRecognizers
 		{
 			get
 			{
-				if (_compositeGestureRecognizers is not null)
-					return _compositeGestureRecognizers;
+				_recognizerForPointerOverState ??= new PointerGestureRecognizer();
 
 				_recognizerForPointerOverState.PointerEntered += (s, e) =>
 				{
@@ -223,14 +221,6 @@ namespace Microsoft.Maui.Controls
 				return;
 			if (gesture is PinchGestureRecognizer && _gestureRecognizers.GetGesturesFor<PinchGestureRecognizer>().Count() > 1)
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
-		}
-
-		override protected internal void ChangeVisualState()
-		{
-			if (IsPointerOver)
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-			else
-				base.ChangeVisualState();
 		}
 	}
 }

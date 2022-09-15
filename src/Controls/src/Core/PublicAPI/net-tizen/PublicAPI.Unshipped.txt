@@ -2878,6 +2878,7 @@ Microsoft.Maui.Controls.VisualElement.IsPlatformEnabled.get -> bool
 Microsoft.Maui.Controls.VisualElement.IsPlatformEnabled.set -> void
 Microsoft.Maui.Controls.VisualElement.IsPlatformStateConsistent.get -> bool
 Microsoft.Maui.Controls.VisualElement.IsPlatformStateConsistent.set -> void
+Microsoft.Maui.Controls.VisualElement.IsPointerOver -> bool
 Microsoft.Maui.Controls.VisualElement.IsVisible.get -> bool
 Microsoft.Maui.Controls.VisualElement.IsVisible.set -> void
 Microsoft.Maui.Controls.VisualElement.Layout(Microsoft.Maui.Graphics.Rect bounds) -> void
@@ -3224,7 +3225,6 @@ override Microsoft.Maui.Controls.TemplatedView.MeasureOverride(double widthConst
 override Microsoft.Maui.Controls.TemplatedView.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.TextCell.OnTapped() -> void
 override Microsoft.Maui.Controls.UriImageSource.IsEmpty.get -> bool
-override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 override Microsoft.Maui.Controls.View.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.VisualElement.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.VisualState.GetHashCode() -> int
