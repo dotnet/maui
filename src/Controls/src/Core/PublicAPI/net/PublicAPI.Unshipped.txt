@@ -91,8 +91,30 @@ virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Contr
 ~Microsoft.Maui.Controls.MenuFlyout.Remove(Microsoft.Maui.IMenuElement item) -> bool
 ~Microsoft.Maui.Controls.MenuFlyout.this[int index].get -> Microsoft.Maui.IMenuElement
 ~Microsoft.Maui.Controls.MenuFlyout.this[int index].set -> void
+~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Button.MapLineBreakMode(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.IEditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void
+~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.IEntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
 ~static Microsoft.Maui.Controls.FlyoutBase.GetContextFlyout(Microsoft.Maui.Controls.BindableObject b) -> Microsoft.Maui.Controls.FlyoutBase
 ~static Microsoft.Maui.Controls.FlyoutBase.SetContextFlyout(Microsoft.Maui.Controls.BindableObject b, Microsoft.Maui.Controls.FlyoutBase value) -> void
+~static Microsoft.Maui.Controls.Label.MapLineBreakMode(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapMaxLines(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapText(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.ILayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
+~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
 ~static readonly Microsoft.Maui.Controls.FlyoutBase.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
+*REMOVED*~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Button.MapLineBreakMode(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.EntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Label.MapLineBreakMode(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Label.MapMaxLines(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Label.MapText(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+*REMOVED*~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.LayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void

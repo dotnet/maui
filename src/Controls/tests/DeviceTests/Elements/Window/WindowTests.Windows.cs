@@ -6,6 +6,8 @@ using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 using Xunit;
 using System.Linq;
 using Microsoft.Maui.Graphics.Win2D;
+using System;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -55,6 +57,73 @@ namespace Microsoft.Maui.DeviceTests
 
 				var countAfterPageSwap = windowRootViewContainer.Children.Count;
 				Assert.Equal(countBeforePageSwap, countAfterPageSwap);
+			});
+		}
+
+		[Fact]
+		public async Task HeaderCorrectlyOffsetFromAppTitleBar()
+		{
+			SetupBuilder();
+
+			var mainPage = new NavigationPage(new ContentPage()
+			{
+				Title = "title",
+				ToolbarItems =
+				{
+					new ToolbarItem()
+					{
+						Text = "Item"
+					}
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
+			{
+				var mauiToolBar = GetPlatformToolbar(handler);
+				var position = mauiToolBar.GetLocationOnScreen();
+				var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
+
+				Assert.True(appTitleBarHeight > 0);
+				Assert.True(Math.Abs(position.Value.Y - appTitleBarHeight) < 1);
+			});
+		}
+
+		[Theory]
+		[ClassData(typeof(WindowPageSwapTestCases))]
+		public async Task HeaderCorrectlyOffsetsWhenSwappingMainPage(WindowPageSwapTestCase swapOrder)
+		{
+			SetupBuilder();
+
+			var firstRootPage = swapOrder.GetNextPageType();
+			var window = new Window(firstRootPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				await OnLoadedAsync(swapOrder.Page);
+				while (!swapOrder.IsFinished())
+				{
+					var nextRootPage = swapOrder.GetNextPageType();
+					window.Page = nextRootPage;
+
+					try
+					{
+						await OnLoadedAsync(swapOrder.Page);
+
+						if (nextRootPage is NavigationPage || nextRootPage is Shell)
+						{
+							var mauiToolBar = GetPlatformToolbar(handler);
+							var position = mauiToolBar.GetLocationOnScreen();
+							var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
+
+							Assert.True(appTitleBarHeight > 0);
+							Assert.True(Math.Abs(position.Value.Y - appTitleBarHeight) < 1);
+						}
+					}
+					catch (Exception exc)
+					{
+						throw new Exception($"Failed to swap to {nextRootPage}", exc);
+					}
+				}
 			});
 		}
 	}

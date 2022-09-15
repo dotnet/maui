@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button
 	{
-		private static void MapPadding(ButtonHandler handler, Button button)
+		private static void MapPadding(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView.UpdatePadding(button);
 		}
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		public static void MapText(ButtonHandler handler, Button button)
+		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);
 		}
