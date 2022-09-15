@@ -337,7 +337,7 @@ namespace Microsoft.Maui.Layouts
 				CompressStarMeasurements();
 			}
 
-			void MeasureCellsWithUnknowns() 
+			void MeasureCellsWithUnknowns()
 			{
 				for (int n = 0; n < _cells.Length; n++)
 				{
@@ -771,7 +771,7 @@ namespace Microsoft.Maui.Layouts
 				UpdateStarSizes(_columns, copy);
 			}
 
-			static Definition[] ScratchCopy(Definition[] original) 
+			static Definition[] ScratchCopy(Definition[] original)
 			{
 				var copy = new Definition[original.Length];
 				original.CopyTo(copy, 0);
@@ -822,7 +822,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			static void ZeroOutStarSizes(Definition[] definitions) 
+			static void ZeroOutStarSizes(Definition[] definitions)
 			{
 				for (int n = 0; n < definitions.Length; n++)
 				{
@@ -834,7 +834,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			static void UpdateStarSizes(Definition[] original, Definition[] updated) 
+			static void UpdateStarSizes(Definition[] original, Definition[] updated)
 			{
 				for (int n = 0; n < updated.Length; n++)
 				{
