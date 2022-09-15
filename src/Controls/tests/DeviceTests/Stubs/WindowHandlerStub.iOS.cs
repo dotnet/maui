@@ -53,19 +53,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			if (view is Shell)
 			{
+				var pvc = platformView?.RootViewController?.PresentedViewController;
 				// This means shell never got to the point of being preesented
-				if (platformView
-					?.RootViewController
-					?.PresentedViewController == null)
+				if (pvc == null)
 				{
 					finishedClosing?.Invoke();
 					return;
 				}
 
-				platformView
-					.RootViewController
-					.PresentedViewController
-					.DismissViewController(false,
+				pvc.DismissViewController(false,
 					() =>
 					{
 						finishedClosing.Invoke();

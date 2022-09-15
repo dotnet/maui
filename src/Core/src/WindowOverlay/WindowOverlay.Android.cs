@@ -19,9 +19,6 @@ namespace Microsoft.Maui
 			if (IsPlatformViewInitialized)
 				return true;
 
-			if (Window == null)
-				return false;
-
 			if (Window?.Content?.Handler == null)
 				return false;
 
@@ -33,6 +30,7 @@ namespace Microsoft.Maui
 			var handler = Window?.Handler as WindowHandler;
 			if (handler?.MauiContext == null)
 				return false;
+
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			if (rootManager == null)
 				return false;
