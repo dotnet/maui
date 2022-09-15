@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Devices.Sensors
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Compass']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Compass']/Docs/*" />
 	public static class Compass
 	{
 		public static event EventHandler<CompassChangedEventArgs> ReadingChanged
@@ -38,19 +38,19 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static bool IsSupported
 			=> Current.IsSupported;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='IsMonitoring']/Docs/*" />
 		public static bool IsMonitoring
 			=> Current.IsMonitoring;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][1]/Docs/*" />
 		public static void Start(SensorSpeed sensorSpeed)
 			=> Start(sensorSpeed, true);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Start'][2]/Docs/*" />
 		public static void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
 			=> Current.Start(sensorSpeed, applyLowPassFilter);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop'][1]/Docs/*" />
 		public static void Stop()
 			=> Current.Stop();
 
@@ -95,32 +95,32 @@ namespace Microsoft.Maui.Devices.Sensors
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassChangedEventArgs']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassChangedEventArgs']/Docs/*" />
 	public class CompassChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public CompassChangedEventArgs(CompassData reading) =>
 			Reading = reading;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="//Member[@MemberName='Reading']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassChangedEventArgs.xml" path="//Member[@MemberName='Reading']/Docs/*" />
 		public CompassData Reading { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassData']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.CompassData']/Docs/*" />
 	public readonly struct CompassData : IEquatable<CompassData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public CompassData(double headingMagneticNorth) =>
 			HeadingMagneticNorth = headingMagneticNorth;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='HeadingMagneticNorth']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='HeadingMagneticNorth']/Docs/*" />
 		public double HeadingMagneticNorth { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][1]/Docs/*" />
 		public override bool Equals(object? obj) =>
 			(obj is CompassData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='Equals'][2]/Docs/*" />
 		public bool Equals(CompassData other) =>
 			HeadingMagneticNorth.Equals(other.HeadingMagneticNorth);
 
@@ -130,11 +130,11 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static bool operator !=(CompassData left, CompassData right) =>
 		   !left.Equals(right);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
 		public override int GetHashCode() =>
 			HeadingMagneticNorth.GetHashCode();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/CompassData.xml" path="//Member[@MemberName='ToString']/Docs/*" />
 		public override string ToString() =>
 			$"{nameof(HeadingMagneticNorth)}: {HeadingMagneticNorth}";
 	}
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop'][2]/Docs/*" />
 		public void Stop()
 		{
 			if (!PlatformIsSupported)

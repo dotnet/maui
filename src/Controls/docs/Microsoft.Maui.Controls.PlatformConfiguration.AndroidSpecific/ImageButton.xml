@@ -63,17 +63,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetShadowColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetShadowColor (Microsoft.Maui.Controls.BindableObject element);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetShadowColor(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetShadowColor (Microsoft.Maui.Controls.BindableObject element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetShadowColor(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetShadowColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowColor element" />
+      <MemberSignature Language="F#" Value="static member GetShadowColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowColor element" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -86,17 +86,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetShadowColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetShadowColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; config);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetShadowColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; config) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetShadowColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; config);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetShadowColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; config) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton})" />
-      <MemberSignature Language="F#" Value="static member GetShadowColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt; -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowColor config" />
+      <MemberSignature Language="F#" Value="static member GetShadowColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt; -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowColor config" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt;" RefType="this" />
@@ -109,17 +109,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetShadowOffset">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Size GetShadowOffset (Microsoft.Maui.Controls.BindableObject element);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Size GetShadowOffset(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Size GetShadowOffset (Microsoft.Maui.Controls.BindableObject element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Size GetShadowOffset(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowOffset(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetShadowOffset : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowOffset element" />
+      <MemberSignature Language="F#" Value="static member GetShadowOffset : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowOffset element" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -132,17 +132,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetShadowOffset">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Size GetShadowOffset (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; config);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Size GetShadowOffset(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; config) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Size GetShadowOffset (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; config);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Size GetShadowOffset(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; config) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowOffset(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton})" />
-      <MemberSignature Language="F#" Value="static member GetShadowOffset : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt; -&gt; Microsoft.Maui.Controls.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowOffset config" />
+      <MemberSignature Language="F#" Value="static member GetShadowOffset : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt; -&gt; Microsoft.Maui.Graphics.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetShadowOffset config" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt;" RefType="this" />
@@ -268,10 +268,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetShadowColor">
-      <MemberSignature Language="C#" Value="public static void SetShadowColor (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetShadowColor(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetShadowColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowColor (element, value)" />
+      <MemberSignature Language="C#" Value="public static void SetShadowColor (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetShadowColor(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetShadowColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowColor (element, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -282,7 +282,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="element">To be added.</param>
@@ -292,10 +292,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetShadowColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; SetShadowColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; config, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; SetShadowColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; config, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton},Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetShadowColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt; * Microsoft.Maui.Controls.Color -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowColor (config, value)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; SetShadowColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; config, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; SetShadowColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; config, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton},Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetShadowColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt; * Microsoft.Maui.Graphics.Color -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowColor (config, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -306,7 +306,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt;" RefType="this" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="config">To be added.</param>
@@ -317,10 +317,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetShadowOffset">
-      <MemberSignature Language="C#" Value="public static void SetShadowOffset (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Controls.Size value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetShadowOffset(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Controls.Size value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowOffset(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Size)" />
-      <MemberSignature Language="F#" Value="static member SetShadowOffset : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Size -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowOffset (element, value)" />
+      <MemberSignature Language="C#" Value="public static void SetShadowOffset (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Size value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetShadowOffset(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Graphics.Size value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowOffset(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Size)" />
+      <MemberSignature Language="F#" Value="static member SetShadowOffset : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Size -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowOffset (element, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -331,7 +331,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Size" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Size" />
       </Parameters>
       <Docs>
         <param name="element">To be added.</param>
@@ -341,10 +341,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetShadowOffset">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; SetShadowOffset (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; config, Microsoft.Maui.Controls.Size value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; SetShadowOffset(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; config, valuetype Microsoft.Maui.Controls.Size value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowOffset(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton},Microsoft.Maui.Controls.Size)" />
-      <MemberSignature Language="F#" Value="static member SetShadowOffset : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt; * Microsoft.Maui.Controls.Size -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowOffset (config, value)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; SetShadowOffset (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt; config, Microsoft.Maui.Graphics.Size value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; SetShadowOffset(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Android, class Microsoft.Maui.Controls.ImageButton&gt; config, valuetype Microsoft.Maui.Graphics.Size value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowOffset(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton},Microsoft.Maui.Graphics.Size)" />
+      <MemberSignature Language="F#" Value="static member SetShadowOffset : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt; * Microsoft.Maui.Graphics.Size -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetShadowOffset (config, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -355,7 +355,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.ImageButton&gt;" RefType="this" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Size" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Size" />
       </Parameters>
       <Docs>
         <param name="config">To be added.</param>

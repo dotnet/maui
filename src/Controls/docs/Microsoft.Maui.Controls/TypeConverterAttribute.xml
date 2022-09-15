@@ -1,7 +1,7 @@
-<Type Name="TypeConverterAttribute" FullName="Microsoft.Maui.Controls.TypeConverterAttribute">
+<Type Name="TypeConverterAttribute" FullName="System.ComponentModel.TypeConverterAttribute">
   <TypeSignature Language="C#" Value="public sealed class TypeConverterAttribute : Attribute" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit TypeConverterAttribute extends System.Attribute" />
-  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.TypeConverterAttribute" />
+  <TypeSignature Language="DocId" Value="T:System.ComponentModel.TypeConverterAttribute" />
   <TypeSignature Language="F#" Value="type TypeConverterAttribute = class&#xA;    inherit Attribute" />
   <AssemblyInfo>
     <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -24,14 +24,14 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>Attribute that specifies the type of <see cref="T:Microsoft.Maui.Controls.TypeConverter" /> used by its target.</summary>
+    <summary>Attribute that specifies the type of <see cref="T:System.ComponentModel.TypeConverter" /> used by its target.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public TypeConverterAttribute ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.TypeConverterAttribute.#ctor" />
+      <MemberSignature Language="DocId" Value="M:System.ComponentModel.TypeConverterAttribute.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -46,15 +46,15 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.TypeConverterAttribute" /> with default values.</summary>
+        <summary>Creates a new <see cref="T:System.ComponentModel.TypeConverterAttribute" /> with default values.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public TypeConverterAttribute (string typeName);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string typeName) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.TypeConverterAttribute.#ctor(System.String)" />
-      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.TypeConverterAttribute : string -&gt; Microsoft.Maui.Controls.TypeConverterAttribute" Usage="new Microsoft.Maui.Controls.TypeConverterAttribute typeName" />
+      <MemberSignature Language="DocId" Value="M:System.ComponentModel.TypeConverterAttribute.#ctor(System.String)" />
+      <MemberSignature Language="F#" Value="new System.ComponentModel.TypeConverterAttribute : string -&gt; System.ComponentModel.TypeConverterAttribute" Usage="new System.ComponentModel.TypeConverterAttribute typeName" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -72,15 +72,15 @@
       </Parameters>
       <Docs>
         <param name="typeName">The name of the type that this attribute can decorate.</param>
-        <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.TypeConverterAttribute" /> object that specifies that the class it decorates converts values to the <paramref name="typeName" /> type.</summary>
+        <summary>Creates a new <see cref="T:System.ComponentModel.TypeConverterAttribute" /> object that specifies that the class it decorates converts values to the <paramref name="typeName" /> type.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public TypeConverterAttribute (Type type);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class System.Type type) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.TypeConverterAttribute.#ctor(System.Type)" />
-      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.TypeConverterAttribute : Type -&gt; Microsoft.Maui.Controls.TypeConverterAttribute" Usage="new Microsoft.Maui.Controls.TypeConverterAttribute type" />
+      <MemberSignature Language="DocId" Value="M:System.ComponentModel.TypeConverterAttribute.#ctor(System.Type)" />
+      <MemberSignature Language="F#" Value="new System.ComponentModel.TypeConverterAttribute : Type -&gt; System.ComponentModel.TypeConverterAttribute" Usage="new System.ComponentModel.TypeConverterAttribute type" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -98,15 +98,15 @@
       </Parameters>
       <Docs>
         <param name="type">The type that this attribute can decorate.</param>
-        <summary>reates a new <see cref="T:Microsoft.Maui.Controls.TypeConverterAttribute" /> object that specifies that the class it decorates converts values to <paramref name="type" />.</summary>
+        <summary>reates a new <see cref="T:System.ComponentModel.TypeConverterAttribute" /> object that specifies that the class it decorates converts values to <paramref name="type" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConverterTypeName">
       <MemberSignature Language="C#" Value="public string ConverterTypeName { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string ConverterTypeName" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.TypeConverterAttribute.ConverterTypeName" />
-      <MemberSignature Language="F#" Value="member this.ConverterTypeName : string" Usage="Microsoft.Maui.Controls.TypeConverterAttribute.ConverterTypeName" />
+      <MemberSignature Language="DocId" Value="P:System.ComponentModel.TypeConverterAttribute.ConverterTypeName" />
+      <MemberSignature Language="F#" Value="member this.ConverterTypeName : string" Usage="System.ComponentModel.TypeConverterAttribute.ConverterTypeName" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -129,10 +129,10 @@
       </Docs>
     </Member>
     <Member MemberName="Default">
-      <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.TypeConverterAttribute Default;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.TypeConverterAttribute Default" />
-      <MemberSignature Language="DocId" Value="F:Microsoft.Maui.Controls.TypeConverterAttribute.Default" />
-      <MemberSignature Language="F#" Value=" staticval mutable Default : Microsoft.Maui.Controls.TypeConverterAttribute" Usage="Microsoft.Maui.Controls.TypeConverterAttribute.Default" />
+      <MemberSignature Language="C#" Value="public static readonly System.ComponentModel.TypeConverterAttribute Default;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class System.ComponentModel.TypeConverterAttribute Default" />
+      <MemberSignature Language="DocId" Value="F:System.ComponentModel.TypeConverterAttribute.Default" />
+      <MemberSignature Language="F#" Value=" staticval mutable Default : System.ComponentModel.TypeConverterAttribute" Usage="System.ComponentModel.TypeConverterAttribute.Default" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -146,17 +146,17 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TypeConverterAttribute</ReturnType>
+        <ReturnType>System.ComponentModel.TypeConverterAttribute</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>A <see cref="T:Microsoft.Maui.Controls.TypeConverterAttribute" /> that contains no information about the types to which the class that it decorates can convert values.</summary>
+        <summary>A <see cref="T:System.ComponentModel.TypeConverterAttribute" /> that contains no information about the types to which the class that it decorates can convert values.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Equals">
       <MemberSignature Language="C#" Value="public override bool Equals (object obj);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool Equals(object obj) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.TypeConverterAttribute.Equals(System.Object)" />
+      <MemberSignature Language="DocId" Value="M:System.ComponentModel.TypeConverterAttribute.Equals(System.Object)" />
       <MemberSignature Language="F#" Value="override this.Equals : obj -&gt; bool" Usage="typeConverterAttribute.Equals obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -178,7 +178,7 @@
       </Parameters>
       <Docs>
         <param name="obj">The object against which to do the comparison.</param>
-        <summary>Returns true if <paramref name="obj" /> is a <see cref="T:Microsoft.Maui.Controls.TypeConverterAttribute" /> and has the same <see cref="P:Microsoft.Maui.Controls.TypeConverterAttribute.ConverterTypeName" /> value.</summary>
+        <summary>Returns true if <paramref name="obj" /> is a <see cref="T:System.ComponentModel.TypeConverterAttribute" /> and has the same <see cref="P:System.ComponentModel.TypeConverterAttribute.ConverterTypeName" /> value.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -186,7 +186,7 @@
     <Member MemberName="GetHashCode">
       <MemberSignature Language="C#" Value="public override int GetHashCode ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance int32 GetHashCode() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.TypeConverterAttribute.GetHashCode" />
+      <MemberSignature Language="DocId" Value="M:System.ComponentModel.TypeConverterAttribute.GetHashCode" />
       <MemberSignature Language="F#" Value="override this.GetHashCode : unit -&gt; int" Usage="typeConverterAttribute.GetHashCode " />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -205,7 +205,7 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Returns a value that is used for efficient storage and lookup of this <see cref="T:Microsoft.Maui.Controls.TypeConverterAttribute" /> object.</summary>
+        <summary>Returns a value that is used for efficient storage and lookup of this <see cref="T:System.ComponentModel.TypeConverterAttribute" /> object.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

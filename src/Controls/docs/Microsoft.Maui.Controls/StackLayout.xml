@@ -1,6 +1,6 @@
 <Type Name="StackLayout" FullName="Microsoft.Maui.Controls.StackLayout">
   <TypeSignature Language="C#" Value="public class StackLayout : Microsoft.Maui.Controls.Layout&lt;Microsoft.Maui.Controls.View&gt;, Microsoft.Maui.Controls.IElementConfiguration&lt;Microsoft.Maui.Controls.StackLayout&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit StackLayout extends Microsoft.Maui.Controls.Layout`1&lt;class Microsoft.Maui.Controls.View&gt; implements class Microsoft.Maui.Controls.IElementConfiguration`1&lt;class Microsoft.Maui.Controls.StackLayout&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit StackLayout extends Microsoft.Maui.Controls.Layout&lt;class Microsoft.Maui.Controls.View&gt; implements class Microsoft.Maui.Controls.IElementConfiguration`1&lt;class Microsoft.Maui.Controls.StackLayout&gt;" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.StackLayout" />
   <TypeSignature Language="F#" Value="type StackLayout = class&#xA;    inherit Layout&lt;View&gt;&#xA;    interface IElementConfiguration&lt;StackLayout&gt;" />
   <AssemblyInfo>
@@ -27,7 +27,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>A <see cref="T:Microsoft.Maui.Controls.Layout`1" /> that positions child elements in a single line which can be oriented vertically or horizontally.</summary>
+    <summary>A <see cref="T:Microsoft.Maui.Controls.Layout" /> that positions child elements in a single line which can be oriented vertically or horizontally.</summary>
     <remarks>
       <para>Because <see cref="T:Microsoft.Maui.Controls.StackLayout" /> layouts override the bounds on their child elements, application developers should not set bounds on them.</para>
       <example>
@@ -109,7 +109,7 @@ StackLayout stackLayout = new StackLayout
 ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/StackLayout.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/StackLayout.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -222,10 +222,10 @@ var stackLayout = new StackLayout {
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
-      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.Controls.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.StackLayout.OnSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="stackLayout.OnSizeRequest (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="stackLayout.OnSizeRequest (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -248,7 +248,7 @@ var stackLayout = new StackLayout {
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -258,7 +258,7 @@ var stackLayout = new StackLayout {
         <param name="widthConstraint">The available width for the StackLayout to use.</param>
         <param name="heightConstraint">The available height for the StackLayout to use.</param>
         <summary>This method is called during the measure pass of a layout cycle to get the desired size of the StackLayout.</summary>
-        <returns>A <see cref="T:Microsoft.Maui.Controls.SizeRequest" /> which contains the desired size of the StackLayout.</returns>
+        <returns>A <see cref="T:Microsoft.Maui.SizeRequest" /> which contains the desired size of the StackLayout.</returns>
         <remarks>The results of this method will be a sum of all the desired sizes of its children along the orientation axis, and the maximum along the non-orientation axis.</remarks>
       </Docs>
     </Member>

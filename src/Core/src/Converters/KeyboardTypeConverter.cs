@@ -6,20 +6,26 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Converters
 {
+	/// <inheritdoc/>
 	public class KeyboardTypeConverter : TypeConverter
 	{
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
+		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
 		{
 			var strValue = value?.ToString();
+
 			if (strValue != null)
 			{
 				string[] parts = strValue.Split('.');
+
 				if (parts != null && parts.Length == 1 || (parts != null && parts.Length == 2 && parts[0] == "Keyboard"))
 				{
 					var kbType = typeof(Keyboard);
@@ -38,10 +44,12 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(Keyboard)));
 		}
 
+		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (!(value is Keyboard keyboard))
 				throw new NotSupportedException();
+
 			if (keyboard == Keyboard.Plain)
 				return nameof(Keyboard.Plain);
 			if (keyboard == Keyboard.Chat)
@@ -58,6 +66,7 @@ namespace Microsoft.Maui.Converters
 				return nameof(Keyboard.Text);
 			if (keyboard == Keyboard.Url)
 				return nameof(Keyboard.Url);
+
 			throw new NotSupportedException();
 		}
 	}

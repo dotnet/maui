@@ -2,7 +2,7 @@
   <ItemGroup>
     <PackageReference
         Update="Xamarin.AndroidX.AppCompat.AppCompatResources"
-        Version="1.4.2.1"
+        Version="1.5.0"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Browser"

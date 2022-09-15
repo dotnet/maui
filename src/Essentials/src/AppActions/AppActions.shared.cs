@@ -28,25 +28,25 @@ namespace Microsoft.Maui.ApplicationModel
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActions']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActions']/Docs/*" />
 	public static class AppActions
 	{
 		public static bool IsSupported
 			=> Current.IsSupported;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='GetAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='GetAsync']/Docs/*" />
 		public static Task<IEnumerable<AppAction>> GetAsync()
 			=> Current.GetAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync'][1]/Docs/*" />
 		public static Task SetAsync(params AppAction[] actions)
 			=> Current.SetAsync(actions);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='SetAsync'][2]/Docs/*" />
 		public static Task SetAsync(IEnumerable<AppAction> actions)
 			=> Current.SetAsync(actions);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='OnAppAction'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="//Member[@MemberName='OnAppAction'][2]/Docs/*" />
 		public static event EventHandler<AppActionEventArgs>? OnAppAction
 		{
 			add => Current.AppActionActivated += value;
@@ -87,21 +87,21 @@ namespace Microsoft.Maui.ApplicationModel
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActionEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActionEventArgs']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActionEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActionEventArgs']/Docs/*" />
 	public class AppActionEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActionEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActionEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public AppActionEventArgs(AppAction appAction)
 			: base() => AppAction = appAction;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActionEventArgs.xml" path="//Member[@MemberName='AppAction']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppActionEventArgs.xml" path="//Member[@MemberName='AppAction']/Docs/*" />
 		public AppAction AppAction { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppAction']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppAction']/Docs/*" />
 	public class AppAction
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public AppAction(string id, string title, string? subtitle = null, string? icon = null)
 		{
 			Id = id ?? throw new ArgumentNullException(nameof(id));
@@ -111,13 +111,13 @@ namespace Microsoft.Maui.ApplicationModel
 			Icon = icon;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='Title']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='Title']/Docs/*" />
 		public string Title { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='Subtitle']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='Subtitle']/Docs/*" />
 		public string? Subtitle { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='Id']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AppAction.xml" path="//Member[@MemberName='Id']/Docs/*" />
 		public string Id { get; set; }
 
 		internal string? Icon { get; set; }
