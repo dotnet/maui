@@ -157,13 +157,18 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEditorAction(object? sender, EditorActionEventArgs e)
 		{
-			var currentInputImeFlag = VirtualView?.ReturnType.ToPlatform();
+			var returnType = VirtualView?.ReturnType;
 
-			if (e.IsCompletedAction(currentInputImeFlag))
+			if (returnType != null)
 			{
-				// TODO: Dismiss keyboard for hardware / physical keyboards
+				var currentInputImeFlag = returnType.Value.ToPlatform();
 
-				VirtualView?.Completed();
+				if (e.IsCompletedAction(currentInputImeFlag))
+				{
+					// TODO: Dismiss keyboard for hardware / physical keyboards
+
+					VirtualView?.Completed();
+				}
 			}
 
 			e.Handled = true;
