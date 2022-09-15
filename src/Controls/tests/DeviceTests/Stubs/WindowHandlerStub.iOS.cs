@@ -26,12 +26,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				var view = VirtualView.Content.ToPlatform(MauiContext);
 				_currentView = VirtualView.Content;
 
-				if (VirtualView.Content is Shell)
+				if (VirtualView.Content is IFlyoutView)
 				{
 					var vc =
 						(_currentView.Handler as IPlatformViewHandler)
 							.ViewController;
-
+							
+					vc.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
+				
 					PlatformView.RootViewController.PresentViewController(vc, false, null);
 				}
 				else
@@ -51,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			var vc = (view.Handler as IPlatformViewHandler).ViewController;
 
-			if (view is Shell)
+			if (view is IFlyoutView)
 			{
 				var pvc = platformView?.RootViewController?.PresentedViewController;
 				// This means shell never got to the point of being preesented
