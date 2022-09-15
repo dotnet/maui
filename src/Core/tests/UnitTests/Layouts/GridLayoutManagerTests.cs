@@ -150,7 +150,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return measuredSize;
 		}
 
-		static Size MeasureAndArrangeAuto(IGridLayout grid) 
+		static Size MeasureAndArrangeAuto(IGridLayout grid)
 		{
 			return MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity, 0, 0);
 		}
@@ -1928,7 +1928,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(LayoutAlignment.End, false)]
 		[InlineData(LayoutAlignment.Fill, true)]
 		[InlineData(LayoutAlignment.Fill, false)]
-		public void GridMeasuresStarColumnToChildWidth(LayoutAlignment alignment, bool impliedColumn) 
+		public void GridMeasuresStarColumnToChildWidth(LayoutAlignment alignment, bool impliedColumn)
 		{
 			string layoutData = impliedColumn ? null : "*";
 
@@ -1951,7 +1951,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(false, 100)]
 		[InlineData(true, 15)]
 		[InlineData(false, 15)]
-		public void FillGridArrangesStarColumnToWidthConstraint(bool implied, double constraint) 
+		public void FillGridArrangesStarColumnToWidthConstraint(bool implied, double constraint)
 		{
 			string layoutData = implied ? null : "*";
 
