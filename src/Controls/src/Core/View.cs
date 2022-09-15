@@ -165,13 +165,13 @@ namespace Microsoft.Maui.Controls
 
 				_recognizerForPointerOverState.PointerEntered += (s, e) =>
 				{
-					_isPointerOver = true;
+					IsPointerOver = true;
 					ChangeVisualState();
 				};
 
 				_recognizerForPointerOverState.PointerExited += (s, e) =>
 				{
-					_isPointerOver = false;
+					IsPointerOver = false;
 					ChangeVisualState();
 				};
 
