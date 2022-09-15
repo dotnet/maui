@@ -52,10 +52,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
+			if (_webViewClient is MauiWebViewClient mauiWebViewClient)
+				mauiWebViewClient.Disconnect();
+
+			_webChromeClient?.Disconnect();
+			platformView.SetWebChromeClient(null);
+
 			platformView.StopLoading();
 
-			_webViewClient?.Dispose();
-			_webChromeClient?.Dispose();
+			_webViewClient = null;
+			_webChromeClient = null;
 
 			base.DisconnectHandler(platformView);
 		}

@@ -69,9 +69,14 @@ namespace Microsoft.Maui.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
-				UnregisterCallbacks();
+				Disconnect();
 
 			base.Dispose(disposing);
+		}
+
+		internal void Disconnect()
+		{
+			UnregisterCallbacks();
 		}
 
 		protected virtual Object ParseResult(Result resultCode, Intent data)
