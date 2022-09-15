@@ -2878,7 +2878,6 @@ Microsoft.Maui.Controls.VisualElement.IsPlatformEnabled.get -> bool
 Microsoft.Maui.Controls.VisualElement.IsPlatformEnabled.set -> void
 Microsoft.Maui.Controls.VisualElement.IsPlatformStateConsistent.get -> bool
 Microsoft.Maui.Controls.VisualElement.IsPlatformStateConsistent.set -> void
-Microsoft.Maui.Controls.VisualElement.IsPointerOver -> bool
 Microsoft.Maui.Controls.VisualElement.IsVisible.get -> bool
 Microsoft.Maui.Controls.VisualElement.IsVisible.set -> void
 Microsoft.Maui.Controls.VisualElement.Layout(Microsoft.Maui.Graphics.Rect bounds) -> void
