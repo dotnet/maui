@@ -123,6 +123,7 @@
         <ResizetizeCollectItemsBeforeTargets>
             $(ResizetizeCollectItemsBeforeTargets);
             _CollectBundleResources;
+            _RemoveProcessedImageAssets;
             _BeforeCoreCompileImageAssets;
         </ResizetizeCollectItemsBeforeTargets>
 
@@ -133,6 +134,7 @@
 
         <ProcessMauiFontsBeforeTargets>
             $(ProcessMauiFontsBeforeTargets);
+            _RemoveProcessedImageAssets;
             _BeforeCoreCompileImageAssets;
         </ProcessMauiFontsBeforeTargets>
 
