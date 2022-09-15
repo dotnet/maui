@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		WeakReference<Activity> _activityRef;
 		List<int> _requestCodes;
 
-		public MauiWebChromeClient(WebViewHandler handler)
+		public MauiWebChromeClient(IWebViewHandler handler)
 		{
 			_ = handler ?? throw new ArgumentNullException("handler");
 
@@ -84,9 +84,9 @@ namespace Microsoft.Maui.Platform
 			return FileChooserParams.ParseResult((int)resultCode, data);
 		}
 
-		void SetContext(WebViewHandler handler)
+		void SetContext(IWebViewHandler handler)
 		{
-			var activity = (handler.Context?.GetActivity()) ?? ApplicationModel.Platform.CurrentActivity;
+			var activity = (handler?.MauiContext?.Context?.GetActivity()) ?? ApplicationModel.Platform.CurrentActivity;
 
 			if (activity == null)
 				handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
