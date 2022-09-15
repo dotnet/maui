@@ -304,15 +304,12 @@ namespace Microsoft.Maui.Platform
 			if (platformWindow is null)
 				return null;
 
-			if (platformWindow is null)
-				return null;
-
 			var windows = WindowExtensions.GetWindows();
 			foreach (var window in windows)
 			{
-				if (window.Handler?.PlatformView is Android.App.Activity active)
+				if (window.Handler?.PlatformView is Android.App.Activity activity)
 				{
-					if (active == platformWindow)
+					if (activity == platformWindow)
 						return window;
 				}
 			}

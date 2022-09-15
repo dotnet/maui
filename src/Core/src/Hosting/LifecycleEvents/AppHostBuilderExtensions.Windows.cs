@@ -55,10 +55,9 @@ namespace Microsoft.Maui.LifecycleEvents
 					if (e.MessageId == PlatformMethods.MessageIds.WM_SETTINGCHANGE ||
 						e.MessageId == PlatformMethods.MessageIds.WM_THEMECHANGE)
 					{
-						var mauiApp = MauiWinUIApplication.Current;
-						if (mauiApp is not null)
+						if (IPlatformApplication.Current is IPlatformApplication platformApplication)
 						{
-							mauiApp.Application?.ThemeChanged();
+							platformApplication.Application?.ThemeChanged();
 						}
 					}
 					else if (e.MessageId == PlatformMethods.MessageIds.WM_DPICHANGED)
