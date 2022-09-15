@@ -580,7 +580,7 @@ namespace Microsoft.Maui.Platform
 			=> GetHostedWindow(view?.Handler?.PlatformView as View);
 
 		internal static IWindow? GetHostedWindow(this View? view)
-			=> view?.Context?.GetActivity().GetWindowFromActivity();
+			=> view?.Context?.GetWindow();
 
 		internal static Rect GetFrameRelativeTo(this View view, View relativeTo)
 		{

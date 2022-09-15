@@ -80,7 +80,7 @@ namespace Microsoft.Maui.LifecycleEvents
 						mauiApp.Application?.ThemeChanged();
 					}
 
-					var mauiWindow = activity.GetWindowFromActivity();
+					var mauiWindow = activity.GetWindow();
 					if (mauiWindow is not null)
 					{
 						if (newConfig is not null)

@@ -5,24 +5,6 @@ namespace Microsoft.Maui.Platform
 {
 	internal static partial class ActivityExtensions
 	{
-		internal static IWindow? GetWindowFromActivity(this Android.App.Activity? activity)
-		{
-			if (activity is null)
-				return null;
-
-			var windows = WindowExtensions.GetWindows();
-			foreach (var window in windows)
-			{
-				if (window.Handler?.PlatformView is Android.App.Activity active)
-				{
-					if (active == activity)
-						return window;
-				}
-			}
-
-			return null;
-		}
-
 		internal static Rect GetWindowFrame(this Android.App.Activity activity)
 		{
 			var wmc = WindowMetricsCalculator.Companion.OrCreate;
