@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UnregisterCallbacks()
 		{
-			if (_requestCodes == null || _requestCodes.Count == 0 || !_activityRef.TryGetTarget(out Activity activity))
+			if (_requestCodes == null || _requestCodes.Count == 0 || !_activityRef.TryGetTarget(out Activity _))
 				return;
 
 			foreach (int requestCode in _requestCodes)
