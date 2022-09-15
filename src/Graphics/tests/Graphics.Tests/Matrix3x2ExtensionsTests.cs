@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Graphics.Tests
 			var t = reference.GetTranslation();
 
 			AssertEqual(refScale, s, 5);
-			Assert.Equal(refRot, r, 5);
+			Assert.Equal(refRot, r, 5f);
 			AssertEqual(refTrans, t, 5);
 
 			var m = Matrix3x2Extensions.CreateMatrix3x2(s, r, t);
@@ -126,11 +126,11 @@ namespace Microsoft.Maui.Graphics.Tests
 			var m = Matrix3x2.CreateRotation(2);
 
 			m = m.WithScale(new Vector2(3, 4));
-			Assert.Equal(2, m.GetRotation(), 4);
+			Assert.Equal(2f, m.GetRotation(), 4f);
 			AssertEqual(new Vector2(3, 4), m.GetScale(), 5);
 
 			m = m.WithScale(new Vector2(2, 2));
-			Assert.Equal(2, m.GetRotation(), 4);
+			Assert.Equal(2f, m.GetRotation(), 4f);
 			AssertEqual(new Vector2(2, 2), m.GetScale(), 5);
 		}
 
