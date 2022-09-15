@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.Pins.Add(mall);
 
 			Assert.Equal(2, map.Pins.Count);
-			Assert.Equal(map.Pins[1].Location.Latitude, -12);
+			Assert.Equal(-12, map.Pins[1].Location.Latitude);
 		}
 
 		[Fact]

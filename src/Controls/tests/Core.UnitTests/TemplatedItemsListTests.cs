@@ -723,8 +723,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var result = bindable.TemplatedItems.GetGroupAndIndexOfItem(group, group[0]);
 
-			Assert.Equal(result.Item1, -1);
-			Assert.Equal(result.Item2, -1);
+			Assert.Equal(-1, result.Item1);
+			Assert.Equal(-1, result.Item2);
 		}
 
 		[Fact]
@@ -742,7 +742,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var result = bindable.TemplatedItems.GetGroupAndIndexOfItem(items[1], "bam");
 
 			Assert.Equal(1, result.Item1);
-			Assert.Equal(result.Item2, -1);
+			Assert.Equal(-1, result.Item2);
 		}
 
 		[Fact("Issue #2464: ANE thrown when moving items in a ListView")]
@@ -781,7 +781,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.ItemsSource = items;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem("101");
-			Assert.Equal(global, -1);
+			Assert.Equal(-1, global);
 		}
 
 		[Fact]
@@ -813,7 +813,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.IsGroupingEnabled = true;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem("101");
-			Assert.Equal(global, -1);
+			Assert.Equal(-1, global);
 		}
 
 		[Fact]
@@ -845,7 +845,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.IsGroupingEnabled = true;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem(items[1], "bar");
-			Assert.Equal(global, -1);
+			Assert.Equal(-1, global);
 		}
 
 		[Fact]
@@ -861,7 +861,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.IsGroupingEnabled = true;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem(new object(), "foo");
-			Assert.Equal(global, -1);
+			Assert.Equal(-1, global);
 		}
 
 		[Fact]
@@ -1090,7 +1090,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var group2 = bindable.TemplatedItems.GetGroup(1);
 
-			Assert.Equal(group2.IndexOf(cell), -1);
+			Assert.Equal(-1, group2.IndexOf(cell));
 		}
 	}
 }

@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch1.IsEnabled = false;
 			VisualStateManager.SetVisualStateGroups(switch1, CreateTestStateGroups());
 			var groups1 = VisualStateManager.GetVisualStateGroups(switch1);
-			Assert.Equal(groups1[0].CurrentState.Name, DisabledStateName);
+			Assert.Equal(DisabledStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch1.IsToggled = true;
 			VisualStateManager.SetVisualStateGroups(switch1, CreateTestStateGroups());
 			var groups1 = VisualStateManager.GetVisualStateGroups(switch1);
-			Assert.Equal(groups1[0].CurrentState.Name, OnStateName);
+			Assert.Equal(OnStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch1.IsToggled = false;
 			VisualStateManager.SetVisualStateGroups(switch1, CreateTestStateGroups());
 			var groups1 = VisualStateManager.GetVisualStateGroups(switch1);
-			Assert.Equal(groups1[0].CurrentState.Name, OffStateName);
+			Assert.Equal(OffStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var switch1 = new Switch();
 			VisualStateManager.SetVisualStateGroups(switch1, CreateTestStateGroupsWithoutOnOffStates());
 			var groups1 = VisualStateManager.GetVisualStateGroups(switch1);
-			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
