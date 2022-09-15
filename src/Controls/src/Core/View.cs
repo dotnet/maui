@@ -158,7 +158,10 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				_recognizerForPointerOverState ??= new PointerGestureRecognizer();
+				if (_compositeGestureRecognizers is not null)
+					return _compositeGestureRecognizers;
+
+				_recognizerForPointerOverState = new PointerGestureRecognizer();
 
 				_recognizerForPointerOverState.PointerEntered += (s, e) =>
 				{
