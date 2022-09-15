@@ -1087,13 +1087,13 @@ namespace Microsoft.Maui.Controls
 
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
 
-		internal bool IsPointerOver = false;
+		internal bool _isPointerOver = false;
 
 		protected internal virtual void ChangeVisualState()
 		{
 			if (!IsEnabled)
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
-			else if (IsPointerOver)
+			else if (_isPointerOver)
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
 			else if (IsFocused)
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Focused);
