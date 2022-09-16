@@ -74,10 +74,9 @@ namespace Microsoft.Maui.LifecycleEvents
 			android
 				.OnConfigurationChanged((activity, newConfig) =>
 				{
-					var mauiApp = MauiApplication.Current;
-					if (mauiApp is not null)
+					if (IPlatformApplication.Current is IPlatformApplication platformApplication)
 					{
-						mauiApp.Application?.ThemeChanged();
+						platformApplication.Application?.ThemeChanged();
 					}
 
 					var mauiWindow = activity.GetWindow();
