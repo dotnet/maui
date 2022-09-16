@@ -161,3 +161,4 @@ static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.I
 *REMOVED*static Microsoft.Maui.Controls.Toolbar.MapToolbarDynamicOverflowEnabled(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 *REMOVED*static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 *REMOVED*static Microsoft.Maui.Controls.Toolbar.MapToolbarPlacement(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+*REMOVED*~override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
