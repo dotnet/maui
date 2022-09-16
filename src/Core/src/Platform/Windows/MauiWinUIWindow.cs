@@ -6,6 +6,7 @@ using Microsoft.Maui.LifecycleEvents;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
 using Windows.Graphics;
 
 namespace Microsoft.Maui
@@ -170,7 +171,13 @@ namespace Microsoft.Maui
 				fe.GetDescendantByName<TextBlock>("AppTitle") is TextBlock tb)
 			{
 				tb.Text = Title;
+				UpdateSemanticsDescription(tb, Title);
 			}
+		}
+
+		void UpdateSemanticsDescription(FrameworkElement frameworkElement, string description)
+		{
+			AutomationProperties.SetName(frameworkElement, description);
 		}
 
 		[DllImport("shell32.dll", CharSet = CharSet.Auto)]
