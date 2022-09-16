@@ -71,7 +71,6 @@ static Microsoft.Maui.Controls.Toolbar.MapBackButtonEnabled(Microsoft.Maui.Handl
 static Microsoft.Maui.Controls.Toolbar.MapIcon(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 static Microsoft.Maui.Controls.Toolbar.MapToolbarDynamicOverflowEnabled(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 static Microsoft.Maui.Controls.Toolbar.MapToolbarPlacement(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
-override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!

@@ -166,13 +166,11 @@ namespace Microsoft.Maui.Controls
 				_recognizerForPointerOverState.PointerEntered += (s, e) =>
 				{
 					IsPointerOver = true;
-					ChangeVisualState();
 				};
 
 				_recognizerForPointerOverState.PointerExited += (s, e) =>
 				{
 					IsPointerOver = false;
-					ChangeVisualState();
 				};
 
 				_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>() { _recognizerForPointerOverState };
