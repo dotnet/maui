@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		void UpdateContent(UIWindow platformView)
 		{
-			CloseView(_currentView, platformView , () =>
+			CloseView(_currentView, platformView, () =>
 			{
 				var view = VirtualView.Content.ToPlatform(MauiContext);
 				_currentView = VirtualView.Content;
@@ -31,9 +31,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					var vc =
 						(_currentView.Handler as IPlatformViewHandler)
 							.ViewController;
-							
+
 					vc.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
-				
+
 					PlatformView.RootViewController.PresentViewController(vc, false, null);
 				}
 				else
