@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ActivityIndicatorPage), "ActivityIndicator",
 				"Displays an animation to show that the application is engaged in a lengthy activity."),
 
-			new SectionModel(typeof(BordersPage), "Border",
+			new SectionModel(typeof(BorderPage), "Border",
 				"Draws a border around a View."),
 
 			new SectionModel(typeof(BoxViewPage), "BoxView",

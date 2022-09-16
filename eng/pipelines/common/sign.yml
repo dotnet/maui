@@ -23,11 +23,4 @@ stages:
           artifactPath: signed
           propsArtifactName: nuget
           signType: Real
-          useDateTimeVersion: false
-          preConvertSteps:
-            - task: DownloadPipelineArtifact@2
-              displayName: Download library-packs nugets
-              continueOnError: true
-              inputs:
-                artifactName: library-packs
-                downloadPath: $(Build.StagingDirectory)\nugets\signed
+          useDateTimeVersion: falses

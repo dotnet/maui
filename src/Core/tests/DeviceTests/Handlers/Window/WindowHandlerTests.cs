@@ -34,6 +34,33 @@ namespace Microsoft.Maui.DeviceTests
 
 #if MACCATALYST || WINDOWS
 
+		[Fact(
+#if MACCATALYST
+			Skip = "Setting Location on MacCatalyst is currently not supported"
+#endif
+			)]
+
+		public async Task InitialPositionsAreTakenIntoAccount()
+		{
+			var window = new Window(new NavigationPage(new ContentPage()))
+			{
+				Width = 200,
+				Height = 500,
+				X = 0,
+				Y = 500
+			};
+
+			await RunWindowTest(window, async handler =>
+			{
+				// Just let things settle for good measure
+				await Task.Delay(100);
+				Assert.Equal(200, window.Width);
+				Assert.Equal(500, window.Height);
+				Assert.Equal(0, window.X);
+				Assert.Equal(500, window.Y);
+			});
+		}
+
 		[Fact]
 		public async Task WindowSupportsEmptyPage()
 		{

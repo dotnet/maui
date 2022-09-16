@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Represents a command in a MenuFlyout view.
+	/// </summary>
 	public interface IMenuFlyoutItem : IMenuElement
 	{
 	}

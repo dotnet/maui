@@ -6,12 +6,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Label
 	{
-		public static void MapTextType(LabelHandler handler, Label label)
+		public static void MapTextType(ILabelHandler handler, Label label)
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView, label);
 		}
 
-		public static void MapText(LabelHandler handler, Label label)
+		public static void MapText(ILabelHandler handler, Label label)
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView, label);
 		}
