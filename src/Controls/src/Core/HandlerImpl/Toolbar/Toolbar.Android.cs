@@ -75,14 +75,21 @@ namespace Microsoft.Maui.Controls
 			_ = MauiContext.Context ?? throw new ArgumentNullException(nameof(MauiContext.Context));
 
 			VisualElement titleView = TitleView;
+
 			if (_platformTitleViewHandler != null)
 			{
-				Type? rendererType = null;
+				Type? titleViewHandlerType = null;
+				Type? titleViewVirtualViewType = null;
 
 				if (titleView != null)
-					rendererType = MauiContext.Handlers.GetHandlerType(titleView.GetType());
+					titleViewHandlerType = MauiContext.Handlers.GetHandlerType(titleView.GetType());
+				
+				if (_platformTitleViewHandler.VirtualView != null)
+					titleViewVirtualViewType = _platformTitleViewHandler.VirtualView.GetType();
 
-				if (titleView == null || titleView.Handler?.GetType() != rendererType)
+				if (titleView == null || 
+					titleView.Handler?.GetType() != titleViewHandlerType ||
+					titleView.GetType() != titleViewVirtualViewType)
 				{
 					if (_platformTitleView != null)
 						_platformTitleView.Child = null;
