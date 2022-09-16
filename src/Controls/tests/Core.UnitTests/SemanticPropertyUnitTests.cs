@@ -116,9 +116,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public override void UpdateValue(string property)
 			{
-				SemanticDescription = (VirtualView as IView).Semantics.Description;
-				SemanticHint = (VirtualView as IView).Semantics.Hint;
-				SemanticHeadingLevel = (VirtualView as IView).Semantics.HeadingLevel;
+				if ((VirtualView as IView).Semantics is Semantics semantics)
+				{
+					SemanticDescription = semantics.Description;
+					SemanticHint = semantics.Hint;
+					SemanticHeadingLevel = semantics.HeadingLevel;
+				}
 
 				base.UpdateValue(property);
 			}
