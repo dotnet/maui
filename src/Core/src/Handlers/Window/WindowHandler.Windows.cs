@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Handlers
 			if (platformView.Content is null)
 				platformView.Content = new WindowRootViewContainer();
 
-			// update the platform window with the user size
+			// update the platform window with the user size/position
+			platformView.UpdatePosition(VirtualView);
 			platformView.UpdateSize(VirtualView);
 
 			var appWindow = platformView.GetAppWindow();

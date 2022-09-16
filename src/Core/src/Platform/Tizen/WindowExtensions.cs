@@ -113,5 +113,19 @@ namespace Microsoft.Maui
 				s_windowCloseRequestHandler[platformWindow].Invoke();
 		}
 
+		internal static void UpdateX(this Window platformWindow, IWindow window) =>
+			platformWindow.UpdateUnsupportedCoordinate(window);
+
+		internal static void UpdateY(this Window platformWindow, IWindow window) =>
+			platformWindow.UpdateUnsupportedCoordinate(window);
+
+		internal static void UpdateWidth(this Window platformWindow, IWindow window) =>
+			platformWindow.UpdateUnsupportedCoordinate(window);
+
+		internal static void UpdateHeight(this Window platformWindow, IWindow window) =>
+			platformWindow.UpdateUnsupportedCoordinate(window);
+
+		internal static void UpdateUnsupportedCoordinate(this Window platformWindow, IWindow window) =>
+			window.FrameChanged(platformWindow.WindowPositionSize.ToDP());
 	}
 }
