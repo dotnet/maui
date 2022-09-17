@@ -7414,6 +7414,8 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~virtual Microsoft.Maui.Controls.Toolbar.TitleView.get -> Microsoft.Maui.Controls.VisualElement
 ~virtual Microsoft.Maui.Controls.Toolbar.TitleView.set -> void
 ~virtual Microsoft.Maui.Controls.View.GetChildElements(Microsoft.Maui.Graphics.Point point) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.GestureElement>
+Microsoft.Maui.Controls.ILayoutManagerFactory
+~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
 static Microsoft.Maui.Controls.Toolbar.MapBackButtonTitle(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Toolbar.MapBackButtonVisible(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Toolbar.MapBarBackground(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void

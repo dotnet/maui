@@ -120,6 +120,8 @@ virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Contr
 ~static readonly Microsoft.Maui.Controls.FlyoutBase.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
+Microsoft.Maui.Controls.ILayoutManagerFactory
+~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
 *REMOVED*~static Microsoft.Maui.Controls.NavigationPage.MapIsNavigationBarTranslucent(Microsoft.Maui.Handlers.NavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
 *REMOVED*~static Microsoft.Maui.Controls.NavigationPage.MapPrefersLargeTitles(Microsoft.Maui.Handlers.NavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
 *REMOVED*~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.LayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
