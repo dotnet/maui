@@ -36,5 +36,13 @@ namespace Microsoft.Maui.Graphics
 
 			return paint == null;
 		}
+
+		internal static bool IsTransparent(this Paint? paint)
+		{
+			if (paint is SolidPaint solidPaint)
+				return solidPaint.Color == Colors.Transparent;
+
+			return false;
+		}
 	}
 }
