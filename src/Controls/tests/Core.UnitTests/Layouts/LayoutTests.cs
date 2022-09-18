@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			readonly double _width;
 			readonly double _height;
 
-			public AlternateLayoutManager(double width, double height) 
+			public AlternateLayoutManager(double width, double height)
 			{
 				_width = width;
 				_height = height;
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(4321, result.Height);
 		}
 
-		class NullLayoutManagerFactory : Controls.ILayoutManagerFactory 
+		class NullLayoutManagerFactory : Controls.ILayoutManagerFactory
 		{
 			public ILayoutManager? CreateLayoutManager(Layout layout)
 			{

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static ILayoutManager GetLayoutManagerFromFactory(Layout layout) 
+		static ILayoutManager GetLayoutManagerFromFactory(Layout layout)
 		{
 			var factory = layout.FindMauiContext()?.Services?.GetService<ILayoutManagerFactory>();
 			return factory?.CreateLayoutManager(layout);
