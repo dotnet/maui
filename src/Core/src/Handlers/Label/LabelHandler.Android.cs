@@ -33,6 +33,11 @@ namespace Microsoft.Maui.Handlers
 			base.PlatformArrange(frame);
 		}
 
+		internal static void MapBackground(ILabelHandler handler, ILabel label)
+		{
+			handler.PlatformView?.UpdateBackground(label);
+		}
+
 		public static void MapText(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateTextPlainText(label);
