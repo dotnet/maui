@@ -78,6 +78,8 @@ namespace Microsoft.Maui.Controls
 
 		readonly ObservableCollection<IGestureRecognizer> _gestureRecognizers = new ObservableCollection<IGestureRecognizer>();
 
+		PointerGestureRecognizer _recognizerForPointerOverState;
+
 		protected internal View()
 		{
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
@@ -127,6 +129,9 @@ namespace Microsoft.Maui.Controls
 
 						foreach (IElementDefinition item in GestureController.CompositeGestureRecognizers.OfType<IElementDefinition>())
 						{
+							if (item == _recognizerForPointerOverState)
+								continue;
+
 							if (_gestureRecognizers.Contains((IGestureRecognizer)item))
 								item.Parent = this;
 							else
@@ -151,7 +156,26 @@ namespace Microsoft.Maui.Controls
 
 		IList<IGestureRecognizer> IGestureController.CompositeGestureRecognizers
 		{
-			get { return _compositeGestureRecognizers ?? (_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>()); }
+			get
+			{
+				if (_compositeGestureRecognizers is not null)
+					return _compositeGestureRecognizers;
+
+				_recognizerForPointerOverState = new PointerGestureRecognizer();
+
+				_recognizerForPointerOverState.PointerEntered += (s, e) =>
+				{
+					IsPointerOver = true;
+				};
+
+				_recognizerForPointerOverState.PointerExited += (s, e) =>
+				{
+					IsPointerOver = false;
+				};
+
+				_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>() { _recognizerForPointerOverState };
+				return _compositeGestureRecognizers;
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='GetChildElements']/Docs/*" />
