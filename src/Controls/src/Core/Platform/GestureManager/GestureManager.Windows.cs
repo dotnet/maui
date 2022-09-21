@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 		}
-		
+
 		public void Dispose()
 		{
 			Dispose(true);
