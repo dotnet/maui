@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Resizetizer
 			writer.WriteAttributeString("android", "gravity", Namespace, "center");
 
 			writer.WriteStartElement("bitmap");
-			writer.WriteAttributeString("android", "gravity", Namespace, "fill");
+			writer.WriteAttributeString("android", "gravity", Namespace, "center");
 			writer.WriteAttributeString("android", "src", Namespace, "@drawable/" + splash.OutputName);
 			writer.WriteAttributeString("android", "mipMap", Namespace, "true");
 
