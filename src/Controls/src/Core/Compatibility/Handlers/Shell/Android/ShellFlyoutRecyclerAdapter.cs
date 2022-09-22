@@ -281,12 +281,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					View.BindingContext = value;
 
 					if (_element != null)
-					{          
+					{
 						if (value is BaseShellItem bsiNew)
 							bsiNew.AddLogicalChild(View);
 						else
 							_shell.AddLogicalChild(View);
-              
+
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();
 					}

@@ -625,7 +625,7 @@ namespace Microsoft.Maui.Platform
 						disposable = null;
 						action();
 					}
-					else if(nSObservedChange != null)
+					else if (nSObservedChange != null)
 					{
 						// In some cases (FlyoutPage) the arrange and measure all take place before
 						// the view is added to the screen so this queues up a second check that

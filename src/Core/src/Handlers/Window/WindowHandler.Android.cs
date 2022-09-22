@@ -2,11 +2,19 @@ using System;
 using Android.App;
 using Android.Views;
 using Google.Android.Material.AppBar;
+using AndroidX.Window.Layout;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, Activity>
 	{
+		protected override void ConnectHandler(Activity platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			UpdateVirtualViewFrame(platformView);
+		}
+
 		public static void MapTitle(IWindowHandler handler, IWindow window) { }
 
 		public static void MapContent(IWindowHandler handler, IWindow window)
@@ -16,6 +24,18 @@ namespace Microsoft.Maui.Handlers
 			var rootView = CreateRootViewFromContent(handler, window);
 			handler.PlatformView.SetContentView(rootView);
 		}
+
+		public static void MapX(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateX(view);
+
+		public static void MapY(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateY(view);
+
+		public static void MapWidth(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateWidth(view);
+
+		public static void MapHeight(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateHeight(view);
 
 		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{
@@ -58,6 +78,12 @@ namespace Microsoft.Maui.Handlers
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.Connect(window.Content);
 			return rootManager.RootView;
+		}
+
+		void UpdateVirtualViewFrame(Activity activity)
+		{
+			var frame = activity.GetWindowFrame();
+			VirtualView.FrameChanged(frame);
 		}
 	}
 }

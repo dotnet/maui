@@ -19,6 +19,18 @@ namespace Microsoft.Maui.Handlers
 				window.VisualDiagnosticsOverlay.Initialize();
 		}
 
+		public static void MapX(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateX(view);
+
+		public static void MapY(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateY(view);
+
+		public static void MapWidth(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateWidth(view);
+
+		public static void MapHeight(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateHeight(view);
+
 		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{
 			if (view is IToolbarElement tb)

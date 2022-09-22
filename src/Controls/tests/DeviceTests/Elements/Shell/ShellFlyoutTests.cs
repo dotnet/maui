@@ -23,13 +23,13 @@ namespace Microsoft.Maui.DeviceTests
 			var flyoutItemGrid = new Grid();
 			var shellSectionGrid = new Grid();
 			var shellContentGrid = new Grid();
-			
+
 			var flyoutItem = new FlyoutItem() { Items = { new ContentPage() } };
 			var shellSection = new ShellSection() { Items = { new ContentPage() } };
 			var shellContent = new ShellContent() { Content = new ContentPage() };
 
 			// Validate the the bindingcontext of the flyout content only gets set to the Shell Part it came from
-			flyoutItemGrid.BindingContextChanged += (_, _) => 
+			flyoutItemGrid.BindingContextChanged += (_, _) =>
 				Assert.True(flyoutItemGrid.BindingContext == flyoutItem || flyoutItem.BindingContext == null);
 
 			shellSectionGrid.BindingContextChanged += (_, _) =>

@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using NRectangle = Tizen.NUI.Rectangle;
 using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;
 using TPoint = Tizen.UIExtensions.Common.Point;
@@ -9,6 +10,11 @@ namespace Microsoft.Maui.Platform
 {
 	public static class DPExtensions
 	{
+		internal static Rect ToDP(this NRectangle rect)
+		{
+			return new Rect(ConvertToScaledDP(rect.X), ConvertToScaledDP(rect.Y), ConvertToScaledDP(rect.Width), ConvertToScaledDP(rect.Height));
+		}
+
 		public static Rect ToDP(this TRect rect)
 		{
 			return new Rect(ConvertToScaledDP(rect.X), ConvertToScaledDP(rect.Y), ConvertToScaledDP(rect.Width), ConvertToScaledDP(rect.Height));
