@@ -30,7 +30,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.Common"
-        Version="2.5.1"
+        Version="2.5.2"
     />
     <PackageReference
         Update="Xamarin.AndroidX.MediaRouter"
