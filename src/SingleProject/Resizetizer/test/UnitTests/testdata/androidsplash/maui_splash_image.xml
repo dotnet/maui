@@ -6,7 +6,7 @@
     android:height="108dp"
     android:gravity="center">
     <bitmap
-      android:gravity="fill"
+      android:gravity="center"
       android:src="{drawable}"
       android:mipMap="true" />
   </item>
