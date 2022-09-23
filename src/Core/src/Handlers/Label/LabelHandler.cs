@@ -40,6 +40,10 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID
 			[nameof(ILabel.Background)] = MapBackground,
 #endif
+
+			[nameof(IMultilineText.MaximumLines)] = MapMaximumLines,
+			[nameof(IMultilineText.TextWrapMode)] = MapTextWrapMode,
+			[nameof(IOverflowableText.TextOverflowMode)] = MapTextOverflowMode,
 		};
 
 		public static CommandMapper<ILabel, ILabelHandler> CommandMapper = new(ViewCommandMapper)

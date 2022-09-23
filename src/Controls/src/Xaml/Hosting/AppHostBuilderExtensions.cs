@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			builder.Services.TryAddSingleton<IApplication>(implementationFactory);
 			builder.SetupDefaults();
+
 			return builder;
 		}
 
@@ -173,7 +174,8 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif
-			builder.RemapForControls();
+
+			builder.ConfigureCompatibilityBehaviors(compatOptions => { });
 
 			return builder;
 		}
@@ -201,7 +203,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			}
 		}
 
-
 		internal static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
 		{
 			builder.ConfigureImageSources(services =>
@@ -211,34 +212,6 @@ namespace Microsoft.Maui.Controls.Hosting
 				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
 				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
 			});
-
-			return builder;
-		}
-
-		internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
-		{
-			// Update the mappings for IView/View to work specifically for Controls
-			Application.RemapForControls();
-			VisualElement.RemapForControls();
-			Label.RemapForControls();
-			Button.RemapForControls();
-			CheckBox.RemapForControls();
-			DatePicker.RemapForControls();
-			RadioButton.RemapForControls();
-			FlyoutPage.RemapForControls();
-			Toolbar.RemapForControls();
-			Window.RemapForControls();
-			Editor.RemapForControls();
-			Entry.RemapForControls();
-			Picker.RemapForControls();
-			SearchBar.RemapForControls();
-			TabbedPage.RemapForControls();
-			TimePicker.RemapForControls();
-			Layout.RemapForControls();
-			ScrollView.RemapForControls();
-			RefreshView.RemapForControls();
-			Shape.RemapForControls();
-			WebView.RemapForControls();
 
 			return builder;
 		}

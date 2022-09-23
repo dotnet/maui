@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Hosting
@@ -39,6 +41,8 @@ namespace Microsoft.Maui.Controls.Hosting
 
 	public static partial class AppHostBuilderExtensions
 	{
+		static bool _compatibilityBehaviorsConfigured;
+
 		public static MauiAppBuilder ConfigureEffects(this MauiAppBuilder builder, Action<IEffectsBuilder> configureDelegate)
 		{
 			builder.Services.TryAddSingleton<EffectsFactory>();
@@ -46,6 +50,55 @@ namespace Microsoft.Maui.Controls.Hosting
 			{
 				builder.Services.AddSingleton<EffectsRegistration>(new EffectsRegistration(configureDelegate));
 			}
+
+			return builder;
+		}
+
+		public static MauiAppBuilder ConfigureCompatibilityBehaviors(this MauiAppBuilder builder, Action<CompatibilityOptions> configure)
+		{
+			if (_compatibilityBehaviorsConfigured)
+			{
+				return builder;
+			}
+
+			var options = new CompatibilityOptions();
+			configure(options);
+
+			// Make sure this is available if anything needs it at runtime
+			builder.Services.AddSingleton(options);
+
+			// Update the mappings from Core to match the Controls behaviors carried over from old versions
+			builder.RemapForControls(options);
+
+			_compatibilityBehaviorsConfigured = true;
+
+			return builder;
+		}
+
+		internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder, CompatibilityOptions flags)
+		{
+			// Update the mappings for IView/View to work specifically for Controls
+			Application.RemapForControls();
+			VisualElement.RemapForControls();
+			Label.RemapForControls(flags);
+			Button.RemapForControls();
+			CheckBox.RemapForControls();
+			DatePicker.RemapForControls();
+			RadioButton.RemapForControls();
+			FlyoutPage.RemapForControls();
+			Toolbar.RemapForControls();
+			Window.RemapForControls();
+			Editor.RemapForControls();
+			Entry.RemapForControls();
+			Picker.RemapForControls();
+			SearchBar.RemapForControls();
+			TabbedPage.RemapForControls();
+			TimePicker.RemapForControls();
+			Layout.RemapForControls();
+			ScrollView.RemapForControls();
+			RefreshView.RemapForControls();
+			Shape.RemapForControls();
+			WebView.RemapForControls();
 
 			return builder;
 		}

@@ -114,6 +114,17 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextTypeProperty = BindableProperty.Create(nameof(TextType), typeof(TextType), typeof(Label), TextType.Text,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
+		public static readonly BindableProperty TextOverflowModeProperty = BindableProperty.Create(nameof(TextOverflowMode), 
+			typeof(TextOverflowMode), typeof(Label), TextOverflowMode.None, propertyChanged: Invalidate);
+
+		public static readonly BindableProperty TextWrapModeProperty = BindableProperty.Create(nameof(TextWrapMode),
+			typeof(TextWrapMode), typeof(Label), TextWrapMode.None, propertyChanged: Invalidate);
+
+		static void Invalidate(BindableObject bindable, object oldValue, object newValue) 
+		{
+			((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		}
+
 		readonly Lazy<PlatformConfigurationRegistry<Label>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
@@ -148,6 +159,18 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (LineBreakMode)GetValue(LineBreakModeProperty); }
 			set { SetValue(LineBreakModeProperty, value); }
+		}
+
+		public TextOverflowMode TextOverflowMode
+		{
+			get { return (TextOverflowMode)GetValue(TextOverflowModeProperty); }
+			set { SetValue(TextOverflowModeProperty, value); }
+		}
+
+		public TextWrapMode TextWrapMode
+		{
+			get { return (TextWrapMode)GetValue(TextWrapModeProperty); }
+			set { SetValue(TextWrapModeProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='Text']/Docs/*" />
@@ -228,6 +251,8 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(MaxLinesProperty, value);
 		}
 
+		int Microsoft.Maui.IMultilineText.MaximumLines => MaxLines;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='Padding']/Docs/*" />
 		public Thickness Padding
 		{
@@ -295,7 +320,6 @@ namespace Microsoft.Maui.Controls
 				GestureController.CompositeGestureRecognizers.Add(new ChildGestureRecognizer() { GestureRecognizer = gestureRecognizer });
 		}
 
-
 		void RemoveSpans(IEnumerable spans)
 		{
 			foreach (Span span in spans)
@@ -312,7 +336,6 @@ namespace Microsoft.Maui.Controls
 					if (spanRecognizer is ChildGestureRecognizer childGestureRecognizer && childGestureRecognizer.GestureRecognizer == gestureRecognizer)
 						GestureController.CompositeGestureRecognizers.Remove(spanRecognizer);
 		}
-
 
 		void Span_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -420,5 +443,7 @@ namespace Microsoft.Maui.Controls
 		{
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
+
+
 	}
 }

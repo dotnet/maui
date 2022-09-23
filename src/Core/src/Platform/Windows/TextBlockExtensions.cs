@@ -86,6 +86,60 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static void UpdateMaximumLines(this TextBlock platformControl, ILabel label) 
+		{
+			var maxLines = label.MaximumLines;
+			if (maxLines < 1)
+			{
+				maxLines = 0;
+			}
+
+			platformControl.MaxLines = maxLines;
+		}
+
+		public static void UpdateTextWrapMode(this TextBlock platformControl, ILabel label)
+		{
+			switch (label.TextWrapMode)
+			{
+				case TextWrapMode.None:
+					platformControl.TextWrapping = TextWrapping.NoWrap;
+					break;
+				case TextWrapMode.Word:
+					platformControl.TextWrapping = TextWrapping.WrapWholeWords;
+					break;
+				case TextWrapMode.Character:
+					platformControl.TextWrapping = TextWrapping.Wrap;
+					break;
+			}
+		}
+
+		public static void UpdateTextOverflowMode(this TextBlock platformControl, ILabel label)
+		{
+			switch (label.TextOverflowMode)
+			{
+				case TextOverflowMode.None:
+					platformControl.TextTrimming = TextTrimming.None;
+					break;
+				case TextOverflowMode.Truncate:
+					platformControl.TextTrimming = TextTrimming.Clip;
+					break;
+				case TextOverflowMode.EllipsizeEnd:
+					// This is a mode that Windows has built in
+					platformControl.TextTrimming = TextTrimming.WordEllipsis;
+					break;
+				case TextOverflowMode.EllipsizeStart:
+					// Start and middle aren't built into Windows. For the moment, we'll just
+					// ignore that, do end, and document that these two don't really work. 
+					// Eventually, we might be able to work out a scheme or a custom TextBlock
+					// which _does_ handle these cases.
+					platformControl.TextTrimming = TextTrimming.WordEllipsis;
+					break;
+				case TextOverflowMode.EllipsizeMiddle:
+					platformControl.TextTrimming = TextTrimming.WordEllipsis;
+					break;
+			}
+		}
+
 		public static void UpdateHorizontalTextAlignment(this TextBlock platformControl, ILabel label)
 		{
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 

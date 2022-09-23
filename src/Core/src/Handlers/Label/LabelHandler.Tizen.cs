@@ -60,5 +60,9 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapPadding(ILabelHandler handler, ILabel label) { }
+
+		public static void MapMaximumLines(ILabelHandler handler, ILabel label) { }
+		public static void MapTextWrapMode(ILabelHandler handler, ILabel label) { }
+		public static void MapTextOverflowMode(ILabelHandler handler, ILabel label) { }
 	}
 }

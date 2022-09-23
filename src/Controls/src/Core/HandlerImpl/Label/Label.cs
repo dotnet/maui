@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Handlers;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
@@ -25,15 +25,29 @@ namespace Microsoft.Maui.Controls
 			[nameof(ILabel.Font)] = MapFont,
 			[nameof(TextColor)] = MapTextColor,
 #endif
-			[nameof(Label.LineBreakMode)] = MapLineBreakMode,
-			[nameof(Label.MaxLines)] = MapMaxLines,
 		};
 
-		internal static new void RemapForControls()
+		static void AddLegacyMultilineMappings() 
+		{
+			var mapper = ControlsLabelMapper as PropertyMapper<Label, LabelHandler>;
+
+			mapper.Add(nameof(Label.LineBreakMode), MapLineBreakMode);
+			mapper.Add(nameof(Label.MaxLines),  MapMaxLines);
+
+			// Does this even work? Why is there no "Remove"?
+			mapper[nameof(IMultilineText.MaximumLines)] = null;
+		}
+
+		internal static void RemapForControls(CompatibilityOptions options = null)
 		{
 			// Adjust the mappings to preserve Controls.Label legacy behaviors
 			// ILabel does not include the TextType property, so we map it here to handle HTML text
 			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings
+
+			if (options != null && options.LabelMultilineLegacyBehavior)
+			{
+				AddLegacyMultilineMappings();
+			}
 
 			LabelHandler.Mapper = ControlsLabelMapper;
 		}

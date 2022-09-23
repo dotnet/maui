@@ -82,5 +82,20 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapLineHeight(ILabelHandler handler, ILabel label) =>
 			handler.PlatformView?.UpdateLineHeight(label);
+
+		public static void MapMaximumLines(ILabelHandler handler, ILabel label) 
+		{
+			handler.PlatformView?.UpdateMaximumLines(label);
+		}
+
+		public static void MapTextWrapMode(ILabelHandler handler, ILabel label) 
+		{
+			handler.PlatformView?.UpdateTextWrapMode(label);
+		}
+
+		public static void MapTextOverflowMode(ILabelHandler handler, ILabel label) 
+		{
+			handler.PlatformView?.UpdateTextOverflowMode(label);
+		}
 	}
 }

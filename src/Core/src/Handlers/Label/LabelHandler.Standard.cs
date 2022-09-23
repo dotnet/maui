@@ -16,5 +16,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapMaxLines(ILabelHandler handler, ILabel label) { }
 		public static void MapPadding(ILabelHandler handler, ILabel label) { }
 		public static void MapLineHeight(ILabelHandler handler, ILabel label) { }
+		public static void MapMaximumLines(ILabelHandler handler, ILabel label) { }
+		public static void MapTextWrapMode(ILabelHandler handler, ILabel label) { }
+		public static void MapTextOverflowMode(ILabelHandler handler, ILabel label) { }
 	}
 }

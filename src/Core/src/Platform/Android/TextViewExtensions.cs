@@ -2,6 +2,7 @@ using System;
 using Android.Graphics;
 using Android.Text;
 using Android.Widget;
+using Java.Lang;
 using static Android.Widget.TextView;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
@@ -117,6 +118,108 @@ namespace Microsoft.Maui.Platform
 		{
 			if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);
+		}
+
+		public static void UpdateMaximumLines(this TextView textView, ILabel label)
+		{
+			var wrap = label.TextWrapMode;
+
+			if (wrap == TextWrapMode.None)
+			{
+				textView.SetMaxLines(1);
+				return;
+			}
+
+			var maxLines = label.MaximumLines;
+
+			if (maxLines < 1)
+			{
+				maxLines = Integer.MaxValue;
+			}
+
+			textView.SetMaxLines(maxLines);
+		}
+
+		public static void UpdateTextWrapMode(this TextView textView, ILabel label)
+		{
+			//if (OperatingSystem.IsAndroidVersionAtLeast(33))
+			//{
+				// At this level we could also customize LineBreakStyle
+			//}
+			
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				// Recent API level, which means we can use break strategy
+				textView.UpdateBreakStrategy(label);
+			}
+
+			// We're on an old API level, which means no break strategy available;
+			// Word and Character mode will do the same thing, which is just default line breaks
+
+			switch (label.TextWrapMode)
+			{
+				case TextWrapMode.None:
+					// The max lines setting will take care of disabling line breaks
+					break;
+				case TextWrapMode.Word:
+				case TextWrapMode.Character:
+					break;
+			}
+
+			// Changing the text wrap settings means we have to update max lines, 
+			// because max lines is what is (or was) enforcing the "no break" option
+			textView.UpdateMaximumLines(label);
+		}
+
+		public static void UpdateBreakStrategy(this TextView textView, ILabel label)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				switch (label.TextWrapMode)
+				{
+					case TextWrapMode.None:
+						// The max lines setting will take care of disabling line breaks
+						break;
+					case TextWrapMode.Word:
+					case TextWrapMode.Character:
+						// Word vs character isn't really a thing on Android
+						textView.BreakStrategy = BreakStrategy.HighQuality;
+						break;
+				}
+
+				// Changing the text wrap settings means we have to update max lines, 
+				// because max lines is what is (or was) enforcing the "no break" option
+				textView.UpdateMaximumLines(label);
+			}
+		}
+
+		public static void UpdateTextOverflowMode(this TextView textView, ILabel label)
+		{
+			switch (label.TextOverflowMode)
+			{
+				case TextOverflowMode.None:
+					textView.Ellipsize = null;
+					break;
+				case TextOverflowMode.Truncate:
+					// TODO ezhart Figure out if we can get this to actually clip; Ellipsize null just makes it stop
+					// at a word boundary
+					textView.Ellipsize = null;
+					break;
+				case TextOverflowMode.EllipsizeEnd:
+					// This one works if max lines is more than 1
+					textView.Ellipsize = TextUtils.TruncateAt.End;
+					break;
+				case TextOverflowMode.EllipsizeStart:
+					// Note that this won't do anything if the max lines is greater than 1
+					// See:  https://developer.android.com/reference/android/widget/TextView#setEllipsize(android.text.TextUtils.TruncateAt)
+					textView.Ellipsize = TextUtils.TruncateAt.Start;
+					break;
+				case TextOverflowMode.EllipsizeMiddle:
+					// Note that this won't do anything if the max lines is greater than 1
+					// See:  https://developer.android.com/reference/android/widget/TextView#setEllipsize(android.text.TextUtils.TruncateAt)
+					textView.Ellipsize = TextUtils.TruncateAt.Middle; 
+					break;
+			}
 		}
 	}
 }

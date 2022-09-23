@@ -92,5 +92,71 @@ namespace Microsoft.Maui.Platform
 		{
 			platformLabel.Text = label.Text;
 		}
+
+		public static void UpdateMaximumLines(this UILabel platformLabel, ILabel label)
+		{
+			if (label.TextWrapMode == TextWrapMode.None)
+			{
+				// No wrapping, so constrain to one line
+				platformLabel.Lines = 1;
+				return;
+			}
+
+			var maxLines = label.MaximumLines;
+
+			if (maxLines < 1)
+			{
+				maxLines = 0; // as many lines as needed
+			}
+
+			platformLabel.Lines = maxLines;
+		}
+
+		public static void UpdateTextWrapMode(this UILabel platformLabel, ILabel label)
+		{
+			// iOS 14 also gives us LineBreakStrategy to work with, but none of the values
+			// actually apply to our options. The default is standard, which is what we want.
+
+			switch (label.TextWrapMode)
+			{
+				case TextWrapMode.None:
+					platformLabel.LineBreakMode = UILineBreakMode.Clip;
+					break;
+				case TextWrapMode.Word:
+					platformLabel.LineBreakMode = UILineBreakMode.WordWrap;
+					break;
+				case TextWrapMode.Character:
+					platformLabel.LineBreakMode = UILineBreakMode.CharacterWrap;
+					break;
+			}
+
+			// We have to update max lines, too, because the wrap value may affect it
+			platformLabel.UpdateMaximumLines(label);
+		}
+
+		public static void UpdateTextOverflowMode(this UILabel platformLabel, ILabel label)
+		{
+			switch (label.TextOverflowMode)
+			{
+				case TextOverflowMode.None:
+				case TextOverflowMode.Truncate:
+					platformLabel.UpdateTextWrapMode(label);
+					break;
+				case TextOverflowMode.EllipsizeEnd:
+					// Note that this will blow away the TextWrapMode setting
+					// But this will work with multiple lines
+					platformLabel.LineBreakMode = UILineBreakMode.TailTruncation;
+					break;
+				case TextOverflowMode.EllipsizeStart:
+					// Note that this will blow away the TextWrapMode setting
+					// But this will work with multiple lines
+					platformLabel.LineBreakMode = UILineBreakMode.HeadTruncation;
+					break;
+				case TextOverflowMode.EllipsizeMiddle:
+					// Note that this will truncate the text to a single line.
+					platformLabel.LineBreakMode = UILineBreakMode.MiddleTruncation;
+					break;
+			}
+		}
 	}
 }
