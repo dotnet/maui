@@ -172,11 +172,13 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapItems(ShellHandler handler, Shell view)
 		{
 			handler.PlatformView.UpdateMenuItemSource();
+			handler.UpdateValue(nameof(Shell.CurrentItem));
 		}
 
 		public static void MapFlyoutItems(ShellHandler handler, Shell view)
 		{
 			handler.PlatformView.UpdateMenuItemSource();
+			handler.UpdateValue(nameof(Shell.CurrentItem));
 		}
 
 		void UpdateFlyoutHeaderBehavior(Shell view)

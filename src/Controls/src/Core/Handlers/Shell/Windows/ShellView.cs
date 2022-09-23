@@ -124,7 +124,9 @@ namespace Microsoft.Maui.Controls.Platform
 				foreach (var item in newItems)
 				{
 					if (!FlyoutItems.Contains(item))
+					{
 						FlyoutItems.Add(item);
+					}
 				}
 
 				for (var i = FlyoutItems.Count - 1; i >= 0; i--)
@@ -134,6 +136,9 @@ namespace Microsoft.Maui.Controls.Platform
 						FlyoutItems.RemoveAt(i);
 				}
 			}
+
+			if (!FlyoutItems.Contains(SelectedItem))
+				SelectedItem = null;
 		}
 
 		IEnumerable<object> IterateItems(List<List<Element>> groups)
@@ -179,7 +184,12 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				SelectedItem = newItem;
+				if (FlyoutItems.Contains(newItem))
+					SelectedItem = newItem;
+				else if (FlyoutItems.Contains(newItem.CurrentItem))
+					SelectedItem = newItem.CurrentItem;
+				else if (FlyoutItems.Contains(newItem.CurrentItem.CurrentItem))
+					SelectedItem = newItem.CurrentItem.CurrentItem;
 			}
 
 			var handler = CreateShellItemView();
@@ -219,7 +229,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		ShellItemHandler CreateShellItemView()
 		{
-			ItemRenderer ??= (ShellItemHandler)Element.CurrentItem.ToHandler(MauiContext);
+			if (ItemRenderer == null)
+			{
+				ItemRenderer = (ShellItemHandler)Element.CurrentItem.ToHandler(MauiContext);
+				if (ItemRenderer.PlatformView is NavigationView nv)
+				{
+					nv.SelectionChanged += TabSelectionChanged;
+				}
+			}
 
 			if (ItemRenderer.PlatformView != (Content as FrameworkElement))
 				Content = ItemRenderer.PlatformView;
@@ -229,5 +246,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return ItemRenderer;
 		}
+
+		void TabSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) =>
+			Element.Handler.UpdateValue(nameof(Shell.CurrentItem));
 	}
 }
