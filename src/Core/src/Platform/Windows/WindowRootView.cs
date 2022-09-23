@@ -193,7 +193,9 @@ namespace Microsoft.Maui.Platform
 				_appTitleBarHeight = AppTitleBarContentControl.ActualHeight;
 				NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight);
 
-				this.SetApplicationResource("NavigationViewContentMargin", new WThickness(0, _appTitleBarHeight, 0, 0));
+				var contentMargin = new WThickness(0, _appTitleBarHeight, 0, 0);
+				this.SetApplicationResource("NavigationViewContentMargin", contentMargin);
+				this.SetApplicationResource("NavigationViewMinimalContentMargin", contentMargin);
 				this.RefreshThemeResources();
 			}
 		}
