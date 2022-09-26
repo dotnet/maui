@@ -120,6 +120,16 @@
     <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
         <ResizetizerPlatformType>ios</ResizetizerPlatformType>
 
+        <CollectBundleResourcesDependsOn>
+		    $(CollectBundleResourcesDependsOn);
+		    ResizetizeCollectItems;
+        </CollectBundleResourcesDependsOn>
+
+        <CompileImageAssetsDependsOn>
+		    $(CompileImageAssetsDependsOn);
+		    ResizetizeCollectItems;
+        </CompileImageAssetsDependsOn>
+
         <ResizetizeCollectItemsBeforeTargets>
             $(ResizetizeCollectItemsBeforeTargets);
             $(CollectBundleResourcesDependsOn);
@@ -141,16 +151,6 @@
             ProcessMauiSplashScreens;
             $(CollectAppManifestsDependsOn)
         </CollectAppManifestsDependsOn>
-
-        <CollectBundleResourcesDependsOn>
-		    $(CollectBundleResourcesDependsOn);
-		    ResizetizeCollectItems;
-        </CollectBundleResourcesDependsOn>
-
-        <CompileImageAssetsDependsOn>
-		    $(CompileImageAssetsDependsOn);
-		    ResizetizeCollectItems;
-        </CompileImageAssetsDependsOn>
     </PropertyGroup>
 
     <!-- Android -->
