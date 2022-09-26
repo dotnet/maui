@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<ValueChangedEventArgs> ValueChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='On<T>']/Docs/*" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='On&lt;T&gt;']/Docs/*" />
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
 
 		double IStepper.Interval => Increment;

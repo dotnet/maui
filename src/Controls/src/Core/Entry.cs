@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='On<T>']/Docs/*" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='On&lt;T&gt;']/Docs/*" />
 		public IPlatformElementConfiguration<T, Entry> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

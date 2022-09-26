@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 			return ImageElement.Measure(this, desiredSize, widthConstraint, heightConstraint);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='On<T>']/Docs/*" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='On&lt;T&gt;']/Docs/*" />
 		public IPlatformElementConfiguration<T, Image> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

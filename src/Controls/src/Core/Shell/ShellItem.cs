@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator ShellItem(MenuItem menuItem) => new MenuShellItem(menuItem);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='On<T>']/Docs/*" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='On&lt;T&gt;']/Docs/*" />
 		public IPlatformElementConfiguration<T, ShellItem> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
