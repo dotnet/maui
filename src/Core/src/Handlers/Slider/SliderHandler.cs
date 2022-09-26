@@ -34,7 +34,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public SliderHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public SliderHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

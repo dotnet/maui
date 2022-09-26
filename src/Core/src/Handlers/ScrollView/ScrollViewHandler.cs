@@ -37,9 +37,9 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public ScrollViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public ScrollViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
-
 		}
 
 		IScrollView IScrollViewHandler.VirtualView => VirtualView;

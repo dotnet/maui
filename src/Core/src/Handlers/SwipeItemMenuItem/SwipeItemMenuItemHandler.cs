@@ -44,9 +44,6 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public SwipeItemMenuItemHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
-		{
-		}
 		ISwipeItemMenuItem ISwipeItemMenuItemHandler.VirtualView => VirtualView;
 
 		PlatformView ISwipeItemMenuItemHandler.PlatformView => PlatformView;

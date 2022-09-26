@@ -30,7 +30,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public SwitchHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public SwitchHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 
