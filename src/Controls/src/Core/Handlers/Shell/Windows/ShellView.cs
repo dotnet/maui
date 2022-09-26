@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -150,9 +151,20 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					yield return new FlyoutItemMenuSeparator(separatorNumber++); // Creates a separator
 				}
+
 				foreach (var item in group)
 				{
-					yield return item;
+					// Check to see if this element already has a VM counter part
+					foreach (var navItem in FlyoutItems)
+					{
+						if (navItem is NavigationViewItemViewModel viewModel && viewModel.Data == item)
+							yield return viewModel;
+					}
+
+					yield return new NavigationViewItemViewModel()
+					{
+						Data = item
+					};
 				}
 			}
 		}
@@ -172,24 +184,26 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void SwitchShellItem(ShellItem newItem, bool animate = true)
 		{
+			var navItems = FlyoutItems.OfType<NavigationViewItemViewModel>();
+
 			// Implicit items aren't items that are surfaced to the user 
 			// or data structures. So, we just want to find the element
 			// the user defined on Shell
 			if (Routing.IsImplicit(newItem))
 			{
 				if (Routing.IsImplicit(newItem.CurrentItem))
-					SelectedItem = newItem.CurrentItem.CurrentItem;
+					SelectedItem = navItems.GetWithData(newItem.CurrentItem.CurrentItem);
 				else
-					SelectedItem = newItem.CurrentItem;
+					SelectedItem = navItems.GetWithData(newItem.CurrentItem);
 			}
 			else
 			{
-				if (FlyoutItems.Contains(newItem))
-					SelectedItem = newItem;
-				else if (FlyoutItems.Contains(newItem.CurrentItem))
-					SelectedItem = newItem.CurrentItem;
-				else if (FlyoutItems.Contains(newItem.CurrentItem.CurrentItem))
-					SelectedItem = newItem.CurrentItem.CurrentItem;
+				if (navItems.TryGetWithData(newItem, out NavigationViewItemViewModel vm1))
+					SelectedItem = vm1;
+				else if (navItems.TryGetWithData(newItem.CurrentItem, out NavigationViewItemViewModel vm2))
+					SelectedItem = vm2;
+				else if (navItems.TryGetWithData(newItem.CurrentItem.CurrentItem, out NavigationViewItemViewModel vm3))
+					SelectedItem = vm3;
 			}
 
 			var handler = CreateShellItemView();

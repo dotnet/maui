@@ -334,7 +334,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
 		[Fact(DisplayName = "Selected Item On ShellView Correct With Implict Flyout Item")]
 		public async Task SelectedItemOnShellViewCorrectWithImplictFlyoutItem()
 		{
@@ -378,19 +377,17 @@ namespace Microsoft.Maui.DeviceTests
 				var navigationView =
 					handler.PlatformView as MauiNavigationView;
 
-				var menuItems = navigationView.MenuItemsSource as IList<NavigationViewItemViewModel>;
-
-				Assert.Equal(flyoutItem1, navigationView.SelectedItem);
+				Assert.Equal(flyoutItem1, (navigationView.SelectedItem as NavigationViewItemViewModel).Data);
 
 				// Switch to Shell Section 
 				shell.CurrentItem = flyoutItem2ShellSection;
 				await OnLoadedAsync(page2);
-				Assert.Equal(flyoutItem2ShellSection, navigationView.SelectedItem);
+				Assert.Equal(flyoutItem2ShellSection, (navigationView.SelectedItem as NavigationViewItemViewModel).Data);
 
 				// Switch to Shell Content 
 				shell.CurrentItem = flyoutItem3ShellContent;
 				await OnLoadedAsync(page3);
-				Assert.Equal(flyoutItem3ShellContent, navigationView.SelectedItem);
+				Assert.Equal(flyoutItem3ShellContent, (navigationView.SelectedItem as NavigationViewItemViewModel).Data);
 			});
 		}
 
@@ -525,13 +522,13 @@ namespace Microsoft.Maui.DeviceTests
 				var selectedTabItem = tabbedView.SelectedItem as NavigationViewItemViewModel;
 
 				// check that the initial flyout item is selected
-				Assert.Equal(rootView.SelectedItem, flyoutItems[0][0]);
+				Assert.Equal((rootView.SelectedItem as NavigationViewItemViewModel).Data, flyoutItems[0][0]);
 				Assert.Equal(selectedTabItem.Data, flyoutItem.Items[0].Items[0]);
 
 				tabbedView.SelectedItem = platformTabItems[1].MenuItemsSource[1];
 
 				// Verify that the flyout item updates
-				Assert.Equal(rootView.SelectedItem, flyoutItems[0][1]);
+				Assert.Equal((rootView.SelectedItem as NavigationViewItemViewModel).Data, flyoutItems[0][1]);
 			});
 		}
 	}

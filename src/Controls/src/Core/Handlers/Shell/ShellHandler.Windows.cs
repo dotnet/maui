@@ -56,9 +56,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnMenuItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
 		{
-			var item = args.InvokedItemContainer?.DataContext as Element;
-			if (item != null)
-				(VirtualView as IShellController)?.OnFlyoutItemSelected(item);
+			var item = args.InvokedItemContainer?.DataContext;
+
+			if (item is NavigationViewItemViewModel nvm && nvm.Data is Element e)
+				(VirtualView as IShellController)?.OnFlyoutItemSelected(e);
+			else if (item is Element e2)
+				(VirtualView as IShellController)?.OnFlyoutItemSelected(e2);
 		}
 
 		void OnApplyTemplateFinished(object sender, System.EventArgs e)
