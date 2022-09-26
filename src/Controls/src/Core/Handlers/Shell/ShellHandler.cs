@@ -37,11 +37,6 @@ namespace Microsoft.Maui.Controls.Handlers
 		public ShellHandler() : base(Mapper, CommandMapper)
 		{
 		}
-
-		public ShellHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
-		{
-		}
 	}
 }
 #endif
