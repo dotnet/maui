@@ -122,8 +122,8 @@
 
         <ResizetizeCollectItemsBeforeTargets>
             $(ResizetizeCollectItemsBeforeTargets);
-            $(CollectBundleResourcesDependsOn);
-            $(CompileImageAssetsDependsOn);
+            _CollectBundleResources;
+            _BeforeCoreCompileImageAssets;
         </ResizetizeCollectItemsBeforeTargets>
 
         <ResizetizeAfterTargets>
@@ -133,7 +133,7 @@
 
         <ProcessMauiFontsBeforeTargets>
             $(ProcessMauiFontsBeforeTargets);
-            $(CompileImageAssetsDependsOn);
+            _BeforeCoreCompileImageAssets;
         </ProcessMauiFontsBeforeTargets>
 
         <CollectAppManifestsDependsOn>
@@ -141,16 +141,6 @@
             ProcessMauiSplashScreens;
             $(CollectAppManifestsDependsOn)
         </CollectAppManifestsDependsOn>
-
-        <CollectBundleResourcesDependsOn>
-		    $(CollectBundleResourcesDependsOn);
-		    ResizetizeCollectItems;
-        </CollectBundleResourcesDependsOn>
-
-        <CompileImageAssetsDependsOn>
-		    $(CompileImageAssetsDependsOn);
-		    ResizetizeCollectItems;
-        </CompileImageAssetsDependsOn>
     </PropertyGroup>
 
     <!-- Android -->
