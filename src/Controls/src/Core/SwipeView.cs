@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls
 			return ((SwipeView)bindable).SwipeItemsDefaultValueCreator();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='On<T>']/Docs/*" />
 		public IPlatformElementConfiguration<T, SwipeView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
