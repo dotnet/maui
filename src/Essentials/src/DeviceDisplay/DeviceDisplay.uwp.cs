@@ -145,8 +145,10 @@ namespace Microsoft.Maui.Devices
 				WindowStateManager.Default.ActiveWindowDisplayChanged += OnWindowDisplayChanged;
 				WindowStateManager.Default.ActiveWindowChanged += OnCurrentWindowChanged;
 
-				_currentAppWindowListeningTo = WindowStateManager.Default.GetActiveAppWindow(true)!;
-				_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
+				_currentAppWindowListeningTo = WindowStateManager.Default.GetActiveAppWindow(false)!;
+
+				if (_currentAppWindowListeningTo != null)
+					_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
 			});
 		}
 

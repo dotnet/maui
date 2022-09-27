@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		readonly FilteredCollectionView<TestCaseViewModel, (string, TestState)> _filteredTests;
 		readonly ITestNavigation _navigation;
 		readonly ITestRunner _runner;
+		readonly List<TestCaseViewModel> _results;
 
 		CancellationTokenSource? _filterCancellationTokenSource;
 		TestState _result;
@@ -46,6 +48,28 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			DisplayName = Path.GetFileNameWithoutExtension(runInfo.AssemblyFileName);
 
 			_allTests = new ObservableCollection<TestCaseViewModel>(runInfo.TestCases);
+			_results = new List<TestCaseViewModel>(runInfo.TestCases);
+
+			_allTests.CollectionChanged += (_, args) =>
+			{
+				lock (_results)
+				{
+					switch (args.Action)
+					{
+						case NotifyCollectionChangedAction.Add:
+							foreach (TestCaseViewModel item in args.NewItems!)
+								_results.Add(item);
+							break;
+						case NotifyCollectionChangedAction.Remove:
+							foreach (TestCaseViewModel item in args.OldItems!)
+								_results.Remove(item);
+							break;
+						default:
+							throw new InvalidOperationException($"I can't work with {args.Action}");
+					}
+				}
+			};
+
 			_filteredTests = new FilteredCollectionView<TestCaseViewModel, (string, TestState)>(
 				_allTests,
 				IsTestFilterMatch,
@@ -232,9 +256,16 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				return;
 			}
 
-			var results = _allTests
-				.GroupBy(r => r.Result)
-				.ToDictionary(k => k.Key, v => v.Count());
+			// This would occasionally crash when running the group operation
+			// most likely because of thread safety issues.
+			Dictionary<TestState, int> results;
+			lock (_results)
+			{
+				results =
+					_results
+						.GroupBy(r => r.Result)
+						.ToDictionary(k => k.Key, v => v.Count());
+			}
 
 			results.TryGetValue(TestState.Passed, out int passed);
 			results.TryGetValue(TestState.Failed, out int failure);

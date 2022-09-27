@@ -63,7 +63,7 @@ public class App : Application
 }]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/TextCell.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/TextCell.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -227,10 +227,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="DetailColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color DetailColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color DetailColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color DetailColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color DetailColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.TextCell.DetailColor" />
-      <MemberSignature Language="F#" Value="member this.DetailColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.TextCell.DetailColor" />
+      <MemberSignature Language="F#" Value="member this.DetailColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.TextCell.DetailColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -244,7 +244,7 @@ public class App : Application
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color to render the secondary text. This is a bindable property.</summary>
@@ -359,10 +359,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="TextColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TextColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TextColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TextColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TextColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.TextCell.TextColor" />
-      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.TextCell.TextColor" />
+      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.TextCell.TextColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -376,7 +376,7 @@ public class App : Application
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color to render the primary text. This is a bindable property.</summary>

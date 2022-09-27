@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateText(this EditText editText, IEntry entry)
 		{
+			var previousTextLength = editText.Length();
+
 			// Setting the text causes the cursor to reset to position zero
 			// Therefore if:
 			// User Types => VirtualView Updated => Triggers Native Update
@@ -171,30 +173,16 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
+		// TODO: NET7 hartez - Remove this, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
 			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
 
+		// TODO: NET7 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
 		{
-			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
-			void ShowClearButton()
+			if (entry?.Handler is not EntryHandler entryHandler)
 			{
-				var drawable = getClearButtonDrawable?.Invoke();
-
-				if (entry.GetEffectiveFlowDirection() == FlowDirection.RightToLeft)
-				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-				}
-				else
-				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
-				}
-			}
-
-			// Hides clear button drawable from the control.
-			void HideClearButton()
-			{
-				editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+				return;
 			}
 
 			bool isFocused = editText.IsFocused;
@@ -206,11 +194,11 @@ namespace Microsoft.Maui.Platform
 
 			if (shouldDisplayClearButton)
 			{
-				ShowClearButton();
+				entryHandler.ShowClearButton();
 			}
 			else
 			{
-				HideClearButton();
+				entryHandler.HideClearButton();
 			}
 		}
 
@@ -293,43 +281,35 @@ namespace Microsoft.Maui.Platform
 		{
 			var previousCursorPosition = editText.SelectionStart;
 
-			if (textInput.IsReadOnly)
+			var keyboard = textInput.Keyboard;
+			var nativeInputTypeToUpdate = keyboard.ToInputType();
+
+			if (keyboard is not CustomKeyboard)
 			{
-				editText.InputType = InputTypes.Null;
+				// TODO: IsSpellCheckEnabled handling must be here.
+
+				if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+				{
+					if (!textInput.IsTextPredictionEnabled)
+						nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+				}
 			}
-			else
+
+			if (keyboard == Keyboard.Numeric)
 			{
-				
-				var keyboard = textInput.Keyboard;
-				var nativeInputTypeToUpdate = keyboard.ToInputType();
-
-				if (keyboard is not CustomKeyboard)
-				{
-					// TODO: IsSpellCheckEnabled handling must be here.
-
-					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
-					{
-						if (!textInput.IsTextPredictionEnabled)
-							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
-					}
-				}
-
-				if (keyboard == Keyboard.Numeric)
-				{
-					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
-				}
-
-				if (textInput is IEntry entry && entry.IsPassword)
-				{
-					if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
-						nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
-
-					if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
-						nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
-				}
-
-				editText.InputType = nativeInputTypeToUpdate;
+				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
+
+			if (textInput is IEntry entry && entry.IsPassword)
+			{
+				if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
+					nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
+
+				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
+					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
+			}
+
+			editText.InputType = nativeInputTypeToUpdate;
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
@@ -372,7 +352,7 @@ namespace Microsoft.Maui.Platform
 			if (motionEvent.Action != MotionEventActions.Up)
 				return false;
 
-			var x = motionEvent.GetX();
+			var x = motionEvent.RawX;
 			var y = motionEvent.GetY();
 
 			if ((flowDirection != FlowDirection.LeftToRight

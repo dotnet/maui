@@ -1,28 +1,29 @@
 ﻿using System;
+using ContentViewGroup = Microsoft.Maui.Platform.ContentViewGroup;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorderView, BorderView>
+	public partial class BorderHandler : ViewHandler<IBorderView, ContentViewGroup>
 	{
 		IPlatformViewHandler? _contentHandler;
 
-		protected override BorderView CreatePlatformView()
+		protected override ContentViewGroup CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 
-			var view = new BorderView(PlatformParent, VirtualView)
+			var view = new ContentViewGroup(VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
-			view.Show();
 			return view;
 		}
 
 		protected override void SetupContainer()
 		{
 			base.SetupContainer();
-			PlatformView.ContainerView = ContainerView;
+			ContainerView?.UpdateBorder(VirtualView);
+			ContainerView?.UpdateBackground(VirtualView.Background);
 		}
 
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -61,7 +62,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Children.Add(view.ToPlatform(MauiContext));
 				if (view.Handler is IPlatformViewHandler thandler)
 				{
-					thandler?.SetParent(this);
 					_contentHandler = thandler;
 				}
 			}

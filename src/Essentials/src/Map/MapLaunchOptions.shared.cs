@@ -1,12 +1,12 @@
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MapLaunchOptions']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MapLaunchOptions']/Docs/*" />
 	public class MapLaunchOptions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="//Member[@MemberName='NavigationMode']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="//Member[@MemberName='NavigationMode']/Docs/*" />
 		public NavigationMode NavigationMode { get; set; } = NavigationMode.None;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="//Member[@MemberName='Name']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="//Member[@MemberName='Name']/Docs/*" />
 		public string Name { get; set; } = string.Empty;
 	}
 }

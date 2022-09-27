@@ -70,16 +70,20 @@ namespace Microsoft.Maui.DeviceTests
 				view = wrapper;
 
 			TaskCompletionSource? tcs = null;
+			TaskCompletionSource? unloadedTcs = null;
+			Window? window = null;
 
 			if (view.Parent == null)
 			{
 				// prepare to wait for element to be in the UI
 				tcs = new TaskCompletionSource();
+				unloadedTcs = new TaskCompletionSource();
+
 				view.Loaded += OnViewLoaded;
 
 				// attach to the UI
 				Grid grid;
-				var window = new Window
+				window = new Window
 				{
 					Content = new Grid
 					{
@@ -103,17 +107,23 @@ namespace Microsoft.Maui.DeviceTests
 
 				// wait for element to be loaded
 				await tcs.Task;
+				view.Unloaded += OnViewUnloaded;
 
 				// continue with the run
+				T result;
 				try
 				{
-					return await Run(action);
+					result = await Run(action);
+					grid.Children.Clear();
 				}
 				finally
 				{
-					grid.Children.Clear();
+					await unloadedTcs.Task;
+					await Task.Delay(10);
 					window.Close();
 				}
+
+				return result;
 			}
 			else
 			{
@@ -129,6 +139,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				view.Loaded -= OnViewLoaded;
 				tcs?.SetResult();
+			}
+
+			void OnViewUnloaded(object sender, RoutedEventArgs e)
+			{
+				view.Unloaded -= OnViewUnloaded;
+				unloadedTcs?.SetResult();
 			}
 		}
 

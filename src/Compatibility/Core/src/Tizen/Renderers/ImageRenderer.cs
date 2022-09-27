@@ -1,30 +1,29 @@
-using System.ComponentModel;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
-using EImage = ElmSharp.Image;
-using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Image;
+using Tizen.UIExtensions.NUI;
+using CAspect = Tizen.UIExtensions.Common.Aspect;
+using NImage = Tizen.UIExtensions.NUI.Image;
+using NUIImage = Tizen.NUI.BaseComponents.ImageView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class ImageRenderer : ViewRenderer<Image, Native.Image>
+	public class ImageRenderer : ViewRenderer<Image, NImage>
 	{
 		public ImageRenderer()
 		{
 			RegisterPropertyHandler(Image.SourceProperty, UpdateSource);
 			RegisterPropertyHandler(Image.AspectProperty, UpdateAspect);
-			RegisterPropertyHandler(Image.IsOpaqueProperty, UpdateIsOpaque);
 			RegisterPropertyHandler(Image.IsAnimationPlayingProperty, UpdateIsAnimationPlaying);
-			RegisterPropertyHandler(Specific.BlendColorProperty, UpdateBlendColor);
-			RegisterPropertyHandler(Specific.FileProperty, UpdateFile);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.Image(Forms.NativeParent));
+				SetNativeControl(new NImage());
 			}
 			base.OnElementChanged(e);
 		}
@@ -52,112 +51,82 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				((IImageController)Element).SetIsLoading(false);
 		}
 
-		void UpdateFile(bool initialize)
-		{
-			if (initialize && Specific.GetFile(Element) == default || Element.Source != default(ImageSource))
-				return;
-
-			if (Control != null)
-			{
-				bool success = Control.LoadFromFile(Specific.GetFile(Element));
-
-				if (!IsDisposed && success)
-				{
-					((IVisualElementController)Element).PlatformSizeChanged();
-					UpdateAfterLoading(initialize);
-				}
-			}
-		}
-
 		protected virtual void UpdateAfterLoading(bool initialize)
 		{
-			UpdateIsOpaque(initialize);
-			UpdateBlendColor(initialize);
-			UpdateIsAnimationPlaying(initialize);
 		}
 
-		void UpdateAspect(bool initialize)
+		void UpdateAspect()
 		{
-			if (initialize && Element.Aspect == Aspect.AspectFit)
-				return;
-
-			Control.ApplyAspect(Element.Aspect);
-		}
-
-		void UpdateIsOpaque(bool initialize)
-		{
-			if (initialize && !Element.IsOpaque)
-				return;
-
-			Control.IsOpaque = Element.IsOpaque;
+			Control.Aspect = (CAspect)Element.Aspect;
 		}
 
 		void UpdateIsAnimationPlaying(bool initialize)
 		{
-			if (initialize && !Element.IsAnimationPlaying)
+			// Default behavior of animation is true on NUI
+			if (initialize && Element.IsAnimationPlaying)
 				return;
-
-			Control.IsAnimated = Element.IsAnimationPlaying;
-			Control.IsAnimationPlaying = Element.IsAnimationPlaying;
-		}
-
-		void UpdateBlendColor(bool initialize)
-		{
-			if (initialize && Specific.GetBlendColor(Element) == null)
-				return;
-
-			Control.Color = Specific.GetBlendColor(Element).ToPlatformEFL();
+			Control.SetIsAnimationPlaying(Element.IsAnimationPlaying);
 		}
 	}
 
 	public interface IImageSourceHandler : IRegisterable
 	{
-		Task<bool> LoadImageAsync(EImage image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken));
+		Task<bool> LoadImageAsync(NUIImage image, ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken));
 	}
 
 	public sealed class FileImageSourceHandler : IImageSourceHandler
 	{
-		public Task<bool> LoadImageAsync(EImage image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken))
+		public async Task<bool> LoadImageAsync(NUIImage image, ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var filesource = imageSource as FileImageSource;
-			if (filesource != null)
+			if (image == null)
+				return false;
+			var path = ResourcePath.GetPath(imageSource);
+			return await image.LoadAsync(path);
+		}
+	}
+
+	public sealed class UriImageSourceHandler : IImageSourceHandler
+	{
+		public async Task<bool> LoadImageAsync(NUIImage image, ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			if (image == null)
+				return false;
+
+			if (imageSource is UriImageSource src)
 			{
-				string file = filesource.File;
-				if (!string.IsNullOrEmpty(file))
-					return image.LoadAsync(ResourcePath.GetPath(file), cancelationToken);
+				return await image.LoadAsync(src.Uri.AbsoluteUri);
 			}
-			return Task.FromResult<bool>(false);
+			else
+			{
+				return false;
+			}
 		}
 	}
 
 	public sealed class StreamImageSourceHandler : IImageSourceHandler
 	{
-		public async Task<bool> LoadImageAsync(EImage image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken))
+		public async Task<bool> LoadImageAsync(NUIImage image, ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var streamsource = imageSource as StreamImageSource;
-			if (streamsource != null && streamsource.Stream != null)
+			if (image == null)
+				return false;
+
+			if (imageSource is StreamImageSource streamsource && streamsource.Stream != null)
 			{
-				using (var streamImage = await ((IStreamImageSource)streamsource).GetStreamAsync(cancelationToken))
+				using (var streamImage = await ((IStreamImageSource)streamsource).GetStreamAsync(cancellationToken))
 				{
-					if (streamImage != null)
-						return await image.LoadAsync(streamImage, cancelationToken);
+					if (streamImage != null && image is NImage nimage)
+						return await nimage.LoadAsync(streamImage);
 				}
 			}
 			return false;
 		}
 	}
 
-	public sealed class UriImageSourceHandler : IImageSourceHandler
+	public sealed class FontImageSourceHandler : IImageSourceHandler
 	{
-		public Task<bool> LoadImageAsync(EImage image, ImageSource imageSource, CancellationToken cancelationToken = default(CancellationToken))
+		public Task<bool> LoadImageAsync(NUIImage image, ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var urisource = imageSource as UriImageSource;
-			if (urisource != null && urisource.Uri != null)
-			{
-				return image.LoadAsync(urisource.Uri, cancelationToken);
-			}
-
-			return Task.FromResult<bool>(false);
+			throw new NotSupportedException($"FontImageSource: {imageSource}");
 		}
 	}
 }

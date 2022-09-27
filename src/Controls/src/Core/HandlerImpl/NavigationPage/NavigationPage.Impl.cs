@@ -12,7 +12,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs" />
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
 	public partial class NavigationPage : IStackNavigationView, IToolbarElement
 	{
 		// If the user is making overlapping navigation requests this is used to fire once all navigation 

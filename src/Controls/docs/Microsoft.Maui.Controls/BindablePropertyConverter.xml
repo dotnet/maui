@@ -1,6 +1,6 @@
 <Type Name="BindablePropertyConverter" FullName="Microsoft.Maui.Controls.BindablePropertyConverter">
-  <TypeSignature Language="C#" Value="public sealed class BindablePropertyConverter : Microsoft.Maui.Controls.TypeConverter, Microsoft.Maui.Controls.IExtendedTypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit BindablePropertyConverter extends Microsoft.Maui.Controls.TypeConverter implements class Microsoft.Maui.Controls.IExtendedTypeConverter" />
+  <TypeSignature Language="C#" Value="public sealed class BindablePropertyConverter : System.ComponentModel.TypeConverter, Microsoft.Maui.Controls.IExtendedTypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit BindablePropertyConverter extends System.ComponentModel.TypeConverter implements class Microsoft.Maui.Controls.IExtendedTypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.BindablePropertyConverter" />
   <TypeSignature Language="F#" Value="type BindablePropertyConverter = class&#xA;    inherit TypeConverter&#xA;    interface IExtendedTypeConverter" />
   <AssemblyInfo>
@@ -10,7 +10,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces>
     <Interface>
@@ -23,7 +23,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>A <see cref="T:Microsoft.Maui.Controls.TypeConverter" /> for bindable properties.</summary>
+    <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> for bindable properties.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>

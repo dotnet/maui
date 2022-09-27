@@ -6,7 +6,7 @@ using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBlock;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.Label;
+using PlatformView = Tizen.UIExtensions.NUI.Label;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -25,6 +25,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.Height)] = MapHeight,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #endif
+#if TIZEN
+			[nameof(ILabel.Shadow)] = MapShadow,
+#endif
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
@@ -36,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
 		};
 
-		public static CommandMapper<IActivityIndicator, ILabelHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<ILabel, ILabelHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 

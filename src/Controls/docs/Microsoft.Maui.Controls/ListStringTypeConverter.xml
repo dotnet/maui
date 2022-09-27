@@ -1,6 +1,6 @@
 <Type Name="ListStringTypeConverter" FullName="Microsoft.Maui.Controls.ListStringTypeConverter">
-  <TypeSignature Language="C#" Value="public class ListStringTypeConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ListStringTypeConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public class ListStringTypeConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ListStringTypeConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.ListStringTypeConverter" />
   <TypeSignature Language="F#" Value="type ListStringTypeConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -9,7 +9,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>
