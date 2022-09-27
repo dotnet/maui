@@ -72,7 +72,9 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public float Density => Window?.RequestDisplayDensity() ?? 1f;
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// The event handler that is fired whenever the <see cref="WindowOverlay"/> is tapped.
+		/// </summary>
 		public event EventHandler<WindowOverlayTappedEventArgs>? Tapped;
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
