@@ -22,11 +22,13 @@ namespace Microsoft.Maui.Controls.Platform
 		INavigationView _navigationView;
 		INavigationContentView _navigationContentView;
 
+		View? _headerView;
 		FlyoutHeaderBehavior _headerBehavior;
-		NView? _flyoutView;
+
+		IView? _flyoutView;
+
 		MauiToolbar? _toolbar;
 
-		List<List<Element>>? _cachedGroups;
 		NCollectionView? _itemsView;
 		ItemTemplateAdaptor? _adaptor;
 
@@ -111,12 +113,12 @@ namespace Microsoft.Maui.Controls.Platform
 			_navigationDrawer.DrawerWidth = drawerwidth.ToScaledPixel();
 		}
 
-		public void UpdateFlyout(NView flyout)
+		public void UpdateFlyout(IView? flyout)
 		{
 			_flyoutView = flyout;
 
 			if (_flyoutView != null)
-				_navigationView.Content = _flyoutView;
+				_navigationView.Content = _flyoutView.ToPlatform(MauiContext!);
 		}
 
 		public void UpdateBackgroundColor(GColor? color)
@@ -144,16 +146,35 @@ namespace Microsoft.Maui.Controls.Platform
 		public void UpdateFlyoutHeader(Shell shell)
 		{
 			_headerBehavior = shell.FlyoutHeaderBehavior;
-			_navigationView.Header = ShellController.FlyoutHeader?.ToPlatform(MauiContext!);
+
+			if (_flyoutView != null)
+				return;
+
+			// Once _headerView is attached to CollectionView, it will be disposed when the adaptor of CollectionView is changed.
+			// This code is to reset handler after NUI view of header is disposed.
+			if (_headerView != null && _headerView.Handler is IPlatformViewHandler nativeHandler)
+			{
+				nativeHandler.Dispose();
+				_headerView.Handler = null;
+			}
+
+			_headerView = ShellController.FlyoutHeader;
+
+			if (HeaderOnMenu)
+			{
+				_navigationView.Header = null;
+			}
+			else
+			{
+				_navigationView.Header = _headerView?.ToPlatform(MauiContext!);
+			}
+
+			UpdateItems();
 		}
 
 		public void UpdateItems()
 		{
 			if (_flyoutView != null)
-				return;
-
-			var groups = ShellController!.GenerateFlyoutGrouping();
-			if (!IsItemChanged(groups) && !HeaderOnMenu)
 				return;
 
 			if (_itemsView == null)
@@ -174,7 +195,6 @@ namespace Microsoft.Maui.Controls.Platform
 			_itemsView.Adaptor = _adaptor = CreateItemAdaptor();
 			_adaptor.SelectionChanged += OnTabItemSelected;
 
-			_cachedGroups = groups;
 			_navigationView.Content = _itemsView;
 		}
 
@@ -216,7 +236,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual ItemTemplateAdaptor CreateItemAdaptor()
 		{
-			return new ShellItemTemplateAdaptor(Element!, Element!.Items);
+			return new ShellFlyoutItemTemplateAdaptor(Element!, Element!.Items, HeaderOnMenu);
 		}
 
 		void OnIconPressed(object? sender, EventArgs e)
@@ -229,30 +249,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			Element!.Toolbar.DrawerToggleVisible = ((Element!.Toolbar.DrawerToggleVisible) && (Element.FlyoutBehavior == FlyoutBehavior.Flyout));
 			_toolbar?.UpdateBackButton(Element!.Toolbar);
-		}
-
-		bool IsItemChanged(List<List<Element>> groups)
-		{
-			if (_cachedGroups == null)
-				return true;
-
-			if (_cachedGroups.Count != groups.Count)
-				return true;
-
-			for (int i = 0; i < groups.Count; i++)
-			{
-				if (_cachedGroups[i].Count != groups[i].Count)
-					return true;
-
-				for (int j = 0; j < groups[i].Count; j++)
-				{
-					if (_cachedGroups[i][j] != groups[i][j])
-						return true;
-				}
-			}
-
-			_cachedGroups = groups;
-			return false;
 		}
 
 		void OnTabItemSelected(object? sender, CollectionViewSelectionChangedEventArgs e)

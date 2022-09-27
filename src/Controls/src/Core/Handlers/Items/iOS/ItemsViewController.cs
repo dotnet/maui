@@ -134,7 +134,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ItemsSource = CreateItemsViewSource();
 
-			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+				|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+			))
 			{
 				AutomaticallyAdjustsScrollViewInsets = false;
 			}
