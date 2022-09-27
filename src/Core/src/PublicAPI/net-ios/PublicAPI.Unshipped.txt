@@ -30,6 +30,7 @@ Microsoft.Maui.IFlyout
 Microsoft.Maui.IMenuFlyout
 Microsoft.Maui.IContextFlyoutElement
 Microsoft.Maui.IMenuFlyoutSeparator
+Microsoft.Maui.ITextInput.IsSpellCheckEnabled.get -> bool
 Microsoft.Maui.IToolTipElement
 Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
 Microsoft.Maui.IWindow.FrameChanged(Microsoft.Maui.Graphics.Rect frame) -> void
@@ -80,6 +81,7 @@ override Microsoft.Maui.Platform.MauiWebViewUIDelegate.RunJavaScriptAlertPanel(W
 override Microsoft.Maui.Platform.MauiWebViewUIDelegate.RunJavaScriptConfirmPanel(WebKit.WKWebView! webView, string! message, WebKit.WKFrameInfo! frame, System.Action<bool>! completionHandler) -> void
 override Microsoft.Maui.Platform.MauiWebViewUIDelegate.RunJavaScriptTextInputPanel(WebKit.WKWebView! webView, string! prompt, string? defaultText, WebKit.WKFrameInfo! frame, System.Action<string!>! completionHandler) -> void
 override Microsoft.Maui.Platform.MauiWebViewUIDelegate.SetContextMenuConfiguration(WebKit.WKWebView! webView, WebKit.WKContextMenuElementInfo! elementInfo, System.Action<UIKit.UIContextMenuConfiguration!>! completionHandler) -> void
+static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyout!, Microsoft.Maui.Handlers.IMenuFlyoutHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapAdd(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapClear(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
@@ -111,6 +113,7 @@ static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.SceneWillEnt
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.WindowSceneDidUpdateCoordinateSpace(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.WindowSceneDidUpdateCoordinateSpace! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.Platform.MauiWKWebView.CreateConfiguration() -> WebKit.WKWebViewConfiguration!
 static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Platform.TextFieldExtensions.UpdateIsSpellCheckEnabled(this UIKit.UITextField! textField, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.Graphics.Paint? paint, Microsoft.Maui.IButtonStroke? stroke = null) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this UIKit.UIView! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
 static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumHeight(this UIKit.UIWindow! platformWindow, Microsoft.Maui.IWindow! window) -> void
