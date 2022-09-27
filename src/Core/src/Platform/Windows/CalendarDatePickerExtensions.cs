@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Platform
 
 			return separator;
 		}
-		
+
 		internal static string GetPart(string format)
 		{
 			if (IsDay(format))

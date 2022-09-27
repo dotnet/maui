@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var uri = _currentUri;
 					_currentUri = null;
 					_currentNavigation = null;
-					var request = new NSUrlRequest(uri);
+					var request = new NSUrlRequest(uri!);
 					webView.LoadRequest(request);
 				}
 			}

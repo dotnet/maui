@@ -14,7 +14,7 @@
 			handler.PlatformView.UpdatePosition();
 		}
 
-		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator) 
+		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.PlatformView.UpdateCount();
 		}

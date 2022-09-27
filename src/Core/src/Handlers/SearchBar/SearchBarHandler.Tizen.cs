@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.Entry.UpdateText(searchBar);
 		}
-		
+
 		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.Entry.UpdatePlaceholder(searchBar);

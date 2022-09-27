@@ -59,18 +59,20 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ContentView platformView, IBorderStroke border)
 		{
-			bool hasBorder = border.Shape != null && border.Stroke != null;
+			bool hasShape = border.Shape != null;
 
-			if (hasBorder)
+			if (hasShape)
 			{
 				platformView.UpdateMauiCALayer(border);
 			}
 		}
 
-		public static void UpdateBackground(this UIView platformView, IView view) =>
-			platformView.UpdateBackground(view.Background);
+		public static void UpdateBackground(this UIView platformView, IView view)
+		{
+			platformView.UpdateBackground(view.Background, view as IButtonStroke);
+		}
 
-		public static void UpdateBackground(this UIView platformView, Paint? paint)
+		public static void UpdateBackground(this UIView platformView, Paint? paint, IButtonStroke? stroke = null)
 		{
 			// Remove previous background gradient layer if any
 			platformView.RemoveBackgroundLayer();
@@ -103,6 +105,9 @@ namespace Microsoft.Maui.Platform
 				{
 					backgroundLayer.Name = BackgroundLayerName;
 					platformView.BackgroundColor = UIColor.Clear;
+
+					backgroundLayer.UpdateLayerBorder(stroke);
+
 					platformView.InsertBackgroundLayer(backgroundLayer, 0);
 				}
 			}
@@ -115,7 +120,7 @@ namespace Microsoft.Maui.Platform
 			switch (view.FlowDirection)
 			{
 				case FlowDirection.MatchParent:
-					updateValue = UISemanticContentAttribute.Unspecified;
+					updateValue = GetParentMatchingSemanticContentAttribute(view);
 					break;
 				case FlowDirection.LeftToRight:
 					updateValue = UISemanticContentAttribute.ForceLeftToRight;
@@ -126,7 +131,71 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (updateValue != platformView.SemanticContentAttribute)
+			{
 				platformView.SemanticContentAttribute = updateValue;
+
+				if (view is ITextAlignment)
+				{
+					// A change in flow direction may mean a change in text alignment
+					view.Handler?.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment));
+				}
+
+				PropagateFlowDirection(updateValue, view);
+			}
+		}
+
+		static UISemanticContentAttribute GetParentMatchingSemanticContentAttribute(IView view)
+		{
+			var parent = view.Parent?.Handler?.PlatformView as UIView;
+
+			if (parent == null)
+			{
+				// No parent, no direction we need to match
+				return UISemanticContentAttribute.Unspecified;
+			}
+
+			var parentSemanticContentAttribute = parent.SemanticContentAttribute;
+
+			if (parentSemanticContentAttribute == UISemanticContentAttribute.ForceLeftToRight
+				|| parentSemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
+			{
+				return parentSemanticContentAttribute;
+			}
+
+			// The parent view isn't using an explicit direction, so there's nothing for us to match
+			return UISemanticContentAttribute.Unspecified;
+		}
+
+		static void PropagateFlowDirection(UISemanticContentAttribute semanticContentAttribute, IView view)
+		{
+			if (semanticContentAttribute != UISemanticContentAttribute.ForceLeftToRight
+				&& semanticContentAttribute != UISemanticContentAttribute.ForceRightToLeft)
+			{
+				// If the current view isn't using an explicit LTR/RTL value, there's nothing to propagate
+				return;
+			}
+
+			// If this view has any child/content views, we'll need to call UpdateFlowDirection on them
+			// because they _may_ need to update their FlowDirection to match this view
+
+			if (view is IContainer container)
+			{
+				foreach (var child in container)
+				{
+					if (child.Handler?.PlatformView is UIView uiView)
+					{
+						uiView.UpdateFlowDirection(child);
+					}
+				}
+			}
+			else if (view is IContentView contentView
+				&& contentView.PresentedContent is IView child)
+			{
+				if (child.Handler?.PlatformView is UIView uiView)
+				{
+					uiView.UpdateFlowDirection(child);
+				}
+			}
 		}
 
 		public static void UpdateOpacity(this UIView platformView, IView view)
@@ -447,6 +516,61 @@ namespace Microsoft.Maui.Platform
 			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
 		}
 
+
+		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView)
+		{
+			UIToolTipInteraction? interaction = default;
+
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15)
+				|| OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				if (platformView is UIControl control)
+				{
+					interaction = control.ToolTipInteraction;
+				}
+				else
+				{
+					if (platformView.Interactions is not null)
+					{
+						foreach (var ia in platformView.Interactions)
+						{
+							if (ia is UIToolTipInteraction toolTipInteraction)
+							{
+								interaction = toolTipInteraction;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			return interaction;
+		}
+
+		public static void UpdateToolTip(this UIView platformView, ToolTip? tooltip)
+		{
+			// UpdateToolTips were added in 15.0 for both iOS and MacCatalyst
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15)
+				|| OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				string? text = tooltip?.Content?.ToString();
+				var interaction = platformView.GetToolTipInteraction();
+
+				if (interaction is null)
+				{
+					if (!string.IsNullOrEmpty(text))
+					{
+						interaction = new UIToolTipInteraction(text);
+						platformView.AddInteraction(interaction);
+					}
+				}
+				else
+				{
+					interaction.DefaultToolTip = text;
+				}
+			}
+		}
+
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as UIView);
 
@@ -470,29 +594,46 @@ namespace Microsoft.Maui.Platform
 			}
 
 			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
-			ActionDisposable? disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = null;
+			disposable = new ActionDisposable(() =>
 			{
-				foreach (var thing in observers)
-					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
+				disposable = null;
+				foreach (var observer in observers)
+				{
+					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
+					observers.Remove(observer.Key);
+				}
 			});
 
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
 			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.			
-			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
+			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
 
 			// OnLoaded is called at the point in time where the xplat view knows it's going to be attached to the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
 			// to get attached.
-			uiView.BeginInvokeOnMainThread(OnLoadedCheck);
+			uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 
-			void OnLoadedCheck()
+			void OnLoadedCheck(NSObservedChange? nSObservedChange = null)
 			{
-				if (uiView.IsLoaded() && disposable != null)
+				if (disposable != null)
 				{
-					disposable.Dispose();
-					disposable = null;
-					action();
+					if (uiView.IsLoaded())
+					{
+						disposable.Dispose();
+						disposable = null;
+						action();
+					}
+					else if (nSObservedChange != null)
+					{
+						// In some cases (FlyoutPage) the arrange and measure all take place before
+						// the view is added to the screen so this queues up a second check that
+						// hopefully will fire loaded once the view is added to the window.
+						// None of this code is great but I haven't found a better way
+						// for an outside observer to know when a subview is added to a window
+						uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
+					}
 				}
 			};
 
@@ -509,10 +650,15 @@ namespace Microsoft.Maui.Platform
 			}
 
 			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
-			ActionDisposable? disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = null;
+			disposable = new ActionDisposable(() =>
 			{
-				foreach (var thing in observers)
-					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
+				disposable = null;
+				foreach (var observer in observers)
+				{
+					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
+					observers.Remove(observer.Key);
+				}
 			});
 
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
@@ -536,6 +682,21 @@ namespace Microsoft.Maui.Platform
 			};
 
 			return disposable;
+		}
+
+		internal static void UpdateLayerBorder(this CoreAnimation.CALayer layer, IButtonStroke? stroke)
+		{
+			if (stroke == null)
+				return;
+
+			if (stroke.StrokeColor != null)
+				layer.BorderColor = stroke.StrokeColor.ToCGColor();
+
+			if (stroke.StrokeThickness >= 0)
+				layer.BorderWidth = (float)stroke.StrokeThickness;
+
+			if (stroke.CornerRadius >= 0)
+				layer.CornerRadius = stroke.CornerRadius;
 		}
 	}
 }

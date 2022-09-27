@@ -8,5 +8,8 @@ namespace Microsoft.Maui.LifecycleEvents
 	{
 		internal static MauiAppBuilder ConfigureCrossPlatformLifecycleEvents(this MauiAppBuilder builder) =>
 			builder;
+
+		internal static MauiAppBuilder ConfigureWindowEvents(this MauiAppBuilder builder) =>
+			builder;
 	}
 }

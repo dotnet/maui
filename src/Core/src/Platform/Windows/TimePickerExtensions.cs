@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 				platformTimePicker.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
 				platformTimePicker.Foreground = platformBrush;
 			}
-			
+
 			platformTimePicker.RefreshThemeResources();
 		}
 

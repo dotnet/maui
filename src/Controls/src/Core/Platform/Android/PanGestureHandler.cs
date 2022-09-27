@@ -6,11 +6,23 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class PanGestureHandler
 	{
-		readonly Func<double, double> _pixelTranslation;
-
-		public PanGestureHandler(Func<View> getView, Func<double, double> pixelTranslation)
+		Func<double, double> PixelTranslation
 		{
-			_pixelTranslation = pixelTranslation;
+			get
+			{
+				return (input) =>
+				{
+					var context = GetView()?.Handler?.MauiContext?.Context;
+					if (context == null)
+						return 0;
+
+					return context.FromPixels(input);
+				};
+			}
+		}
+
+		public PanGestureHandler(Func<View> getView)
+		{
 			GetView = getView;
 		}
 
@@ -27,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 			foreach (PanGestureRecognizer panGesture in
 				view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>(g => g.TouchPoints == pointerCount))
 			{
-				((IPanGestureController)panGesture).SendPan(view, _pixelTranslation(x), _pixelTranslation(y), PanGestureRecognizer.CurrentId.Value);
+				((IPanGestureController)panGesture).SendPan(view, PixelTranslation(x), PixelTranslation(y), PanGestureRecognizer.CurrentId.Value);
 				result = true;
 			}
 

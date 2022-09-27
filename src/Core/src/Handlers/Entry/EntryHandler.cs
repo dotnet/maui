@@ -45,9 +45,6 @@ namespace Microsoft.Maui.Handlers
 
 		static EntryHandler()
 		{
-#if __IOS__
-			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
-#endif
 		}
 
 		public EntryHandler() : base(Mapper)

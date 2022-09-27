@@ -1,20 +1,18 @@
-﻿<Project Sdk="Microsoft.Net.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Controls.Foldable</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Foldable</RootNamespace>
     <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <!-- TODO: remove this when Foldable is made into a nupkg -->
     <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
   </PropertyGroup>
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Graphics" />
-  </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.Configuration" />
