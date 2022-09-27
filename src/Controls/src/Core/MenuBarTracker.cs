@@ -27,14 +27,6 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_handlerProperty != null)
 			{
-				// For now we just reset the entire menu if users modify the menubar
-				// collection
-				//if (_parent is IMenuBarElement mbe &&
-				//	mbe.MenuBar?.Handler != null)
-				//{
-				//	mbe.MenuBar.Handler.DisconnectHandler();
-				//}
-
 				_parent?.Handler?.UpdateValue(_handlerProperty);
 			}
 		}
@@ -47,7 +39,7 @@ namespace Microsoft.Maui.Controls
 				if (menuBarItems.Count == 0)
 					return null;
 
-				_menuBar.ReplaceWith(ToolbarItems);
+				_menuBar.SyncMenuBarItemsFromPages(ToolbarItems);
 
 				return _menuBar;
 			}

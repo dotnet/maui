@@ -565,10 +565,11 @@ namespace Microsoft.Maui.Controls
 
 		void OnToolbarItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (args.Action != NotifyCollectionChangedAction.Add)
-				return;
-			foreach (IElementDefinition item in args.NewItems)
-				item.Parent = this;
+			if (args.NewItems != null)
+			{
+				foreach (IElementDefinition item in args.NewItems)
+					item.Parent = this;
+			}
 		}
 
 		bool ShouldLayoutChildren()
