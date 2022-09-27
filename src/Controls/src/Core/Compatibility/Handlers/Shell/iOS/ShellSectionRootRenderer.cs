@@ -74,8 +74,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLoad();
 
 			_containerArea = new UIView();
-			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+				|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+			)
+			{
 				_containerArea.InsetsLayoutMarginsFromSafeArea = false;
+			}
 
 			View.AddSubview(_containerArea);
 
@@ -508,7 +514,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_header != null)
 			{
 				tabThickness = HeaderHeight;
-				var headerTop = (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)) ? View.SafeAreaInsets.Top : TopLayoutGuide.Length;
+				var headerTop = (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+				|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+					) ? View.SafeAreaInsets.Top : TopLayoutGuide.Length;
+
 				CGRect frame = new CGRect(View.Bounds.X, headerTop, View.Bounds.Width, HeaderHeight);
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
@@ -518,7 +529,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			nfloat top;
 			nfloat right;
 			nfloat bottom;
-			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+				|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+			)
 			{
 				left = View.SafeAreaInsets.Left;
 				top = View.SafeAreaInsets.Top;

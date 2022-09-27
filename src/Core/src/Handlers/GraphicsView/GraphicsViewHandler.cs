@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public GraphicsViewHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
+		public GraphicsViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}

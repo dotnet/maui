@@ -26,6 +26,11 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
+		public ToolbarHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
+		{
+		}
+
 		IToolbar IToolbarHandler.VirtualView => VirtualView;
 		PlatformView IToolbarHandler.PlatformView => PlatformView;
 	}
