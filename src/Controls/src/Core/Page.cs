@@ -570,6 +570,12 @@ namespace Microsoft.Maui.Controls
 				foreach (IElementDefinition item in args.NewItems)
 					item.Parent = this;
 			}
+
+			if (args.OldItems != null)
+			{
+				foreach (IElementDefinition item in args.OldItems)
+					item.Parent = null;
+			}
 		}
 
 		bool ShouldLayoutChildren()
