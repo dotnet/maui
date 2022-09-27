@@ -203,10 +203,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetSectionTextColor">
-      <MemberSignature Language="C#" Value="public virtual Microsoft.Maui.Controls.Color GetSectionTextColor (int section);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance valuetype Microsoft.Maui.Controls.Color GetSectionTextColor(int32 section) cil managed" />
+      <MemberSignature Language="C#" Value="public virtual Microsoft.Maui.Graphics.Color GetSectionTextColor (int section);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance valuetype Microsoft.Maui.Graphics.Color GetSectionTextColor(int32 section) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Internals.TableModel.GetSectionTextColor(System.Int32)" />
-      <MemberSignature Language="F#" Value="abstract member GetSectionTextColor : int -&gt; Microsoft.Maui.Controls.Color&#xA;override this.GetSectionTextColor : int -&gt; Microsoft.Maui.Controls.Color" Usage="tableModel.GetSectionTextColor section" />
+      <MemberSignature Language="F#" Value="abstract member GetSectionTextColor : int -&gt; Microsoft.Maui.Graphics.Color&#xA;override this.GetSectionTextColor : int -&gt; Microsoft.Maui.Graphics.Color" Usage="tableModel.GetSectionTextColor section" />
       <MemberType>Method</MemberType>
       <Implements>
         <InterfaceMember>M:Microsoft.Maui.Controls.ITableModel.GetSectionTextColor(System.Int32)</InterfaceMember>
@@ -216,7 +216,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="section" Type="System.Int32" />

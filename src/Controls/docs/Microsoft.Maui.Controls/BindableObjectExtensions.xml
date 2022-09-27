@@ -56,10 +56,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetAppThemeColor">
-      <MemberSignature Language="C#" Value="public static void SetAppThemeColor (this Microsoft.Maui.Controls.BindableObject self, Microsoft.Maui.Controls.BindableProperty targetProperty, Microsoft.Maui.Controls.Color light, Microsoft.Maui.Controls.Color dark);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetAppThemeColor(class Microsoft.Maui.Controls.BindableObject self, class Microsoft.Maui.Controls.BindableProperty targetProperty, valuetype Microsoft.Maui.Controls.Color light, valuetype Microsoft.Maui.Controls.Color dark) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.BindableObjectExtensions.SetAppThemeColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.BindableProperty,Microsoft.Maui.Controls.Color,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetAppThemeColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.BindableProperty * Microsoft.Maui.Controls.Color * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.BindableObjectExtensions.SetAppThemeColor (self, targetProperty, light, dark)" />
+      <MemberSignature Language="C#" Value="public static void SetAppThemeColor (this Microsoft.Maui.Controls.BindableObject self, Microsoft.Maui.Controls.BindableProperty targetProperty, Microsoft.Maui.Graphics.Color light, Microsoft.Maui.Graphics.Color dark);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetAppThemeColor(class Microsoft.Maui.Controls.BindableObject self, class Microsoft.Maui.Controls.BindableProperty targetProperty, valuetype Microsoft.Maui.Graphics.Color light, valuetype Microsoft.Maui.Graphics.Color dark) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.BindableObjectExtensions.SetAppThemeColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.BindableProperty,Microsoft.Maui.Graphics.Color,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetAppThemeColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.BindableProperty * Microsoft.Maui.Graphics.Color * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.BindableObjectExtensions.SetAppThemeColor (self, targetProperty, light, dark)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -71,8 +71,8 @@
       <Parameters>
         <Parameter Name="self" Type="Microsoft.Maui.Controls.BindableObject" RefType="this" />
         <Parameter Name="targetProperty" Type="Microsoft.Maui.Controls.BindableProperty" />
-        <Parameter Name="light" Type="Microsoft.Maui.Controls.Color" />
-        <Parameter Name="dark" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="light" Type="Microsoft.Maui.Graphics.Color" />
+        <Parameter Name="dark" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="self">To be added.</param>

@@ -280,17 +280,17 @@
       </Docs>
     </Member>
     <Member MemberName="FlyoutBackgroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color FlyoutBackgroundColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color FlyoutBackgroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color FlyoutBackgroundColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color FlyoutBackgroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shell.FlyoutBackgroundColor" />
-      <MemberSignature Language="F#" Value="member this.FlyoutBackgroundColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBackgroundColor" />
+      <MemberSignature Language="F#" Value="member this.FlyoutBackgroundColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBackgroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the background color of the <see cref="P:Microsoft.Maui.Controls.Shell" /> Flyout.</summary>
@@ -328,7 +328,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -341,17 +341,17 @@
       </Docs>
     </Member>
     <Member MemberName="FlyoutBackgroundImageAspect">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Aspect FlyoutBackgroundImageAspect { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Aspect FlyoutBackgroundImageAspect" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Aspect FlyoutBackgroundImageAspect { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Aspect FlyoutBackgroundImageAspect" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shell.FlyoutBackgroundImageAspect" />
-      <MemberSignature Language="F#" Value="member this.FlyoutBackgroundImageAspect : Microsoft.Maui.Controls.Aspect with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBackgroundImageAspect" />
+      <MemberSignature Language="F#" Value="member this.FlyoutBackgroundImageAspect : Microsoft.Maui.Aspect with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBackgroundImageAspect" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Aspect</ReturnType>
+        <ReturnType>Microsoft.Maui.Aspect</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -414,20 +414,20 @@
       </Docs>
     </Member>
     <Member MemberName="FlyoutBehavior">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.FlyoutBehavior FlyoutBehavior { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.FlyoutBehavior FlyoutBehavior" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.FlyoutBehavior FlyoutBehavior { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.FlyoutBehavior FlyoutBehavior" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Shell.FlyoutBehavior" />
-      <MemberSignature Language="F#" Value="member this.FlyoutBehavior : Microsoft.Maui.Controls.FlyoutBehavior with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBehavior" />
+      <MemberSignature Language="F#" Value="member this.FlyoutBehavior : Microsoft.Maui.FlyoutBehavior with get, set" Usage="Microsoft.Maui.Controls.Shell.FlyoutBehavior" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.FlyoutBehavior</ReturnType>
+        <ReturnType>Microsoft.Maui.FlyoutBehavior</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Setting the <see cref="T:Microsoft.Maui.Controls.FlyoutBehavior" /> property to Disabled hides the flyout, which is useful when you only have one ShellItem. The other valid FlyoutBehavior values are Flyout (default), and Locked.</summary>
+        <summary>Setting the <see cref="T:Microsoft.Maui.FlyoutBehavior" /> property to Disabled hides the flyout, which is useful when you only have one ShellItem. The other valid FlyoutBehavior values are Flyout (default), and Locked.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -714,17 +714,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetBackgroundColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetBackgroundColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetBackgroundColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetBackgroundColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetBackgroundColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetBackgroundColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetBackgroundColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetBackgroundColor obj" />
+      <MemberSignature Language="F#" Value="static member GetBackgroundColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetBackgroundColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -737,17 +737,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetDisabledColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetDisabledColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetDisabledColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetDisabledColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetDisabledColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetDisabledColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetDisabledColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetDisabledColor obj" />
+      <MemberSignature Language="F#" Value="static member GetDisabledColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetDisabledColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -783,17 +783,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetFlyoutBehavior">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.FlyoutBehavior GetFlyoutBehavior (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.FlyoutBehavior GetFlyoutBehavior(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.FlyoutBehavior GetFlyoutBehavior (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.FlyoutBehavior GetFlyoutBehavior(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetFlyoutBehavior(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetFlyoutBehavior : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.FlyoutBehavior" Usage="Microsoft.Maui.Controls.Shell.GetFlyoutBehavior obj" />
+      <MemberSignature Language="F#" Value="static member GetFlyoutBehavior : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.FlyoutBehavior" Usage="Microsoft.Maui.Controls.Shell.GetFlyoutBehavior obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.FlyoutBehavior</ReturnType>
+        <ReturnType>Microsoft.Maui.FlyoutBehavior</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -806,17 +806,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetForegroundColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetForegroundColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetForegroundColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetForegroundColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetForegroundColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetForegroundColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetForegroundColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetForegroundColor obj" />
+      <MemberSignature Language="F#" Value="static member GetForegroundColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetForegroundColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -968,17 +968,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetTabBarBackgroundColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetTabBarBackgroundColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetTabBarBackgroundColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetTabBarBackgroundColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetTabBarBackgroundColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetTabBarBackgroundColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetTabBarBackgroundColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarBackgroundColor obj" />
+      <MemberSignature Language="F#" Value="static member GetTabBarBackgroundColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarBackgroundColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -991,17 +991,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetTabBarDisabledColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetTabBarDisabledColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetTabBarDisabledColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetTabBarDisabledColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetTabBarDisabledColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetTabBarDisabledColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetTabBarDisabledColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarDisabledColor obj" />
+      <MemberSignature Language="F#" Value="static member GetTabBarDisabledColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarDisabledColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -1014,17 +1014,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetTabBarForegroundColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetTabBarForegroundColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetTabBarForegroundColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetTabBarForegroundColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetTabBarForegroundColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetTabBarForegroundColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetTabBarForegroundColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarForegroundColor obj" />
+      <MemberSignature Language="F#" Value="static member GetTabBarForegroundColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarForegroundColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -1060,17 +1060,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetTabBarTitleColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetTabBarTitleColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetTabBarTitleColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetTabBarTitleColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetTabBarTitleColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetTabBarTitleColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetTabBarTitleColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarTitleColor obj" />
+      <MemberSignature Language="F#" Value="static member GetTabBarTitleColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarTitleColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -1083,17 +1083,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetTabBarUnselectedColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetTabBarUnselectedColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetTabBarUnselectedColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetTabBarUnselectedColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetTabBarUnselectedColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetTabBarUnselectedColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetTabBarUnselectedColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarUnselectedColor obj" />
+      <MemberSignature Language="F#" Value="static member GetTabBarUnselectedColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetTabBarUnselectedColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -1106,17 +1106,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetTitleColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetTitleColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetTitleColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetTitleColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetTitleColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetTitleColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetTitleColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetTitleColor obj" />
+      <MemberSignature Language="F#" Value="static member GetTitleColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetTitleColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -1152,17 +1152,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetUnselectedColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetUnselectedColor (Microsoft.Maui.Controls.BindableObject obj);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetUnselectedColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetUnselectedColor (Microsoft.Maui.Controls.BindableObject obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetUnselectedColor(class Microsoft.Maui.Controls.BindableObject obj) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.GetUnselectedColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetUnselectedColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.Shell.GetUnselectedColor obj" />
+      <MemberSignature Language="F#" Value="static member GetUnselectedColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.Shell.GetUnselectedColor obj" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -1565,10 +1565,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetBackgroundColor">
-      <MemberSignature Language="C#" Value="public static void SetBackgroundColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetBackgroundColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetBackgroundColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetBackgroundColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetBackgroundColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetBackgroundColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetBackgroundColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetBackgroundColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetBackgroundColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetBackgroundColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1579,7 +1579,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -1589,10 +1589,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetDisabledColor">
-      <MemberSignature Language="C#" Value="public static void SetDisabledColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetDisabledColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetDisabledColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetDisabledColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetDisabledColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetDisabledColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetDisabledColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetDisabledColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetDisabledColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetDisabledColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1603,7 +1603,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -1637,10 +1637,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetFlyoutBehavior">
-      <MemberSignature Language="C#" Value="public static void SetFlyoutBehavior (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.FlyoutBehavior value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetFlyoutBehavior(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.FlyoutBehavior value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetFlyoutBehavior(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.FlyoutBehavior)" />
-      <MemberSignature Language="F#" Value="static member SetFlyoutBehavior : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.FlyoutBehavior -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetFlyoutBehavior (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetFlyoutBehavior (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.FlyoutBehavior value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetFlyoutBehavior(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.FlyoutBehavior value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetFlyoutBehavior(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.FlyoutBehavior)" />
+      <MemberSignature Language="F#" Value="static member SetFlyoutBehavior : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.FlyoutBehavior -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetFlyoutBehavior (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1651,7 +1651,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.FlyoutBehavior" />
+        <Parameter Name="value" Type="Microsoft.Maui.FlyoutBehavior" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -1661,10 +1661,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetForegroundColor">
-      <MemberSignature Language="C#" Value="public static void SetForegroundColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetForegroundColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetForegroundColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetForegroundColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetForegroundColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetForegroundColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetForegroundColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetForegroundColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetForegroundColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetForegroundColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1675,7 +1675,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -1829,10 +1829,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetTabBarBackgroundColor">
-      <MemberSignature Language="C#" Value="public static void SetTabBarBackgroundColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarBackgroundColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarBackgroundColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetTabBarBackgroundColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarBackgroundColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetTabBarBackgroundColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarBackgroundColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarBackgroundColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetTabBarBackgroundColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarBackgroundColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1843,7 +1843,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -1853,10 +1853,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetTabBarDisabledColor">
-      <MemberSignature Language="C#" Value="public static void SetTabBarDisabledColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarDisabledColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarDisabledColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetTabBarDisabledColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarDisabledColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetTabBarDisabledColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarDisabledColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarDisabledColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetTabBarDisabledColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarDisabledColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1867,7 +1867,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -1877,10 +1877,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetTabBarForegroundColor">
-      <MemberSignature Language="C#" Value="public static void SetTabBarForegroundColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarForegroundColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarForegroundColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetTabBarForegroundColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarForegroundColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetTabBarForegroundColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarForegroundColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarForegroundColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetTabBarForegroundColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarForegroundColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1891,7 +1891,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -1925,10 +1925,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetTabBarTitleColor">
-      <MemberSignature Language="C#" Value="public static void SetTabBarTitleColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarTitleColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarTitleColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetTabBarTitleColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarTitleColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetTabBarTitleColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarTitleColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarTitleColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetTabBarTitleColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarTitleColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1939,7 +1939,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -1949,10 +1949,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetTabBarUnselectedColor">
-      <MemberSignature Language="C#" Value="public static void SetTabBarUnselectedColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarUnselectedColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarUnselectedColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetTabBarUnselectedColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarUnselectedColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetTabBarUnselectedColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTabBarUnselectedColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTabBarUnselectedColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetTabBarUnselectedColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTabBarUnselectedColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1963,7 +1963,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -1973,10 +1973,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetTitleColor">
-      <MemberSignature Language="C#" Value="public static void SetTitleColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTitleColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTitleColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetTitleColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTitleColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetTitleColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTitleColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetTitleColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetTitleColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetTitleColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1987,7 +1987,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
@@ -2021,10 +2021,10 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Docs>
     </Member>
     <Member MemberName="SetUnselectedColor">
-      <MemberSignature Language="C#" Value="public static void SetUnselectedColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetUnselectedColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetUnselectedColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetUnselectedColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetUnselectedColor (obj, value)" />
+      <MemberSignature Language="C#" Value="public static void SetUnselectedColor (Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetUnselectedColor(class Microsoft.Maui.Controls.BindableObject obj, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Shell.SetUnselectedColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetUnselectedColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.Shell.SetUnselectedColor (obj, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -2035,7 +2035,7 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters>
         <Parameter Name="obj" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>

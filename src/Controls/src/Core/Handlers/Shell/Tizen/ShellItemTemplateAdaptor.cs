@@ -1,5 +1,6 @@
 #nullable enable
 
+using System;
 using System.Collections;
 using Microsoft.Maui.Controls.Handlers.Items;
 
@@ -19,21 +20,14 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 	}
 
-
 	public class ShellDataTemplateSelector : DataTemplateSelector
 	{
-		DataTemplate ShellItemTemplate { get; }
 		DataTemplate ShellSectionItemTemplate { get; }
 
 		DataTemplate ShellContentItemTemplate { get; }
 
 		public ShellDataTemplateSelector()
 		{
-			ShellItemTemplate = new DataTemplate(() =>
-			{
-				return new ShellItemTemplatedView();
-			});
-
 			ShellSectionItemTemplate = new DataTemplate(() =>
 			{
 				return new ShellSectionItemTemplatedView();
@@ -47,10 +41,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 		{
-			if (item is ShellItem)
-				return ShellItemTemplate;
-
-			else if (item is ShellSection)
+			if (item is ShellSection)
 				return ShellSectionItemTemplate;
 
 			return ShellContentItemTemplate;

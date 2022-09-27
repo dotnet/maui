@@ -8,20 +8,20 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="Type[@FullName='Microsoft.Maui.Controls.InitializationFlags']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="Type[@FullName='Microsoft.Maui.Controls.InitializationFlags']/Docs/*" />
 	[Flags]
 	public enum InitializationFlags : long
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="//Member[@MemberName='DisableCss']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="//Member[@MemberName='DisableCss']/Docs/*" />
 		DisableCss = 1 << 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="//Member[@MemberName='SkipRenderers']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="//Member[@MemberName='SkipRenderers']/Docs/*" />
 		SkipRenderers = 1 << 1,
 	}
 }
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar' and position()=0]/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar' and position()=0]/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class Registrar<TRegistrable> where TRegistrable : class
 	{
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		static Type[] _defaultVisualRenderers = new[] { _defaultVisualType };
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][1]/Docs/*" />
 		public void Register(Type tview, Type trender, Type[] supportedVisuals, short priority)
 		{
 			supportedVisuals = supportedVisuals ?? _defaultVisualRenderers;
@@ -73,10 +73,10 @@ namespace Microsoft.Maui.Controls.Internals
 			//	});
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][2]/Docs/*" />
 		public void Register(Type tview, Type trender, Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][3]/Docs/*" />
 		public void Register(Type tview, Type trender) => Register(tview, trender, _defaultVisualRenderers);
 
 		internal TRegistrable GetHandler(Type type) => GetHandler(type, _defaultVisualType);
@@ -109,19 +109,19 @@ namespace Microsoft.Maui.Controls.Internals
 			return returnValue;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler'][1]/Docs/*" />
 		public TOut GetHandler<TOut>(Type type) where TOut : class, TRegistrable
 		{
 			return GetHandler(type) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler'][2]/Docs/*" />
 		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : class, TRegistrable
 		{
 			return GetHandler(type, null, null, args) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject'][1]/Docs/*" />
 		public TOut GetHandlerForObject<TOut>(object obj) where TOut : class, TRegistrable
 		{
 			if (obj == null)
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return GetHandler(type, (obj as IVisualController)?.EffectiveVisual?.GetType()) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject'][2]/Docs/*" />
 		public TOut GetHandlerForObject<TOut>(object obj, params object[] args) where TOut : class, TRegistrable
 		{
 			if (obj == null)
@@ -145,10 +145,10 @@ namespace Microsoft.Maui.Controls.Internals
 			return GetHandler(type, obj, (obj as IVisualController)?.EffectiveVisual, args) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType'][1]/Docs/*" />
 		public Type GetHandlerType(Type viewType) => GetHandlerType(viewType, _defaultVisualType);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType'][2]/Docs/*" />
 		public Type GetHandlerType(Type viewType, Type visualType)
 		{
 			visualType = visualType ?? _defaultVisualType;
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Internals
 				return null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerTypeForObject']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerTypeForObject']/Docs/*" />
 		public Type GetHandlerTypeForObject(object obj)
 		{
 			if (obj == null)
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar' and position()=1]/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar' and position()=1]/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class Registrar
 	{
@@ -286,17 +286,17 @@ namespace Microsoft.Maui.Controls.Internals
 		static bool DisableCSS = false;
 		static readonly Lazy<Dictionary<string, IList<StylePropertyAttribute>>> LazyStyleProperties = new Lazy<Dictionary<string, IList<StylePropertyAttribute>>>(LoadStyleSheets);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='ExtraAssemblies']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='ExtraAssemblies']/Docs/*" />
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Registered']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Registered']/Docs/*" />
 		public static Registrar<IRegisterable> Registered { get; internal set; }
 
 		//typeof(ExportRendererAttribute);
 		//typeof(ExportCellAttribute);
 		//typeof(ExportImageSourceHandlerAttribute);
 		//TODO this is no longer used?
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterRenderers']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterRenderers']/Docs/*" />
 		public static void RegisterRenderers(HandlerAttribute[] attributes)
 		{
 			var length = attributes.Length;
@@ -312,13 +312,13 @@ namespace Microsoft.Maui.Controls.Internals
 		// If the user has called Forms.Init() this will register all found types 
 		// into the handlers registrar and then it will use this factory to create a shim
 		internal static Func<object, IViewHandler> RendererToHandlerShim { get; private set; }
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterRendererToHandlerShim']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterRendererToHandlerShim']/Docs/*" />
 		public static void RegisterRendererToHandlerShim(Func<object, IViewHandler> handlerShim)
 		{
 			RendererToHandlerShim = handlerShim;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterStylesheets']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterStylesheets']/Docs/*" />
 		public static void RegisterStylesheets(InitializationFlags flags)
 		{
 			if ((flags & InitializationFlags.DisableCss) == InitializationFlags.DisableCss)
@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterEffects']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterEffects']/Docs/*" />
 		public static void RegisterEffects(string resolutionName, ExportEffectAttribute[] effectAttributes)
 		{
 			var exportEffectsLength = effectAttributes.Length;
@@ -377,13 +377,13 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterEffect']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterEffect']/Docs/*" />
 		public static void RegisterEffect(string resolutionName, string id, Type effectType)
 		{
 			Effects[resolutionName + "." + id] = effectType;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][1]/Docs/*" />
 		[Obsolete]
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public static void RegisterAll(Type[] attrTypes, IFontRegistrar fontRegistrar = null)
@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls.Internals
 			RegisterAll(attrTypes, default(InitializationFlags), fontRegistrar);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][2]/Docs/*" />
 		[Obsolete]
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags, IFontRegistrar fontRegistrar = null)

@@ -32,7 +32,7 @@
           "Microsoft.Maui.Extensions",
           "Microsoft.Maui.Graphics",
           "Microsoft.Maui.Resizetizer.Sdk",
-          "Microsoft.Maui.Templates-@MAUI_DOTNET_VERSION@",
+          "Microsoft.Maui.Templates.net6",
           "Microsoft.Maui.Core.Ref.any",
           "Microsoft.Maui.Core.Runtime.any",
           "Microsoft.Maui.Controls.Ref.any",
@@ -298,7 +298,7 @@
       "kind": "sdk",
       "version": "@VERSION@"
     },
-    "Microsoft.Maui.Templates-@MAUI_DOTNET_VERSION@": {
+    "Microsoft.Maui.Templates.net6": {
       "kind": "template",
       "version": "@VERSION@"
     }

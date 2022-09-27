@@ -14,12 +14,19 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateSource(this AWebView platformWebView, IWebView webView, IWebViewDelegate? webViewDelegate)
 		{
-			if (webViewDelegate != null)
-			{
-				webView.Source?.Load(webViewDelegate);
+			IWebViewSource? source = webView.Source;
 
-				platformWebView.UpdateCanGoBackForward(webView);
+			if (source != null)
+			{
+				if (webViewDelegate != null)
+				{
+					source.Load(webViewDelegate);
+
+					platformWebView.UpdateCanGoBackForward(webView);
+				}
 			}
+			else
+				platformWebView.LoadUrl("about:blank");
 		}
 
 		public static void UpdateSettings(this AWebView platformWebView, IWebView webView, bool javaScriptEnabled, bool domStorageEnabled)
