@@ -117,5 +117,26 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateNativeFill(polygon, Colors.Lime);
 		}
+
+		[Theory(DisplayName = "Polyline Background Initializes Correctly")]
+		[InlineData(0xFF0000)]
+		[InlineData(0x00FF00)]
+		[InlineData(0x0000FF)]
+		public async Task PolylineBackgroundInitializesCorrectly(uint color)
+		{
+			var expected = Color.FromUint(color);
+
+			var polyline = new ShapeViewStub()
+			{
+				Shape = new PolylineShapeStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
+				Stroke = new SolidPaintStub(Colors.Green),
+				Background = new SolidPaintStub(expected),
+				StrokeThickness = 4,
+				Height = 50,
+				Width = 100
+			};
+
+			await ValidateHasColor(polyline, expected);
+		}
 	}
 }
