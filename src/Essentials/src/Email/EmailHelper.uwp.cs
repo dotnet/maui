@@ -1,290 +1,220 @@
-﻿using System.Collections.Generic;
-using System.Runtime.InteropServices;
+﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
-{   
-	// TODO Make public for NET7
-	internal class EmailHelper
+{
+	static class EmailHelper
 	{
-		const int MAPI_LOGON_UI = 0x00000001;
-		const int MAPI_DIALOG = 0x00000008;
-		const int MaxAttachments = 200;
+		public static Task<bool> ShowComposeNewEmailAsync(PlatformEmailMessage message) =>
+			Task.Run(() => SendMail(message) == 0);
 
-		readonly string[] _errors;
-		int _lastError;
+		static int SendMail(PlatformEmailMessage message)
+		{
+			var flags = SendMailFlags.MAPI_LOGON_UI | SendMailFlags.MAPI_DIALOG_MODELESS | SendMailFlags.MAPI_DIALOG;
 
-		readonly List<MapiRecipDesc> _recipients;
-		readonly List<string> _attachments;
+			var recipients = GetRecipients(message);
+			var attachments = GetAttachments(message);
 
-		enum HowTo
+			var msg = new MapiMessage
+			{
+				subject = message.Subject,
+				noteText = message.Body,
+				recipCount = recipients?.Length ?? 0,
+				recips = GetUnmanagedArray(recipients),
+				fileCount = attachments?.Length ?? 0,
+				files = GetUnmanagedArray(attachments),
+			};
+
+			try
+			{
+				return MAPISendMail(IntPtr.Zero, IntPtr.Zero, ref msg, flags, 0);
+			}
+			finally
+			{
+				DestroyUnmanagedArray(msg.recips, recipients);
+				DestroyUnmanagedArray(msg.files, attachments);
+			}
+		}
+
+		static IntPtr GetUnmanagedArray<TStruct>(TStruct[]? array)
+		{
+			if (array?.Length > 0)
+			{
+				var size = Marshal.SizeOf(typeof(TStruct));
+
+				var intptr = Marshal.AllocHGlobal(array.Length * size);
+
+				var ptr = intptr;
+				foreach (var item in array)
+				{
+					Marshal.StructureToPtr(item!, ptr, false);
+					ptr += size;
+				}
+
+				return intptr;
+			}
+
+			return IntPtr.Zero;
+		}
+
+		static void DestroyUnmanagedArray<TStruct>(IntPtr intptr, TStruct[]? array)
+		{
+			var count = array?.Length;
+			if (count > 0)
+			{
+				var size = Marshal.SizeOf(typeof(TStruct));
+
+				var ptr = intptr;
+				for (var i = 0; i < count; i++)
+				{
+					Marshal.DestroyStructure<TStruct>(ptr);
+					ptr += size;
+				}
+
+				Marshal.FreeHGlobal(intptr);
+			}
+		}
+
+		static MapiRecipDesc[]? GetRecipients(PlatformEmailMessage message)
+		{
+			var recipCount = message.To.Count + message.CC.Count + message.Bcc.Count;
+
+			if (recipCount == 0)
+				return null;
+
+			var recipients = new MapiRecipDesc[recipCount];
+
+			var idx = 0;
+			foreach (var to in message.To)
+				recipients[idx++] = Create(to, RecipientClass.MAPI_TO);
+			foreach (var cc in message.CC)
+				recipients[idx++] = Create(cc, RecipientClass.MAPI_CC);
+			foreach (var bcc in message.Bcc)
+				recipients[idx++] = Create(bcc, RecipientClass.MAPI_BCC);
+
+			return recipients;
+
+			static MapiRecipDesc Create(PlatformEmailRecipient recipient, RecipientClass type)
+			{
+				return new MapiRecipDesc
+				{
+					name = recipient.Address,
+					recipClass = type
+				};
+			}
+		}
+
+		static MapiFileDesc[]? GetAttachments(PlatformEmailMessage message)
+		{
+			var attachCount = message.Attachments.Count;
+
+			if (attachCount == 0)
+				return null;
+
+			var attachments = new MapiFileDesc[attachCount];
+
+			var idx = 0;
+			foreach (var file in message.Attachments)
+				attachments[idx++] = Create(file);
+
+			return attachments;
+
+			static MapiFileDesc Create(string filename)
+			{
+				return new MapiFileDesc
+				{
+					name = Path.GetFileName(filename),
+					path = filename,
+					position = -1
+				};
+			}
+		}
+
+		[DllImport("MAPI32.DLL")]
+		static extern int MAPISendMail(IntPtr sess, IntPtr hwnd, ref MapiMessage message, SendMailFlags flg, int rsv);
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+		struct MapiMessage
+		{
+			private int reserved;
+			public string? subject;
+			public string? noteText;
+			public string? messageType;
+			public string? dateReceived;
+			public string? conversationID;
+			public int flags;
+			public IntPtr originator;
+			public int recipCount;
+			public IntPtr recips;
+			public int fileCount;
+			public IntPtr files;
+		}
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+		struct MapiFileDesc
+		{
+			private int reserved;
+			public int flags;
+			public int position;
+			public string? path;
+			public string? name;
+			public IntPtr type;
+		}
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+		struct MapiRecipDesc
+		{
+			private int reserved;
+			public RecipientClass recipClass;
+			public string? name;
+			public string? address;
+			public int eIDSize;
+			public IntPtr entryID;
+		}
+
+		enum RecipientClass
 		{
 			MAPI_ORIG = 0,
 			MAPI_TO,
-			MAPI_CC,  // Not supported
-			MAPI_BCC  // Not supported 
+			MAPI_CC,
+			MAPI_BCC
 		};
 
-		public EmailHelper()
+		[Flags]
+		enum SendMailFlags
 		{
-			_errors = new string[]
-			{
-				"OK [0]",
-				"User abort [1]",
-				"General MAPI failure [2]",
-				"MAPI login failure [3]",
-				"Disk full [4]",
-				"Insufficient memory [5]",
-				"Access denied [6]",
-				"-unknown- [7]",
-				"Too many sessions [8]",
-				"Too many files were specified [9]",
-				"Too many recipients were specified [10]",
-				"A specified attachment was not found [11]",
-				"Attachment open failure [12]",
-				"Attachment write failure [13]",
-				"Unknown recipient [14]",
-				"Bad recipient type [15]",
-				"No messages [16]",
-				"Invalid message [17]",
-				"Text too large [18]",
-				"Invalid session [19]",
-				"Type not supported [20]",
-				"A recipient was specified ambiguously [21]",
-				"Message in use [22]",
-				"Network failure [23]",
-				"Invalid edit fields [24]",
-				"Invalid recipients [25]",
-				"Not supported [26]"
-			};
-
-			_recipients = new List<MapiRecipDesc>();
-			_attachments = new List<string>();
-			_lastError = 0;
-
-		}
-
-		public bool AddRecipient(string email, string name)
-		{
-			MapiRecipDesc recipient;
-
-			recipient = new MapiRecipDesc
-			{
-				recipClass = (int)HowTo.MAPI_TO,
-				address = email,
-				name = name
-			};
-
-			_recipients.Add(recipient);
-			return true;
-		}
-
-		public bool AddRecipient(MapiRecipDesc recipient)
-		{
-			_recipients.Add(recipient);
-			return true;
-		}
-
-		public void AddAttachment(string strAttachmentFileName)
-		{
-			_attachments.Add(strAttachmentFileName);
-		}
-
-		[DllImport("MAPI32.DLL")]
-		static extern int MAPISendMail(IntPtr sess, IntPtr hwnd, MapiMessage message, int flg, int rsv);
-
-		[DllImport("MAPI32.DLL")]
-		static extern int MAPIResolveName(IntPtr sess, IntPtr hwnd, string name, int flg, int rsv, ref MapiRecipDesc recipient);
-
-		public bool SendMail(string strSubject, string strBody)
-		{
-			MapiMessage msg;
-
-			msg = new MapiMessage
-			{
-				subject = strSubject,
-				noteText = strBody
-			};
-
-			msg.recips = GetRecipients(out msg.recipCount);
-			msg.files = GetAttachments(out msg.fileCount);
-
-			_lastError = MAPISendMail(new IntPtr(0), new IntPtr(0), msg, MAPI_LOGON_UI | MAPI_DIALOG, 0);
-
-			if (_lastError > 1)
-			{
-				Cleanup(ref msg);
-				return false;
-			}
-
-			Cleanup(ref msg);
-			return true;
-		}
-
-		public bool ResolveName(string name, ref MapiRecipDesc recipient)
-		{
-			_lastError = MAPIResolveName(new IntPtr(0), new IntPtr(0), name, 0, 0, ref recipient);
-
-			if (_lastError > 1)
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		IntPtr GetRecipients(out int recipCount)
-		{
-			int size;
-			IntPtr intPtr;
-			IntPtr ptr;
-
-			if (_recipients.Count == 0)
-			{
-				recipCount = 0;
-				return IntPtr.Zero;
-			}
-
-			size = Marshal.SizeOf(typeof(MapiRecipDesc));
-			intPtr = Marshal.AllocHGlobal(_recipients.Count * size);
-
-			ptr = intPtr;
-
-			foreach (MapiRecipDesc mapiDesc in _recipients)
-			{
-				Marshal.StructureToPtr(mapiDesc, (IntPtr)ptr, false);
-				ptr += size;
-			}
-
-			recipCount = _recipients.Count;
-			return intPtr;
-		}
-
-		IntPtr GetAttachments(out int fileCount)
-		{
-			MapiFileDesc mapiFileDesc;
-			int size;
-			IntPtr intPtr;
-			IntPtr ptr;
-
-			if (_attachments == null)
-			{
-				fileCount = 0;
-				return IntPtr.Zero;
-			}
-
-			if ((_attachments.Count <= 0) || (_attachments.Count > MaxAttachments))
-			{
-				fileCount = 0;
-				return IntPtr.Zero;
-			}
-
-			size = Marshal.SizeOf(typeof(MapiFileDesc));
-			intPtr = Marshal.AllocHGlobal(_attachments.Count * size);
-
-			mapiFileDesc = new MapiFileDesc
-			{
-				position = -1
-			};
-
-			ptr = intPtr;
-
-			foreach (string strAttachment in _attachments)
-			{
-				mapiFileDesc.name = Path.GetFileName(strAttachment);
-				mapiFileDesc.path = strAttachment;
-				Marshal.StructureToPtr(mapiFileDesc, (IntPtr)ptr, false);
-				ptr += size;
-			}
-
-			fileCount = _attachments.Count;
-
-			return intPtr;
-		}
-
-		void Cleanup(ref MapiMessage msg)
-		{
-			int size;
-			IntPtr ptr;
-			int i;
-
-			if (msg.recips != IntPtr.Zero)
-			{
-				size = Marshal.SizeOf(typeof(MapiRecipDesc));
-				ptr = msg.recips;
-
-				for (i = 0; i < msg.recipCount; i++)
-				{
-					Marshal.DestroyStructure((IntPtr)ptr, typeof(MapiRecipDesc));
-					ptr += size;
-				}
-				Marshal.FreeHGlobal(msg.recips);
-			}
-
-			if (msg.files != IntPtr.Zero)
-			{
-				size = Marshal.SizeOf(typeof(MapiFileDesc));
-				ptr = msg.files;
-
-				for (i = 0; i < msg.fileCount; i++)
-				{
-					Marshal.DestroyStructure((IntPtr)ptr, typeof(MapiFileDesc));
-					ptr += size;
-				}
-				Marshal.FreeHGlobal(msg.files);
-			}
-
-			_recipients.Clear();
-			_attachments.Clear();
-			_lastError = 0;
-		}
-
-		public string GetLastError()
-		{
-			if (_lastError <= 26)
-				return _errors[_lastError];
-
-			return "EmailHelper error [" + _lastError.ToString() + "]";
+			MAPI_LOGON_UI = 0x00000001,
+			MAPI_DIALOG_MODELESS = 0x00000004,
+			MAPI_DIALOG = 0x00000008,
 		}
 	}
 
-	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-	internal class MapiMessage
+	class PlatformEmailMessage
 	{
-		public int reserved;
-		public string subject;
-		public string noteText;
-		public string messageType;
-		public string dateReceived;
-		public string conversationID;
-		public int flags;
-		public IntPtr originator;
-		public int recipCount;
-		public IntPtr recips;
-		public int fileCount;
-		public IntPtr files;
+		public string? Body { get; set; }
+
+		public string? Subject { get; set; }
+
+		public List<PlatformEmailRecipient> To { get; } = new();
+
+		public List<PlatformEmailRecipient> CC { get; } = new();
+
+		public List<PlatformEmailRecipient> Bcc { get; } = new();
+
+		public List<string> Attachments { get; } = new();
 	}
 
-	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-	internal class MapiFileDesc
+	class PlatformEmailRecipient
 	{
-		public int reserved;
-		public int flags;
-		public int position;
-		public string path;
-		public string name;
-		public IntPtr type;
-	}
+		public PlatformEmailRecipient(string address)
+		{
+			Address = address;
+		}
 
-	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-	internal class MapiRecipDesc
-	{
-		public int reserved;
-		public int recipClass;
-		public string name;
-		public string address;
-		public int eIDSize;
-		public IntPtr entryID;
+		public string Address { get; set; }
 	}
 }
