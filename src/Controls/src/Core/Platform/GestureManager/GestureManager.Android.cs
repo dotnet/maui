@@ -2,11 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -22,7 +24,6 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
-
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
 		View? View => Element as View;
@@ -35,6 +36,18 @@ namespace Microsoft.Maui.Controls.Platform
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
 			_pointerGestureHandler = new Lazy<PointerGestureHandler>(InitializePointerHandler);
 			SetupElement(null, Element);
+		}
+
+		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers
+		{
+			get
+			{
+				if (_handler?.VirtualView is IGestureController gc &&
+					gc.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
+					return oc;
+
+				return null;
+			}
 		}
 
 		protected virtual AView? Control
@@ -207,7 +220,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (oldElement != null)
 			{
 				if (oldElement is View ov &&
-					ov.GestureRecognizers is INotifyCollectionChanged incc)
+					ElementGestureRecognizers is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged -= GestureCollectionChanged;
 				}
@@ -219,7 +232,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_handler = newElement.Handler;
 				if (newElement is View ov &&
-					ov.GestureRecognizers is INotifyCollectionChanged incc)
+					ElementGestureRecognizers is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged += GestureCollectionChanged;
 				}
