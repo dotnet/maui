@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IMenuElement.Source)] = MapSource,
 			};
 
-		public static CommandMapper<ISwipeItemMenuItem, ISwipeViewHandler> CommandMapper =
+		public static CommandMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> CommandMapper =
 			new(ElementHandler.ElementCommandMapper)
 			{
 			};

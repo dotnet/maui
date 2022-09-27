@@ -9,12 +9,12 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	// Don't add IElementConfiguration<Cell> because it kills performance on UWP structures that use Cells
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Cell']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Cell']/Docs/*" />
 	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IVisualTreeElement
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='DefaultCellHeight']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='DefaultCellHeight']/Docs/*" />
 		public const int DefaultCellHeight = 40;
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
 
 		ObservableCollection<MenuItem> _contextActions;
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 
 		bool _nextCallToForceUpdateSizeQueued;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Cell()
 		{
 			_elementConfiguration = new Lazy<ElementConfiguration>(() => new ElementConfiguration(this));
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='ContextActions']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='ContextActions']/Docs/*" />
 		public IList<MenuItem> ContextActions
 		{
 			get
@@ -97,16 +97,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='HasContextActions']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='HasContextActions']/Docs/*" />
 		public bool HasContextActions
 		{
 			get { return _contextActions != null && _contextActions.Count > 0 && IsEnabled; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsContextActionsLegacyModeEnabled']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsContextActionsLegacyModeEnabled']/Docs/*" />
 		public bool IsContextActionsLegacyModeEnabled { get; set; } = false;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='Height']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='Height']/Docs/*" />
 		public double Height
 		{
 			get { return _height; }
@@ -123,14 +123,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsEnabled']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='RenderHeight']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='RenderHeight']/Docs/*" />
 		public double RenderHeight
 		{
 			get
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler ForceUpdateSizeRequested;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='ForceUpdateSize']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='ForceUpdateSize']/Docs/*" />
 		public void ForceUpdateSize()
 		{
 			if (_nextCallToForceUpdateSizeQueued)
@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanging(propertyName);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='SendAppearing']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='SendAppearing']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendAppearing()
 		{
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls
 				container.SendCellAppearing(this);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='SendDisappearing']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='SendDisappearing']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDisappearing()
 		{
@@ -326,7 +326,7 @@ namespace Microsoft.Maui.Controls
 		// This creates a nested class to keep track of IElementConfiguration<Cell> because adding 
 		// IElementConfiguration<Cell> to the Cell itself tanks performance on UWP ListViews
 		// Issue has been logged with UWP
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='On']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='On']/Docs/*" />
 		public IPlatformElementConfiguration<T, Cell> On<T>() where T : IConfigPlatform
 		{
 			return GetElementConfiguration().On<T>();

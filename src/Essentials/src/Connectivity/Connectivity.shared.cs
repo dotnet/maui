@@ -17,16 +17,16 @@ namespace Microsoft.Maui.Networking
 	}
 
 #nullable enable
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs/*" />
 	public static class Connectivity
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='NetworkAccess']/Docs/*" />
 		public static NetworkAccess NetworkAccess => Current.NetworkAccess;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs/*" />
 		public static IEnumerable<ConnectionProfile> ConnectionProfiles => Current.ConnectionProfiles.Distinct();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectivityChanged']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectivityChanged']/Docs/*" />
 		public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
 		{
 			add => Current.ConnectivityChanged += value;
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Networking
 	}
 #nullable disable
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs/*" />
 	partial class ConnectivityImplementation : IConnectivity
 	{
 		event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
@@ -94,23 +94,23 @@ namespace Microsoft.Maui.Networking
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ConnectivityChangedEventArgs']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ConnectivityChangedEventArgs']/Docs/*" />
 	public class ConnectivityChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ConnectivityChangedEventArgs(NetworkAccess access, IEnumerable<ConnectionProfile> connectionProfiles)
 		{
 			NetworkAccess = access;
 			ConnectionProfiles = connectionProfiles;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='NetworkAccess']/Docs/*" />
 		public NetworkAccess NetworkAccess { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs/*" />
 		public IEnumerable<ConnectionProfile> ConnectionProfiles { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='ToString']/Docs/*" />
 		public override string ToString() =>
 			$"{nameof(NetworkAccess)}: {NetworkAccess}, " +
 			$"{nameof(ConnectionProfiles)}: [{string.Join(", ", ConnectionProfiles)}]";

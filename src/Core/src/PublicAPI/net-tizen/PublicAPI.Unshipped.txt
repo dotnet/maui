@@ -1522,6 +1522,8 @@ Microsoft.Maui.Platform.MauiClipperView.Clip.set -> void
 Microsoft.Maui.Platform.MauiClipperView.MauiClipperView() -> void
 Microsoft.Maui.Platform.MauiDateTimePicker
 Microsoft.Maui.Platform.MauiDateTimePicker.MauiDateTimePicker(System.DateTime dateTime, bool isTimePicker) -> void
+Microsoft.Maui.Platform.MauiFlyoutView
+Microsoft.Maui.Platform.MauiFlyoutView.MauiFlyoutView() -> void
 Microsoft.Maui.Platform.MauiImageButton
 Microsoft.Maui.Platform.MauiImageButton.Clicked -> System.EventHandler?
 Microsoft.Maui.Platform.MauiImageButton.MauiImageButton() -> void
@@ -1591,6 +1593,8 @@ Microsoft.Maui.Platform.MauiToolbar.Expand() -> void
 Microsoft.Maui.Platform.MauiToolbar.IconPressed -> System.EventHandler?
 Microsoft.Maui.Platform.MauiToolbar.MauiToolbar() -> void
 Microsoft.Maui.Platform.MauiToolbar.SendIconPressed() -> void
+Microsoft.Maui.Platform.MauiTVFlyoutView
+Microsoft.Maui.Platform.MauiTVFlyoutView.MauiTVFlyoutView() -> void
 Microsoft.Maui.Platform.MauiWebView
 Microsoft.Maui.Platform.MauiWebView.MauiWebView() -> void
 Microsoft.Maui.Platform.NavigationStackExtensions
@@ -2008,7 +2012,9 @@ override Microsoft.Maui.Handlers.TabbedViewHandler.CreatePlatformView() -> Tizen
 override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
 override Microsoft.Maui.Handlers.TimePickerHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.Entry!
 override Microsoft.Maui.Handlers.TimePickerHandler.DisconnectHandler(Tizen.UIExtensions.NUI.Entry! platformView) -> void
+override Microsoft.Maui.Handlers.ToolbarHandler.ConnectHandler(Microsoft.Maui.Platform.MauiToolbar! platformView) -> void
 override Microsoft.Maui.Handlers.ToolbarHandler.CreatePlatformElement() -> Microsoft.Maui.Platform.MauiToolbar!
+override Microsoft.Maui.Handlers.ToolbarHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiToolbar! platformView) -> void
 override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.OnPlatformViewDeleted() -> void
@@ -2416,7 +2422,7 @@ static Microsoft.Maui.Handlers.TimePickerHandler.MapTextColor(Microsoft.Maui.Han
 static Microsoft.Maui.Handlers.TimePickerHandler.MapTime(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.ToolbarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IToolbar!, Microsoft.Maui.Handlers.IToolbarHandler!>!
 static Microsoft.Maui.Handlers.ToolbarHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IToolbar!, Microsoft.Maui.Handlers.IToolbarHandler!>!
-static Microsoft.Maui.Handlers.ToolbarHandler.MapTitle(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.IToolbar! arg2) -> void
+static Microsoft.Maui.Handlers.ToolbarHandler.MapTitle(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.IToolbar! toolbar) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapAnchorX(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapAnchorY(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapAutomationId(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
@@ -2467,10 +2473,14 @@ static Microsoft.Maui.Handlers.WebViewHandler.MapReload(Microsoft.Maui.Handlers.
 static Microsoft.Maui.Handlers.WebViewHandler.MapSource(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
 static Microsoft.Maui.Handlers.WindowHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IWindow!, Microsoft.Maui.Handlers.IWindowHandler!>!
 static Microsoft.Maui.Handlers.WindowHandler.MapContent(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapHeight(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Handlers.WindowHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow!, Microsoft.Maui.Handlers.IWindowHandler!>!
 static Microsoft.Maui.Handlers.WindowHandler.MapRequestDisplayDensity(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window, object? args) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapTitle(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapToolbar(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapX(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapY(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureAnimations(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureDispatching(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.EssentialsExtensions.AddAppAction(this Microsoft.Maui.Hosting.IEssentialsBuilder! essentials, string! id, string! title, string? subtitle = null, string? icon = null) -> Microsoft.Maui.Hosting.IEssentialsBuilder!
@@ -2635,7 +2645,7 @@ static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateFlyoutBehavior(this Ti
 static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateFlyoutWidth(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
 static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateIsGestureEnabled(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
 static Microsoft.Maui.Platform.FlyoutViewExtensions.UpdateIsPresented(this Tizen.UIExtensions.NUI.DrawerView! platformDrawerView, Microsoft.Maui.IFlyoutView! flyoutView) -> void
-static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Tizen.UIExtensions.NUI.GraphicsView.SkiaGraphicsView! platformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
+static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView! platformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Platform.ImageExtensions.Clear(this Tizen.UIExtensions.NUI.Image! platformImage) -> void
 static Microsoft.Maui.Platform.ImageExtensions.UpdateAspect(this Tizen.UIExtensions.NUI.Image! platformImage, Microsoft.Maui.IImage! image) -> void
 static Microsoft.Maui.Platform.ImageExtensions.UpdateIsAnimationPlaying(this Tizen.UIExtensions.NUI.Image! platformImage, Microsoft.Maui.IImageSourcePart! image) -> void
@@ -2874,3 +2884,15 @@ virtual Microsoft.Maui.WindowOverlay.RemoveWindowElements() -> void
 ~override Microsoft.Maui.Converters.ThicknessTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
 ~override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
 ~override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
+*REMOVED*static Microsoft.Maui.Handlers.EditorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.IEditorHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.IndicatorViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.IIndicatorViewHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.LabelHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.ILabelHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSubItem!, Microsoft.Maui.Handlers.IMenuFlyoutItemHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.ProgressBarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.IProgressBarHandler!>!
+*REMOVED*static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISwipeItemMenuItem!, Microsoft.Maui.Handlers.ISwipeViewHandler!>!
+static Microsoft.Maui.Handlers.EditorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IEditor!, Microsoft.Maui.Handlers.IEditorHandler!>!
+static Microsoft.Maui.Handlers.IndicatorViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IIndicatorView!, Microsoft.Maui.Handlers.IIndicatorViewHandler!>!
+static Microsoft.Maui.Handlers.LabelHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ILabel!, Microsoft.Maui.Handlers.ILabelHandler!>!
+static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutItem!, Microsoft.Maui.Handlers.IMenuFlyoutItemHandler!>!
+static Microsoft.Maui.Handlers.ProgressBarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IProgress!, Microsoft.Maui.Handlers.IProgressBarHandler!>!
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISwipeItemMenuItem!, Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler!>!

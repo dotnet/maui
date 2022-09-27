@@ -84,5 +84,16 @@ namespace Microsoft.Maui
 			handler?.Invoke(commandName, args);
 			return args.Result;
 		}
+
+		public static bool CanInvokeMappers(this IElementHandler viewHandler)
+		{
+#if ANDROID
+			var platformView = viewHandler?.PlatformView;
+
+			if (platformView is PlatformView androidView && androidView.IsDisposed())
+				return false;
+#endif
+			return true;
+		}
 	}
 }

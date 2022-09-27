@@ -1,5 +1,5 @@
 ﻿using Android.Content.Res;
-using Android.Graphics.Drawables;
+using Android.Views;
 using Android.Widget;
 using static AndroidX.AppCompat.Widget.SearchView;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchView>
 	{
+		FocusChangeListener FocusListener { get; } = new FocusChangeListener();
+
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
 
 		EditText? _editText;
@@ -26,12 +28,18 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(SearchView platformView)
 		{
+			FocusListener.Handler = this;
+			platformView.SetOnQueryTextFocusChangeListener(FocusListener);
+
 			platformView.QueryTextChange += OnQueryTextChange;
 			platformView.QueryTextSubmit += OnQueryTextSubmit;
 		}
 
 		protected override void DisconnectHandler(SearchView platformView)
 		{
+			FocusListener.Handler = null;
+			platformView.SetOnQueryTextFocusChangeListener(null);
+
 			platformView.QueryTextChange -= OnQueryTextChange;
 			platformView.QueryTextSubmit -= OnQueryTextSubmit;
 		}
@@ -118,6 +126,22 @@ namespace Microsoft.Maui.Handlers
 		{
 			VirtualView.UpdateText(e.NewText);
 			e.Handled = true;
+		}
+
+		class FocusChangeListener : Java.Lang.Object, SearchView.IOnFocusChangeListener
+		{
+			public SearchBarHandler? Handler { get; set; }
+
+			public void OnFocusChange(View? v, bool hasFocus)
+			{
+				if (Handler == null)
+					return;
+
+				var virtualView = Handler.VirtualView;
+
+				if (virtualView != null)
+					virtualView.IsFocused = hasFocus;
+			}
 		}
 	}
 }

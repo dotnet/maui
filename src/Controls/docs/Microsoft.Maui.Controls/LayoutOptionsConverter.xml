@@ -1,6 +1,6 @@
 <Type Name="LayoutOptionsConverter" FullName="Microsoft.Maui.Controls.LayoutOptionsConverter">
-  <TypeSignature Language="C#" Value="public sealed class LayoutOptionsConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit LayoutOptionsConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public sealed class LayoutOptionsConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit LayoutOptionsConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.LayoutOptionsConverter" />
   <TypeSignature Language="F#" Value="type LayoutOptionsConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -10,7 +10,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>

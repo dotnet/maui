@@ -79,7 +79,7 @@ namespace FormsGallery
 }]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/ImageCell.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/ImageCell.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -126,7 +126,7 @@ namespace FormsGallery
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

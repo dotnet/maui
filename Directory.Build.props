@@ -20,9 +20,12 @@
   <!-- Try determine which .NET workloads are installed -->
   <PropertyGroup Condition="'$(CI)' != 'true' and '$(TF_BUILD)' != 'true'">
     <DotNetWorkloadVersionRegex>\d+\.\d+\.\d+(-[a-z]+[\.\d+]+)?</DotNetWorkloadVersionRegex>
+    <DotNetSdkVersionRegex>\d+\.\d+\.\d+(-[a-z]+\.\d+)?</DotNetSdkVersionRegex>
 
-    <DotNetWorkloadInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' == '' and Exists('$(DOTNET_ROOT)\sdk-manifests\$(DotNetVersionBand)\microsoft.net.sdk.macos\WorkloadManifest.json')">$(DOTNET_ROOT)\sdk-manifests\$(DotNetVersionBand)\</DotNetWorkloadInstallLocation>
-    <DotNetWorkloadInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' == '' and Exists('$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetVersionBand)\microsoft.net.sdk.macos\WorkloadManifest.json')">$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetVersionBand)\</DotNetWorkloadInstallLocation>
+    <DotNetSdkManifestVersion>$([System.Text.RegularExpressions.Regex]::Match('$(MSBuildExtensionsPath)', '$(DotNetSdkVersionRegex)'))</DotNetSdkManifestVersion>
+
+    <DotNetWorkloadInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' == '' and Exists('$(DOTNET_ROOT)\sdk-manifests\$(DotNetSdkManifestVersion)\microsoft.net.sdk.macos\WorkloadManifest.json')">$(DOTNET_ROOT)\sdk-manifests\$(DotNetSdkManifestVersion)\</DotNetWorkloadInstallLocation>
+    <DotNetWorkloadInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' == '' and Exists('$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetSdkManifestVersion)\microsoft.net.sdk.macos\WorkloadManifest.json')">$(ProgramFiles)\dotnet\sdk-manifests\$(DotNetSdkManifestVersion)\</DotNetWorkloadInstallLocation>
     <DotNetWorkloadPacksInstallLocation Condition="'$(DotNetWorkloadInstallLocation)' != ''">$(DotNetWorkloadInstallLocation)..\..\packs\</DotNetWorkloadPacksInstallLocation>
 
     <DotNetMacOSWorkloadInstalledVersion Condition="Exists('$(DotNetWorkloadInstallLocation)microsoft.net.sdk.macos\WorkloadManifest.json')">$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(DotNetWorkloadInstallLocation)\microsoft.net.sdk.macos\WorkloadManifest.json')), '$(DotNetWorkloadVersionRegex)'))</DotNetMacOSWorkloadInstalledVersion>
@@ -140,6 +143,6 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
   <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.2.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.3.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>

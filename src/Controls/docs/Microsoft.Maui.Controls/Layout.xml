@@ -31,11 +31,11 @@
       <para>Provides the base class for all Layout elements. Use Layout elements to position and size child elements in Microsoft.Maui.Controls applications.</para>
     </summary>
     <remarks>
-      <para>Subtypes of <see cref="T:Microsoft.Maui.Controls.Layout" /> include <see cref="T:Microsoft.Maui.Controls.ContentView" />, <see cref="T:Microsoft.Maui.Controls.ScrollView" />, and <see cref="T:Microsoft.Maui.Controls.Layout`1" />, as shown in the following diagram.</para>
-      <para>The <see cref="P:Microsoft.Maui.Controls.Layout`1.Children" /> property of <see cref="T:Microsoft.Maui.Controls.Layout`1" /> contains a list of children of the parameterized type <c>T</c>, which must be a type of <see cref="T:Microsoft.Maui.Controls.View" />. Since <see cref="T:Microsoft.Maui.Controls.Layout" /> is itself a subclass of <see cref="T:Microsoft.Maui.Controls.View" />, this allows <see cref="T:Microsoft.Maui.Controls.Layout" />s to hold sub-layouts, scrolling regions, &amp; etc.</para>
+      <para>Subtypes of <see cref="T:Microsoft.Maui.Controls.Layout" /> include <see cref="T:Microsoft.Maui.Controls.ContentView" />, <see cref="T:Microsoft.Maui.Controls.ScrollView" />, and <see cref="T:Microsoft.Maui.Controls.Layout" />, as shown in the following diagram.</para>
+      <para>The <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> property of <see cref="T:Microsoft.Maui.Controls.Layout" /> contains a list of children of the parameterized type <c>T</c>, which must be a type of <see cref="T:Microsoft.Maui.Controls.View" />. Since <see cref="T:Microsoft.Maui.Controls.Layout" /> is itself a subclass of <see cref="T:Microsoft.Maui.Controls.View" />, this allows <see cref="T:Microsoft.Maui.Controls.Layout" />s to hold sub-layouts, scrolling regions, &amp; etc.</para>
     </remarks>
     <altmember cref="T:Microsoft.Maui.Controls.ContentView" />
-    <altmember cref="T:Microsoft.Maui.Controls.Layout`1" />
+    <altmember cref="T:Microsoft.Maui.Controls.Layout" />
     <altmember cref="T:Microsoft.Maui.Controls.ScrollView" />
   </Docs>
   <Members>
@@ -155,10 +155,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetSizeRequest">
-      <MemberSignature Language="C#" Value="public override sealed Microsoft.Maui.Controls.SizeRequest GetSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest GetSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="public override sealed Microsoft.Maui.SizeRequest GetSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance valuetype Microsoft.Maui.SizeRequest GetSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Layout.GetSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.GetSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="layout.GetSizeRequest (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.GetSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="layout.GetSizeRequest (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -180,7 +180,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -189,8 +189,8 @@
       <Docs>
         <param name="widthConstraint">The available width that a parent Layout can allocate to a child. Value will be between 0 and double.PositiveInfinity.</param>
         <param name="heightConstraint">The available height that a parent Layout can allocate to a child. Value will be between 0 and double.PositiveInfinity.</param>
-        <summary>Returns the <see cref="T:Microsoft.Maui.Controls.SizeRequest" /> of the Layout. Calling this method begins the measure pass of a layout cycle.</summary>
-        <returns>A <see cref="T:Microsoft.Maui.Controls.SizeRequest" /> which contains a requested size and a minimum size.</returns>
+        <summary>Returns the <see cref="T:Microsoft.Maui.SizeRequest" /> of the Layout. Calling this method begins the measure pass of a layout cycle.</summary>
+        <returns>A <see cref="T:Microsoft.Maui.SizeRequest" /> which contains a requested size and a minimum size.</returns>
         <remarks>
           <para>
             Calling GetSizeRequest causes a measure pass to occur for the subtree of elements it is called on. It is ideal to only call GetSizeRequest when needed as excessive calls can negatively impact the performance of the app. Overriding GetSizeRequest should only be done if the developer wants to ignore Width/HeightRequest. More likely a subclass would wish to override <see cref="M:Microsoft.Maui.Controls.VisualElement.OnSizeRequest(System.Double,System.Double)" />.
@@ -305,10 +305,10 @@
       </Docs>
     </Member>
     <Member MemberName="LayoutChildIntoBoundingRegion">
-      <MemberSignature Language="C#" Value="public static void LayoutChildIntoBoundingRegion (Microsoft.Maui.Controls.VisualElement child, Microsoft.Maui.Controls.Rectangle region);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void LayoutChildIntoBoundingRegion(class Microsoft.Maui.Controls.VisualElement child, valuetype Microsoft.Maui.Controls.Rectangle region) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Layout.LayoutChildIntoBoundingRegion(Microsoft.Maui.Controls.VisualElement,Microsoft.Maui.Controls.Rectangle)" />
-      <MemberSignature Language="F#" Value="static member LayoutChildIntoBoundingRegion : Microsoft.Maui.Controls.VisualElement * Microsoft.Maui.Controls.Rectangle -&gt; unit" Usage="Microsoft.Maui.Controls.Layout.LayoutChildIntoBoundingRegion (child, region)" />
+      <MemberSignature Language="C#" Value="public static void LayoutChildIntoBoundingRegion (Microsoft.Maui.Controls.VisualElement child, Microsoft.Maui.Controls.Shapes.Rectangle region);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void LayoutChildIntoBoundingRegion(class Microsoft.Maui.Controls.VisualElement child, valuetype Microsoft.Maui.Controls.Shapes.Rectangle region) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Layout.LayoutChildIntoBoundingRegion(Microsoft.Maui.Controls.VisualElement,Microsoft.Maui.Controls.Shapes.Rectangle)" />
+      <MemberSignature Language="F#" Value="static member LayoutChildIntoBoundingRegion : Microsoft.Maui.Controls.VisualElement * Microsoft.Maui.Controls.Shapes.Rectangle -&gt; unit" Usage="Microsoft.Maui.Controls.Layout.LayoutChildIntoBoundingRegion (child, region)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -326,7 +326,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="child" Type="Microsoft.Maui.Controls.VisualElement" />
-        <Parameter Name="region" Type="Microsoft.Maui.Controls.Rectangle" />
+        <Parameter Name="region" Type="Microsoft.Maui.Controls.Shapes.Rectangle" />
       </Parameters>
       <Docs>
         <param name="child">The child element to be positioned.</param>
@@ -485,10 +485,10 @@
       </Docs>
     </Member>
     <Member MemberName="Padding">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Thickness Padding { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Thickness Padding" />
+      <MemberSignature Language="C#" Value="publicMicrosoft.Maui.Thickness Padding { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetypeMicrosoft.Maui.Thickness Padding" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Layout.Padding" />
-      <MemberSignature Language="F#" Value="member this.Padding : Microsoft.Maui.Controls.Thickness with get, set" Usage="Microsoft.Maui.Controls.Layout.Padding" />
+      <MemberSignature Language="F#" Value="member this.Padding :Microsoft.Maui.Thickness with get, set" Usage="Microsoft.Maui.Controls.Layout.Padding" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -502,7 +502,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Thickness</ReturnType>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the inner padding of the Layout.</summary>

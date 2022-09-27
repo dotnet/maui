@@ -60,18 +60,18 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Email']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Email']/Docs/*" />
 	public static class Email
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][1]/Docs/*" />
 		public static Task ComposeAsync() =>
 			Default.ComposeAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][3]/Docs/*" />
 		public static Task ComposeAsync(string subject, string body, params string[] to) =>
 			Default.ComposeAsync(subject, body, to);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Email.xml" path="//Member[@MemberName='ComposeAsync'][2]/Docs/*" />
 		public static Task ComposeAsync(EmailMessage message) =>
 			Default.ComposeAsync(message);
 
@@ -84,15 +84,15 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			defaultImplementation = implementation;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EmailMessage']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EmailMessage']/Docs/*" />
 	public class EmailMessage
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public EmailMessage()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public EmailMessage(string subject, string body, params string[] to)
 		{
 			Subject = subject;
@@ -100,53 +100,53 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			To = to?.ToList() ?? new List<string>();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Subject']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Subject']/Docs/*" />
 		public string? Subject { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Body']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Body']/Docs/*" />
 		public string? Body { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='BodyFormat']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='BodyFormat']/Docs/*" />
 		public EmailBodyFormat BodyFormat { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='To']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='To']/Docs/*" />
 		public List<string>? To { get; set; } = new List<string>();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Cc']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Cc']/Docs/*" />
 		public List<string>? Cc { get; set; } = new List<string>();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Bcc']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Bcc']/Docs/*" />
 		public List<string>? Bcc { get; set; } = new List<string>();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Attachments']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailMessage.xml" path="//Member[@MemberName='Attachments']/Docs/*" />
 		public List<EmailAttachment>? Attachments { get; set; } = new List<EmailAttachment>();
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/EmailBodyFormat.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EmailBodyFormat']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/EmailBodyFormat.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EmailBodyFormat']/Docs/*" />
 	public enum EmailBodyFormat
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailBodyFormat.xml" path="//Member[@MemberName='PlainText']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailBodyFormat.xml" path="//Member[@MemberName='PlainText']/Docs/*" />
 		PlainText,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailBodyFormat.xml" path="//Member[@MemberName='Html']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailBodyFormat.xml" path="//Member[@MemberName='Html']/Docs/*" />
 		Html
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EmailAttachment']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EmailAttachment']/Docs/*" />
 	public partial class EmailAttachment : FileBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public EmailAttachment(string fullPath)
 			: base(fullPath)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
 		public EmailAttachment(string fullPath, string contentType)
 			: base(fullPath, contentType)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/EmailAttachment.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public EmailAttachment(FileBase file)
 			: base(file)
 		{

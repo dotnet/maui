@@ -277,27 +277,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO: NET7 make this public for net7.0
-		internal static void UpdateShadowLayerFrame(this UIView view)
-		{
-			if (view == null || view.Frame.IsEmpty)
-				return;
-
-			var layer = view.Layer;
-
-			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
-				return;
-
-			foreach (var sublayer in layer.Sublayers)
-			{
-				if (sublayer.Opacity > 0) // If the layer has shadow, invalidate the Size
-				{
-					sublayer.Frame = view.Bounds;
-					break;
-				}
-			}
-		}
-
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
 			platformView.SetNeedsLayout();
@@ -598,8 +577,13 @@ namespace Microsoft.Maui.Platform
 		internal static IWindow? GetHostedWindow(this UIView? view)
 			=> GetHostedWindow(view?.Window);
 
-		internal static bool IsLoaded(this UIView uiView) =>
-			uiView.Window != null;
+		internal static bool IsLoaded(this UIView uiView)
+		{
+			if (uiView == null)
+				return false;
+
+			return uiView.Window != null;
+		}
 
 		internal static IDisposable OnLoaded(this UIView uiView, Action action)
 		{
@@ -610,29 +594,46 @@ namespace Microsoft.Maui.Platform
 			}
 
 			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
-			ActionDisposable? disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = null;
+			disposable = new ActionDisposable(() =>
 			{
-				foreach (var thing in observers)
-					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
+				disposable = null;
+				foreach (var observer in observers)
+				{
+					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
+					observers.Remove(observer.Key);
+				}
 			});
 
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
 			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.			
-			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
-			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => OnLoadedCheck()));
+			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
+			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
 
 			// OnLoaded is called at the point in time where the xplat view knows it's going to be attached to the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
 			// to get attached.
-			uiView.BeginInvokeOnMainThread(OnLoadedCheck);
+			uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 
-			void OnLoadedCheck()
+			void OnLoadedCheck(NSObservedChange? nSObservedChange = null)
 			{
-				if (uiView.IsLoaded() && disposable != null)
+				if (disposable != null)
 				{
-					disposable.Dispose();
-					disposable = null;
-					action();
+					if (uiView.IsLoaded())
+					{
+						disposable.Dispose();
+						disposable = null;
+						action();
+					}
+					else if (nSObservedChange != null)
+					{
+						// In some cases (FlyoutPage) the arrange and measure all take place before
+						// the view is added to the screen so this queues up a second check that
+						// hopefully will fire loaded once the view is added to the window.
+						// None of this code is great but I haven't found a better way
+						// for an outside observer to know when a subview is added to a window
+						uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
+					}
 				}
 			};
 
@@ -649,10 +650,15 @@ namespace Microsoft.Maui.Platform
 			}
 
 			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
-			ActionDisposable? disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = null;
+			disposable = new ActionDisposable(() =>
 			{
-				foreach (var thing in observers)
-					uiView.Layer.RemoveObserver(thing.Value, thing.Key);
+				disposable = null;
+				foreach (var observer in observers)
+				{
+					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
+					observers.Remove(observer.Key);
+				}
 			});
 
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single

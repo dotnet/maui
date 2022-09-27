@@ -3,7 +3,6 @@ parameters:
   poolName: ''
   provisionatorChannel: latest
   artifact: 'nuget'
-  libraryPacksArtifact: 'library-packs'
 
 steps:
   - ${{ if eq(parameters.platform, 'macOS') }}:
@@ -42,7 +41,6 @@ steps:
         artifacts/**/*.zip
         artifacts/vs-workload.props
         eng/automation/SignList.xml
-        !artifacts/library-packs/**
         !artifacts/docs-packs/**
       TargetFolder: $(build.artifactstagingdirectory)
       flattenFolders: true
@@ -68,18 +66,11 @@ steps:
     displayName: publish artifacts
     inputs:
       ArtifactName: ${{ parameters.artifact }}
-  # library-packs
-  - task: PublishBuildArtifacts@1
-    condition: always()
-    displayName: publish library packs artifacts
-    inputs:
-      PathToPublish: artifacts/library-packs
-      ArtifactName: ${{ parameters.libraryPacksArtifact }}
   # xml-docs
   - ${{ if eq(parameters.platform, 'Windows') }}:
     - task: PublishBuildArtifacts@1
       condition: always()
-      displayName: publish library packs artifacts
+      displayName: publish docs artifacts
       inputs:
         PathToPublish: artifacts/docs-packs
         ArtifactName: xml-docs
