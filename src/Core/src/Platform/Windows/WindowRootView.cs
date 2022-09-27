@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Platform
 
 		public WindowRootView()
 		{
+			IsTabStop = false;
 		}
 
 		internal double AppTitleBarActualHeight => AppTitleBarContentControl?.ActualHeight ?? 0;
