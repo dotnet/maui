@@ -63,5 +63,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIEdgeInsets GetNativePadding(ImageButtonHandler imageButtonHandler) =>
 			GetPlatformImageButton(imageButtonHandler).ContentEdgeInsets;
+
+		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>
+			imageButtonHandler.PlatformView.ImageView.Image != null;
 	}
 }

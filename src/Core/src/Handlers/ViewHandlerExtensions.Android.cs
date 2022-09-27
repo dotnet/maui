@@ -119,6 +119,15 @@ namespace Microsoft.Maui
 			var bottom = Context.ToPixels(frame.Bottom);
 			var right = Context.ToPixels(frame.Right);
 
+			var viewParent = platformView.Parent;
+			if (viewParent?.LayoutDirection == LayoutDirection.Rtl && viewParent is View parentView)
+			{
+				// Determine the flipped left/right edges for the RTL layout
+				var width = right - left;
+				left = parentView.Width - left - width;
+				right = left + width;
+			}
+
 			platformView.Layout((int)left, (int)top, (int)right, (int)bottom);
 
 			viewHandler.Invoke(nameof(IView.Frame), frame);

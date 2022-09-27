@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override Microsoft.UI.Xaml.DataTemplate SelectTemplateCore(object item)
 		{
-			if (item is MenuFlyoutSeparator)
+			if (item is UI.Xaml.Controls.MenuFlyoutSeparator)
 				return SeperatorTemplate;
 
 			if (item is MenuItem)

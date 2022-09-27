@@ -67,6 +67,67 @@
                 x:Name="entry3"
                 Text=""
                 Placeholder="Type something to enable 2nd Entry" />
+            <Label
+                Text="Button with Normal and PointerOver visual states:" 
+                Style="{StaticResource Headline}" />
+            <Button 
+                Text="Hover me to see color change"
+                WidthRequest="300"
+                HorizontalOptions="Center">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="LightBlue" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Blue" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+            </Button>
+            <Label
+                Text="Button with Normal, PointerOver, and Pressed visual states:" 
+                Style="{StaticResource Headline}" />
+            <Label 
+                Text="The Normal and PointerOver states for this button are the same. This demonstrates how the PointerOver state can be used to set the visual state of the button after it has been clicked so that it's no longer Pressed."
+                FontSize="Body"/>
+            <Button 
+                Text="Click me to see color change and revert back"
+                WidthRequest="300"
+                HorizontalOptions="Center">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="LightBlue" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="LightBlue" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Blue" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+            </Button>
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>

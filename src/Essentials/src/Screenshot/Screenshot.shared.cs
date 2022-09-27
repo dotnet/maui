@@ -25,35 +25,38 @@ namespace Microsoft.Maui.Media
 #elif WINDOWS
 		Task<IScreenshotResult> CaptureAsync(UI.Xaml.Window window);
 		Task<IScreenshotResult> CaptureAsync(UI.Xaml.UIElement element);
+#elif TIZEN
+		Task<IScreenshotResult> CaptureAsync(Tizen.NUI.Window window);
+		Task<IScreenshotResult> CaptureAsync(Tizen.NUI.BaseComponents.View view);
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.IScreenshotResult']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.IScreenshotResult']/Docs/*" />
 	public interface IScreenshotResult
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='Width']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='Width']/Docs/*" />
 		int Width { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='Height']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='Height']/Docs/*" />
 		int Height { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='OpenReadAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='OpenReadAsync']/Docs/*" />
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100);
 #pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='CopyToAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='CopyToAsync']/Docs/*" />
 		Task CopyToAsync(Stream destination, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Screenshot']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Screenshot']/Docs/*" />
 	public static partial class Screenshot
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='IsCaptureSupported']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='IsCaptureSupported']/Docs/*" />
 		public static bool IsCaptureSupported
 			=> Default.IsCaptureSupported;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='CaptureAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='CaptureAsync']/Docs/*" />
 		public static Task<IScreenshotResult> CaptureAsync()
 		{
 			if (!IsCaptureSupported)
@@ -110,21 +113,21 @@ namespace Microsoft.Maui.Media
 
 #elif TIZEN
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, ElmSharp.Window window) =>
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.Window window) =>
 			screenshot.AsPlatform().CaptureAsync(window);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, ElmSharp.EvasObject view) =>
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.BaseComponents.View view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
 
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotFormat']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotFormat']/Docs/*" />
 	public enum ScreenshotFormat
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Png']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Png']/Docs/*" />
 		Png,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Jpeg']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Jpeg']/Docs/*" />
 		Jpeg
 	}
 

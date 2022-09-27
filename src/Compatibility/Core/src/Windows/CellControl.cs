@@ -16,6 +16,8 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
+using WMenuFlyout = Microsoft.UI.Xaml.Controls.MenuFlyout;
+using WFlyoutBase = Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -284,9 +286,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		/// <summary>
 		/// To check the context, not just the text.
 		/// </summary>
-		MenuFlyout GetAttachedFlyout()
+		WMenuFlyout GetAttachedFlyout()
 		{
-			if (FlyoutBase.GetAttachedFlyout(CellContent) is MenuFlyout flyout)
+			if (WFlyoutBase.GetAttachedFlyout(CellContent) is WMenuFlyout flyout)
 			{
 				var actions = Cell.ContextActions;
 				if (flyout.Items.Count != actions.Count)
@@ -306,16 +308,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (GetAttachedFlyout() == null)
 			{
-				var flyout = new MenuFlyout();
+				var flyout = new WMenuFlyout();
 				SetupMenuItems(flyout);
 
 				((INotifyCollectionChanged)Cell.ContextActions).CollectionChanged += OnContextActionsChanged;
 
 				_contextActions = Cell.ContextActions;
-				FlyoutBase.SetAttachedFlyout(CellContent, flyout);
+				WFlyoutBase.SetAttachedFlyout(CellContent, flyout);
 			}
 
-			FlyoutBase.ShowAttachedFlyout(CellContent);
+			WFlyoutBase.ShowAttachedFlyout(CellContent);
 		}
 
 		void SetCell(object newContext)
@@ -441,7 +443,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					_contextActions = null;
 				}
 
-				FlyoutBase.SetAttachedFlyout(CellContent, null);
+				WFlyoutBase.SetAttachedFlyout(CellContent, null);
 				return;
 			}
 
@@ -449,9 +451,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			CellContent.Holding += OnLongTap;
 		}
 
-		void SetupMenuItems(MenuFlyout flyout)
+		void SetupMenuItems(WMenuFlyout flyout)
 		{
-			foreach (MenuItem item in Cell.ContextActions)
+			foreach (var item in Cell.ContextActions)
 			{
 				var flyoutItem = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem();
 				flyoutItem.SetBinding(UI.Xaml.Controls.MenuFlyoutItem.TextProperty, "Text");

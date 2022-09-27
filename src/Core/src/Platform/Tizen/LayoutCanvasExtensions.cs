@@ -2,9 +2,16 @@
 {
 	public static class LayoutCanvasExtensions
 	{
-		public static void UpdateClipsToBounds(this LayoutCanvas layoutCanvas, ILayout layout)
+		public static void UpdateClipsToBounds(this LayoutViewGroup layoutViewGroup, ILayout layout)
 		{
-			//TODO: Need to impl
+			if (layout.ClipsToBounds)
+			{
+				layoutViewGroup.ClippingMode = Tizen.NUI.ClippingModeType.ClipChildren;
+			}
+			else
+			{
+				layoutViewGroup.ClippingMode = Tizen.NUI.ClippingModeType.Disabled;
+			}
 		}
 	}
 }

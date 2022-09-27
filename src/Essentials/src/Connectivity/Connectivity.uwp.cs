@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Networking.Connectivity;
 
 namespace Microsoft.Maui.Networking
@@ -20,22 +21,10 @@ namespace Microsoft.Maui.Networking
 		{
 			get
 			{
-				var profile = NetworkInformation.GetInternetConnectionProfile();
-				if (profile == null)
-					return NetworkAccess.Unknown;
-
-				var level = profile.GetNetworkConnectivityLevel();
-				switch (level)
-				{
-					case NetworkConnectivityLevel.LocalAccess:
-						return NetworkAccess.Local;
-					case NetworkConnectivityLevel.InternetAccess:
-						return NetworkAccess.Internet;
-					case NetworkConnectivityLevel.ConstrainedInternetAccess:
-						return NetworkAccess.ConstrainedInternet;
-					default:
-						return NetworkAccess.None;
-				}
+				return
+					MainThread.IsMainThread ?
+					GetNetworkAccess() :
+					MainThread.InvokeOnMainThreadAsync(GetNetworkAccess).GetAwaiter().GetResult();
 			}
 		}
 
@@ -80,6 +69,35 @@ namespace Microsoft.Maui.Networking
 
 					yield return type;
 				}
+			}
+		}
+
+		NetworkAccess GetNetworkAccess()
+		{
+			try
+			{
+				var profile = NetworkInformation.GetInternetConnectionProfile();
+
+				if (profile == null)
+					return NetworkAccess.Unknown;
+
+				var level = profile.GetNetworkConnectivityLevel();
+
+				switch (level)
+				{
+					case NetworkConnectivityLevel.LocalAccess:
+						return NetworkAccess.Local;
+					case NetworkConnectivityLevel.InternetAccess:
+						return NetworkAccess.Internet;
+					case NetworkConnectivityLevel.ConstrainedInternetAccess:
+						return NetworkAccess.ConstrainedInternet;
+					default:
+						return NetworkAccess.None;
+				}
+			}
+			catch
+			{
+				return NetworkAccess.Unknown;
 			}
 		}
 	}

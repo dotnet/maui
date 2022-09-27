@@ -18,8 +18,8 @@ using ParentView = Android.Views.IViewParent;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using ParentView = Microsoft.UI.Xaml.DependencyObject;
 #elif TIZEN
-using PlatformView = ElmSharp.EvasObject;
-using ParentView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
+using ParentView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
@@ -27,7 +27,7 @@ using ParentView = System.Object;
 
 namespace Microsoft.Maui.Platform
 {
-	/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.ViewExtensions']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.ViewExtensions']/Docs/*" />
 	public static partial class ViewExtensions
 	{
 		internal static Vector3 ExtractPosition(this Matrix4x4 matrix) => matrix.Translation;
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static double ExtractAngleInDegrees(this Matrix4x4 matrix) => ExtractAngleInRadians(matrix) * 180 / Math.PI;
 
-		/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="//Member[@MemberName='ToHandler']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="//Member[@MemberName='ToHandler']/Docs/*" />
 
 		public static IPlatformViewHandler ToHandler(this IView view, IMauiContext context) =>
 			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
@@ -55,7 +55,11 @@ namespace Microsoft.Maui.Platform
 				if (parent != null)
 					return parent;
 
+#if TIZEN
+				view = view?.GetParent() as ParentView;
+#else
 				view = view?.GetParent();
+#endif
 			}
 
 			return default;
@@ -68,11 +72,19 @@ namespace Microsoft.Maui.Platform
 
 			while (view != null)
 			{
+#if TIZEN
+				var parent = view?.GetParent() as ParentView;
+#else
 				var parent = view?.GetParent();
+#endif
 				if (searchExpression(parent))
 					return parent;
 
+#if TIZEN
+				view = view?.GetParent() as ParentView;
+#else
 				view = view?.GetParent();
+#endif
 			}
 
 			return default;

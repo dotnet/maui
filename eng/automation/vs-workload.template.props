@@ -10,7 +10,13 @@
       <Replacement>@VS_COMPONENT_VERSION@</Replacement>
     </ShortNames>
     <ShortNames Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop">
-      <Replacement>Microsoft.Maui.Graphics.Win2D</Replacement>
+      <Replacement>Maui.Graphics.Win2D</Replacement>
+    </ShortNames>
+    <ShortNames Include="Microsoft.Maui">
+      <Replacement>Maui</Replacement>
+    </ShortNames>
+    <ShortNames Include="Microsoft.AspNetCore.Components">
+      <Replacement>AspNetCore</Replacement>
     </ShortNames>
     <ComponentResources Include="maui"              Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK" Description=".NET SDK Workload for building all types of MAUI applications." />
     <ComponentResources Include="maui-mobile"       Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Mobile" Description=".NET SDK Workload for building MAUI applications that target mobile platforms." />
@@ -22,5 +28,6 @@
     <ComponentResources Include="maui-ios"          Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for iOS" Description=".NET SDK Workload for building MAUI applications that target iOS." />
     <ComponentResources Include="maui-windows"      Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Windows" Description=".NET SDK Workload for building MAUI applications that target Windows." />
     <WorkloadPackages Include="$(NuGetPackagePath)\Microsoft.NET.Sdk.Maui.Manifest*.nupkg" Version="@VS_COMPONENT_VERSION@" />
+    <MultiTargetPackNames Include="Microsoft.Maui.Sdk;Microsoft.Maui.Templates" />
   </ItemGroup>
 </Project>

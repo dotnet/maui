@@ -5,6 +5,7 @@ using WStyle = Microsoft.UI.Xaml.Style;
 using Microsoft.Maui.Controls.Platform;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WASDKApp = Microsoft.UI.Xaml.Application;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -194,6 +195,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			style.Setters.Add(new WSetter(GridViewItem.MarginProperty, margin));
 			style.Setters.Add(new WSetter(GridViewItem.PaddingProperty, WinUIHelpers.CreateThickness(0)));
+			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
 
 			return style;
 		}
@@ -207,6 +209,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			style.Setters.Add(new WSetter(ListViewItem.MarginProperty, margin));
 			style.Setters.Add(new WSetter(GridViewItem.PaddingProperty, WinUIHelpers.CreateThickness(0)));
+			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
 
 			return style;
 		}
@@ -219,6 +222,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var style = new WStyle(typeof(ListViewItem));
 
 			style.Setters.Add(new WSetter(ListViewItem.PaddingProperty, padding));
+			style.Setters.Add(new WSetter(Control.VerticalContentAlignmentProperty, VerticalAlignment.Stretch));
 
 			return style;
 		}

@@ -19,16 +19,18 @@ namespace Microsoft.Maui
 			if (IsPlatformViewInitialized)
 				return true;
 
-			if (Window == null)
+			if (Window?.Content?.Handler == null)
 				return false;
 
 			var platformWindow = Window?.Content?.ToPlatform();
+
 			if (platformWindow == null)
 				return false;
 
 			var handler = Window?.Handler as WindowHandler;
 			if (handler?.MauiContext == null)
 				return false;
+
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			if (rootManager == null)
 				return false;
@@ -39,6 +41,10 @@ namespace Microsoft.Maui
 
 			_nativeActivity = activity;
 			_nativeLayer = rootManager.RootView as ViewGroup;
+			_nativeLayer = _nativeLayer?.GetFirstChildOfType<CoordinatorLayout>() ?? _nativeLayer;
+
+			if (_nativeLayer is ContainerView containerView)
+				_nativeLayer = containerView.MainView as ViewGroup;
 
 			if (_nativeLayer?.Context == null)
 				return false;

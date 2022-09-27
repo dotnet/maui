@@ -22,7 +22,9 @@ namespace Microsoft.Maui
 		// TODO: Investigate whether the new AndroidX way is actually useful:
 		//       https://developer.android.com/reference/android/app/Activity#onBackPressed()
 		[Obsolete]
+#pragma warning disable 809
 		public override void OnBackPressed()
+#pragma warning restore 809
 		{
 			var preventBackPropagation = false;
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
@@ -38,22 +40,7 @@ namespace Microsoft.Maui
 		{
 			base.OnConfigurationChanged(newConfig);
 
-			var mauiApp = MauiApplication.Current;
-
-			if (mauiApp is not null)
-			{
-				mauiApp.Application?.ThemeChanged();
-
-				mauiApp.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnConfigurationChanged>(del => del(this, newConfig));
-			}
-
-			var mauiWindow = this.GetWindowFromActivity();
-
-			if (mauiWindow is not null && newConfig is not null)
-			{
-				var density = newConfig.DensityDpi / DeviceDisplay.BaseLogicalDpi;
-				mauiWindow.DisplayDensityChanged(density);
-			}
+			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnConfigurationChanged>(del => del(this, newConfig));
 		}
 
 		protected override void OnNewIntent(Intent? intent)

@@ -11,7 +11,8 @@
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
     <PackageId>Microsoft.Maui.Graphics</PackageId>
     <Product>Microsoft.Maui.Graphics</Product>
-    <NoWarn>$(NoWarn);CA1307;CA1309</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CA1307;CA1309;CS1591</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />

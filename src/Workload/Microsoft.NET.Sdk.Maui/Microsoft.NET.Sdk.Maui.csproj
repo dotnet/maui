@@ -52,12 +52,11 @@
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebViewPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreMetadataPackageVersion" />
       <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftMauiGraphicsVersion" />
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
-      <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion" PropertyName="MicrosoftMauiGraphicsVersion" />
-      <_VersionsToReplace Include="MAUI_GRAPHICS_VERSION" PropertyName="MicrosoftMauiGraphicsVersion" />
       <_VersionsToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+      <_VersionsToReplace Include="MAUI_DOTNET_VERSION_MAJOR" PropertyName="_MauiDotNetVersionMajor" />
       <_VersionsToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_MAJOR" PropertyName="_MauiPreviousDotNetVersionMajor" />
       <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION" PropertyName="_MauiPreviousDotNetVersion" />
       <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
       <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />

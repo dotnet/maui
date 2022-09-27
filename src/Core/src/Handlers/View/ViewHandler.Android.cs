@@ -180,6 +180,10 @@ namespace Microsoft.Maui.Handlers
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 
+		public static void MapContextFlyout(IViewHandler handler, IView view)
+		{
+		}
+
 		public virtual bool NeedsContainer
 		{
 			get

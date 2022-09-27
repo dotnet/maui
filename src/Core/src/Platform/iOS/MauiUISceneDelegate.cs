@@ -105,7 +105,6 @@ namespace Microsoft.Maui
 		public virtual void DidFailToContinueUserActivity(UIScene scene, string userActivityType, NSError error) =>
 			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.SceneDidFailToContinueUserActivity>(del => del(scene, userActivityType, error));
 
-
 		[Export("scene:didUpdateUserActivity:")]
 		public virtual void DidUpdateUserActivity(UIScene scene, NSUserActivity userActivity) =>
 			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.SceneDidUpdateUserActivity>(del => del(scene, userActivity));
@@ -116,5 +115,12 @@ namespace Microsoft.Maui
 		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		public virtual void RestoreInteractionState(UIScene scene, NSUserActivity stateRestorationActivity) =>
 			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.SceneRestoreInteractionState>(del => del(scene, stateRestorationActivity));
+
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst13.0")]
+		[Export("windowScene:didUpdateCoordinateSpace:interfaceOrientation:traitCollection:")]
+		public virtual void DidUpdateCoordinateSpace(UIWindowScene windowScene, IUICoordinateSpace previousCoordinateSpace, UIInterfaceOrientation previousInterfaceOrientation, UITraitCollection previousTraitCollection) =>
+			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.WindowSceneDidUpdateCoordinateSpace>(del => del(windowScene, previousCoordinateSpace, previousInterfaceOrientation, previousTraitCollection));
 	}
 }

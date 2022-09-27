@@ -4,6 +4,8 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.RootNavigationView;
+#elif TIZEN
+using PlatformView = Tizen.UIExtensions.NUI.DrawerView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using PlatformView = System.Object;
 #endif

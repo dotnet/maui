@@ -1,20 +1,19 @@
-﻿using Tizen.UIExtensions.ElmSharp;
-
-namespace Microsoft.Maui.Platform
+﻿
+namespace Microsoft.Maui
 {
 	public static class MauiIndicatorViewExtensions
 	{
-		public static void UpdateIndicatorCount(this IndicatorView platformView, IIndicatorView indicator)
-		{
-			platformView.ClearIndex();
-			platformView.AppendIndex(indicator.Count);
-			platformView.Update(0);
-			platformView.UpdatePosition(indicator);
-		}
+		//public static void UpdateIndicatorCount(this IndicatorView nativeView, IIndicatorView indicator)
+		//{
+		//	nativeView.ClearIndex();
+		//	nativeView.AppendIndex(indicator.Count);
+		//	nativeView.Update(0);
+		//	nativeView.UpdatePosition(indicator);
+		//}
 
-		public static void UpdatePosition(this IndicatorView platformView, IIndicatorView indicator)
-		{
-			platformView.UpdateSelectedIndex(indicator.Position);
-		}
+		//public static void UpdatePosition(this IndicatorView nativeView, IIndicatorView indicator)
+		//{
+		//	nativeView.UpdateSelectedIndex(indicator.Position);
+		//}
 	}
 }

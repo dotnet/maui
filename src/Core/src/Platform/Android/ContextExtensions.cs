@@ -70,6 +70,13 @@ namespace Microsoft.Maui.Platform
 				context.FromPixels(rect.Width),
 				context.FromPixels(rect.Height));
 
+		internal static Rect FromPixels(this Context context, Android.Graphics.Rect rect) =>
+			new Rect(
+				context.FromPixels(rect.Left),
+				context.FromPixels(rect.Top),
+				context.FromPixels(rect.Width()),
+				context.FromPixels(rect.Height()));
+
 		public static void HideKeyboard(this Context self, global::Android.Views.View view)
 		{
 			// Service may be null in the context of the Android Designer
@@ -297,10 +304,14 @@ namespace Microsoft.Maui.Platform
 			if (platformWindow is null)
 				return null;
 
-			foreach (var window in MauiApplication.Current.Application.Windows)
+			var windows = WindowExtensions.GetWindows();
+			foreach (var window in windows)
 			{
-				if (window?.Handler?.PlatformView == platformWindow)
-					return window;
+				if (window.Handler?.PlatformView is Android.App.Activity activity)
+				{
+					if (activity == platformWindow)
+						return window;
+				}
 			}
 
 			return null;
