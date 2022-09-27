@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Graphics.Skia
 		private Stream GetSkStream(ImageFormat format, float quality)
 		{
 			// Skia quality range from 0-100, this is supported by jpeg and webp. Higher values correspond to improved visual quality, but less compression.
-			const int MaxSKQuality = 100; 
+			const int MaxSKQuality = 100;
 			var skQuality = (int)(MaxSKQuality * quality);
 			SKEncodedImageFormat skEncodedImageFormat = format switch
 			{

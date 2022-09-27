@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 
-			private byte[] GetResponseBytes(string url, out string contentType, out int statusCode)
+			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
 			{
 				var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(url);
 				url = QueryStringHelper.RemovePossibleQueryString(url);
