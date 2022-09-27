@@ -3,47 +3,47 @@ using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DistanceUnits']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DistanceUnits']/Docs/*" />
 	public enum DistanceUnits
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="//Member[@MemberName='Kilometers']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="//Member[@MemberName='Kilometers']/Docs/*" />
 		Kilometers,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="//Member[@MemberName='Miles']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="//Member[@MemberName='Miles']/Docs/*" />
 		Miles
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AltitudeReferenceSystem']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AltitudeReferenceSystem']/Docs/*" />
 	public enum AltitudeReferenceSystem
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Unspecified']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Unspecified']/Docs/*" />
 		Unspecified = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Terrain']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Terrain']/Docs/*" />
 		Terrain = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Ellipsoid']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Ellipsoid']/Docs/*" />
 		Ellipsoid = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Geoid']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Geoid']/Docs/*" />
 		Geoid = 3,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Surface']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Surface']/Docs/*" />
 		Surface = 4
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Location']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Location']/Docs/*" />
 	public class Location
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Location()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
 		public Location(double latitude, double longitude)
 		{
-			Latitude = latitude;
-			Longitude = longitude;
+			Latitude = Math.Min(Math.Max(latitude, -90.0), 90.0);
+			Longitude = Math.Min(Math.Max(longitude, -180.0), 180.0);
 			Timestamp = DateTimeOffset.UtcNow;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][4]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][4]/Docs/*" />
 		public Location(double latitude, double longitude, DateTimeOffset timestamp)
 		{
 			Latitude = latitude;
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			Timestamp = timestamp;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][5]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][5]/Docs/*" />
 		public Location(double latitude, double longitude, double altitude)
 		{
 			Latitude = latitude;
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			Timestamp = DateTimeOffset.UtcNow;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public Location(Location point)
 		{
 			if (point == null)
@@ -78,52 +78,52 @@ namespace Microsoft.Maui.Devices.Sensors
 			IsFromMockProvider = point.IsFromMockProvider;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Timestamp']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Timestamp']/Docs/*" />
 		public DateTimeOffset Timestamp { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Latitude']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Latitude']/Docs/*" />
 		public double Latitude { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Longitude']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Longitude']/Docs/*" />
 		public double Longitude { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Altitude']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Altitude']/Docs/*" />
 		public double? Altitude { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Accuracy']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Accuracy']/Docs/*" />
 		public double? Accuracy { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='VerticalAccuracy']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='VerticalAccuracy']/Docs/*" />
 		public double? VerticalAccuracy { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='ReducedAccuracy']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='ReducedAccuracy']/Docs/*" />
 		public bool ReducedAccuracy { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Speed']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Speed']/Docs/*" />
 		public double? Speed { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Course']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Course']/Docs/*" />
 		public double? Course { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='IsFromMockProvider']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='IsFromMockProvider']/Docs/*" />
 		public bool IsFromMockProvider { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='AltitudeReferenceSystem']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='AltitudeReferenceSystem']/Docs/*" />
 		public AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][2]/Docs/*" />
 		public static double CalculateDistance(double latitudeStart, double longitudeStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(latitudeStart, longitudeStart, locationEnd.Latitude, locationEnd.Longitude, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][3]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][3]/Docs/*" />
 		public static double CalculateDistance(Location locationStart, double latitudeEnd, double longitudeEnd, DistanceUnits units) =>
 			CalculateDistance(locationStart.Latitude, locationStart.Longitude, latitudeEnd, longitudeEnd, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][1]/Docs/*" />
 		public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(locationStart.Latitude, locationStart.Longitude, locationEnd.Latitude, locationEnd.Longitude, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][4]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][4]/Docs/*" />
 		public static double CalculateDistance(
 			double latitudeStart,
 			double longitudeStart,
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='ToString']/Docs/*" />
 		public override string ToString() =>
 			$"{nameof(Latitude)}: {Latitude}, " +
 			$"{nameof(Longitude)}: {Longitude}, " +
@@ -152,5 +152,35 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(Speed)}: {Speed}, " +
 			$"{nameof(Course)}: {Course}, " +
 			$"{nameof(Timestamp)}: {Timestamp}";
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj))
+				return false;
+			if (obj.GetType() != GetType())
+				return false;
+			var other = (Location)obj;
+			return Latitude == other.Latitude && Longitude == other.Longitude;
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hashCode = Latitude.GetHashCode();
+				hashCode = (hashCode * 397) ^ Longitude.GetHashCode();
+				return hashCode;
+			}
+		}
+
+		public static bool operator ==(Location left, Location right)
+		{
+			return Equals(left, right);
+		}
+
+		public static bool operator !=(Location left, Location right)
+		{
+			return !Equals(left, right);
+		}
 	}
 }

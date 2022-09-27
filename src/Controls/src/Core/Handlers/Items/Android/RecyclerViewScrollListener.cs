@@ -41,14 +41,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_verticalOffset += dy;
 
 			var (First, Center, Last) = GetVisibleItemsIndex(recyclerView);
-
-			var context = recyclerView.Context;
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
-				HorizontalDelta = context.FromPixels(dx),
-				VerticalDelta = context.FromPixels(dy),
-				HorizontalOffset = context.FromPixels(_horizontalOffset),
-				VerticalOffset = context.FromPixels(_verticalOffset),
+				HorizontalDelta = recyclerView.FromPixels(dx),
+				VerticalDelta = recyclerView.FromPixels(dy),
+				HorizontalOffset = recyclerView.FromPixels(_horizontalOffset),
+				VerticalOffset = recyclerView.FromPixels(_verticalOffset),
 				FirstVisibleItemIndex = First,
 				CenterItemIndex = Center,
 				LastVisibleItemIndex = Last

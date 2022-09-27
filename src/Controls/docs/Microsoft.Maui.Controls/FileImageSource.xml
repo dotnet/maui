@@ -20,7 +20,7 @@
   <Interfaces />
   <Attributes>
     <Attribute>
-      <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.FileImageSourceConverter))</AttributeName>
+      <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.FileImageSourceConverter))</AttributeName>
     </Attribute>
   </Attributes>
   <Docs>

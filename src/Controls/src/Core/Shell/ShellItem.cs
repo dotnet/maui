@@ -10,43 +10,43 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutItem']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutItem']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class FlyoutItem : ShellItem
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='LabelStyle']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='LabelStyle']/Docs/*" />
 		public const string LabelStyle = "FlyoutItemLabelStyle";
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='ImageStyle']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='ImageStyle']/Docs/*" />
 		public const string ImageStyle = "FlyoutItemImageStyle";
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='LayoutStyle']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='LayoutStyle']/Docs/*" />
 		public const string LayoutStyle = "FlyoutItemLayoutStyle";
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public FlyoutItem()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='IsVisibleProperty']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='IsVisibleProperty']/Docs/*" />
 		public static readonly new BindableProperty IsVisibleProperty = BaseShellItem.IsVisibleProperty;
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='GetIsVisible']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='GetIsVisible']/Docs/*" />
 		public static bool GetIsVisible(BindableObject obj) => (bool)obj.GetValue(IsVisibleProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='SetIsVisible']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='SetIsVisible']/Docs/*" />
 		public static void SetIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(IsVisibleProperty, isVisible);
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/TabBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.TabBar']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/TabBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.TabBar']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class TabBar : ShellItem
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TabBar.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/TabBar.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public TabBar()
 		{
 		}
 	}
 
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellItem']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellItem']/Docs/*" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 		#region PropertyKeys
 
 		static readonly BindablePropertyKey ItemsPropertyKey = BindableProperty.CreateReadOnly(nameof(Items), typeof(ShellSectionCollection), typeof(ShellItem), null,
-				defaultValueCreator: bo => new ShellSectionCollection { Inner = new ElementCollection<ShellSection>(((ShellItem)bo)._children) });
+				defaultValueCreator: bo => new ShellSectionCollection { Inner = new ElementCollection<ShellSection>(((ShellItem)bo).DeclaredChildren) });
 
 		#endregion PropertyKeys
 
@@ -131,20 +131,17 @@ namespace Microsoft.Maui.Controls
 		}
 		#endregion
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='CurrentItemProperty']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='CurrentItemProperty']/Docs/*" />
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellSection), typeof(ShellItem), null, BindingMode.TwoWay,
 				propertyChanged: OnCurrentItemChanged);
 
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='ItemsProperty']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='ItemsProperty']/Docs/*" />
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
-
-		readonly ObservableCollection<Element> _children = new ObservableCollection<Element>();
-		ReadOnlyCollection<Element> _logicalChildren;
 		Lazy<PlatformConfigurationRegistry<ShellItem>> _platformConfigurationRegistry;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ShellItem()
 		{
 			((ShellElementCollection)Items).VisibleItemsChangedInternal += (_, args) =>
@@ -173,20 +170,18 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ShellItem>>(() => new PlatformConfigurationRegistry<ShellItem>(this));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='CurrentItem']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='CurrentItem']/Docs/*" />
 		public ShellSection CurrentItem
 		{
 			get { return (ShellSection)GetValue(CurrentItemProperty); }
 			set { SetValue(CurrentItemProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='Items']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='Items']/Docs/*" />
 		public IList<ShellSection> Items => (IList<ShellSection>)GetValue(ItemsProperty);
 		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
 
 		internal bool IsVisibleItem => Parent is Shell shell && shell?.CurrentItem == this;
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(_children));
 
 		internal void SendStructureChanged()
 		{
@@ -240,7 +235,7 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator ShellItem(MenuItem menuItem) => new MenuShellItem(menuItem);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='On']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='On']/Docs/*" />
 		public IPlatformElementConfiguration<T, ShellItem> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
@@ -344,7 +339,5 @@ namespace Microsoft.Maui.Controls
 			if (this.IsVisibleItem && CurrentItem != null)
 				((IShellController)Parent)?.AppearanceChanged(CurrentItem, false);
 		}
-
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Items.ToList();
 	}
 }

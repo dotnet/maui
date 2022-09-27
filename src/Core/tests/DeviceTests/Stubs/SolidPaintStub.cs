@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			Color = color;
 		}
 
-#if IOS || __IOS__
+#if IOS || __IOS__ || MACCATALYST
 		public CoreAnimation.CALayer ToCALayer(CoreGraphics.CGRect frame = default) =>
 			new CoreAnimation.CALayer
 			{

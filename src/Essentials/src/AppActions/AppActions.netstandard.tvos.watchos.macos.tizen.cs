@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActions']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/AppActions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppActions']/Docs/*" />
 	partial class AppActionsImplementation : IAppActions
 	{
 		public bool IsSupported =>

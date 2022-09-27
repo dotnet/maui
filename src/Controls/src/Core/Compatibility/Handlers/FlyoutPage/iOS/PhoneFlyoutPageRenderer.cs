@@ -87,8 +87,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_clickOffView = new UIView();
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
-			Presented = ((FlyoutPage)element).IsPresented;
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
+			Presented = ((FlyoutPage)element).IsPresented;
 			Element.SizeChanged += PageOnSizeChanged;
 		}
 
@@ -118,10 +118,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 
-
-			// TODO MAUI: Is this correct?
-			if (Element.Width == -1 && Element.Height == -1)
-				(Element as IView).Arrange(new Rect(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
+			if (Element is IView view &&
+				!Primitives.Dimension.IsExplicitSet(view.Width) &&
+				!Primitives.Dimension.IsExplicitSet(view.Height))
+			{
+				view.Arrange(new Rect(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
+			}
 
 			LayoutChildren(false);
 		}
@@ -146,7 +148,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			UpdatePanGesture();
 			UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
-
 		}
 
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]

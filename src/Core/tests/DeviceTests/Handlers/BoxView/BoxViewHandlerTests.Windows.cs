@@ -6,7 +6,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class BoxViewHandlerTests
 	{
-		W2DGraphicsView GetNativeBoxView(ShapeViewHandler boxViewHandler) =>	
+		W2DGraphicsView GetNativeBoxView(ShapeViewHandler boxViewHandler) =>
 			boxViewHandler.PlatformView;
 
 		Task ValidateHasColor(IShapeView boxView, Color color, Action action = null)

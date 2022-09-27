@@ -70,7 +70,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		AToolbar _toolbar;
 		IShellToolbarTracker _toolbarTracker;
 		bool _disposed;
-		IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 
 		public ShellContentFragment(IShellContext shellContext, ShellContent shellContent)
 		{
@@ -133,7 +132,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
-			var shellContentMauiContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
+			var shellContentMauiContext = _shellContext.Shell.Handler.MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 
 			Maui.IElement parentElement = (_shellContent as Maui.IElement) ?? _page;
 			var shellToolbar = new Toolbar(parentElement);

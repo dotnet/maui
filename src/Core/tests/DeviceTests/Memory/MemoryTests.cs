@@ -38,8 +38,11 @@ namespace Microsoft.Maui.Handlers.Memory
 		[ClassData(typeof(MemoryTestTypes))]
 		public async Task Allocate((Type ViewType, Type HandlerType) data)
 		{
+
+#if ANDROID
 			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
+#endif
 
 			var handler = await InvokeOnMainThreadAsync(() => CreateHandler((IElement)Activator.CreateInstance(data.ViewType), data.HandlerType));
 			WeakReference weakHandler = new WeakReference(handler);
@@ -56,8 +59,11 @@ namespace Microsoft.Maui.Handlers.Memory
 		[ClassData(typeof(MemoryTestTypes))]
 		public async Task CheckAllocation((Type ViewType, Type HandlerType) data)
 		{
+
+#if ANDROID
 			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
+#endif
 
 			// This is mainly relevant when running inside the visual runner as a single test
 			if (!_fixture.HasType(data.HandlerType))

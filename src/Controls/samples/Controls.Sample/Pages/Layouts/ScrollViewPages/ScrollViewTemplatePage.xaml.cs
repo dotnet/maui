@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Pages.ScrollViewPages
 		}
 	}
 
-	public class ScrollViewTemplatePageModel 
+	public class ScrollViewTemplatePageModel
 	{
 		public int Spacing { get; set; } = 25;
 

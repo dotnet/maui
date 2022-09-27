@@ -14,6 +14,9 @@ using Microsoft.Maui.Controls.Internals;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Windows.Foundation;
+using WMenuFlyout = Microsoft.UI.Xaml.Controls.MenuFlyout;
+using WFlyoutBase = Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -246,15 +249,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		void OnClick(object sender, PointerRoutedEventArgs e)
-		{
-			var point = e.GetCurrentPoint(CellContent);
-			if (point.Properties.PointerUpdateKind != Microsoft.UI.Input.PointerUpdateKind.RightButtonReleased)
-				return;
-
-			OpenContextMenu();
-		}
-
 		void OnContextActionsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			var flyout = GetAttachedFlyout();
@@ -280,18 +274,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_newValue = args.NewValue;
 		}
 
-		void OnLongTap(object sender, HoldingRoutedEventArgs e)
+		private void OnCellContentRightTapped(object sender, RightTappedRoutedEventArgs e)
 		{
-			if (e.HoldingState == Microsoft.UI.Input.HoldingState.Started)
-				OpenContextMenu();
+			OpenContextMenu(e.GetPosition(relativeTo: CellContent));
+			e.Handled = true;
 		}
 
 		/// <summary>
 		/// To check the context, not just the text.
 		/// </summary>
-		MenuFlyout GetAttachedFlyout()
+		WMenuFlyout GetAttachedFlyout()
 		{
-			if (FlyoutBase.GetAttachedFlyout(CellContent) is MenuFlyout flyout)
+			if (WFlyoutBase.GetAttachedFlyout(CellContent) is WMenuFlyout flyout)
 			{
 				var actions = Cell.ContextActions;
 				if (flyout.Items.Count != actions.Count)
@@ -307,20 +301,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return null;
 		}
 
-		void OpenContextMenu()
+		void OpenContextMenu(Point point)
 		{
 			if (GetAttachedFlyout() == null)
 			{
-				var flyout = new MenuFlyout();
+				var flyout = new WMenuFlyout();
 				SetupMenuItems(flyout);
 
 				((INotifyCollectionChanged)Cell.ContextActions).CollectionChanged += OnContextActionsChanged;
 
 				_contextActions = Cell.ContextActions;
-				FlyoutBase.SetAttachedFlyout(CellContent, flyout);
+				WFlyoutBase.SetAttachedFlyout(CellContent, flyout);
 			}
 
-			FlyoutBase.ShowAttachedFlyout(CellContent);
+			WFlyoutBase
+				.GetAttachedFlyout(CellContent)
+				.ShowAt(
+					CellContent,
+					new FlyoutShowOptions
+					{
+						Position = point,
+					});
 		}
 
 		void SetCell(object newContext)
@@ -438,23 +439,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (!Cell.HasContextActions)
 			{
-				CellContent.Holding -= OnLongTap;
-				CellContent.PointerReleased -= OnClick;
+				CellContent.RightTapped -= OnCellContentRightTapped;
 				if (_contextActions != null)
 				{
 					((INotifyCollectionChanged)_contextActions).CollectionChanged -= OnContextActionsChanged;
 					_contextActions = null;
 				}
 
-				FlyoutBase.SetAttachedFlyout(CellContent, null);
+				WFlyoutBase.SetAttachedFlyout(CellContent, null);
 				return;
 			}
 
-			CellContent.PointerReleased += OnClick;
-			CellContent.Holding += OnLongTap;
+			CellContent.RightTapped += OnCellContentRightTapped;
 		}
 
-		void SetupMenuItems(MenuFlyout flyout)
+		void SetupMenuItems(WMenuFlyout flyout)
 		{
 			foreach (MenuItem item in Cell.ContextActions)
 			{

@@ -6,7 +6,7 @@ using PlatformView = AndroidX.AppCompat.Widget.SearchView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.AutoSuggestBox;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.SearchBar;
+using PlatformView = Microsoft.Maui.Platform.MauiSearchBar;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -41,9 +41,6 @@ namespace Microsoft.Maui.Handlers
 
 		static SearchBarHandler()
 		{
-#if __IOS__
-			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
-#endif
 		}
 
 		public SearchBarHandler() : base(Mapper)

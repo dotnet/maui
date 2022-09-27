@@ -6,7 +6,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.IndicatorView;
+using PlatformView = Microsoft.Maui.Platform.MauiPageControl;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IIndicatorView.IndicatorsShape)] = MapIndicatorShape
 		};
 
-		public static CommandMapper<IActivityIndicator, IIndicatorViewHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IIndicatorView, IIndicatorViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 

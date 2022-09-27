@@ -186,17 +186,17 @@
       </Docs>
     </Member>
     <Member MemberName="OnMeasure">
-      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.Controls.SizeRequest OnMeasure (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnMeasure(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.SizeRequest OnMeasure (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.SizeRequest OnMeasure(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.RefreshView.OnMeasure(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.OnMeasure : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="refreshView.OnMeasure (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.OnMeasure : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="refreshView.OnMeasure (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -239,17 +239,17 @@
       </Docs>
     </Member>
     <Member MemberName="RefreshColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color RefreshColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color RefreshColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color RefreshColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color RefreshColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.RefreshView.RefreshColor" />
-      <MemberSignature Language="F#" Value="member this.RefreshColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.RefreshView.RefreshColor" />
+      <MemberSignature Language="F#" Value="member this.RefreshColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.RefreshView.RefreshColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

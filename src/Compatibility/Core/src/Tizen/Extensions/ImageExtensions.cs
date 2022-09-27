@@ -1,35 +1,11 @@
 using System.Threading.Tasks;
-using EImage = ElmSharp.Image;
+using NImage = Tizen.NUI.BaseComponents.ImageView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	public static class ImageExtensions
 	{
-		public static void ApplyAspect(this EImage image, Aspect aspect)
-		{
-			Aspect _aspect = aspect;
-
-			switch (_aspect)
-			{
-				case Aspect.AspectFit:
-					image.IsFixedAspect = true;
-					image.CanFillOutside = false;
-					break;
-				case Aspect.AspectFill:
-					image.IsFixedAspect = true;
-					image.CanFillOutside = true;
-					break;
-				case Aspect.Fill:
-					image.IsFixedAspect = false;
-					image.CanFillOutside = false;
-					break;
-				default:
-					Log.Warn("Invalid Aspect value: {0}", _aspect);
-					break;
-			}
-		}
-
-		public static async Task<bool> LoadFromImageSourceAsync(this EImage image, ImageSource source)
+		public static async Task<bool> LoadFromImageSourceAsync(this NImage image, ImageSource source)
 		{
 			IImageSourceHandler handler;
 			bool isLoadComplate = false;
@@ -37,22 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				isLoadComplate = await handler.LoadImageAsync(image, source);
 			}
-			if (!isLoadComplate)
-			{
-				//If it fails, call the Load function to remove the previous image.
-				image.Load(string.Empty);
-			}
-
 			return isLoadComplate;
-		}
-
-		public static bool LoadFromFile(this EImage image, string file)
-		{
-			if (!string.IsNullOrEmpty(file))
-			{
-				return image.Load(ResourcePath.GetPath(file));
-			}
-			return false;
 		}
 
 		public static bool IsNullOrEmpty(this ImageSource imageSource) =>
