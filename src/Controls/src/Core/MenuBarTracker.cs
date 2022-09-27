@@ -25,6 +25,8 @@ namespace Microsoft.Maui.Controls
 
 		void OnMenuBarItemCollectionChanged(object sender, EventArgs e)
 		{
+			_menuBar.SyncMenuBarItemsFromPages(ToolbarItems);
+
 			if (_handlerProperty != null)
 			{
 				_parent?.Handler?.UpdateValue(_handlerProperty);
