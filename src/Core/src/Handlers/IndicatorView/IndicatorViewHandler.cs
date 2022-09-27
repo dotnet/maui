@@ -36,7 +36,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public IndicatorViewHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
+		public IndicatorViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

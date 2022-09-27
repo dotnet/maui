@@ -28,7 +28,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public NavigationViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper, CommandMapper)
+		public NavigationViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

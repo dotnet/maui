@@ -42,14 +42,9 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		protected BorderHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? ViewCommandMapper)
+		public BorderHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+			: base(mapper, commandMapper ?? CommandMapper)
 		{
-		}
-
-		public BorderHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
-		{
-
 		}
 
 		IBorderView IBorderHandler.VirtualView => VirtualView;
