@@ -183,7 +183,6 @@ namespace Microsoft.Maui.Controls
 		{
 			switch (gesture)
 			{
-				case ClickGestureRecognizer click:
 				case TapGestureRecognizer tap:
 				case null:
 					break;

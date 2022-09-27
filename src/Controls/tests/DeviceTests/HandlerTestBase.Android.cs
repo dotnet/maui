@@ -38,7 +38,6 @@ namespace Microsoft.Maui.DeviceTests
 			return (AView)viewHandler.PlatformView;
 		}
 
-		static Drawable _decorDrawable;
 		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
@@ -46,7 +45,6 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(async () =>
 			{
 				AViewGroup rootView = MauiContext.Context.GetActivity().Window.DecorView as AViewGroup;
-				_decorDrawable ??= rootView.Background;
 				var linearLayoutCompat = new LinearLayoutCompat(MauiContext.Context);
 				var fragmentManager = MauiContext.GetFragmentManager();
 				var viewFragment = new WindowTestFragment(MauiContext, window);
@@ -83,10 +81,6 @@ namespace Microsoft.Maui.DeviceTests
 						await viewFragment.View.OnUnloadedAsync();
 
 					await viewFragment.FinishedDestroying;
-
-					// This is mainly to remove changes to the decor view that shell imposes
-					if (_decorDrawable != rootView.Background)
-						rootView.Background = _decorDrawable;
 
 					// Unset the Support Action bar if the calling code has set the support action bar
 					if (MauiContext.Context.GetActivity() is AppCompatActivity aca)
@@ -205,12 +199,10 @@ namespace Microsoft.Maui.DeviceTests
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 				var handler = (WindowHandlerStub)_window.ToHandler(ScopedMauiContext);
 
-				var decorView = RequireActivity().Window.DecorView;
-				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
-
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
 				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
+				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 
 				return FakeActivityRootView;
 			}

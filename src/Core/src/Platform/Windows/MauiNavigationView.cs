@@ -93,7 +93,6 @@ namespace Microsoft.Maui.Platform
 			PaneHeaderContentBorderRow = (RowDefinition)GetTemplateChild("PaneHeaderContentBorderRow");
 
 			UpdateNavigationBackButtonSize();
-			UpdateNavigationViewContentMargin();
 			UpdateNavigationViewBackButtonMargin();
 			UpdateNavigationViewButtonHolderGridMargin();
 			OnApplyTemplateCore();
@@ -224,29 +223,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (ButtonHolderGrid != null)
 				ButtonHolderGrid.Margin = NavigationViewButtonHolderGridMargin;
-		}
-		#endregion
-
-		#region NavigationViewContentMargin
-		internal static readonly DependencyProperty NavigationViewContentMarginProperty
-			= DependencyProperty.Register(nameof(NavigationViewContentMargin), typeof(WThickness), typeof(MauiNavigationView),
-				new PropertyMetadata(new WThickness(), OnNavigationViewContentMarginChanged));
-
-		internal WThickness NavigationViewContentMargin
-		{
-			get => (WThickness)GetValue(NavigationViewContentMarginProperty);
-			set => SetValue(NavigationViewContentMarginProperty, value);
-		}
-
-		static void OnNavigationViewContentMarginChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			((MauiNavigationView)d).UpdateNavigationViewContentMargin();
-		}
-
-		void UpdateNavigationViewContentMargin()
-		{
-			if (ContentGrid != null)
-				ContentGrid.Margin = NavigationViewContentMargin;
 		}
 		#endregion
 

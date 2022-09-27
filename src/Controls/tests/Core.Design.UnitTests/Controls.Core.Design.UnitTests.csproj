@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472</TargetFrameworks>
+    <AssemblyName>Microsoft.Maui.Controls.Core.Design.UnitTests</AssemblyName>
+    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Microsoft.Maui.Controls.Core.UnitTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Xaml" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.3.32804.24" />
+    <ProjectReference Include="..\..\src\Core.Design\Controls.Core.Design.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ColorDesignTypeConverterTests.cs" />
+    <Compile Include="GridLengthCollectionDesignTypeConverterTests.cs" />
+    <Compile Include="GridLengthDesignTypeConverterTests.cs" />
+  </ItemGroup>
+</Project>

@@ -232,6 +232,10 @@ namespace Microsoft.Maui.Platform
 			platformView.UpdateSize(new Tizen.UIExtensions.Common.Size(view.Width, view.Height));
 		}
 
+		public static void UpdateToolTip(this NView platformView, ToolTip? tooltip)
+		{
+		}
+
 		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();

@@ -38,7 +38,6 @@ import com.microsoft.maui.glide.MauiCustomTarget;
 import com.microsoft.maui.glide.MauiCustomViewTarget;
 import com.microsoft.maui.glide.font.FontModel;
 
-import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 
@@ -84,7 +83,7 @@ public class PlatformInterop {
 
     public static View getSemanticPlatformElement(View view) {
         if (view instanceof SearchView) {
-            view = view.findViewById(androidx.appcompat.R.id.search_button);
+            view = view.findViewById(androidx.appcompat.R.id.search_src_text);
         }
 
         return view;
@@ -316,6 +315,118 @@ public class PlatformInterop {
             return styledAttributes.getColorStateList(index);
         } finally {
             styledAttributes.recycle();
+        }
+    }
+    
+    public static long measureAndGetWidthAndHeight(View view, int widthMeasureSpec, int heightMeasureSpec) {
+        view.measure(widthMeasureSpec, heightMeasureSpec);
+        int width = view.getMeasuredWidth();
+        int height = view.getMeasuredHeight();
+        return ((long)width << 32) | (height & 0xffffffffL);
+    }
+
+    @NonNull
+    public static ColorStateList getDefaultColorStateList(int color)
+    {
+        return new ColorStateList(ColorStates.DEFAULT, new int[] { color });
+    }
+
+    @NonNull
+    public static ColorStateList getEditTextColorStateList(int enabled, int disabled)
+    {
+        return new ColorStateList(ColorStates.getEditTextState(), new int[] { enabled, disabled });
+    }
+
+    @NonNull
+    public static ColorStateList getCheckBoxColorStateList(int enabledChecked, int enabledUnchecked, int disabledChecked, int disabledUnchecked)
+    {
+        return new ColorStateList(ColorStates.getCheckBoxState(), new int[] { enabledChecked, enabledUnchecked, disabledChecked, disabledUnchecked });
+    }
+
+    @NonNull
+    public static ColorStateList getSwitchColorStateList(int disabled, int on, int normal)
+    {
+        return new ColorStateList(ColorStates.getSwitchState(), new int[] { disabled, on, normal });
+    }
+
+    @NonNull
+    public static ColorStateList getButtonColorStateList(int enabled, int disabled, int off, int pressed)
+    {
+        return new ColorStateList(ColorStates.getButtonState(), new int[] { enabled, disabled, off, pressed });
+    }
+
+    /**
+     * Creates a ColorStateList for EditText if the existing colors do not match
+     * @return a ColorStateList, or null if one is not needed
+     */
+    public static ColorStateList createEditTextColorStateList(ColorStateList colorStateList, int color)
+    {
+        if (colorStateList == null) {
+            return getEditTextColorStateList(color, color);
+        }
+        int[][] editTextState = ColorStates.getEditTextState();
+        for (int i = 0; i < editTextState.length; i++) {
+            if (colorStateList.getColorForState(editTextState[i], color) != color) {
+                return getEditTextColorStateList(color, color);
+            }
+        }
+        return null;
+    }
+
+    private static class ColorStates
+    {
+        static final int[] EMPTY = new int[] { };
+        static final int[][] DEFAULT = new int[][] { EMPTY };
+
+        private static int[][] editTextState, checkBoxState, switchState, buttonState;
+
+        static int[][] getEditTextState()
+        {
+            if (editTextState == null) {
+                editTextState = new int[][] {
+                  new int[] {  android.R.attr.state_enabled },
+                  new int[] { -android.R.attr.state_enabled },
+                };
+            }
+            return editTextState;
+        }
+
+        static int[][] getCheckBoxState()
+        {
+            if (checkBoxState == null) {
+                checkBoxState = new int[][] {
+                    new int[] {  android.R.attr.state_enabled,  android.R.attr.state_checked },
+                    new int[] {  android.R.attr.state_enabled, -android.R.attr.state_checked },
+                    new int[] { -android.R.attr.state_enabled,  android.R.attr.state_checked },
+                    new int[] { -android.R.attr.state_enabled, -android.R.attr.state_pressed },
+                };
+            }
+            return checkBoxState;
+        }
+
+        static int[][] getSwitchState()
+        {
+            if (switchState == null) {
+                switchState = new int[][] {
+                    new int[] { -android.R.attr.state_enabled },
+                    new int[] {  android.R.attr.state_checked },
+                    EMPTY,
+                };
+            }
+            return switchState;
+        }
+
+        static int[][] getButtonState()
+        {
+            if (buttonState == null) {
+                buttonState = new int[][] {
+                    new int[] {  android.R.attr.state_enabled },
+                    new int[] { -android.R.attr.state_enabled },
+                    new int[] { -android.R.attr.state_checked },
+                    new int[] {  android.R.attr.state_pressed },
+                };
+            }
+            return buttonState;
         }
     }
 }

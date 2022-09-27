@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.StyleSheets;
 using Microsoft.Maui.Controls.StyleSheets.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.StyleSheets
 {
-	[TestFixture]
+
 	public class BaseClassSelectorTests
 	{
 		IStyleSelectable Page;
@@ -21,8 +21,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.StyleSheets
 		IStyleSelectable CustomLabel1 => AbsoluteLayout0.Children.Skip(1).First();
 		IStyleSelectable AbsoluteLayout0 => StackLayout.Children.Skip(2).First();
 
-		[SetUp]
-		public void SetUp()
+
+		public BaseClassSelectorTests()
 		{
 			Page = new MockStylable
 			{
@@ -57,18 +57,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.StyleSheets
 				SetParents(s, stylable);
 		}
 
-		[TestCase("stacklayout label", true, true, false, false, false)]
-		[TestCase("stacklayout>label", true, false, false, false, false)]
-		[TestCase("stacklayout ^label", true, true, true, true, false)]
-		[TestCase("stacklayout>^label", true, false, true, false, false)]
+		[Theory]
+		[InlineData("stacklayout label", true, true, false, false, false)]
+		[InlineData("stacklayout>label", true, false, false, false, false)]
+		[InlineData("stacklayout ^label", true, true, true, true, false)]
+		[InlineData("stacklayout>^label", true, false, true, false, false)]
 		public void TestCase(string selectorString, bool label0match, bool label1match, bool customLabel0match, bool customLabel1match, bool absoluteLayout0match)
 		{
 			var selector = Selector.Parse(new CssReader(new StringReader(selectorString)));
-			Assert.AreEqual(label0match, selector.Matches(Label0));
-			Assert.AreEqual(label1match, selector.Matches(Label1));
-			Assert.AreEqual(customLabel0match, selector.Matches(CustomLabel0));
-			Assert.AreEqual(customLabel1match, selector.Matches(CustomLabel1));
-			Assert.AreEqual(absoluteLayout0match, selector.Matches(AbsoluteLayout0));
+			Assert.Equal(label0match, selector.Matches(Label0));
+			Assert.Equal(label1match, selector.Matches(Label1));
+			Assert.Equal(customLabel0match, selector.Matches(CustomLabel0));
+			Assert.Equal(customLabel1match, selector.Matches(CustomLabel1));
+			Assert.Equal(absoluteLayout0match, selector.Matches(AbsoluteLayout0));
 		}
 	}
 }

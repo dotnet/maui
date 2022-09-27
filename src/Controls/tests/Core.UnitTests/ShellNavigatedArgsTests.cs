@@ -4,21 +4,25 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ShellNavigatedArgsTests : ShellTestBase
 	{
-		[TearDown]
-		public override void TearDown()
+
+		protected override void Dispose(bool disposing)
 		{
-			base.TearDown();
-			Routing.Clear();
+			if (disposing)
+			{
+				Routing.Clear();
+			}
+
+			base.Dispose(disposing);
 		}
 
-		[Test]
+		[Fact]
 		public async Task RemoveInnerPagesNavigatingArgs()
 		{
 			Routing.RegisterRoute("SecondPageView", typeof(ContentPage));
@@ -31,29 +35,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//HomePageView/FourthPage");
 
 			shell.TestNavigatedArgs(ShellNavigationSource.Pop, "//HomePageView/SecondPageView/ThirdPageView", "//HomePageView/FourthPage");
-			Assert.AreEqual(3, shell.NavigatedCount);
+			Assert.Equal(3, shell.NavigatedCount);
 		}
 
-		[Test]
+		[Fact]
 		public async Task PopToRootSetsCorrectNavigationSource()
 		{
 			var shell = new TestShell(CreateShellItem());
 			await shell.Navigation.PushAsync(new ContentPage());
 			await shell.Navigation.PushAsync(new ContentPage());
 			await shell.Navigation.PopToRootAsync();
-			Assert.AreEqual(ShellNavigationSource.PopToRoot, shell.LastShellNavigatingEventArgs.Source);
+			Assert.Equal(ShellNavigationSource.PopToRoot, shell.LastShellNavigatingEventArgs.Source);
 
 			await shell.Navigation.PushAsync(new ContentPage());
 			await shell.Navigation.PushAsync(new ContentPage());
 
 			await shell.Navigation.PopAsync();
-			Assert.AreEqual(ShellNavigationSource.Pop, shell.LastShellNavigatingEventArgs.Source);
+			Assert.Equal(ShellNavigationSource.Pop, shell.LastShellNavigatingEventArgs.Source);
 
 			await shell.Navigation.PopAsync();
-			Assert.AreEqual(ShellNavigationSource.PopToRoot, shell.LastShellNavigatingEventArgs.Source);
+			Assert.Equal(ShellNavigationSource.PopToRoot, shell.LastShellNavigatingEventArgs.Source);
 		}
 
-		[Test]
+		[Fact]
 		public async Task PushingSetsCorrectNavigationSource()
 		{
 			var shell = new TestShell(CreateShellItem(shellItemRoute: "item1"));
@@ -67,7 +71,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"//item1", $"//item1/{nameof(PushingSetsCorrectNavigationSource)}");
 		}
 
-		[Test]
+		[Fact]
 		public async Task ChangingShellItemSetsCorrectNavigationSource()
 		{
 			var shell = new TestShell(
@@ -81,7 +85,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"//item1", "//item2");
 		}
 
-		[Test]
+		[Fact]
 		public async Task ChangingShellSectionSetsCorrectNavigationSource()
 		{
 			var shell = new TestShell(
@@ -96,7 +100,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"//item1", "//item2");
 		}
 
-		[Test]
+		[Fact]
 		public async Task PoppingSamePageSetsCorrectNavigationSource()
 		{
 			Routing.RegisterRoute("detailspage", typeof(ContentPage));
@@ -112,7 +116,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"//item1/detailspage/detailspage", $"//item1/detailspage");
 		}
 
-		[Test]
+		[Fact]
 		public async Task ChangingShellContentSetsCorrectNavigationSource()
 		{
 			var shell = new TestShell(
@@ -127,7 +131,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"//item1", "//item2");
 		}
 
-		[Test]
+		[Fact]
 		public async Task InsertPageSetsCorrectNavigationSource()
 		{
 			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
@@ -144,7 +148,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task InsertPageFromNavigationSetsCorrectNavigationSource()
 		{
 			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
@@ -163,7 +167,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		[Test]
+		[Fact]
 		public async Task RemovePageFromNavigationSetsCorrectNavigationSource()
 		{
 			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
@@ -179,7 +183,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"//item/pagemiddle/page", "//item/page");
 		}
 
-		[Test]
+		[Fact]
 		public async Task RemovePageSetsCorrectNavigationSource()
 		{
 			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
@@ -196,7 +200,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"//item/pagemiddle/page", "//item/page");
 		}
 
-		[Test]
+		[Fact]
 		public async Task InitialNavigatingArgs()
 		{
 			var shell = new TestShell(

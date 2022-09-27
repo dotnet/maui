@@ -17,17 +17,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			AutoPackage = false;
 		}
 
-		protected override AutomationPeer OnCreateAutomationPeer()
-		{
-			// We need an automation peer so we can interact with this in automated tests
-			if (Control == null)
-			{
-				return new FrameworkElementAutomationPeer(this);
-			}
-
-			return new FrameworkElementAutomationPeer(Control);
-		}
-
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
 		{
 			base.OnElementChanged(e);

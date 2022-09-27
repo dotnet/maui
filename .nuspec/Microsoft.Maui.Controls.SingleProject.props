@@ -6,6 +6,7 @@
     <WindowsAppSDKSelfContained Condition=" '$(WindowsAppSDKSelfContained)' == '' and '$(WindowsPackageType)' == 'None' and '$(OutputType)' == 'WinExe' ">true</WindowsAppSDKSelfContained>
     <WindowsAppSdkBootstrapInitialize Condition=" '$(WindowsAppSdkBootstrapInitialize)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'WinExe' ">false</WindowsAppSdkBootstrapInitialize>
     <PublishAppXPackage Condition=" '$(PublishAppXPackage)' == '' and '$(EnableMsixTooling)' == 'true' and '$(WindowsPackageType)' == 'MSIX' ">true</PublishAppXPackage>
+    <PublishReadyToRun Condition=" '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == '' ">true</PublishReadyToRun>
     <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
     <_SingleProjectRIDSpecified Condition="'$(RuntimeIdentifier)' != '' or '$(RuntimeIdentifiers)' != ''">true</_SingleProjectRIDSpecified>
   </PropertyGroup>

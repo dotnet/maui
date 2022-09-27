@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnDrawerStateChanged(object? sender, DrawerLayout.DrawerStateChangedEventArgs e)
 		{
-			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout)
+			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && _flyoutView != null)
 				VirtualView.IsPresented = DrawerLayout.IsDrawerVisible(_flyoutView);
 		}
 

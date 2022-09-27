@@ -68,7 +68,8 @@ namespace Microsoft.Maui.ApplicationModel
 			if (tabsFlags.HasValue)
 				tabsIntent.Intent.SetFlags(tabsFlags.Value);
 
-			tabsIntent.LaunchUrl(context, nativeUri);
+			if (nativeUri != null)
+				tabsIntent.LaunchUrl(context, nativeUri);
 		}
 
 		static void LaunchExternalBrowser(BrowserLaunchOptions options, AndroidUri? nativeUri)

@@ -1,18 +1,17 @@
 ﻿using System;
 using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Pages
 {
 	public partial class MultiWindowPage : BasePage
 	{
-		static int windowCounter = 1;
-
 		public MultiWindowPage()
 		{
 			InitializeComponent();
 
-			label.Text = "Window Count: " + (windowCounter++).ToString();
+			BindingContext = this;
 		}
 
 		void OnNewWindowClicked(object sender, EventArgs e)
@@ -22,9 +21,42 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnCloseWindowClicked(object sender, EventArgs e)
 		{
-			var window = this.GetParentWindow();
-			if (window is not null)
-				Application.Current.CloseWindow(window);
+			Application.Current.CloseWindow(Window);
+		}
+
+		void OnSetMaxSize(object sender, EventArgs e)
+		{
+			Window.MaximumWidth = 800;
+			Window.MaximumHeight = 600;
+		}
+
+		void OnSetMinSize(object sender, EventArgs e)
+		{
+			Window.MinimumWidth = 640;
+			Window.MinimumHeight = 480;
+		}
+
+		void OnSetFreeSize(object sender, EventArgs e)
+		{
+			Window.MaximumWidth = double.PositiveInfinity;
+			Window.MaximumHeight = double.PositiveInfinity;
+
+			Window.MinimumWidth = -1d;
+			Window.MinimumHeight = -1d;
+		}
+
+		void OnSetCustomSize(object sender, EventArgs e)
+		{
+			Window.Width = 700;
+			Window.Height = 500;
+		}
+
+		void OnCenterWindow(object sender, EventArgs e)
+		{
+			var disp = DeviceDisplay.MainDisplayInfo;
+
+			Window.X = (disp.Width / disp.Density - Window.Width) / 2;
+			Window.Y = (disp.Height / disp.Density - Window.Height) / 2;
 		}
 	}
 }

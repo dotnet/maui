@@ -133,8 +133,7 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyHandler(string action, int index, IMenuBarItem view)
 		{
-			var args = new Maui.Handlers.MenuBarHandlerUpdate(index, view);
-			Handler?.Invoke(action, args);
+			Handler?.Invoke(action, new Maui.Handlers.MenuBarHandlerUpdate(index, view));
 		}
 	}
 }
