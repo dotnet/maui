@@ -1,3 +1,5 @@
+using AndroidX.Window.Layout;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.LifecycleEvents
@@ -6,6 +8,9 @@ namespace Microsoft.Maui.LifecycleEvents
 	{
 		internal static MauiAppBuilder ConfigureCrossPlatformLifecycleEvents(this MauiAppBuilder builder) =>
 			builder.ConfigureLifecycleEvents(events => events.AddAndroid(OnConfigureLifeCycle));
+
+		internal static MauiAppBuilder ConfigureWindowEvents(this MauiAppBuilder builder) =>
+			builder.ConfigureLifecycleEvents(events => events.AddAndroid(OnConfigureWindow));
 
 		static void OnConfigureLifeCycle(IAndroidLifecycleBuilder android)
 		{
@@ -61,6 +66,31 @@ namespace Microsoft.Maui.LifecycleEvents
 				.OnBackPressed(activity =>
 				{
 					return activity.GetWindow()?.BackButtonClicked() ?? false;
+				});
+		}
+
+		static void OnConfigureWindow(IAndroidLifecycleBuilder android)
+		{
+			android
+				.OnConfigurationChanged((activity, newConfig) =>
+				{
+					if (IPlatformApplication.Current is IPlatformApplication platformApplication)
+					{
+						platformApplication.Application?.ThemeChanged();
+					}
+
+					var mauiWindow = activity.GetWindow();
+					if (mauiWindow is not null)
+					{
+						if (newConfig is not null)
+						{
+							var density = newConfig.DensityDpi / DeviceDisplay.BaseLogicalDpi;
+							mauiWindow.DisplayDensityChanged(density);
+						}
+
+						var frame = activity.GetWindowFrame();
+						mauiWindow.FrameChanged(frame);
+					}
 				});
 		}
 	}

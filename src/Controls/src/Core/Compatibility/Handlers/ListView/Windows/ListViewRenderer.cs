@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			internal ListViewRenderer ListViewRenderer { get; }
 			public ListViewTransparent(ListViewRenderer listViewRenderer) : base()
 			{
+				this.ApplyListViewStyles();
 				ListViewRenderer = listViewRenderer;
 			}
 

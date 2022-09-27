@@ -12,16 +12,21 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.DeviceTests.Stubs;
+using System;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
+
+#if IOS || MACCATALYST
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.Window)]
-#if ANDROID
+#if ANDROID || IOS || MACCATALYST
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 #endif
 	public partial class WindowTests : HandlerTestBase
@@ -38,7 +43,17 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
+
+#if ANDROID || WINDOWS
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#else
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
+#endif
+
 #if WINDOWS
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
@@ -48,6 +63,34 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[ClassData(typeof(WindowPageSwapTestCases))]
+		public async Task MainPageSwapTests(WindowPageSwapTestCase swapOrder)
+		{
+			SetupBuilder();
+
+			var firstRootPage = swapOrder.GetNextPageType();
+			var window = new Window(firstRootPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				await OnLoadedAsync(swapOrder.Page);
+				while (!swapOrder.IsFinished())
+				{
+					var nextRootPage = swapOrder.GetNextPageType();
+					window.Page = nextRootPage;
+
+					try
+					{
+						await OnLoadedAsync(swapOrder.Page);
+					}
+					catch (Exception exc)
+					{
+						throw new Exception($"Failed to swap to {nextRootPage}", exc);
+					}
+				}
+			});
+		}
 
 #if !IOS && !MACCATALYST
 		// Automated Shell tests are currently broken via xharness

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 	{
 		static ControlTemplate s_tizenDefaultTemplate;
 
-		public static void MapContent(RadioButtonHandler handler, RadioButton radioButton)
+		public static void MapContent(IRadioButtonHandler handler, RadioButton radioButton)
 		{
 			if (radioButton.ResolveControlTemplate() == null)
 				radioButton.ControlTemplate = s_tizenDefaultTemplate ?? (s_tizenDefaultTemplate = new ControlTemplate(() => BuildTizenDefaultTemplate()));

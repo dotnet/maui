@@ -332,13 +332,14 @@ namespace Microsoft.Maui.Platform
 			editText.SetSelection(previousCursorPosition);
 		}
 
-		internal static bool IsCompletedAction(this EditorActionEventArgs e)
+		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction? currentInputImeFlag)
 		{
 			var actionId = e.ActionId;
 			var evt = e.Event;
 
 			return
 				actionId == ImeAction.Done ||
+				actionId == currentInputImeFlag ||
 				(actionId == ImeAction.ImeNull && evt?.KeyCode == Keycode.Enter && evt?.Action == KeyEventActions.Up);
 		}
 
