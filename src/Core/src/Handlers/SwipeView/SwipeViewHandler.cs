@@ -46,11 +46,6 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public SwipeViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
-		{
-
-		}
-
 		ISwipeView ISwipeViewHandler.VirtualView => VirtualView;
 
 		PlatformView ISwipeViewHandler.PlatformView => PlatformView;
