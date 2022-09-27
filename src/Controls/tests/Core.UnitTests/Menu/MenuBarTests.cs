@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 		}
 
 		[Fact]
-		public void UsingWindowDoesNotReAssigleParents()
+		public void UsingWindowDoesNotReAssignParents()
 		{
 			MenuFlyoutItem flyout;
 			MenuBarItem menuItem;
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 		}
 
 		[Fact]
-		public void UsingWindowDoesNotReAssigleBindingContext()
+		public void UsingWindowDoesNotReAssignBindingContext()
 		{
 			var bindingContext = new
 			{
