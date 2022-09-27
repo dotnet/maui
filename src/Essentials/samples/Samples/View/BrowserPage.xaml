@@ -8,11 +8,14 @@
         <viewmodels:BrowserViewModel/>
     </views:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Quickly and easily open URIs." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
+
+                <Label Text="URI:" FontAttributes="Bold" Margin="0,6,0,0" />
+
                 <Label Text="Enter URI:" />
                 <Entry Placeholder="https://..." Text="{Binding Uri}" />
 
@@ -21,12 +24,12 @@
                         IsEnabled="{Binding IsNotBusy}" />
 
 
-                <Label Text="Launch Type:" />
+                <Label Text="Launch Type:" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Picker HorizontalOptions="FillAndExpand"
                         ItemsSource="{Binding BrowserLaunchModes}"
                         SelectedIndex="{Binding BrowserType, Mode=TwoWay}" />
 
-                <Label Text="Launch Options:" Margin="0,20,0,0"/>
+                <Label Text="Launch Options:" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label Text="Title Mode:" />
                 <Picker HorizontalOptions="FillAndExpand"
                         ItemsSource="{Binding BrowserTitleModes}"
@@ -42,13 +45,9 @@
                         ItemsSource="{Binding AllColors}"
                         SelectedIndex="{Binding ControlColor, Mode=TwoWay}" />
 
-                <Label Text="Flags:" />
+                <Label Text="Flags:" FontAttributes="Bold" Margin="0,6,0,0" />
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
 
                     <Label Text="Launch Adjacent (Android)" Grid.Column="0" Grid.Row="0" />
                     <Switch IsToggled="{Binding LaunchAdjacent, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" />
@@ -62,8 +61,9 @@
                 </Grid>
 
                 <Label Text="{Binding BrowserStatus}" />
+
             </StackLayout>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </views:BasePage>

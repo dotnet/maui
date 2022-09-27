@@ -4,10 +4,10 @@
                xmlns:view="clr-namespace:Samples.View"
                Title="Contact Details">
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="View contact details." FontAttributes="Bold" Margin="12" />
 
-        <StackLayout Padding="12,0,12,12" Spacing="6">
+        <StackLayout Padding="12,0,12,12" Spacing="6" Grid.Row="1">
 
             <Label FontAttributes="Bold" Text="Id:" />
             <Label Text="{Binding Contact.Id}" />
@@ -57,6 +57,6 @@
             </StackLayout>
 
         </StackLayout>
-    </StackLayout>
+    </Grid>
 
 </view:BasePage>

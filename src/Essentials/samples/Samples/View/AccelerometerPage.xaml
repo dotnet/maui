@@ -8,25 +8,11 @@
         <viewmodels:AccelerometerViewModel />
     </views:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Retrieve acceleration data of the device in 3D space. Additionally, this page will detect if you shake your device." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
-            <Grid Padding="12,0,12,12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
+        <ScrollView Grid.Row="1">
+            <Grid Padding="12,0,12,12" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                 <Label Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding X, StringFormat='X: {0:N}'}" />
                 <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Y, StringFormat='Y: {0:N}'}" />
                 <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding Z, StringFormat='Z: {0:N}'}" />
@@ -45,6 +31,6 @@
                 <Label Grid.Row="6" Grid.ColumnSpan="2" Text="{Binding ShakeTime}"/>
             </Grid>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </views:BasePage>
