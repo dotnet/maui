@@ -114,7 +114,9 @@ namespace Samples.ViewModel
 				return;
 
 			// copy it locally
-			var copyPath = Path.Combine(FileSystem.CacheDirectory, result.FileName);
+			var copyDir = FileSystem.CacheDirectory;
+			Directory.CreateDirectory(copyDir);
+			var copyPath = Path.Combine(copyDir, result.FileName);
 			using (var destination = File.Create(copyPath))
 			using (var source = await result.OpenReadAsync())
 				await source.CopyToAsync(destination);
