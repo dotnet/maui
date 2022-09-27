@@ -4,7 +4,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Storage
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs/*" />
 	partial class FileSystemImplementation : IFileSystem
 	{
 		string PlatformCacheDirectory
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Storage
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs/*" />
 	public partial class FileBase
 	{
 		static string PlatformGetContentType(string extension) =>

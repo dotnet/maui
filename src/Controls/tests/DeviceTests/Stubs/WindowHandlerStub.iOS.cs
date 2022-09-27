@@ -12,55 +12,82 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		TaskCompletionSource<bool> _finishedDisconnecting = new TaskCompletionSource<bool>();
 		public Task FinishedDisconnecting => _finishedDisconnecting.Task;
+		IView _currentView;
 
 		public static IPropertyMapper<IWindow, WindowHandlerStub> WindowMapper = new PropertyMapper<IWindow, WindowHandlerStub>(WindowHandler.Mapper)
 		{
 			[nameof(IWindow.Content)] = MapContent
 		};
 
-		private static void MapContent(WindowHandlerStub handler, IWindow window)
+		void UpdateContent(UIWindow platformView)
 		{
-			var view = window.Content.ToPlatform(handler.MauiContext);
-
-			if (window.Content is Shell)
+			CloseView(_currentView, platformView, () =>
 			{
-				var vc =
-					(window.Content.Handler as IPlatformViewHandler)
-						.ViewController;
+				var view = VirtualView.Content.ToPlatform(MauiContext);
+				_currentView = VirtualView.Content;
 
-				handler.PlatformView.RootViewController.PresentViewController(vc, false, null);
-			}
-			else
-			{
-				handler.PlatformView.RootViewController.View.AddSubview(view);
-			}
-		}
-
-		protected override void DisconnectHandler(UIWindow platformView)
-		{
-			var vc = (VirtualView.Content.Handler as IPlatformViewHandler)
+				if (VirtualView.Content is IFlyoutView)
+				{
+					var vc =
+						(_currentView.Handler as IPlatformViewHandler)
 							.ViewController;
 
-			if (VirtualView.Content is Shell)
+					vc.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
+
+					PlatformView.RootViewController.PresentViewController(vc, false, null);
+				}
+				else
+				{
+					PlatformView.RootViewController.View.AddSubview(view);
+				}
+			});
+		}
+
+		void CloseView(IView view, UIWindow platformView, Action finishedClosing)
+		{
+			if (view == null)
 			{
-				platformView.RootViewController
-					.PresentedViewController.
-					DismissViewController(false,
+				finishedClosing?.Invoke();
+				return;
+			}
+
+			var vc = (view.Handler as IPlatformViewHandler).ViewController;
+
+			if (view is IFlyoutView)
+			{
+				var pvc = platformView?.RootViewController?.PresentedViewController;
+				// This means shell never got to the point of being preesented
+				if (pvc == null)
+				{
+					finishedClosing?.Invoke();
+					return;
+				}
+
+				pvc.DismissViewController(false,
 					() =>
 					{
-						_finishedDisconnecting.SetResult(true);
+						finishedClosing.Invoke();
 					});
 			}
 			else
 			{
-				VirtualView
-					.Content
+				view
 					.ToPlatform()
 					.RemoveFromSuperview();
 
-				_finishedDisconnecting.SetResult(true);
+				finishedClosing.Invoke();
 			}
 
+		}
+
+		public static void MapContent(WindowHandlerStub handler, IWindow window)
+		{
+			handler.UpdateContent(handler.PlatformView);
+		}
+
+		protected override void DisconnectHandler(UIWindow platformView)
+		{
+			CloseView(VirtualView.Content, platformView, () => _finishedDisconnecting.SetResult(true));
 			base.DisconnectHandler(platformView);
 		}
 

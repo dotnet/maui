@@ -34,15 +34,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (Control == null)
 				{
-
-					SetNativeControl(new Microsoft.UI.Xaml.Controls.ListView
+					var listView = new Microsoft.UI.Xaml.Controls.ListView
 					{
 						ItemContainerStyle = (Microsoft.UI.Xaml.Style)Microsoft.UI.Xaml.Application.Current.Resources["MauiListViewItem"],
 						ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["CellTemplate"],
 						GroupStyle = { new GroupStyle { HidesIfEmpty = false, HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["TableSection"] } },
 						HeaderTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["TableRoot"],
 						SelectionMode = Microsoft.UI.Xaml.Controls.ListViewSelectionMode.Single
-					});
+					};
+
+					listView.ApplyListViewStyles();
+
+					SetNativeControl(listView);
 
 					// You can't set ItemsSource directly to a CollectionViewSource, it crashes.
 					Control.SetBinding(WItemsControl.ItemsSourceProperty, "");

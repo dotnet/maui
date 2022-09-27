@@ -5,43 +5,45 @@
     x:Class="Maui.Controls.Sample.Pages.MultiWindowPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
 
-    <StackLayout
-        Margin="12">
+    <ScrollView>
+        <StackLayout
+            Padding="12"
+            Spacing="6">
 
-        <Button 
-            Clicked="OnNewWindowClicked"
-            Text="Open a new Window" />
+            <Label Text="Current Window Frame:" />
+            <Label Text="{Binding Window.X, StringFormat='X = {0:0.00}'}" />
+            <Label Text="{Binding Window.Y, StringFormat='Y = {0:0.00}'}" />
+            <Label Text="{Binding Window.Width, StringFormat='W = {0:0.00}'}" />
+            <Label Text="{Binding Window.Height, StringFormat='H = {0:0.00}'}" />
 
-        <Button 
-            Clicked="OnCloseWindowClicked"
-            Text="Close this Window" />
+            <Label Text="Open/Close Windows:" />
+            <Button
+                Clicked="OnNewWindowClicked"
+                Text="Open a new Window" />
+            <Button
+                Clicked="OnCloseWindowClicked"
+                Text="Close this Window" />
 
-        <Label Text="Window Frame:" />
-        <Label Text="{Binding Window.X, StringFormat='X = {0:0.00}'}" />
-        <Label Text="{Binding Window.Y, StringFormat='Y = {0:0.00}'}" />
-        <Label Text="{Binding Window.Width, StringFormat='W = {0:0.00}'}" />
-        <Label Text="{Binding Window.Height, StringFormat='H = {0:0.00}'}" />
+            <Label Text="Control Size:" />
+            <Button
+                Clicked="OnSetMinSize"
+                Text="Set the minimum size to 640x480" />
+            <Button
+                Clicked="OnSetMaxSize"
+                Text="Set the maximum size to 800x600" />
+            <Button
+                Clicked="OnSetFreeSize"
+                Text="Remove size restrictions" />
+            <Button
+                Clicked="OnSetCustomSize"
+                Text="Set window size to 700x500" />
 
-        <Button 
-            Clicked="OnSetMinSize"
-            Text="Set the minimum size to 640x480" />
+            <Label Text="Control Position:" />
+            <Button
+                Clicked="OnCenterWindow"
+                Text="Center window" />
 
-        <Button 
-            Clicked="OnSetMaxSize"
-            Text="Set the maximum size to 800x600" />
-
-        <Button 
-            Clicked="OnSetFreeSize"
-            Text="Remove size restrictions" />
-
-        <Button 
-            Clicked="OnSetCustomSize"
-            Text="Set window size to 700x500" />
-
-        <Button 
-            Clicked="OnCenterWindow"
-            Text="Center window" />
-
-    </StackLayout>
+        </StackLayout>
+    </ScrollView>
 
 </views:BasePage>
