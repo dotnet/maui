@@ -37,7 +37,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public RadioButtonHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
+		public RadioButtonHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 
