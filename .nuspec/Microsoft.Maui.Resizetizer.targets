@@ -130,21 +130,10 @@
 		    ResizetizeCollectItems;
         </CompileImageAssetsDependsOn>
 
-        <ResizetizeCollectItemsBeforeTargets>
-            $(ResizetizeCollectItemsBeforeTargets);
-            $(CollectBundleResourcesDependsOn);
-            $(CompileImageAssetsDependsOn);
-        </ResizetizeCollectItemsBeforeTargets>
-
         <ResizetizeAfterTargets>
             $(ResizetizeAfterTargets);
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
-
-        <ProcessMauiFontsBeforeTargets>
-            $(ProcessMauiFontsBeforeTargets);
-            $(CompileImageAssetsDependsOn);
-        </ProcessMauiFontsBeforeTargets>
 
         <CollectAppManifestsDependsOn>
             ProcessMauiFonts;
