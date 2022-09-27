@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public void ValidateNavigationCompleted()
 		{
-			Assert.IsNull(CurrentNavigationTask);
+			Assert.Null(CurrentNavigationTask);
 			if (Handler is TestNavigationHandler nh)
-				Assert.IsNull(nh.CurrentNavigationRequest);
+				Assert.Null(nh.CurrentNavigationRequest);
 		}
 
 		public async Task<bool> SendBackButtonPressedAsync()
@@ -62,8 +62,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var newStack = CurrentNavigationRequest.NavigationStack.ToList();
 			CurrentNavigationRequest = null;
-			(VirtualView as IStackNavigation)
-				.NavigationFinished(newStack);
+
+			if ((this as IElementHandler).VirtualView is IStackNavigation sn)
+				sn.NavigationFinished(newStack);
 		}
 
 		async void RequestNavigation(NavigationRequest navigationRequest)

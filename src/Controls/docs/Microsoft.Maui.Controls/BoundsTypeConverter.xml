@@ -1,6 +1,6 @@
 <Type Name="BoundsTypeConverter" FullName="Microsoft.Maui.Controls.BoundsTypeConverter">
-  <TypeSignature Language="C#" Value="public sealed class BoundsTypeConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit BoundsTypeConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public sealed class BoundsTypeConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit BoundsTypeConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.BoundsTypeConverter" />
   <TypeSignature Language="F#" Value="type BoundsTypeConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -15,16 +15,16 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>
     <Attribute>
-      <AttributeName>Microsoft.Maui.Controls.Xaml.TypeConversion(typeof(Microsoft.Maui.Controls.Rectangle))</AttributeName>
+      <AttributeName>Microsoft.Maui.Controls.Xaml.TypeConversion(typeof(Microsoft.Maui.Controls.Shapes.Rectangle))</AttributeName>
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>A <see cref="T:Microsoft.Maui.Controls.TypeConverter" /> that converts strings into <see cref="T:Microsoft.Maui.Controls.Rectangle" />s for use with <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" />s.</summary>
+    <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> that converts strings into <see cref="T:Microsoft.Maui.Controls.Shapes.Rectangle" />s for use with <see cref="T:Microsoft.Maui.Controls.AbsoluteLayout" />s.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -69,7 +69,7 @@
       </Parameters>
       <Docs>
         <param name="value">The value to convert.</param>
-        <summary>Converts <paramref name="value" /> into a <see cref="T:Microsoft.Maui.Controls.Rectangle" />.</summary>
+        <summary>Converts <paramref name="value" /> into a <see cref="T:Microsoft.Maui.Controls.Shapes.Rectangle" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

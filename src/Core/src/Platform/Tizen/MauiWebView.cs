@@ -1,41 +1,31 @@
-﻿using System;
-using ElmSharp;
-using Tizen.UIExtensions.ElmSharp;
-using TWebView = Tizen.WebView.WebView;
+﻿using NWebView = Tizen.NUI.BaseComponents.WebView;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiWebView : WidgetLayout, IWebViewDelegate
+	public class MauiWebView : NWebView, IWebViewDelegate
 	{
-		public TWebView WebView { get; }
-
-		public MauiWebView(EvasObject parent) : base(parent)
+		public MauiWebView()
 		{
-			WebView = new TWebView(parent);
-			SetContent(WebView);
-			AllowFocus(true);
-			Focused += OnFocused;
-			Unfocused += OnUnfocused;
+			MouseEventsEnabled = true;
+			KeyEventsEnabled = true;
+			EnableJavaScript = true;
 		}
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
 		{
-			WebView.LoadHtml(baseUrl ?? string.Empty, html ?? string.Empty);
+			if (baseUrl != null)
+			{
+				LoadContents(html, (uint)(html?.Length ?? 0), "text/html", "UTF-8", baseUrl);
+			}
+			else
+			{
+				LoadHtmlString(html);
+			}
 		}
 
 		void IWebViewDelegate.LoadUrl(string? url)
 		{
-			WebView.LoadUrl(url ?? string.Empty);
-		}
-
-		void OnFocused(object? sender, EventArgs e)
-		{
-			WebView.SetFocus(true);
-		}
-
-		void OnUnfocused(object? sender, EventArgs e)
-		{
-			WebView.SetFocus(false);
+			LoadUrl(url);
 		}
 	}
 }

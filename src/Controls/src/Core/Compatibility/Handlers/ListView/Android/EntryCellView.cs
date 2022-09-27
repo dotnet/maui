@@ -4,6 +4,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Java.Lang;
 using Microsoft.Maui.Controls.Compatibility;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public const double DefaultMinHeight = 55;
 
 		readonly Cell _cell;
-		readonly TextView _label;
+		readonly AppCompatTextView _label;
 
 		Color _labelTextColor;
 		string _labelTextText;
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var padding = (int)context.ToPixels(8);
 			SetPadding((int)context.ToPixels(15), padding, padding, padding);
 
-			_label = new TextView(context);
+			_label = new AppCompatTextView(context);
 			TextViewCompat.SetTextAppearance(_label, global::Android.Resource.Style.TextAppearanceSmall);
 
 			var layoutParams = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = GravityFlags.CenterVertical };

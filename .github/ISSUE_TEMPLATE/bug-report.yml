@@ -1,6 +1,6 @@
 name: Bug Report
 description: File a bug report
-labels: ["t/bug", "s/needs-verification"]
+labels: ["t/bug"]
 assignees: []
 body:
   - type: markdown
@@ -13,7 +13,7 @@ body:
     id: description
     attributes:
       label: Description
-      description: Please give us a detailed description of the issue that you're seeing. You can add screenshots and videos as well. We love [reproduction projects](https://github.com/dotnet/maui/blob/main/.github/repro.md), please provide them through a GitHub repo and link that here.
+      description: Please give us a detailed description of the issue that you're seeing. You can add screenshots and videos as well.
       placeholder: Tell us what you see!
     validations:
       required: true
@@ -28,7 +28,14 @@ body:
         3. Click the added button and observe the bug 🐞
         
         Expected outcome: a bug was added
-        Actual outcome: a ladybug appeared 
+        Actual outcome: a ladybug appeared
+    validations:
+      required: true
+  - type: input
+    id: repro-link
+    attributes:
+      label: Link to public reproduction project repository
+      description: Add a link to a public [reproduction project](https://github.com/dotnet/maui/blob/main/.github/repro.md) repository. Attached zip files cannot be opened by us.
     validations:
       required: true
   - type: dropdown
@@ -41,7 +48,10 @@ body:
         - 6.0 Release Candidate 3
         - 6.0.312
         - 6.0.400
-        - 6.0.408 (current)
+        - 6.0.408
+        - 6.0.419
+        - 6.0.424
+        - 6.0.486 (current)
         - Unknown/Other (please specify)
     validations:
       required: true
@@ -55,6 +65,9 @@ body:
         - 6.0 Release Candidate 3
         - 6.0.312
         - 6.0.400
+        - 6.0.408
+        - 6.0.419
+        - 6.0.424
         - Unknown/Other
     validations:
       required: true

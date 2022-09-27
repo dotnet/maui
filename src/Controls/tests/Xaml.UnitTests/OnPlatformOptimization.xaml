@@ -3,13 +3,12 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.OnPlatformOptimization">
 	<StackLayout>
-		<Border>
+		<Grid>
 			<Label x:Name="label0"
 				Text="{OnPlatform Android='john', iOS='paul', Default='ringo' }"
 				Padding="{OnPlatform iOS='2,3,4,5'}" />
-		    <Border.StrokeShape>
-			<RoundRectangle CornerRadius="12"/>
-		    </Border.StrokeShape>
-		</Border>
+			<Label x:Name="label1"
+				Text="{OnPlatform foo, iOS=bar }" />
+		</Grid>
 	</StackLayout>
 </ContentPage>

@@ -27,10 +27,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			// This is used for cases where we are testing swapping out the page set on window
 			if (PlatformViewUnderTest?.Parent is FakeActivityRootView farw)
 			{
-				var decorView = MauiContext.Context.GetActivity().Window.DecorView;
 				PlatformViewUnderTest.RemoveFromParent();
-				platformView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
+
 				farw.AddView(platformView);
+				platformView.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 			}
 
 			PlatformViewUnderTest = platformView;

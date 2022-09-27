@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Text = "Add pins",
 						Command = new Command (() => {
 							foreach (var pin in map.Pins) {
-								pin.MarkerClicked -= PinClicked;
+								(pin as Pin).MarkerClicked -= PinClicked;
 							}
 
 							map.Pins.Clear ();
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 									Address = "address",
 									Label = "label",
 									Type = PinType.Place,
-									Position = new Position (map.VisibleRegion.Center.Latitude + lat, map.VisibleRegion.Center.Longitude + lng)
+									Location = new Devices.Sensors.Location (map.VisibleRegion.Center.Latitude + lat, map.VisibleRegion.Center.Longitude + lng)
 								};
 
 								pin.MarkerClicked += PinClicked;

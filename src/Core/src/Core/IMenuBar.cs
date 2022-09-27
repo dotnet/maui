@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Represents a specialized container that presents a set of menus in a horizontal row, 
+	/// typically at the top of an app window.
+	/// </summary>
 	public interface IMenuBar : IList<IMenuBarItem>, IElement
 	{
 		/// <summary>

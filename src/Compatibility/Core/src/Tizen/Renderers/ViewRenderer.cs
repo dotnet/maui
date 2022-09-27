@@ -3,10 +3,8 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using ElmSharp;
-using ElmSharp.Wearable;
 using Microsoft.Maui.Controls.Platform;
-using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -16,7 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer instead")]
 	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>
 		where TView : View
-		where TNativeView : EvasObject
+		where TNativeView : NView
 	{
 		ObservableCollection<IGestureRecognizer> GestureRecognizers => Element.GestureRecognizers as ObservableCollection<IGestureRecognizer>;
 
@@ -36,13 +34,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		protected override void OnElementChanged(ElementChangedEventArgs<TView> e)
 		{
 			base.OnElementChanged(e);
-			if (GestureDetector != null)
-			{
-				GestureRecognizers.CollectionChanged -= OnGestureRecognizerCollectionChanged;
-				GestureDetector.Clear();
-				GestureDetector = null;
-			}
-
 			GestureRecognizers.CollectionChanged += OnGestureRecognizerCollectionChanged;
 			if (Element.GestureRecognizers.Count > 0)
 			{
@@ -98,40 +89,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 		}
 
-		protected override void OnFocused(object sender, EventArgs e)
+		protected override void Dispose(bool disposing)
 		{
-			base.OnFocused(sender, e);
-			UpdateRotaryInteraction(true);
-		}
-
-		protected override void OnUnfocused(object sender, EventArgs e)
-		{
-			base.OnUnfocused(sender, e);
-			UpdateRotaryInteraction(false);
-		}
-
-		protected virtual void UpdateRotaryInteraction(bool enable)
-		{
-			if (NativeView is IRotaryInteraction ri)
+			if (disposing)
 			{
-				if (Specific.GetUseBezelInteraction(Application.Current))
-				{
-					if (enable)
-					{
-						ri.RotaryWidget?.Activate();
-						Forms.RotaryFocusObject = Element;
-						Specific.SetActiveBezelInteractionElement(Application.Current, Element);
-					}
-					else
-					{
-						ri.RotaryWidget?.Deactivate();
-						if (Forms.RotaryFocusObject == Element)
-							Forms.RotaryFocusObject = null;
-						if (Specific.GetActiveBezelInteractionElement(Application.Current) == Element)
-							Specific.SetActiveBezelInteractionElement(Application.Current, null);
-					}
-				}
+				GestureDetector?.Clear();
 			}
+			base.Dispose(disposing);
 		}
+
 	}
 }
