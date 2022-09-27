@@ -25,6 +25,11 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
+		public TabbedViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
+		{
+		}
+
 		protected override PlatformView CreatePlatformView()
 		{
 			throw new NotImplementedException();

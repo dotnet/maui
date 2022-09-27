@@ -33,9 +33,9 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public CheckBoxHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
+		public CheckBoxHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
-
 		}
 
 		ICheckBox ICheckBoxHandler.VirtualView => VirtualView;

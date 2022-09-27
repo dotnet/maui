@@ -38,7 +38,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public ImageHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
+		public ImageHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 
