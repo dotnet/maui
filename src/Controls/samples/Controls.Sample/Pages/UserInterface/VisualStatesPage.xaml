@@ -93,6 +93,27 @@
                     </VisualStateGroupList>
                 </VisualStateManager.VisualStateGroups>
             </Button>
+            <Label 
+                Text="Hover me to see color change"
+                WidthRequest="300"
+                HorizontalOptions="Center">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="TextColor" Value="Blue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="TextColor" Value="LightBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+            </Label>
             <Label
                 Text="Button with Normal, PointerOver, and Pressed visual states:" 
                 Style="{StaticResource Headline}" />
@@ -113,6 +134,29 @@
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="LightBlue" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Blue" />
+                                    <Setter Property="BorderColor" Value="LightBlue" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+            </Button>
+            <Button 
+                Text="Click me to see color change and revert back"
+                WidthRequest="300"
+                HorizontalOptions="Center">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
                                 <VisualState.Setters>
                                     <Setter Property="BackgroundColor" Value="LightBlue" />
                                     <Setter Property="BorderColor" Value="LightBlue" />

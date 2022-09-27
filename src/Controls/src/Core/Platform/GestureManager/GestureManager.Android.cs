@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Lazy<ScaleGestureDetector> _scaleDetector;
 		Lazy<TapAndPanGestureDetector> _tapAndPanAndSwipeDetector;
 		Lazy<DragAndDropGestureHandler> _dragAndDropGestureHandler;
+		Lazy<PointerGestureHandler> _pointerGestureHandler;
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
@@ -32,6 +33,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_tapAndPanAndSwipeDetector = new Lazy<TapAndPanGestureDetector>(InitializeTapAndPanAndSwipeDetector);
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
+			_pointerGestureHandler = new Lazy<PointerGestureHandler>(InitializePointerHandler);
 			SetupElement(null, Element);
 		}
 
@@ -105,6 +107,11 @@ namespace Microsoft.Maui.Controls.Platform
 			return new DragAndDropGestureHandler(() => View, () => Control);
 		}
 
+		PointerGestureHandler InitializePointerHandler()
+		{
+			return new PointerGestureHandler(() => View, () => Control);
+		}
+
 		TapAndPanGestureDetector InitializeTapAndPanAndSwipeDetector()
 		{
 			if (Control?.Context == null)
@@ -121,7 +128,8 @@ namespace Microsoft.Maui.Controls.Platform
 				}),
 				new PanGestureHandler(() => View),
 				new SwipeGestureHandler(() => View),
-				InitializeDragAndDropHandler()
+				InitializeDragAndDropHandler(),
+				InitializePointerHandler()
 			);
 
 			return new TapAndPanGestureDetector(context, listener);
@@ -222,12 +230,14 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateInputTransparent();
 			UpdateIsEnabled();
 			UpdateDragAndDrop();
+			UpdatePointer();
 			SetupGestures();
 		}
 
 		void GestureCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateDragAndDrop();
+			UpdatePointer();
 			SetupGestures();
 
 			if (_tapAndPanAndSwipeDetector.IsValueCreated)
@@ -240,6 +250,12 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (View?.GestureRecognizers?.Count > 0)
 				_dragAndDropGestureHandler.Value.SetupHandlerForDrop();
+		}
+
+		void UpdatePointer()
+		{
+			if (View?.GestureRecognizers?.Count > 0)
+				_pointerGestureHandler.Value.SetupHandlerForPointer();
 		}
 
 		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)

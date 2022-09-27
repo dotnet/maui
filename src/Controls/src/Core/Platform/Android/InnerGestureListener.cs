@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 		PanGestureHandler _panGestureHandler;
 		SwipeGestureHandler _swipeGestureHandler;
 		DragAndDropGestureHandler _dragAndDropGestureHandler;
+		PointerGestureHandler _pointerGestureHandler;
 		bool _isScrolling;
 		float _lastX;
 		float _lastY;
@@ -31,17 +32,20 @@ namespace Microsoft.Maui.Controls.Platform
 			TapGestureHandler tapGestureHandler,
 			PanGestureHandler panGestureHandler,
 			SwipeGestureHandler swipeGestureHandler,
-			DragAndDropGestureHandler dragAndDropGestureHandler)
+			DragAndDropGestureHandler dragAndDropGestureHandler,
+			PointerGestureHandler pointerGestureHandler)
 		{
 			_ = tapGestureHandler ?? throw new ArgumentNullException(nameof(tapGestureHandler));
 			_ = panGestureHandler ?? throw new ArgumentNullException(nameof(panGestureHandler));
 			_ = swipeGestureHandler ?? throw new ArgumentNullException(nameof(swipeGestureHandler));
 			_ = dragAndDropGestureHandler ?? throw new ArgumentNullException(nameof(dragAndDropGestureHandler));
+			_ = pointerGestureHandler ?? throw new ArgumentNullException(nameof(pointerGestureHandler));
 
 			_tapGestureHandler = tapGestureHandler;
 			_panGestureHandler = panGestureHandler;
 			_swipeGestureHandler = swipeGestureHandler;
 			_dragAndDropGestureHandler = dragAndDropGestureHandler;
+			_pointerGestureHandler = pointerGestureHandler;
 
 			_tapDelegate = tapGestureHandler.OnTap;
 			_tapGestureRecognizers = tapGestureHandler.TapGestureRecognizers;
