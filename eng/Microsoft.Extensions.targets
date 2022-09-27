@@ -90,6 +90,18 @@
         Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)"
     />
     <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.Google"
+        Version="$(MicrosoftAspNetCoreAuthenticationGooglePackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.Facebook"
+        Version="$(MicrosoftAspNetCoreAuthenticationFacebookPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.MicrosoftAccount"
+        Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
         Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)"
     />
@@ -114,7 +126,7 @@
         Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)"
     />
     <PackageReference
-        Update="Tizen.UIExtensions.ElmSharp"
+        Update="Tizen.UIExtensions.NUI"
         Version="$(TizenUIExtensionsVersion)"
     />
     <PackageReference

@@ -1,4 +1,4 @@
-﻿#if WINDOWS
+﻿#if WINDOWS || TIZEN
 using System;
 using System.Collections.Generic;
 using System.Text;

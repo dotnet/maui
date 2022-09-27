@@ -1,7 +1,8 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Skia;
-using SkiaSharp.Views.Tizen;
-using ElmSharp;
+using SkiaSharp.Views.Tizen.NUI;
+using Tizen.NUI;
+using SKPaintSurfaceEventArgs = SkiaSharp.Views.Tizen.SKPaintSurfaceEventArgs;
 
 namespace Microsoft.Maui.Graphics.Skia.Views
 {
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 		private SkiaCanvas _canvas;
 		private ScalingCanvas _scalingCanvas;
 
-		public SkiaGraphicsView(EvasObject parent, IDrawable drawable = null) : base(parent)
+		public SkiaGraphicsView(IDrawable drawable = null) : base()
 		{
 			_canvas = new SkiaCanvas();
 			_scalingCanvas = new ScalingCanvas(_canvas);
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 			skiaCanvas.Clear();
 
 			_canvas.Canvas = skiaCanvas;
-			_drawable.Draw(_scalingCanvas, new RectF(0, 0, GetSurfaceSize().Width, GetSurfaceSize().Height));
+			_drawable.Draw(_scalingCanvas, new RectF(0, 0, e.Info.Width, e.Info.Height));
 		}
 	}
 }

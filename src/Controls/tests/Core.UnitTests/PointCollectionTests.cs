@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Shapes.UnitTests
 {
@@ -6,19 +6,19 @@ namespace Microsoft.Maui.Controls.Shapes.UnitTests
 	{
 		PointCollectionConverter _pointCollectionConverter;
 
-		[SetUp]
-		public void SetUp()
+
+		public PointCollectionTests()
 		{
 			_pointCollectionConverter = new PointCollectionConverter();
 		}
 
-		[Test]
+		[Fact]
 		public void ConvertStringToPointCollectionTest()
 		{
 			PointCollection result = _pointCollectionConverter.ConvertFromInvariantString("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200 144 48") as PointCollection;
 
-			Assert.IsNotNull(result);
-			Assert.AreEqual(10, result.Count);
+			Assert.NotNull(result);
+			Assert.Equal(10, result.Count);
 		}
 	}
 }

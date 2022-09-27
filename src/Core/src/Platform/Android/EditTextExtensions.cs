@@ -346,13 +346,14 @@ namespace Microsoft.Maui.Platform
 			editText.SetSelection(previousCursorPosition);
 		}
 
-		internal static bool IsCompletedAction(this EditorActionEventArgs e)
+		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction? currentInputImeFlag)
 		{
 			var actionId = e.ActionId;
 			var evt = e.Event;
 
 			return
 				actionId == ImeAction.Done ||
+				actionId == currentInputImeFlag ||
 				(actionId == ImeAction.ImeNull && evt?.KeyCode == Keycode.Enter && evt?.Action == KeyEventActions.Up);
 		}
 
@@ -361,7 +362,7 @@ namespace Microsoft.Maui.Platform
 		/// This will return True to handle OnTouch to prevent re-activating keyboard after clearing the text.
 		/// </summary>
 		/// <returns>True if clear button is clicked and Text is cleared. False if not.</returns>
-		internal static bool HandleClearButtonTouched(this EditText? platformView, FlowDirection flowDirection, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
+		internal static bool HandleClearButtonTouched(this EditText? platformView, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
 		{
 			if (platformView is null)
 				return false;
@@ -382,12 +383,14 @@ namespace Microsoft.Maui.Platform
 			var x = motionEvent.RawX;
 			var y = motionEvent.GetY();
 
-			if ((flowDirection != FlowDirection.LeftToRight
+			var flowDirection = platformView.LayoutDirection;
+
+			if ((flowDirection != LayoutDirection.Ltr
 				|| x < platformView.Right - buttonWidth
 				|| x > platformView.Right - platformView.PaddingRight
 				|| y < platformView.PaddingTop
 				|| y > platformView.Height - platformView.PaddingBottom) &&
-				(flowDirection != FlowDirection.RightToLeft
+				(flowDirection != LayoutDirection.Rtl
 				|| x < platformView.Left + platformView.PaddingLeft
 				|| x > platformView.Left + buttonWidth
 				|| y < platformView.PaddingTop

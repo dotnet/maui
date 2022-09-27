@@ -5,14 +5,14 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.VisualElementTree)]
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 	[Collection(HandlerTestBase.RunInNewWindowCollection)]
 #endif
 	public partial class VisualElementTreeTests : HandlerTestBase
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-#if IOS
+#if IOS || MACCATALYST
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
 #else
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));

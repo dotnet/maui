@@ -2,14 +2,14 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="Type[@FullName='Microsoft.Maui.Controls.RowDefinition']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="Type[@FullName='Microsoft.Maui.Controls.RowDefinition']/Docs/*" />
 	public sealed class RowDefinition : BindableObject, IDefinition, IGridRowDefinition
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='HeightProperty']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='HeightProperty']/Docs/*" />
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(nameof(Height), typeof(GridLength), typeof(RowDefinition), GridLength.Star,
 			propertyChanged: (bindable, oldValue, newValue) => ((RowDefinition)bindable).OnSizeChanged());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public RowDefinition()
 		{
 		}
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			SetValue(HeightProperty, height);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='Height']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='Height']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(GridLengthTypeConverter))]
 		public GridLength Height
 		{

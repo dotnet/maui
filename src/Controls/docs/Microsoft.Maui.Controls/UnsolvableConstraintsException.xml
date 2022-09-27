@@ -24,7 +24,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>Exception indicating that the <see cref="T:Microsoft.Maui.Controls.Constraint" />s specified cannot be simultaneously satisfied.</summary>
+    <summary>Exception indicating that the <see cref="T:Microsoft.Maui.Controls.Compatibility.Constraint" />s specified cannot be simultaneously satisfied.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>

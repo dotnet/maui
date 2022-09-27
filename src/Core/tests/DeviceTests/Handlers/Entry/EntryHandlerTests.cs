@@ -262,10 +262,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory(DisplayName = "Validates Text Keyboard")]
 		[InlineData(nameof(Keyboard.Chat), false)]
+#if WINDOWS
+		// The Text keyboard is the default one on Windows
+		[InlineData(nameof(Keyboard.Default), true)]
+		// Plain is the same as the Default keyboard on Windows
+		[InlineData(nameof(Keyboard.Plain), true)]
+#else
 		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+#endif
 		[InlineData(nameof(Keyboard.Email), false)]
 		[InlineData(nameof(Keyboard.Numeric), false)]
-		[InlineData(nameof(Keyboard.Plain), false)]
 		[InlineData(nameof(Keyboard.Telephone), false)]
 		[InlineData(nameof(Keyboard.Text), true)]
 		[InlineData(nameof(Keyboard.Url), false)]
@@ -343,7 +350,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(text, entry.Text);
 		}
 
-		[Theory(DisplayName = "MaxLength Clips Native Text Correctly")]
+		[Theory(DisplayName = "MaxLength Clips Native Text Correctly"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/7939"
+#endif
+		)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]

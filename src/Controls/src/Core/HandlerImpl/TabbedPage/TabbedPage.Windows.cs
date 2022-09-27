@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls
 				// Unset styles set by parent NavigationView
 				_navigationView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 				_navigationView.SetApplicationResource("NavigationViewHeaderMargin", null);
+				_navigationView.SetApplicationResource("NavigationViewContentMargin", null);
 
 				return _navigationView;
 			}
