@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.SelectionLength)] = MapSelectionLength
 		};
 
-		public static CommandMapper<IPicker, IEditorHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IEditor, IEditorHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 

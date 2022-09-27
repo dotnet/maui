@@ -1710,7 +1710,7 @@ Microsoft.Maui.Controls.Platform.ShellView.Toggled -> System.EventHandler?
 Microsoft.Maui.Controls.Platform.ShellView.UpdateBackgroundColor(Microsoft.Maui.Graphics.Color? color) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateCurrentItem(Microsoft.Maui.Controls.ShellItem! newItem, bool animate = true) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateDrawerWidth(double drawerwidth) -> void
-Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyout(Tizen.NUI.BaseComponents.View! flyout) -> void
+Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyout(Microsoft.Maui.IView? flyout) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutBackDrop(Microsoft.Maui.Controls.Brush! backdrop) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutBehavior(Microsoft.Maui.FlyoutBehavior flyoutBehavior) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutFooter(Microsoft.Maui.Controls.Shell! shell) -> void

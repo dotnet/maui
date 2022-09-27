@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
 		public override int GetHashCode()
 		{
-			return -1234567890 + Color.GetHashCode();
+			return -1234567890 + (Color?.GetHashCode() ?? 0);
 		}
 	}
 }
