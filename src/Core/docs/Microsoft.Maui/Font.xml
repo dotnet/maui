@@ -67,10 +67,10 @@
       </Docs>
     </Member>
     <Member MemberName="BoldSystemFontOfSize">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Font BoldSystemFontOfSize (Microsoft.Maui.NamedSize size);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Font BoldSystemFontOfSize(valuetype Microsoft.Maui.NamedSize size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.BoldSystemFontOfSize(Microsoft.Maui.NamedSize)" />
-      <MemberSignature Language="F#" Value="static member BoldSystemFontOfSize : Microsoft.Maui.NamedSize -&gt; Microsoft.Maui.Font" Usage="Microsoft.Maui.Font.BoldSystemFontOfSize size" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Font BoldSystemFontOfSize (Microsoft.Maui.Controls.NamedSize size);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Font BoldSystemFontOfSize(valuetype Microsoft.Maui.Controls.NamedSize size) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.BoldSystemFontOfSize(Microsoft.Maui.Controls.NamedSize)" />
+      <MemberSignature Language="F#" Value="static member BoldSystemFontOfSize : Microsoft.Maui.Controls.NamedSize -&gt; Microsoft.Maui.Font" Usage="Microsoft.Maui.Font.BoldSystemFontOfSize size" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -95,10 +95,10 @@
         <ReturnType>Microsoft.Maui.Font</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="size" Type="Microsoft.Maui.NamedSize" />
+        <Parameter Name="size" Type="Microsoft.Maui.Controls.NamedSize" />
       </Parameters>
       <Docs>
-        <param name="size">The desired font <see cref="T:Microsoft.Maui.NamedSize" />.</param>
+        <param name="size">The desired font <see cref="T:Microsoft.Maui.Controls.NamedSize" />.</param>
         <summary>Returns an usable font instance representing the default bold font, in the requested NamedSize, for the device.</summary>
         <returns>The requested bold <see cref="T:Microsoft.Maui.Font" />.</returns>
         <remarks>To be added.</remarks>
@@ -162,8 +162,8 @@
     <Member MemberName="FontAttributes">
       <MemberSignature Language="C#" Value="public Microsoft.Maui.FontAttributes FontAttributes { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.FontAttributes FontAttributes" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Font.FontAttributes" />
-      <MemberSignature Language="F#" Value="member this.FontAttributes : Microsoft.Maui.FontAttributes" Usage="Microsoft.Maui.Font.FontAttributes" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.FontAttributes" />
+      <MemberSignature Language="F#" Value="member this.FontAttributes : Microsoft.Maui.FontAttributes" Usage="Microsoft.Maui.Controls.FontAttributes" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -183,11 +183,11 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="FontFamily">
-      <MemberSignature Language="C#" Value="public string FontFamily { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string FontFamily" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Font.FontFamily" />
-      <MemberSignature Language="F#" Value="member this.FontFamily : string" Usage="Microsoft.Maui.Font.FontFamily" />
+    <Member MemberName="Family">
+      <MemberSignature Language="C#" Value="public string Family { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Family" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Font.Family" />
+      <MemberSignature Language="F#" Value="member this.FontFamily : string" Usage="Microsoft.Maui.Font.Family" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -207,11 +207,11 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="FontSize">
-      <MemberSignature Language="C#" Value="public double FontSize { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 FontSize" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Font.FontSize" />
-      <MemberSignature Language="F#" Value="member this.FontSize : double" Usage="Microsoft.Maui.Font.FontSize" />
+    <Member MemberName="Size">
+      <MemberSignature Language="C#" Value="public double Size { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Size" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Font.Size" />
+      <MemberSignature Language="F#" Value="member this.Size : double" Usage="Microsoft.Maui.Font.Size" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -279,30 +279,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="NamedSize">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.NamedSize NamedSize { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.NamedSize NamedSize" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Font.NamedSize" />
-      <MemberSignature Language="F#" Value="member this.NamedSize : Microsoft.Maui.NamedSize" Usage="Microsoft.Maui.Font.NamedSize" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.NamedSize</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the named font size, such as "Large" or "Small".</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="OfSize">
       <MemberSignature Language="C#" Value="public static Microsoft.Maui.Font OfSize (string name, double size);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Font OfSize(string name, float64 size) cil managed" />
@@ -336,10 +312,10 @@
       </Docs>
     </Member>
     <Member MemberName="OfSize">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Font OfSize (string name, Microsoft.Maui.NamedSize size);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Font OfSize(string name, valuetype Microsoft.Maui.NamedSize size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.OfSize(System.String,Microsoft.Maui.NamedSize)" />
-      <MemberSignature Language="F#" Value="static member OfSize : string * Microsoft.Maui.NamedSize -&gt; Microsoft.Maui.Font" Usage="Microsoft.Maui.Font.OfSize (name, size)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Font OfSize (string name, Microsoft.Maui.Controls.NamedSize size);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Font OfSize(string name, valuetype Microsoft.Maui.Controls.NamedSize size) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.OfSize(System.String,Microsoft.Maui.Controls.NamedSize)" />
+      <MemberSignature Language="F#" Value="static member OfSize : string * Microsoft.Maui.Controls.NamedSize -&gt; Microsoft.Maui.Font" Usage="Microsoft.Maui.Font.OfSize (name, size)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -357,11 +333,11 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="name" Type="System.String" />
-        <Parameter Name="size" Type="Microsoft.Maui.NamedSize" />
+        <Parameter Name="size" Type="Microsoft.Maui.Controls.NamedSize" />
       </Parameters>
       <Docs>
         <param name="name">The name of the targeted system font.</param>
-        <param name="size">The desired font <see cref="T:Microsoft.Maui.NamedSize" />.</param>
+        <param name="size">The desired font <see cref="T:Microsoft.Maui.Controls.NamedSize" />.</param>
         <summary>Returns an usable <see cref="T:Microsoft.Maui.Font" />, with the requested font and NamedSize.</summary>
         <returns>A Font instance.</returns>
         <remarks>Font availability is platform and device dependent.</remarks>
@@ -462,10 +438,10 @@
       </Docs>
     </Member>
     <Member MemberName="SystemFontOfSize">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Font SystemFontOfSize (Microsoft.Maui.NamedSize size);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Font SystemFontOfSize(valuetype Microsoft.Maui.NamedSize size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.SystemFontOfSize(Microsoft.Maui.NamedSize)" />
-      <MemberSignature Language="F#" Value="static member SystemFontOfSize : Microsoft.Maui.NamedSize -&gt; Microsoft.Maui.Font" Usage="Microsoft.Maui.Font.SystemFontOfSize size" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Font SystemFontOfSize (Microsoft.Maui.Controls.NamedSize size);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Font SystemFontOfSize(valuetype Microsoft.Maui.Controls.NamedSize size) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.SystemFontOfSize(Microsoft.Maui.Controls.NamedSize)" />
+      <MemberSignature Language="F#" Value="static member SystemFontOfSize : Microsoft.Maui.Controls.NamedSize -&gt; Microsoft.Maui.Font" Usage="Microsoft.Maui.Font.SystemFontOfSize size" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -482,10 +458,10 @@
         <ReturnType>Microsoft.Maui.Font</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="size" Type="Microsoft.Maui.NamedSize" />
+        <Parameter Name="size" Type="Microsoft.Maui.Controls.NamedSize" />
       </Parameters>
       <Docs>
-        <param name="size">The desired font <see cref="T:Microsoft.Maui.NamedSize" />.</param>
+        <param name="size">The desired font <see cref="T:Microsoft.Maui.Controls.NamedSize" />.</param>
         <summary>Returns an usable font instance representing the default font, in the requested size, for the device and platform.</summary>
         <returns>The requested bold <see cref="T:Microsoft.Maui.Font" />.</returns>
         <remarks>To be added.</remarks>
@@ -522,10 +498,10 @@
       </Docs>
     </Member>
     <Member MemberName="SystemFontOfSize">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Font SystemFontOfSize (Microsoft.Maui.NamedSize size, Microsoft.Maui.FontAttributes attributes);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Font SystemFontOfSize(valuetype Microsoft.Maui.NamedSize size, valuetype Microsoft.Maui.FontAttributes attributes) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.SystemFontOfSize(Microsoft.Maui.NamedSize,Microsoft.Maui.FontAttributes)" />
-      <MemberSignature Language="F#" Value="static member SystemFontOfSize : Microsoft.Maui.NamedSize * Microsoft.Maui.FontAttributes -&gt; Microsoft.Maui.Font" Usage="Microsoft.Maui.Font.SystemFontOfSize (size, attributes)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Font SystemFontOfSize (Microsoft.Maui.Controls.NamedSize size, Microsoft.Maui.FontAttributes attributes);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Font SystemFontOfSize(valuetype Microsoft.Maui.Controls.NamedSize size, valuetype Microsoft.Maui.FontAttributes attributes) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.SystemFontOfSize(Microsoft.Maui.Controls.NamedSize,Microsoft.Maui.FontAttributes)" />
+      <MemberSignature Language="F#" Value="static member SystemFontOfSize : Microsoft.Maui.Controls.NamedSize * Microsoft.Maui.FontAttributes -&gt; Microsoft.Maui.Font" Usage="Microsoft.Maui.Font.SystemFontOfSize (size, attributes)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -540,7 +516,7 @@
         <ReturnType>Microsoft.Maui.Font</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="size" Type="Microsoft.Maui.NamedSize" />
+        <Parameter Name="size" Type="Microsoft.Maui.Controls.NamedSize" />
         <Parameter Name="attributes" Type="Microsoft.Maui.FontAttributes" />
       </Parameters>
       <Docs>
@@ -573,31 +549,7 @@
       <Docs>
         <summary>Returns a string representation of this font structure.</summary>
         <returns>A string representation of this <see cref="T:Microsoft.Maui.Font" /> structure.</returns>
-        <remarks>The <see cref="M:Microsoft.Maui.Font.ToString" /> method returns a string that contains a labeled, comma-separated list of the <see cref="P:Microsoft.Maui.Font.FontFamily" />, <see cref="P:Microsoft.Maui.Font.FontSize" />, <see cref="P:Microsoft.Maui.Font.NamedSize" /> , and <see cref="P:Microsoft.Maui.Font.FontAttributes" /> properties.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="UseNamedSize">
-      <MemberSignature Language="C#" Value="public bool UseNamedSize { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance bool UseNamedSize" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Font.UseNamedSize" />
-      <MemberSignature Language="F#" Value="member this.UseNamedSize : bool" Usage="Microsoft.Maui.Font.UseNamedSize" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets a value that indicates whether the target operating system should use size that is specified by the <see cref="P:Microsoft.Maui.Font.NamedSize" /> property.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <remarks>The <see cref="M:Microsoft.Maui.Font.ToString" /> method returns a string that contains a labeled, comma-separated list of the <see cref="P:Microsoft.Maui.Font.Family" />, <see cref="P:Microsoft.Maui.Font.Size" />, and <see cref="P:Microsoft.Maui.Controls.FontAttributes" /> properties.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WithAttributes">
@@ -657,10 +609,10 @@
       </Docs>
     </Member>
     <Member MemberName="WithSize">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Font WithSize (Microsoft.Maui.NamedSize size);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Microsoft.Maui.Font WithSize(valuetype Microsoft.Maui.NamedSize size) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.WithSize(Microsoft.Maui.NamedSize)" />
-      <MemberSignature Language="F#" Value="member this.WithSize : Microsoft.Maui.NamedSize -&gt; Microsoft.Maui.Font" Usage="font.WithSize size" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Font WithSize (Microsoft.Maui.Controls.NamedSize size);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Microsoft.Maui.Font WithSize(valuetype Microsoft.Maui.Controls.NamedSize size) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Font.WithSize(Microsoft.Maui.Controls.NamedSize)" />
+      <MemberSignature Language="F#" Value="member this.WithSize : Microsoft.Maui.Controls.NamedSize -&gt; Microsoft.Maui.Font" Usage="font.WithSize size" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -675,7 +627,7 @@
         <ReturnType>Microsoft.Maui.Font</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="size" Type="Microsoft.Maui.NamedSize" />
+        <Parameter Name="size" Type="Microsoft.Maui.Controls.NamedSize" />
       </Parameters>
       <Docs>
         <param name="size">The requested named font size.</param>

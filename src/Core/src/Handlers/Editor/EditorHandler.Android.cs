@@ -1,5 +1,4 @@
 ﻿using System;
-using Android.Content.Res;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;

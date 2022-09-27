@@ -10,18 +10,18 @@ using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableObject']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableObject']/Docs/*" />
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
 		IDispatcher _dispatcher;
 
 		// return the dispatcher that was available when this was created,
 		// otherwise try to find the nearest dispatcher (probably the window/app)
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='Dispatcher']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='Dispatcher']/Docs/*" />
 		public IDispatcher Dispatcher =>
 			_dispatcher ??= this.FindDispatcher();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public BindableObject()
 		{
 			// try use the current thread's dispatcher
@@ -32,12 +32,12 @@ namespace Microsoft.Maui.Controls
 		bool _applying;
 		object _inheritedContext;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContextProperty']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContextProperty']/Docs/*" />
 		public static readonly BindableProperty BindingContextProperty =
 			BindableProperty.Create(nameof(BindingContext), typeof(object), typeof(BindableObject), default(object),
 									BindingMode.OneWay, null, BindingContextPropertyChanged, null, null, BindingContextPropertyBindingChanging);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContext']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContext']/Docs/*" />
 		public object BindingContext
 		{
 			get => _inheritedContext ?? GetValue(BindingContextProperty);
@@ -48,12 +48,12 @@ namespace Microsoft.Maui.Controls
 		public event PropertyChangingEventHandler PropertyChanging;
 		public event EventHandler BindingContextChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][1]/Docs/*" />
 		public void ClearValue(BindableProperty property) => ClearValue(property, fromStyle: false, checkAccess: true);
 
 		internal void ClearValue(BindableProperty property, bool fromStyle) => ClearValue(property, fromStyle: fromStyle, checkAccess: true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][2]/Docs/*" />
 		public void ClearValue(BindablePropertyKey propertyKey)
 		{
 			if (propertyKey == null)
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='GetValue']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='GetValue']/Docs/*" />
 		public object GetValue(BindableProperty property)
 		{
 			if (property == null)
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls
 			return resultArray;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='IsSet']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='IsSet']/Docs/*" />
 		public bool IsSet(BindableProperty targetProperty)
 		{
 			var bpcontext = GetContext(targetProperty ?? throw new ArgumentNullException(nameof(targetProperty)));
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='RemoveBinding']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='RemoveBinding']/Docs/*" />
 		public void RemoveBinding(BindableProperty property)
 		{
 			BindablePropertyContext context = GetContext(property ?? throw new ArgumentNullException(nameof(property)));
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls
 				RemoveBinding(property, context);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetBinding']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetBinding']/Docs/*" />
 		public void SetBinding(BindableProperty targetProperty, BindingBase binding) => SetBinding(targetProperty, binding, false);
 
 		internal void SetBinding(BindableProperty targetProperty, BindingBase binding, bool fromStyle)
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls
 			binding.Apply(BindingContext, this, targetProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetInheritedBindingContext']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetInheritedBindingContext']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetInheritedBindingContext(BindableObject bindable, object value)
 		{
@@ -272,6 +272,9 @@ namespace Microsoft.Maui.Controls
 
 			if (Shell.GetTitleView(this) is View titleView)
 				SetInheritedBindingContext(titleView, BindingContext);
+
+			if (FlyoutBase.GetContextFlyout(this) is BindableObject contextFlyout)
+				SetInheritedBindingContext(contextFlyout, BindingContext);
 		}
 
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -358,10 +361,10 @@ namespace Microsoft.Maui.Controls
 			OnSetDynamicResource(property, key);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][1]/Docs/*" />
 		public void SetValue(BindableProperty property, object value) => SetValue(property, value, false, true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][2]/Docs/*" />
 		public void SetValue(BindablePropertyKey propertyKey, object value)
 		{
 			if (propertyKey == null)
@@ -392,7 +395,7 @@ namespace Microsoft.Maui.Controls
 		internal void SetValueCore(BindablePropertyKey propertyKey, object value, SetValueFlags attributes = SetValueFlags.None)
 			=> SetValueCore(propertyKey.BindableProperty, value, attributes, SetValuePrivateFlags.None);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValueCore']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValueCore']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueCore(BindableProperty property, object value, SetValueFlags attributes = SetValueFlags.None)
 			=> SetValueCore(property, value, attributes, SetValuePrivateFlags.Default);
@@ -600,10 +603,10 @@ namespace Microsoft.Maui.Controls
 			context.Binding = null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][1]/Docs/*" />
 		public void CoerceValue(BindableProperty property) => CoerceValue(property, checkAccess: true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][2]/Docs/*" />
 		public void CoerceValue(BindablePropertyKey propertyKey)
 		{
 			if (propertyKey == null)

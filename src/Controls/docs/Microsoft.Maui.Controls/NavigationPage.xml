@@ -134,10 +134,10 @@
       </Docs>
     </Member>
     <Member MemberName="BarBackgroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color BarBackgroundColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color BarBackgroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BarBackgroundColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BarBackgroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.NavigationPage.BarBackgroundColor" />
-      <MemberSignature Language="F#" Value="member this.BarBackgroundColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.NavigationPage.BarBackgroundColor" />
+      <MemberSignature Language="F#" Value="member this.BarBackgroundColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.NavigationPage.BarBackgroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -149,7 +149,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the background color for the bar at the top of the NavigationPage.</summary>
@@ -201,10 +201,10 @@
       </Docs>
     </Member>
     <Member MemberName="BarTextColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color BarTextColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color BarTextColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BarTextColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BarTextColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.NavigationPage.BarTextColor" />
-      <MemberSignature Language="F#" Value="member this.BarTextColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.NavigationPage.BarTextColor" />
+      <MemberSignature Language="F#" Value="member this.BarTextColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.NavigationPage.BarTextColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -216,7 +216,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text that appears on the bar at the top of the NavigationPage.</summary>
@@ -390,17 +390,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetIconColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetIconColor (Microsoft.Maui.Controls.BindableObject bindable);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetIconColor(class Microsoft.Maui.Controls.BindableObject bindable) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetIconColor (Microsoft.Maui.Controls.BindableObject bindable);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetIconColor(class Microsoft.Maui.Controls.BindableObject bindable) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.NavigationPage.GetIconColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetIconColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.NavigationPage.GetIconColor bindable" />
+      <MemberSignature Language="F#" Value="static member GetIconColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.NavigationPage.GetIconColor bindable" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="bindable" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -1219,10 +1219,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetIconColor">
-      <MemberSignature Language="C#" Value="public static void SetIconColor (Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetIconColor(class Microsoft.Maui.Controls.BindableObject bindable, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.NavigationPage.SetIconColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetIconColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.NavigationPage.SetIconColor (bindable, value)" />
+      <MemberSignature Language="C#" Value="public static void SetIconColor (Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetIconColor(class Microsoft.Maui.Controls.BindableObject bindable, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.NavigationPage.SetIconColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetIconColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.NavigationPage.SetIconColor (bindable, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -1233,7 +1233,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="bindable" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="bindable">To be added.</param>
@@ -1352,10 +1352,10 @@
       </Docs>
     </Member>
     <Member MemberName="Tint">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color Tint { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Tint" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color Tint { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Tint" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.NavigationPage.Tint" />
-      <MemberSignature Language="F#" Value="member this.Tint : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.NavigationPage.Tint" />
+      <MemberSignature Language="F#" Value="member this.Tint : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.NavigationPage.Tint" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -1377,7 +1377,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>The color to be used as the Tint of the <see cref="T:Microsoft.Maui.Controls.NavigationPage" />.</summary>

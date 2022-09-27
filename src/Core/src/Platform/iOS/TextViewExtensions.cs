@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UITextView textView, IEditor editor)
 		{
-			textView.TextAlignment = editor.HorizontalTextAlignment.ToPlatformHorizontal().AdjustForFlowDirection(editor);
+			textView.TextAlignment = editor.HorizontalTextAlignment.ToPlatformHorizontal(textView.EffectiveUserInterfaceLayoutDirection);
 		}
 
 		public static void UpdateVerticalTextAlignment(this MauiTextView textView, IEditor editor)

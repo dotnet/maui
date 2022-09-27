@@ -3,6 +3,7 @@ using CoreFoundation;
 
 namespace Microsoft.Maui.Dispatching
 {
+	/// <inheritdoc/>
 	public partial class Dispatcher : IDispatcher
 	{
 		readonly DispatchQueue _dispatchQueue;
@@ -33,24 +34,33 @@ namespace Microsoft.Maui.Dispatching
 		}
 	}
 
+	/// <inheritdoc/>
 	partial class DispatcherTimer : IDispatcherTimer
 	{
 		readonly DispatchQueue _dispatchQueue;
 		DispatchBlock? _dispatchBlock;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DispatcherTimer"/> class.
+		/// </summary>
 		public DispatcherTimer(DispatchQueue dispatchQueue)
 		{
 			_dispatchQueue = dispatchQueue;
 		}
 
+		/// <inheritdoc/>
 		public TimeSpan Interval { get; set; }
 
+		/// <inheritdoc/>
 		public bool IsRepeating { get; set; } = true;
 
+		/// <inheritdoc/>
 		public bool IsRunning { get; private set; }
 
+		/// <inheritdoc/>
 		public event EventHandler? Tick;
 
+		/// <inheritdoc/>
 		public void Start()
 		{
 			if (IsRunning)
@@ -62,6 +72,7 @@ namespace Microsoft.Maui.Dispatching
 			_dispatchQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, Interval), _dispatchBlock);
 		}
 
+		/// <inheritdoc/>
 		public void Stop()
 		{
 			if (!IsRunning)
@@ -85,6 +96,7 @@ namespace Microsoft.Maui.Dispatching
 		}
 	}
 
+	/// <inheritdoc/>
 	public partial class DispatcherProvider
 	{
 		static IDispatcher? GetForCurrentThreadImplementation()

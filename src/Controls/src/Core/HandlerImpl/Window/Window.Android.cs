@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 			(Handler?.PlatformView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
 
 		[Obsolete]
-		public static void MapContent(WindowHandler handler, IWindow view)
+		public static void MapContent(IWindowHandler handler, IWindow view)
 		{
 		}
 	}

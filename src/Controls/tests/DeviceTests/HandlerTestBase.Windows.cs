@@ -88,6 +88,11 @@ namespace Microsoft.Maui.DeviceTests
 			return (navigationRootManager.RootView as WindowRootView).NavigationViewControl;
 		}
 
+		protected WindowRootView GetWindowRootView(IElementHandler handler)
+		{
+			return handler.MauiContext.GetNavigationRootManager().RootView as WindowRootView;
+		}
+
 		protected MauiNavigationView GetMauiNavigationView(IMauiContext mauiContext)
 		{
 			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());

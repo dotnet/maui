@@ -7,46 +7,45 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ListProxyTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void ListCount()
 		{
 			var list = new List<string> { "foo", "bar" };
 			var proxy = new ListProxy(list);
 
-			Assert.AreEqual(list.Count, proxy.Count);
+			Assert.Equal(list.Count, proxy.Count);
 			list.Add("baz");
-			Assert.AreEqual(list.Count, proxy.Count);
+			Assert.Equal(list.Count, proxy.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void CollectionCount()
 		{
 			var list = new Collection<string> { "foo", "bar" };
 			var proxy = new ListProxy(list);
 
-			Assert.AreEqual(list.Count, proxy.Count);
+			Assert.Equal(list.Count, proxy.Count);
 			list.Add("baz");
-			Assert.AreEqual(list.Count, proxy.Count);
+			Assert.Equal(list.Count, proxy.Count);
 		}
 
-		[Test]
-		[Description("Count should ensure that the window is created if neccessary")]
+		[Fact("Count should ensure that the window is created if neccessary")]
 		public void EnumerableInitialCount()
 		{
 			var enumerable = Enumerable.Range(0, 100);
 			var proxy = new ListProxy(enumerable, 10);
 
-			Assert.AreEqual(10, proxy.Count);
+			Assert.Equal(10, proxy.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void EnumerableCount()
 		{
 			var enumerable = Enumerable.Range(0, 100);
@@ -58,13 +57,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var enumerator = proxy.GetEnumerator();
 			enumerator.MoveNext();
 
-			Assert.AreEqual(10, proxy.Count);
-			Assert.AreEqual(1, changed);
+			Assert.Equal(10, proxy.Count);
+			Assert.Equal(1, changed);
 
 			enumerator.MoveNext();
 
-			Assert.AreEqual(10, proxy.Count);
-			Assert.AreEqual(1, changed);
+			Assert.Equal(10, proxy.Count);
+			Assert.Equal(1, changed);
 
 			while (enumerator.MoveNext())
 			{
@@ -72,76 +71,76 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			enumerator.Dispose();
 
-			Assert.AreEqual(100, proxy.Count);
-			Assert.AreEqual(19, changed);
+			Assert.Equal(100, proxy.Count);
+			Assert.Equal(19, changed);
 
 			using (enumerator = proxy.GetEnumerator())
 			{
 
-				Assert.AreEqual(100, proxy.Count);
+				Assert.Equal(100, proxy.Count);
 
 				while (enumerator.MoveNext())
-					Assert.AreEqual(100, proxy.Count);
+					Assert.Equal(100, proxy.Count);
 
-				Assert.AreEqual(100, proxy.Count);
+				Assert.Equal(100, proxy.Count);
 			}
 
-			Assert.AreEqual(19, changed);
+			Assert.Equal(19, changed);
 		}
 
-		[Test]
+		[Fact]
 		public void InsideWindowSize()
 		{
 			var numbers = Enumerable.Range(0, 100);
 			var proxy = new ListProxy(numbers, 10);
 
 			int i = (int)proxy[5];
-			Assert.That(i, Is.EqualTo(5));
+			Assert.Equal(5, i);
 		}
 
-		[Test]
+		[Fact]
 		public void IndexOutsideWindowSize()
 		{
 			var numbers = Enumerable.Range(0, 100);
 			var proxy = new ListProxy(numbers, 10);
 
 			int i = (int)proxy[50];
-			Assert.That(i, Is.EqualTo(50));
+			Assert.Equal(50, i);
 		}
 
-		[Test]
+		[Fact]
 		public void IndexInsideToOutsideWindowSize()
 		{
 			var numbers = Enumerable.Range(0, 100);
 			var proxy = new ListProxy(numbers, 10);
 
 			int i = (int)proxy[5];
-			Assert.That(i, Is.EqualTo(5));
+			Assert.Equal(5, i);
 
 			i = (int)proxy[50];
-			Assert.That(i, Is.EqualTo(50));
+			Assert.Equal(50, i);
 		}
 
-		[Test]
+		[Fact]
 		public void IndexOutsideToPreWindowSize()
 		{
 			var numbers = Enumerable.Range(0, 100);
 			var proxy = new ListProxy(numbers, 10);
 
 			int i = (int)proxy[50];
-			Assert.That(i, Is.EqualTo(50));
+			Assert.Equal(50, i);
 
 			i = (int)proxy[5];
-			Assert.That(i, Is.EqualTo(5));
+			Assert.Equal(5, i);
 		}
 
-		[Test]
+		[Fact]
 		public void EnumerableIndexOutOfRange()
 		{
 			var numbers = Enumerable.Range(0, 100);
 			var proxy = new ListProxy(numbers);
 
-			Assert.That(() => proxy[100], Throws.InstanceOf<ArgumentOutOfRangeException>());
+			Assert.Throws<ArgumentOutOfRangeException>(() => proxy[100]);
 		}
 
 		class IntCollection
@@ -184,40 +183,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public bool IsReadOnly { get { return true; } }
 		}
 
-		[Test]
+		[Fact]
 		public void CollectionIndexOutOfRange()
 		{
 			var numbers = new IntCollection(Enumerable.Range(0, 100));
 			var proxy = new ListProxy(numbers);
 
-			Assert.That(() => proxy[100], Throws.InstanceOf<ArgumentOutOfRangeException>());
+			Assert.Throws<ArgumentOutOfRangeException>(() => proxy[100]);
 		}
 
-		[Test]
+		[Fact]
 		public void ListIndexOutOfRange()
 		{
 			var numbers = Enumerable.Range(0, 100).ToList();
 			var proxy = new ListProxy(numbers);
 
-			Assert.That(() => proxy[100], Throws.InstanceOf<ArgumentOutOfRangeException>());
+			Assert.Throws<ArgumentOutOfRangeException>(() => proxy[100]);
 		}
 
-		[Test]
+		[Fact]
 		public void CollectionChangedWhileEnumerating()
 		{
 			var c = new ObservableCollection<string> { "foo", "bar" };
 			var p = new ListProxy(c);
 
 			IEnumerator<object> e = p.GetEnumerator();
-			Assert.IsTrue(e.MoveNext(), "Initial MoveNext() failed, test can't continue");
+			Assert.True(e.MoveNext(), "Initial MoveNext() failed, test can't continue");
 
 			c.Add("baz");
 
-			Assert.That(() => e.MoveNext(), Throws.InvalidOperationException,
-				"MoveNext did not throw an exception when the underlying collection had changed");
+			Assert.Throws<InvalidOperationException>(() => e.MoveNext());
 		}
 
-		[Test]
+		[Fact]
 		public void SynchronizedCollectionAccess()
 		{
 			var collection = new ObservableCollection<string> { "foo" };
@@ -229,10 +227,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			BindingBase.EnableCollectionSynchronization(collection, context, (enumerable, o, method, access) =>
 			{
 				executed = true;
-				Assert.AreSame(collection, enumerable);
-				Assert.AreSame(context, o);
-				Assert.IsNotNull(method);
-				Assert.IsFalse(access);
+				Assert.Same(collection, enumerable);
+				Assert.Same(context, o);
+				Assert.NotNull(method);
+				Assert.False(access);
 
 				lock (enumerable)
 					method();
@@ -240,10 +238,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			object value = list[0];
 
-			Assert.IsTrue(executed, "Callback was not executed");
+			Assert.True(executed, "Callback was not executed");
 		}
 
-		[Test]
+		[Fact]
 		public Task SynchronizedCollectionAdd() => DispatcherTest.Run(() =>
 		{
 			bool invoked = false;
@@ -260,16 +258,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var list = new ListProxy(collection);
 
-			Assert.IsFalse(invoked, "An invoke shouldn't be executed just setting up ListProxy");
+			Assert.False(invoked, "An invoke shouldn't be executed just setting up ListProxy");
 
 			bool executed = false;
 			BindingBase.EnableCollectionSynchronization(collection, context, (enumerable, o, method, access) =>
 			{
 				executed = true;
-				Assert.AreSame(collection, enumerable);
-				Assert.AreSame(context, o);
-				Assert.IsNotNull(method);
-				Assert.IsFalse(access);
+				Assert.Same(collection, enumerable);
+				Assert.Same(context, o);
+				Assert.NotNull(method);
+				Assert.False(access);
 
 				lock (enumerable)
 					method();
@@ -294,11 +292,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			mre.WaitOne(5000);
 
-			Assert.IsTrue(executed, "Callback was not executed");
-			Assert.IsTrue(invoked, "Callback was not executed on the UI thread");
+			Assert.True(executed, "Callback was not executed");
+			Assert.True(invoked, "Callback was not executed on the UI thread");
 		});
 
-		[Test]
+		[Fact]
 		public void ClearEnumerable()
 		{
 			var proxy = new ListProxy(Enumerable.Range(0, 100));
@@ -308,11 +306,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			proxy.Clear();
 
-			Assert.AreEqual(100, proxy.Count);
-			Assert.That(() => enumerator.MoveNext(), Throws.InvalidOperationException);
+			Assert.Equal(100, proxy.Count);
+			Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
 		}
 
-		[Test]
+		[Fact]
 		public void ClearCollection()
 		{
 			var proxy = new ListProxy(new IntCollection(Enumerable.Range(0, 100)));
@@ -322,11 +320,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			proxy.Clear();
 
-			Assert.AreEqual(100, proxy.Count);
-			Assert.That(() => enumerator.MoveNext(), Throws.InvalidOperationException);
+			Assert.Equal(100, proxy.Count);
+			Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
 		}
 
-		[Test]
+		[Fact]
 		public void ClearList()
 		{
 			var proxy = new ListProxy(Enumerable.Range(0, 100).ToList());
@@ -336,32 +334,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			proxy.Clear();
 
-			Assert.AreEqual(100, proxy.Count);
-			Assert.That(() => enumerator.MoveNext(), Throws.InvalidOperationException);
+			Assert.Equal(100, proxy.Count);
+			Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
 		}
 
-		[Test]
+		[Fact]
 		public void IndexOfValueTypeNonList()
 		{
 			var proxy = new ListProxy(Enumerable.Range(0, 100));
-			Assert.AreEqual(1, proxy.IndexOf(1));
+			Assert.Equal(1, proxy.IndexOf(1));
 		}
 
-		[Test]
+		[Fact]
 		public void EnumeratorForEnumerable()
 		{
 			var proxy = new ListProxy(Enumerable.Range(0, 2));
 
 			var enumerator = proxy.GetEnumerator();
-			Assert.That(enumerator.Current, Is.Null);
-			Assert.That(enumerator.MoveNext(), Is.True);
-			Assert.That(enumerator.Current, Is.EqualTo(0));
-			Assert.That(enumerator.MoveNext(), Is.True);
-			Assert.That(enumerator.Current, Is.EqualTo(1));
-			Assert.That(enumerator.MoveNext(), Is.False);
+			Assert.Null(enumerator.Current);
+			Assert.True(enumerator.MoveNext());
+			Assert.Equal(0, enumerator.Current);
+			Assert.True(enumerator.MoveNext());
+			Assert.Equal(1, enumerator.Current);
+			Assert.False(enumerator.MoveNext());
 		}
 
-		[Test]
+		[Fact]
 		public void ProxyIsWeaklyHeldByINotifyCollectionChanged()
 		{
 			ObservableCollection<string> collection = new ObservableCollection<string>();
@@ -388,10 +386,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
 
-			Assert.That(weakProxy.IsAlive, Is.False);
+			Assert.False(weakProxy.IsAlive);
 		}
 
-		[Test]
+		[Fact]
 		public void IEnumerableAddDoesNotReport0()
 		{
 			var custom = new CustomINCC();
@@ -399,10 +397,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			custom.Add("test2");
 
 			var proxy = new ListProxy(custom);
-			Assert.That(proxy.Count, Is.EqualTo(2));
+			Assert.Equal(2, proxy.Count);
 
 			custom.Add("testing");
-			Assert.That(proxy.Count, Is.EqualTo(3));
+			Assert.Equal(3, proxy.Count);
 		}
 
 		class CustomINCC : IEnumerable<string>, INotifyCollectionChanged
@@ -433,7 +431,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		ListProxy _proxyForWeakToWeakTest;
 #pragma warning restore 0414
 
-		[Test, Ignore("https://github.com/dotnet/maui/issues/1524")]
+		[Fact(Skip = "https://github.com/dotnet/maui/issues/1524")]
 		public void WeakToWeak()
 		{
 			WeakCollectionChangedList list = new WeakCollectionChangedList();
@@ -444,14 +442,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			Assert.IsTrue(list.AddObject(), "GC run, but proxy should still hold a reference");
+			Assert.True(list.AddObject(), "GC run, but proxy should still hold a reference");
 
 			_proxyForWeakToWeakTest = null;
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			Assert.IsFalse(list.AddObject(), "Proxy is gone and GC has run");
+			Assert.False(list.AddObject(), "Proxy is gone and GC has run");
 		}
 
 		public class WeakCollectionChangedList : List<object>, INotifyCollectionChanged

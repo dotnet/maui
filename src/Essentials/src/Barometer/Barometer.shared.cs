@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void Stop();
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Barometer']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Barometer']/Docs/*" />
 	public static class Barometer
 	{
 		public static event EventHandler<BarometerChangedEventArgs> ReadingChanged
@@ -28,15 +28,15 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public static bool IsSupported => Default.IsSupported;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='IsMonitoring']/Docs/*" />
 		public static bool IsMonitoring
 			=> Default.IsMonitoring;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Start']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Start']/Docs/*" />
 		public static void Start(SensorSpeed sensorSpeed)
 			=> Default.Start(sensorSpeed);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Barometer.xml" path="//Member[@MemberName='Stop']/Docs/*" />
 		public static void Stop()
 			=> Default.Stop();
 
@@ -49,25 +49,25 @@ namespace Microsoft.Maui.Devices.Sensors
 			defaultImplementation = implementation;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BarometerChangedEventArgs']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BarometerChangedEventArgs']/Docs/*" />
 	public class BarometerChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public BarometerChangedEventArgs(BarometerData reading) =>
 			Reading = reading;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerChangedEventArgs.xml" path="//Member[@MemberName='Reading']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerChangedEventArgs.xml" path="//Member[@MemberName='Reading']/Docs/*" />
 		public BarometerData Reading { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BarometerData']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BarometerData']/Docs/*" />
 	public readonly struct BarometerData : IEquatable<BarometerData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public BarometerData(double pressure) =>
 			PressureInHectopascals = pressure;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='PressureInHectopascals']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='PressureInHectopascals']/Docs/*" />
 		public double PressureInHectopascals { get; }
 
 		public static bool operator ==(BarometerData left, BarometerData right) =>
@@ -76,19 +76,19 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static bool operator !=(BarometerData left, BarometerData right) =>
 			!left.Equals(right);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][1]/Docs/*" />
 		public override bool Equals(object? obj) =>
 			(obj is BarometerData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='Equals'][2]/Docs/*" />
 		public bool Equals(BarometerData other) =>
 			PressureInHectopascals.Equals(other.PressureInHectopascals);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
 		public override int GetHashCode() =>
 			PressureInHectopascals.GetHashCode();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/BarometerData.xml" path="//Member[@MemberName='ToString']/Docs/*" />
 		public override string ToString() => $"{nameof(PressureInHectopascals)}: {PressureInHectopascals}";
 	}
 

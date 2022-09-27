@@ -1,1 +1,5 @@
 ﻿#nullable enable
+override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
+~override Microsoft.Maui.Devices.Sensors.Location.Equals(object obj) -> bool
+~static Microsoft.Maui.Devices.Sensors.Location.operator !=(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
+~static Microsoft.Maui.Devices.Sensors.Location.operator ==(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool

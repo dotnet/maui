@@ -3,7 +3,8 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
-
+using Microsoft.Maui.Maps;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		public void DisplayMaps()
 		{
 			map2.IsVisible = false;
-			var mapPinPosition = new Position(Latitude, Longitude);
+			var mapPinPosition = new Location(Latitude, Longitude);
 
 			var type = MapType.Satellite;
 			map1.MapType = type;
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var pin = new Pin
 			{
 				Type = PinType.Place,
-				Position = mapPinPosition,
+				Location = mapPinPosition,
 				Label = LocationTitle,
 				Address = StreetAddress
 			};
@@ -73,8 +74,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			// Move the map to center on the map location with the proper zoom level
 			var lldegrees = 360 / (Math.Pow(2, 16));
-			map1.MoveToRegion(new MapSpan(map1.Pins[0].Position, lldegrees, lldegrees));
-			map2.MoveToRegion(new MapSpan(map2.Pins[0].Position, lldegrees, lldegrees));
+			map1.MoveToRegion(new MapSpan(map1.Pins[0].Location, lldegrees, lldegrees));
+			map2.MoveToRegion(new MapSpan(map2.Pins[0].Location, lldegrees, lldegrees));
 		}
 	}
 }
