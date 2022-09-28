@@ -89,7 +89,7 @@ namespace Samples.ViewModel
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine("Unable to stop barometer: {0}", ex);
+				Debug.WriteLine("Unable to stop compass: {0}", ex);
 			}
 		}
 
