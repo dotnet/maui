@@ -68,11 +68,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				try
 				{
-#if IOS16_0_OR_GREATER
 					UIGraphics.EndPDFContext();
-#else
-					UIGraphics.EndPDFContent();
-#endif
 				}
 				catch (Exception exc)
 				{
