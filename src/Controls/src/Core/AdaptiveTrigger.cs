@@ -64,48 +64,23 @@ namespace Microsoft.Maui.Controls
 			DetachEvents();
 
 			_visualElement = VisualState?.VisualStateGroup?.VisualElement;
-			if (_visualElement is not null)
-				_visualElement.PropertyChanged += OnVisualElementPropertyChanged;
 
 			_window = _visualElement?.Window;
 			if (_window is not null)
 			{
-				_window.PropertyChanged += OnWindowPropertyChanged;
 				_window.SizeChanged += OnWindowSizeChanged;
 			}
 		}
 
 		void DetachEvents()
 		{
-			if (_visualElement is not null)
-				_visualElement.PropertyChanged -= OnVisualElementPropertyChanged;
-
 			_visualElement = null;
 
 			if (_window is not null)
 			{
-				_window.PropertyChanged -= OnWindowPropertyChanged;
 				_window.SizeChanged -= OnWindowSizeChanged;
 			}
 			_window = null;
-		}
-
-		void OnVisualElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == VisualElement.WindowProperty.PropertyName)
-			{
-				AttachEvents();
-				UpdateState();
-			}
-		}
-
-		void OnWindowPropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == Window.PageProperty.PropertyName)
-			{
-				AttachEvents();
-				UpdateState();
-			}
 		}
 
 		void OnWindowSizeChanged(object? sender, EventArgs e)
