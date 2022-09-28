@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 using Xunit;
+using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 
 
 namespace Microsoft.Maui.DeviceTests
@@ -438,14 +441,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task OpenFlyout(ShellHandler shellRenderer, TimeSpan? timeOut = null)
+		protected async Task OpenFlyout(ShellHandler shellRenderer, TimeSpan? timeOut = null)
 		{
-			throw new NotImplementedException();
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+
+			var navView = (shellRenderer.PlatformView as ShellView);
+
+			if (navView.IsPaneOpen)
+				return;
+
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			navView.PaneOpened += OnPaneOpened;
+			navView.IsPaneOpen = true;
+
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			void OnPaneOpened(NavigationView sender, object args)
+			{
+				navView.PaneOpened -= OnPaneOpened;
+				taskCompletionSource.SetResult(true);
+			}
 		}
 
-		internal Graphics.Rect GetFrameRelativeToFlyout(ShellHandler shellRenderer, IView view)
+		internal Graphics.Rect GetFrameRelativeToFlyout(ShellHandler handler, IView view)
 		{
-			throw new NotImplementedException();
+			var shellView = handler.PlatformView as ShellView;
+			var flyoutContainer = shellView.RootSplitView.FindName("PaneContentGrid") as UIElement;
+			var titleBar = handler.MauiContext.GetNavigationRootManager().AppTitleBar;
+			var platformView = view.Handler.PlatformView as FrameworkElement;
+			var point = platformView.GetLocationRelativeTo(flyoutContainer);
+
+			// We subtract the titlebar height because the PaneContentGrid extends into the titlebar area but
+			// our flyout content is already offset from the title bar
+			return new Graphics.Rect(point.Value.X, point.Value.Y - titleBar.ActualHeight, platformView.ActualWidth, platformView.ActualHeight);
 		}
 
 		internal Graphics.Rect GetFlyoutFrame(ShellHandler shellRenderer)
