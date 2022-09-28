@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 			return _manager.ArrangeChildren(bounds);
 		}
 
-		IGridLayout Gridify(StackLayout stackLayout)
+		static IGridLayout Gridify(StackLayout stackLayout)
 		{
 			if (stackLayout.Orientation == StackOrientation.Vertical)
 			{
@@ -42,11 +42,11 @@ namespace Microsoft.Maui.Controls
 
 		static IGridLayout ConvertToRows(StackLayout stackLayout)
 		{
-			Grid grid = new AndExpandGrid
+			Grid grid = new AndExpandGrid(stackLayout)
 			{
 				ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition { Width = GridLength.Star } },
 				RowDefinitions = new RowDefinitionCollection(),
-				RowSpacing = stackLayout.Spacing
+				RowSpacing = stackLayout.Spacing,
 			};
 
 			for (int n = 0; n < stackLayout.Count; n++)
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls
 
 		static IGridLayout ConvertToColumns(StackLayout stackLayout)
 		{
-			Grid grid = new AndExpandGrid
+			Grid grid = new AndExpandGrid(stackLayout)
 			{
 				RowDefinitions = new RowDefinitionCollection { new RowDefinition { Height = GridLength.Star } },
 				ColumnDefinitions = new ColumnDefinitionCollection(),
@@ -108,6 +108,12 @@ namespace Microsoft.Maui.Controls
 			protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 			{
 				// Don't do anything here; the base methods will null out Parents, etc., and we don't want that
+			}
+
+			public AndExpandGrid(StackLayout layout) 
+			{
+				Margin = layout.Margin;
+				Padding = layout.Padding;
 			}
 		}
 	}
