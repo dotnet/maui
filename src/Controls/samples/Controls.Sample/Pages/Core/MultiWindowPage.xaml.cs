@@ -24,6 +24,11 @@ namespace Maui.Controls.Sample.Pages
 			Application.Current.CloseWindow(Window);
 		}
 
+		async void OnOpenDialogClicked(object sender, EventArgs e)
+		{
+			await DisplayAlert("Information", "The dialog should open by Window.", "Ok");
+		}
+
 		void OnSetMaxSize(object sender, EventArgs e)
 		{
 			Window.MaximumWidth = 800;
