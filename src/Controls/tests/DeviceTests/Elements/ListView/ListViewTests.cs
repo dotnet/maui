@@ -111,5 +111,46 @@ namespace Microsoft.Maui.DeviceTests
 				ValidatePlatformCells(listView);
 			});
 		}
+
+		[Fact]
+		public async Task ClearItemsListViewDoesntCrash()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"cat",
+				"dog",
+				"catdog"
+			};
+
+			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					return new ViewCell()
+					{
+						View = new VerticalStackLayout()
+						{
+							new Label()
+						}
+					};
+				}),
+				HasUnevenRows = true,
+				ItemsSource = data
+			};
+
+			var layout = new VerticalStackLayout()
+			{
+				listView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
+			{
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+				data.Clear();
+				await Task.Delay(100);
+			});
+		}
 	}
 }
