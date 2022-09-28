@@ -5,46 +5,11 @@ namespace Microsoft.Maui.Controls
 {
 	public class SemanticProperties
 	{
-		public static readonly BindableProperty DescriptionProperty = BindableProperty.CreateAttached("Description", typeof(string), typeof(SemanticProperties), default(string), propertyChanged: OnDescriptionPropertyChanged);
+		public static readonly BindableProperty DescriptionProperty = BindableProperty.CreateAttached("Description", typeof(string), typeof(SemanticProperties), default(string));
 
-		public static readonly BindableProperty HintProperty = BindableProperty.CreateAttached("Hint", typeof(string), typeof(SemanticProperties), default(string), propertyChanged: OnHintPropertyChanged);
+		public static readonly BindableProperty HintProperty = BindableProperty.CreateAttached("Hint", typeof(string), typeof(SemanticProperties), default(string));
 
-		public static readonly BindableProperty HeadingLevelProperty = BindableProperty.CreateAttached("HeadingLevel", typeof(SemanticHeadingLevel), typeof(SemanticProperties), SemanticHeadingLevel.None, propertyChanged: OnHeadingLevelPropertyChanged);
-
-		static void OnHeadingLevelPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			UpdateSemanticsProperty(bindable,
-				(semantics) => semantics.HeadingLevel = (SemanticHeadingLevel)newValue);
-		}
-
-		static void OnDescriptionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			string value = null;
-			if (newValue != null)
-				value = newValue.ToString();
-
-			UpdateSemanticsProperty(bindable,
-				(semantics) => semantics.Description = value);
-		}
-
-		static void OnHintPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			string value = null;
-			if (newValue != null)
-				value = newValue.ToString();
-
-			UpdateSemanticsProperty(bindable,
-				(semantics) => semantics.Hint = value);
-		}
-
-		static void UpdateSemanticsProperty(BindableObject bindable, Action<Semantics> action)
-		{
-			if (bindable is VisualElement ve)
-				action.Invoke(ve.SetupSemantics());
-
-			if (bindable is IView fe)
-				fe.Handler?.UpdateValue(nameof(IView.Semantics));
-		}
+		public static readonly BindableProperty HeadingLevelProperty = BindableProperty.CreateAttached("HeadingLevel", typeof(SemanticHeadingLevel), typeof(SemanticProperties), SemanticHeadingLevel.None);
 
 		public static string GetDescription(BindableObject bindable)
 		{
