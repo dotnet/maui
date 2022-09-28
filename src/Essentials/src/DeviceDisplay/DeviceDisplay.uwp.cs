@@ -108,19 +108,11 @@ namespace Microsoft.Maui.Devices
 			return null;
 		}
 
-		protected override void StartScreenMetricsListeners()
-		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				WindowStateManager.Default.ActiveWindowDisplayChanged += OnWindowDisplayChanged;
-				WindowStateManager.Default.ActiveWindowChanged += OnCurrentWindowChanged;
+		protected override void StartScreenMetricsListeners() =>
+			MainThread.BeginInvokeOnMainThread(_activeWindowTracker.Start);
 
-				_currentAppWindowListeningTo = WindowStateManager.Default.GetActiveAppWindow(false)!;
-
-				if (_currentAppWindowListeningTo != null)
-					_currentAppWindowListeningTo.Changed += OnAppWindowChanged;
-			});
-		}
+		protected override void StopScreenMetricsListeners() =>
+			MainThread.BeginInvokeOnMainThread(_activeWindowTracker.Stop);
 
 		// Currently there isn't a way to detect Orientation Changes unless you subclass the WinUI.Window and watch the messages.
 		// This is the "subtlest" way to currently wire this together.
