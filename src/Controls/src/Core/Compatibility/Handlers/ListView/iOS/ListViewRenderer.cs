@@ -969,7 +969,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_prototype != null)
 				{
 					var element = _prototype.VirtualView;
-					element.Handler?.DisconnectHandler();
+					element?.Handler?.DisconnectHandler();
 					//_prototype?.Dispose();
 					//_prototype = null;
 				}
