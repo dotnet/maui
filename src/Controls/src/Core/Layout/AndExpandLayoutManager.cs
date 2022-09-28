@@ -34,18 +34,19 @@ namespace Microsoft.Maui.Controls
 		{
 			if (stackLayout.Orientation == StackOrientation.Vertical)
 			{
-				return ConvertToRows(stackLayout);
+				return AndExpandLayoutManager.ConvertToRows(stackLayout);
 			}
 
-			return ConvertToColumns(stackLayout);
+			return AndExpandLayoutManager.ConvertToColumns(stackLayout);
 		}
 
-		IGridLayout ConvertToRows(StackLayout stackLayout)
+		static IGridLayout ConvertToRows(StackLayout stackLayout)
 		{
 			Grid grid = new AndExpandGrid
 			{
 				ColumnDefinitions = new ColumnDefinitionCollection { new ColumnDefinition { Width = GridLength.Star } },
-				RowDefinitions = new RowDefinitionCollection()
+				RowDefinitions = new RowDefinitionCollection(),
+				RowSpacing = stackLayout.Spacing
 			};
 
 			for (int n = 0; n < stackLayout.Count; n++)
@@ -68,12 +69,13 @@ namespace Microsoft.Maui.Controls
 			return grid;
 		}
 
-		IGridLayout ConvertToColumns(StackLayout stackLayout)
+		static IGridLayout ConvertToColumns(StackLayout stackLayout)
 		{
 			Grid grid = new AndExpandGrid
 			{
 				RowDefinitions = new RowDefinitionCollection { new RowDefinition { Height = GridLength.Star } },
-				ColumnDefinitions = new ColumnDefinitionCollection()
+				ColumnDefinitions = new ColumnDefinitionCollection(),
+				ColumnSpacing = stackLayout.Spacing
 			};
 
 			for (int n = 0; n < stackLayout.Count; n++)
