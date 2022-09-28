@@ -410,6 +410,7 @@ namespace Microsoft.Maui.Controls
 				oldWindow.HandlerChanged -= visualElement.OnWindowHandlerChanged;
 
 			visualElement.UpdatePlatformUnloadedLoadedWiring(newValue as Window);
+			visualElement.InvalidateStateTriggers(newValue != null);
 		}
 
 		void OnWindowHandlerChanged(object? sender, EventArgs e)

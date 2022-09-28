@@ -46,21 +46,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = label,
 			};
 
-			var window = new Window
+			IWindow window = new Window
 			{
 				Page = page
 			};
 
-			label.IsPlatformEnabled = true;
-			page.IsPlatformEnabled = true;
+			window.FrameChanged(new Rect(0, 0, 100, 100));
 
 			Assert.Equal(label.Background, blueBrush);
 
-			page.Frame = new Rect(0, 0, 500, 100);
+			window.FrameChanged(new Rect(0, 0, 500, 100));
 
 			Assert.Equal(label.Background, greenBrush);
 
-			page.Frame = new Rect(0, 0, 100, 100);
+			window.FrameChanged(new Rect(0, 0, 100, 100));
 
 			Assert.Equal(label.Background, blueBrush);
 		}

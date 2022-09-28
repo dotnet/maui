@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls
 	public sealed class AdaptiveTrigger : StateTriggerBase
 	{
 		VisualElement? _visualElement;
-		Page? _page;
 		Window? _window;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
@@ -70,34 +69,25 @@ namespace Microsoft.Maui.Controls
 
 			_window = _visualElement?.Window;
 			if (_window is not null)
+			{
 				_window.PropertyChanged += OnWindowPropertyChanged;
-
-			var page = _window?.Page;
-
-			if (page is Shell shell)
-				_page = shell.CurrentPage;
-			else if (page is NavigationPage navigationPage)
-				_page = navigationPage.CurrentPage;
-			else
-				_page = page;
-
-			if (_page is not null)
-				_page.SizeChanged += OnPageSizeChanged;
+				_window.SizeChanged += OnWindowSizeChanged;
+			}
 		}
 
 		void DetachEvents()
 		{
 			if (_visualElement is not null)
 				_visualElement.PropertyChanged -= OnVisualElementPropertyChanged;
+
 			_visualElement = null;
 
 			if (_window is not null)
+			{
 				_window.PropertyChanged -= OnWindowPropertyChanged;
+				_window.SizeChanged -= OnWindowSizeChanged;
+			}
 			_window = null;
-
-			if (_page is not null)
-				_page.SizeChanged -= OnPageSizeChanged;
-			_page = null;
 		}
 
 		void OnVisualElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -118,7 +108,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnPageSizeChanged(object? sender, EventArgs e)
+		void OnWindowSizeChanged(object? sender, EventArgs e)
 		{
 			UpdateState();
 		}
@@ -128,8 +118,8 @@ namespace Microsoft.Maui.Controls
 			if (!knownAttached && !IsAttached)
 				return;
 
-			var w = _page?.Width ?? -1;
-			var h = _page?.Height ?? -1;
+			var w = _window?.Width ?? -1;
+			var h = _window?.Height ?? -1;
 
 			if (w == -1 || h == -1)
 				return;
