@@ -1924,7 +1924,6 @@ override Microsoft.Maui.GridLength.ToString() -> string!
 override Microsoft.Maui.Handlers.ActivityIndicatorHandler.CreatePlatformView() -> Tizen.UIExtensions.NUI.GraphicsView.ActivityIndicator!
 override Microsoft.Maui.Handlers.ApplicationHandler.CreatePlatformElement() -> Tizen.Applications.CoreApplication!
 override Microsoft.Maui.Handlers.BorderHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentViewGroup!
-override Microsoft.Maui.Handlers.BorderHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.BorderHandler.SetupContainer() -> void
 override Microsoft.Maui.Handlers.BorderHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.ButtonHandler.ConnectHandler(Tizen.UIExtensions.NUI.Button! platformView) -> void
