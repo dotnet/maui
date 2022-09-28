@@ -12,7 +12,10 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		{
 			ValidateOpen(number);
 
-			await Launcher.OpenAsync($"tel:{number}");
+			if (ApiInformation.IsTypePresent("Windows.ApplicationModel.Calls.PhoneCallManager"))
+				PhoneCallManager.ShowPhoneCallUI(number, string.Empty);
+			else
+				await Launcher.OpenAsync($"tel:{number}");
 		}
 	}
 }
