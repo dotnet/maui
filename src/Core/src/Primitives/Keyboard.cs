@@ -77,6 +77,7 @@ namespace Microsoft.Maui
 			get { return s_url ??= new UrlKeyboard(); }
 		}
 		
+		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Url']/Docs/*" />
 		public static Keyboard None
 		{
 			get { return s_none ??= new NoneKeyboard(); }
