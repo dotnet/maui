@@ -697,8 +697,6 @@ namespace Microsoft.Maui.Controls
 				if (value && IsPlatformStateConsistent)
 					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 
-				InvalidateStateTriggers(IsPlatformEnabled);
-
 				OnIsPlatformEnabledChanged();
 				PlatformEnabledChanged?.Invoke(this, EventArgs.Empty);
 			}
