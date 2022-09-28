@@ -79,7 +79,7 @@ namespace Microsoft.Maui
 		
 		public static Keyboard None
 		{
-			get { return s_none ??= new NoneKeybaord(); }
+			get { return s_none ??= new NoneKeyboard(); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Create']/Docs/*" />
