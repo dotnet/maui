@@ -63,17 +63,25 @@ namespace Microsoft.Maui.Platform
 					var result = await imageSource.UpdateSourceAsync(PlatformView, ImageSourceServiceProvider, SetImage!, token)
 						.ConfigureAwait(false);
 
-					SourceManager.CompleteLoad(result);
+					if (result != null)
+						SourceManager.CompleteLoad(result);
+					else
+						SetNullImage();
 #else
 					await Task.CompletedTask;
 #endif
 				}
 				else
 				{
-					SetImage?.Invoke(null);
-					SourceManager.CompleteLoad(null);
+					SetNullImage();
 				}
 			}
+		}
+
+		void SetNullImage()
+		{
+			SetImage?.Invoke(null);
+			SourceManager.CompleteLoad(null);
 		}
 	}
 }
