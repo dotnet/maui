@@ -22,6 +22,8 @@ namespace Microsoft.Maui
 		static Keyboard? s_telephone;
 
 		static Keyboard? s_chat;
+		
+		static Keyboard? s_none;
 
 		internal Keyboard()
 		{
@@ -73,6 +75,11 @@ namespace Microsoft.Maui
 		public static Keyboard Url
 		{
 			get { return s_url ??= new UrlKeyboard(); }
+		}
+		
+		public static Keyboard None
+		{
+			get { return s_none ??= new NoneKeybaord(); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Create']/Docs/*" />
