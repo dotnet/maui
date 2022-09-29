@@ -115,8 +115,20 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 			AndroidSystemImageAbi.x86,
 			AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice(
+			"Android_API27",
+			AndroidApiLevel.Oreo_8_1 ,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.x86,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
 			"Android_API28",
 			AndroidApiLevel.P,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.x86,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API29",
+			AndroidApiLevel.Q,
 			AndroidSystemImageApi.GooglePlayStore,
 			AndroidSystemImageAbi.x86,
 			AndroidVirtualDevice.NEXUS_5X)
