@@ -9,7 +9,6 @@
     <ApplicationId>com.microsoft.maui.benchmarks</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <PublishTrimmed>false</PublishTrimmed>
     <!-- Physical device is recommended -->
     <RuntimeIdentifier>android-arm64</RuntimeIdentifier>
     <!-- HACK: to workaround System.IO.FileNotFoundException: /System.Private.CoreLib.dll -->
