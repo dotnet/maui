@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Animations
 		internal WeakReference<IAnimator>? Parent { get; set; }
 
 		/// <summary>
-		/// A callback that is invoked whenever this animation finishes.
+		/// A callback that is invoked when this animation finishes.
 		/// </summary>
 		public Action? Finished { get; set; }
 
