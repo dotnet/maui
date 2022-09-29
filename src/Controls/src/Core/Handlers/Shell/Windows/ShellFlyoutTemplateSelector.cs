@@ -29,6 +29,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (item is MenuItem)
 				return MenuItemTemplate;
 
+			if (item is NavigationViewItemViewModel nvm && nvm.Data is MenuItem)
+				return MenuItemTemplate;
+
 			return BaseShellItemTemplate;
 		}
 	}
