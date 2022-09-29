@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
+    <RuntimeIdentifier Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
