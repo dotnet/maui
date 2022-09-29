@@ -8,6 +8,7 @@
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn),CA1416</NoWarn>
+    <BuildInParallel>false</BuildInParallel>
   </PropertyGroup>
 
   <PropertyGroup>
