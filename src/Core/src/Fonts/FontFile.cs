@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// The filename for this font.
 		/// </summary>
-		/// <remarks>This should not include the extension. If you want the filename including the extension use <see cref="FileNameWithExtension"/>.</remarks>
+		/// <remarks>This should not include the extension. If you want the filename including the extension use <see cref="FileNameWithExtension()"/>.</remarks>
 		public string? FileName { get; set; }
 
 		/// <summary>

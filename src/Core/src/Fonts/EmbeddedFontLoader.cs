@@ -1,5 +1,8 @@
 #nullable enable
 using System;
+#if __ANDROID__
+using System.IO;
+#endif
 
 namespace Microsoft.Maui
 {
