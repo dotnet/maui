@@ -48,7 +48,10 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 				await Task.Delay(WaitTimeInMS);
 			}
 
-			throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'. Most recent value was '{latestControlValue}'.");
+			var documentHtmlJavaScriptEncoded = await ExecuteScriptAsync(webView, "document.body.innerHTML");
+			var documentHtmlString = System.Text.Json.JsonSerializer.Deserialize<string>(documentHtmlJavaScriptEncoded);
+
+			throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'. Most recent value was '{latestControlValue}'. document.body.innerHTML = {documentHtmlString}");
 		}
 
 		class JavascriptResult : Java.Lang.Object, IValueCallback
