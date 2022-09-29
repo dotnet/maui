@@ -16,8 +16,8 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Creates a new <see cref="FileSystemEmbeddedFontLoader"/> instance.
 		/// </summary>
-		/// <param name="rootPath">The path that will be used to copy the font to on the filesystem.</param>
-		/// <param name="serviceProvider">The applications <see cref="IServiceProvider"/>.
+		/// <param name="rootPath">Destination filesystem path for the font.</param>
+		/// <param name="serviceProvider">The application's <see cref="IServiceProvider"/>.
 		/// Typically this is provided through dependency injection for logging purposes.</param>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="rootPath"/> is null.</exception>
 		public FileSystemEmbeddedFontLoader(string rootPath, IServiceProvider? serviceProvider = null)
@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Creates a new <see cref="FileSystemEmbeddedFontLoader"/> instance.
 		/// </summary>
-		/// <param name="getRootPath">Function that is executed to retrieve the path that will be used to copy the font to on the filesystem.</param>
+		/// <param name="getRootPath">Function which retrieves the destination filesystem path for the font.</param>
 		/// <param name="serviceProvider">The applications <see cref="IServiceProvider"/>.
 		/// Typically this is provided through dependency injection for logging purposes.</param>
 		// Allows for delay-loading _rootPath, in case it is expensive and isn't always used.
