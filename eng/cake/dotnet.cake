@@ -87,9 +87,9 @@ Task("dotnet-build")
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount:1);
         else
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf",  maxCpuCount:1);
     });
 
 Task("dotnet-samples")
@@ -598,7 +598,8 @@ void RunMSBuildWithDotNet(
     bool warningsAsError = false,
     bool restore = true,
     string targetFramework = null,
-    bool forceDotNetBuild = false)
+    bool forceDotNetBuild = false,
+    int maxCpuCount = 0)
 {
     var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
 
@@ -613,7 +614,7 @@ void RunMSBuildWithDotNet(
 
     var msbuildSettings = new DotNetCoreMSBuildSettings()
         .SetConfiguration(configuration)
-        .SetMaxCpuCount(0)
+        .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
         .EnableBinaryLogger(binlog);
 
