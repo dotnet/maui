@@ -410,7 +410,7 @@
             <_MauiSplashScreens Include="$(_MauiIntermediateSplashScreen)splash\*" />
             <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
-
+        <MakeDir Directories="$(IntermediateOutputPath)"/>
         <!-- Stamp file for Outputs -->
         <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
         <ItemGroup>
