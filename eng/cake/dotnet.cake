@@ -133,6 +133,8 @@ Task("dotnet-templates")
 
             // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
+            //Try not restore dependecies of 6.0.10
+            { "DisableTransitiveFrameworkReferenceDownloads",  "true" },
         };
 
         var templates = new Dictionary<string, Action<DirectoryPath>> {
