@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Animations
 		public double CurrentTime { get; protected set; }
 
 		/// <summary>
-		/// 
+		/// Progress of this animation in percentage.
 		/// </summary>
 		public double Progress { get; protected set; }
 
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Animations
 		}
 
 		/// <summary>
-		/// Updates this animation.
+		/// Updates this animation by updating <see cref="Progress"/> and invoking <see cref="Step"/>.
 		/// </summary>
 		/// <param name="percent">Progress of this animation in percentage.</param>
 		public virtual void Update(double percent)
@@ -334,7 +334,8 @@ namespace Microsoft.Maui.Animations
 		}
 
 		/// <summary>
-		/// 
+		/// Removes this animation from it's <see cref="Parent"/>.
+		/// If there is no <see cref="Parent"/>, nothing will happen.
 		/// </summary>
 		public void RemoveFromParent()
 		{
