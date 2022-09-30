@@ -39,8 +39,13 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		protected SwipeItemMenuItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? CommandMapper)
+		protected SwipeItemMenuItemHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		protected SwipeItemMenuItemHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

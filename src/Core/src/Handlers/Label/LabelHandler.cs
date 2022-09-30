@@ -50,7 +50,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public LabelHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public LabelHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public LabelHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
