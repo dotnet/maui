@@ -46,23 +46,65 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = label,
 			};
 
-			var window = new Window
+			IWindow window = new Window
 			{
 				Page = page
 			};
 
-			label.IsPlatformEnabled = true;
-			page.IsPlatformEnabled = true;
+			window.FrameChanged(new Rect(0, 0, 100, 100));
 
 			Assert.Equal(label.Background, blueBrush);
 
-			page.Frame = new Rect(0, 0, 500, 100);
+			window.FrameChanged(new Rect(0, 0, 500, 100));
 
 			Assert.Equal(label.Background, greenBrush);
 
-			page.Frame = new Rect(0, 0, 100, 100);
+			window.FrameChanged(new Rect(0, 0, 100, 100));
 
 			Assert.Equal(label.Background, blueBrush);
+		}
+
+
+		[Fact]
+		public void ValidateAdaptiveTriggerDisconnects()
+		{
+			var greenBrush = new SolidColorBrush(Colors.Green);
+			var label = new Label();
+			var trigger = new AdaptiveTrigger { MinWindowWidth = 300 };
+
+
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState
+						{
+							Name = "Large",
+							StateTriggers = { trigger },
+							Setters = { new Setter { Property = Label.BackgroundProperty, Value = greenBrush } }
+						},
+					}
+				}
+			});
+
+			var page = new ContentPage
+			{
+				Content = label,
+			};
+
+			Assert.False(trigger.IsAttached);
+			_ = new Window
+			{
+				Page = page
+			};
+
+			Assert.True(trigger.IsAttached);
+
+			page.Content = new Label();
+
+			Assert.False(trigger.IsAttached);
 		}
 	}
 }
