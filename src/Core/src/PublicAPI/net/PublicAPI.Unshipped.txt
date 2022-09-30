@@ -41,7 +41,7 @@ Microsoft.Maui.Handlers.RefreshViewHandler.RefreshViewHandler(Microsoft.Maui.IPr
 Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.SearchBarHandler.SearchBarHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
-Microsoft.Maui.Handlers.SearchBarHandlSer.SearchBarHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.SearchBarHandler.SearchBarHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.ShapeViewHandler.ShapeViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Handlers.ShapeViewHandler.ShapeViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.SliderHandler.SliderHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
