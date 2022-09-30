@@ -12,5 +12,11 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapLineBreakMode(ILabelHandler handler, Label label) { }
 		public static void MapMaxLines(ILabelHandler handler, Label label) { }
+
+
+		public static void MapTextType(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
+		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
+		public static void MapLineBreakMode(LabelHandler handler, Label label) => MapLineBreakMode((ILabelHandler)handler, label);
+		public static void MapMaxLines(LabelHandler handler, Label label) => MapMaxLines((ILabelHandler)handler, label);
 	}
 }

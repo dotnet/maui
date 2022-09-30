@@ -4,6 +4,11 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Label
 	{
+		public static void MapDetectReadingOrderFromContent(LabelHandler handler, Label label) => MapDetectReadingOrderFromContent((ILabelHandler)handler, label);
+		public static void MapTextType(LabelHandler handler, Label label) => MapTextType((ILabelHandler)handler, label);
+		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
+
+
 		public static void MapDetectReadingOrderFromContent(ILabelHandler handler, Label label) =>
 			Platform.TextBlockExtensions.UpdateDetectReadingOrderFromContent(handler.PlatformView, label);
 

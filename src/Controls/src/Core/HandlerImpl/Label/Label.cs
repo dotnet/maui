@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 			[nameof(TextColor)] = MapTextColor,
 #endif
-#if IOS
+#if __IOS__
 			[nameof(TextDecorations)] = MapTextDecorations,
 			[nameof(CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(LineHeight)] = MapLineHeight,
