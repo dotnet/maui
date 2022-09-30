@@ -108,6 +108,9 @@ namespace Microsoft.Maui.DeviceTests
 			GetNativeEntry(entryHandler).GetCursorPosition();
 
 		int GetNativeSelectionLength(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).SelectionLength;
+			GetNativeEntry(entryHandler).SelectionLength; 
+		
+		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).IsTextPredictionEnabled;
 	}
 }
