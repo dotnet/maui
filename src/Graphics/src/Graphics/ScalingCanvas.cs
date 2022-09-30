@@ -21,12 +21,6 @@ namespace Microsoft.Maui.Graphics
 			_blurrableCanvas = _canvas as IBlurrableCanvas;
 		}
 
-		public float RetinaScale
-		{
-			get => _canvas.RetinaScale;
-			set => _canvas.RetinaScale = value;
-		}
-
 		public float DisplayScale
 		{
 			get => _canvas.DisplayScale;

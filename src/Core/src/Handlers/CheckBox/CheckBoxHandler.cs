@@ -33,7 +33,12 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public CheckBoxHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public CheckBoxHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public CheckBoxHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}

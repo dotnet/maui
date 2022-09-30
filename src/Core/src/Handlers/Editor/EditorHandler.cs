@@ -45,7 +45,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public EditorHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public EditorHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public EditorHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
