@@ -326,7 +326,6 @@ namespace Microsoft.Maui.Controls
 		// This creates a nested class to keep track of IElementConfiguration<Cell> because adding 
 		// IElementConfiguration<Cell> to the Cell itself tanks performance on UWP ListViews
 		// Issue has been logged with UWP
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='On']/Docs/*" />
 		public IPlatformElementConfiguration<T, Cell> On<T>() where T : IConfigPlatform
 		{
 			return GetElementConfiguration().On<T>();
@@ -346,6 +345,7 @@ namespace Microsoft.Maui.Controls
 					new Lazy<PlatformConfigurationRegistry<Cell>>(() => new PlatformConfigurationRegistry<Cell>(cell));
 			}
 
+			/// <inheritdoc/>
 			public IPlatformElementConfiguration<T, Cell> On<T>() where T : IConfigPlatform
 			{
 				return _platformConfigurationRegistry.Value.On<T>();

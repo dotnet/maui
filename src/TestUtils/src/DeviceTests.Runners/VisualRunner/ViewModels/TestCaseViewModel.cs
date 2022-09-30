@@ -32,7 +32,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 		public string AssemblyFileName { get; }
 
-		public string DisplayName => TestResult?.TestResultMessage?.Test?.DisplayName ?? TestCase.DisplayName;
+		public string DisplayName => (_testResults.Count > 1) ? TestResult?.TestResultMessage?.Test?.DisplayName ?? TestCase.DisplayName : TestCase.DisplayName;
 
 		public string? Message
 		{
