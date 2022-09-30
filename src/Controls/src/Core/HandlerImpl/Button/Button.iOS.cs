@@ -9,9 +9,6 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button
 	{
-		private static void MapPadding(ButtonHandler handler, Button button) =>
-			MapPadding((IButtonHandler)handler, button);
-
 		protected override Size ArrangeOverride(Rect bounds)
 		{
 			var result = base.ArrangeOverride(bounds);
@@ -31,6 +28,7 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.PlatformView.UpdatePadding(button);
 		}
+
 		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);

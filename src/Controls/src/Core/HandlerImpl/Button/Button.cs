@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper)
 		{
 			[nameof(ContentLayout)] = MapContentLayout,
-#if __IOS__
+#if IOS
 			[nameof(Padding)] = MapPadding,
 #endif
 #if WINDOWS
