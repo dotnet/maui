@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if ANDROID
+#if ANDROID || WINDOWS
 		[Fact]
 		public async Task FlyoutHeaderAdaptsToMinimumHeight()
 		{
@@ -85,10 +85,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OpenFlyout(handler);
 				var flyoutFrame = GetFrameRelativeToFlyout(handler, shell.FlyoutHeader as IView);
-
 				AssertionExtensions.CloseEnough(flyoutFrame.Height, 30);
 			});
 		}
+#endif
+
+#if ANDROID
 
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]

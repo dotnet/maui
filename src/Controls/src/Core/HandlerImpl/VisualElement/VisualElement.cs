@@ -16,7 +16,10 @@ namespace Microsoft.Maui.Controls
 				[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName] = MapAccessKeyVerticalOffset,
 #endif
 				[nameof(BackgroundColor)] = MapBackgroundColor,
-				[nameof(Page.BackgroundImageSource)] = MapBackgroundImageSource
+				[nameof(Page.BackgroundImageSource)] = MapBackgroundImageSource,
+				[SemanticProperties.DescriptionProperty.PropertyName] = MapSemanticPropertiesDescriptionProperty,
+				[SemanticProperties.HintProperty.PropertyName] = MapSemanticPropertiesHintProperty,
+				[SemanticProperties.HeadingLevelProperty.PropertyName] = MapSemanticPropertiesHeadingLevelProperty,
 			};
 
 		internal static void RemapForControls()
@@ -33,6 +36,21 @@ namespace Microsoft.Maui.Controls
 		public static void MapBackgroundImageSource(IViewHandler handler, IView view)
 		{
 			handler.UpdateValue(nameof(Background));
+		}
+
+		static void MapSemanticPropertiesHeadingLevelProperty(IViewHandler handler, IView element) =>
+			(element as VisualElement)?.UpdateSemanticsFromMapper();
+
+		static void MapSemanticPropertiesHintProperty(IViewHandler handler, IView element) =>
+			(element as VisualElement)?.UpdateSemanticsFromMapper();
+
+		static void MapSemanticPropertiesDescriptionProperty(IViewHandler handler, IView element) =>
+			(element as VisualElement)?.UpdateSemanticsFromMapper();
+
+		void UpdateSemanticsFromMapper()
+		{
+			UpdateSemantics();
+			Handler?.UpdateValue(nameof(IView.Semantics));
 		}
 	}
 }

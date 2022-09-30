@@ -8,10 +8,16 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.ViewExtensions']/Docs/*" />
+	/// <summary>
+	/// Extension methods for <see cref="VisualElement" />s, providing animatable scaling, rotation, and layout functions.
+	/// </summary>
 	public static class ViewExtensions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='CancelAnimations']/Docs/*" />
+		/// <summary>
+		/// Aborts all animations (e.g. <c>LayoutTo</c>, <c>TranslateTo</c>, <c>ScaleTo</c>, etc.) on the <paramref name= "view" /> element.
+		/// </summary>
+		///	<param name="view">The view on which this method operates.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static void CancelAnimations(this VisualElement view)
 		{
 			if (view == null)
@@ -51,7 +57,15 @@ namespace Microsoft.Maui.Controls
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='FadeTo']/Docs/*" />
+
+		/// <summary>
+		/// Returns a task that performs the fade that is described by the <paramref name="opacity" />, <paramref name = "length" />, and <paramref name="easing" /> parameters.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="opacity">The opacity to fade to.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> FadeTo(this VisualElement view, double opacity, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -60,7 +74,15 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.Opacity, opacity, nameof(FadeTo), (v, value) => v.Opacity = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='LayoutTo']/Docs/*" />
+		/// <summary>
+		/// <summary>Returns a task that eases the bounds of the <see cref="VisualElement" /> that is specified by the <paramref name="view" />
+		/// to the rectangle that is specified by the <paramref name="bounds" /> parameter.</summary>
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="bounds">The layout bounds.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> LayoutTo(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -80,7 +102,14 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, 0, 1, nameof(LayoutTo), (v, value) => v.Layout(computeBounds(value)), length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RelRotateTo']/Docs/*" />
+		/// <summary>
+		/// Rotates the <see cref="VisualElement" /> that is specified by <paramref name="view" /> from its current rotation by <paramref name="drotation" />.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="drotation">The relative rotation.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RelRotateTo(this VisualElement view, double drotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -89,7 +118,15 @@ namespace Microsoft.Maui.Controls
 			return view.RotateTo(view.Rotation + drotation, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RelScaleTo']/Docs/*" />
+		/// <summary>
+		/// Returns a task that scales the <see cref="VisualElement" /> that is specified by <paramref name="view" />
+		/// from its current scale to <paramref name="dscale" />.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="dscale">The relative scale.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RelScaleTo(this VisualElement view, double dscale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -98,7 +135,15 @@ namespace Microsoft.Maui.Controls
 			return view.ScaleTo(view.Scale + dscale, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RotateTo']/Docs/*" />
+		/// <summary>
+		/// Returns a task that rotates the <see cref="VisualElement" /> that is specified by <paramref name="view" />
+		/// that is described by the <paramref name="rotation" />, <paramref name="length" />, and <paramref name="easing" /> parameters.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="rotation">The final rotation value.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RotateTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -107,7 +152,15 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.Rotation, rotation, nameof(RotateTo), (v, value) => v.Rotation = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RotateXTo']/Docs/*" />
+		/// <summary>
+		/// Returns a task that skews the X axis of the the <see cref="VisualElement" /> that is specified by <paramref name="view" />
+		/// by <paramref name="rotation" />, taking time <paramref name="length" /> and using <paramref name="easing" />.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="rotation">The final rotation value.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RotateXTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -116,7 +169,15 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.RotationX, rotation, nameof(RotateXTo), (v, value) => v.RotationX = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='RotateYTo']/Docs/*" />
+		/// <summary>
+		/// Returns a task that skews the Y axis of the the <see cref="VisualElement" /> that is specified by <paramref name="view" />
+		/// by <paramref name="rotation" />, taking time <paramref name="length" /> and using <paramref name="easing" />.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="rotation">The final rotation value.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RotateYTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -125,7 +186,14 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.RotationY, rotation, nameof(RotateYTo), (v, value) => v.RotationY = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='ScaleTo']/Docs/*" />
+		/// <summary>
+		/// Returns a task that scales the <see cref="VisualElement" /> that is specified by <paramref name="view" /> to the absolute scale factor <paramref name="scale" />.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="scale">The final absolute scale.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> ScaleTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -134,7 +202,15 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.Scale, scale, nameof(ScaleTo), (v, value) => v.Scale = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='ScaleXTo']/Docs/*" />
+		/// <summary>
+		/// Returns a task that scales the X axis of the the <see cref="VisualElement" /> that is specified by <paramref name="view" />
+		/// to the absolute scale factor <paramref name="scale" />.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="scale">The final absolute scale.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -143,7 +219,15 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.ScaleX, scale, nameof(ScaleXTo), (v, value) => v.ScaleX = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='ScaleYTo']/Docs/*" />
+		/// <summary>
+		/// Returns a task that scales the Y axis of the the <see cref="VisualElement" /> that is specified by <paramref name="view" />
+		/// to the absolute scale factor <paramref name="scale" />.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="scale">The final absolute scale.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
@@ -152,7 +236,16 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.ScaleY, scale, nameof(ScaleYTo), (v, value) => v.ScaleY = value, length, easing);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewExtensions.xml" path="//Member[@MemberName='TranslateTo']/Docs/*" />
+		/// <summary>
+		/// Animates an elements <see cref="VisualElement.TranslationX"/> and <see cref="VisualElement.TranslationY"/> properties
+		/// from their current values to the new values. This ensures that the input layout is in the same position as the visual layout.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="x">The x component of the final translation vector.</param>
+		/// <param name="y">The y component of the final translation vector.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)

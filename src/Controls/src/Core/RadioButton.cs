@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls
 				new PlatformConfigurationRegistry<RadioButton>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, RadioButton> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

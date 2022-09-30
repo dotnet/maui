@@ -22,7 +22,6 @@ namespace Microsoft.Maui
 		{
 		}
 
-		/// <inheritdoc/>
 		public override void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			base.Draw(canvas, dirtyRect);

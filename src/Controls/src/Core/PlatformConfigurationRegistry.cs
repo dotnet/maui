@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>
-	/// Helper that handles storing and lookup of platform specifics implementations
-	/// </summary>
-	/// <typeparam name="TElement">The Element type</typeparam>
+	/// <inheritdoc/>
 	public class PlatformConfigurationRegistry<TElement> : IElementConfiguration<TElement>
 		where TElement : Element
 	{
@@ -19,6 +15,7 @@ namespace Microsoft.Maui.Controls
 			_element = element;
 		}
 
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, TElement> On<T>() where T : IConfigPlatform
 		{
 			if (_platformSpecifics.ContainsKey(typeof(T)))

@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, TimePicker> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
