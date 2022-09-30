@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-#region IDisposable Support
+		#region IDisposable Support
 
 		public void Dispose()
 		{
@@ -205,6 +205,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-#endregion IDisposable Support
+		#endregion IDisposable Support
 	}
 }
