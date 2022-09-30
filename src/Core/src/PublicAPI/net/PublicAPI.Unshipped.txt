@@ -61,7 +61,8 @@ Microsoft.Maui.Handlers.TimePickerHandler.TimePickerHandler(Microsoft.Maui.IProp
 Microsoft.Maui.Handlers.TimePickerHandler.TimePickerHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.ToolbarHandler.ToolbarHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Handlers.ToolbarHandler.ToolbarHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
-Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.MenuFlyoutHandler
 Microsoft.Maui.Handlers.MenuFlyoutHandler.Add(Microsoft.Maui.IMenuElement! view) -> void
 Microsoft.Maui.Handlers.MenuFlyoutHandler.Clear() -> void

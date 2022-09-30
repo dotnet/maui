@@ -61,7 +61,8 @@ Microsoft.Maui.Handlers.RadioButtonHandler.RadioButtonHandler(Microsoft.Maui.IPr
 Microsoft.Maui.Handlers.RadioButtonHandler.RadioButtonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.RefreshViewHandler.RefreshViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Handlers.RefreshViewHandler.RefreshViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
-Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Handlers.MenuFlyoutHandler
 Microsoft.Maui.Handlers.MenuFlyoutHandler.Add(Microsoft.Maui.IMenuElement! view) -> void
