@@ -949,6 +949,7 @@ Microsoft.Maui.IMenuFlyout
 Microsoft.Maui.IMenuFlyoutItem
 Microsoft.Maui.IMenuFlyoutSeparator
 Microsoft.Maui.IMenuFlyoutSubItem
+Microsoft.Maui.ITextInput.IsSpellCheckEnabled.get -> bool
 Microsoft.Maui.IPadding
 Microsoft.Maui.IPadding.Padding.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.IPersistedState
@@ -2207,6 +2208,7 @@ static Microsoft.Maui.Handlers.EntryHandler.MapSelectionLength(Microsoft.Maui.Ha
 static Microsoft.Maui.Handlers.EntryHandler.MapText(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapTextColor(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapVerticalTextAlignment(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.FlyoutViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IFlyoutView!, Microsoft.Maui.Handlers.IFlyoutViewHandler!>!
 static Microsoft.Maui.Handlers.FlyoutViewHandler.MapDetail(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
 static Microsoft.Maui.Handlers.FlyoutViewHandler.MapFlyout(Microsoft.Maui.Handlers.IFlyoutViewHandler! handler, Microsoft.Maui.IFlyoutView! flyoutView) -> void
