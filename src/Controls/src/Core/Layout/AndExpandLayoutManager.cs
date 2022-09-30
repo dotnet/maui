@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls
 				// Don't do anything here; the base methods will null out Parents, etc., and we don't want that
 			}
 
-			public AndExpandGrid(StackLayout layout) 
+			public AndExpandGrid(StackLayout layout)
 			{
 				Margin = layout.Margin;
 				Padding = layout.Padding;
