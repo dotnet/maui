@@ -103,11 +103,10 @@ Task("dotnet-build")
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
         }
         else
         {
-            // NOTE: intentionally omit maxCpuCount, to avoid an issue with the 7.0.100 .NET SDK
             RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
         }
     });
@@ -121,7 +120,7 @@ Task("dotnet-samples")
             ["UseWorkload"] = "true",
             // ["GenerateAppxPackageOnBuild"] = "true",
             ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        }, maxCpuCount: 1, binlogPrefix: "sample-");
+        }, binlogPrefix: "sample-");
     });
 
 Task("dotnet-templates")
