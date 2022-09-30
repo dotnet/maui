@@ -29,8 +29,13 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		protected SwipeItemViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? CommandMapper)
+		protected SwipeItemViewHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		protected SwipeItemViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

@@ -38,7 +38,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public ApplicationHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public ApplicationHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public ApplicationHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}

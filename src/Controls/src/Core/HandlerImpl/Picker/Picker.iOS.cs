@@ -10,5 +10,8 @@ namespace Microsoft.Maui.Controls
 			if (handler is PickerHandler ph)
 				ph.UpdateImmediately = picker.OnThisPlatform().UpdateMode() == UpdateMode.Immediately;
 		}
+
+		public static void MapUpdateMode(PickerHandler handler, Picker picker) =>
+			MapUpdateMode((IPickerHandler)handler, picker);
 	}
 }

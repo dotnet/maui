@@ -123,27 +123,3 @@ static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> 
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
 Microsoft.Maui.Controls.ILayoutManagerFactory
 ~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
-*REMOVED*~static Microsoft.Maui.Controls.Entry.MapAdjustsFontSizeToFitWidth(Microsoft.Maui.Handlers.EntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Entry.MapCursorColor(Microsoft.Maui.Handlers.EntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.EntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
-*REMOVED*~static Microsoft.Maui.Controls.DatePicker.MapUpdateMode(Microsoft.Maui.Handlers.DatePickerHandler handler, Microsoft.Maui.Controls.DatePicker datePicker) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapCharacterSpacing(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapFont(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapLineHeight(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapText(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapTextColor(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapTextDecorations(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.LayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.LayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
-*REMOVED*~static Microsoft.Maui.Controls.NavigationPage.MapIsNavigationBarTranslucent(Microsoft.Maui.Handlers.NavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
-*REMOVED*~static Microsoft.Maui.Controls.NavigationPage.MapPrefersLargeTitles(Microsoft.Maui.Handlers.NavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Picker.MapUpdateMode(Microsoft.Maui.Handlers.PickerHandler handler, Microsoft.Maui.Controls.Picker picker) -> void
-*REMOVED*~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.RadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
-*REMOVED*~static Microsoft.Maui.Controls.ScrollView.MapShouldDelayContentTouches(Microsoft.Maui.Handlers.ScrollViewHandler handler, Microsoft.Maui.Controls.ScrollView scrollView) -> void
-*REMOVED*~static Microsoft.Maui.Controls.SearchBar.MapSearchBarStyle(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
-*REMOVED*~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
-*REMOVED*~static Microsoft.Maui.Controls.TimePicker.MapUpdateMode(Microsoft.Maui.Handlers.TimePickerHandler handler, Microsoft.Maui.Controls.TimePicker timePicker) -> void
