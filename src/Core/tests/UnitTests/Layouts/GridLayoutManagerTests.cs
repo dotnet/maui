@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Maui.Controls;
@@ -2279,6 +2280,48 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			_ = MeasureAndArrange(grid, double.PositiveInfinity, 200);
 
 			view0.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Any<double>());
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarColumnWidthLimitedToGridWidth()
+		{
+			var grid = CreateGridLayout(columns: "*", rows: "Auto, Auto");
+
+			var screenWidth = 500;
+
+			var view0 = CreateTestView(new Size(600, 20));
+			var view1 = CreateTestView(new Size(100, 20));
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 1);
+
+			SubstituteChildren(grid, view0, view1);
+
+			_ = MeasureAndArrange(grid, screenWidth, 200);
+
+			AssertArranged(view1, new Rect(0, 20, 500, 20));
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarRowHeightLimitedToGridHeight()
+		{
+			var grid = CreateGridLayout(rows: "*", columns: "Auto, Auto");
+
+			var screenHeight = 500;
+
+			var view0 = CreateTestView(new Size(20, 600));
+			var view1 = CreateTestView(new Size(20, 100));
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+
+			SubstituteChildren(grid, view0, view1);
+
+			_ = MeasureAndArrange(grid, 200, screenHeight);
+
+			AssertArranged(view1, new Rect(20, 0, 20, 500));
 		}
 	}
 }
