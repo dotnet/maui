@@ -87,9 +87,9 @@ Task("dotnet-build")
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
         else
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", maxCpuCount: 1);
     });
 
 Task("dotnet-samples")
@@ -101,7 +101,7 @@ Task("dotnet-samples")
             ["UseWorkload"] = "true",
             // ["GenerateAppxPackageOnBuild"] = "true",
             ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        });
+        }, maxCpuCount: 1);
     });
 
 Task("dotnet-templates")
@@ -133,6 +133,8 @@ Task("dotnet-templates")
 
             // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
+            //Try not restore dependecies of 6.0.10
+            { "DisableTransitiveFrameworkReferenceDownloads",  "true" },
         };
 
         var templates = new Dictionary<string, Action<DirectoryPath>> {
@@ -596,7 +598,8 @@ void RunMSBuildWithDotNet(
     bool warningsAsError = false,
     bool restore = true,
     string targetFramework = null,
-    bool forceDotNetBuild = false)
+    bool forceDotNetBuild = false,
+    int maxCpuCount = 0)
 {
     var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
 
@@ -611,7 +614,7 @@ void RunMSBuildWithDotNet(
 
     var msbuildSettings = new DotNetCoreMSBuildSettings()
         .SetConfiguration(configuration)
-        .SetMaxCpuCount(0)
+        .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
         .EnableBinaryLogger(binlog);
 
