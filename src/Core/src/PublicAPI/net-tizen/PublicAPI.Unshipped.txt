@@ -1,4 +1,5 @@
 ﻿#nullable enable
+Microsoft.Maui.IBoxView
 Microsoft.Maui.Platform.MauiFlyoutView
 Microsoft.Maui.Platform.MauiFlyoutView.MauiFlyoutView() -> void
 Microsoft.Maui.Platform.MauiPicker
