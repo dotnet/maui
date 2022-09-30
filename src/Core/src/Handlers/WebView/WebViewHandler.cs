@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IWebView, IWebViewHandler> Mapper = new PropertyMapper<IWebView, IWebViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IWebView.Source)] = MapSource,
+			[nameof(IWebView.UserAgent)] = MapUserAgent,
 #if __ANDROID__
 			[nameof(WebViewClient)] = MapWebViewClient,
 			[nameof(WebChromeClient)] = MapWebChromeClient,

@@ -136,3 +136,6 @@ static Microsoft.Maui.Controls.Toolbar.MapTitleIcon(Microsoft.Maui.Handlers.IToo
 static Microsoft.Maui.Controls.Toolbar.MapTitleView(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
 *REMOVED*~override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer
+~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
+~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
+~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty

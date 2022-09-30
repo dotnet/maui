@@ -38,6 +38,17 @@ namespace Microsoft.Maui.Platform
 			platformWebView.Settings.DomStorageEnabled = domStorageEnabled;
 		}
 
+		public static void UpdateUserAgent(this AWebView platformWebView, IWebView webView)
+		{
+			if (platformWebView.Settings == null)
+				return;
+
+			if (webView.UserAgent != null)
+				platformWebView.Settings.UserAgentString = webView.UserAgent;
+			else
+				webView.UserAgent = platformWebView.Settings.UserAgentString;
+		}
+
 		public static void Eval(this AWebView platformWebView, IWebView webView, string script)
 		{
 			string source = "javascript:" + script;

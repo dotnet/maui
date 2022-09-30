@@ -29,6 +29,11 @@
 			handler.PlatformView?.UpdateSource(webView, handler.PlatformView);
 		}
 
+		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView?.UpdateUserAgent(webView);
+		}
+
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			handler.PlatformView?.UpdateGoBack(webView);
