@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapImageSource(ButtonHandler handler, Button button) =>
 			MapImageSource((IButtonHandler)handler, button);
 
-		public static void MapText(ButtonHandler handler, Button button)
+		public static void MapText(IButtonHandler handler, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
 			handler.PlatformView?.UpdateText(text);
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
 		}
 
-		public static void MapText(IButtonHandler handler, Button button) =>
+		public static void MapText(ButtonHandler handler, Button button) =>
 			MapText((IButtonHandler)handler, button);
 	}
 }

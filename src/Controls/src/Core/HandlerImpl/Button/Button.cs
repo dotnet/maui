@@ -33,12 +33,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='MapContentLayout']/Docs/*" />
-		public static void MapContentLayout(ButtonHandler handler, Button button)
+		public static void MapContentLayout(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView.UpdateContentLayout(button);
 		}
 
-		public static void MapContentLayout(IButtonHandler handler, Button button) =>
+		public static void MapContentLayout(ButtonHandler handler, Button button) =>
 			MapContentLayout((IButtonHandler)handler, button);
 	}
 }
