@@ -53,19 +53,27 @@
                         </HtmlWebViewSource>
                     </WebView.Source>
                 </WebView>
-                <StackLayout
-                    Orientation="Horizontal">
+                <StackLayout>
+                    <StackLayout
+                        Orientation="Horizontal">
+                        <Entry 
+                            x:Name="input"
+                            WidthRequest="150" 
+                            Margin="12" 
+                            Text="index.html"/>
+                        <Button
+                            Margin="12" 
+                            Text="Load" 
+                            Clicked="OnLoadHtmlFileClicked" 
+                            HeightRequest="48" 
+                            WidthRequest="150" />
+                    </StackLayout>
                     <Entry 
-                        x:Name="input"
-                        WidthRequest="150" 
-                        Margin="12" 
-                        Text="index.html"/>
+                        x:Name="userAgent"
+                        Text="{Binding UserAgent, Source={x:Reference FileWebView}}"/>
                     <Button
-                        Margin="12" 
-                        Text="Load" 
-                        Clicked="OnLoadHtmlFileClicked" 
-                        HeightRequest="48" 
-                        WidthRequest="150" />
+                        Text="Set User Agent"
+                        Clicked="OnSetUserAgentClicked" />
                 </StackLayout>
                 <Label
                     Text="UrlWebViewSource"
