@@ -31,7 +31,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEditor.Keyboard)] = MapKeyboard,
 			[nameof(IEditor.CursorPosition)] = MapCursorPosition,
-			[nameof(IEditor.SelectionLength)] = MapSelectionLength
+			[nameof(IEditor.SelectionLength)] = MapSelectionLength,
+#if IOS
+			[nameof(IEditor.IsEnabled)] = MapIsEnabled,
+#endif
 		};
 
 		public static CommandMapper<IEditor, IEditorHandler> CommandMapper = new(ViewCommandMapper)
