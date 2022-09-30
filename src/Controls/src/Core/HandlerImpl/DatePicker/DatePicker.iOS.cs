@@ -7,7 +7,8 @@ namespace Microsoft.Maui.Controls
 	{
 		public static void MapUpdateMode(IDatePickerHandler handler, DatePicker datePicker)
 		{
-			handler.UpdateImmediately = datePicker.OnThisPlatform().UpdateMode() == UpdateMode.Immediately;
+			if (handler is DatePickerHandler dph)
+				dph.UpdateImmediately = datePicker.OnThisPlatform().UpdateMode() == UpdateMode.Immediately;
 		}
 
 		public static void MapUpdateMode(DatePickerHandler handler, DatePicker datePicker) =>
