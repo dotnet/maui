@@ -62,6 +62,7 @@ Microsoft.Maui.Maps.IMapPin.MarkerId.get -> object?
 Microsoft.Maui.Maps.IMapPin.MarkerId.set -> void
 Microsoft.Maui.Maps.IMapPin.SendInfoWindowClick() -> bool
 Microsoft.Maui.Maps.IMapPin.SendMarkerClick() -> bool
+Microsoft.Maui.Maps.IMapPin.Tag.get -> object?
 Microsoft.Maui.Maps.MapSpan
 Microsoft.Maui.Maps.MapSpan.Center.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Maps.MapSpan.ClampLatitude(double north, double south) -> Microsoft.Maui.Maps.MapSpan!

@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Controls.Maps
 		public static readonly BindableProperty AddressProperty = BindableProperty.Create(nameof(Address), typeof(string), typeof(Pin), default(string));
 
 		public static readonly BindableProperty LabelProperty = BindableProperty.Create(nameof(Label), typeof(string), typeof(Pin), default(string));
+
+		public static readonly BindableProperty TagProperty = BindableProperty.Create(nameof(Tag), typeof(object), typeof(Pin), default(object));
+
 		private object? _markerId;
 
 		public string Address
@@ -38,6 +41,12 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			get { return (PinType)GetValue(TypeProperty); }
 			set { SetValue(TypeProperty, value); }
+		}
+
+		public object? Tag
+		{
+			get { return (object)GetValue(TagProperty); }
+			set { SetValue(TagProperty, value); }
 		}
 
 		public object? MarkerId

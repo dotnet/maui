@@ -127,5 +127,6 @@ static readonly Microsoft.Maui.Controls.Maps.MapElement.StrokeWidthProperty -> M
 static readonly Microsoft.Maui.Controls.Maps.Pin.AddressProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.LabelProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.LocationProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Pin.TagProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.TypeProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Polygon.FillColorProperty -> Microsoft.Maui.Controls.BindableProperty!

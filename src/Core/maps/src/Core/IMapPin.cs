@@ -23,6 +23,11 @@ namespace Microsoft.Maui.Maps
 		/// </summary>
 		Location Location { get; }
 
+		/// <summary>
+		/// Tag of this pin
+		/// </summary>
+		object? Tag { get; }
+
 		object? MarkerId { get; set; }
 
 		bool SendMarkerClick();
