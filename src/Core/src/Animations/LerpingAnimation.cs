@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Animations
 		{
 		}
 
-		public LerpingAnimation(Action<double> callback, double start = 0, double end = 1, Easing? easing = null, Action? finished = null) 
+		public LerpingAnimation(Action<double> callback, double start = 0, double end = 1, Easing? easing = null, Action? finished = null)
 			: base(callback, start, end, easing, finished)
 		{
 		}
