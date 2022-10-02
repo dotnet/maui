@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMapPin.Location)] = MapLocation,
 			[nameof(IMapPin.Label)] = MapLabel,
 			[nameof(IMapPin.Address)] = MapAddress,
-			[nameof(IMapPin.Tag)] = MapAddress,
 		};
 
 		public MapPinHandler() : base(Mapper)
