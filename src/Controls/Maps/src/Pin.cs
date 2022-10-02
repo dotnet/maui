@@ -82,11 +82,13 @@ namespace Microsoft.Maui.Controls.Maps
 				hashCode = (hashCode * 397) ^ Location.GetHashCode();
 				hashCode = (hashCode * 397) ^ (int)Type;
 				hashCode = (hashCode * 397) ^ (Address?.GetHashCode() ?? 0);
+				hashCode = (hashCode * 397) ^ (Tag?.GetHashCode() ?? 0);
 #else
 				int hashCode = Label?.GetHashCode(StringComparison.Ordinal) ?? 0;
 				hashCode = (hashCode * 397) ^ Location.GetHashCode();
 				hashCode = (hashCode * 397) ^ (int)Type;
 				hashCode = (hashCode * 397) ^ (Address?.GetHashCode(StringComparison.Ordinal) ?? 0);
+				hashCode = (hashCode * 397) ^ (Tag?.GetHashCode() ?? 0);
 #endif
 				return hashCode;
 			}

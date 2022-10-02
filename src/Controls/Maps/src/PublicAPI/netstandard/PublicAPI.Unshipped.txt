@@ -58,6 +58,8 @@ Microsoft.Maui.Controls.Maps.Pin.MarkerId.set -> void
 Microsoft.Maui.Controls.Maps.Pin.Pin() -> void
 Microsoft.Maui.Controls.Maps.Pin.SendInfoWindowClick() -> bool
 Microsoft.Maui.Controls.Maps.Pin.SendMarkerClick() -> bool
+Microsoft.Maui.Controls.Maps.Pin.Tag.get -> object?
+Microsoft.Maui.Controls.Maps.Pin.Tag.set -> void
 Microsoft.Maui.Controls.Maps.Pin.Type.get -> Microsoft.Maui.Controls.Maps.PinType
 Microsoft.Maui.Controls.Maps.Pin.Type.set -> void
 Microsoft.Maui.Controls.Maps.PinClickedEventArgs
