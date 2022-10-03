@@ -71,7 +71,8 @@ namespace Microsoft.Maui.Platform
 			// calling EnsureCoreWebView2Async().
 			await _internalWebView.EnsureCoreWebView2Async();
 
-			// When the 'navigation' to the original HTML string is done, we can modify it to include our <base> tag
+			// When the 'navigation' to the original HTML string is done,
+			// we can modify it to include our <base> tag
 			_internalWebView.NavigationCompleted += async (sender, args) =>
 			{
 				// Generate a version of the <base> script with the correct <base> tag
@@ -99,11 +100,19 @@ namespace Microsoft.Maui.Platform
 				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
 
 				// Free up memory after we're done with _internalWebView
-				_internalWebView = null;
+
+				if (_internalWebView != null && _internalWebView.CoreWebView2 != null)
+				{
+					_internalWebView.Close();
+					_internalWebView = null;
+				}
 			};
 
-			// Kick off the initial navigation
-			_internalWebView.NavigateToString(html);
+			_internalWebView.CoreWebView2Initialized +=  (sender, args) =>
+			{      
+				// Kick off the initial navigation
+				_internalWebView.NavigateToString(html);
+			};
 		}
 
 		public async void LoadUrl(string? url)
