@@ -52,6 +52,8 @@ Microsoft.Maui.Controls.Maps.Pin.Label.get -> string!
 Microsoft.Maui.Controls.Maps.Pin.Label.set -> void
 Microsoft.Maui.Controls.Maps.Pin.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Controls.Maps.Pin.Location.set -> void
+Microsoft.Maui.Controls.Maps.Pin.Tag.get -> object?
+Microsoft.Maui.Controls.Maps.Pin.Tag.set -> void
 Microsoft.Maui.Controls.Maps.Pin.MarkerClicked -> System.EventHandler<Microsoft.Maui.Controls.Maps.PinClickedEventArgs!>?
 Microsoft.Maui.Controls.Maps.Pin.MarkerId.get -> object?
 Microsoft.Maui.Controls.Maps.Pin.MarkerId.set -> void
@@ -127,5 +129,6 @@ static readonly Microsoft.Maui.Controls.Maps.MapElement.StrokeWidthProperty -> M
 static readonly Microsoft.Maui.Controls.Maps.Pin.AddressProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.LabelProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.LocationProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Pin.TagProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.TypeProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Polygon.FillColorProperty -> Microsoft.Maui.Controls.BindableProperty!

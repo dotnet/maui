@@ -57,6 +57,7 @@ Microsoft.Maui.Maps.IMapPin
 Microsoft.Maui.Maps.IMapPin.Address.get -> string!
 Microsoft.Maui.Maps.IMapPin.Label.get -> string!
 Microsoft.Maui.Maps.IMapPin.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Maps.IMapPin.Tag.get -> object?
 Microsoft.Maui.Maps.IMapPin.MarkerId.get -> object?
 Microsoft.Maui.Maps.IMapPin.MarkerId.set -> void
 Microsoft.Maui.Maps.IMapPin.SendInfoWindowClick() -> bool
