@@ -62,14 +62,10 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class CalendarRead : BasePlatformPermission
 		{
-			protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
-				new[] { "appointments" };
 		}
 
 		public partial class CalendarWrite : BasePlatformPermission
 		{
-			protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
-				new[] { "appointments" };
 		}
 
 		public partial class Camera : BasePlatformPermission
@@ -78,9 +74,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class ContactsRead : BasePlatformPermission
 		{
-			protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
-				new[] { "contacts" };
-
 			public override async Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -95,9 +88,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class ContactsWrite : BasePlatformPermission
 		{
-			protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
-				   new[] { "contacts" };
-
 			public override async Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -120,9 +110,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class LocationWhenInUse : BasePlatformPermission
 		{
-			protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
-				new[] { "location" };
-
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -146,9 +133,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class LocationAlways : BasePlatformPermission
 		{
-			protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
-				new[] { "location" };
-
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -166,8 +150,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class Microphone : BasePlatformPermission
 		{
-			protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
-				new[] { "microphone" };
 		}
 
 		public partial class NetworkState : BasePlatformPermission
