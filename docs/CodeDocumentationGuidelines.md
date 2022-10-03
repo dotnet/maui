@@ -4,7 +4,9 @@ In this document you will find the guidelines for adding XML comments to our cod
 
 ## Guidelines
 
-For adding comments to our code we mainly follow the [recommended XML tags documentation](https://learn.microsoft.com/dotnet/csharp/language-reference/xmldoc/recommended-tags) by Microsoft. This is also what is best supported by Visual Studio. As a rule of thumb: complete your code first and just start typing a tripe slash (`///`) on top of your code. That will suggest all the attributes that we want to see. Which attributes will show up is infered from your code.
+For what kind of comments to our code we mainly follow the [recommended XML tags documentation](https://learn.microsoft.com/dotnet/csharp/language-reference/xmldoc/recommended-tags) by Microsoft. This is also what is best supported by Visual Studio. As a rule of thumb: complete your code first and just start typing a tripe slash (`///`) on top of your code. That will suggest all the attributes that we want to see. Which attributes will show up is infered from your code.
+
+If you're unsure about how to document a certain element, have a look the [.NET API docs wiki](https://github.com/dotnet/dotnet-api-docs/wiki) which has a very extensive description on what kind of comment to add on which element in the code. We would highly recommend going through that and apply the same style of comments everywhere.
 
 These are the tags that we would like to see when applicable: `<summary>`, `<remarks>`, `<returns>`, `<param>`, `<exception>`, `<inheritdoc>`, `<see>`, `<c>`.
 
