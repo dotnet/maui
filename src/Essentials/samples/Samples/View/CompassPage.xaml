@@ -19,10 +19,10 @@
                 <Label Grid.Row="1" Grid.ColumnSpan="2" Text="Speed:" />
 
                 <Picker Grid.Row="2" Grid.ColumnSpan="2" HorizontalOptions="FillAndExpand"
-                    ItemsSource="{Binding Speeds}" 
-                    SelectedIndex="{Binding Speed, Mode=TwoWay}"
-                    IsEnabled="{Binding IsActive, Converter={StaticResource NegativeConverter}}"
-                    Margin="0,0,0,10"/>
+                        ItemsSource="{Binding Speeds}" 
+                        SelectedIndex="{Binding Speed, Mode=TwoWay}"
+                        IsEnabled="{Binding IsActive, Converter={StaticResource NegativeConverter}}"
+                        Margin="0,0,0,10"/>
 
                 <Label Grid.Row="3" Grid.ColumnSpan="2" Text="Apply low pass filter:" />
 
