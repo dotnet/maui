@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Controls
 			return ((DateTime)value).Date <= ((DatePicker)bindable).MaximumDate.Date;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, DatePicker> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

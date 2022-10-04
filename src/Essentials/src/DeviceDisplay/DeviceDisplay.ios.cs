@@ -18,9 +18,16 @@ namespace Microsoft.Maui.Devices
 			var bounds = UIScreen.MainScreen.Bounds;
 			var scale = UIScreen.MainScreen.Scale;
 
-			var rate = (OperatingSystem.IsIOSVersionAtLeast(10, 3) || OperatingSystem.IsTvOSVersionAtLeast(10, 3))
-				? UIScreen.MainScreen.MaximumFramesPerSecond
-				: 0;
+			nint rate = 0;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(10, 3) || OperatingSystem.IsMacCatalystVersionAtLeast(10, 3)
+#if TVOS
+				|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+			)
+			{
+				rate = UIScreen.MainScreen.MaximumFramesPerSecond;
+			}
 
 			return new DisplayInfo(
 				width: bounds.Width * scale,

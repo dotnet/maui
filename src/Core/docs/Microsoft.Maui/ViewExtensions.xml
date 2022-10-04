@@ -19,7 +19,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Extension methods for <see cref="T:Microsoft.Maui.View" />s, providing animatable scaling, rotation, and layout functions.</summary>
+    <summary>Extension methods for <see cref="T:Microsoft.Maui.Controls.View" />s, providing animatable scaling, rotation, and layout functions.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
