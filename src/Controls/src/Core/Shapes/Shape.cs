@@ -203,8 +203,8 @@ namespace Microsoft.Maui.Controls.Shapes
 				if (requireAdjustX || requireAdjustY)
 				{
 					transform = Matrix3x2.CreateTranslation(
-						(float)(viewBounds.Left - pathBounds.Left),
-						(float)(viewBounds.Top - pathBounds.Top));
+						(float)(pathBounds.X + viewBounds.Left - pathBounds.Left),
+						(float)(pathBounds.Y + viewBounds.Top - pathBounds.Top));
 				}
 				else
 				{
