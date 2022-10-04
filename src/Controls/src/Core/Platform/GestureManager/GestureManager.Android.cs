@@ -249,13 +249,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateDragAndDrop()
 		{
-			if (View?.GestureRecognizers?.Count > 0)
+			if (View?.GetCompositeGestureRecognizers()?.Count > 0)
 				_dragAndDropGestureHandler.Value.SetupHandlerForDrop();
 		}
 
 		void UpdatePointer()
 		{
-			if (View?.GestureRecognizers?.Count > 0)
+			if (View?.GetCompositeGestureRecognizers()?.Count > 0)
 				_pointerGestureHandler.Value.SetupHandlerForPointer();
 		}
 
