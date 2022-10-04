@@ -259,7 +259,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Editable;
-    
+
 		int GetNativeSelectionLength(EditorHandler editorHandler)
 		{
 			var nativeEditor = GetNativeEditor(editorHandler);
