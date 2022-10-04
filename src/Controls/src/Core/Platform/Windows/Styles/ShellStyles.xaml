@@ -10,12 +10,12 @@
     xmlns:maui="using:Microsoft.Maui.Controls.Platform">
     <x:Double x:Key="NavigationViewItemOnLeftMinHeight">0</x:Double>
     <DataTemplate x:Key="ShellFlyoutBaseShellItemTemplate">
-        <maui:ShellNavigationViewItem  x:Name="navItem">
+        <maui:ShellNavigationViewItem  x:Name="navItem" MenuItemsSource="{Binding MenuItemsSource}">
             <maui:ShellFlyoutItemView IsTabStop="false" IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></maui:ShellFlyoutItemView>
         </maui:ShellNavigationViewItem>
     </DataTemplate>
     <DataTemplate x:Key="ShellFlyoutMenuItemTemplate">
-        <maui:ShellNavigationViewItem x:Name="navItem">
+        <maui:ShellNavigationViewItem x:Name="navItem" MenuItemsSource="{Binding MenuItemsSource}">
             <maui:ShellFlyoutItemView IsTabStop="false" IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></maui:ShellFlyoutItemView>
         </maui:ShellNavigationViewItem>
     </DataTemplate>

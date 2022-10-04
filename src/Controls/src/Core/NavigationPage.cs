@@ -425,7 +425,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<NavigationPage>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public new IPlatformElementConfiguration<T, NavigationPage> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -47,7 +47,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public EntryHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public EntryHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public EntryHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}

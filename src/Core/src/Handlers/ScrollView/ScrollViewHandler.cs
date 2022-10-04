@@ -37,7 +37,12 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public ScrollViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public ScrollViewHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public ScrollViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}

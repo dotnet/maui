@@ -152,4 +152,10 @@
   <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.3.0" PrivateAssets="all" />
   </ItemGroup>
+  <PropertyGroup>
+    <!-- We don't need to be warned that we are using a preview .NET -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <!-- Disables the transitive restore of packages like Microsoft.AspNetCore.App.Ref, Microsoft.WindowsDesktop.App.Ref -->
+    <DisableTransitiveFrameworkReferenceDownloads>true</DisableTransitiveFrameworkReferenceDownloads>
+  </PropertyGroup>
 </Project>

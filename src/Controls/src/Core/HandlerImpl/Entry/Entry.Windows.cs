@@ -11,5 +11,11 @@
 		{
 			Platform.TextBoxExtensions.UpdateText(handler.PlatformView, entry);
 		}
+
+		public static void MapDetectReadingOrderFromContent(EntryHandler handler, Entry entry) =>
+			MapDetectReadingOrderFromContent((IEntryHandler)handler, entry);
+
+		public static void MapText(EntryHandler handler, Entry entry) =>
+			MapText((IEntryHandler)handler, entry);
 	}
 }

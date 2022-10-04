@@ -16,5 +16,15 @@
 		{
 			Platform.WebViewExtensions.UpdateMixedContentMode(handler.PlatformView, webView);
 		}
+
+
+		public static void MapDisplayZoomControls(WebViewHandler handler, WebView webView) =>
+			MapDisplayZoomControls((IWebViewHandler)handler, webView);
+
+		public static void MapEnableZoomControls(WebViewHandler handler, WebView webView) =>
+			MapEnableZoomControls((IWebViewHandler)handler, webView);
+
+		public static void MapMixedContentMode(WebViewHandler handler, WebView webView) =>
+			MapMixedContentMode((IWebViewHandler)handler, webView);
 	}
 }

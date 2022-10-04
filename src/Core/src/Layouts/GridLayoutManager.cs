@@ -735,7 +735,7 @@ namespace Microsoft.Maui.Layouts
 					var start = cell.Row;
 					var end = start + cell.RowSpan;
 
-					var desiredHeight = _childrenToLayOut[cell.ViewIndex].DesiredSize.Height;
+					var desiredHeight = Math.Min(_gridHeightConstraint, _childrenToLayOut[cell.ViewIndex].DesiredSize.Height);
 
 					ExpandStarsInSpan(desiredHeight, _rows, copy, start, end);
 				}
@@ -763,7 +763,7 @@ namespace Microsoft.Maui.Layouts
 					var start = cell.Column;
 					var end = start + cell.ColumnSpan;
 
-					var cellRequiredWidth = _childrenToLayOut[cell.ViewIndex].DesiredSize.Width;
+					var cellRequiredWidth = Math.Min(_gridWidthConstraint, _childrenToLayOut[cell.ViewIndex].DesiredSize.Width);
 
 					ExpandStarsInSpan(cellRequiredWidth, _columns, copy, start, end);
 				}
@@ -774,7 +774,14 @@ namespace Microsoft.Maui.Layouts
 			static Definition[] ScratchCopy(Definition[] original)
 			{
 				var copy = new Definition[original.Length];
-				original.CopyTo(copy, 0);
+
+				for (int n = 0; n < original.Length; n++)
+				{
+					copy[n] = new Definition(original[n].GridLength)
+					{
+						Size = original[n].Size
+					};
+				}
 
 				// zero out the star sizes in the copy
 				ZeroOutStarSizes(copy);

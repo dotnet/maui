@@ -2,6 +2,12 @@
 {
 	public partial class NavigationPage
 	{
+		public static void MapPrefersLargeTitles(NavigationViewHandler handler, NavigationPage navigationPage) =>
+			MapPrefersLargeTitles((INavigationViewHandler)handler, navigationPage);
+
+		public static void MapIsNavigationBarTranslucent(NavigationViewHandler handler, NavigationPage navigationPage) =>
+			MapPrefersLargeTitles((INavigationViewHandler)handler, navigationPage);
+
 		public static void MapPrefersLargeTitles(INavigationViewHandler handler, NavigationPage navigationPage)
 		{
 			if (handler is NavigationViewHandler nvh && nvh.ViewController is ControlsNavigationController navigationController)

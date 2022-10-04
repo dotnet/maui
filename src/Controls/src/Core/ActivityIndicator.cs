@@ -33,7 +33,8 @@ namespace Microsoft.Maui.Controls
 			get { return (bool)GetValue(IsRunningProperty); }
 			set { SetValue(IsRunningProperty, value); }
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="//Member[@MemberName='On']/Docs/*" />
+
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, ActivityIndicator> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

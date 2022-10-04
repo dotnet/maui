@@ -145,6 +145,9 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(editor);
 		}
 
+		public static void MapIsEnabled(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateIsEnabled(editor);
+
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString) =>
 			VirtualView.TextWithinMaxLength(textView.Text, range, replacementString);
 

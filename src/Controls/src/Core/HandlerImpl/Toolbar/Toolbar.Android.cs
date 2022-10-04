@@ -117,6 +117,38 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBarTextColor((IToolbarHandler)arg1, arg2);
+
+		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBarBackground((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonTitle((IToolbarHandler)arg1, arg2);
+
+		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2) =>
+			MapToolbarItems((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitle((IToolbarHandler)arg1, arg2);
+
+		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2) =>
+			MapIconColor((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitleView((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitleIcon((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonVisible((IToolbarHandler)arg1, arg2);
+
+		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapIsVisible((IToolbarHandler)arg1, arg2);
+
+
+
 		public static void MapBarTextColor(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBarTextColor(arg2);
@@ -166,6 +198,10 @@ namespace Microsoft.Maui.Controls
 		{
 			arg1.PlatformView.UpdateIsVisible(arg2);
 		}
+
+
+
+
 
 		internal class Container : ViewGroup
 		{
