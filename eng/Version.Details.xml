@@ -39,49 +39,49 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authentication.Facebook" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Facebook" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authentication.Google" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Google" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Components" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="7.0.0-rtm.22501.6">
+    <Dependency Name="Microsoft.JSInterop" Version="7.0.0-rtm.22503.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2b8523d9b40815bc800cb8a3b1149abfc4137d32</Sha>
+      <Sha>a6d7c399f6f86f01c355281e24c1a8d6bcce5b17</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Tasks" Version="7.0.100-preview.2.22102.8">
       <Uri>https://github.com/dotnet/templating</Uri>
