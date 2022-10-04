@@ -620,7 +620,7 @@ namespace Microsoft.Maui.Platform
 						MeasureSpec.MakeMeasureSpec(swipeItemWidth, MeasureSpecMode.AtMost),
 						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost)
 					);
-					
+
 					child.Layout(l, t, r, b);
 
 					i++;
