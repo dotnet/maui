@@ -68,17 +68,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers
-		{
-			get
-			{
-				if (_handler?.VirtualView is IGestureController gc &&
-					gc.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-					return oc;
-
-				return null;
-			}
-		}
+		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers => 
+			(_handler.VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
 
 		// TODO MAUI
 		// Do we need to provide a hook for this in the handlers?

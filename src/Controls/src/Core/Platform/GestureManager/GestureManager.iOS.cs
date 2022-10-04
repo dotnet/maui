@@ -55,17 +55,8 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new ArgumentNullException(nameof(handler.VirtualView));
 		}
 
-		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers
-		{
-			get
-			{
-				if (_handler?.VirtualView is IGestureController gc &&
-					gc.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-					return oc;
-
-				return null;
-			}
-		}
+		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers =>
+			(_handler.VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
 
 		internal void Disconnect()
 		{

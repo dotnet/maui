@@ -197,6 +197,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_swipeCompletedDelegate = null;
 				_dragAndDropGestureHandler?.Dispose();
 				_dragAndDropGestureHandler = null;
+				_pointerGestureHandler = null;
 			}
 
 			base.Dispose(disposing);

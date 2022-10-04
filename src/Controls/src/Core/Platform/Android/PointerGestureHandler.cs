@@ -28,11 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (control == null)
 				return;
 
-			var gestures = view.GestureRecognizers;
-			if (gestures == null || gestures.Count == 0)
-				return;
-
-			foreach (var gesture in gestures)
+			foreach (var gesture in view.GetCompositeGestureRecognizers())
 				if (gesture is PointerGestureRecognizer)
 					OnPointerAction(view, control, gesture as PointerGestureRecognizer);
 			

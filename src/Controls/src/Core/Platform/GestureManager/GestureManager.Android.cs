@@ -38,18 +38,6 @@ namespace Microsoft.Maui.Controls.Platform
 			SetupElement(null, Element);
 		}
 
-		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers
-		{
-			get
-			{
-				if (_handler?.VirtualView is IGestureController gc &&
-					gc.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-					return oc;
-
-				return null;
-			}
-		}
-
 		protected virtual AView? Control
 		{
 			get
@@ -220,7 +208,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (oldElement != null)
 			{
 				if (oldElement is View ov &&
-					ElementGestureRecognizers is INotifyCollectionChanged incc)
+					ov.GetCompositeGestureRecognizers() is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged -= GestureCollectionChanged;
 				}
@@ -232,7 +220,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_handler = newElement.Handler;
 				if (newElement is View ov &&
-					ElementGestureRecognizers is INotifyCollectionChanged incc)
+					ov.GetCompositeGestureRecognizers() is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged += GestureCollectionChanged;
 				}
