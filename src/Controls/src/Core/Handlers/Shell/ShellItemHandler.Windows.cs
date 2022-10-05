@@ -241,8 +241,9 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
-					autoSuggestBox.ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["SearchHandlerItemTemplate"];
+					autoSuggestBox.ItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.Text = _currentSearchHandler.Query;
+					autoSuggestBox.UpdateTextOnSelect = false;
 
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
 
@@ -288,8 +289,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (selectedItem is ItemTemplateContext itemTemplateContext)
 				selectedItem = itemTemplateContext.Item;
 
+			// Currently the search handler on each platform clears out the text when an answer is chosen
+			// Ideally we'd have a "TextMemberPath" property that could bind to a property in the item source
+			// to indicate what to display
+			if (String.IsNullOrEmpty(sender.TextMemberPath))
+				sender.Text = String.Empty;
+
 			((ISearchHandlerController)_currentSearchHandler).ItemSelected(selectedItem);
-			_currentSearchHandler.Query = selectedItem.ToString();
+
 		}
 
 		void OnSearchBoxQuerySubmitted(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxQuerySubmittedEventArgs args)
