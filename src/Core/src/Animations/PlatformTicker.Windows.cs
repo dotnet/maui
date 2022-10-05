@@ -1,16 +1,17 @@
-﻿using Windows.ApplicationModel.Core;
-using System;
-using Microsoft.UI.Xaml.Media;
+﻿using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Animations
 {
+	/// <inheritdoc/>
 	public class PlatformTicker : Ticker
 	{
+		/// <inheritdoc/>
 		public override void Start()
 		{
 			CompositionTarget.Rendering += RenderingFrameEventHandler;
 		}
 
+		/// <inheritdoc/>
 		public override void Stop()
 		{
 			CompositionTarget.Rendering -= RenderingFrameEventHandler;

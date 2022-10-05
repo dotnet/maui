@@ -13,6 +13,10 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
+#if IOS || MACCATALYST
+using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
+#endif
+
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -25,6 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));

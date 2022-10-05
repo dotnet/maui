@@ -74,6 +74,16 @@
                 <SearchBar
                     IsTextPredictionEnabled="False"/>
                 <Label
+                    Text="Focus"
+                    Style="{StaticResource Headline}" />
+                <SearchBar 
+                    Focused="OnSearchBarFocused"/>
+                <Label
+                    Text="Unfocus"
+                    Style="{StaticResource Headline}" />
+                <SearchBar 
+                    Unfocused="OnSearchBarUnfocused"/>
+                <Label
                     Text="TextChanged"
                     Style="{StaticResource Headline}"/>
                 <SearchBar

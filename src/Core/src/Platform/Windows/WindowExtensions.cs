@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Platform
 
 		public static IWindow? GetWindow(this UI.Xaml.Window platformWindow)
 		{
-			foreach (var window in MauiWinUIApplication.Current.Application.Windows)
+			foreach (var window in WindowExtensions.GetWindows())
 			{
 				if (window?.Handler?.PlatformView is UI.Xaml.Window win && win == platformWindow)
 					return window;

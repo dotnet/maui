@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls
 			SelectedItem = Items[index];
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Picker> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

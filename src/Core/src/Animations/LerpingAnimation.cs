@@ -1,23 +1,28 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 
 namespace Microsoft.Maui.Animations
 {
 	public class LerpingAnimation : Animation
 	{
-
+		/// <summary>
+		/// Instantiate a new <see cref="LerpingAnimation"/> object.
+		/// </summary>
 		public LerpingAnimation()
 		{
 		}
 
-		public LerpingAnimation(Action<double> callback, double start = 0, double end = 1, Easing? easing = null, Action? finished = null) : base(callback, start, end, easing, finished)
+		public LerpingAnimation(Action<double> callback, double start = 0, double end = 1, Easing? easing = null, Action? finished = null)
+			: base(callback, start, end, easing, finished)
 		{
 		}
 
-		public LerpingAnimation(List<Animation> animations) : base(animations)
+		/// <summary>
+		/// Instantiate a new <see cref="LerpingAnimation"/> that consists of the given list of child animations.
+		/// </summary>
+		/// <param name="animations">A <see cref="List{T}"/> that contains <see cref="Animation"/> objects that will be children of the newly instantiated animation.</param>
+		public LerpingAnimation(List<Animation> animations)
+			: base(animations)
 		{
 		}
 
@@ -55,6 +60,7 @@ namespace Microsoft.Maui.Animations
 			set => _lerp = value;
 		}
 
+		/// <inheritdoc/>
 		public override void Update(double percent)
 		{
 			try

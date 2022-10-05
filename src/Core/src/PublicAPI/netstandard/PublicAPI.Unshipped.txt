@@ -1,4 +1,69 @@
 ﻿#nullable enable
+Microsoft.Maui.Handlers.ApplicationHandler.ApplicationHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.BorderHandler.BorderHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.BorderHandler.BorderHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.PickerHandler.PickerHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.PickerHandler.PickerHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.ProgressBarHandler.ProgressBarHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ProgressBarHandler.ProgressBarHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.SearchBarHandler.SearchBarHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.SearchBarHandler.SearchBarHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.ShapeViewHandler.ShapeViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ShapeViewHandler.ShapeViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.SliderHandler.SliderHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.SliderHandler.SliderHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.StepperHandler.StepperHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.StepperHandler.StepperHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SwipeItemMenuItemHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SwipeItemMenuItemHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.SwipeItemViewHandler.SwipeItemViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.SwipeItemViewHandler.SwipeItemViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.SwipeViewHandler.SwipeViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.SwipeViewHandler.SwipeViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.SwitchHandler.SwitchHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.SwitchHandler.SwitchHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.TabbedViewHandler.TabbedViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.TabbedViewHandler.TabbedViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.TimePickerHandler.TimePickerHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.TimePickerHandler.TimePickerHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.ToolbarHandler.ToolbarHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ToolbarHandler.ToolbarHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.ActivityIndicatorHandler.ActivityIndicatorHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ActivityIndicatorHandler.ActivityIndicatorHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.ButtonHandler.ButtonHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ButtonHandler.ButtonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.CheckBoxHandler.CheckBoxHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.CheckBoxHandler.CheckBoxHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.DatePickerHandler.DatePickerHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.DatePickerHandler.DatePickerHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.EditorHandler.EditorHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.EditorHandler.EditorHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.EntryHandler.EntryHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.EntryHandler.EntryHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.FlyoutViewHandler.FlyoutViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.FlyoutViewHandler.FlyoutViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.GraphicsViewHandler.GraphicsViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.GraphicsViewHandler.GraphicsViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.ImageButtonHandler.ImageButtonHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ImageButtonHandler.ImageButtonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.ImageHandler.ImageHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ImageHandler.ImageHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.IndicatorViewHandler.IndicatorViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.IndicatorViewHandler.IndicatorViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.LabelHandler.LabelHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.LabelHandler.LabelHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.NavigationViewHandler.NavigationViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.NavigationViewHandler.NavigationViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.PageHandler.PageHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.PageHandler.PageHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.RadioButtonHandler.RadioButtonHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.RadioButtonHandler.RadioButtonHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.RefreshViewHandler.RefreshViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.RefreshViewHandler.RefreshViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.MenuFlyoutHandler
 Microsoft.Maui.Handlers.MenuFlyoutHandler.Add(Microsoft.Maui.IMenuElement! view) -> void
 Microsoft.Maui.Handlers.MenuFlyoutHandler.Clear() -> void
@@ -78,3 +143,45 @@ static Microsoft.Maui.Handlers.LabelHandler.CommandMapper -> Microsoft.Maui.Comm
 static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutItem!, Microsoft.Maui.Handlers.IMenuFlyoutItemHandler!>!
 static Microsoft.Maui.Handlers.ProgressBarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IProgress!, Microsoft.Maui.Handlers.IProgressBarHandler!>!
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISwipeItemMenuItem!, Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler!>!
+static Microsoft.Maui.Handlers.WindowHandler.MapHeight(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapX(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Handlers.WindowHandler.MapY(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+*REMOVED*Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.WindowHandler.WindowHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.TimePickerHandler.TimePickerHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.ActivityIndicatorHandler.ActivityIndicatorHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.BorderHandler.BorderHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.BorderHandler.BorderHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.CheckBoxHandler.CheckBoxHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.DatePickerHandler.DatePickerHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.EditorHandler.EditorHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.EntryHandler.EntryHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.GraphicsViewHandler.GraphicsViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.ImageHandler.ImageHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.IndicatorViewHandler.IndicatorViewHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.LabelHandler.LabelHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.NavigationViewHandler.NavigationViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.PageHandler.PageHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.PickerHandler.PickerHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.ProgressBarHandler.ProgressBarHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.RadioButtonHandler.RadioButtonHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.RefreshViewHandler.RefreshViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.ScrollViewHandler.ScrollViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.SearchBarHandler.SearchBarHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.ShapeViewHandler.ShapeViewHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.SliderHandler.SliderHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.StepperHandler.StepperHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SwipeItemMenuItemHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SwipeItemMenuItemHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.SwipeItemViewHandler.SwipeItemViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.SwipeItemViewHandler.SwipeItemViewHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.SwipeViewHandler.SwipeViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.SwipeViewHandler.SwipeViewHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.SwitchHandler.SwitchHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.ImageButtonHandler.ImageButtonHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.ContentViewHandler.ContentViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*Microsoft.Maui.Handlers.ContentViewHandler.ContentViewHandler(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Handlers.ContentViewHandler.ContentViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
+Microsoft.Maui.Handlers.ContentViewHandler.ContentViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+*REMOVED*Microsoft.Maui.Handlers.ButtonHandler.ButtonHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void

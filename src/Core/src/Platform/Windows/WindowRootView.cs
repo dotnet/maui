@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 				new PropertyMetadata(null, OnAppTitleBarTemplateChanged));
 
 		double _appTitleBarHeight;
+		bool _useCustomAppTitleBar;
 		internal event EventHandler? OnAppTitleBarChanged;
 		internal event EventHandler? OnApplyTemplateFinished;
 		internal event EventHandler? ContentChanged;
@@ -26,8 +27,10 @@ namespace Microsoft.Maui.Platform
 
 		public WindowRootView()
 		{
+			IsTabStop = false;
 		}
 
+		internal double AppTitleBarActualHeight => AppTitleBarContentControl?.ActualHeight ?? 0;
 		internal ContentControl? AppTitleBarContentControl { get; private set; }
 		internal FrameworkElement? AppTitleBarContainer { get; private set; }
 
@@ -101,6 +104,8 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateAppTitleBar(Graphics.Rect captionButtonRect, bool useCustomAppTitleBar)
 		{
+			_useCustomAppTitleBar = useCustomAppTitleBar;
+
 			if (AppTitleBarContentControl != null)
 			{
 				AppTitleBarContentControl.MinHeight = captionButtonRect.Height;
@@ -170,19 +175,29 @@ namespace Microsoft.Maui.Platform
 			else
 				LoadAppTitleBarControls();
 
-			AppTitleBarContentControl.SizeChanged += (_, __) =>
-			{
-				if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight)
-				{
-					_appTitleBarHeight = AppTitleBarContentControl.ActualHeight;
-					NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight);
-				}
-			};
+			AppTitleBarContentControl.SizeChanged += (_, __) => UpdateAppTitleBarHeight();
 
 			void OnAppTitleBarContentControlLoaded(object sender, RoutedEventArgs e)
 			{
 				LoadAppTitleBarControls();
 				AppTitleBarContentControl.Loaded -= OnAppTitleBarContentControlLoaded;
+			}
+		}
+
+		void UpdateAppTitleBarHeight()
+		{
+			if (AppTitleBarContentControl == null)
+				return;
+
+			if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight)
+			{
+				_appTitleBarHeight = AppTitleBarContentControl.ActualHeight;
+				NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight);
+
+				var contentMargin = new WThickness(0, _appTitleBarHeight, 0, 0);
+				this.SetApplicationResource("NavigationViewContentMargin", contentMargin);
+				this.SetApplicationResource("NavigationViewMinimalContentMargin", contentMargin);
+				this.RefreshThemeResources();
 			}
 		}
 
@@ -239,10 +254,9 @@ namespace Microsoft.Maui.Platform
 					NavigationViewControl = null;
 				});
 
-
 				if (_appTitleBarHeight > 0)
 				{
-					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight);
+					NavigationViewControl.UpdateAppTitleBar(_appTitleBarHeight, _useCustomAppTitleBar);
 				}
 			}
 

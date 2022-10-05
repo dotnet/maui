@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls
 			return ImageElement.Measure(this, desiredSize, widthConstraint, heightConstraint);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, ImageButton> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
 
 		int IBorderElement.CornerRadiusDefaultValue => (int)CornerRadiusProperty.DefaultValue;

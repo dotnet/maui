@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Layouts;
 
@@ -14,7 +16,19 @@ namespace Microsoft.Maui.Controls
 
 		protected ILayoutManager _layoutManager;
 
-		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
+		ILayoutManager LayoutManager
+		{
+			get
+			{
+				return _layoutManager ??= GetLayoutManagerFromFactory(this) ?? CreateLayoutManager();
+			}
+		}
+
+		static ILayoutManager GetLayoutManagerFromFactory(Layout layout)
+		{
+			var factory = layout.FindMauiContext()?.Services?.GetService<ILayoutManagerFactory>();
+			return factory?.CreateLayoutManager(layout);
+		}
 
 		// The actual backing store for the IViews in the ILayout
 		readonly List<IView> _children = new();

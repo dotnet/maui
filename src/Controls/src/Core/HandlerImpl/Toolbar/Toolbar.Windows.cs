@@ -75,37 +75,69 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBarTextColor((IToolbarHandler)arg1, arg2);
 
-		public static void MapToolbarPlacement(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBarBackground((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonTitle((IToolbarHandler)arg1, arg2);
+
+		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2) =>
+			MapToolbarItems((IToolbarHandler)arg1, arg2);
+
+		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2) =>
+			MapIconColor((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitleView((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitleIcon((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonVisible((IToolbarHandler)arg1, arg2);
+
+		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapIsVisible((IToolbarHandler)arg1, arg2);
+
+		public static void MapToolbarPlacement(ToolbarHandler arg1, Toolbar arg2) =>
+			MapToolbarPlacement((IToolbarHandler)arg1, arg2);
+
+		public static void MapToolbarDynamicOverflowEnabled(ToolbarHandler arg1, Toolbar arg2) =>
+			MapToolbarDynamicOverflowEnabled((IToolbarHandler)arg1, arg2);
+
+		public static void MapToolbarPlacement(IToolbarHandler arg1, Toolbar arg2)
 		{
 		}
 
-		public static void MapToolbarDynamicOverflowEnabled(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapToolbarDynamicOverflowEnabled(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateToolbarDynamicOverflowEnabled(arg2);
 		}
 
-		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBarTextColor(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBarTextColor(arg2);
 		}
 
-		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBarBackground(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBarBackground(arg2);
 		}
 
-		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBackButtonTitle(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
-		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapToolbarItems(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg2.UpdateMenu();
 		}
 
-		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapIconColor(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateIconColor(arg2);
 		}
@@ -114,27 +146,35 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapIcon(IToolbarHandler arg1, Toolbar arg2)
+		{
+		}
+
+		public static void MapTitleView(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateTitleView(arg2);
 		}
 
-		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapTitleIcon(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateTitleIcon(arg2);
 		}
 
-		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBackButtonVisible(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
-		public static void MapBackButtonEnabled(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBackButtonEnabled(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonEnabled((IToolbarHandler)arg1, arg2);
+
+
+		public static void MapBackButtonEnabled(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
-		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapIsVisible(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateIsVisible(arg2);
 		}

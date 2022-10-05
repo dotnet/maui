@@ -50,6 +50,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_mauiNavigationView = platformView;
 			platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 			platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
+			platformView.SetApplicationResource("NavigationViewContentMargin", null);
 
 			_mauiNavigationView.Loaded += OnNavigationViewLoaded;
 			return platformView;
@@ -124,11 +125,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void MapMenuItems()
 		{
-			// NavigationView makes a lot of changes to properties before it's been loaded
-			// So we like to just wait until it's loaded to project our changes over it
-			if (!ShellItemNavigationView.IsLoaded)
-				return;
-
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
 
