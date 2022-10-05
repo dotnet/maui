@@ -12,21 +12,21 @@
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
       <Sha>b9389dc0168e184758c226962a0b270d300c17eb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.1270-rtm">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.4.1278-rtm">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>0991fae9716cd0e9a53fa6f86d5c0b32aaa5dea7</Sha>
+      <Sha>d8b991e0e60b6278876791047d6ad0c02572f3b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.1270-rtm">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.4.1278-rtm">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>0991fae9716cd0e9a53fa6f86d5c0b32aaa5dea7</Sha>
+      <Sha>d8b991e0e60b6278876791047d6ad0c02572f3b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.1270-rtm">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.4.1278-rtm">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>0991fae9716cd0e9a53fa6f86d5c0b32aaa5dea7</Sha>
+      <Sha>d8b991e0e60b6278876791047d6ad0c02572f3b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.1270-rtm">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.3.1278-rtm">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>0991fae9716cd0e9a53fa6f86d5c0b32aaa5dea7</Sha>
+      <Sha>d8b991e0e60b6278876791047d6ad0c02572f3b4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.net6.Manifest-7.0.100" Version="7.0.0-rc.1.22424.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
