@@ -16,7 +16,7 @@
         <ShellContent Icon="coffee.png" Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
         <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
     </FlyoutItem>
-    <FlyoutItem Title = "Flyout Item 2">
+    <FlyoutItem Title = "Flyout Item 2" FlyoutDisplayOptions="AsMultipleItems">
 	  <ShellSection Title = "Tab 1">
 	        <ShellContent  Icon="calculator.png" Title = "Flyout Gallery" ContentTemplate="{DataTemplate shellPages:ShellChromeGallery}"></ShellContent>
       	  <ShellContent  Icon="coffee.png" Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>

@@ -110,15 +110,3 @@ static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> 
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
 Microsoft.Maui.Controls.ILayoutManagerFactory
 ~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
-*REMOVED*~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Button.MapLineBreakMode(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.EntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapLineBreakMode(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapMaxLines(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapText(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.LayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
-*REMOVED*~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
-*REMOVED*~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void

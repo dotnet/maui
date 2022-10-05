@@ -25,7 +25,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public TabbedViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public TabbedViewHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public TabbedViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}

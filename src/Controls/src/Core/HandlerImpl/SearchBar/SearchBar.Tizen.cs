@@ -6,5 +6,8 @@
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView.Entry, searchBar);
 		}
+
+		public static void MapText(SearchBarHandler handler, SearchBar searchBar) =>
+			MapText((ISearchBarHandler)handler, searchBar);
 	}
 }

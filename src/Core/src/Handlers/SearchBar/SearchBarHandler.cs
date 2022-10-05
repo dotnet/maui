@@ -43,7 +43,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public SearchBarHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public SearchBarHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public SearchBarHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}

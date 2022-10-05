@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, ProgressBar> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

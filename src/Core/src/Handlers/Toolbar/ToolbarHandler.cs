@@ -26,7 +26,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public ToolbarHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public ToolbarHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public ToolbarHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}

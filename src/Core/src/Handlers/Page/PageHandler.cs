@@ -19,7 +19,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public PageHandler(IPropertyMapper? mapper, CommandMapper? commandMapper = null)
+		public PageHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public PageHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
