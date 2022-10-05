@@ -1212,6 +1212,7 @@ virtual Microsoft.Maui.Storage.FilePickerFileType.GetPlatformFileType(Microsoft.
 ~override Microsoft.Maui.ApplicationModel.Permissions.ContactsWrite.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Flashlight.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.LocationAlways.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
+~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 ~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Microphone.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.NetworkState.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
