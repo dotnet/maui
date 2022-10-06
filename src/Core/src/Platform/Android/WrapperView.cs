@@ -19,10 +19,7 @@ namespace Microsoft.Maui.Platform
 		SizeF _lastPathSize;
 		bool _invalidateClip;
 
-		Bitmap _shadowBitmap;
-		Canvas _shadowCanvas;
-		Android.Graphics.Paint _shadowPaint;
-		bool _invalidateShadow;
+		readonly ShadowCache _cache;
 
 		AView _borderView;
 
@@ -32,22 +29,10 @@ namespace Microsoft.Maui.Platform
 			: base(context)
 		{
 			_viewBounds = new Android.Graphics.Rect();
+			_cache = ShadowCache.Instance;
 
 			SetClipChildren(false);
 			SetWillNotDraw(true);
-		}
-
-		protected override void OnDetachedFromWindow()
-		{
-			base.OnDetachedFromWindow();
-
-			_invalidateShadow = true;
-
-			if (_shadowBitmap != null)
-			{
-				_shadowBitmap.Recycle();
-				_shadowBitmap = null;
-			}
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
@@ -83,26 +68,26 @@ namespace Microsoft.Maui.Platform
 
 		public override void RequestLayout()
 		{
-			// Redraw shadow (if exists)
-			_invalidateShadow = true;
-
 			base.RequestLayout();
+
+			InvalidateShadow();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+
+			if (disposing)
+			{
+				_cache.Dispose();
+			}
 		}
 
 		protected override void DispatchDraw(Canvas canvas)
 		{
-			// If is not shadowed, skip
-			if (Shadow?.Paint != null)
-			{
+			// Draw the shadow (if exists)
+			if (Shadow != null)
 				DrawShadow(canvas);
-			}
-			else
-			{
-				if (_shadowBitmap != null)
-				{
-					ClearShadowResources();
-				}
-			}
 
 			// Clip the child view
 			if (Clip != null)
@@ -124,13 +109,13 @@ namespace Microsoft.Maui.Platform
 
 		partial void ClipChanged()
 		{
-			_invalidateClip = _invalidateShadow = true;
+			_invalidateClip = true;
 			PostInvalidate();
 		}
 
 		partial void ShadowChanged()
 		{
-			_invalidateShadow = true;
+			InvalidateShadow();
 			PostInvalidate();
 		}
 
@@ -171,79 +156,97 @@ namespace Microsoft.Maui.Platform
 				canvas.ClipPath(_currentPath);
 		}
 
+		string GetShadowHash()
+		{
+			if (Shadow == null)
+				return null;
+
+			var shadowHash = Shadow.GetHashCode();
+
+			return shadowHash.ToString();
+		}
+
 		void DrawShadow(Canvas canvas)
 		{
-			if (_shadowCanvas == null)
-				_shadowCanvas = new Canvas();
+			if (_cache == null)
+				return;
 
-			if (_shadowPaint == null)
-				_shadowPaint = new Android.Graphics.Paint
-				{
-					AntiAlias = true,
-					Dither = true,
-					FilterBitmap = true
-				};
-
-			Graphics.Color solidColor = null;
-
-			// If need to redraw shadow
-			if (_invalidateShadow)
+			if (GetChildAt(0) is AView child)
 			{
-				var viewHeight = _viewBounds.Height();
-				var viewWidth = _viewBounds.Width();
+				var shadow = _cache.Add(GetShadowHash(), CreateShadow);
 
-				if (GetChildAt(0) is AView child)
+				if (shadow == null || shadow.IsDisposed())
+					return;
+
+				float x = child.GetX() + (float)Shadow.Offset.X;
+				float y = child.GetY() + (float)Shadow.Offset.Y;
+
+				canvas.DrawBitmap(shadow, x, y, null);
+			}
+		}
+
+		Bitmap CreateShadow()
+		{
+			if (_cache == null || Shadow == null)
+				return null;
+
+			var viewHeight = _viewBounds.Height();
+			var viewWidth = _viewBounds.Width();
+
+			if (GetChildAt(0) is AView child)
+			{
+				if (viewHeight == 0)
+					viewHeight = child.MeasuredHeight;
+
+				if (viewWidth == 0)
+					viewWidth = child.MeasuredWidth;
+			}
+
+			if (viewHeight != 0 && viewWidth != 0)
+			{
+				var bitmapHeight = viewHeight + MaximumRadius;
+				var bitmapWidth = viewWidth + MaximumRadius;
+
+				// Create the Shadow bitmap
+				var shadowBitmap = Bitmap.CreateBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.Argb8888);
+
+				using var shadowCanvas = new Canvas(shadowBitmap);
+				using var shadowPaint = new Android.Graphics.Paint { AntiAlias = false, FilterBitmap = false };
 				{
-					if (viewHeight == 0)
-						viewHeight = child.MeasuredHeight;
-
-					if (viewWidth == 0)
-						viewWidth = child.MeasuredWidth;
-				}
-
-				// If bounds is zero
-				if (viewHeight != 0 && viewWidth != 0)
-				{
-					var bitmapHeight = viewHeight + MaximumRadius;
-					var bitmapWidth = viewWidth + MaximumRadius;
-
-					// Reset bitmap to bounds
-					_shadowBitmap = Bitmap.CreateBitmap(
-						bitmapWidth, bitmapHeight, Bitmap.Config.Argb8888
-					);
-
 					// Reset Canvas
-					_shadowCanvas.SetBitmap(_shadowBitmap);
-
-					_invalidateShadow = false;
+					shadowCanvas.SetBitmap(shadowBitmap);
 
 					// Create the local copy of all content to draw bitmap as a
 					// bottom layer of natural canvas.
-					base.DispatchDraw(_shadowCanvas);
+					base.DispatchDraw(shadowCanvas);
 
 					// Get the alpha bounds of bitmap
-					Bitmap extractAlpha = _shadowBitmap.ExtractAlpha();
+					Bitmap extractAlpha = shadowBitmap.ExtractAlpha();
 
 					// Clear past content content to draw shadow
-					_shadowCanvas.DrawColor(Android.Graphics.Color.Black, PorterDuff.Mode.Clear);
+					shadowCanvas.DrawColor(Android.Graphics.Color.Black, PorterDuff.Mode.Clear);
 
 					var shadowOpacity = (float)Shadow.Opacity;
 
 					if (Shadow.Paint is LinearGradientPaint linearGradientPaint)
 					{
 						var linearGradientShaderFactory = PaintExtensions.GetLinearGradientShaderFactory(linearGradientPaint, shadowOpacity);
-						_shadowPaint.SetShader(linearGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
+						shadowPaint.SetShader(linearGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
+
 					if (Shadow.Paint is RadialGradientPaint radialGradientPaint)
 					{
 						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint, shadowOpacity);
-						_shadowPaint.SetShader(radialGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
+						shadowPaint.SetShader(radialGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
 					}
+
+					Graphics.Color solidColor = null;
+
 					if (Shadow.Paint is SolidPaint solidPaint)
 					{
 						solidColor = solidPaint.ToColor();
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
-						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
+						shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToPlatform();
 #pragma warning restore CA1416
 					}
 
@@ -256,54 +259,43 @@ namespace Microsoft.Maui.Platform
 					if (radius > 100)
 						radius = MaximumRadius;
 
-					_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
+					shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
 
 					float shadowOffsetX = (float)Shadow.Offset.X;
 					float shadowOffsetY = (float)Shadow.Offset.Y;
 
 					if (Clip == null)
 					{
-						_shadowCanvas.DrawBitmap(extractAlpha, shadowOffsetX, shadowOffsetY, _shadowPaint);
+						shadowCanvas.DrawBitmap(extractAlpha, shadowOffsetX, shadowOffsetY, shadowPaint);
 					}
 					else
 					{
-						var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
+						var bounds = new Graphics.RectF(0, 0, viewWidth, viewHeight);
 						var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
-
 						path.Offset(shadowOffsetX, shadowOffsetY);
-
-						_shadowCanvas.DrawPath(path, _shadowPaint);
+						shadowCanvas.DrawPath(path, shadowPaint);
 					}
 
 					// Recycle and clear extracted alpha
 					extractAlpha.Recycle();
 				}
-				else
-				{
-					// Create placeholder bitmap when size is zero and wait until new size coming up
-					_shadowBitmap = Bitmap.CreateBitmap(1, 1, Bitmap.Config.Rgb565!);
-				}
+
+				return shadowBitmap;
 			}
-
-			// Reset alpha to draw child with full alpha
-			if (solidColor != null)
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
-				_shadowPaint.Color = solidColor.ToPlatform();
-#pragma warning restore CA1416
-
-			// Draw shadow bitmap
-			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)
-				canvas.DrawBitmap(_shadowBitmap, 0.0F, 0.0F, _shadowPaint);
+			else
+			{
+				return null;
+			}
 		}
 
-		void ClearShadowResources()
+		void InvalidateShadow()
 		{
-			_shadowCanvas?.Dispose();
-			_shadowPaint?.Dispose();
-			_shadowBitmap?.Dispose();
-			_shadowCanvas = null;
-			_shadowPaint = null;
-			_shadowBitmap = null;
+			if (_cache == null || Shadow == null)
+				return;
+
+			var shadowHash = GetShadowHash();
+			_cache.Remove(shadowHash);
+			_cache.Add(shadowHash, CreateShadow);
 		}
 	}
 }

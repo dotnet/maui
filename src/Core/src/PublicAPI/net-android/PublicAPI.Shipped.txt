@@ -2152,7 +2152,6 @@ override Microsoft.Maui.Platform.NavigationViewFragment.OnResume() -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnHoverEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
-override Microsoft.Maui.Platform.WrapperView.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.WrapperView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.WrapperView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.WrapperView.RequestLayout() -> void
