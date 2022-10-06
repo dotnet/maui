@@ -359,6 +359,7 @@
             MauiSplashScreen="@(MauiSplashScreen)"
         />
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+            <MauiImage Include="@(MauiSplashScreen)" />
             <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
                 <StampFile>$(_ResizetizerStampFile)</StampFile>
             </LibraryResourceDirectories>
@@ -580,7 +581,7 @@
                 <StampFile>$(_ResizetizerStampFile)</StampFile>
             </LibraryResourceDirectories>
 
-            <FileWrites Include="$(_MauiIntermediateImages)\**" />
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
         <!-- UWP / WinUI -->
