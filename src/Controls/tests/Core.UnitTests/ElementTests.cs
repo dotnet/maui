@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -41,11 +41,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		readonly ObservableCollection<Element> internalChildren = new ObservableCollection<Element>();
 	}
 
-	[TestFixture]
+
 	public class ElementTests
 		: BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void DescendantAddedLevel1()
 		{
 			var root = new TestElement();
@@ -55,14 +55,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool added = false;
 			root.DescendantAdded += (sender, args) =>
 			{
-				Assert.That(args.Element, Is.SameAs(child));
+				Assert.Same(args.Element, child);
 				added = true;
 			};
 
 			root.Children.Add(child);
 		}
 
-		[Test]
+		[Fact]
 		public void DescendantAddedLevel2()
 		{
 			var root = new TestElement();
@@ -75,14 +75,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool added = false;
 			root.DescendantAdded += (sender, args) =>
 			{
-				Assert.That(args.Element, Is.SameAs(child2));
+				Assert.Same(args.Element, child2);
 				added = true;
 			};
 
 			child.Children.Add(child2);
 		}
 
-		[Test]
+		[Fact]
 		public void DescendantAddedExistingChildren()
 		{
 			var root = new TestElement();
@@ -108,11 +108,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			root.Children.Add(child);
 
-			Assert.That(tier1added, Is.True);
-			Assert.That(tier2added, Is.True);
+			Assert.True(tier1added);
+			Assert.True(tier2added);
 		}
 
-		[Test]
+		[Fact]
 		public void DescendantRemovedLevel1()
 		{
 			var root = new TestElement();
@@ -123,14 +123,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool removed = false;
 			root.DescendantRemoved += (sender, args) =>
 			{
-				Assert.That(args.Element, Is.SameAs(child));
+				Assert.Same(args.Element, child);
 				removed = true;
 			};
 
 			root.Children.Remove(child);
 		}
 
-		[Test]
+		[Fact]
 		public void DescendantRemovedLevel2()
 		{
 			var root = new TestElement();
@@ -144,14 +144,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool removed = false;
 			root.DescendantRemoved += (sender, args) =>
 			{
-				Assert.That(args.Element, Is.SameAs(child2));
+				Assert.Same(args.Element, child2);
 				removed = true;
 			};
 
 			child.Children.Remove(child2);
 		}
 
-		[Test]
+		[Fact]
 		public void DescendantRemovedWithChildren()
 		{
 			var root = new TestElement();
@@ -179,8 +179,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			root.Children.Remove(child);
 
-			Assert.That(tier1removed, Is.True);
-			Assert.That(tier2removed, Is.True);
+			Assert.True(tier1removed);
+			Assert.True(tier2removed);
 		}
 	}
 }

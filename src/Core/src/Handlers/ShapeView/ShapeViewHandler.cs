@@ -38,7 +38,13 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public ShapeViewHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
+		public ShapeViewHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public ShapeViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

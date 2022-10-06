@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellSectionHandler : ElementHandler<ShellSection, ShellSectionStackManager> , IDisposable
+	public partial class ShellSectionHandler : ElementHandler<ShellSection, ShellSectionStackManager>, IDisposable
 	{
 		bool _disposedValue;
 		Page? _dummyPage;

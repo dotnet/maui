@@ -82,14 +82,19 @@
 
     <MauiPlatforms Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-tizen;$(MauiPlatforms)</MauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiPlatforms)</MauiPlatforms>
-    <MauiPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' != 'false'">net$(_MauiDotNetVersion)-android;$(MauiPlatforms)</MauiPlatforms>
-    <MauiPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' != 'false'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiPlatforms)</MauiPlatforms>
-    <MauiPlatforms Condition="'$(IncludeIosTargetFrameworks)' != 'false'">net$(_MauiDotNetVersion)-ios;$(MauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiPlatforms)</MauiPlatforms>
 
-    <!-- Work around the IDE not properly handling the NU1703 warning -->
-    <MauiPlatformsNoMacCat Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatformsNoMacCat);$(WindowsMauiPlatforms)</MauiPlatformsNoMacCat>
-    <MauiPlatformsNoMacCat Condition="'$(IncludeIosTargetFrameworks)' != 'false'">net$(_MauiDotNetVersion)-ios;$(MauiPlatformsNoMacCat)</MauiPlatformsNoMacCat>
-    <MauiPlatformsNoMacCat Condition="'$(IncludeAndroidTargetFrameworks)' != 'false'">net$(_MauiDotNetVersion)-android;$(MauiPlatformsNoMacCat)</MauiPlatformsNoMacCat>
+    <!-- Device Tests TFMs (no Tizen yet) -->
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+
+    <!-- Graphics TFMs -->
+    <MauiGraphicsPlatforms>$(MauiPlatforms)</MauiGraphicsPlatforms>
+    <MauiGraphicsPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiGraphicsPlatforms);net$(_MauiDotNetVersion)-macos</MauiGraphicsPlatforms>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -138,6 +143,6 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
   <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.2.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.3.1" PrivateAssets="all" />
   </ItemGroup>
 </Project>

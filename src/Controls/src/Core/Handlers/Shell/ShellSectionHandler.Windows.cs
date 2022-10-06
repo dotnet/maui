@@ -81,6 +81,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void SyncNavigationStack(bool animated)
 		{
+			// Current Item might transition to null while visibility is adjusting on shell
+			// so we just ignore this and eventually when shell knows
+			// the next current item it will request to sync again
+			if (VirtualView.CurrentItem == null)
+				return;
+
 			List<IView> pageStack = new List<IView>()
 			{
 				(VirtualView.CurrentItem as IShellContentController).GetOrCreateContent()

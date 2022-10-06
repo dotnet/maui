@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 						backgroundColorContentPage.Background = SolidColorBrush.Purple;
 
 					await navPage.CurrentPage.Navigation.PushModalAsync(backgroundColorContentPage);
-					
+
 					var modalRootView =
 						backgroundColorContentPage.FindMauiContext().GetNavigationRootManager().RootView;
 					var rootPageRootView =

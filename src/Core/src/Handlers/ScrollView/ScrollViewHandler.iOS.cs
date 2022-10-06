@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				handler.PlatformView.SetContentOffset(new CoreGraphics.CGPoint(request.HoriztonalOffset, request.VerticalOffset), !request.Instant);
+				handler.PlatformView.SetContentOffset(new CoreGraphics.CGPoint(request.HorizontalOffset, request.VerticalOffset), !request.Instant);
 
 				if (request.Instant)
 				{
@@ -170,8 +170,8 @@ namespace Microsoft.Maui.Handlers
 					var scrollViewBounds = scrollView.Bounds;
 					var containerBounds = container.Bounds;
 
-					container.Bounds = new CGRect(0, 0, 
-						Math.Max(containerBounds.Width, scrollViewBounds.Width), 
+					container.Bounds = new CGRect(0, 0,
+						Math.Max(containerBounds.Width, scrollViewBounds.Width),
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}

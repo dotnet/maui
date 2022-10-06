@@ -26,11 +26,6 @@ namespace Microsoft.Maui.Handlers
 			ContainerView?.UpdateBackground(VirtualView.Background);
 		}
 
-		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
-		}
-
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);

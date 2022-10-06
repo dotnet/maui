@@ -83,8 +83,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ShadowProperty, value); }
 		}
 
-		internal static readonly BindableProperty ZIndexProperty =
-			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(View), default(int),
+		public static readonly BindableProperty ZIndexProperty =
+			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(VisualElement), default(int),
 				propertyChanged: ZIndexPropertyChanged);
 
 		static void ZIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -172,13 +172,27 @@ namespace Microsoft.Maui.Controls
 
 		Semantics IView.Semantics
 		{
-			get => _semantics;
+			get
+			{
+				UpdateSemantics();
+				return _semantics;
+			}
 		}
 
-		// We don't want to initialize Semantics until someone explicitly 
-		// wants to modify some aspect of the semantics class
-		internal Semantics SetupSemantics() =>
+		void UpdateSemantics()
+		{
+			if (!this.IsSet(SemanticProperties.HintProperty) &&
+				!this.IsSet(SemanticProperties.DescriptionProperty) &&
+				!this.IsSet(SemanticProperties.HeadingLevelProperty))
+			{
+				return;
+			}
+
 			_semantics ??= new Semantics();
+			_semantics.Description = SemanticProperties.GetDescription(this);
+			_semantics.HeadingLevel = SemanticProperties.GetHeadingLevel(this);
+			_semantics.Hint = SemanticProperties.GetHint(this);
+		}
 
 		static double EnsurePositive(double value)
 		{
@@ -410,6 +424,7 @@ namespace Microsoft.Maui.Controls
 				oldWindow.HandlerChanged -= visualElement.OnWindowHandlerChanged;
 
 			visualElement.UpdatePlatformUnloadedLoadedWiring(newValue as Window);
+			visualElement.InvalidateStateTriggers(newValue != null);
 		}
 
 		void OnWindowHandlerChanged(object? sender, EventArgs e)

@@ -3,7 +3,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.ShellGalleries.ShellChromeGallery"
-    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"    
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"  
+    xmlns:pages="using:Maui.Controls.Sample.Pages"  
     Title="Chrome Gallery">
     <views:BasePage.Content>
         <StackLayout
@@ -46,4 +47,24 @@
             <Picker x:Name="flyoutHeaderBehavior" />
         </StackLayout>
     </views:BasePage.Content>
+
+    <Shell.SearchHandler>
+        <pages:PageSearchHandler Placeholder="Enter search term"
+                                      ShowsResults="true">
+            <pages:PageSearchHandler.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10"
+                          ColumnDefinitions="0.15*,0.85*">
+                        <Image Source="{Binding ImageUrl}"
+                               HeightRequest="40"
+                               WidthRequest="40" />
+                        <Label Grid.Column="1"
+                               Text="{Binding Name}"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </pages:PageSearchHandler.ItemTemplate>
+        </pages:PageSearchHandler>
+    </Shell.SearchHandler>
 </views:BasePage>

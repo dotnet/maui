@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using ObjCRuntime;
 using UIKit;
 
@@ -65,6 +65,11 @@ namespace Microsoft.Maui.Platform
 			textView.UserInteractionEnabled = !(editor.IsReadOnly || editor.InputTransparent);
 		}
 
+		public static void UpdateIsEnabled(this UITextView textView, IEditor editor)
+		{
+			textView.Editable = editor.IsEnabled;
+		}
+
 		public static void UpdateKeyboard(this UITextView textView, IEditor editor)
 		{
 			var keyboard = editor.Keyboard;
@@ -97,7 +102,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UITextView textView, IEditor editor)
 		{
-			textView.TextAlignment = editor.HorizontalTextAlignment.ToPlatformHorizontal().AdjustForFlowDirection(editor);
+			textView.TextAlignment = editor.HorizontalTextAlignment.ToPlatformHorizontal(textView.EffectiveUserInterfaceLayoutDirection);
 		}
 
 		public static void UpdateVerticalTextAlignment(this MauiTextView textView, IEditor editor)

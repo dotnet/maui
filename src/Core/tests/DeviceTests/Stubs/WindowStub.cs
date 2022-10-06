@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -31,46 +32,70 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool IsStopped { get; set; }
 		public FlowDirection FlowDirection { get; set; }
 
-		public void Activated()
+		public void FrameChanged(Rect frame)
+		{
+			X = frame.X;
+			Y = frame.Y;
+			Width = frame.Width;
+			Height = frame.Height;
+		}
+
+		public double X { get; set; } = double.NaN;
+
+		public double Y { get; set; } = double.NaN;
+
+		public double Width { get; set; } = double.NaN;
+
+		public double Height { get; set; } = double.NaN;
+
+		public double MinimumWidth { get; set; } = double.NaN;
+
+		public double MaximumWidth { get; set; } = double.NaN;
+
+		public double MinimumHeight { get; set; } = double.NaN;
+
+		public double MaximumHeight { get; set; } = double.NaN;
+
+		public virtual void Activated()
 		{
 			IsActivated = true;
 			IsDeactivated = false;
 		}
 
-		public void Created()
+		public virtual void Created()
 		{
 			IsCreated = true;
 		}
 
-		public void Deactivated()
+		public virtual void Deactivated()
 		{
 			IsActivated = false;
 			IsDeactivated = false;
 		}
 
-		public void Destroying()
+		public virtual void Destroying()
 		{
 			IsDestroyed = true;
 			IsCreated = false;
 		}
 
-		public void Resumed()
+		public virtual void Resumed()
 		{
 			IsResumed = true;
 			IsStopped = false;
 		}
 
-		public void Stopped()
+		public virtual void Stopped()
 		{
 			IsStopped = true;
 			IsResumed = false;
 		}
 
-		public void Backgrounding(IPersistedState state)
+		public virtual void Backgrounding(IPersistedState state)
 		{
 		}
 
-		public bool AddOverlay(IWindowOverlay overlay)
+		public virtual bool AddOverlay(IWindowOverlay overlay)
 		{
 			if (overlay is IVisualDiagnosticsOverlay)
 				return false;
@@ -88,7 +113,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return result;
 		}
 
-		public bool RemoveOverlay(IWindowOverlay overlay)
+		public virtual bool RemoveOverlay(IWindowOverlay overlay)
 		{
 			if (overlay is IVisualDiagnosticsOverlay)
 				return false;
@@ -100,13 +125,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return result;
 		}
 
-		public bool BackButtonClicked() => true;
+		public virtual bool BackButtonClicked() => true;
 
 		public IReadOnlyList<IVisualTreeElement> GetVisualChildren() => _visualChildren.AsReadOnly();
 
 		public IVisualTreeElement GetVisualParent() => this.Parent as IVisualTreeElement;
 
-		public float RequestDisplayDensity() => 1.0f;
+		public virtual float RequestDisplayDensity() => 1.0f;
 
 		public virtual void DisplayDensityChanged(float displayDensity) { }
 	}

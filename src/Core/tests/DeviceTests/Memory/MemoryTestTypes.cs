@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers.Memory
 		{
 			yield return new object[] { (typeof(DatePickerStub), typeof(DatePickerHandler)) };
 			yield return new object[] { (typeof(EditorStub), typeof(EditorHandler)) };
+			yield return new object[] { (typeof(SearchBarStub), typeof(SearchBarHandler)) };
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
