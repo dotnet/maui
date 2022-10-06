@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Maui.Controls.Platform;
 using System.Collections.ObjectModel;
 using WApp = Microsoft.UI.Xaml.Application;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
@@ -239,8 +240,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
-					autoSuggestBox.ItemsSource = _currentSearchHandler.ItemsSource;
+					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					autoSuggestBox.ItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.Text = _currentSearchHandler.Query;
+					autoSuggestBox.UpdateTextOnSelect = false;
 
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
 
@@ -280,14 +283,40 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (_currentSearchHandler == null)
 				return;
-			((ISearchHandlerController)_currentSearchHandler).ItemSelected(args.SelectedItem);
+
+			object selectedItem = args.SelectedItem;
+
+			if (selectedItem is ItemTemplateContext itemTemplateContext)
+				selectedItem = itemTemplateContext.Item;
+
+			// Currently the search handler on each platform clears out the text when an answer is chosen
+			// Ideally we'd have a "TextMemberPath" property that could bind to a property in the item source
+			// to indicate what to display
+			if (String.IsNullOrEmpty(sender.TextMemberPath))
+				sender.Text = String.Empty;
+
+			((ISearchHandlerController)_currentSearchHandler).ItemSelected(selectedItem);
+
 		}
 
 		void OnSearchBoxQuerySubmitted(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxQuerySubmittedEventArgs args)
 		{
 			if (_currentSearchHandler == null)
 				return;
+
 			((ISearchHandlerController)_currentSearchHandler).QueryConfirmed();
+		}
+
+		object? CreateSearchHandlerItemsSource()
+		{
+			if (_currentSearchHandler == null)
+				return null;
+
+			if (_currentSearchHandler.ItemsSource == null)
+				return _currentSearchHandler.ItemsSource;
+
+			return TemplatedItemSourceFactory.Create(_currentSearchHandler.ItemsSource, _currentSearchHandler.ItemTemplate, _currentSearchHandler,
+				null, null, null, MauiContext);
 		}
 
 		void OnCurrentSearchHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -304,7 +333,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					ShellItemNavigationView.AutoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					break;
 				case nameof(SearchHandler.ItemsSource):
-					ShellItemNavigationView.AutoSuggestBox.ItemsSource = _currentSearchHandler.ItemsSource;
+					ShellItemNavigationView.AutoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
 					break;
 				case nameof(SearchHandler.Query):
 					ShellItemNavigationView.AutoSuggestBox.Text = _currentSearchHandler.Query;
