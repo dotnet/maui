@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Android.Content;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TItemsViewSource : IItemsViewSource
 	{
 		protected readonly TItemsView ItemsView;
+		protected readonly List<ItemContentView> ContentViews;
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
 		protected internal TItemsViewSource ItemsSource;
 
@@ -22,6 +24,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected internal ItemsViewAdapter(TItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
 			ItemsView = itemsView ?? throw new ArgumentNullException(nameof(itemsView));
+			ContentViews = new List<ItemContentView>();
 
 			UpdateUsingItemTemplate();
 
@@ -43,7 +46,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void ItemsViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs property)
 		{
-			if (property.Is(Microsoft.Maui.Controls.ItemsView.ItemTemplateProperty))
+			if (property.Is(Microsoft.Maui.Controls.ItemsView.ItemsSourceProperty))
+			{
+				UpdateItemsSource();
+			}
+			else if (property.Is(Microsoft.Maui.Controls.ItemsView.ItemTemplateProperty))
 			{
 				UpdateUsingItemTemplate();
 			}
@@ -86,6 +93,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var itemContentView = _createItemContentView.Invoke(ItemsView, context);
 
+			ContentViews.Add(itemContentView);
+
 			return new TemplatedItemViewHolder(itemContentView, ItemsView.ItemTemplate, IsSelectionEnabled(parent, viewType));
 		}
 
@@ -108,6 +117,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (disposing)
 				{
+					foreach (var contentView in ContentViews)
+					{
+						contentView.Recycle();
+					}
+					
+					ContentViews.Clear();
+
 					ItemsSource?.Dispose();
 					ItemsView.PropertyChanged -= ItemsViewPropertyChanged;
 				}
@@ -126,6 +142,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void BindTemplatedItemViewHolder(TemplatedItemViewHolder templatedItemViewHolder, object context)
 		{
 			templatedItemViewHolder.Bind(context, ItemsView);
+		}
+
+		void UpdateItemsSource()
+		{
+			ItemsSource?.Dispose();
+
+			ItemsSource = CreateItemsSource();
 		}
 
 		void UpdateUsingItemTemplate()

@@ -108,6 +108,7 @@ virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Contr
 *REMOVED*override Microsoft.Maui.Controls.FlexLayout.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+~readonly Microsoft.Maui.Controls.Handlers.Items.ItemsViewAdapter<TItemsView, TItemsViewSource>.ContentViews -> System.Collections.Generic.List<Microsoft.Maui.Controls.Handlers.Items.ItemContentView>
 ~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.IEditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void

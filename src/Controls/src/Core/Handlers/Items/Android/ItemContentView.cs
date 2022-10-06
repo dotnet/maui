@@ -46,6 +46,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (platformView != null)
 			{
 				RemoveView(platformView);
+				platformView?.Dispose();
+				platformView = null;
 			}
 
 			Content = null;
