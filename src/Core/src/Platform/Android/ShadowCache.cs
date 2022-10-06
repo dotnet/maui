@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Platform
 	internal class ShadowCache : IDisposable
 	{
 		static ShadowCache _instance;
-		readonly Dictionary<string, BitmapReference> _cache;
+		readonly Dictionary<int, BitmapReference> _cache;
 		readonly object _lock;
 
 		public ShadowCache()
 		{
-			_cache = new Dictionary<string, BitmapReference>();
+			_cache = new Dictionary<int, BitmapReference>();
 			_lock = new object();
 		}
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public Bitmap Add(string id, Func<Bitmap> create)
+		public Bitmap Add(int id, Func<Bitmap> create)
 		{
 			lock (_lock)
 			{
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public bool Remove(string id)
+		public bool Remove(int id)
 		{
 			lock (_lock)
 			{
