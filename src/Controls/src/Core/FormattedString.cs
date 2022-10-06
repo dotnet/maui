@@ -41,9 +41,9 @@ namespace Microsoft.Maui.Controls
 				foreach (object item in e.OldItems)
 				{
 					var bo = item as Span;
-					bo.Parent = null;
 					if (bo != null)
 					{
+						bo.Parent = null;
 						bo.PropertyChanging -= OnItemPropertyChanging;
 						bo.PropertyChanged -= OnItemPropertyChanged;
 					}
