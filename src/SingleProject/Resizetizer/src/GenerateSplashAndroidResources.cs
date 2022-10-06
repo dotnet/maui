@@ -12,10 +12,7 @@ namespace Microsoft.Maui.Resizetizer
 	public class GenerateSplashAndroidResources : Task
 	{
 		[Required]
-		public string ColorsFile { get; set; }
-
-		[Required]
-		public string DrawableFile { get; set; }
+		public string IntermediateOutputPath { get; set; }
 
 		[Required]
 		public ITaskItem[] MauiSplashScreen { get; set; }
@@ -25,6 +22,8 @@ namespace Microsoft.Maui.Resizetizer
 			var splash = MauiSplashScreen[0];
 
 			var info = ResizeImageInfo.Parse(splash);
+
+			Directory.CreateDirectory(IntermediateOutputPath);
 
 			WriteColors(info);
 			WriteDrawable(info);
@@ -38,9 +37,11 @@ namespace Microsoft.Maui.Resizetizer
 
 		void WriteColors(ResizeImageInfo splash)
 		{
-			Directory.CreateDirectory(Path.GetDirectoryName(ColorsFile));
+			var dir = Path.Combine(IntermediateOutputPath, "values");
+			Directory.CreateDirectory(dir);
 
-			using var writer = XmlWriter.Create(ColorsFile, Settings);
+			var colorsFile = Path.Combine(dir, "maui_colors.xml");
+			using var writer = XmlWriter.Create(colorsFile, Settings);
 			writer.WriteComment(Comment);
 			writer.WriteStartElement("resources");
 
@@ -57,9 +58,11 @@ namespace Microsoft.Maui.Resizetizer
 
 		void WriteDrawable(ResizeImageInfo splash)
 		{
-			Directory.CreateDirectory(Path.GetDirectoryName(DrawableFile));
+			var dir = Path.Combine(IntermediateOutputPath, "drawable");
+			Directory.CreateDirectory(dir);
 
-			using var writer = XmlWriter.Create(DrawableFile, Settings);
+			var drawableFile = Path.Combine(dir, "maui_splash_image.xml");
+			using var writer = XmlWriter.Create(drawableFile, Settings);
 			writer.WriteComment(Comment);
 			writer.WriteStartElement("layer-list");
 			writer.WriteAttributeString("xmlns", "android", ns: null, value: Namespace);
