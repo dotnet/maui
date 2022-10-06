@@ -811,7 +811,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override UIContextMenuConfiguration? GetConfigurationForMenu(UIContextMenuInteraction interaction, CGPoint location)
 				{
-					ProcessRecognizerHandlerTap(_gestureManager, _recognizer, location, 1);
+					ProcessRecognizerHandlerTap(_gestureManager, _recognizer, location, TapGestureRecognizer?.NumberOfTapsRequired ?? int.MaxValue);
 					return null;
 				}
 			}

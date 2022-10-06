@@ -53,7 +53,7 @@ namespace Maui.Controls.Sample.Pages
 
 			var doubleTapLabel = new Label
 			{
-				Text = "Double Tap me!!",
+				Text = "Double Tap me!! Right Clicking Me Shouldn't Do Anything!",
 				BackgroundColor = Colors.Aqua
 			};
 			var doubleTapGesture = new TapGestureRecognizer
@@ -61,10 +61,71 @@ namespace Maui.Controls.Sample.Pages
 				Command = TapCommand,
 				CommandParameter = Colors.Aqua,
 				NumberOfTapsRequired = 2,
+				Buttons = ButtonsMask.Secondary | ButtonsMask.Primary
 			};
 			doubleTapGesture.Tapped += OnTapped;
 			doubleTapLabel.GestureRecognizers.Add(doubleTapGesture);
 			horizontal.Add(doubleTapLabel);
+
+			var horizontal2 = new HorizontalStackLayout
+			{
+				Spacing = 20,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center
+			};
+			vertical.Add(horizontal2);
+
+
+			var rightClickLabel = new Label
+			{
+				Text = "Right click me¡",
+				BackgroundColor = Colors.Coral
+			};
+			var rigthClickGesture = new TapGestureRecognizer
+			{
+				Command = TapCommand,
+				CommandParameter = Colors.Coral,
+				NumberOfTapsRequired = 1,
+				Buttons = ButtonsMask.Secondary
+			};
+			rigthClickGesture.Tapped += OnTapped;
+			rightClickLabel.GestureRecognizers.Add(rigthClickGesture);
+			horizontal2.Children.Add(rightClickLabel);
+
+			var rightorLeftClickLabel = new Label
+			{
+				Text = "Right or Left click me¡",
+				BackgroundColor = Colors.Green
+			};
+			var rigthOrLeftClickGesture = new TapGestureRecognizer
+			{
+				Command = TapCommand,
+				CommandParameter = Colors.Green,
+				NumberOfTapsRequired = 1,
+				Buttons = ButtonsMask.Secondary | ButtonsMask.Primary
+			};
+
+			rigthOrLeftClickGesture.Tapped += OnTapped;
+			rightorLeftClickLabel.GestureRecognizers.Add(rigthOrLeftClickGesture);
+			horizontal2.Children.Add(rightorLeftClickLabel);
+
+			var rightorLeftClickLabel2Taps = new Label
+			{
+				Text = "Double Click Me! ",
+				BackgroundColor = Colors.Green,
+			};
+
+			var rigthOrLeftClickGesture2Taps = new TapGestureRecognizer
+			{
+				Command = TapCommand,
+				CommandParameter = Colors.Green,
+				NumberOfTapsRequired = 2,
+				Buttons = ButtonsMask.Secondary | ButtonsMask.Primary
+			};
+
+			rigthOrLeftClickGesture2Taps.Tapped += OnTapped;
+			rightorLeftClickLabel2Taps.GestureRecognizers.Add(rigthOrLeftClickGesture2Taps);
+			horizontal2.Children.Add(rightorLeftClickLabel2Taps);
 
 			changeColorBoxView = new Label
 			{
@@ -105,41 +166,6 @@ namespace Maui.Controls.Sample.Pages
 			tripleClickGesture.Tapped += OnTapped;
 			tripleClicklabel.GestureRecognizers.Add(tripleClickGesture);
 			horizontal.Children.Add(tripleClicklabel);
-
-			var rightClickLabel = new Label
-			{
-				Text = "Right click me¡",
-				BackgroundColor = Colors.Coral
-			};
-			var rigthClickGesture = new TapGestureRecognizer
-			{
-				Command = TapCommand,
-				CommandParameter = Colors.Coral,
-				NumberOfTapsRequired = 1,
-				Buttons = ButtonsMask.Secondary
-			};
-			rigthClickGesture.Tapped += OnTapped;
-			rightClickLabel.GestureRecognizers.Add(rigthClickGesture);
-			horizontal.Children.Add(rightClickLabel);
-
-
-			var rightorLeftClickLabel = new Label
-			{
-				Text = "Right or Left click me¡",
-				BackgroundColor = Colors.Green
-			};
-			var rigthOrLeftClickGesture = new TapGestureRecognizer
-			{
-				Command = TapCommand,
-				CommandParameter = Colors.Green,
-				NumberOfTapsRequired = 1,
-				Buttons = ButtonsMask.Secondary | ButtonsMask.Primary
-			};
-
-			rigthOrLeftClickGesture.Tapped += OnTapped;
-			rightorLeftClickLabel.GestureRecognizers.Add(rigthOrLeftClickGesture);
-			horizontal.Children.Add(rightorLeftClickLabel);
-
 
 			Content = vertical;
 		}
