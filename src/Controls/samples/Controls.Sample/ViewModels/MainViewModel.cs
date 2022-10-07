@@ -89,9 +89,6 @@ namespace Maui.Controls.Sample.ViewModels
 
 				new SectionModel(typeof(Gallery.SurfingApp.HomePage), "Surfing App",
 				"An app for surfers"),
-
-				new SectionModel(typeof(Gallery.Xaminals.AppShell), "Xaminals",
-				"An app for animal lovers"),
 			};
 		}
 	}

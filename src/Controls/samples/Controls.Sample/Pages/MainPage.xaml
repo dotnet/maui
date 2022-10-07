@@ -113,7 +113,7 @@
                         <DataTemplate>
                             <Border
                                Style="{StaticResource SectionItemContainerStyle}"
-                                WidthRequest="150">
+                                WidthRequest="200">
                                 <Border.StrokeShape>
                                     <RoundRectangle 
                                         CornerRadius="0" />
