@@ -81,15 +81,15 @@ namespace Maui.Controls.Sample.Pages
 				Text = "Right click me¡",
 				BackgroundColor = Colors.Coral
 			};
-			var rigthClickGesture = new TapGestureRecognizer
+			var rightClickGesture = new TapGestureRecognizer
 			{
 				Command = TapCommand,
 				CommandParameter = Colors.Coral,
 				NumberOfTapsRequired = 1,
 				Buttons = ButtonsMask.Secondary
 			};
-			rigthClickGesture.Tapped += OnTapped;
-			rightClickLabel.GestureRecognizers.Add(rigthClickGesture);
+			rightClickGesture.Tapped += OnTapped;
+			rightClickLabel.GestureRecognizers.Add(rightClickGesture);
 			horizontal2.Children.Add(rightClickLabel);
 
 			var rightorLeftClickLabel = new Label
@@ -97,7 +97,8 @@ namespace Maui.Controls.Sample.Pages
 				Text = "Right or Left click me¡",
 				BackgroundColor = Colors.Green
 			};
-			var rigthOrLeftClickGesture = new TapGestureRecognizer
+			
+			var rightOrLeftClickGesture = new TapGestureRecognizer
 			{
 				Command = TapCommand,
 				CommandParameter = Colors.Green,
@@ -105,17 +106,17 @@ namespace Maui.Controls.Sample.Pages
 				Buttons = ButtonsMask.Secondary | ButtonsMask.Primary
 			};
 
-			rigthOrLeftClickGesture.Tapped += OnTapped;
-			rightorLeftClickLabel.GestureRecognizers.Add(rigthOrLeftClickGesture);
+			rightOrLeftClickGesture.Tapped += OnTapped;
+			rightorLeftClickLabel.GestureRecognizers.Add(rightOrLeftClickGesture);
 			horizontal2.Children.Add(rightorLeftClickLabel);
 
-			var rightorLeftClickLabel2Taps = new Label
+			var rightOrLeftClickLabel2Taps = new Label
 			{
 				Text = "Double Click Me! ",
 				BackgroundColor = Colors.Green,
 			};
 
-			var rigthOrLeftClickGesture2Taps = new TapGestureRecognizer
+			var rightOrLeftClickGesture2Taps = new TapGestureRecognizer
 			{
 				Command = TapCommand,
 				CommandParameter = Colors.Green,
@@ -123,9 +124,9 @@ namespace Maui.Controls.Sample.Pages
 				Buttons = ButtonsMask.Secondary | ButtonsMask.Primary
 			};
 
-			rigthOrLeftClickGesture2Taps.Tapped += OnTapped;
-			rightorLeftClickLabel2Taps.GestureRecognizers.Add(rigthOrLeftClickGesture2Taps);
-			horizontal2.Children.Add(rightorLeftClickLabel2Taps);
+			rightOrLeftClickGesture2Taps.Tapped += OnTapped;
+			rightOrLeftClickLabel2Taps.GestureRecognizers.Add(rightOrLeftClickGesture2Taps);
+			horizontal2.Children.Add(rightOrLeftClickLabel2Taps);
 
 			changeColorBoxView = new Label
 			{
