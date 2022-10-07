@@ -1,5 +1,13 @@
 ﻿#nullable enable
+Microsoft.Maui.ApplicationModel.Permissions.PermissionResult
+~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.GrantResults.get -> Android.Content.PM.Permission[]
+~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.PermissionResult(string[] permissions, Android.Content.PM.Permission[] grantResults) -> void
+~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.Permissions.get -> string[]
+~override Microsoft.Maui.ApplicationModel.Permissions.LocationAlways.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~virtual Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.DoRequest(string[] permissions) -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.Permissions.PermissionResult>
 override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
 ~override Microsoft.Maui.Devices.Sensors.Location.Equals(object obj) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator !=(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator ==(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
+*REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
