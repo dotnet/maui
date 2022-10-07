@@ -28,31 +28,34 @@ namespace Microsoft.Maui.Controls.Platform
 			if (control == null)
 				return;
 
-			foreach (var gesture in view.GetCompositeGestureRecognizers())
-				if (gesture is PointerGestureRecognizer)
-					OnPointerAction(view, control, gesture as PointerGestureRecognizer);
-			
+			if (HasAnyPointerGestures())
+				OnPointerAction(view, control);
+
 			return;
 		}
 
-		private void OnPointerAction(View view, AView control, PointerGestureRecognizer pgr)
+		private void OnPointerAction(View view, AView control)
 		{
-			if (pgr == null)
-				return;
-
 			control?.SetOnHoverListener(CreatePointerRecognizer((v, e) =>
 			{
-				switch (e.Action)
+				foreach (var gesture in view.GetCompositeGestureRecognizers())
 				{
-					case MotionEventActions.HoverEnter:
-						pgr.SendPointerEntered(view, (relativeTo) => CalculatePosition(view, e));
-						break;
-					case MotionEventActions.HoverMove:
-						pgr.SendPointerMoved(view, (relativeTo) => CalculatePosition(view, e));
-						break;
-					case MotionEventActions.HoverExit:
-						pgr.SendPointerExited(view, (relativeTo) => CalculatePosition(view, e));
-						break;
+					if (gesture is PointerGestureRecognizer)
+					{
+						var pgr = gesture as PointerGestureRecognizer;
+						switch (e.Action)
+						{
+							case MotionEventActions.HoverEnter:
+								pgr.SendPointerEntered(view, (relativeTo) => CalculatePosition(view, e));
+								break;
+							case MotionEventActions.HoverMove:
+								pgr.SendPointerMoved(view, (relativeTo) => CalculatePosition(view, e));
+								break;
+							case MotionEventActions.HoverExit:
+								pgr.SendPointerExited(view, (relativeTo) => CalculatePosition(view, e));
+								break;
+						}
+					}
 				}
 				return false;
 			}));
@@ -95,6 +98,19 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var result = new CustomHoverGestureRecognizer(onHover);
 			return result;
+		}
+
+		public bool HasAnyPointerGestures()
+		{
+			var gestures = GetView().GetCompositeGestureRecognizers();
+			if (gestures == null || gestures.Count == 0)
+				return false;
+
+			foreach (var gesture in gestures)
+				if (gesture is PointerGestureRecognizer)
+					return true;
+
+			return false;
 		}
 	}
 }
