@@ -565,11 +565,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool ValidateGesture(TapGestureRecognizer g)
 			{
-				if (e is RightTappedRoutedEventArgs &&
-					(g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+				if (e is RightTappedRoutedEventArgs)
 				{
 					// Currently we only support single right clicks on WinUI
-					return g.NumberOfTapsRequired == 1;
+					if ((g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+						return g.NumberOfTapsRequired == 1;
+					else
+						return false;
 				}
 
 				if ((g.Buttons & ButtonsMask.Primary) != ButtonsMask.Primary)
