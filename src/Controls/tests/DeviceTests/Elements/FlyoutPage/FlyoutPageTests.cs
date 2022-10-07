@@ -67,38 +67,6 @@ namespace Microsoft.Maui.DeviceTests
 
 #if !IOS && !MACCATALYST
 
-
-		[Fact(DisplayName = "Toolbar Recreates With New MauiContext")]
-		public async Task ToolbarRecreatesWithNewMauiContext()
-		{
-			SetupBuilder();
-			var flyoutPage = new FlyoutPage()
-			{
-				Detail = new NavigationPage(new ContentPage() { Title = "Detail" }),
-				Flyout = new ContentPage() { Title = "Flyout" }
-			};
-
-			var window = new Window(flyoutPage);
-
-			var context1 = new ContextStub(MauiContext.Services);
-			var context2 = new ContextStub(MauiContext.Services);
-
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(window, (handler) =>
-			{
-				Assert.NotNull(flyoutPage.Toolbar);
-				Assert.NotNull(GetPlatformToolbar(handler));
-				return Task.CompletedTask;
-			}, context1);
-
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(window, (handler) =>
-			{
-				Assert.NotNull(flyoutPage.Toolbar);
-				Assert.NotNull(GetPlatformToolbar(handler));
-				return Task.CompletedTask;
-			}, context2);
-		}
-
-
 		[Fact(DisplayName = "FlyoutPage With Toolbar")]
 		public async Task FlyoutPageWithToolbar()
 		{

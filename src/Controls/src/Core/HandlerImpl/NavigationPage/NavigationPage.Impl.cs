@@ -126,11 +126,6 @@ namespace Microsoft.Maui.Controls
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
-			SetupToolbar();
-		}
-
-		void SetupToolbar()
-		{
 			if (FindMyToolbar() is not NavigationPageToolbar)
 			{
 				// If the root is a flyoutpage then we set the toolbar on the flyout page

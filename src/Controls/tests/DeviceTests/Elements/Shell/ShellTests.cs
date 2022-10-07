@@ -28,23 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Image, ImageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Toolbar, ToolbarHandler>();
-					handlers.AddHandler<MenuBar, MenuBarHandler>();
-					handlers.AddHandler<MenuBarItem, MenuBarItemHandler>();
-					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
-					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
-					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
-					handlers.AddHandler<ScrollView, ScrollViewHandler>();
-#if WINDOWS
-					handlers.AddHandler<ShellItem, ShellItemHandler>();
-					handlers.AddHandler<ShellSection, ShellSectionHandler>();
-					handlers.AddHandler<ShellContent, ShellContentHandler>();
-#endif
+					SetupShellHandlers(handlers);
 				});
 			});
 		}
