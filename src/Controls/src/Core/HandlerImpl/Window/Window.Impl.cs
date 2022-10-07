@@ -493,6 +493,7 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Destroying()
 		{
+			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
 

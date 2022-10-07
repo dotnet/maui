@@ -126,6 +126,11 @@ namespace Microsoft.Maui.Controls
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Container level Toolbar with my Toolbar information
+			SetupToolbar();
+		}
+
+		void SetupToolbar()
+		{
 			if (FindMyToolbar() is not NavigationPageToolbar)
 			{
 				// If the root is a flyoutpage then we set the toolbar on the flyout page
@@ -225,15 +230,6 @@ namespace Microsoft.Maui.Controls
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
-
-			if (Handler == null && FindMyToolbar() is IToolbar tb)
-			{
-				tb.Handler = null;
-				if (tb.Parent is Window w)
-					w.Toolbar = null;
-				else if (tb.Parent is Page p)
-					p.Toolbar = null;
-			}
 
 			if (Navigation is MauiNavigationImpl && InternalChildren.Count > 0)
 			{
