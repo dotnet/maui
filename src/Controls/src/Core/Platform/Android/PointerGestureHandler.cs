@@ -6,7 +6,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class PointerGestureHandler
+	internal class PointerGestureHandler : Java.Lang.Object, AView.IOnHoverListener
 	{
 		internal PointerGestureHandler(Func<View> getView, Func<AView> getControl)
 		{
@@ -17,6 +17,33 @@ namespace Microsoft.Maui.Controls.Platform
 
 		Func<View> GetView { get; }
 		Func<AView> GetControl { get; }
+
+		public bool OnHover(AView control, MotionEvent e)
+		{
+			var view = GetView();
+
+			foreach (var gesture in view.GetCompositeGestureRecognizers())
+			{
+				if (gesture is PointerGestureRecognizer)
+				{
+					var pgr = gesture as PointerGestureRecognizer;
+					switch (e.Action)
+					{
+						case MotionEventActions.HoverEnter:
+							pgr.SendPointerEntered(view, (relativeTo) => CalculatePosition(view, e));
+							break;
+						case MotionEventActions.HoverMove:
+							pgr.SendPointerMoved(view, (relativeTo) => CalculatePosition(view, e));
+							break;
+						case MotionEventActions.HoverExit:
+							pgr.SendPointerExited(view, (relativeTo) => CalculatePosition(view, e));
+							break;
+					}
+				}
+			}
+
+			return false;
+		}
 
 		public void SetupHandlerForPointer()
 		{
@@ -29,36 +56,9 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			if (HasAnyPointerGestures())
-				OnPointerAction(view, control);
+				GetControl()?.SetOnHoverListener(this);
 
 			return;
-		}
-
-		private void OnPointerAction(View view, AView control)
-		{
-			control?.SetOnHoverListener(CreatePointerRecognizer((v, e) =>
-			{
-				foreach (var gesture in view.GetCompositeGestureRecognizers())
-				{
-					if (gesture is PointerGestureRecognizer)
-					{
-						var pgr = gesture as PointerGestureRecognizer;
-						switch (e.Action)
-						{
-							case MotionEventActions.HoverEnter:
-								pgr.SendPointerEntered(view, (relativeTo) => CalculatePosition(view, e));
-								break;
-							case MotionEventActions.HoverMove:
-								pgr.SendPointerMoved(view, (relativeTo) => CalculatePosition(view, e));
-								break;
-							case MotionEventActions.HoverExit:
-								pgr.SendPointerExited(view, (relativeTo) => CalculatePosition(view, e));
-								break;
-						}
-					}
-				}
-				return false;
-			}));
 		}
 
 		Point? CalculatePosition(IElement element, MotionEvent e)
@@ -92,12 +92,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			return null;
-		}
-
-		CustomHoverGestureRecognizer CreatePointerRecognizer(Func<AView, MotionEvent, bool> onHover)
-		{
-			var result = new CustomHoverGestureRecognizer(onHover);
-			return result;
 		}
 
 		public bool HasAnyPointerGestures()
