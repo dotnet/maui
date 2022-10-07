@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
 			AssertColorsFile("maui_colors.xml", outputColor);
-			AssertImageFile("maui_splash_image.xml", "@drawable/appiconfg");
-			AssertImageFile_v31("maui_splash_image_v31.xml", "@drawable/appiconfg");
+			AssertImageFile("maui_splash_image.xml", _drawable, "@drawable/appiconfg");
+			AssertImageFile("maui_splash_image_v31.xml", _drawable_v31, "@drawable/appiconfg");
 		}
 
 		[Theory]
@@ -64,8 +64,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var success = task.Execute();
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-			AssertImageFile("maui_splash_image.xml", "@drawable/splash_image_drawable", width, height);
-			AssertImageFile_v31("maui_splash_image_v31.xml", "@drawable/splash_image_drawable", width, height);
+			AssertImageFile("maui_splash_image.xml", _drawable, "@drawable/splash_image_drawable", width, height);
+			AssertImageFile("maui_splash_image_v31.xml", _drawable_v31, "@drawable/splash_image_drawable", width, height);
 		}
 
 		[Theory]
@@ -82,8 +82,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var success = task.Execute();
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-			AssertImageFile("maui_splash_image.xml", $"@drawable/{outputImage}");
-			AssertImageFile_v31("maui_splash_image_v31.xml", $"@drawable/{outputImage}");
+			AssertImageFile("maui_splash_image.xml", _drawable, $"@drawable/{outputImage}");
+			AssertImageFile("maui_splash_image_v31.xml", _drawable_v31, $"@drawable/{outputImage}");
 		}
 
 		void AssertColorsFile(string expectedFilename, string color)
@@ -97,30 +97,17 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(XNode.DeepEquals(actual, expected), $"{_colors} did not match:\n{actual}");
 		}
 
-		void AssertImageFile(string expectedFilename, string image, string width = "108", string height = "108")
+		void AssertImageFile(string expectedFilename, string actualFilename, string image, string width = "108", string height = "108")
 		{
 			var expectedXml = File.ReadAllText($"testdata/androidsplash/" + expectedFilename)
 				.Replace("{drawable}", image, StringComparison.OrdinalIgnoreCase)
 				.Replace("{width}", width, StringComparison.OrdinalIgnoreCase)
 				.Replace("{height}", height, StringComparison.OrdinalIgnoreCase);
 
-			var actual = XElement.Load(_drawable);
+			var actual = XElement.Load(actualFilename);
 			var expected = XElement.Parse(expectedXml);
 
-			Assert.True(XNode.DeepEquals(actual, expected), $"{_drawable} did not match:\n{actual}");
-		}
-
-		void AssertImageFile_v31(string expectedFilename, string image, string width = "108", string height = "108")
-		{
-			var expectedXml = File.ReadAllText($"testdata/androidsplash/" + expectedFilename)
-				.Replace("{drawable}", image, StringComparison.OrdinalIgnoreCase)
-				.Replace("{width}", width, StringComparison.OrdinalIgnoreCase)
-				.Replace("{height}", height, StringComparison.OrdinalIgnoreCase);
-
-			var actual = XElement.Load(_drawable_v31);
-			var expected = XElement.Parse(expectedXml);
-
-			Assert.True(XNode.DeepEquals(actual, expected), $"{_drawable_v31} did not match:\n{actual}");
+			Assert.True(XNode.DeepEquals(actual, expected), $"{actualFilename} did not match:\n{actual}");
 		}
 	}
 }
