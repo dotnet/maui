@@ -1,0 +1,247 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Gallery.ChatApp.DetailPage"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Gallery.ChatApp"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+
+            <DataTemplate x:Key="SenderMessageItemTemplate">
+                <local:SenderChatMessageItemTemplate />
+            </DataTemplate>
+
+            <DataTemplate x:Key="ReceiverMessageItemTemplate">
+                <local:ReceiverChatMessageItemTemplate />
+            </DataTemplate>
+
+            <local:MessageDataTemplateSelector 
+                x:Key="MessageDataTemplateSelector"             
+                SenderMessageTemplate="{StaticResource SenderMessageItemTemplate}"    
+                ReceiverMessageTemplate="{StaticResource ReceiverMessageItemTemplate}"/>
+
+            <Style x:Key="NavigationButtonContainerStyle" TargetType="Grid">
+                <Setter Property="Margin" Value="24, 12" />
+                <Setter Property="VerticalOptions" Value="Start" />
+            </Style>
+
+            <Color x:Key="NavigationButtonColor">#A2A4D6</Color>
+
+            <Style x:Key="NavigationButtonStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource NavigationButtonColor}" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="FontFamily" Value="Metropolis Regular" />
+            </Style>
+
+            <Style x:Key="UsernameTextStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="26" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="FontFamily" Value="Metropolis Medium" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="WidthRequest" Value="150" />
+                <Setter Property="HorizontalOptions" Value="Start" />
+                <Setter Property="Margin" Value="24, 36" />
+            </Style>
+
+            <Style x:Key="ButtonsContainerStyle" TargetType="StackLayout">
+                <Setter Property="HeightRequest" Value="120" />
+                <Setter Property="Orientation" Value="Horizontal" />
+                <Setter Property="Margin" Value="24, 12" />
+            </Style>
+
+            <Color x:Key="CircularButtonEllipseColor">#868BCB</Color>
+
+            <Style x:Key="CircularButtonEllipseStyle" TargetType="BoxView">
+                <Setter Property="CornerRadius" Value="40" />
+                <Setter Property="HeightRequest" Value="40" />
+                <Setter Property="WidthRequest" Value="40" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="Margin" Value="6, 0, 0, 0" />
+            </Style>
+
+            <Style x:Key="CircularButtonImageStyle" TargetType="Image">
+                <Setter Property="HeightRequest" Value="40" />
+                <Setter Property="Aspect" Value="AspectFit" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+            <Style x:Key="ChatAdornerStyle" TargetType="BoxView">
+                <Setter Property="Color" Value="White" />
+                <Setter Property="CornerRadius" Value="24, 24, 0, 0" />
+            </Style>
+
+            <Style x:Key="ChatCollectionStyle" TargetType="CollectionView">
+                <Setter Property="Margin" Value="18, 32, 18, 0" />
+            </Style>
+
+            <Color x:Key="ChatEntryBackgroundColor">#F7F7F8</Color>
+
+            <Style x:Key="ChatEntryContainerStyle" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="{StaticResource ChatEntryBackgroundColor}" />
+                <Setter Property="HeightRequest" Value="72" />
+                <Setter Property="CornerRadius" Value="32" />
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="Padding" Value="4" />
+                <Setter Property="Margin" Value="12" />
+            </Style>
+
+            <Style x:Key="ChatEntryStyle" TargetType="Entry">
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="Margin" Value="6, 0" />
+            </Style>
+            <Style x:Key="SearchButtonContainerStyle" TargetType="Grid">
+                <Setter Property="HorizontalOptions" Value="End" />
+                <Setter Property="WidthRequest" Value="40" />
+            </Style>
+
+            <Style x:Key="SearchButtonEllipseStyle" TargetType="BoxView">
+                <Setter Property="Color" Value="{StaticResource PrimaryColor}" />
+                <Setter Property="CornerRadius" Value="32" />
+                <Setter Property="HeightRequest" Value="32" />
+                <Setter Property="WidthRequest" Value="32" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+            <Style x:Key="SearchButtonImageStyle" TargetType="Image">
+                <Setter Property="HeightRequest" Value="40" />
+                <Setter Property="Aspect" Value="AspectFit" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+        </ResourceDictionary>
+    </views:BasePage.Resources>
+    <ContentPage.BindingContext>
+        <local:DetailViewModel />
+    </ContentPage.BindingContext>
+    <views:BasePage.Content>
+        <Grid      
+            BackgroundColor="{StaticResource PrimaryColor}"
+            RowDefinitions="220, *">
+            <Grid 
+                Grid.Row="0"
+                RowDefinitions="Auto, 150">
+                <Grid 
+                    ColumnDefinitions="Auto, *"
+                    Style="{StaticResource NavigationButtonContainerStyle}">
+                    <Label
+                        Text="Back"
+                        Style="{StaticResource NavigationButtonStyle}">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer 
+                                Command="{Binding BackCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label                    
+                        Grid.Column="1"
+                        Text="Search"
+                        HorizontalOptions="End"
+                        Style="{StaticResource NavigationButtonStyle}"/>
+                </Grid>
+                <Grid 
+                    Grid.Row="1"
+                    ColumnDefinitions="*, Auto">
+                    <Label
+                        Text="{Binding User.Name}" 
+                        Style="{StaticResource UsernameTextStyle}"/>
+                    <StackLayout 
+                        Grid.Column="1" 
+                        Style="{StaticResource ButtonsContainerStyle}">
+                        <Grid>
+                            <BoxView
+                                Color="{StaticResource CircularButtonEllipseColor}"
+                                Style="{StaticResource CircularButtonEllipseStyle}" />
+                            <!-- FontImageSource not rendering correctly -->
+                            <!--
+                            <Image    
+                                Margin="8">
+                                <Image.Source>
+                                    <FontImageSource   
+                                        FontFamily="Material Icons"
+                                        Glyph="&#xe0b0;"
+                                        Color="White"
+                                        Size="12" />
+                                </Image.Source>
+                            </Image>
+                            -->
+                            <Image   
+                                Source="call.png"
+                                Style="{StaticResource CircularButtonImageStyle}"/>
+                        </Grid>
+                        <Grid>
+                            <BoxView
+                                Color="{StaticResource CircularButtonEllipseColor}"
+                                Style="{StaticResource CircularButtonEllipseStyle}" />
+                            <!-- FontImageSource not rendering correctly -->
+                            <!--
+                            <Image       
+                                Margin="8">
+                                <Image.Source>
+                                    <FontImageSource   
+                                        FontFamily="Material Icons"
+                                        Glyph="&#xe04b;"
+                                        Color="White"
+                                        Size="12" />
+                                </Image.Source>
+                            </Image>
+                            -->
+                            <Image   
+                                Source="record.png"
+                                Style="{StaticResource CircularButtonImageStyle}"/>
+                        </Grid>
+                    </StackLayout>
+                </Grid>
+            </Grid>
+            <Grid
+                Grid.Row="1">
+                <BoxView
+                    Style="{StaticResource ChatAdornerStyle}"/>
+                <Grid
+                    RowDefinitions="*, Auto">
+                    <Grid>
+                        <CollectionView 
+                            ItemsSource="{Binding Messages}"
+                            ItemTemplate="{StaticResource MessageDataTemplateSelector}"
+                            Style="{StaticResource ChatCollectionStyle}" />
+                    </Grid>
+                    <Frame
+                        Grid.Row="1"
+                        Style="{StaticResource ChatEntryContainerStyle}">
+                        <Grid
+                            ColumnDefinitions="*, Auto">
+                            <Entry
+                                Placeholder="Type your message..."
+                                Style="{StaticResource ChatEntryStyle}"/>
+                            <Grid 
+                                Grid.Column="1"
+                                Style="{StaticResource SearchButtonContainerStyle}">
+                                <Ellipse
+                                    Fill="{StaticResource PrimaryBrush}"
+                                    Style="{StaticResource SearchButtonEllipseStyle}"/>
+                                <!-- FontImageSource not rendering correctly -->
+                                <!--
+                                <Image
+                                    Margin="6">
+                                    <Image.Source>
+                                        <FontImageSource   
+                                            FontFamily="Material Icons"
+                                            Glyph="&#xe163;"
+                                            Color="White"
+                                            Size="12" />
+                                    </Image.Source>
+                                </Image>
+                                -->
+                                <Image   
+                                    Source="send.png"
+                                    Style="{StaticResource SearchButtonImageStyle}"/>
+                            </Grid>
+                        </Grid>
+                    </Frame>
+                </Grid>
+            </Grid>
+        </Grid>
+    </views:BasePage.Content>
+</views:BasePage>

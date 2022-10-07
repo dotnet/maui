@@ -8,7 +8,7 @@
     x:Name="HomePage"
     BackgroundColor="{DynamicResource BackgroundColor}"
     NavigationPage.IconColor="White"
-    Title="Gallery">
+    Title=".NET MAUI Gallery">
     <views:BasePage.Resources>
         <ResourceDictionary>
 
@@ -29,6 +29,11 @@
                 <Setter Property="Margin" Value="24, 12" />
             </Style>
 
+            <Style x:Key="SectionTitleStyle" TargetType="Label">
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+            
             <Color x:Key="SectionItemBorderColor">#C8C8C8</Color>
 
             <Style x:Key="SectionItemContainerStyle" TargetType="Border">
@@ -53,7 +58,7 @@
     </views:BasePage.Resources>
     <ScrollView>
         <Grid
-            RowDefinitions="150, *, Auto"
+            RowDefinitions="150, Auto, *, Auto"
             RowSpacing="0">
             <!-- HEADER -->
             <Image
@@ -82,11 +87,63 @@
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
                     Style="{StaticResource SubTitleStyle}"/>
             </Grid>
-            <!-- SECTIONS -->
+            <!-- GALLERY -->
             <Grid
                 Grid.Row="1"
+                RowDefinitions="Auto, *"
                 Margin="12">
+                <Label
+                    Text="Gallery"
+                    Style="{StaticResource SectionTitleStyle}"/>
+                <CollectionView
+                    Grid.Row="1"
+                    x:Name="GallerySections"
+                    ItemsSource="{Binding Gallery}"
+                    SelectionMode="Single"
+                    SelectedItem="{Binding SelectedItem, Source={x:RelativeSource AncestorType={x:Type ContentPage}}, Mode=TwoWay}"
+                    SelectionChangedCommand="{Binding NavigateCommand, Source={x:Reference HomePage}}"
+                    Margin="6, 12, 6, 0">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout
+                            Orientation="Horizontal"
+                            HorizontalItemSpacing="6"
+                            VerticalItemSpacing="6"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                               Style="{StaticResource SectionItemContainerStyle}"
+                                WidthRequest="150">
+                                <Border.StrokeShape>
+                                    <RoundRectangle 
+                                        CornerRadius="0" />
+                                </Border.StrokeShape>
+                                <Grid
+                                   RowSpacing="0"
+                                   RowDefinitions="Auto, *">
+                                    <Label
+                                       Text="{Binding Title}"
+                                       Style="{StaticResource GalleryItemTitleStyle}"/>
+                                    <Label
+                                       Grid.Row="1"
+                                       Text="{Binding Description}"
+                                       Style="{StaticResource GalleryItemDescriptionStyle}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+            <!-- SECTIONS -->
+            <Grid
+                Grid.Row="2"
+                RowDefinitions="Auto, *"
+                Margin="12">
+                <Label
+                    Text="Sections"
+                    Style="{StaticResource SectionTitleStyle}"/>
                 <CollectionView 
+                    Grid.Row="1"
                     x:Name="HomeSections"
                     BackgroundColor="Transparent"
                     ItemsSource="{Binding Items}"
@@ -127,7 +184,7 @@
             </Grid>
             <!-- FOOTER -->
             <Label
-                Grid.Row="2"
+                Grid.Row="3"
                 Text="{Binding Path=Year, Source={x:Static sys:DateTime.Now}, StringFormat='Microsoft Corporation © {0}'}"
                 Style="{StaticResource FooterStyle}" />
         </Grid>

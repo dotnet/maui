@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Maui.Controls.Sample.Models;
@@ -16,6 +17,8 @@ namespace Maui.Controls.Sample.ViewModels
 		readonly IConfiguration _configuration;
 		readonly ITextService _textService;
 		readonly IDispatcher _dispatcher;
+
+		ObservableCollection<SectionModel> _gallery;
 
 		public MainViewModel(IConfiguration configuration, ITextService textService, IDispatcher dispatcher)
 		{
@@ -34,6 +37,18 @@ namespace Maui.Controls.Sample.ViewModels
 					Debug.WriteLine($"This is on the main thread! (dispatchRequired={_dispatcher.IsDispatchRequired}; id={Environment.CurrentManagedThreadId})");
 				});
 			});
+
+			LoadGallery();
+		}
+
+		public ObservableCollection<SectionModel> Gallery
+		{
+			get { return _gallery; }
+			set
+			{
+				_gallery = value;
+				OnPropertyChanged();
+			}
 		}
 
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
@@ -64,5 +79,20 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(OthersPage), "Others Concepts",
 				"Other options like Graphics."),
 		};
+
+		void LoadGallery()
+		{
+			Gallery = new ObservableCollection<SectionModel>
+			{
+				new SectionModel(typeof(Gallery.ChatApp.HomePage), "Chat App",
+				"An efficient chat app"),
+
+				new SectionModel(typeof(Gallery.SurfingApp.HomePage), "Surfing App",
+				"An app for surfers"),
+
+				new SectionModel(typeof(Gallery.Xaminals.AppShell), "Xaminals",
+				"An app for animal lovers"),
+			};
+		}
 	}
 }

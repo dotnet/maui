@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Gallery.ChatApp.RecentChatItemTemplate"
+    xmlns:viewmodel="clr-namespace:Maui.Controls.Sample.Gallery.ChatApp">
+    <ContentView.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="RecentImageContainerStyle" TargetType="Grid">
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="HeightRequest" Value="72" />
+                <Setter Property="WidthRequest" Value="72" />
+            </Style>
+            
+            <Style x:Key="RecentEllipseStyle" TargetType="Ellipse">
+                <Setter Property="HeightRequest" Value="72" />
+                <Setter Property="WidthRequest" Value="72" />
+            </Style>
+            
+            <Style x:Key="RecentImageStyle" TargetType="Image">
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="HeightRequest" Value="48" />
+                <Setter Property="Margin" Value="10" />
+            </Style>
+
+            <Style x:Key="NameTextStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="Black" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontFamily" Value="Metropolis Regular" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="Margin" Value="12, 0" />
+            </Style>
+
+            <Style x:Key="MessageTextStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="Black" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontFamily" Value="Metropolis Regular" />
+                <Setter Property="LineBreakMode" Value="TailTruncation" />
+                <Setter Property="MaxLines" Value="1" />
+                <Setter Property="Margin" Value="12, 12, 12, 0" />
+            </Style>
+
+            <Color x:Key="TimeColor">#B2ACBE</Color>
+
+            <Style x:Key="TimeTextStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource TimeColor}" />
+                <Setter Property="FontFamily" Value="Metropolis Regular" />
+                <Setter Property="FontSize" Value="11" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentView.Resources>
+    <ContentView.Content>
+        <Grid
+          ColumnDefinitions="Auto, *"
+          RowSpacing="0"
+          Margin="12, 24">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer                
+                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:HomeViewModel}}, Path=DetailCommand}"      
+                    CommandParameter="{Binding}"/>
+            </Grid.GestureRecognizers>
+            <Grid
+                Style="{StaticResource RecentImageContainerStyle}">
+                <Ellipse
+                    Fill="{Binding Sender.Color}"
+                    Style="{StaticResource RecentEllipseStyle}"/>
+                <Image
+                    Source="{Binding Sender.Image}"
+                    Style="{StaticResource RecentImageStyle}"/>
+            </Grid>
+            <Grid
+                Grid.Column="1"   
+                ColumnDefinitions="*, Auto">
+                <StackLayout>
+                    <Label        
+                        Text="{Binding Sender.Name}"
+                        Style="{StaticResource NameTextStyle}"/>
+                    <Label         
+                        Text="{Binding Text}"
+                        Style="{StaticResource MessageTextStyle}"/>
+                </StackLayout>
+                <Label 
+                    Grid.Column="1"
+                    Text="{Binding Time}"
+                    Style="{StaticResource TimeTextStyle}"/>
+            </Grid>
+        </Grid>
+    </ContentView.Content>
+</ContentView>

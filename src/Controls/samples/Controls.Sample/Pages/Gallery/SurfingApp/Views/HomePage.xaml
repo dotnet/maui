@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Gallery.SurfingApp.HomePage"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Gallery.SurfingApp"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <local:ToUpperConverter x:Key="ToUpperConverter" />
+
+            <Style x:Key="HeaderLayoutStyle" TargetType="Grid">
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="Margin" Value="24, 6" />
+            </Style>
+
+            <Style x:Key="HeaderIconStyle" TargetType="Path">
+                <Setter Property="Fill" Value="Black" />
+                <Setter Property="Scale" Value="0.75" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="HeightRequest" Value="40" />
+                <Setter Property="WidthRequest" Value="40" />
+            </Style>
+
+            <Style x:Key="TitleStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="28" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="Black" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.BindingContext>
+        <local:HomeViewModel />
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        <Grid
+            RowDefinitions="48, Auto, *">
+            <!--NAVBAR -->
+            <Grid
+                ColumnDefinitions="Auto, *, Auto">
+                <Grid
+                    Style="{StaticResource HeaderLayoutStyle}">
+                    <Path 
+                        Data="M1.230957,19.693036L30.768982,19.693036C31.506958,19.693036,32,20.185041,32,20.923019L32,22.154038C32,22.893054,31.506958,23.384999,30.768982,23.384999L1.230957,23.384999C0.49194336,23.384999,0,22.893054,0,22.154038L0,20.923019C0,20.185041,0.49194336,19.693036,1.230957,19.693036z M1.230957,9.8470059L30.768982,9.8470059C31.506958,9.8470059,32,10.339011,32,11.076989L32,12.30801C32,13.045987,31.506958,13.53903,30.768982,13.53903L1.230957,13.53903C0.49194336,13.53903,0,13.047025,0,12.30801L0,11.076989C0,10.339011,0.49194336,9.8470059,1.230957,9.8470059z M1.230957,0L30.768982,0C31.506958,-6.3337211E-08,32,0.49298194,32,1.2309594L32,2.4619804C32,3.1999579,31.506958,3.6930011,30.768982,3.6930013L1.230957,3.6930013C0.49194336,3.6930011,0,3.1999579,0,2.4619804L0,1.2309594C0,0.49298194,0.49194336,-6.3337211E-08,1.230957,0z"
+                        Style="{StaticResource HeaderIconStyle}"/>
+                </Grid>
+                <Label
+                    Grid.Column="1"
+                    Text="Surfers"
+                    Style="{StaticResource TitleStyle}"/>
+                <Grid
+                    Grid.Column="2"
+                    Style="{StaticResource HeaderLayoutStyle}">
+                    <Path
+                        Data="M11.170988,2.0000026C6.1139962,2.0000026 1.9999944,6.1120075 1.9999944,11.16603 1.9999944,16.219991 6.1139962,20.331996 11.170988,20.331996 16.227981,20.331996 20.341006,16.219991 20.341006,11.16603 20.341006,6.1120075 16.227981,2.0000026 11.170988,2.0000026z M11.170988,0C17.33003,0 22.341001,5.0089787 22.341001,11.16603 22.341001,13.76351 21.449155,16.156669 19.95551,18.055608L19.942527,18.071714 31.999898,30.615001 30.5589,32.001003 18.567029,19.525854 18.476871,19.605846C16.516895,21.303544 13.961804,22.332 11.170988,22.332 5.0119487,22.332 1.6168633E-07,17.32302 0,11.16603 1.6168633E-07,5.0089787 5.0119487,0 11.170988,0z"
+                        Style="{StaticResource HeaderIconStyle}"/>
+                </Grid>
+            </Grid>
+            <!-- USER LIST -->
+            <Grid
+                Grid.Row="1"
+                Padding="24, 0"
+                Margin="0, 18">
+                <CollectionView
+                    ItemsSource="{Binding Users}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout
+                            Orientation="Horizontal"
+                            ItemSpacing="6"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <local:UserItemTemplate />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+            <!-- POST LIST -->
+            <Grid
+                Grid.Row="2"
+                Padding="24, 12, 24, 0">
+                <CollectionView 
+                    ItemsSource="{Binding Posts}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout
+                            Orientation="Vertical"
+                            ItemSpacing="36"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <local:PostItemTemplate />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

@@ -157,6 +157,14 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("SegoeUI-Bold.ttf", "Segoe UI Bold");
 					fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
 					fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
+					fonts.AddFont("Metropolis-Black.otf", "Metropolis Black");
+					fonts.AddFont("Metropolis-Light.otf", "Metropolis Light");
+					fonts.AddFont("Metropolis-Medium.otf", "Metropolis Medium");
+					fonts.AddFont("Metropolis-Regular.otf", "Metropolis Regular");
+					fonts.AddFont("Metropolis-Regular.otf", "Metropolis Regular");
+					fonts.AddFont("MaterialIcons-Regular.ttf", "Material Icons");
+					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+					fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 				})
 				.ConfigureEssentials(essentials =>
 				{

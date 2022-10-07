@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Gallery.ChatApp.SuggestedItemTemplate">
+    <ContentView.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="SuggestedContainerStyle" TargetType="Grid">
+                <Setter Property="HeightRequest" Value="52" />
+                <Setter Property="WidthRequest" Value="52" />
+                <Setter Property="Margin" Value="0, 0, 12, 0" />
+            </Style>
+
+            <Style x:Key="SuggestedImageStyle" TargetType="Image">
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="Margin" Value="8" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentView.Resources>
+  <ContentView.Content>
+        <Grid
+            Style="{StaticResource SuggestedContainerStyle}">
+            <Ellipse   
+                Fill="{Binding Color}"/>
+            <Image
+                Source="{Binding Image}"
+                Style="{StaticResource SuggestedImageStyle}"/>
+      </Grid>
+  </ContentView.Content>
+</ContentView>

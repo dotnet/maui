@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Gallery.ChatApp.ReceiverChatMessageItemTemplate">
+    <ContentView.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="MessageContainerStyle" TargetType="Grid">
+                <Setter Property="Margin" Value="8" />
+            </Style>
+
+            <Color x:Key="MessageColor">#EDEEF7</Color>
+
+            <Style x:Key="MessageShapeStyle" TargetType="BoxView">
+                <Setter Property="BackgroundColor" Value="{StaticResource MessageColor}" />
+                <Setter Property="CornerRadius" Value="24, 24, 24, 0" />
+            </Style>
+
+            <Style x:Key="MessageTextStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="FontFamily" Value="Metropolis Regular" />
+                <Setter Property="TextColor" Value="Black" />
+            </Style>
+
+            <Style x:Key="TimeTextStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="FontFamily" Value="Metropolis Regular" />
+                <Setter Property="TextColor" Value="Gray" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="Margin" Value="12, 0, 48, 0" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentView.Resources>
+    <ContentView.Content>
+        <Grid
+            ColumnDefinitions="Auto, *"
+            Style="{StaticResource MessageContainerStyle}">
+            <Label
+                Text="{Binding Time}"
+                Style="{StaticResource TimeTextStyle}"/>
+            <Grid 
+                Grid.Column="1">
+                <BoxView
+                    Style="{StaticResource MessageShapeStyle}" />
+                <Label 
+                    Text="{Binding Text}"
+                    Padding="12"
+                    Style="{StaticResource MessageTextStyle}"/>
+            </Grid>
+        </Grid>
+    </ContentView.Content>
+</ContentView>

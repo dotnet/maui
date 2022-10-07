@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Gallery.ChatApp.HomePage"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Gallery.ChatApp"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+            
+            <Color x:Key="PrimaryColor">#5B61B9</Color>
+            <Color x:Key="SecondaryColor">White</Color>
+
+            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+            <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}" />
+            
+            <Style x:Key="TitleTextStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="26" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="FontFamily" Value="Metropolis Medium" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="WidthRequest" Value="160" />
+                <Setter Property="Margin" Value="36, 48, 0, 0" />
+            </Style>
+
+            <Style x:Key="SuggestedContainerStyle" TargetType="Grid">
+                <Setter Property="Margin" Value="36, 24, 0, 24" />
+            </Style>
+
+            <Style x:Key="SearchContainerStyle" TargetType="Grid">
+                <Setter Property="HeightRequest" Value="52" />
+                <Setter Property="WidthRequest" Value="52" />
+                <Setter Property="Margin" Value="0, 0, 12, 0" />
+            </Style>
+
+            <Color x:Key="SearchBackgroundColor">#868ACB</Color>
+
+            <Style x:Key="RecentChatCollectionStyle" TargetType="CollectionView">
+                <Setter Property="Margin" Value="12, 24, 12, 0" />
+            </Style>
+
+            <Style x:Key="RecentChatAdornerStyle" TargetType="BoxView">
+                <Setter Property="Color" Value="White" />
+                <Setter Property="CornerRadius" Value="18, 18, 0, 0" />
+            </Style>
+
+        </ResourceDictionary>
+    </views:BasePage.Resources>
+    <ContentPage.BindingContext>
+        <local:HomeViewModel />
+    </ContentPage.BindingContext>
+    <views:BasePage.Content>
+        <Grid  
+            BackgroundColor="{StaticResource PrimaryColor}"
+            RowDefinitions="220, *">
+            <Grid
+                RowDefinitions="Auto, *">
+                <Label 
+                    Text="Chat with your friends"
+                    Style="{StaticResource TitleTextStyle}" />
+                <Grid      
+                    Grid.Row="1"
+                    ColumnDefinitions="Auto, *"
+                    Style="{StaticResource SuggestedContainerStyle}">
+                    <!-- SEARCH -->
+                    <Grid     
+                        Style="{StaticResource SearchContainerStyle}">
+                        <Ellipse   
+                            Fill="{StaticResource SearchBackgroundColor}"/>
+                        <Image   
+                            Source="search.png"/>
+                    </Grid>
+                    <!-- SUGGESTED CONTACTS -->
+                    <ScrollView
+                        Grid.Column="1">
+                        <StackLayout
+                            Orientation="Horizontal"
+                            BindableLayout.ItemsSource="{Binding Users}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <local:SuggestedItemTemplate />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
+                    </ScrollView>
+                </Grid>
+            </Grid>
+            <Grid
+                Grid.Row="1">
+                <BoxView
+                    Style="{StaticResource RecentChatAdornerStyle}"/>
+                <CollectionView
+                    ItemsSource="{Binding RecentChat}" 
+                    Style="{StaticResource RecentChatCollectionStyle}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <local:RecentChatItemTemplate />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </Grid>
+    </views:BasePage.Content>
+</views:BasePage>
