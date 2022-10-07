@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Controls
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
+		bool _isActivated;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -298,8 +299,20 @@ namespace Microsoft.Maui.Controls
 
 		internal bool IsActivated
 		{
-			get;
-			private set;
+			get
+			{
+				return _isActivated;
+			}
+			private set
+			{
+				if (_isActivated == value)
+					return;
+
+				_isActivated = value;
+
+				if (value)
+					SendWindowAppearing();
+			}
 		}
 
 		IFlowDirectionController FlowController => this;
