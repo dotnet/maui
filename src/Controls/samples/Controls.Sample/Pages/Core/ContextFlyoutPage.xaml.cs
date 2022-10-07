@@ -21,7 +21,23 @@ namespace Maui.Controls.Sample.Pages
 						cancel: "OK");
 				});
 
+			DynamicEnabledCommand = new Command(
+				execute: async (object arg) =>
+				{
+					var incrementAmount = int.Parse((string)arg);
+					count += incrementAmount;
+					OnPropertyChanged(nameof(CounterValue));
+
+					await DisplayAlert(
+						title: "Dynamic Option",
+						message: $"If you see this, then I am enabled.",
+						cancel: "OK");
+				},
+				canExecute: _ => IsDynamicCommandEnabled);
+
 			BindingContext = this;
+
+			bbb.IsEnabled = false;
 
 			ContextMenuWebView.HandlerChanged += OnWebViewHandlerChanged;
 		}
@@ -52,7 +68,22 @@ namespace Maui.Controls.Sample.Pages
 
 		public ICommand ImageContextCommand { get; init; }
 
+		public bool IsDynamicCommandEnabled
+		{
+			get => _isDynamicCommandEnabled;
+			set
+			{
+				if (_isDynamicCommandEnabled != value)
+				{
+					_isDynamicCommandEnabled = value;
+					DynamicEnabledCommand.ChangeCanExecute();
+				}
+			}
+		}
+		public Command DynamicEnabledCommand { get; init; }
+
 		int count;
+		private bool _isDynamicCommandEnabled;
 
 		void OnIncrementByOneClicked(object sender, EventArgs e)
 		{
