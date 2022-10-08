@@ -93,15 +93,14 @@ namespace Microsoft.Maui.DeviceTests
 						// Shell currently doesn't create the handler on the xplat toolbar with Android
 						// Because Android has lots of toolbars spread out between the viewpagers that
 						var platformToolBar = GetPlatformToolbar(handler);
-						var toolBar = toolbar;
-						Assert.Equal(platformToolBar != null, toolBar != null);
+						Assert.Equal(platformToolBar != null, toolbar != null);
 
 						if (platformToolBar != null)
 						{
 							if (DeviceInfo.Current.Platform == DevicePlatform.WinUI ||
 								window.Page is not Shell)
 							{
-								Assert.Equal(toolBar?.Handler?.PlatformView, platformToolBar);
+								Assert.Equal(toolbar?.Handler?.PlatformView, platformToolBar);
 							}
 
 							Assert.True(IsNavigationBarVisible(handler));
