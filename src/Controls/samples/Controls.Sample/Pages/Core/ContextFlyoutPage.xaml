@@ -29,8 +29,11 @@
             <Label Text="Right-click and add additional menus (currently quirky on Windows and Catalyst)">
                 <FlyoutBase.ContextFlyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem Text="Add Menu" Clicked="OnAddMenuClicked"></MenuFlyoutItem>
-                        <MenuFlyoutSubItem Text="Add Sub Menu" Clicked="OnSubMenuClicked"></MenuFlyoutSubItem>
+                        <MenuFlyoutItem Text="Add top-level menu items" Clicked="OnAddMenuClicked"></MenuFlyoutItem>
+                        <MenuFlyoutSubItem Text="Sub menu items go in here">
+                            <MenuFlyoutItem Text="Add sub menu items below here" Clicked="OnAddSubMenuClicked"></MenuFlyoutItem>
+                            <MenuFlyoutSeparator />
+                        </MenuFlyoutSubItem>
                     </MenuFlyout>
                 </FlyoutBase.ContextFlyout>
             </Label>

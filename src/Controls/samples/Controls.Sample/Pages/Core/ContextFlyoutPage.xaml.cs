@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Input;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -137,16 +139,30 @@ namespace Maui.Controls.Sample.Pages
 			await ContextMenuWebView.EvaluateJavaScriptAsync(@"alert('help, i\'m being invoked!');");
 		}
 
+		int newMenuItemCount = 0;
+
 		void OnAddMenuClicked(object sender, EventArgs e)
 		{
 			var contextFlyout = ((MenuFlyoutItem)sender).Parent as MenuFlyout;
-			contextFlyout.Add(new MenuFlyoutItem() { Text = "Thank you for adding me" });
+			AddNewMenu(contextFlyout, "top-level");
 		}
 
-		void OnSubMenuClicked(object sender, EventArgs e)
+		void OnAddSubMenuClicked(object sender, EventArgs e)
 		{
-			var subMenu = ((MenuFlyoutSubItem)sender);
-			subMenu.Add(new MenuFlyoutItem() { Text = "Thank you for adding me" });
+			var subMenu = (MenuFlyoutSubItem)((MenuFlyoutItem)sender).Parent;
+			AddNewMenu(subMenu, "sub-menu");
+		}
+
+		private void AddNewMenu(IList<IMenuElement> parent, string newItemType)
+		{
+			var newItemLocalValue = newMenuItemCount;
+			var newMenuItem = new MenuFlyoutItem() { Text = $"New {newItemType} menu item #{newItemLocalValue}" };
+			newMenuItem.Clicked += (s, e) => DisplayAlert(
+				title: "New Menu Item Click",
+				message: $"The new menu item {newItemLocalValue} was clicked",
+				cancel: "OK");
+			parent.Add(newMenuItem);
+			newMenuItemCount++;
 		}
 	}
 }
