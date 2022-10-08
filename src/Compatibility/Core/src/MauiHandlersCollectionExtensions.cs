@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TRenderer>(this IMauiHandlersCollection handlersCollection)
 			where TControlType : IView
 		{
-			//Internals.Registrar.CheckIfRendererIsCompatibilityRenderer(typeof(TRenderer));
+			Internals.Registrar.CheckIfRendererIsCompatibilityRenderer(typeof(TRenderer));
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			handlersCollection.AddCompatibilityRenderer<TControlType, TControlType, TRenderer>();
 
