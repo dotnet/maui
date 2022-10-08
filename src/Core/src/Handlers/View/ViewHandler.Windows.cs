@@ -95,13 +95,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
 
-			PlatformView? mauiToolbar = null;
 			if (toolbarElement.Toolbar != null)
 			{
-				mauiToolbar = toolbarElement.Toolbar.ToPlatform(handler.MauiContext);
+				var toolBar = toolbarElement.Toolbar.ToPlatform(handler.MauiContext);
+				handler.MauiContext.GetNavigationRootManager().SetToolbar(toolBar);
 			}
-
-			handler.MauiContext.GetNavigationRootManager().SetToolbar(mauiToolbar);
 		}
 
 		public static void MapContextFlyout(IViewHandler handler, IView view)
