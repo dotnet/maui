@@ -1,19 +1,30 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Security.Cryptography.DataProtection;
 using Windows.Storage;
+using SecureStorageDictionary = System.Collections.Concurrent.ConcurrentDictionary<string, byte[]>;
 
 namespace Microsoft.Maui.Storage
 {
 	partial class SecureStorageImplementation : ISecureStorage
 	{
+		readonly ISecureStorageImplementation _secureStorage;
+
+		public SecureStorageImplementation()
+		{
+			_secureStorage = AppInfoUtils.IsPackagedApp
+				? new PackagedSecureStorageImplementation()
+				: new UnpackagedSecureStorageImplementation();
+		}
+
 		async Task<string> PlatformGetAsync(string key)
 		{
-			var settings = GetSettings(Alias);
-
-			var encBytes = settings.Values[key] as byte[];
+			var encBytes = await _secureStorage.GetAsync(key);
 
 			if (encBytes == null)
 				return null;
@@ -27,8 +38,6 @@ namespace Microsoft.Maui.Storage
 
 		async Task PlatformSetAsync(string key, string data)
 		{
-			var settings = GetSettings(Alias);
-
 			var bytes = Encoding.UTF8.GetBytes(data);
 
 			// LOCAL=user and LOCAL=machine do not require enterprise auth capability
@@ -38,36 +47,139 @@ namespace Microsoft.Maui.Storage
 
 			var encBytes = buffer.ToArray();
 
-			settings.Values[key] = encBytes;
+			await _secureStorage.SetAsync(key, encBytes);
 		}
 
-		bool PlatformRemove(string key)
+		bool PlatformRemove(string key) =>
+			_secureStorage.Remove(key);
+
+		void PlatformRemoveAll() =>
+			_secureStorage.RemoveAll();
+	}
+
+	interface ISecureStorageImplementation
+	{
+		Task<byte[]> GetAsync(string key);
+
+		Task SetAsync(string key, byte[] value);
+
+		bool Remove(string key);
+
+		void RemoveAll();
+	}
+
+	class PackagedSecureStorageImplementation : ISecureStorageImplementation
+	{
+		public Task<byte[]> GetAsync(string key)
 		{
-			var settings = GetSettings(Alias);
-
-			if (settings.Values.ContainsKey(key))
-			{
-				settings.Values.Remove(key);
-				return true;
-			}
-
-			return false;
+			var settings = GetSettings(SecureStorageImplementation.Alias);
+			var encBytes = settings.Values[key] as byte[];
+			return Task.FromResult(encBytes);
 		}
 
-		void PlatformRemoveAll()
+		public Task SetAsync(string key, byte[] data)
 		{
-			var settings = GetSettings(Alias);
+			var settings = GetSettings(SecureStorageImplementation.Alias);
+			settings.Values[key] = data;
+			return Task.CompletedTask;
+		}
 
+		public bool Remove(string key)
+		{
+			var settings = GetSettings(SecureStorageImplementation.Alias);
+			return settings.Values.Remove(key);
+		}
+
+		public void RemoveAll()
+		{
+			var settings = GetSettings(SecureStorageImplementation.Alias);
 			settings.Values.Clear();
 		}
 
 		static ApplicationDataContainer GetSettings(string name)
 		{
 			var localSettings = ApplicationData.Current.LocalSettings;
-
 			if (!localSettings.Containers.ContainsKey(name))
 				localSettings.CreateContainer(name, ApplicationDataCreateDisposition.Always);
 			return localSettings.Containers[name];
+		}
+	}
+
+	class UnpackagedSecureStorageImplementation : ISecureStorageImplementation
+	{
+		static readonly string AppSecureStoragePath = Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
+
+		readonly SecureStorageDictionary _secureStorage = new();
+
+		public UnpackagedSecureStorageImplementation()
+		{
+			Load();
+		}
+
+		void Load()
+		{
+			if (!File.Exists(AppSecureStoragePath))
+				return;
+
+			try
+			{
+				using var stream = File.OpenRead(AppSecureStoragePath);
+
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+				var readPreferences = JsonSerializer.Deserialize<SecureStorageDictionary>(stream);
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+
+				if (readPreferences != null)
+				{
+					_secureStorage.Clear();
+					foreach (var pair in readPreferences)
+						_secureStorage.TryAdd(pair.Key, pair.Value);
+				}
+			}
+			catch (JsonException)
+			{
+				// if deserialization fails proceed with empty settings
+			}
+		}
+
+		void Save()
+		{
+			var dir = Path.GetDirectoryName(AppSecureStoragePath);
+			Directory.CreateDirectory(dir);
+
+			using var stream = File.Create(AppSecureStoragePath);
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+			JsonSerializer.Serialize(stream, _secureStorage);
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+		}
+
+		public Task<byte[]> GetAsync(string key)
+		{
+			_secureStorage.TryGetValue(key, out var value);
+			return Task.FromResult(value);
+		}
+
+		public Task SetAsync(string key, byte[] value)
+		{
+			if (value is null)
+				_secureStorage.TryRemove(key, out _);
+			else
+				_secureStorage[key] = value;
+			Save();
+			return Task.CompletedTask;
+		}
+
+		public bool Remove(string key)
+		{
+			var result = _secureStorage.TryRemove(key, out _);
+			Save();
+			return result;
+		}
+
+		public void RemoveAll()
+		{
+			_secureStorage.Clear();
+			Save();
 		}
 	}
 }
