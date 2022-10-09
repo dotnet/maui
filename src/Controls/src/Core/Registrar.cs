@@ -493,7 +493,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (typeof(IElementHandler).IsAssignableFrom(rendererType))
 			{
-				throw new Exception($"{rendererType} will work with AddHandler. Please use AddHandler instead of AddCompatibilityRenderer.");
+				throw new InvalidOperationException($"{rendererType} will work with AddHandler. Please use AddHandler instead of AddCompatibilityRenderer.");
 			}
 		}
 	}
