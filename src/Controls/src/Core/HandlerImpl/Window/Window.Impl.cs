@@ -420,6 +420,7 @@ namespace Microsoft.Maui.Controls
 		void SendWindowDisppearing()
 		{
 			Page?.SendDisappearing();
+			IsActivated = false;
 		}
 
 		void OnModalPopped(Page modalPage)
