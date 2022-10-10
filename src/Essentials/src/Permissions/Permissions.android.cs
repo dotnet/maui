@@ -40,7 +40,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public abstract partial class BasePlatformPermission : BasePermission
 		{
-			static readonly Dictionary<int, TaskCompletionSource<PermissionResult>> requests =	
+			static readonly Dictionary<int, TaskCompletionSource<PermissionResult>> requests =
 				new Dictionary<int, TaskCompletionSource<PermissionResult>>();
 
 			static readonly object locker = new object();
