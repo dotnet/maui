@@ -102,7 +102,7 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				var scenes = UIApplication.SharedApplication.ConnectedScenes;
 				var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
-				return windowScene?.Windows.First();
+				return windowScene?.Windows.FirstOrDefault();
 			}
 
 			return UIApplication.SharedApplication.KeyWindow;
