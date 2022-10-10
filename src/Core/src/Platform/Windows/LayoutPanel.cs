@@ -9,7 +9,7 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutPanel : Panel
+	public class LayoutPanel : Panel, IDisposable
 	{
 		Canvas? _backgroundLayer;
 
@@ -17,6 +17,11 @@ namespace Microsoft.Maui.Platform
 		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
 		public bool ClipsToBounds { get; set; }
+
+		public void Dispose()
+		{
+			Children.Clear();
+		}
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also

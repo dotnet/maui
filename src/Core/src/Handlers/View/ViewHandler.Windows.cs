@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.GotFocus -= OnPlatformViewGotFocus;
 			platformView.LostFocus -= OnPlatformViewLostFocus;
+
+			if (platformView is IDisposable disposable)
+				disposable.Dispose();
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view)

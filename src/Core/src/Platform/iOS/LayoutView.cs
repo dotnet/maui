@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutView : MauiView
+	public class LayoutView : MauiView, IDisposable
 	{
 		bool _userInteractionEnabled;
 

@@ -3,15 +3,13 @@ using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Android.Widget;
-using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using Rectangle = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutViewGroup : ViewGroup
+	public class LayoutViewGroup : ViewGroup, IDisposable
 	{
 		readonly ARect _clipRect = new();
 		readonly Context _context;

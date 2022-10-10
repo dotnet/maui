@@ -139,6 +139,32 @@ namespace Microsoft.Maui.Controls
 			_logicalChildren.Remove(element);
 			OnChildRemoved(element, oldLogicalIndex);
 			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
+			DisconnectLogicalChild(element);
+		}
+
+
+		void DisconnectLogicalChild(Element element)
+		{
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+			if (element.Handler is IPlatformViewHandler platformHandler)
+			{
+				foreach (Element child in element.Descendants())
+				{
+					if (child is VisualElement ve)
+					{
+						ve.Handler?.DisconnectHandler();
+
+						if (ve.Handler is IDisposable veHandlerDisposable)
+							veHandlerDisposable.Dispose();
+					}
+				}
+
+				platformHandler.DisconnectHandler();
+
+				if (platformHandler is IDisposable platformHandlerDisposable)
+					platformHandlerDisposable.Dispose();
+			}
+#endif
 		}
 
 		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren.AsReadOnly();
