@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		GradientDrawable? _backgroundDrawable;
 		private IMauiContext? _mauiContext;
 		ViewHandlerDelegator<Frame> _viewHandlerWrapper;
-		VisualElement _element;
+		VisualElement? _element;
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
