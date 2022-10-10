@@ -1,10 +1,10 @@
-﻿#if !IOS && !MACCATALYST
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -23,12 +23,32 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+#if IOS || MACCATALYST
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Frame, FrameRenderer>();
 				});
 			});
 		}
+
+		[Fact]
+		public async Task PoppingNavigationPageDoesntCrash()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.PushAsync(new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }));
+				await navPage.PopAsync();
+			});
+		}
+
+#if !IOS && !MACCATALYST
 
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()
@@ -191,6 +211,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(IsBackButtonVisible(navPage.Handler));
 			});
 		}
+#endif
 	}
 }
-#endif
