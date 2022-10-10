@@ -48,10 +48,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				// When the current active page is a TabbedPage then
-				// we put to toolbar inside the PaneFooter so it's
-				// to the right of the tabs
-
 				await navPage.PushAsync(CreateBasicTabbedPage());
 				await navPage.PopAsync();
 			});
