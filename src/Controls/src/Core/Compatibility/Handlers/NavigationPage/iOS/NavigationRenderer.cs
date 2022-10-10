@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<NavigationPage, NavigationRenderer> CommandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
 		ViewHandlerDelegator<NavigationPage> _viewHandlerWrapper;
 		bool _navigating = false;
+		VisualElement _element;
 
 		[Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		NavigationPage NavPage => Element as NavigationPage;
 		INavigationPageController NavPageController => NavPage;
 
-		public VisualElement Element { get => _viewHandlerWrapper.Element; }
+		public VisualElement Element { get => _viewHandlerWrapper.Element ?? _element; }
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -74,6 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			(this as IElementHandler).SetVirtualView(element);
+			_element = element;
 		}
 
 		public UIViewController ViewController
@@ -1556,6 +1558,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
 			_viewHandlerWrapper.SetVirtualView(view, ElementChanged, false);
+			_element = view as VisualElement;
 
 			void ElementChanged(ElementChangedEventArgs<NavigationPage> e)
 			{
