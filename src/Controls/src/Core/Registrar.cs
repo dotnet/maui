@@ -87,6 +87,8 @@ namespace Microsoft.Maui.Controls.Internals
 			if (handlerType == null)
 				return null;
 
+			Registrar.CheckIfRendererIsCompatibilityRenderer(handlerType);
+
 			object handler = DependencyResolver.ResolveOrCreate(handlerType);
 
 			return (TRegistrable)handler;
@@ -102,6 +104,8 @@ namespace Microsoft.Maui.Controls.Internals
 			else
 			{
 				Type handlerType = GetHandlerType(type, visual?.GetType() ?? _defaultVisualType);
+				Registrar.CheckIfRendererIsCompatibilityRenderer(handlerType);
+
 				if (handlerType != null)
 					returnValue = (TRegistrable)DependencyResolver.ResolveOrCreate(handlerType, source, visual?.GetType(), args);
 			}
@@ -480,6 +484,17 @@ namespace Microsoft.Maui.Controls.Internals
 			DependencyService.Initialize(assemblies);
 
 			Profile.FrameEnd();
+		}
+
+		internal static void CheckIfRendererIsCompatibilityRenderer(Type rendererType)
+		{
+			if (typeof(IRegisterable).IsAssignableFrom(rendererType))
+				return;
+
+			if (typeof(IElementHandler).IsAssignableFrom(rendererType))
+			{
+				throw new InvalidOperationException($"{rendererType} will work with AddHandler. Please use AddHandler instead of AddCompatibilityRenderer.");
+			}
 		}
 	}
 }
