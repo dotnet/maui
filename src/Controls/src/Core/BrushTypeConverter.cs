@@ -138,7 +138,6 @@ namespace Microsoft.Maui.Controls
 						|| part.Equals(Hsl, StringComparison.OrdinalIgnoreCase)
 						|| part.Equals(Hsla, StringComparison.OrdinalIgnoreCase))
 					{
-						part.Trim();
 						var colorString = new StringBuilder(part);
 
 						colorString.Append('(');

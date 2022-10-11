@@ -27,14 +27,13 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			{
 				flyoutBehavior.SelectedIndex = (int)AppShell.FlyoutBehavior;
 				flyoutHeaderBehavior.SelectedIndex = (int)AppShell.FlyoutHeaderBehavior;
+				AppShell.FlyoutBackdrop = SolidColorBrush.Pink;
 			}
 			else
 			{
 				flyoutBehavior.SelectedIndex = 1;
 				flyoutHeaderBehavior.SelectedIndex = 0;
 			}
-
-			AppShell.FlyoutBackdrop = SolidColorBrush.Pink;
 		}
 
 		async void OnPushPage(object sender, EventArgs e)

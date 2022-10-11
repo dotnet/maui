@@ -615,6 +615,12 @@ namespace Microsoft.Maui.Platform
 							b = contentHeight;
 							break;
 					}
+
+					child.Measure(
+						MeasureSpec.MakeMeasureSpec(swipeItemWidth, MeasureSpecMode.AtMost),
+						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost)
+					);
+
 					child.Layout(l, t, r, b);
 
 					i++;
