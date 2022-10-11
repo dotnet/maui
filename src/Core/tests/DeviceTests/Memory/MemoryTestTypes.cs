@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Handlers.Memory
 			yield return new object[] { (typeof(EditorStub), typeof(EditorHandler)) };
 			yield return new object[] { (typeof(EntryStub), typeof(EntryHandler)) };
 			yield return new object[] { (typeof(SearchBarStub), typeof(SearchBarHandler)) };
+			yield return new object[] { (typeof(ButtonStub), typeof(ButtonHandler)) };
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
