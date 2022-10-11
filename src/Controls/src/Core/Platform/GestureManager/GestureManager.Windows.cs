@@ -567,7 +567,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (e is RightTappedRoutedEventArgs)
 				{
-					// Currently we only support single right clicks on WinUI
+					// Currently we only support single right clicks
 					if ((g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
 						return g.NumberOfTapsRequired == 1;
 					else
