@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected Frame? Element
 		{
-			get { return _viewHandlerWrapper.Element ?? _element; }
+			get { return _viewHandlerWrapper.Element ?? (_element as Frame); }
 			set
 			{
 				if (value != null)
