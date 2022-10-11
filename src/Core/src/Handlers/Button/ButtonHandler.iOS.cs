@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIButton CreatePlatformView()
 		{
-			var button = new UIButton(UIButtonType.System);
+			var button = new MauiButton();
 			SetControlPropertiesFromProxy(button);
 			return button;
 		}
@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpInside += OnButtonTouchUpInside;
 			platformView.TouchUpOutside += OnButtonTouchUpOutside;
 			platformView.TouchDown += OnButtonTouchDown;
+			if (platformView is MauiButton mauiButton)
+				mauiButton.FocusChanged += OnButtonFocusChanged;
 
 			base.ConnectHandler(platformView);
 		}
@@ -33,6 +35,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpInside -= OnButtonTouchUpInside;
 			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
 			platformView.TouchDown -= OnButtonTouchDown;
+			if (platformView is MauiButton mauiButton)
+				mauiButton.FocusChanged -= OnButtonFocusChanged;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -180,6 +184,12 @@ namespace Microsoft.Maui.Handlers
 		void OnButtonTouchDown(object? sender, EventArgs e)
 		{
 			VirtualView?.Pressed();
+		}
+
+		void OnButtonFocusChanged(object? sender, EventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = PlatformView.Focused;
 		}
 	}
 }
