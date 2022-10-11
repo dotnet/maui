@@ -48,15 +48,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		public bool IsNavigationBarVisible(IElementHandler handler) =>
-			IsNavigationBarVisible(handler.MauiContext);
-
-		public bool IsNavigationBarVisible(IMauiContext mauiContext)
-		{
-			return GetPlatformToolbar(mauiContext)?
-					.LayoutParameters?.Height > 0;
-		}
-
 		string GetToolbarTitle(IElementHandler handler) =>
 			GetPlatformToolbar(handler).Title;
 	}

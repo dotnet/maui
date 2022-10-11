@@ -30,6 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler<Frame, FrameRenderer>();
 				});
 			});
@@ -209,6 +210,38 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 
 				Assert.False(IsBackButtonVisible(navPage.Handler));
+			});
+		}
+
+		[Fact(DisplayName = "Pushing a Tabbed Page Doesn't Throw Exception")]
+		public async Task PushingATabbedPageDoesntThrowException()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				Title = "Page Title"
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var tabbedPage1 = CreateTabbedPage("1");
+				var tabbedPage2 = CreateTabbedPage("2");
+
+				await navPage.PushAsync(tabbedPage1);
+				tabbedPage1.SelectedItem = tabbedPage1.Children[1];
+				await OnLoadedAsync(tabbedPage1.Children[1]);
+				await navPage.PopAsync();
+				await navPage.PushAsync(tabbedPage2);
+
+				TabbedPage CreateTabbedPage(string title) => new TabbedPage()
+				{
+					Title = title,
+					Children =
+					{
+						new ContentPage(),
+						new ContentPage()
+					}
+				};
 			});
 		}
 #endif
