@@ -444,10 +444,11 @@ namespace Microsoft.Maui.Controls
 				viewCell.View.ComputedConstraint = LayoutConstraint.None;
 
 			if (content != null)
+			{
 				_logicalChildren.Add(content);
-
-			content.Parent = this;
-			VisualDiagnostics.OnChildAdded(this, content);
+				content.Parent = this;
+				VisualDiagnostics.OnChildAdded(this, content);
+			}
 		}
 
 		protected override void UnhookContent(Cell content)
