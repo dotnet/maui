@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
 			_viewHandlerWrapper.SetVirtualView(view, OnElementChanged, false);
-			_element = view as VisualElement;
+			_element = view as Frame;
 		}
 
 		void IElementHandler.UpdateValue(string property)
