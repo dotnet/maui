@@ -302,14 +302,7 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = 0; n < definitions.Length; n++)
 				{
-					var current = definitions[n].Size;
-
-					if (current <= 0 && !definitions[n].IsStar)
-					{
-						continue;
-					}
-
-					sum += current;
+					sum += definitions[n].Size;
 
 					if (n > 0)
 					{
