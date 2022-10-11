@@ -16,5 +16,14 @@
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView, entry);
 		}
+
+		public static void MapCursorColor(EntryHandler handler, Entry entry) =>
+			MapCursorColor((IEntryHandler)handler, entry);
+
+		public static void MapAdjustsFontSizeToFitWidth(EntryHandler handler, Entry entry) =>
+			MapAdjustsFontSizeToFitWidth((IEntryHandler)handler, entry);
+
+		public static void MapText(EntryHandler handler, Entry entry) =>
+			MapText((IEntryHandler)handler, entry);
 	}
 }

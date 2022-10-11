@@ -127,8 +127,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else if (ContentView is IPlatformViewHandler ver && ver.PlatformView is UIScrollView uIScroll)
 					ScrollView = uIScroll;
 
-				if (ScrollView != null && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+				if (ScrollView != null && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+					|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+				))
+				{
 					ScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+				}
 
 				LayoutParallax();
 				SetHeaderContentInset();

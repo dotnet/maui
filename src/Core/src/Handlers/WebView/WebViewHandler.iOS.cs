@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Handlers
 
 				var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
 				var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
-				NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri)!);
+				var request = new NSUrlRequest(new NSUrl(new Uri(safeHostUri, safeRelativeUri).AbsoluteUri));
 
 				if (HasCookiesToLoad(url) && !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 					return;

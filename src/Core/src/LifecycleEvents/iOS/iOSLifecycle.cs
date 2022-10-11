@@ -32,6 +32,8 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void SceneDidUpdateUserActivity(UIScene scene, NSUserActivity userActivity);
 		public delegate void SceneRestoreInteractionState(UIScene scene, NSUserActivity stateRestorationActivity);
 
+		// Window Scene
+		public delegate void WindowSceneDidUpdateCoordinateSpace(UIWindowScene windowScene, IUICoordinateSpace previousCoordinateSpace, UIInterfaceOrientation previousInterfaceOrientation, UITraitCollection previousTraitCollection);
 
 		// Internal events
 		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);

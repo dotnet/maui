@@ -565,10 +565,17 @@ namespace Microsoft.Maui.Controls
 
 		void OnToolbarItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (args.Action != NotifyCollectionChangedAction.Add)
-				return;
-			foreach (IElementDefinition item in args.NewItems)
-				item.Parent = this;
+			if (args.NewItems != null)
+			{
+				foreach (IElementDefinition item in args.NewItems)
+					item.Parent = this;
+			}
+
+			if (args.OldItems != null)
+			{
+				foreach (IElementDefinition item in args.OldItems)
+					item.Parent = null;
+			}
 		}
 
 		bool ShouldLayoutChildren()
@@ -598,7 +605,7 @@ namespace Microsoft.Maui.Controls
 			return !any;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Page> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

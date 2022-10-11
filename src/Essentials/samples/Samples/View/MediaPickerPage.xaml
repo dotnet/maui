@@ -8,16 +8,20 @@
         <viewmodels:MediaPickerViewModel />
     </views:BasePage.BindingContext>
 
-    <ScrollView>
-        <StackLayout Padding="10">
-            <Button Text="Pick photo" Command="{Binding PickPhotoCommand}" />
-            <Button Text="Capture photo" Command="{Binding CapturePhotoCommand}" />
-            <Button Text="Pick video" Command="{Binding PickVideoCommand}" />
-            <Button Text="Capture video" Command="{Binding CaptureVideoCommand}" />
+    <Grid RowDefinitions="Auto,*">
+        <Label Text="Pick or capture a photo or video." FontAttributes="Bold" Margin="12" />
 
-            <Image Source="{Binding PhotoPath}" IsVisible="{Binding ShowPhoto}" HeightRequest="300"/>
-            <!--<MediaElement VerticalOptions="FillAndExpand" Source="{Binding VideoPath}" IsVisible="{Binding ShowVideo}" />-->
-        </StackLayout>
-    </ScrollView>
+        <ScrollView Grid.Row="1">
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <Button Text="Pick photo" Command="{Binding PickPhotoCommand}" />
+                <Button Text="Capture photo" Command="{Binding CapturePhotoCommand}" />
+                <Button Text="Pick video" Command="{Binding PickVideoCommand}" />
+                <Button Text="Capture video" Command="{Binding CaptureVideoCommand}" />
+
+                <Image Source="{Binding PhotoPath}" IsVisible="{Binding ShowPhoto}" HeightRequest="300"/>
+                <!--<MediaElement VerticalOptions="FillAndExpand" Source="{Binding VideoPath}" IsVisible="{Binding ShowVideo}" />-->
+            </StackLayout>
+        </ScrollView>
+    </Grid>
 
 </views:BasePage>

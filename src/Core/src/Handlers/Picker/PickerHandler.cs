@@ -34,15 +34,17 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		static PickerHandler()
-		{
-		}
-
 		public PickerHandler() : base(Mapper, CommandMapper)
 		{
 		}
 
-		public PickerHandler(IPropertyMapper mapper) : base(mapper)
+		public PickerHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public PickerHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

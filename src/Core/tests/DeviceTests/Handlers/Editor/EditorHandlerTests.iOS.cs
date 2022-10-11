@@ -131,6 +131,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
+		[Theory(DisplayName = "IsEnabled Initializes Correctly")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task IsEnabledInitializesCorrectly(bool isEnabled)
+		{
+			var xplatIsEnabled = isEnabled;
+
+			var editor = new EditorStub()
+			{
+				IsEnabled = xplatIsEnabled,
+				Text = "Test"
+			};
+
+			var values = await GetValueAsync(editor, (handler) =>
+			{
+				return new
+				{
+					ViewValue = editor.IsEnabled,
+					PlatformViewValue = GetNativeIsEnabled(handler)
+				};
+			});
+
+			Assert.Equal(xplatIsEnabled, values.ViewValue);
+			Assert.Equal(xplatIsEnabled, values.PlatformViewValue);
+		}
 
 		static MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
 			editorHandler.PlatformView;
@@ -231,6 +256,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		bool GetNativeIsEnabled(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).Editable;
 
 		int GetNativeSelectionLength(EditorHandler editorHandler)
 		{

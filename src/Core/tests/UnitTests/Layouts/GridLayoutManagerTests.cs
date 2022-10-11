@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Maui.Controls;
@@ -370,7 +371,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpacing, GridAutoSizing)]
-		[Fact(DisplayName = "Empty rows should not incur additional row spacing")]
+		[Fact(DisplayName = "Empty rows should still count for row spacing")]
 		public void RowSpacingForEmptyRows()
 		{
 			var grid = CreateGridLayout(rows: "100, auto, 100", rowSpacing: 10);
@@ -381,16 +382,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, row: 2);
 
-			var manager = new GridLayoutManager(grid);
-			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-
-			// Because the auto row has no content, we expect it to have height zero
-			// and we expect that it won't add more row spacing 
-			Assert.Equal(100 + 100 + 10, measure.Height);
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			
+			Assert.Equal(100 + 100 + 10 + 10, measure.Height);
+			AssertArranged(view2, new Rect(0, 100 + 10 + 10, 100, 100));
 		}
 
 		[Category(GridSpacing, GridAutoSizing)]
-		[Fact(DisplayName = "Auto rows with collapsed views should not incur additional row spacing")]
+		[Fact(DisplayName = "Auto rows with collapsed views should still count for row spacing")]
 		public void RowSpacingForAutoRowsWithCollapsedViews()
 		{
 			var grid = CreateGridLayout(rows: "100, auto, 100", rowSpacing: 10);
@@ -405,12 +404,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			view1.Visibility.Returns(Visibility.Collapsed);
 
-			var manager = new GridLayoutManager(grid);
-			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
-			// Because the auto row has no content, we expect it to have height zero
-			// and we expect that it won't add more row spacing 
-			Assert.Equal(100 + 100 + 10, measure.Height);
+			Assert.Equal(100 + 100 + 10 + 10, measure.Height);
+			AssertArranged(view2, new Rect(0, 100 + 10 + 10, 100, 100));
 		}
 
 		[Category(GridSpacing)]
@@ -444,6 +441,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view1, 110, 0, 100, 100);
 		}
 
+		[Category(GridSpacing)]
 		[Fact(DisplayName = "Measure should include column spacing")]
 		public void MeasureTwoColumnsWithSpacing()
 		{
@@ -484,10 +482,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpacing, GridAutoSizing)]
-		[Fact(DisplayName = "Empty columns should not incur additional column spacing")]
+		[Fact(DisplayName = "Empty columns still count for column spacing")]
 		public void ColumnSpacingForEmptyColumns()
 		{
-			var grid = CreateGridLayout(columns: "100, auto, 100", colSpacing: 10);
+			var grid = CreateGridLayout(columns: "auto, auto, auto", colSpacing: 10);
 			var view0 = CreateTestView(new Size(100, 100));
 			var view2 = CreateTestView(new Size(100, 100));
 
@@ -495,16 +493,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, col: 2);
 
-			var manager = new GridLayoutManager(grid);
-			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
-			// Because the auto column has no content, we expect it to have width zero
-			// and we expect that it won't add more column spacing 
-			Assert.Equal(100 + 100 + 10, measure.Width);
+			Assert.Equal(100 + 100 + 10 + 10, measure.Width);
+			AssertArranged(view2, new Rect(100 + 10 + 10, 0, 100, 100));
 		}
 
 		[Category(GridSpacing, GridAutoSizing)]
-		[Fact(DisplayName = "Auto columns with collapsed views should not incur additional column spacing")]
+		[Fact(DisplayName = "Auto columns with collapsed views should still count for column spacing")]
 		public void AutoColumnsWithCollapsedViews()
 		{
 			var grid = CreateGridLayout(columns: "100, auto, 100", colSpacing: 10);
@@ -519,12 +515,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			view1.Visibility.Returns(Visibility.Collapsed);
 
-			var manager = new GridLayoutManager(grid);
-			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
-			// Because the auto column has no content, we expect it to have width zero
-			// and we expect that it won't add more column spacing 
-			Assert.Equal(100 + 100 + 10, measure.Width);
+			Assert.Equal(100 + 100 + 10 + 10, measure.Width);
+			AssertArranged(view2, new Rect(100 + 10 + 10, 0, 100, 100));
 		}
 
 		[Category(GridSpan)]
@@ -2279,6 +2273,48 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			_ = MeasureAndArrange(grid, double.PositiveInfinity, 200);
 
 			view0.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Any<double>());
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarColumnWidthLimitedToGridWidth()
+		{
+			var grid = CreateGridLayout(columns: "*", rows: "Auto, Auto");
+
+			var screenWidth = 500;
+
+			var view0 = CreateTestView(new Size(600, 20));
+			var view1 = CreateTestView(new Size(100, 20));
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 1);
+
+			SubstituteChildren(grid, view0, view1);
+
+			_ = MeasureAndArrange(grid, screenWidth, 200);
+
+			AssertArranged(view1, new Rect(0, 20, 500, 20));
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarRowHeightLimitedToGridHeight()
+		{
+			var grid = CreateGridLayout(rows: "*", columns: "Auto, Auto");
+
+			var screenHeight = 500;
+
+			var view0 = CreateTestView(new Size(20, 600));
+			var view1 = CreateTestView(new Size(20, 100));
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+
+			SubstituteChildren(grid, view0, view1);
+
+			_ = MeasureAndArrange(grid, 200, screenHeight);
+
+			AssertArranged(view1, new Rect(20, 0, 20, 500));
 		}
 	}
 }

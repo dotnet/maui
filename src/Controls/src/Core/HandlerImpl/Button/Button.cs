@@ -37,5 +37,8 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.PlatformView.UpdateContentLayout(button);
 		}
+
+		public static void MapContentLayout(ButtonHandler handler, Button button) =>
+			MapContentLayout((IButtonHandler)handler, button);
 	}
 }

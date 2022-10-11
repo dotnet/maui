@@ -1,8 +1,9 @@
-﻿#if ANDROID
+﻿
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -16,6 +17,55 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ShellTests : HandlerTestBase
 	{
+		[Fact]
+		public async Task LogicalChildrenPropagateCorrectly()
+		{
+			var flyoutItemGrid = new Grid();
+			var shellSectionGrid = new Grid();
+			var shellContentGrid = new Grid();
+
+			var flyoutItem = new FlyoutItem() { Items = { new ContentPage() } };
+			var shellSection = new ShellSection() { Items = { new ContentPage() } };
+			var shellContent = new ShellContent() { Content = new ContentPage() };
+
+			// Validate the the bindingcontext of the flyout content only gets set to the Shell Part it came from
+			flyoutItemGrid.BindingContextChanged += (_, _) =>
+				Assert.True(flyoutItemGrid.BindingContext == flyoutItem || flyoutItem.BindingContext == null);
+
+			shellSectionGrid.BindingContextChanged += (_, _) =>
+				Assert.True(shellSectionGrid.BindingContext == shellSection || shellSection.BindingContext == null);
+
+			shellContentGrid.BindingContextChanged += (_, _) =>
+				Assert.True(shellContentGrid.BindingContext == shellContent || shellContent.BindingContext == null);
+
+			Shell.SetItemTemplate(flyoutItem, new DataTemplate(() => flyoutItemGrid));
+			Shell.SetItemTemplate(shellSection, new DataTemplate(() => shellSectionGrid));
+			Shell.SetItemTemplate(shellContent, new DataTemplate(() => shellContentGrid));
+
+			await RunShellTest(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				shell.Items.Add(flyoutItem);
+				shell.Items.Add(shellSection);
+				shell.Items.Add(shellContent);
+			},
+			async (shell, handler) =>
+			{
+				await OnLoadedAsync(flyoutItemGrid);
+				await OnLoadedAsync(shellSectionGrid);
+				await OnLoadedAsync(shellContentGrid);
+
+				Assert.Equal(flyoutItemGrid.Parent, flyoutItem);
+				Assert.Equal(shellSectionGrid.Parent, shellSection);
+				Assert.Equal(shellContentGrid.Parent, shellContent);
+
+				Assert.Contains(flyoutItemGrid, (flyoutItem as IVisualTreeElement).GetVisualChildren());
+				Assert.Contains(shellSectionGrid, (shellSection as IVisualTreeElement).GetVisualChildren());
+				Assert.Contains(shellContentGrid, (shellContent as IVisualTreeElement).GetVisualChildren());
+			});
+		}
+
+#if ANDROID || WINDOWS
 		[Fact]
 		public async Task FlyoutHeaderAdaptsToMinimumHeight()
 		{
@@ -35,10 +85,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OpenFlyout(handler);
 				var flyoutFrame = GetFrameRelativeToFlyout(handler, shell.FlyoutHeader as IView);
-
 				AssertionExtensions.CloseEnough(flyoutFrame.Height, 30);
 			});
 		}
+#endif
+
+#if ANDROID
 
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
@@ -237,6 +289,7 @@ namespace Microsoft.Maui.DeviceTests
 				);
 			});
 		}
+#endif
 
 		async Task RunShellTest(Action<Shell> action, Func<Shell, ShellHandler, Task> testAction)
 		{
@@ -256,4 +309,3 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
-#endif

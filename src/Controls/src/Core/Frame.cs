@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls
 
 		double IBorderElement.BorderWidthDefaultValue => -1d;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Frame> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

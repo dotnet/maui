@@ -5,6 +5,15 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Label
 	{
+		public static void MapTextType(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
+		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
+		public static void MapCharacterSpacing(LabelHandler handler, Label label) => MapCharacterSpacing((ILabelHandler)handler, label);
+		public static void MapTextDecorations(LabelHandler handler, Label label) => MapTextDecorations((ILabelHandler)handler, label);
+		public static void MapLineHeight(LabelHandler handler, Label label) => MapLineHeight((ILabelHandler)handler, label);
+		public static void MapFont(LabelHandler handler, Label label) => MapFont((ILabelHandler)handler, label);
+		public static void MapTextColor(LabelHandler handler, Label label) => MapTextColor((ILabelHandler)handler, label);
+
+
 		public static void MapTextType(ILabelHandler handler, Label label)
 		{
 			Platform.LabelExtensions.UpdateText(handler.PlatformView, label);

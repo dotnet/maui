@@ -444,10 +444,11 @@ namespace Microsoft.Maui.Controls
 				viewCell.View.ComputedConstraint = LayoutConstraint.None;
 
 			if (content != null)
+			{
 				_logicalChildren.Add(content);
-
-			content.Parent = this;
-			VisualDiagnostics.OnChildAdded(this, content);
+				content.Parent = this;
+				VisualDiagnostics.OnChildAdded(this, content);
+			}
 		}
 
 		protected override void UnhookContent(Cell content)
@@ -739,7 +740,7 @@ namespace Microsoft.Maui.Controls
 			return template.CreateContent() is View;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, ListView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -24,7 +24,7 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             </imageView>
                         </subviews>
-                        <color key="backgroundColor" red="{color.red}" green="{color.green}" blue="{color.blue}" alpha="{color.alpha}" colorSpace="custom" customColorSpace="displayP3"/>
+                        <color key="backgroundColor" red="{color.red}" green="{color.green}" blue="{color.blue}" alpha="{color.alpha}" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
