@@ -66,8 +66,8 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
-			if (args.OldHandler != null && args.NewHandler == null)
-				OnHandlerDisconnected(args.OldHandler.PlatformView as FrameworkElement);
+			if (args?.OldHandler?.PlatformView is FrameworkElement fe)
+				OnHandlerDisconnected(fe);
 		}
 
 		void OnHandlerConnected()
