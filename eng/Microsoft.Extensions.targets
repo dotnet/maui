@@ -34,7 +34,7 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
-        Version="$(MicrosoftExtensionsPackageVersion)"
+        Version="$(MicrosoftExtensionsServicingPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection.Abstractions"
