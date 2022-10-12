@@ -97,7 +97,7 @@ namespace Maui.Controls.Sample.Pages
 				Text = "Right or Left click me¡",
 				BackgroundColor = Colors.Green
 			};
-			
+
 			var rightOrLeftClickGesture = new TapGestureRecognizer
 			{
 				Command = TapCommand,

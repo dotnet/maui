@@ -383,7 +383,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view2, row: 2);
 
 			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
-			
+
 			Assert.Equal(100 + 100 + 10 + 10, measure.Height);
 			AssertArranged(view2, new Rect(0, 100 + 10 + 10, 100, 100));
 		}
