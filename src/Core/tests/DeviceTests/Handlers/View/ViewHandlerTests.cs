@@ -98,7 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 #if IOS || MACCATALYST
-			// Tooltips are only as from iOS 15
+			// ToolTips are only available on iOS 15+
 			if (!(OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsIOSVersionAtLeast(15)))
 				return;
 #endif
