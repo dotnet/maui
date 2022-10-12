@@ -97,6 +97,11 @@ namespace Microsoft.Maui.DeviceTests
 				return;
 #endif
 
+#if IOS || MACCATALYST
+			// Tooltips are only as from iOS 15
+			if (!(OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsIOSVersionAtLeast(15)))
+				return;
+#endif
 			var control = (TElement)Activator.CreateInstance(typeof(TElement));
 			control.ToolTip = new ToolTip() { Content = expected };
 
