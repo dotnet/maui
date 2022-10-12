@@ -1,6 +1,5 @@
 using System;
 using Android.Views;
-using Microsoft.Maui.Controls.Platform.Android;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -30,13 +29,13 @@ namespace Microsoft.Maui.Controls.Platform
 					switch (e.Action)
 					{
 						case MotionEventActions.HoverEnter:
-							pgr.SendPointerEntered(view, (relativeTo) => CalculatePosition(view, e));
+							pgr.SendPointerEntered(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
 							break;
 						case MotionEventActions.HoverMove:
-							pgr.SendPointerMoved(view, (relativeTo) => CalculatePosition(view, e));
+							pgr.SendPointerMoved(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
 							break;
 						case MotionEventActions.HoverExit:
-							pgr.SendPointerExited(view, (relativeTo) => CalculatePosition(view, e));
+							pgr.SendPointerExited(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
 							break;
 					}
 				}
@@ -57,41 +56,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (HasAnyPointerGestures())
 				GetControl()?.SetOnHoverListener(this);
+			else
+				GetControl()?.SetOnHoverListener(null);
 
 			return;
-		}
-
-		Point? CalculatePosition(IElement element, MotionEvent e)
-		{
-			var context = GetView()?.Handler?.MauiContext?.Context;
-
-			if (context == null)
-				return null;
-
-			if (e == null)
-				return null;
-
-			if (element == null)
-			{
-				return new Point(context.FromPixels(e.RawX), context.FromPixels(e.RawY));
-			}
-
-			if (element == GetView())
-			{
-				return new Point(context.FromPixels(e.GetX()), context.FromPixels(e.GetY()));
-			}
-
-			if (element?.Handler?.PlatformView is AView aView)
-			{
-				var location = aView.GetLocationOnScreenPx();
-
-				var x = e.RawX - location.X;
-				var y = e.RawY - location.Y;
-
-				return new Point(context.FromPixels(x), context.FromPixels(y));
-			}
-
-			return null;
 		}
 
 		public bool HasAnyPointerGestures()
