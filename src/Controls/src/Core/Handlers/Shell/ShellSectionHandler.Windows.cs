@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		}
 
 		void OnNavigationRequested(object? sender, NavigationRequestedEventArgs e)
-		{			
+		{
 			SyncNavigationStack(e.Animated, e);
 		}
 
