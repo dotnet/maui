@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	internal class MauiButton : UIButton
+	public class MauiButton : UIButton
 	{
 		public event EventHandler? FocusChanged;
 
