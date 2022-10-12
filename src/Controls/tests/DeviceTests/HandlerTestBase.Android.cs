@@ -165,6 +165,15 @@ namespace Microsoft.Maui.DeviceTests
 			return toolBar;
 		}
 
+		public bool IsNavigationBarVisible(IElementHandler handler) =>
+			IsNavigationBarVisible(handler.MauiContext);
+
+		public bool IsNavigationBarVisible(IMauiContext mauiContext)
+		{
+			return GetPlatformToolbar(mauiContext)?
+					.LayoutParameters?.Height > 0;
+		}
+
 		protected bool IsBackButtonVisible(IElementHandler handler)
 		{
 			if (GetPlatformToolbar(handler)?.NavigationIcon is DrawerArrowDrawable dad)

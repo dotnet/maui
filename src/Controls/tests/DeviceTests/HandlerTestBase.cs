@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -16,6 +18,9 @@ using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
+#if ANDROID || IOS || MACCATALYST
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -85,6 +90,28 @@ namespace Microsoft.Maui.DeviceTests
 			MauiApp = appBuilder.Build();
 
 			_mauiContext = new ContextStub(MauiApp.Services);
+		}
+
+
+		protected void SetupShellHandlers(IMauiHandlersCollection handlers)
+		{
+			handlers.TryAddHandler(typeof(Controls.Shell), typeof(ShellHandler));
+			handlers.TryAddHandler<Layout, LayoutHandler>();
+			handlers.TryAddHandler<Image, ImageHandler>();
+			handlers.TryAddHandler<Label, LabelHandler>();
+			handlers.TryAddHandler<Page, PageHandler>();
+			handlers.TryAddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+			handlers.TryAddHandler(typeof(MenuBar), typeof(MenuBarHandler));
+			handlers.TryAddHandler(typeof(MenuBarItem), typeof(MenuBarItemHandler));
+			handlers.TryAddHandler(typeof(MenuFlyoutItem), typeof(MenuFlyoutItemHandler));
+			handlers.TryAddHandler(typeof(MenuFlyoutSubItem), typeof(MenuFlyoutSubItemHandler));
+			handlers.TryAddHandler<ScrollView, ScrollViewHandler>();
+
+#if WINDOWS
+			handlers.TryAddHandler(typeof(ShellItem), typeof(ShellItemHandler));
+			handlers.TryAddHandler(typeof(ShellSection), typeof(ShellSectionHandler));
+			handlers.TryAddHandler(typeof(ShellContent), typeof(ShellContentHandler));
+#endif
 		}
 
 		public void Dispose()
@@ -465,6 +492,17 @@ namespace Microsoft.Maui.DeviceTests
 				frameworkElement.BatchCommitted -= OnBatchCommitted;
 				taskCompletionSource.SetResult(true);
 			}
+		}
+
+
+		protected IToolbar GetToolbar(IElementHandler handler)
+		{
+			return (handler.VirtualView as IWindowController)
+						.Window
+						.GetVisualTreeDescendants()
+						.OfType<IToolbarElement>()
+						.SingleOrDefault(x => x.Toolbar != null)
+						?.Toolbar;
 		}
 	}
 }

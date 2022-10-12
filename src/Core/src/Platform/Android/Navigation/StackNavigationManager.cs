@@ -3,15 +3,10 @@ using System.Collections.Generic;
 using Android.Content;
 using Android.OS;
 using Android.Views;
-using AndroidX.AppCompat.View;
-using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.DrawerLayout.Widget;
+using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
-using Google.Android.Material.AppBar;
-using Kotlin.Collections;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -298,8 +293,7 @@ namespace Microsoft.Maui.Platform
 				if (_navHost?.NavController != null && _navHost.NavController.IsAlive())
 					_navHost.NavController.RemoveOnDestinationChangedListener(_fragmentLifecycleCallbacks);
 
-				if (_navHost?.ChildFragmentManager != null && _navHost.ChildFragmentManager.IsAlive())
-					_navHost.ChildFragmentManager.UnregisterFragmentLifecycleCallbacks(_fragmentLifecycleCallbacks);
+				ChildFragmentManager?.UnregisterFragmentLifecycleCallbacks(_fragmentLifecycleCallbacks);
 
 				_fragmentLifecycleCallbacks.Disconnect();
 				_fragmentLifecycleCallbacks = null;
@@ -352,7 +346,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_fragmentLifecycleCallbacks = new Callbacks(this);
 				NavHost.NavController.AddOnDestinationChangedListener(_fragmentLifecycleCallbacks);
-				NavHost.ChildFragmentManager.RegisterFragmentLifecycleCallbacks(_fragmentLifecycleCallbacks, false);
+				ChildFragmentManager?.RegisterFragmentLifecycleCallbacks(_fragmentLifecycleCallbacks, false);
 			}
 
 			ApplyNavigationRequest(e);
@@ -388,6 +382,23 @@ namespace Microsoft.Maui.Platform
 
 		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle? bundle)
 		{
+		}
+
+		FragmentManager? ChildFragmentManager
+		{
+			get
+			{
+				// If you try to access `ChildFragmentManager` and the `NavHost`
+				// isn't attached to a context then android will throw an IllegalStateException
+				if (_navHost.IsAlive() &&
+					_navHost?.Context != null &&
+					_navHost.ChildFragmentManager.IsAlive())
+				{
+					return _navHost.ChildFragmentManager;
+				}
+
+				return null;
+			}
 		}
 
 		internal class StackLayoutInflater : LayoutInflater

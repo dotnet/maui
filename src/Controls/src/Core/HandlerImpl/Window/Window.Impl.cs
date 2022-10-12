@@ -312,8 +312,6 @@ namespace Microsoft.Maui.Controls
 
 				if (value)
 					SendWindowAppearing();
-				else
-					SendWindowDisppearing();
 			}
 		}
 
@@ -422,6 +420,7 @@ namespace Microsoft.Maui.Controls
 		void SendWindowDisppearing()
 		{
 			Page?.SendDisappearing();
+			IsActivated = false;
 		}
 
 		void OnModalPopped(Page modalPage)
@@ -495,6 +494,7 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Destroying()
 		{
+			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
 
