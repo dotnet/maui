@@ -53,6 +53,17 @@
                     Text="Has Shadow" />
             </Frame>
             <Label
+                Text="Opacity"
+                Style="{StaticResource Headline}"/>
+            <Frame
+                BackgroundColor="LightGray"
+                BorderColor="Red"
+                Opacity="0.2"
+                HasShadow="True">
+                <Label 
+                    Text="Opacity 0.5" />
+            </Frame>
+            <Label
                 Text="IsClippedToBounds (False)"
                 Style="{StaticResource Headline}"/>
             <Frame
