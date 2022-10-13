@@ -11,6 +11,7 @@
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
     <PackageId>Microsoft.Maui.Graphics</PackageId>
     <Product>Microsoft.Maui.Graphics</Product>
+    <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CA1307;CA1309;CS1591</NoWarn>
   </PropertyGroup>
