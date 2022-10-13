@@ -225,6 +225,27 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+		[Fact(DisplayName = "PopToRootAsync correctly navigates to root page")]
+		public async Task PopToRootAsyncCorrectlyNavigationsBackToRootPage()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = rootPage;
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PopToRootAsync();
+				await OnLoadedAsync(rootPage);
+			});
+		}
+
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
 		{

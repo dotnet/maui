@@ -35,6 +35,11 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 				flyoutHeaderBehavior.SelectedIndex = 0;
 			}
 		}
+		protected override void OnNavigatedTo(NavigatedToEventArgs args)
+		{
+			base.OnNavigatedTo(args);
+			popToRoot.IsVisible = Navigation.NavigationStack.Count > 1;
+		}
 
 		async void OnPushPage(object sender, EventArgs e)
 		{
@@ -46,6 +51,13 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			if (Navigation.NavigationStack.Count > 1)
 				await Navigation.PopAsync();
 		}
+
+		async void OnPopToRoot(object sender, EventArgs e)
+		{
+			await Navigation.PopToRootAsync();
+		}
+
+
 
 		void OnFlyoutHeaderBehaviorSelectedIndexChanged(object sender, EventArgs e)
 		{
