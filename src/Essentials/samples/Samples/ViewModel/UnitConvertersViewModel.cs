@@ -1,7 +1,3 @@
-using System;
-using System.Windows.Input;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Media;
 
 namespace Samples.ViewModel
@@ -20,11 +16,7 @@ namespace Samples.ViewModel
 		public double Fahrenheit
 		{
 			get => fahrenheit;
-			set
-			{
-				SetProperty(ref fahrenheit, value);
-				Celsius = UnitConverters.FahrenheitToCelsius(fahrenheit);
-			}
+			set => SetProperty(ref fahrenheit, value, onChanged: () => Celsius = UnitConverters.FahrenheitToCelsius(fahrenheit));
 		}
 
 		public double Celsius
@@ -36,11 +28,7 @@ namespace Samples.ViewModel
 		public double Miles
 		{
 			get => miles;
-			set
-			{
-				SetProperty(ref miles, value);
-				Kilometers = UnitConverters.MilesToKilometers(miles);
-			}
+			set => SetProperty(ref miles, value, onChanged: () => Kilometers = UnitConverters.MilesToKilometers(miles));
 		}
 
 		public double Kilometers

@@ -1,11 +1,12 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Skia.Views;
 using Tizen.NUI;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
 using TSize = Tizen.UIExtensions.Common.Size;
-using TSkiaGraphicsView = Tizen.UIExtensions.NUI.GraphicsView.SkiaGraphicsView;
 using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
+using NColor = Tizen.NUI.Color;
 
 namespace Microsoft.Maui.Platform
 {
@@ -16,12 +17,12 @@ namespace Microsoft.Maui.Platform
 		const double Radius = 8;
 
 		Entry _entry;
-		TSkiaGraphicsView _searchButton;
+		SkiaGraphicsView _searchButton;
 		PointStateType _lastPointState;
 
 		public MauiSearchBar()
 		{
-			BackgroundColor = new Tizen.NUI.Color(0.9f, 0.9f, 0.9f, 1);
+			BackgroundColor = new NColor(0.9f, 0.9f, 0.9f, 1);
 
 			_entry = new Entry
 			{
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Platform
 				VerticalTextAlignment = TTextAlignment.Center,
 			};
 			_entry.KeyEvent += OnKeyEvent;
-			_searchButton = new TSkiaGraphicsView
+			_searchButton = new SkiaGraphicsView
 			{
 				Focusable = true,
 				Drawable = new SearchIcon(),

@@ -8,10 +8,10 @@
         <viewmodels:HapticFeedbackViewModel />
     </views:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Quickly and easily make the device provide haptic feedback." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <Button Text="Click" Command="{Binding ClickCommand}" />
                 <Button Text="LongPress" Command="{Binding LongPressCommand}" />
@@ -19,6 +19,6 @@
                        IsVisible="{Binding IsSupported, Converter={StaticResource NegativeConverter}}" />
             </StackLayout>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </views:BasePage>

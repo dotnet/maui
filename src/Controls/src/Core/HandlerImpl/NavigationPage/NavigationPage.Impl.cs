@@ -226,15 +226,6 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler == null && FindMyToolbar() is IToolbar tb)
-			{
-				tb.Handler = null;
-				if (tb.Parent is Window w)
-					w.Toolbar = null;
-				else if (tb.Parent is Page p)
-					p.Toolbar = null;
-			}
-
 			if (Navigation is MauiNavigationImpl && InternalChildren.Count > 0)
 			{
 				var navStack = Navigation.NavigationStack;

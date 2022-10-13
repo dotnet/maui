@@ -13,43 +13,22 @@ namespace Microsoft.Maui.Resizetizer.Tests
 	{
 		readonly string _colors;
 		readonly string _drawable;
+		readonly string _drawable_v31;
 
 		public GenerateSplashAndroidResourcesTests()
 		{
-			_colors = Path.Combine(DestinationDirectory, "maui_colors.xml");
-			_drawable = Path.Combine(DestinationDirectory, "maui_splash_image.xml");
+			_colors = Path.Combine(DestinationDirectory, "values", "maui_colors.xml");
+			_drawable = Path.Combine(DestinationDirectory, "drawable", "maui_splash_image.xml");
+			_drawable_v31 = Path.Combine(DestinationDirectory, "drawable-v31", "maui_splash_image.xml");
 		}
 
 		protected GenerateSplashAndroidResources GetNewTask(ITaskItem splash) =>
 			new()
 			{
 				MauiSplashScreen = new[] { splash },
-				ColorsFile = _colors,
-				DrawableFile = _drawable,
+				IntermediateOutputPath = DestinationDirectory,
 				BuildEngine = this,
 			};
-
-		void AssertColorsFile(string color)
-		{
-			var expectedXml = File.ReadAllText($"testdata/androidsplash/maui_colors.xml")
-				.Replace("{maui_splash_color}", color, StringComparison.OrdinalIgnoreCase);
-
-			var actual = XElement.Load(_colors);
-			var expected = XElement.Parse(expectedXml);
-
-			Assert.True(XNode.DeepEquals(actual, expected), $"{_colors} did not match:\n{actual}");
-		}
-
-		void AssertImageFile(string image)
-		{
-			var expectedXml = File.ReadAllText($"testdata/androidsplash/maui_splash_image.xml")
-				.Replace("{drawable}", image, StringComparison.OrdinalIgnoreCase);
-
-			var actual = XElement.Load(_drawable);
-			var expected = XElement.Parse(expectedXml);
-
-			Assert.True(XNode.DeepEquals(actual, expected), $"{_drawable} did not match:\n{actual}");
-		}
 
 		[Theory]
 		[InlineData("#abcdef", "#ffabcdef")]
@@ -65,8 +44,28 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var success = task.Execute();
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-			AssertColorsFile(outputColor);
-			AssertImageFile("@drawable/appiconfg");
+			AssertColorsFile("maui_colors.xml", outputColor);
+			AssertImageFile("maui_splash_image.xml", _drawable, "@drawable/appiconfg");
+			AssertImageFile("maui_splash_image_v31.xml", _drawable_v31, "@drawable/appiconfg");
+		}
+
+		[Theory]
+		[InlineData("tall_image.png", "20", "108")]
+		[InlineData("wide_image.png", "108", "20")]
+		public void XmlIsValidForNonSquare(string image, string width, string height)
+		{
+			var splash = new TaskItem("images/" + image, new Dictionary<string, string>
+			{
+				["Color"] = "Red",
+				["Link"] = "splash_image_drawable",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertImageFile("maui_splash_image.xml", _drawable, "@drawable/splash_image_drawable", width, height);
+			AssertImageFile("maui_splash_image_v31.xml", _drawable_v31, "@drawable/splash_image_drawable", width, height);
 		}
 
 		[Theory]
@@ -83,7 +82,32 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var success = task.Execute();
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-			AssertImageFile($"@drawable/{outputImage}");
+			AssertImageFile("maui_splash_image.xml", _drawable, $"@drawable/{outputImage}");
+			AssertImageFile("maui_splash_image_v31.xml", _drawable_v31, $"@drawable/{outputImage}");
+		}
+
+		void AssertColorsFile(string expectedFilename, string color)
+		{
+			var expectedXml = File.ReadAllText($"testdata/androidsplash/" + expectedFilename)
+				.Replace("{maui_splash_color}", color, StringComparison.OrdinalIgnoreCase);
+
+			var actual = XElement.Load(_colors);
+			var expected = XElement.Parse(expectedXml);
+
+			Assert.True(XNode.DeepEquals(actual, expected), $"{_colors} did not match:\n{actual}");
+		}
+
+		void AssertImageFile(string expectedFilename, string actualFilename, string image, string width = "108", string height = "108")
+		{
+			var expectedXml = File.ReadAllText($"testdata/androidsplash/" + expectedFilename)
+				.Replace("{drawable}", image, StringComparison.OrdinalIgnoreCase)
+				.Replace("{width}", width, StringComparison.OrdinalIgnoreCase)
+				.Replace("{height}", height, StringComparison.OrdinalIgnoreCase);
+
+			var actual = XElement.Load(actualFilename);
+			var expected = XElement.Parse(expectedXml);
+
+			Assert.True(XNode.DeepEquals(actual, expected), $"{actualFilename} did not match:\n{actual}");
 		}
 	}
 }
