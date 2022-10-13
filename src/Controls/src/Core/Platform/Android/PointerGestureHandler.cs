@@ -55,9 +55,9 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			if (HasAnyPointerGestures())
-				GetControl()?.SetOnHoverListener(this);
+				control.SetOnHoverListener(this);
 			else
-				GetControl()?.SetOnHoverListener(null);
+				control.SetOnHoverListener(null);
 
 			return;
 		}
