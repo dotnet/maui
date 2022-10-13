@@ -42,7 +42,7 @@
             <Frame
                 BackgroundColor="LightGray"
                 BorderColor="Red"
-                Opacity="0.2"
+                Opacity="0.5"
                 HasShadow="True">
                 <Label 
                     Text="Opacity 0.5" />
