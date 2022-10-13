@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Platform
 				if (_cache.TryGetValue(id, out var bitmapReference))
 				{
 					bitmapReference.Reference++;
-					Debug.WriteLine($"Reference: {bitmapReference.Reference}");
+					Debug.WriteLine($"Reference {bitmapReference.Reference}, count is {_cache.Count}");
 					return bitmapReference.Bitmap;
 				}
 
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Platform
 				if (_cache.TryGetValue(id, out var bitmapReference))
 				{
 					bitmapReference.Reference--;
-					Debug.WriteLine($"Reference: {bitmapReference.Reference}");
+					Debug.WriteLine($"Reference {bitmapReference.Reference}, count is {_cache.Count}");
 
 					if (bitmapReference.Reference <= 0)
 					{

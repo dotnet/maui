@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Platform
 			if (Shadow == null)
 				return string.Empty;
 
-			return Shadow.GetHashCode().ToString();
+			return $"id:{Shadow.GetHashCode()},width:{Width},height:{Height},brush:{Shadow.Paint},radius:{Shadow.Radius},offset:{Shadow.Offset}";
 		}
 
 		void DrawShadow(Canvas canvas)
