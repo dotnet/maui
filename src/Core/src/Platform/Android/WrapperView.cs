@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
+using Android.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using APath = Android.Graphics.Path;
@@ -156,12 +157,17 @@ namespace Microsoft.Maui.Platform
 				canvas.ClipPath(_currentPath);
 		}
 
-		string GetShadowHash()
+		string GetShadowId()
 		{
 			if (Shadow == null)
 				return string.Empty;
 
-			return $"id:{Shadow.GetHashCode()},width:{Width},height:{Height},brush:{Shadow.Paint},radius:{Shadow.Radius},offset:{Shadow.Offset}";
+			string shadowId = $"width:{Width},height:{Height},brush:{Shadow.Paint},radius:{Shadow.Radius},offset:{Shadow.Offset}";
+
+			if (GetChildAt(0) is TextView textView)
+				return $"{shadowId},text:{textView.Text}";
+
+			return shadowId;
 		}
 
 		void DrawShadow(Canvas canvas)
@@ -171,7 +177,7 @@ namespace Microsoft.Maui.Platform
 
 			if (GetChildAt(0) is AView child)
 			{
-				var shadow = _cache.Add(GetShadowHash(), CreateShadow);
+				var shadow = _cache.Add(GetShadowId(), CreateShadow);
 
 				if (shadow == null || shadow.IsDisposed())
 					return;
@@ -291,7 +297,7 @@ namespace Microsoft.Maui.Platform
 			if (_cache == null || Shadow == null)
 				return;
 
-			var shadowHash = GetShadowHash();
+			var shadowHash = GetShadowId();
 			_cache.Remove(shadowHash);
 			_cache.Add(shadowHash, CreateShadow);
 		}

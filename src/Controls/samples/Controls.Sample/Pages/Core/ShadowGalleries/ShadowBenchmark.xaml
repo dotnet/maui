@@ -202,12 +202,14 @@
                                                 <Label 
                                                     Text="{Binding Title}"
                                                     Style="{StaticResource TitleTextStyle}">
+                                                    <!--
                                                     <Label.Shadow>
                                                         <Shadow
                                                             Brush="LightGray"
                                                             Radius="6"
                                                             Offset="2, 2"/>
                                                     </Label.Shadow>
+                                                    -->
                                                 </Label>
                                                 <Label 
                                                     Text="{Binding User.From}"
