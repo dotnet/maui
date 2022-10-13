@@ -66,7 +66,7 @@ namespace Maui.Controls.Sample.Pages
 
 			for(int i = 0; i < 1000; i++)
 			{
-				Posts.Add(new Post { Title = $"Lorem ipsum dolor sit amet, consectetur adipiscing elit {1}", Image = "photo.jpg", Likes = "1k", User = user });
+				Posts.Add(new Post { Title = $"Lorem ipsum dolor sit amet, consectetur adipiscing elit {i + 1}", Image = "photo.jpg", Likes = "1k", User = user });
 			}
 		}
 	}
