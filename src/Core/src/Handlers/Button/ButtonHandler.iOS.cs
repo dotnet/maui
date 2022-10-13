@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -14,18 +15,21 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIButton CreatePlatformView()
 		{
-			var button = new MauiButton();
+			UIButton button = new UIButton(UIButtonType.System);
+
+			NSNotificationCenter.DefaultCenter.AddObserver(nameof(UIView.DidUpdateFocus), button, null, notf =>
+			{
+				VirtualView.IsFocused = PlatformView.Focused;
+			});
+
 			SetControlPropertiesFromProxy(button);
 			return button;
 		}
-
 		protected override void ConnectHandler(UIButton platformView)
 		{
 			platformView.TouchUpInside += OnButtonTouchUpInside;
 			platformView.TouchUpOutside += OnButtonTouchUpOutside;
 			platformView.TouchDown += OnButtonTouchDown;
-			if (platformView is MauiButton mauiButton)
-				mauiButton.FocusChanged += OnButtonFocusChanged;
 
 			base.ConnectHandler(platformView);
 		}
@@ -35,8 +39,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpInside -= OnButtonTouchUpInside;
 			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
 			platformView.TouchDown -= OnButtonTouchDown;
-			if (platformView is MauiButton mauiButton)
-				mauiButton.FocusChanged -= OnButtonFocusChanged;
+
+			NSNotificationCenter.DefaultCenter.RemoveObserver(platformView, nameof(UIView.DidUpdateFocus));
 
 			base.DisconnectHandler(platformView);
 		}

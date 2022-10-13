@@ -91,9 +91,9 @@ namespace Microsoft.Maui.Platform
 
 			var uiWindow = windowScene is not null
 #pragma warning disable CA1416 // UIWindow(windowScene) is only supported on: ios 13.0 and later
-				? new UIWindow(windowScene)
+				? new Microsoft.Maui.Platform.MauiUIWindow(windowScene)
 #pragma warning restore CA1416
-				: new UIWindow();
+				: new Microsoft.Maui.Platform.MauiUIWindow();
 
 			var mauiContext = applicationContext.MakeWindowScope(uiWindow, out var windowScope);
 
