@@ -8,9 +8,18 @@ namespace Microsoft.Maui.Controls.Platform.iOS;
 
 internal class CustomHoverGestureRecognizer : UIHoverGestureRecognizer
 {
+	NSObject _target;
+
+#pragma warning disable CA1416
+	public CustomHoverGestureRecognizer(NSObject target, Selector action) : base(target, action)
+	{
+		_target = target;
+	}
+#pragma warning restore CA1416
+
 #pragma warning disable CA1416
 	internal CustomHoverGestureRecognizer(Action<UIHoverGestureRecognizer> action)
-		: base(new Callback(action), Selector.FromHandle(Selector.GetHandle("target:"))!) { }
+		: this(new Callback(action), Selector.FromHandle(Selector.GetHandle("target:"))!) { }
 #pragma warning restore CA1416
 
 	[Register("__UIHoverGestureRecognizer")]
