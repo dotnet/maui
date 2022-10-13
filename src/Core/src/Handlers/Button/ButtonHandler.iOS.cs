@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Handlers
 
 			NSNotificationCenter.DefaultCenter.AddObserver(nameof(UIView.DidUpdateFocus), button, null, notf =>
 			{
-				VirtualView.IsFocused = PlatformView.Focused;
+				if (VirtualView != null)
+					VirtualView.IsFocused = PlatformView.Focused;
 			});
 
 			SetControlPropertiesFromProxy(button);
@@ -188,12 +189,6 @@ namespace Microsoft.Maui.Handlers
 		void OnButtonTouchDown(object? sender, EventArgs e)
 		{
 			VirtualView?.Pressed();
-		}
-
-		void OnButtonFocusChanged(object? sender, EventArgs e)
-		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = PlatformView.Focused;
 		}
 	}
 }

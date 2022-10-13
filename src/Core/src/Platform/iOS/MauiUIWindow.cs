@@ -1,5 +1,4 @@
-﻿using System;
-using Foundation;
+﻿using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -9,10 +8,7 @@ namespace Microsoft.Maui.Platform
 		public MauiUIWindow() { }
 
 #pragma warning disable CA1416 // UIWindow(windowScene) is only supported on: ios 13.0 and later
-		public MauiUIWindow(UIWindowScene uIWindowScene) : base(uIWindowScene)
-		{
-
-		}
+		public MauiUIWindow(UIWindowScene uIWindowScene) : base(uIWindowScene) { }
 #pragma warning restore CA1416
 
 		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
