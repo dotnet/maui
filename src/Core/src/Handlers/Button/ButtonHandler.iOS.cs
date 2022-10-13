@@ -17,12 +17,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			UIButton button = new UIButton(UIButtonType.System);
 
-			NSNotificationCenter.DefaultCenter.AddObserver(nameof(UIView.DidUpdateFocus), button, null, notf =>
-			{
-				if (VirtualView != null)
-					VirtualView.IsFocused = PlatformView.Focused;
-			});
-
 			SetControlPropertiesFromProxy(button);
 			return button;
 		}
@@ -31,6 +25,12 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpInside += OnButtonTouchUpInside;
 			platformView.TouchUpOutside += OnButtonTouchUpOutside;
 			platformView.TouchDown += OnButtonTouchDown;
+
+			NSNotificationCenter.DefaultCenter.AddObserver(nameof(UIView.DidUpdateFocus), platformView, null, notf =>
+			{
+				if (VirtualView != null)
+					VirtualView.IsFocused = PlatformView.Focused;
+			});
 
 			base.ConnectHandler(platformView);
 		}
