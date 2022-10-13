@@ -440,6 +440,23 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task EmptyShellHasNoTopMargin()
+		{
+			SetupBuilder();
+
+			var mainPage = new ContentPage();
+			var shell = new Shell() { CurrentItem = mainPage };
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			{
+				var position = mainPage.ToPlatform().GetLocationOnScreen();
+				var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
+
+				Assert.True(Math.Abs(position.Value.Y - appTitleBarHeight) < 1);
+			});
+		}
+
 		protected async Task OpenFlyout(ShellHandler shellRenderer, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);

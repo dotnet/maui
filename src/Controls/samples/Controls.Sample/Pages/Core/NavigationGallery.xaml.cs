@@ -80,12 +80,18 @@ namespace Maui.Controls.Sample.Pages
 			if (_currentNavStack == null)
 			{
 				_currentNavStack = Navigation.NavigationStack.ToList();
-				(Parent as IStackNavigationView).RequestNavigation(
-				new NavigationRequest(
-					new List<NavigationGallery>
-					{
-						new NavigationGallery()
-					}, false));
+
+				var stackNavigationView = Parent as IStackNavigationView;
+
+				if (stackNavigationView == null && Parent is FlyoutPage fp)
+					stackNavigationView = fp.Detail as IStackNavigationView;
+
+				stackNavigationView.RequestNavigation(
+					new NavigationRequest(
+						new List<NavigationGallery>
+						{
+							new NavigationGallery()
+						}, false));
 			}
 			else
 			{
