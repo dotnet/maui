@@ -51,12 +51,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_VERSION" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2">
-          <AllowExplicitVersion>true</AllowExplicitVersion>
-        </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="MS_EXT_VERSION_SERVICING">
-          <AllowExplicitVersion>true</AllowExplicitVersion>
-        </PackageReference>
     </ItemGroup>
 
 </Project>
