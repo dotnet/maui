@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Android.Graphics;
 
 namespace Microsoft.Maui.Platform
@@ -8,12 +9,12 @@ namespace Microsoft.Maui.Platform
 	internal class ShadowCache : IDisposable
 	{
 		static ShadowCache _instance;
-		readonly Dictionary<int, BitmapReference> _cache;
+		readonly Dictionary<string, BitmapReference> _cache;
 		readonly object _lock;
 
 		public ShadowCache()
 		{
-			_cache = new Dictionary<int, BitmapReference>();
+			_cache = new Dictionary<string, BitmapReference>();
 			_lock = new object();
 		}
 
@@ -44,12 +45,16 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public Bitmap Add(int id, Func<Bitmap> create)
+		public Bitmap Add(string id, Func<Bitmap> create)
 		{
+			Debug.WriteLine($"Add {id}");
+
 			lock (_lock)
 			{
 				if (_cache.TryGetValue(id, out var bitmapReference))
 				{
+					bitmapReference.Reference++;
+					Debug.WriteLine($"Reference: {bitmapReference.Reference}");
 					return bitmapReference.Bitmap;
 				}
 
@@ -60,22 +65,27 @@ namespace Microsoft.Maui.Platform
 					return null;
 				}
 
+				Debug.WriteLine($"Adding {id}, count is {_cache.Count}");
 				_cache.Add(id, new BitmapReference(bitmap, 1));
 
 				return bitmap;
 			}
 		}
 
-		public bool Remove(int id)
+		public bool Remove(string id)
 		{
+			Debug.WriteLine($"Remove {id}");
+
 			lock (_lock)
 			{
 				if (_cache.TryGetValue(id, out var bitmapReference))
 				{
 					bitmapReference.Reference--;
+					Debug.WriteLine($"Reference: {bitmapReference.Reference}");
 
 					if (bitmapReference.Reference <= 0)
 					{
+						Debug.WriteLine($"Removing {id}, count is {_cache.Count}");
 						_cache.Remove(id);
 
 						if (bitmapReference.Bitmap != null && !bitmapReference.Bitmap.IsDisposed())

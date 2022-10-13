@@ -156,12 +156,12 @@ namespace Microsoft.Maui.Platform
 				canvas.ClipPath(_currentPath);
 		}
 
-		int GetShadowHash()
+		string GetShadowHash()
 		{
 			if (Shadow == null)
-				return -1;
+				return string.Empty;
 
-			return Shadow.GetHashCode();
+			return Shadow.GetHashCode().ToString();
 		}
 
 		void DrawShadow(Canvas canvas)
