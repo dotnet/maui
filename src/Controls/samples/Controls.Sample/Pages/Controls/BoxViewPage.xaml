@@ -67,6 +67,17 @@
                 VerticalOptions="Center"
                 HorizontalOptions="Center" />
 
+            <Label
+                Text="Using Opacity"
+                Style="{StaticResource Headline}"/>
+            <BoxView
+                Color="Orange"
+                Opacity="0.5"
+                WidthRequest="160"
+                HeightRequest="160"
+                VerticalOptions="Center"
+                HorizontalOptions="Center" />
+
         </VerticalStackLayout>
     </ScrollView>
 </views:BasePage>
