@@ -6,12 +6,17 @@ using TApplication = Tizen.Applications.Application;
 
 namespace Microsoft.Maui
 {
+	/// <inheritdoc/>
 	public partial class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
 		const string _fontCacheFolderName = "fonts";
 
+		/// <summary>
+		/// Gets the path of the directory that is used to cache previously loaded fonts.
+		/// </summary>
 		public DirectoryInfo? FontCacheDirectory { get; private set; }
 
+		/// <inheritdoc/>
 		public string? LoadFont(EmbeddedFont font)
 		{
 			if (FontCacheDirectory == null)
