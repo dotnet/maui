@@ -41,7 +41,17 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
 			platformView.TouchDown -= OnButtonTouchDown;
 
-			NSNotificationCenter.DefaultCenter.RemoveObserver(platformView, nameof(UIView.DidUpdateFocus));
+			try
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(platformView, nameof(UIView.DidUpdateFocus));
+				//there's no way to check if we added an Observer to a control, we need to wrap on a try catch  
+			}
+			catch (ObjCRuntime.ObjCException ex)
+			{
+				if(ex.Name != "NSRangeException")
+					throw;
+			}
+			
 
 			base.DisconnectHandler(platformView);
 		}
