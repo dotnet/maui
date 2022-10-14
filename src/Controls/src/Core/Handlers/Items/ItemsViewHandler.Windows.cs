@@ -123,6 +123,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				CollectionViewSource = null;
 			}
 
+			var itemContentControls = ListViewBase.GetChildren<ItemContentControl>();
+
+			foreach (ItemContentControl itemContentControl in itemContentControls)
+			{
+				itemContentControl.Dispose();
+			}
+
 			if (VirtualView?.ItemsSource == null)
 			{
 				ListViewBase.ItemsSource = null;

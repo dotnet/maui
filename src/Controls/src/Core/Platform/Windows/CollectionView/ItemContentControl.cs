@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ItemContentControl : ContentControl
+	public class ItemContentControl : ContentControl, IDisposable
 	{
 		VisualElement _visualElement;
 		IViewHandler _renderer;
@@ -141,6 +141,24 @@ namespace Microsoft.Maui.Controls.Platform
 				_visualElement.PropertyChanged += OnViewPropertyChanged;
 				UpdateSemanticProperties(_visualElement);
 			}
+		}
+
+		public void Dispose()
+		{
+			if (FormsContainer is ItemsView itemsView && _renderer?.VirtualView is Element element)
+			{
+				itemsView.RemoveLogicalChild(element);
+				element = null;
+			}
+
+			FormsDataContext = null;
+			FormsDataTemplate = null;
+			FormsContainer = null;
+			DataContext = null;
+			MauiContext = null;
+
+			_renderer.DisconnectHandler();
+			_renderer = null;
 		}
 
 		internal void Realize()

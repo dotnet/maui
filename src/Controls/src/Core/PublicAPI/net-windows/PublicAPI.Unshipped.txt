@@ -7,6 +7,7 @@ Microsoft.Maui.Controls.MenuFlyout.MenuFlyout() -> void
 Microsoft.Maui.Controls.MenuFlyout.Count.get -> int
 Microsoft.Maui.Controls.MenuFlyout.IsReadOnly.get -> bool
 Microsoft.Maui.Controls.MenuFlyout.RemoveAt(int index) -> void
+Microsoft.Maui.Controls.Platform.ItemContentControl.Dispose() -> void
 Microsoft.Maui.Controls.Platform.ShellNavigationViewItem
 Microsoft.Maui.Controls.Platform.ShellNavigationViewItem.ShellNavigationViewItem() -> void
 Microsoft.Maui.Controls.Platform.ShellNavigationViewItemAutomationPeer
