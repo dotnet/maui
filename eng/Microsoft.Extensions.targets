@@ -46,7 +46,7 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
-        Version="$(MicrosoftExtensionsServicing2PackageVersion)"
+        Version="$(MicrosoftExtensionsNewServicingPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging"

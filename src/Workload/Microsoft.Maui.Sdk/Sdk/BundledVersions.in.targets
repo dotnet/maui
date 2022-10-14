@@ -70,7 +70,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="@MicrosoftExtensionsPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="@MicrosoftExtensionsServicing2PackageVersion@" IsImplicitlyDefined="true">
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="@MicrosoftExtensionsNewServicingPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>

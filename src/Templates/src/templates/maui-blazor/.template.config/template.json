@@ -65,12 +65,6 @@
         "replaces": "MS_EXT_VERSION",
         "defaultValue": "MS_EXT_VERSION_VALUE"
       },
-      "msExtensionsServicingVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "MS_EXT_VERSION_SERVICING",
-        "defaultValue": "MS_EXT_VERSION_SERVICING_VALUE"
-      },
       "Framework": {
         "type": "parameter",
         "description": "The target framework for the project.",
