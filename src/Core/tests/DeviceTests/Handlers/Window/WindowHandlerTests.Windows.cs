@@ -161,13 +161,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Rounded Maui Buttons Default Style")]
-		public void RoundedCornersMauiButtons()
-		{
-			var button = new Button();
-			Assert.True(button.CornerRadius != 0);
-		}
-
 		void MovePlatformWindow(UI.Xaml.Window window, Rect rect)
 		{
 			var density = window.GetDisplayDensity();
