@@ -164,7 +164,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Rounded Maui Buttons Default Style")]
 		public void RoundedCornersMauiButtons()
 		{
-			var button = new Microsoft.Maui.Controls.Button();
+			var button = new Button();
 			Assert.True(button.CornerRadius != 0);
 		}
 
