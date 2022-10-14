@@ -20,7 +20,7 @@ public static class MauiProgram
 //-:cnd:noEmit
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
-	//	builder.Logging.AddDebug();
+		builder.Logging.AddDebug();
 #endif
 //+:cnd:noEmit
 
