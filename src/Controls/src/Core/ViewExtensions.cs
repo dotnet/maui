@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (element is IGestureController gc)
 				return gc.CompositeGestureRecognizers;
-			
+
 			return null;
 		}
 

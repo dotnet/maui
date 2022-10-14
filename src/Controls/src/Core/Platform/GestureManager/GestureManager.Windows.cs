@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers => 
+		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers =>
 			(_handler.VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
 
 		// TODO MAUI
