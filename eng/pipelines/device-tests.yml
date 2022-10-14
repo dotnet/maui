@@ -101,12 +101,15 @@ stages:
           desc: Core
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+          iosVersionsExclude: [ '12.4'] #Ignore while we don't get a fix
         - name: controls
           desc: Controls
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+          iosVersionsExclude: [ '12.4'] #Ignore while we don't get a fix
         - name: blazorwebview
           desc: BlazorWebView
           androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
           android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+          iosVersionsExclude: [ '12.4'] #Ignore while we don't get a fix
