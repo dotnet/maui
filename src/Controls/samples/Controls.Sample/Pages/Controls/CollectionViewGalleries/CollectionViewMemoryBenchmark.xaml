@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.CollectionViewGalleries.CollectionViewMemoryBenchmark"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Pages.CollectionViewGalleries"
+    Title="CollectionView Memory Benchmark">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            
+            <Color x:Key="Gray300">#ACACAC</Color>
+            <SolidColorBrush x:Key="Gray300Brush" Color="{StaticResource Gray300}"/>
+            
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <Grid
+            ColumnDefinitions="*,*,*"
+            ColumnSpacing="5"
+            RowDefinitions="40,60,20,20,*"
+            RowSpacing="5">
+
+            <Button
+                Grid.Column="0"
+                Clicked="Button_Clicked_1"
+                Text="Test 1" />
+            <Button
+                Grid.Column="1"
+                Clicked="Button_Clicked_2"
+                Text="Test 2" />
+            <Button
+                Grid.Column="2"
+                Clicked="Button_Clicked_3"
+                Text="Test 3" />
+
+            <Label
+                Grid.Row="1"
+                Grid.Column="0"
+                FontSize="Caption"
+                HorizontalTextAlignment="Center"
+                Text="BackgroundColor=&quot;{StaticResource Gray300}&quot;" />
+
+            <Label
+                Grid.Row="1"
+                Grid.Column="1"
+                FontSize="Caption"
+                HorizontalTextAlignment="Center"
+                Text="Background=&quot;{StaticResource Gray300}&quot;" />
+
+            <Label
+                Grid.Row="1"
+                Grid.Column="2"
+                FontSize="Caption"
+                HorizontalTextAlignment="Center"
+                Text="Background=&quot;{StaticResource Gray300Brush}&quot;" />
+
+            <Label
+                x:Name="LabelMemory"
+                Grid.Row="2"
+                Grid.ColumnSpan="3"
+                HorizontalTextAlignment="Center"
+                Text="Memory" />
+
+            <Label
+                x:Name="LabelAlive"
+                Grid.Row="3"
+                Grid.ColumnSpan="3"
+                HorizontalTextAlignment="Center"
+                Text="Objects alive" />
+
+            <CollectionView
+                x:Name="CollectionView1"
+                Grid.Row="4"
+                Grid.Column="0">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="local:DataModel">
+                        <VerticalStackLayout
+                            local:References.IsWatched="True"
+                            BackgroundColor="{StaticResource Gray300}">
+                            <Button Text="{Binding ID}" />
+                            <Label
+                                Margin="10"
+                                Text="{Binding Name}" />
+                            <Label
+                                Margin="10"
+                                Text="{Binding Data1}" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <CollectionView
+                x:Name="CollectionView2"
+                Grid.Row="4"
+                Grid.Column="1">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="local:DataModel">
+                        <VerticalStackLayout
+                            local:References.IsWatched="True"
+                            Background="{StaticResource Gray300}">
+                            <Button Text="{Binding ID}" />
+                            <Label
+                                Margin="10"
+                                Text="{Binding Name}" />
+                            <Label
+                                Margin="10"
+                                Text="{Binding Data1}" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <CollectionView
+                x:Name="CollectionView3"
+                Grid.Row="4"
+                Grid.Column="2">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="local:DataModel">
+                        <VerticalStackLayout
+                            local:References.IsWatched="True"
+                            Background="{StaticResource Gray300Brush}">
+                            <Button Text="{Binding ID}" />
+                            <Label
+                                Margin="10"
+                                Text="{Binding Name}" />
+                            <Label
+                                Margin="10"
+                                Text="{Binding Data1}" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>
