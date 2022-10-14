@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, UIButton>
 	{
-		NSObject? _observer;
+
+		WeakReference<NSObject?>? _observer;
 		static readonly UIControlState[] ControlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
 
 		// This appears to be the padding that Xcode has when "Default" content insets are used
@@ -21,17 +22,20 @@ namespace Microsoft.Maui.Handlers
 			SetControlPropertiesFromProxy(button);
 			return button;
 		}
+
 		protected override void ConnectHandler(UIButton platformView)
 		{
 			platformView.TouchUpInside += OnButtonTouchUpInside;
 			platformView.TouchUpOutside += OnButtonTouchUpOutside;
 			platformView.TouchDown += OnButtonTouchDown;
 
-			_observer = NSNotificationCenter.DefaultCenter.AddObserver(nameof(UIView.DidUpdateFocus), platformView, null, notf =>
+			var obs = NSNotificationCenter.DefaultCenter.AddObserver(nameof(UIView.DidUpdateFocus), platformView, null, notf =>
 			{
 				if (VirtualView != null)
 					VirtualView.IsFocused = PlatformView.Focused;
 			});
+
+			_observer = new WeakReference<NSObject?>(obs);
 
 			base.ConnectHandler(platformView);
 		}
@@ -42,12 +46,12 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
 			platformView.TouchDown -= OnButtonTouchDown;
 
-			if(_observer != null)
+			if(_observer != null && _observer.TryGetTarget(out NSObject? target))
 			{ 
-				NSNotificationCenter.DefaultCenter.RemoveObserver(_observer);
-				_observer = null;
+				NSNotificationCenter.DefaultCenter.RemoveObserver(target);
+				_observer.SetTarget(null);
 			}
-			
+
 			base.DisconnectHandler(platformView);
 		}
 
