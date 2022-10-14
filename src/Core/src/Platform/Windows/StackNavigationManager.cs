@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Platform
 			NavigationTransitionInfo? transition = GetNavigationTransition(args);
 			_currentPage = newPageStack[newPageStack.Count - 1];
 
-			_ = _currentPage ?? throw new InvalidOperationException("Navigatoin Request Contains Null Elements");
+			_ = _currentPage ?? throw new InvalidOperationException("Navigation Request Contains Null Elements");
 			if (previousNavigationStack.Count < args.NavigationStack.Count)
 			{
 				Type destinationPageType = GetDestinationPageType();

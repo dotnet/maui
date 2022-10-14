@@ -14,5 +14,7 @@
             </Label.GestureRecognizers>
         </Label>
         <Label x:Name="positionLabel" Text="Hover above label to reveal pointer position"/>
+        <Label x:Name="positionToWindow" />
+        <Label x:Name="positionToThisLabel" />
     </StackLayout>
 </views:BasePage>
