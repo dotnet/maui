@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, UIButton>
 	{
+		NSObject? _observer;
 		static readonly UIControlState[] ControlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
 
 		// This appears to be the padding that Xcode has when "Default" content insets are used
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpOutside += OnButtonTouchUpOutside;
 			platformView.TouchDown += OnButtonTouchDown;
 
-			NSNotificationCenter.DefaultCenter.AddObserver(nameof(UIView.DidUpdateFocus), platformView, null, notf =>
+			_observer = NSNotificationCenter.DefaultCenter.AddObserver(nameof(UIView.DidUpdateFocus), platformView, null, notf =>
 			{
 				if (VirtualView != null)
 					VirtualView.IsFocused = PlatformView.Focused;
@@ -41,18 +42,12 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
 			platformView.TouchDown -= OnButtonTouchDown;
 
-			try
-			{
-				NSNotificationCenter.DefaultCenter.RemoveObserver(platformView, nameof(UIView.DidUpdateFocus));
-				//there's no way to check if we added an Observer to a control, we need to wrap on a try catch  
-			}
-			catch (ObjCRuntime.ObjCException ex)
-			{
-				if(ex.Name != "NSRangeException")
-					throw;
+			if(_observer != null)
+			{ 
+				NSNotificationCenter.DefaultCenter.RemoveObserver(_observer);
+				_observer = null;
 			}
 			
-
 			base.DisconnectHandler(platformView);
 		}
 
