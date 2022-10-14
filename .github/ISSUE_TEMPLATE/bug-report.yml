@@ -70,6 +70,7 @@ body:
         - 6.0.408
         - 6.0.419
         - 6.0.424
+        - 7.0 Release Candidate 1
         - Unknown/Other
     validations:
       required: true
