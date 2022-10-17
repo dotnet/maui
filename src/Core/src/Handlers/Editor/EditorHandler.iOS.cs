@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 #if !MACCATALYST
 			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.SetDataContext(this);
 			accessoryView.SetDoneClicked(OnDoneClicked);
 			platformEditor.InputAccessoryView = accessoryView;
 #endif
