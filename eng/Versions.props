@@ -75,7 +75,7 @@
     <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetMaciOSManifestVersionBand>
-    <DotNetTizenManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetTizenManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>7.0.100-rc.2</DotNetMaciOSManifestVersionBand>
+    <DotNetTizenManifestVersionBand>7.0.100-rc.2</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>
