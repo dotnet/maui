@@ -38,6 +38,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "Rounded Maui Buttons Default Style")]
+		public async Task RoundedCornersMauiButtons()
+		{
+			var flatCornerRadius = 0;
+			var b = new Maui.Controls.Button();
+
+			var button = new ButtonStub()
+			{
+				// assign ButtonStub the default CornerRadius value of a Maui.Controls.Button
+				CornerRadius = b.CornerRadius
+			};
+
+			var values = await GetValueAsync(button, (handler) =>
+			{
+				return new
+				{
+					ViewValue = button.CornerRadius,
+					platformResources = handler.PlatformView.Resources
+				};
+			});
+
+			Assert.False(values.platformResources.ContainsKey("ControlCornerRadius"));
+			Assert.NotEqual(flatCornerRadius, values.ViewValue);
+		}
+
 		UI.Xaml.Controls.Button GetNativeButton(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;
 
