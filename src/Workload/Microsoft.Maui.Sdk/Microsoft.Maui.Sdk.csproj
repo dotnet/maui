@@ -92,6 +92,12 @@
         OldValue="@MicrosoftExtensionsServicingPackageVersion@"
         NewValue="$(MicrosoftExtensionsServicingPackageVersion)"
     />
+     <ReplaceText
+        Input="$(IntermediateOutputPath)BundledVersions.targets"
+        Output="$(IntermediateOutputPath)BundledVersions.targets"
+        OldValue="@MicrosoftExtensionsNewServicingPackageVersion@"
+        NewValue="$(MicrosoftExtensionsNewServicingPackageVersion)"
+    />
     <ItemGroup>
       <None
           Include="$(IntermediateOutputPath)BundledVersions.targets"

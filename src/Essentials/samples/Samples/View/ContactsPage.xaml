@@ -9,15 +9,15 @@
         <viewmodel:ContactsViewModel />
     </view:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,Auto,*">
         <Label Text="Get contacts in your device." FontAttributes="Bold" Margin="12" />
 
-        <StackLayout Padding="12,0,12,12" Spacing="6">
+        <StackLayout Padding="12,0,12,12" Spacing="6" Grid.Row="1">
             <Button Command="{Binding GetContactCommand}" Text="Pick Contact" />
             <Button Command="{Binding GetAllContactCommand}" Text="Get All Contacts" />
         </StackLayout>
 
-        <ListView ItemsSource="{Binding ContactsList}" SelectedItem="{Binding SelectedContact}">
+        <ListView ItemsSource="{Binding ContactsList}" SelectedItem="{Binding SelectedContact}" Grid.Row="2">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
@@ -28,6 +28,6 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-    </StackLayout>
+    </Grid>
 
 </view:BasePage>

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
-
+		VisualElement _element;
 		bool _disposed;
 
 		UIViewController _flyoutController;
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		public VisualElement Element => _viewHandlerWrapper.Element;
+		public VisualElement Element => _viewHandlerWrapper.Element ?? _element;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
+
 			var flyoutPage = element as FlyoutPage;
 
 			_flyoutController = new ChildViewController();
@@ -88,6 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_clickOffView = new UIView();
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
+			_element = element;
 			Presented = ((FlyoutPage)element).IsPresented;
 			Element.SizeChanged += PageOnSizeChanged;
 		}
