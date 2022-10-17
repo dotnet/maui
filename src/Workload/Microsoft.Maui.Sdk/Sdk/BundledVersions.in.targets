@@ -64,13 +64,13 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="@MicrosoftExtensionsServicingPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="@MicrosoftExtensionsPackageVersion@" IsImplicitlyDefined="true">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="@MicrosoftExtensionsServicingPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="@MicrosoftExtensionsPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="@MicrosoftExtensionsServicingPackageVersion@" IsImplicitlyDefined="true">
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="@MicrosoftExtensionsNewServicingPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>

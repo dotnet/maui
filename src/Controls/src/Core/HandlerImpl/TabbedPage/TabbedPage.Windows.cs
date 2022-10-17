@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 				_navigationView.SetApplicationResource("NavigationViewHeaderMargin", null);
 				_navigationView.SetApplicationResource("NavigationViewContentMargin", null);
+				_navigationView.SetApplicationResource("NavigationViewMinimalContentMargin", null);
 
 				return _navigationView;
 			}
