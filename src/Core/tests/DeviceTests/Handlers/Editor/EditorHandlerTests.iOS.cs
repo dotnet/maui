@@ -269,5 +269,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+#if IOS
+		void TapDoneButton(EditorHandler editorHandler)
+		{
+			var control = GetNativeEditor(editorHandler);
+			var accessoryView = (MauiDoneAccessoryView)control.InputAccessoryView;
+			var doneButton = accessoryView.Items[1] as UIBarButtonItem;
+			UIApplication.SharedApplication.SendAction(doneButton.Action, doneButton.Target!, null, null);
+		}
+#endif
 	}
 }

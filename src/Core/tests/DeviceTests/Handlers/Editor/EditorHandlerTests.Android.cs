@@ -222,5 +222,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		void TapDoneButton(EditorHandler editorHandler)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

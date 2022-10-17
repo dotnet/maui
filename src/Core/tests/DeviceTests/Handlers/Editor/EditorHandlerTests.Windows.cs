@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -86,5 +87,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetNativeSelectionLength(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).SelectionLength;
+
+
+		async void TapDoneButton(EditorHandler editorHandler)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
