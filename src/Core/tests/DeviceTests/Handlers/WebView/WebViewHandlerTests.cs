@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+#if !ANDROID
 	[Category(TestCategory.WebView)]
 	public partial class WebViewHandlerTests : HandlerTestBase<WebViewHandler, WebViewStub>
 	{
@@ -24,4 +25,5 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() => ValidatePropertyInitValue(webView, () => url, GetNativeSource, url));
 		}
 	}
+#endif
 }
