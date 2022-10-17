@@ -141,7 +141,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Default Input Field is at least 44dp high")]
 		public async Task DefaultInputFieldIsAtLeast44DpHigh()
 		{
-			var searchBar = new SearchBarStub();
+			var searchBar = new SearchBarStub()
+			{
+				Text = "search bar text",
+				Width = 200
+			};
+
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler(searchBar);
