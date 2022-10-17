@@ -522,8 +522,14 @@
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
+        <ItemGroup>
+            <_MauiImageDistinct Include="@(MauiImage->Distinct())" />
+        </ItemGroup>
+
+        <Warning Text="@(MauiImage)" />
+
         <DetectInvalidResourceOutputFilenamesTask
-            Items="@(MauiImage->Distinct())"
+            Items="@(_MauiImageDistinct)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
         </DetectInvalidResourceOutputFilenamesTask>
 
@@ -532,7 +538,7 @@
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
-            Images="@(MauiImage->Distinct())">
+            Images="@(_MauiImageDistinct)">
         </ResizetizeImages>
 
         <ItemGroup>
