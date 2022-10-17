@@ -138,6 +138,21 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(searchBar);
 		}
 
+		[Fact(DisplayName = "Default Input Field is at least 44dp high")]
+		public async Task DefaultInputFieldIsAtLeast44DpHigh()
+		{
+			var searchBar = new SearchBarStub();
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(searchBar);
+				await AssertionExtensions.AttachAndRun(handler.PlatformView, () =>
+				{
+					var height = GetInputFieldHeight(handler);
+					Assert.True(height >= 44);
+				});
+			});
+		}
+
 #if !WINDOWS
 		[Theory]
 		[InlineData(true)]
