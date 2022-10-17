@@ -2,7 +2,6 @@
 using System.Linq;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
