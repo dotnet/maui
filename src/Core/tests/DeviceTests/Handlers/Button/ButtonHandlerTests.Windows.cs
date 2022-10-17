@@ -38,16 +38,14 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
-		[Fact(DisplayName = "Rounded Maui Buttons Default Style")]
-		public async Task RoundedCornersMauiButtons()
+		[Fact(DisplayName = "Corner radius is rounded by default")]
+		public async Task RoundedCornersDefault()
 		{
 			var flatCornerRadius = 0;
-			var b = new Maui.Controls.Button();
-
 			var button = new ButtonStub()
 			{
-				// assign ButtonStub the default CornerRadius value of a Maui.Controls.Button
-				CornerRadius = b.CornerRadius
+				// assign the default value
+				CornerRadius = -1
 			};
 
 			var values = await GetValueAsync(button, (handler) =>
@@ -55,12 +53,35 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = button.CornerRadius,
-					platformResources = handler.PlatformView.Resources
+					ContainsResource = handler.PlatformView.Resources.Keys.Contains("ControlCornerRadius")
 				};
 			});
 
-			Assert.False(values.platformResources.ContainsKey("ControlCornerRadius"));
+			Assert.False(values.ContainsResource);
 			Assert.NotEqual(flatCornerRadius, values.ViewValue);
+		}
+
+		[Fact(DisplayName = "Corner Radius Set Correctly")]
+		public async Task CornerRadiusSetCorrectly()
+		{
+			var cornerRadius = 8;
+			var button = new ButtonStub()
+			{
+				CornerRadius = cornerRadius
+			};
+
+			var values = await GetValueAsync(button, (handler) =>
+			{
+				var ret = new
+				{
+					ViewValue = button.CornerRadius,
+					ContainsResource = handler.PlatformView.Resources.Keys.Contains("ControlCornerRadius")
+				};
+				return ret;
+			});
+
+			Assert.True(values.ContainsResource);
+			Assert.Equal(cornerRadius, values.ViewValue);
 		}
 
 		UI.Xaml.Controls.Button GetNativeButton(ButtonHandler buttonHandler) =>
