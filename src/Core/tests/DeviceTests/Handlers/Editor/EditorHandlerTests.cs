@@ -369,26 +369,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsChatKeyboard, expected);
 		}
-
-#if !MACCATALYST
-		[Fact(DisplayName = "Completed Event Fires")]
-		public async Task CompletedEventFiresFromTappingDone()
-		{
-			var editor = new EditorStub()
-			{
-				Text = "Test"
-			};
-
-			int completedCount = 0;
-			editor.Completed += (_, _) => completedCount++;
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler(editor);
-				TapDoneButton(handler);
-			});
-
-			Assert.Equal(1, completedCount);
-		}
-#endif
 	}
 }

@@ -270,13 +270,24 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-#if IOS
-		void TapDoneButton(EditorHandler editorHandler)
+#if !MACCATALYST
+		[Fact(DisplayName = "Completed Event Fires")]
+		public async Task CompletedEventFiresFromTappingDone()
 		{
-			var control = GetNativeEditor(editorHandler);
-			var accessoryView = (MauiDoneAccessoryView)control.InputAccessoryView;
-			var doneButton = accessoryView.Items[1] as UIBarButtonItem;
-			UIApplication.SharedApplication.SendAction(doneButton.Action, doneButton.Target!, null, null);
+			var editor = new EditorStub()
+			{
+				Text = "Test"
+			};
+
+			int completedCount = 0;
+			editor.Completed += (_, _) => completedCount++;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(editor);
+				TapDoneOnInputAccessoryView(handler.PlatformView);
+			});
+
+			Assert.Equal(1, completedCount);
 		}
 #endif
 	}

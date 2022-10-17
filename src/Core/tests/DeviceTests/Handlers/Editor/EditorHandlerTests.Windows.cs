@@ -87,11 +87,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetNativeSelectionLength(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).SelectionLength;
-
-
-		async void TapDoneButton(EditorHandler editorHandler)
-		{
-			throw new NotImplementedException();
-		}
 	}
 }
