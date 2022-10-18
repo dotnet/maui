@@ -58,7 +58,10 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
-			};
+#if ANDROID
+				["Initialize"] = (h, v) => ((PlatformView?)h.PlatformView)?.Initialize(v)
+#endif
+	};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
 		{
@@ -128,10 +131,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(element);
 
-			if (element is IView view)
-			{
-				((PlatformView?)PlatformView)?.Initialize(view);
-			}
+			//if (element is IView view)
+			//{
+			//	((PlatformView?)PlatformView)?.Initialize(view);
+			//}
 		}
 #endif
 

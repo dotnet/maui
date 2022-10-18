@@ -28,8 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				[Frame.CornerRadiusProperty.PropertyName] = (h, _) => h.UpdateCornerRadius(),
 				[Frame.BorderColorProperty.PropertyName] = (h, _) => h.UpdateBorderColor(),
 				[Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty.PropertyName] = (h, _) => h.UpdateClippedToBounds(),
-				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent(),
-				[VisualElement.OpacityProperty.PropertyName] = (h, v) => h.UpdateOpacity(v)
+				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent()
 			};
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
