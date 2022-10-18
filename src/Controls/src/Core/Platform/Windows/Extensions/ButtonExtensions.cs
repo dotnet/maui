@@ -67,10 +67,18 @@ namespace Microsoft.Maui.Controls.Platform
 			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
 			{
 				var buttonPadding = platformButton.Padding;
-				var horizontalPadding = buttonPadding.Left + buttonPadding.Right;
+				var horizontalSpace = buttonPadding.Left + buttonPadding.Right;
 
-				if (platformButton.ActualWidth > horizontalPadding)
-					textBlock.MaxWidth = platformButton.ActualWidth - horizontalPadding;
+				var image = platformButton.GetContent<UI.Xaml.Controls.Image>();
+
+				if (image != null)
+				{
+					var imageMargin = image.Margin.Left + image.Margin.Right;
+					horizontalSpace += image.ActualWidth + imageMargin;
+				}
+
+				if (platformButton.ActualWidth > horizontalSpace)
+					textBlock.MaxWidth = platformButton.ActualWidth - horizontalSpace;
 			}
 		}
 	}
