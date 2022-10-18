@@ -5,7 +5,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, RadioButton>
 	{
-		protected override RadioButton CreatePlatformView() => new RadioButton();
+		protected override RadioButton CreatePlatformView() 
+			=> new RadioButton
+			{
+				Padding = new UI.Xaml.Thickness(8, 0, 0, 0),
+				VerticalContentAlignment = VerticalAlignment.Center
+			};
 
 		protected override void ConnectHandler(RadioButton platformView)
 		{
