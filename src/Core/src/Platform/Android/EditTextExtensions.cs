@@ -172,11 +172,11 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
-		// TODO: NET7 hartez - Remove this, nothing uses it
+		// TODO: NET8 hartez - Remove this, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
 			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
 
-		// TODO: NET7 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
+		// TODO: NET8 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
 		{
 			if (entry?.Handler is not EntryHandler entryHandler)
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Platform
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
-		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
 		internal static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
 		{
 			var newCursorPosition = editText.SelectionStart + cursorOffset;
@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
-		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
 		internal static int GetSelectedTextLength(this EditText editText)
 		{
 			var selectedLength = editText.SelectionEnd - editText.SelectionStart;

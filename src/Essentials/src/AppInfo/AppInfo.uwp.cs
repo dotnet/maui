@@ -31,7 +31,7 @@ namespace Microsoft.Maui.ApplicationModel
 			? Package.Current.Id.Name
 			: _launchingAssembly.GetAppInfoValue("PackageName") ?? _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
 
-		// TODO: NET7 add this as a actual data point and public property if it is valid on platforms
+		// TODO: NET8 add this as a actual data point and public property if it is valid on platforms
 		internal static string PublisherName => AppInfoUtils.IsPackagedApp
 			? Package.Current.PublisherDisplayName
 			: _launchingAssembly.GetAppInfoValue("PublisherName") ?? _launchingAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? string.Empty;
