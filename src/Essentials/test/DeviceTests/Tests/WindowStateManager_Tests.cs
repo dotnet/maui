@@ -25,9 +25,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Machine)]
 		public void GetCurrentUIViewController()
 		{
-			var windows = WindowStateManager.Default.GetCurrentUIViewController();
-			Assert.NotNull(windows);
-			Assert.NotEmpty(windows);
+			var viewController = WindowStateManager.Default.GetCurrentUIViewController();
+			Assert.NotNull(viewController);
 		}
 #endif
 	}
