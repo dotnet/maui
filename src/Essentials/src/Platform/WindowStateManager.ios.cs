@@ -96,27 +96,31 @@ namespace Microsoft.Maui.ApplicationModel
 			return window;
 		}
 
-		UIWindow? GetKeyWindow()
+		static UIWindow? GetKeyWindow()
 		{
-			if(OperatingSystem.IsIOSVersionAtLeast(13))
+			// if we have scene support, use that
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var scenes = UIApplication.SharedApplication.ConnectedScenes;
 				var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
 				return windowScene?.Windows.FirstOrDefault();
 			}
 
+			// use the windows property (up to 13.0)
 			return UIApplication.SharedApplication.KeyWindow;
 		}
 
-		UIWindow[]? GetWindows()
+		static UIWindow[]? GetWindows()
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(15))
+			// if we have scene support, use that
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var scenes = UIApplication.SharedApplication.ConnectedScenes;
 				var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
 				return windowScene?.Windows;
 			}
 
+			// use the windows property (up to 15.0)
 			return UIApplication.SharedApplication.Windows;
 		}
 	}
