@@ -72,8 +72,6 @@
         <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
         <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
         <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
-        <_MauiIntermediateColors>$(_MauiIntermediateSplashScreen)maui_colors.xml</_MauiIntermediateColors>
-        <_MauiIntermediateDrawable>$(_MauiIntermediateSplashScreen)maui_splash_image.xml</_MauiIntermediateDrawable>
         <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
 
         <_ResizetizerPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_ResizetizerPlatformIdentifier>
@@ -357,15 +355,15 @@
         <!-- Android -->
         <GenerateSplashAndroidResources
             Condition="'$(_ResizetizerIsAndroidApp)' == 'True'"
-            ColorsFile="$(_MauiIntermediateColors)"
-            DrawableFile="$(_MauiIntermediateDrawable)"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             MauiSplashScreen="@(MauiSplashScreen)"
         />
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
             <MauiImage Include="@(MauiSplashScreen)" />
-            <AndroidResource Include="$(_MauiIntermediateDrawable)" Link="Resources\drawable\$([System.IO.Path]::GetFileName($(_MauiIntermediateDrawable)))" />
-            <AndroidResource Include="$(_MauiIntermediateColors)"   Link="Resources\values\$([System.IO.Path]::GetFileName($(_MauiIntermediateColors)))" />
-            <FileWrites Include="$(_MauiIntermediateColors);$(_MauiIntermediateDrawable)" />
+            <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
+                <StampFile>$(_ResizetizerStampFile)</StampFile>
+            </LibraryResourceDirectories>
+            <FileWrites Include="$(_MauiIntermediateSplashScreen)**\*" />
         </ItemGroup>
 
         <!-- iOS, but not Catalyst -->

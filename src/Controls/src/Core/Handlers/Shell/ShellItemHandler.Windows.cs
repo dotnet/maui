@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 			platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
 			platformView.SetApplicationResource("NavigationViewContentMargin", null);
+			platformView.SetApplicationResource("NavigationViewMinimalContentMargin", null);
 
 			_mauiNavigationView.Loaded += OnNavigationViewLoaded;
 			return platformView;

@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 	{
 		public static IMauiHandlersCollection TryAddCompatibilityRenderer(this IMauiHandlersCollection handlersCollection, Type controlType, Type rendererType)
 		{
+			Internals.Registrar.CheckIfRendererIsCompatibilityRenderer(rendererType);
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			Internals.Registrar.Registered.Register(controlType, rendererType);
 
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 
 		public static IMauiHandlersCollection AddCompatibilityRenderer(this IMauiHandlersCollection handlersCollection, Type controlType, Type rendererType)
 		{
+			Internals.Registrar.CheckIfRendererIsCompatibilityRenderer(rendererType);
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			Internals.Registrar.Registered.Register(controlType, rendererType);
 
@@ -37,6 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TMauiType, TRenderer>(this IMauiHandlersCollection handlersCollection)
 			where TMauiType : IView
 		{
+			Internals.Registrar.CheckIfRendererIsCompatibilityRenderer(typeof(TRenderer));
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			Internals.Registrar.Registered.Register(typeof(TControlType), typeof(TRenderer));
 
@@ -51,6 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TRenderer>(this IMauiHandlersCollection handlersCollection)
 			where TControlType : IView
 		{
+			Internals.Registrar.CheckIfRendererIsCompatibilityRenderer(typeof(TRenderer));
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			handlersCollection.AddCompatibilityRenderer<TControlType, TControlType, TRenderer>();
 

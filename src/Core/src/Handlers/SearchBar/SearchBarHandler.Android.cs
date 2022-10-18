@@ -1,6 +1,8 @@
-﻿using Android.Content.Res;
+﻿using Android.Content;
+using Android.Content.Res;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using static AndroidX.AppCompat.Widget.SearchView;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -12,18 +14,14 @@ namespace Microsoft.Maui.Handlers
 
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
 
-		EditText? _editText;
+		MauiSearchView? _platformSearchView;
 
-		public EditText? QueryEditor => _editText;
+		public EditText? QueryEditor => _platformSearchView?._queryEditor;
 
 		protected override SearchView CreatePlatformView()
 		{
-			var searchView = new SearchView(Context);
-			searchView.SetIconifiedByDefault(false);
-
-			_editText = searchView.GetFirstChildOfType<EditText>();
-
-			return searchView;
+			_platformSearchView = new MauiSearchView(Context);
+			return _platformSearchView;
 		}
 
 		protected override void ConnectHandler(SearchView platformView)

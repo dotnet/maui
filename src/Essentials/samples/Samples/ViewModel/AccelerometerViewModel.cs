@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Input;
-using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices.Sensors;
@@ -58,7 +57,7 @@ namespace Samples.ViewModel
 		}
 
 		public string[] Speeds { get; } =
-		   Enum.GetNames(typeof(SensorSpeed));
+			Enum.GetNames(typeof(SensorSpeed));
 
 		public int Speed
 		{
@@ -80,8 +79,10 @@ namespace Samples.ViewModel
 		public override void OnDisappearing()
 		{
 			OnStop();
+
 			Accelerometer.ReadingChanged -= OnReadingChanged;
 			Accelerometer.ShakeDetected -= Accelerometer_OnShaked;
+
 			base.OnDisappearing();
 		}
 
@@ -100,8 +101,15 @@ namespace Samples.ViewModel
 
 		void OnStop()
 		{
-			IsActive = false;
-			Accelerometer.Stop();
+			try
+			{
+				Accelerometer.Stop();
+				IsActive = false;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Unable to stop accelerometer: {0}", ex);
+			}
 		}
 
 		void OnReadingChanged(object sender, AccelerometerChangedEventArgs e)
