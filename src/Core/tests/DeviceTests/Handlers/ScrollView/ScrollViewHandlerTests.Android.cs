@@ -54,15 +54,18 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(result, $"Expected (but did not find) a {nameof(AppCompatEditText)} child of the {nameof(NestedScrollView)}.");
 		}
 
-		[Fact]
-		public async Task HorizontalVisibilityInitializesCorrectly()
+		[Theory]
+		[InlineData(ScrollBarVisibility.Always, true)]
+		[InlineData(ScrollBarVisibility.Default, true)]
+		[InlineData(ScrollBarVisibility.Never, false)]
+		public async Task HorizontalVisibilityInitializesCorrectly(ScrollBarVisibility visibility, bool expected)
 		{
 			bool result = await InvokeOnMainThreadAsync(() =>
 			{
 				var scrollView = new ScrollViewStub()
 				{
 					Orientation = ScrollOrientation.Horizontal,
-					HorizontalScrollBarVisibility = ScrollBarVisibility.Never
+					HorizontalScrollBarVisibility = visibility
 				};
 
 				var scrollViewHandler = CreateHandler(scrollView);
@@ -71,7 +74,30 @@ namespace Microsoft.Maui.DeviceTests
 				return ((MauiHorizontalScrollView)scrollViewHandler.PlatformView.GetChildAt(0)).HorizontalScrollBarEnabled;
 			});
 
-			Assert.False(result, $"Expected HorizontalScrollBarEnabled to be false.");
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
+		[InlineData(ScrollBarVisibility.Always, true)]
+		[InlineData(ScrollBarVisibility.Default, true)]
+		[InlineData(ScrollBarVisibility.Never, false)]
+		public async Task VerticalVisibilityInitializesCorrectly(ScrollBarVisibility visibility, bool expected)
+		{
+			bool result = await InvokeOnMainThreadAsync(() =>
+			{
+				var scrollView = new ScrollViewStub()
+				{
+					Orientation = ScrollOrientation.Vertical,
+					VerticalScrollBarVisibility = visibility
+				};
+
+				var scrollViewHandler = CreateHandler(scrollView);
+
+
+				return ((MauiScrollView)scrollViewHandler.PlatformView).VerticalScrollBarEnabled;
+			});
+
+			Assert.Equal(expected, result);
 		}
 	}
 }
