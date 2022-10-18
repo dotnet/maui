@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					{
 						using var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
 
-						var memStream = new MemoryStream();
+						using var memStream = new MemoryStream();
 						contentStream.CopyTo(memStream);
 						stream = new InMemoryRandomAccessStream();
 						await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams.
 						// See issue https://github.com/microsoft/CsWinRT/issues/670
 						using var contentStream = File.OpenRead(path);
-						var memStream = new MemoryStream();
+						using var memStream = new MemoryStream();
 						contentStream.CopyTo(memStream);
 						stream = new InMemoryRandomAccessStream();
 						await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
 				{
 					stream = new InMemoryRandomAccessStream();
-					var memStream = new MemoryStream();
+					using var memStream = new MemoryStream();
 					hotReloadedContent.CopyTo(memStream);
 					await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
 				}
