@@ -7,11 +7,40 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
+		[Fact(DisplayName = "Different brushes by State")]
+		public async Task DifferentBrushesByStates()
+		{
+			var xplatBackgroundColor = Colors.Red;
+
+			var button = new ButtonStub()
+			{
+				Background = new SolidPaintStub(xplatBackgroundColor),
+				Text = "Test"
+			};
+
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(() =>
+				{
+					var buttonBackground = handler.PlatformView.Resources["ButtonBackground"] as WSolidColorBrush;
+					var buttonBackgroundPointerOver = handler.PlatformView.Resources["ButtonBackgroundPointerOver"] as WSolidColorBrush;
+					var buttonBorderBrushDisabled = handler.PlatformView.Resources["ButtonBorderBrushDisabled"] as WSolidColorBrush;
+
+					Assert.Equal(buttonBackground?.Color.ToColor(), xplatBackgroundColor);
+					Assert.NotEqual(buttonBackground?.Color, buttonBackgroundPointerOver?.Color);
+					Assert.NotEqual(buttonBackground?.Color, buttonBorderBrushDisabled?.Color);
+				});
+			});
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
