@@ -2316,5 +2316,28 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			AssertArranged(view1, new Rect(20, 0, 20, 500));
 		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarsExpandToFixedSizes()
+		{
+			var grid = CreateGridLayout();
+			grid.DesiredSize.Returns(new Size(100, 120));
+			grid.Width.Returns(100);
+			grid.Height.Returns(120);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			view0.Width.Returns(20);
+			view0.Height.Returns(20);
+			view0.HorizontalLayoutAlignment.Returns(LayoutAlignment.End);
+			view0.VerticalLayoutAlignment.Returns(LayoutAlignment.Start);
+
+			SetLocation(grid, view0);
+			SubstituteChildren(grid, view0);
+
+			_ = MeasureAndArrange(grid);
+
+			AssertArranged(view0, new Rect(0, 0, 100, 120));
+		}
 	}
 }

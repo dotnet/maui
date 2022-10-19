@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -115,6 +116,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(editText);
 			});
 		}
+
+		double GetInputFieldHeight(SearchBarHandler searchBarHandler)
+		{
+			var control = GetNativeSearchBar(searchBarHandler);
+			var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
+			return MauiContext.Context.FromPixels((double)editText.MeasuredHeight);
+		}
+
 
 		static SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			searchBarHandler.PlatformView;
