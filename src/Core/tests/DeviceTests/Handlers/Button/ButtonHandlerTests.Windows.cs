@@ -13,14 +13,17 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
-		[Fact(DisplayName = "Different brushes by State")]
-		public async Task DifferentBrushesByStates()
+		[Theory(DisplayName = "Different brushes by State")]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#0000FF")]
+		public async Task DifferentBrushesByStates(string colorHex)
 		{
-			var xplatBackgroundColor = Colors.Red;
+			var expectedColor = Color.FromArgb(colorHex);
 
 			var button = new ButtonStub()
 			{
-				Background = new SolidPaintStub(xplatBackgroundColor),
+				Background = new SolidPaintStub(expectedColor),
 				Text = "Test"
 			};
 
@@ -34,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 					var buttonBackgroundPointerOver = handler.PlatformView.Resources["ButtonBackgroundPointerOver"] as WSolidColorBrush;
 					var buttonBorderBrushDisabled = handler.PlatformView.Resources["ButtonBorderBrushDisabled"] as WSolidColorBrush;
 
-					Assert.Equal(buttonBackground?.Color.ToColor(), xplatBackgroundColor);
+					Assert.Equal(buttonBackground?.Color.ToColor(), expectedColor);
 					Assert.NotEqual(buttonBackground?.Color, buttonBackgroundPointerOver?.Color);
 					Assert.NotEqual(buttonBackground?.Color, buttonBorderBrushDisabled?.Color);
 				});
