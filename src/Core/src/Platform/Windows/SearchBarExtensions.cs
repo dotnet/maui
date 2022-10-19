@@ -7,17 +7,39 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchBarExtensions
 	{
-		private static readonly string[] _backgroundColorKeys =
-		{
-			"TextControlBackground",
-			"TextControlBackgroundPointerOver",
-			"TextControlBackgroundFocused",
-			"TextControlBackgroundDisabled"
-		};
+		static readonly string TextControlBackground = "TextControlBackground";
+		static readonly string TextControlBackgroundPointerOver = "TextControlBackgroundPointerOver";
+		static readonly string TextControlBackgroundFocused = "TextControlBackgroundFocused";
+		static readonly string TextControlBackgroundDisabled = "TextControlBackgroundDisabled";
 
+		static readonly string[] BackgroundColorResourceKeys =
+		{
+			TextControlBackground,
+			TextControlBackgroundPointerOver,
+			TextControlBackgroundFocused,
+			TextControlBackgroundDisabled
+		}; 
+		
 		public static void UpdateBackground(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			UpdateColors(platformControl.Resources, _backgroundColorKeys, searchBar.Background?.ToPlatform());
+			var brush = searchBar?.Background?.ToPlatform();
+
+			if (brush is null)
+			{
+				platformControl.Resources.RemoveKeys(BackgroundColorResourceKeys);
+				platformControl.ClearValue(Control.BackgroundProperty);
+			}
+			else
+			{
+				platformControl.Resources.SetValueForKey(TextControlBackground, brush);
+				platformControl.Resources.SetValueForKey(TextControlBackgroundFocused, brush);
+				platformControl.Resources.SetValueForKey(TextControlBackgroundPointerOver, brush.Darker());
+				platformControl.Resources.SetValueForKey(TextControlBackgroundDisabled, brush.Lighter());
+
+				platformControl.Background = brush;
+			}
+
+			platformControl.RefreshThemeResources();
 		}
 
 		public static void UpdateIsEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -35,7 +57,7 @@ namespace Microsoft.Maui.Platform
 			platformControl.PlaceholderText = searchBar.Placeholder ?? string.Empty;
 		}
 
-		private static readonly string[] _placeholderForegroundColorKeys =
+		private static readonly string[] PlaceholderForegroundColorKeys =
 		{
 			"TextControlPlaceholderForeground",
 			"TextControlPlaceholderForegroundPointerOver",
@@ -45,7 +67,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholderColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			UpdateColors(platformControl.Resources, _placeholderForegroundColorKeys,
+			UpdateColors(platformControl.Resources, PlaceholderForegroundColorKeys,
 				searchBar.PlaceholderColor?.ToPlatform());
 		}
 
@@ -54,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			platformControl.Text = searchBar.Text;
 		}
 
-		private static readonly string[] _foregroundColorKeys =
+		private static readonly string[] ForegroundColorKeys =
 		{
 			"TextControlForeground",
 			"TextControlForegroundPointerOver",
@@ -68,12 +90,12 @@ namespace Microsoft.Maui.Platform
 
 			if (tintBrush == null)
 			{
-				platformControl.Resources.RemoveKeys(_foregroundColorKeys);
+				platformControl.Resources.RemoveKeys(ForegroundColorKeys);
 				platformControl.Foreground = null;
 			}
 			else
 			{
-				platformControl.Resources.SetValueForAllKey(_foregroundColorKeys, tintBrush);
+				platformControl.Resources.SetValueForAllKey(ForegroundColorKeys, tintBrush);
 				platformControl.Foreground = tintBrush;
 			}
 

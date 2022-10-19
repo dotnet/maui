@@ -18,17 +18,32 @@ namespace Microsoft.Maui.Platform
 			if (brush is null)
 				platformButton.Resources.RemoveKeys(StrokeColorResourceKeys);
 			else
-				platformButton.Resources.SetValueForAllKey(StrokeColorResourceKeys, brush);
+			{
+				platformButton.Resources.SetValueForKey(ButtonBorderBrush, brush);
+				platformButton.Resources.SetValueForAllKey(PointerStrokeColorResourceKeys, brush.Darker());
+				platformButton.Resources.SetValueForKey(ButtonBorderBrushDisabled, brush.Lighter());
+			}
 
 			platformButton.RefreshThemeResources();
 		}
 
+		static readonly string ButtonBorderBrush = "ButtonBorderBrush";
+		static readonly string ButtonBorderBrushPointerOver = "ButtonBorderBrushPointerOver";
+		static readonly string ButtonBorderBrushPressed = "ButtonBorderBrushPressed";
+		static readonly string ButtonBorderBrushDisabled = "ButtonBorderBrushDisabled";
+
 		static readonly string[] StrokeColorResourceKeys =
 		{
-			"ButtonBorderBrush",
-			"ButtonBorderBrushPointerOver",
-			"ButtonBorderBrushPressed",
-			"ButtonBorderBrushDisabled",
+			ButtonBorderBrush,
+			ButtonBorderBrushPointerOver,
+			ButtonBorderBrushPressed,
+			ButtonBorderBrushDisabled,
+		}; 
+		
+		static readonly string[] PointerStrokeColorResourceKeys =
+		{
+			ButtonBorderBrushPointerOver,
+			ButtonBorderBrushPressed,
 		};
 
 		public static void UpdateStrokeThickness(this Button platformButton, IButtonStroke buttonStroke)
@@ -88,17 +103,32 @@ namespace Microsoft.Maui.Platform
 			if (brush is null)
 				platformButton.Resources.RemoveKeys(BackgroundResourceKeys);
 			else
-				platformButton.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
+			{
+				platformButton.Resources.SetValueForKey(ButtonBackground, brush);
+				platformButton.Resources.SetValueForAllKey(PointerBackgroundResourceKeys, brush.Darker());
+				platformButton.Resources.SetValueForKey(ButtonBackgroundDisabled, brush.Lighter());
+			}
 
 			platformButton.RefreshThemeResources();
 		}
 
+		static readonly string ButtonBackground = "ButtonBackground";
+		static readonly string ButtonBackgroundPointerOver = "ButtonBackgroundPointerOver";
+		static readonly string ButtonBackgroundPressed = "ButtonBackgroundPressed";
+		static readonly string ButtonBackgroundDisabled = "ButtonBackgroundDisabled";
+
 		static readonly string[] BackgroundResourceKeys =
 		{
-			"ButtonBackground",
-			"ButtonBackgroundPointerOver",
-			"ButtonBackgroundPressed",
-			"ButtonBackgroundDisabled",
+			ButtonBackground,
+			ButtonBackgroundPointerOver,
+			ButtonBackgroundPressed,
+			ButtonBackgroundDisabled,
+		}; 
+		
+		static readonly string[] PointerBackgroundResourceKeys =
+		{
+			ButtonBackgroundPointerOver,
+			ButtonBackgroundPressed,
 		};
 
 		public static void UpdateTextColor(this ButtonBase platformButton, ITextStyle button)

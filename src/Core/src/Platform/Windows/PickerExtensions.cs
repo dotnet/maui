@@ -18,28 +18,44 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
 		{
-			var platformBrush = picker.Background?.ToPlatform();
+			var brush = picker.Background?.ToPlatform();
 
-			if (platformBrush == null)
+			if (brush == null)
 			{
 				nativeComboBox.Resources.RemoveKeys(BackgroundColorResourceKeys);
 			}
 			else
 			{
-				nativeComboBox.Resources.SetValueForAllKey(BackgroundColorResourceKeys, platformBrush);
+				nativeComboBox.Resources.SetValueForKey(ComboBoxBackground, brush);
+				nativeComboBox.Resources.SetValueForKey(ComboBoxBackgroundUnfocused, brush);
+				nativeComboBox.Resources.SetValueForAllKey(PointerBackgroundColorResourceKeys, brush.Darker());
+				nativeComboBox.Resources.SetValueForKey(ComboBoxBackgroundDisabled, brush.Lighter());
 			}
+
+			nativeComboBox.RefreshThemeResources();
 		}
+
+		static readonly string ComboBoxBackground = "ComboBoxBackground";
+		static readonly string ComboBoxBackgroundPointerOver = "ComboBoxBackgroundPointerOver";
+		static readonly string ComboBoxBackgroundPressed = "ComboBoxBackgroundPressed";
+		static readonly string ComboBoxBackgroundDisabled = "ComboBoxBackgroundDisabled";
+		static readonly string ComboBoxBackgroundUnfocused = "ComboBoxBackgroundUnfocused";
 
 		static readonly string[] BackgroundColorResourceKeys =
 		{
-			"ComboBoxBackground",
-			"ComboBoxBackgroundPointerOver",
-			"ComboBoxBackgroundPressed",
-			"ComboBoxBackgroundDisabled",
-			"ComboBoxBackgroundUnfocused",
-		};
-
-
+			ComboBoxBackground,
+			ComboBoxBackgroundPointerOver,
+			ComboBoxBackgroundPressed,
+			ComboBoxBackgroundDisabled,
+			ComboBoxBackgroundUnfocused,
+		}; 
+		
+		static readonly string[] PointerBackgroundColorResourceKeys =
+		{
+			ComboBoxBackgroundPointerOver,
+			ComboBoxBackgroundPressed,
+		}; 
+		
 		public static void UpdateTextColor(this ComboBox nativeComboBox, IPicker picker)
 		{
 			var platformBrush = picker.TextColor?.ToPlatform();

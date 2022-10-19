@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Platform
 			if (brush is null)
 			{
 				platformDatePicker.Resources.RemoveKeys(TextColorResourceKeys);
-				platformDatePicker.ClearValue(CalendarDatePicker.ForegroundProperty);
+				platformDatePicker.ClearValue(Control.ForegroundProperty);
 			}
 			else
 			{
@@ -81,24 +81,40 @@ namespace Microsoft.Maui.Platform
 			if (brush is null)
 			{
 				platformDatePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
-				platformDatePicker.ClearValue(CalendarDatePicker.BackgroundProperty);
+				platformDatePicker.ClearValue(Control.BackgroundProperty);
 			}
 			else
 			{
-				platformDatePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
+				platformDatePicker.Resources.SetValueForKey(CalendarDatePickerBackground, brush);
+				platformDatePicker.Resources.SetValueForKey(CalendarDatePickerBackgroundFocused, brush);
+				platformDatePicker.Resources.SetValueForAllKey(PointerBackgroundColorResourceKeys, brush.Darker());
+				platformDatePicker.Resources.SetValueForKey(CalendarDatePickerBackgroundDisabled, brush.Lighter());
+
 				platformDatePicker.Background = brush;
 			}
 
 			platformDatePicker.RefreshThemeResources();
 		}
 
+		static readonly string CalendarDatePickerBackground = "CalendarDatePickerBackground";
+		static readonly string CalendarDatePickerBackgroundPointerOver = "CalendarDatePickerBackgroundPointerOver";
+		static readonly string CalendarDatePickerBackgroundPressed = "CalendarDatePickerBackgroundPressed";
+		static readonly string CalendarDatePickerBackgroundDisabled = "CalendarDatePickerBackgroundDisabled";
+		static readonly string CalendarDatePickerBackgroundFocused = "CalendarDatePickerBackgroundFocused";
+
 		static readonly string[] BackgroundColorResourceKeys =
 		{
-			"CalendarDatePickerBackground",
-			"CalendarDatePickerBackgroundPointerOver",
-			"CalendarDatePickerBackgroundPressed",
-			"CalendarDatePickerBackgroundDisabled",
-			"CalendarDatePickerBackgroundFocused",
+			CalendarDatePickerBackground,
+			CalendarDatePickerBackgroundPointerOver,
+			CalendarDatePickerBackgroundPressed,
+			CalendarDatePickerBackgroundDisabled,
+			CalendarDatePickerBackgroundFocused,
+		}; 
+		
+		static readonly string[] PointerBackgroundColorResourceKeys =
+		{
+			CalendarDatePickerBackgroundPointerOver,
+			CalendarDatePickerBackgroundPressed,
 		};
 	}
 }

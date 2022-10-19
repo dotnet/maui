@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 			if (platformBrush == null)
 			{
 				platformTimePicker.Resources.RemoveKeys(TextColorResourceKeys);
-				platformTimePicker.ClearValue(TimePicker.ForegroundProperty);
+				platformTimePicker.ClearValue(Control.ForegroundProperty);
 			}
 			else
 			{
@@ -66,24 +66,40 @@ namespace Microsoft.Maui.Platform
 			if (brush is null)
 			{
 				platformTimePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
-				platformTimePicker.ClearValue(TimePicker.BackgroundProperty);
+				platformTimePicker.ClearValue(Control.BackgroundProperty);
 			}
 			else
 			{
-				platformTimePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
+				platformTimePicker.Resources.SetValueForKey(TimePickerButtonBackground, brush);
+				platformTimePicker.Resources.SetValueForKey(TimePickerButtonBackgroundFocused, brush);
+				platformTimePicker.Resources.SetValueForAllKey(PointerBackgroundColorResourceKeys, brush.Darker());
+				platformTimePicker.Resources.SetValueForKey(TimePickerButtonBackgroundDisabled, brush.Lighter());
+
 				platformTimePicker.Background = brush;
 			}
 
 			platformTimePicker.RefreshThemeResources();
 		}
 
+		static readonly string TimePickerButtonBackground = "TimePickerButtonBackground";
+		static readonly string TimePickerButtonBackgroundPointerOver = "TimePickerButtonBackgroundPointerOver";
+		static readonly string TimePickerButtonBackgroundPressed = "TimePickerButtonBackgroundPressed";
+		static readonly string TimePickerButtonBackgroundDisabled = "TimePickerButtonBackgroundDisabled";
+		static readonly string TimePickerButtonBackgroundFocused = "TimePickerButtonBackgroundFocused";
+
 		static readonly string[] BackgroundColorResourceKeys =
 		{
-			"TimePickerButtonBackground",
-			"TimePickerButtonBackgroundPointerOver",
-			"TimePickerButtonBackgroundPressed",
-			"TimePickerButtonBackgroundDisabled",
-			"TimePickerButtonBackgroundFocused",
+			TimePickerButtonBackground,
+			TimePickerButtonBackgroundPointerOver,
+			TimePickerButtonBackgroundPressed,
+			TimePickerButtonBackgroundDisabled,
+			TimePickerButtonBackgroundFocused,
+		}; 
+		
+		static readonly string[] PointerBackgroundColorResourceKeys =
+		{
+			TimePickerButtonBackgroundPointerOver,
+			TimePickerButtonBackgroundPressed,
 		};
 	}
 }

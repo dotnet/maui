@@ -99,6 +99,7 @@ Microsoft.Maui.IMenuFlyoutSeparator
 Microsoft.Maui.IToolTipElement
 Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
 Microsoft.Maui.IWindow.FrameChanged(Microsoft.Maui.Graphics.Rect frame) -> void
+Microsoft.Maui.Platform.BrushExtensions
 Microsoft.Maui.ToolTip
 Microsoft.Maui.ToolTip.Content.get -> object?
 Microsoft.Maui.ToolTip.Content.set -> void
@@ -139,6 +140,12 @@ static Microsoft.Maui.Handlers.WindowHandler.MapMinimumWidth(Microsoft.Maui.Hand
 static Microsoft.Maui.Handlers.WindowHandler.MapWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapX(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapY(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Platform.BrushExtensions.ChangeBrushBrightness(this Microsoft.UI.Xaml.Media.Brush! brush, double correctionFactor) -> Microsoft.UI.Xaml.Media.Brush?
+static Microsoft.Maui.Platform.BrushExtensions.Darker(this Microsoft.UI.Xaml.Media.Brush! brush) -> Microsoft.UI.Xaml.Media.Brush?
+static Microsoft.Maui.Platform.BrushExtensions.Lighter(this Microsoft.UI.Xaml.Media.Brush! brush) -> Microsoft.UI.Xaml.Media.Brush?
+static Microsoft.Maui.Platform.ColorExtensions.ChangeColorBrightness(this Windows.UI.Color color, double correctionFactor) -> Windows.UI.Color
+static Microsoft.Maui.Platform.ColorExtensions.Darker(this Windows.UI.Color color) -> Windows.UI.Color
+static Microsoft.Maui.Platform.ColorExtensions.Lighter(this Windows.UI.Color color) -> Windows.UI.Color
 static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
 static Microsoft.Maui.Platform.WindowExtensions.UpdateHeight(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumHeight(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void

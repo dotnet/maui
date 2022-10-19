@@ -1,6 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -17,12 +16,12 @@ namespace Microsoft.Maui.Platform
 
 			if (tintBrush == null)
 			{
-				platformCheckBox.Resources.RemoveKeys(_tintColorResourceKeys);
+				platformCheckBox.Resources.RemoveKeys(TintColorResourceKeys);
 				platformCheckBox.Foreground = null;
 			}
 			else
 			{
-				platformCheckBox.Resources.SetValueForAllKey(_tintColorResourceKeys, tintBrush);
+				platformCheckBox.Resources.SetValueForAllKey(TintColorResourceKeys, tintBrush);
 				platformCheckBox.Foreground = tintBrush;
 			}
 
@@ -31,7 +30,7 @@ namespace Microsoft.Maui.Platform
 
 		// ResourceKeys controlling the stroke and the checked fill color of the CheckBox.
 		// https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.checkbox?view=winui-3.0#control-style-and-template
-		static readonly string[] _tintColorResourceKeys =
+		static readonly string[] TintColorResourceKeys =
 		{
 			"CheckBoxCheckBackgroundFillChecked",
 			"CheckBoxCheckBackgroundFillCheckedPointerOver",

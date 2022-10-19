@@ -65,11 +65,16 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void SetValueForKey(this UI.Xaml.ResourceDictionary resources, string key, object? value)
+		{
+			resources[key] = value;
+		}
+		
 		internal static void SetValueForAllKey(this UI.Xaml.ResourceDictionary resources, IEnumerable<string> keys, object? value)
 		{
 			foreach (string key in keys)
 			{
-				resources[key] = value;
+				resources.SetValueForKey(key, value);
 			}
 		}
 	}

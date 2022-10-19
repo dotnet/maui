@@ -9,6 +9,40 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ColorExtensions
 	{
+		public static global::Windows.UI.Color ChangeColorBrightness(this global::Windows.UI.Color color, double correctionFactor)
+		{
+			double red = color.R;
+			double green = color.G;
+			double blue = color.B;
+
+			if (correctionFactor < 0)
+			{
+				correctionFactor = (1 + correctionFactor);
+
+				red *= correctionFactor;
+				green *= correctionFactor;
+				blue *= correctionFactor;
+			}
+			else
+			{
+				red = ((255 - red) * correctionFactor + red);
+				green = ((255 - green) * correctionFactor + green);
+				blue = ((255 - blue) * correctionFactor + blue);
+			}
+
+			return global::Windows.UI.Color.FromArgb(color.A, (byte)red, (byte)green, (byte)blue);
+		}
+
+		public static global::Windows.UI.Color Darker(this global::Windows.UI.Color color)
+		{
+			return color.ChangeColorBrightness(-0.15);
+		}
+
+		public static global::Windows.UI.Color Lighter(this global::Windows.UI.Color color)
+		{
+			return color.ChangeColorBrightness(0.15);
+		}
+
 		public static global::Windows.UI.Color GetContrastingColor(this global::Windows.UI.Color color)
 		{
 			var nThreshold = 105;
