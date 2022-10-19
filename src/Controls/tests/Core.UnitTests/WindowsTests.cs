@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		void DeActivatedFiresDisappearingEvent()
+		void DestroyedFiresDisappearingEvent()
 		{
 			int disappear = 0;
 			int appear = 0;
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cp.Appearing += (_, __) => appear++;
 			cp.Disappearing += (_, __) => disappear++;
 
-			window.Deactivated();
+			window.Destroying();
 			Assert.Equal(1, disappear);
 			Assert.Equal(0, appear);
 		}
@@ -314,8 +314,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cp.Appearing += (_, __) => appear++;
 			cp.Disappearing += (_, __) => disappear++;
 
+			var app = window.Parent as TestApp;
 			Assert.Equal(0, disappear);
-			window.Deactivated();
+			window.Destroying();
+
+			// simulate platform requesting another window for the same page
+			_ = app.CreateWindow(cp);
+
 			window.Activated();
 			Assert.Equal(1, disappear);
 			Assert.Equal(1, appear);

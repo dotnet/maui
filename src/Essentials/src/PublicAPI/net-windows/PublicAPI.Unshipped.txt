@@ -6,3 +6,10 @@ override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
 ~override Microsoft.Maui.Devices.Sensors.Location.Equals(object obj) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator !=(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator ==(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
+*REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.CalendarRead.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
+*REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.CalendarWrite.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
+*REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.ContactsRead.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
+*REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.ContactsWrite.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
+*REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.LocationAlways.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
+*REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
+*REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.Microphone.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>

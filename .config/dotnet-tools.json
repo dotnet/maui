@@ -15,13 +15,13 @@
       ]
     },
     "microsoft.dotnet.xharness.cli": {
-      "version": "1.0.0-prerelease.22451.1",
+      "version": "1.0.0-prerelease.22506.1",
       "commands": [
         "xharness"
       ]
     },
     "api-tools": {
-      "version": "1.3.3",
+      "version": "1.3.5",
       "commands": [
         "api-tools"
       ]

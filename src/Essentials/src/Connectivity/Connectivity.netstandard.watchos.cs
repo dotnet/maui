@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Networking
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs/*" />
 	partial class ConnectivityImplementation : IConnectivity
 	{
 		public NetworkAccess NetworkAccess =>

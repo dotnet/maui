@@ -28,6 +28,6 @@
     <ComponentResources Include="maui-ios"          Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for iOS" Description=".NET SDK Workload for building MAUI applications that target iOS." />
     <ComponentResources Include="maui-windows"      Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Windows" Description=".NET SDK Workload for building MAUI applications that target Windows." />
     <WorkloadPackages Include="$(NuGetPackagePath)\Microsoft.NET.Sdk.Maui.Manifest*.nupkg" Version="@VS_COMPONENT_VERSION@" />
-    <MultiTargetPackNames Include="Microsoft.Maui.Sdk;Microsoft.Maui.Templates" />
+    <MultiTargetPackNames Include="Maui.Sdk;Maui.Templates" />
   </ItemGroup>
 </Project>

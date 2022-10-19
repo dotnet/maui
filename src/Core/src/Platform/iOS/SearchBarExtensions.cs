@@ -23,10 +23,13 @@ namespace Microsoft.Maui.Platform
 			if (background is SolidPaint solidPaint)
 				uiSearchBar.BarTintColor = solidPaint.Color.ToPlatform();
 
+			if(background is GradientPaint gradientPaint)
+				ViewExtensions.UpdateBackground(uiSearchBar, gradientPaint);
+						
 			if (background == null)
 				uiSearchBar.BarTintColor = UISearchBar.Appearance.BarTintColor;
 		}
-
+		
 		public static void UpdateIsEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.UserInteractionEnabled = searchBar.IsEnabled;

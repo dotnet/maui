@@ -30,13 +30,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			menuBar.Add(child0);
 
-			Assert.Same(menuBar, child0.Parent);
+			// Menu Bar Items only get parented to pages currently
+			if (typeof(TChildType) == typeof(MenuBarItem))
+			{
+				var cp = new ContentPage();
+				cp.MenuBarItems.Add(child0 as MenuBarItem);
+				Assert.Same(cp, child0.Parent);
+			}
+			else
+			{
+				Assert.Same(menuBar, child0.Parent);
+			}
+
 			Assert.Null(child1.Parent);
 
-			menuBar[0] = child1;
+			// Menu Bar Items only get parented to pages currently
+			if (typeof(TChildType) == typeof(MenuBarItem))
+			{
+				(child0.Parent as ContentPage)!.MenuBarItems[0] = child1 as MenuBarItem;
+			}
+			else
+			{
+				menuBar[0] = child1;
+			}
 
 			Assert.Null(child0.Parent);
-			Assert.Same(menuBar, child1.Parent);
+
+			if (typeof(TChildType) == typeof(MenuBarItem))
+			{
+				Assert.True(child1.Parent is ContentPage);
+			}
+			else
+			{
+				Assert.Same(menuBar, child1.Parent);
+			}
 		}
 
 		[Fact]
@@ -47,13 +74,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			var child0 = new TChildType();
 			var child1 = new TChildType();
 
-			menuBar.Add(child0);
-			menuBar.Add(child1);
+			// Menu Bar Items only get parented to pages currently
+			if (typeof(TChildType) == typeof(MenuBarItem))
+			{
+				// this sets up the MenuBarTracker
+				var cp = new ContentPage();
+				_ = new Window()
+				{
+					Page = cp
+				};
 
-			Assert.Same(menuBar, child0.Parent);
-			Assert.Same(menuBar, child1.Parent);
+				cp.MenuBarItems.Add(child0 as MenuBarItem);
+				cp.MenuBarItems.Add(child1 as MenuBarItem);
 
-			menuBar.Clear();
+				Assert.Same(cp, child0.Parent);
+				Assert.Same(cp, child1.Parent);
+			}
+			else
+			{
+				menuBar.Add(child0);
+				menuBar.Add(child1);
+
+				Assert.Same(menuBar, child0.Parent);
+				Assert.Same(menuBar, child1.Parent);
+			}
+
+			if (typeof(TChildType) == typeof(MenuBarItem))
+			{
+				(child0.Parent as ContentPage)!.MenuBarItems.Clear();
+			}
+			else
+			{
+				menuBar.Clear();
+			}
 
 			Assert.Null(child0.Parent);
 			Assert.Null(child1.Parent);

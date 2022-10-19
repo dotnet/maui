@@ -107,8 +107,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
 					if (winUIItem != null)
 					{
-						var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
-						stream = contentStream.AsRandomAccessStream();
+						using var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
+
+						var memStream = new MemoryStream();
+						contentStream.CopyTo(memStream);
+						stream = new InMemoryRandomAccessStream();
+						await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
 					}
 				}
 				else

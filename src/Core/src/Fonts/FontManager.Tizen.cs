@@ -11,8 +11,15 @@ namespace Microsoft.Maui
 		readonly IFontRegistrar _fontRegistrar;
 		readonly IServiceProvider? _serviceProvider;
 
+		/// <inheritdoc/>
 		public double DefaultFontSize => 14; // 14sp
 
+		/// <summary>
+		/// Creates a new <see cref="EmbeddedFontLoader"/> instance.
+		/// </summary>
+		/// <param name="fontRegistrar">A <see cref="IFontRegistrar"/> instance to retrieve details from about registered fonts.</param>
+		/// <param name="serviceProvider">The applications <see cref="IServiceProvider"/>.
+		/// Typically this is provided through dependency injection.</param>
 		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{
 			_fontRegistrar = fontRegistrar;
@@ -20,6 +27,7 @@ namespace Microsoft.Maui
 		}
 
 
+		/// <inheritdoc/>
 		public string GetFont(Font font)
 		{
 			var size = font.Size <= 0 || double.IsNaN(font.Size)
@@ -29,6 +37,7 @@ namespace Microsoft.Maui
 			return GetFont(font.Family, size, font.Slant, GetNativeFontFamily);
 		}
 
+		/// <inheritdoc/>
 		public string GetFontFamily(string? fontFamliy)
 		{
 			if (string.IsNullOrEmpty(fontFamliy))

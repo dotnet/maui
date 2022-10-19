@@ -42,7 +42,7 @@ body:
     id: version-with-bug
     attributes:
       label: Version with bug
-      description: In what version do you see this issue? Run `dotnet --version` to find your version.
+      description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
         - 6.0 Release Candidate 2 or older
         - 6.0 Release Candidate 3
@@ -59,7 +59,7 @@ body:
     id: version-that-worked
     attributes:
       label: Last version that worked well
-      description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown/Other`.  Run `dotnet --version` to find your version.
+      description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown/Other`.  Run `dotnet workload list` to find your version.
       options:
         - 6.0 Release Candidate 2 or older
         - 6.0 Release Candidate 3

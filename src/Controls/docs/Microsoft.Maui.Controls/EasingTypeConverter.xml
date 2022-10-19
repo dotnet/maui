@@ -1,6 +1,6 @@
 <Type Name="EasingTypeConverter" FullName="Microsoft.Maui.Controls.EasingTypeConverter">
-  <TypeSignature Language="C#" Value="public class EasingTypeConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit EasingTypeConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public class EasingTypeConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit EasingTypeConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.EasingTypeConverter" />
   <TypeSignature Language="F#" Value="type EasingTypeConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -8,7 +8,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>

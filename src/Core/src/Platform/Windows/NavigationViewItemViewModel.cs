@@ -29,6 +29,26 @@ namespace Microsoft.Maui.Platform
 
 	internal static class NavigationViewItemViewModelExtensions
 	{
+		public static NavigationViewItemViewModel? GetWithData(this IEnumerable<NavigationViewItemViewModel> dest, object data)
+		{
+			foreach (var item in dest)
+			{
+				if (item.Data == data)
+				{
+					return item;
+				}
+			}
+
+			return null;
+		}
+
+		public static bool TryGetWithData(this IEnumerable<NavigationViewItemViewModel> dest, object data, out NavigationViewItemViewModel? vm)
+		{
+			var result = GetWithData(dest, data);
+			vm = result;
+			return result != null;
+		}
+
 		public static void SyncItems<T>(
 			this ObservableCollection<NavigationViewItemViewModel> dest,
 			IList<T> source,

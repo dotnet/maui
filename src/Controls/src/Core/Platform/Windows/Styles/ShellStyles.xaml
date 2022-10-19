@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:platform="using:Microsoft.Maui.Controls.Platform"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
@@ -10,16 +11,28 @@
     xmlns:maui="using:Microsoft.Maui.Controls.Platform">
     <x:Double x:Key="NavigationViewItemOnLeftMinHeight">0</x:Double>
     <DataTemplate x:Key="ShellFlyoutBaseShellItemTemplate">
-        <maui:ShellNavigationViewItem  x:Name="navItem">
+        <maui:ShellNavigationViewItem  x:Name="navItem" MenuItemsSource="{Binding MenuItemsSource}">
             <maui:ShellFlyoutItemView IsTabStop="false" IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></maui:ShellFlyoutItemView>
         </maui:ShellNavigationViewItem>
     </DataTemplate>
     <DataTemplate x:Key="ShellFlyoutMenuItemTemplate">
-        <maui:ShellNavigationViewItem x:Name="navItem">
+        <maui:ShellNavigationViewItem x:Name="navItem" MenuItemsSource="{Binding MenuItemsSource}">
             <maui:ShellFlyoutItemView IsTabStop="false" IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></maui:ShellFlyoutItemView>
         </maui:ShellNavigationViewItem>
     </DataTemplate>
     <DataTemplate x:Key="ShellFlyoutSeperatorTemplate">
         <winui:NavigationViewItemSeparator />
+    </DataTemplate>
+    <DataTemplate x:Key="SearchHandlerItemTemplate">
+        <platform:ItemContentControl
+            x:Name="ItemContentControl" 
+            MauiContext="{Binding MauiContext}" 
+			FormsDataTemplate="{Binding FormsDataTemplate}" 
+            FormsDataContext="{Binding Item}"
+            FormsContainer="{Binding Container}"
+            ItemHeight="{Binding ItemHeight}"
+            ItemWidth="{Binding ItemWidth}"
+            ItemSpacing="{Binding ItemSpacing}">
+        </platform:ItemContentControl>
     </DataTemplate>
 </ResourceDictionary>

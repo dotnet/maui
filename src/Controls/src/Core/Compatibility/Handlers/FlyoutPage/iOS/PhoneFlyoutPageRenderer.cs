@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
-
+		VisualElement _element;
 		bool _disposed;
 
 		UIViewController _flyoutController;
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		public VisualElement Element => _viewHandlerWrapper.Element;
+		public VisualElement Element => _viewHandlerWrapper.Element ?? _element;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
+
 			var flyoutPage = element as FlyoutPage;
 
 			_flyoutController = new ChildViewController();
@@ -87,8 +88,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_clickOffView = new UIView();
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
-			Presented = ((FlyoutPage)element).IsPresented;
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
+			_element = element;
+			Presented = ((FlyoutPage)element).IsPresented;
 			Element.SizeChanged += PageOnSizeChanged;
 		}
 
@@ -118,10 +120,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 
-
-			// TODO MAUI: Is this correct?
-			if (Element.Width == -1 && Element.Height == -1)
-				(Element as IView).Arrange(new Rect(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
+			if (Element is IView view &&
+				!Primitives.Dimension.IsExplicitSet(view.Width) &&
+				!Primitives.Dimension.IsExplicitSet(view.Height))
+			{
+				view.Arrange(new Rect(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
+			}
 
 			LayoutChildren(false);
 		}
@@ -146,7 +150,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			UpdatePanGesture();
 			UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
-
 		}
 
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]

@@ -2,10 +2,10 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
 	public partial class VisualElement
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ControlsVisualElementMapper']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ControlsVisualElementMapper']/Docs/*" />
 		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper =
 			new PropertyMapper<IView, IViewHandler>(Element.ControlsElementMapper)
 			{
@@ -16,7 +16,10 @@ namespace Microsoft.Maui.Controls
 				[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName] = MapAccessKeyVerticalOffset,
 #endif
 				[nameof(BackgroundColor)] = MapBackgroundColor,
-				[nameof(Page.BackgroundImageSource)] = MapBackgroundImageSource
+				[nameof(Page.BackgroundImageSource)] = MapBackgroundImageSource,
+				[SemanticProperties.DescriptionProperty.PropertyName] = MapSemanticPropertiesDescriptionProperty,
+				[SemanticProperties.HintProperty.PropertyName] = MapSemanticPropertiesHintProperty,
+				[SemanticProperties.HeadingLevelProperty.PropertyName] = MapSemanticPropertiesHeadingLevelProperty,
 			};
 
 		internal static void RemapForControls()
@@ -24,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			ViewHandler.ViewMapper = ControlsVisualElementMapper;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MapBackgroundColor']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MapBackgroundColor']/Docs/*" />
 		public static void MapBackgroundColor(IViewHandler handler, IView view)
 		{
 			handler.UpdateValue(nameof(Background));
@@ -33,6 +36,21 @@ namespace Microsoft.Maui.Controls
 		public static void MapBackgroundImageSource(IViewHandler handler, IView view)
 		{
 			handler.UpdateValue(nameof(Background));
+		}
+
+		static void MapSemanticPropertiesHeadingLevelProperty(IViewHandler handler, IView element) =>
+			(element as VisualElement)?.UpdateSemanticsFromMapper();
+
+		static void MapSemanticPropertiesHintProperty(IViewHandler handler, IView element) =>
+			(element as VisualElement)?.UpdateSemanticsFromMapper();
+
+		static void MapSemanticPropertiesDescriptionProperty(IViewHandler handler, IView element) =>
+			(element as VisualElement)?.UpdateSemanticsFromMapper();
+
+		void UpdateSemanticsFromMapper()
+		{
+			UpdateSemantics();
+			Handler?.UpdateValue(nameof(IView.Semantics));
 		}
 	}
 }
