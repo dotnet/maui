@@ -1,7 +1,7 @@
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Enumerates clear button visibility behavior on input fields.
+	/// Enumerates values that influences clear button visibility behavior on input fields.
 	/// Typically this is shown as a button inside of the input field, near the end, with which the input can be cleared with a tap on said button.
 	/// </summary>
 	public enum ClearButtonVisibility
