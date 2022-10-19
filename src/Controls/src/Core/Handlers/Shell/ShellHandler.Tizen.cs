@@ -28,8 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapFlyout(ShellHandler handler, IFlyoutView flyoutView)
 		{
-			if (flyoutView.Flyout != null)
-				handler.PlatformView.UpdateFlyout(flyoutView.Flyout.ToPlatform(handler.MauiContext!));
+			handler.PlatformView.UpdateFlyout(flyoutView.Flyout);
 		}
 
 		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)

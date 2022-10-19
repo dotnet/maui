@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -22,6 +23,10 @@ namespace Microsoft.Maui.Controls
 		const string DefaultFlyoutItemLabelStyle = "Default_FlyoutItemLabelStyle";
 		const string DefaultFlyoutItemImageStyle = "Default_FlyoutItemImageStyle";
 		const string DefaultFlyoutItemLayoutStyle = "Default_FlyoutItemLayoutStyle";
+
+		protected private ObservableCollection<Element> DeclaredChildren { get; } = new ObservableCollection<Element>();
+		readonly ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
+		internal override IReadOnlyList<Element> LogicalChildrenInternal => new ReadOnlyCollection<Element>(_logicalChildren);
 
 		#region PropertyKeys
 
@@ -52,6 +57,20 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IsVisibleProperty']/Docs/*" />
 		public static readonly BindableProperty IsVisibleProperty =
 			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), true);
+
+		public BaseShellItem()
+		{
+			DeclaredChildren.CollectionChanged += (_, args) =>
+			{
+				if (args.NewItems != null)
+					foreach (Element element in args.NewItems)
+						AddLogicalChild(element);
+
+				if (args.OldItems != null)
+					foreach (Element element in args.OldItems)
+						RemoveLogicalChild(element);
+			};
+		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='FlyoutIcon']/Docs/*" />
 		public ImageSource FlyoutIcon
@@ -104,6 +123,7 @@ namespace Microsoft.Maui.Controls
 			get => (bool)GetValue(Shell.FlyoutItemIsVisibleProperty);
 			set => SetValue(Shell.FlyoutItemIsVisibleProperty, value);
 		}
+
 
 		internal bool IsPartOfVisibleTree()
 		{
@@ -238,6 +258,40 @@ namespace Microsoft.Maui.Controls
 
 			if (from.IsSet(property) && !to.IsSet(property))
 				to.SetValue(property, from.GetValue(property));
+		}
+
+		internal void AddLogicalChild(Element element)
+		{
+			if (element == null)
+			{
+				return;
+			}
+
+			if (_logicalChildren.Contains(element))
+				return;
+
+			_logicalChildren.Add(element);
+			element.Parent = this;
+			OnChildAdded(element);
+			VisualDiagnostics.OnChildAdded(this, element);
+		}
+
+		internal void RemoveLogicalChild(Element element)
+		{
+			if (element == null)
+			{
+				return;
+			}
+
+			element.Parent = null;
+
+			if (!_logicalChildren.Contains(element))
+				return;
+
+			var oldLogicalIndex = _logicalChildren.IndexOf(element);
+			_logicalChildren.Remove(element);
+			OnChildRemoved(element, oldLogicalIndex);
+			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
 		}
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)

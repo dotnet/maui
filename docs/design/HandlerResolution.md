@@ -8,10 +8,10 @@ Handlers are the platform components used to render a cross platform `View` on t
 ## Registering a Handler in Code
 
 ```csharp
-builder
-	.ConfigureMauiHandlers(handlers =>
-	{
-		handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+builder.ConfigureMauiHandlers(handlers =>
+       {
+          handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+       }
 ```
 
 ## Types used in the resolution of Handlers to Views

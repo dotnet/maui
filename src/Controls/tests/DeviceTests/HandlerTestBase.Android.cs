@@ -165,6 +165,15 @@ namespace Microsoft.Maui.DeviceTests
 			return toolBar;
 		}
 
+		public bool IsNavigationBarVisible(IElementHandler handler) =>
+			IsNavigationBarVisible(handler.MauiContext);
+
+		public bool IsNavigationBarVisible(IMauiContext mauiContext)
+		{
+			return GetPlatformToolbar(mauiContext)?
+					.LayoutParameters?.Height > 0;
+		}
+
 		protected bool IsBackButtonVisible(IElementHandler handler)
 		{
 			if (GetPlatformToolbar(handler)?.NavigationIcon is DrawerArrowDrawable dad)
@@ -199,12 +208,10 @@ namespace Microsoft.Maui.DeviceTests
 				ScopedMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 				var handler = (WindowHandlerStub)_window.ToHandler(ScopedMauiContext);
 
-				var decorView = RequireActivity().Window.DecorView;
-				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
-
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
 				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
+				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 
 				return FakeActivityRootView;
 			}

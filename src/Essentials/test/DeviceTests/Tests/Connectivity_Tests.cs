@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Networking;
 using Xunit;
 
@@ -20,6 +21,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			var profiles = Connectivity.ConnectionProfiles;
 			Assert.Equal(profiles.Count(), profiles.Distinct().Count());
+		}
+
+		[Fact]
+		public async Task Test()
+		{
+			var current = Connectivity.Current.NetworkAccess;
+
+			var thread = await Task.Run(() => Connectivity.Current.NetworkAccess);
+
+			Assert.Equal(current, thread);
 		}
 	}
 }

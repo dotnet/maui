@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Controls
 				((Label)bindable).FormattedText = null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Label> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -109,6 +109,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
+		double GetInputFieldHeight(SearchBarHandler searchBarHandler)
+		{
+			return GetNativeSearchBar(searchBarHandler).Bounds.Height;
+		}
+
 		static UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			(UISearchBar)searchBarHandler.PlatformView;
 

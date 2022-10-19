@@ -16,5 +16,9 @@ namespace Microsoft.Maui.Controls
 		public static void MapContent(WindowHandler handler, IWindow view)
 		{
 		}
+
+		public static void MapContent(IWindowHandler handler, IWindow view)
+		{
+		}
 	}
 }

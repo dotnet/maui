@@ -68,6 +68,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers =>
+			(_handler.VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
+
 		// TODO MAUI
 		// Do we need to provide a hook for this in the handlers?
 		// For now I just built this ugly matching statement
@@ -272,11 +275,8 @@ namespace Microsoft.Maui.Controls.Platform
 					var view = _element as View;
 					if (view != null)
 					{
-						var oldRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
-						oldRecognizers.CollectionChanged -= _collectionChangedHandler;
-
-						if ((view as IGestureController)?.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-							oc.CollectionChanged -= _collectionChangedHandler;
+						if (ElementGestureRecognizers != null)
+							ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 					}
 				}
 
@@ -287,11 +287,8 @@ namespace Microsoft.Maui.Controls.Platform
 					var view = _element as View;
 					if (view != null)
 					{
-						var newRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
-						newRecognizers.CollectionChanged += _collectionChangedHandler;
-
-						if ((view as IGestureController)?.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-							oc.CollectionChanged += _collectionChangedHandler;
+						if (ElementGestureRecognizers != null)
+							ElementGestureRecognizers.CollectionChanged += _collectionChangedHandler;
 					}
 				}
 			}
@@ -343,8 +340,8 @@ namespace Microsoft.Maui.Controls.Platform
 				var view = _element as View;
 				if (view != null)
 				{
-					var oldRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
-					oldRecognizers.CollectionChanged -= _collectionChangedHandler;
+					if (ElementGestureRecognizers != null)
+						ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 				}
 			}
 
@@ -503,7 +500,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return;
 
-			var pointerGestures = view.GestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
+			var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
 			foreach (var recognizer in pointerGestures)
 			{
 				SendPointerEvent.Invoke(view, recognizer);
@@ -559,11 +556,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool ValidateGesture(TapGestureRecognizer g)
 			{
-				if (e is RightTappedRoutedEventArgs &&
-					(g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+				if (e is RightTappedRoutedEventArgs)
 				{
-					// Currently we only support single right clicks on WinUI
-					return g.NumberOfTapsRequired == 1;
+					// Currently we only support single right clicks
+					if ((g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+						return g.NumberOfTapsRequired == 1;
+					else
+						return false;
 				}
 
 				if ((g.Buttons & ButtonsMask.Primary) != ButtonsMask.Primary)

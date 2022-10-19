@@ -21,20 +21,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests : HandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-				});
-			});
-		}
-
 		[Fact(DisplayName = "Toolbar Visible When Pushing To TabbedPage")]
 		public async Task ToolbarVisibleWhenPushingToTabbedPage()
 		{
@@ -227,19 +213,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(tabbedPage.CurrentPage, tabbedPage.Children[1]);
 				return Task.CompletedTask;
 			});
-		}
-
-
-		TabbedPage CreateBasicTabbedPage()
-		{
-			return new TabbedPage()
-			{
-				Title = "Tabbed Page",
-				Children =
-				{
-					new ContentPage() { Title = "Page 1" }
-				}
-			};
 		}
 	}
 }

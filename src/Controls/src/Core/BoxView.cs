@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(CornerElement.CornerRadiusProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, BoxView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -53,5 +53,8 @@ namespace Microsoft.Maui.DeviceTests
 				platformImageButton.AssertContainsColor(color);
 			});
 		}
+
+		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>
+			imageButtonHandler.PlatformView.Drawable != null;
 	}
 }

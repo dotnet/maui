@@ -2,7 +2,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.Communication;
 using Microsoft.Maui.Controls;
@@ -12,24 +11,19 @@ namespace Samples.ViewModel
 {
 	class ContactsViewModel : BaseViewModel
 	{
-		ObservableCollection<Contact> contactsList = new ObservableCollection<Contact>();
 		Contact selectedContact;
 
 		public ContactsViewModel()
 		{
 			GetContactCommand = new Command(OnGetContact);
-			GetAllContactCommand = new Command(() => OnGetAllContact());
+			GetAllContactCommand = new Command(OnGetAllContact);
 		}
 
 		public ICommand GetContactCommand { get; }
 
 		public ICommand GetAllContactCommand { get; }
 
-		public ObservableCollection<Contact> ContactsList
-		{
-			get => contactsList;
-			set => SetProperty(ref contactsList, value);
-		}
+		public ObservableCollection<Contact> ContactsList { get; } = new ObservableCollection<Contact>();
 
 		public Contact SelectedContact
 		{
@@ -42,6 +36,7 @@ namespace Samples.ViewModel
 			if (IsBusy)
 				return;
 			IsBusy = true;
+
 			try
 			{
 				var contact = await ContactsManager.PickContactAsync();
@@ -69,7 +64,8 @@ namespace Samples.ViewModel
 			if (IsBusy)
 				return;
 			IsBusy = true;
-			ContactsList?.Clear();
+
+			ContactsList.Clear();
 			try
 			{
 				var contacts = await ContactsManager.GetAllAsync();

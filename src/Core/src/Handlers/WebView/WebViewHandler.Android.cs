@@ -52,10 +52,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
+			if (_webViewClient is MauiWebViewClient mauiWebViewClient)
+				mauiWebViewClient.Disconnect();
+
+			_webChromeClient?.Disconnect();
+			platformView.SetWebChromeClient(null);
+
 			platformView.StopLoading();
 
-			_webViewClient?.Dispose();
-			_webChromeClient?.Dispose();
+			_webViewClient = null;
+			_webChromeClient = null;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -132,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected internal bool NavigatingCanceled(string? url)
 		{
-			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
+			if (VirtualView == null || string.IsNullOrWhiteSpace(url) || _webViewClient == null)
 				return true;
 
 			if (url == AssetBaseUrl)
@@ -140,7 +146,13 @@ namespace Microsoft.Maui.Handlers
 
 			// TODO: Sync Cookies
 			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
+
+			// if the user disconnects from the handler we want to exit
+			if (_webViewClient == null)
+				return true;
+
 			PlatformView?.UpdateCanGoBackForward(VirtualView);
+
 			UrlCanceled = cancel ? null : url;
 
 			return cancel;

@@ -165,6 +165,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(handlersCalled);
 		}
 
+		[Fact]
+		public void RegisteringHandlerWithAddCompatibilityRendererThrowsException()
+		{
+			MauiAppBuilderExtensions.ResetCompatibilityCheck();
+			bool handlersCalled = false;
+			var builder = MauiApp.CreateBuilder().UseMauiApp<ApplicationStub>();
+
+			var mauiApp =
+				builder.ConfigureMauiHandlers(collection =>
+				{
+					handlersCalled = true;
+
+					Assert.Throws<InvalidOperationException>(() =>
+							collection.AddCompatibilityRenderer(typeof(ButtonHandlerStub), typeof(Object))
+						);
+				})
+				.Build();
+
+			_ = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			Assert.True(handlersCalled);
+		}
+
 		public class TrackingConfigurationSource : IConfigurationSource
 		{
 			public int ProvidersBuilt { get; set; }

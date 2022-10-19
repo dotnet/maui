@@ -6,6 +6,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
+		protected override void ConnectHandler(UIWindow platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			UpdateVirtualViewFrame(platformView);
+		}
+
 		public static void MapTitle(IWindowHandler handler, IWindow window) { }
 
 		public static void MapContent(IWindowHandler handler, IWindow window)
@@ -19,8 +26,6 @@ namespace Microsoft.Maui.Handlers
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();
 		}
-
-#if MACCATALYST
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
 			handler.PlatformView?.UpdateX(view);
@@ -45,8 +50,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimumHeight(IWindowHandler handler, IWindow view) =>
 			handler.PlatformView?.UpdateMinimumHeight(view);
-
-#endif
 
 		public static void MapMenuBar(IWindowHandler handler, IWindow view)
 		{
@@ -80,6 +83,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is DisplayDensityRequest request)
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
+		}
+
+		void UpdateVirtualViewFrame(UIWindow window)
+		{
+			VirtualView.FrameChanged(window.Bounds.ToRectangle());
 		}
 	}
 }

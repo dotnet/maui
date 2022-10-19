@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindablePropertyKey ItemsPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(Items), typeof(ShellContentCollection), typeof(ShellSection), null,
-				defaultValueCreator: bo => new ShellContentCollection());
+				defaultValueCreator: bo => new ShellContentCollection() { Inner = new ElementCollection<ShellContent>(((ShellSection)bo).DeclaredChildren) });
 
 		#endregion PropertyKeys
 
@@ -206,10 +206,6 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
 
 		Page _displayedPage;
-		IList<Element> _logicalChildren = new List<Element>();
-
-		ReadOnlyCollection<Element> _logicalChildrenReadOnly;
-
 		List<Page> _navStack = new List<Page> { null };
 		internal bool IsPushingModalStack { get; private set; }
 		internal bool IsPoppingModalStack { get; private set; }
@@ -238,8 +234,6 @@ namespace Microsoft.Maui.Controls
 				SendStructureChanged();
 			};
 
-			(Items as INotifyCollectionChanged).CollectionChanged += ItemsCollectionChanged;
-
 			Navigation = new NavigationImpl(this);
 		}
 
@@ -256,8 +250,6 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Stack']/Docs/*" />
 		public IReadOnlyList<Page> Stack => _navStack;
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
 
 		internal Page DisplayedPage
 		{
@@ -715,9 +707,6 @@ namespace Microsoft.Maui.Controls
 			UpdateDisplayedPage();
 		}
 
-		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => Items;
-
-
 		void InvokeNavigationRequest(NavigationRequestedEventArgs args)
 		{
 			_navigationRequested?.Invoke(this, args);
@@ -1005,35 +994,12 @@ namespace Microsoft.Maui.Controls
 
 		void AddPage(Page page)
 		{
-			_logicalChildren.Add(page);
-			OnChildAdded(page);
-		}
-
-		void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.NewItems != null)
-			{
-				foreach (Element element in e.NewItems)
-					OnChildAdded(element);
-			}
-
-			if (e.OldItems != null)
-			{
-				for (var i = 0; i < e.OldItems.Count; i++)
-				{
-					var element = (Element)e.OldItems[i];
-					OnChildRemoved(element, e.OldStartingIndex + i);
-				}
-			}
+			AddLogicalChild(page);
 		}
 
 		void RemovePage(Page page)
 		{
-			if (!_logicalChildren.Contains(page))
-				return;
-			var index = _logicalChildren.IndexOf(page);
-			_logicalChildren.Remove(page);
-			OnChildRemoved(page, index);
+			RemoveLogicalChild(page);
 		}
 
 		void SendAppearanceChanged() => ((IShellController)Parent?.Parent)?.AppearanceChanged(this, false);

@@ -107,8 +107,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
 					if (winUIItem != null)
 					{
-						var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
-						stream = contentStream.AsRandomAccessStream();
+						using var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
+						stream = await CopyContentToRandomAccessStreamAsync(contentStream);
 					}
 				}
 				else
@@ -116,23 +116,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var path = Path.Combine(AppContext.BaseDirectory, relativePath);
 					if (File.Exists(path))
 					{
-						// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams.
-						// See issue https://github.com/microsoft/CsWinRT/issues/670
 						using var contentStream = File.OpenRead(path);
-						var memStream = new MemoryStream();
-						contentStream.CopyTo(memStream);
-						stream = new InMemoryRandomAccessStream();
-						await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+						stream = await CopyContentToRandomAccessStreamAsync(contentStream);
 					}
 				}
 
 				var hotReloadedContent = Stream.Null;
 				if (StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
 				{
-					stream = new InMemoryRandomAccessStream();
-					var memStream = new MemoryStream();
-					hotReloadedContent.CopyTo(memStream);
-					await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+					stream = await CopyContentToRandomAccessStreamAsync(hotReloadedContent);
 				}
 
 				if (stream != null)
@@ -143,6 +135,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						statusCode,
 						statusMessage,
 						headerString);
+				}
+
+				async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
+				{
+					using var memStream = new MemoryStream();
+					await content.CopyToAsync(memStream);
+					var randomAccessStream = new InMemoryRandomAccessStream();
+					await randomAccessStream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+					return randomAccessStream;
 				}
 			}
 

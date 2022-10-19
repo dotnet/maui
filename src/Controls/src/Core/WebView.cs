@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Controls
 			remove { _reloadRequested -= value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, WebView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

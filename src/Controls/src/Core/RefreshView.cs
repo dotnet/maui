@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(RefreshColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, RefreshView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

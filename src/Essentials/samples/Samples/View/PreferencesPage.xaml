@@ -8,16 +8,16 @@
         <viewmodels:PreferencesViewModel />
     </views:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Quickly and easily add persistent preferences." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <Label Text="Enter some text to save:" />
                 <Editor Placeholder="Enter text..." Text="{Binding PreferenceValue}"
                         AutoSize="TextChanges" />
             </StackLayout>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </views:BasePage>

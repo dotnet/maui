@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 #if !MACCATALYST
 			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.SetDataContext(this);
 			accessoryView.SetDoneClicked(OnDoneClicked);
 			platformEditor.InputAccessoryView = accessoryView;
 #endif
@@ -144,6 +145,9 @@ namespace Microsoft.Maui.Handlers
 			// Update all of the attributed text formatting properties
 			handler.PlatformView?.UpdateCharacterSpacing(editor);
 		}
+
+		public static void MapIsEnabled(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateIsEnabled(editor);
 
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString) =>
 			VirtualView.TextWithinMaxLength(textView.Text, range, replacementString);

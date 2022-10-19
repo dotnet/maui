@@ -233,5 +233,15 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = (UIView)viewHandler.PlatformView;
 			return platformView.UserInteractionEnabled;
 		}
+
+
+#if !MACCATALYST
+		protected void TapDoneOnInputAccessoryView(UIView platformView)
+		{
+			var accessoryView = (MauiDoneAccessoryView)platformView.InputAccessoryView;
+			var doneButton = accessoryView.Items[1] as UIBarButtonItem;
+			UIApplication.SharedApplication.SendAction(doneButton.Action, doneButton.Target!, null, null);
+		}
+#endif
 	}
 }

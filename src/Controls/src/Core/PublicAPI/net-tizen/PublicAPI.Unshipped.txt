@@ -1733,7 +1733,7 @@ Microsoft.Maui.Controls.Platform.ShellView.Toggled -> System.EventHandler?
 Microsoft.Maui.Controls.Platform.ShellView.UpdateBackgroundColor(Microsoft.Maui.Graphics.Color? color) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateCurrentItem(Microsoft.Maui.Controls.ShellItem! newItem, bool animate = true) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateDrawerWidth(double drawerwidth) -> void
-Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyout(Tizen.NUI.BaseComponents.View! flyout) -> void
+Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyout(Microsoft.Maui.IView? flyout) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutBackDrop(Microsoft.Maui.Controls.Brush! backdrop) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutBehavior(Microsoft.Maui.FlyoutBehavior flyoutBehavior) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutFooter(Microsoft.Maui.Controls.Shell! shell) -> void
@@ -3299,17 +3299,6 @@ static Microsoft.Maui.Controls.Shapes.Matrix.operator *(Microsoft.Maui.Controls.
 static Microsoft.Maui.Controls.Shapes.MatrixExtensions.ToMatrix(this System.Numerics.Matrix3x2 matrix3x2) -> Microsoft.Maui.Controls.Shapes.Matrix
 static Microsoft.Maui.Controls.Shapes.MatrixExtensions.ToMatrix3X2(this Microsoft.Maui.Controls.Shapes.Matrix matrix) -> System.Numerics.Matrix3x2
 static Microsoft.Maui.Controls.Toolbar.ControlsToolbarMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Toolbar!, Microsoft.Maui.Handlers.ToolbarHandler!>!
-static Microsoft.Maui.Controls.Toolbar.MapBackButtonTitle(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapBackButtonVisible(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapBarBackground(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapBarBackgroundColor(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapBarTextColor(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapIconColor(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapIsVisible(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapTitle(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapTitleIcon(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapTitleView(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.ToolTipProperties.GetText(Microsoft.Maui.Controls.BindableObject! bindable) -> object!
 static Microsoft.Maui.Controls.ToolTipProperties.SetText(Microsoft.Maui.Controls.BindableObject! bindable, object! value) -> void
 static Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(this Microsoft.Maui.Controls.VisualElement! view) -> void
@@ -3567,6 +3556,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.Focused = "Focused" -> string
 ~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.Normal = "Normal" -> string
 ~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.Selected = "Selected" -> string
+~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.PointerOver = "PointerOver" -> string
 ~Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutBounds(Microsoft.Maui.IView view) -> Microsoft.Maui.Graphics.Rect
 ~Microsoft.Maui.Controls.AbsoluteLayout.GetLayoutFlags(Microsoft.Maui.IView view) -> Microsoft.Maui.Layouts.AbsoluteLayoutFlags
 ~Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutBounds(Microsoft.Maui.IView view, Microsoft.Maui.Graphics.Rect bounds) -> void
@@ -5629,9 +5619,9 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static Microsoft.Maui.Controls.Brush.Yellow.get -> Microsoft.Maui.Controls.SolidColorBrush
 ~static Microsoft.Maui.Controls.Brush.YellowGreen.get -> Microsoft.Maui.Controls.SolidColorBrush
 ~static Microsoft.Maui.Controls.Button.ControlsButtonMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IButton, Microsoft.Maui.Handlers.ButtonHandler>
-~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Button.MapLineBreakMode(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
-~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.GetLayoutBounds(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Graphics.Rect
 ~static Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.GetLayoutFlags(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Layouts.AbsoluteLayoutFlags
 ~static Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.SetLayoutBounds(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Graphics.Rect bounds) -> void
@@ -5699,14 +5689,14 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static Microsoft.Maui.Controls.DoubleCollection.implicit operator Microsoft.Maui.Controls.DoubleCollection(double[] d) -> Microsoft.Maui.Controls.DoubleCollection
 ~static Microsoft.Maui.Controls.DoubleCollection.implicit operator Microsoft.Maui.Controls.DoubleCollection(float[] f) -> Microsoft.Maui.Controls.DoubleCollection
 ~static Microsoft.Maui.Controls.Editor.ControlsEditorMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IEditor, Microsoft.Maui.Handlers.EditorHandler>
-~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void
+~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.IEditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void
 ~static Microsoft.Maui.Controls.Effect.Resolve(string name) -> Microsoft.Maui.Controls.Effect
 ~static Microsoft.Maui.Controls.EffectiveVisualExtensions.IsDefault(this Microsoft.Maui.Controls.IVisual visual) -> bool
 ~static Microsoft.Maui.Controls.EffectiveVisualExtensions.IsMatchParent(this Microsoft.Maui.Controls.IVisual visual) -> bool
 ~static Microsoft.Maui.Controls.EffectiveVisualExtensions.IsMaterial(this Microsoft.Maui.Controls.IVisual visual) -> bool
 ~static Microsoft.Maui.Controls.Element.ControlsElementMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement, Microsoft.Maui.IElementHandler>
 ~static Microsoft.Maui.Controls.Entry.ControlsEntryMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IEntry, Microsoft.Maui.Handlers.EntryHandler>
-~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.EntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
+~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.IEntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
 ~static Microsoft.Maui.Controls.FileImageSource.implicit operator Microsoft.Maui.Controls.FileImageSource(string file) -> Microsoft.Maui.Controls.FileImageSource
 ~static Microsoft.Maui.Controls.FileImageSource.implicit operator string(Microsoft.Maui.Controls.FileImageSource file) -> string
 ~static Microsoft.Maui.Controls.FlexLayout.GetAlignSelf(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Layouts.FlexAlignSelf
@@ -5861,10 +5851,10 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static Microsoft.Maui.Controls.Label.ControlsLabelMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.ILabel, Microsoft.Maui.Handlers.LabelHandler>
 ~static Microsoft.Maui.Controls.Label.MapLineBreakMode(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
 ~static Microsoft.Maui.Controls.Label.MapMaxLines(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-~static Microsoft.Maui.Controls.Label.MapText(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
-~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapText(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
 ~static Microsoft.Maui.Controls.Layout.ControlsLayoutMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IView, Microsoft.Maui.IViewHandler>
-~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.LayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
+~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.ILayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
 ~static Microsoft.Maui.Controls.MenuItem.GetAccelerator(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.Accelerator
 ~static Microsoft.Maui.Controls.MenuItem.SetAccelerator(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.Accelerator value) -> void
 ~static Microsoft.Maui.Controls.MessagingCenter.Instance.get -> Microsoft.Maui.Controls.IMessagingCenter
@@ -6380,7 +6370,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static Microsoft.Maui.Controls.PointCollection.implicit operator Microsoft.Maui.Controls.PointCollection(Microsoft.Maui.Graphics.Point[] d) -> Microsoft.Maui.Controls.PointCollection
 ~static Microsoft.Maui.Controls.RadioButton.ControlsRadioButtonMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.RadioButton, Microsoft.Maui.Handlers.RadioButtonHandler>
 ~static Microsoft.Maui.Controls.RadioButton.DefaultTemplate.get -> Microsoft.Maui.Controls.ControlTemplate
-~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.RadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
+~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
 ~static Microsoft.Maui.Controls.RadioButtonGroup.GetGroupName(Microsoft.Maui.Controls.BindableObject b) -> string
 ~static Microsoft.Maui.Controls.RadioButtonGroup.GetSelectedValue(Microsoft.Maui.Controls.BindableObject bindableObject) -> object
 ~static Microsoft.Maui.Controls.RadioButtonGroup.SetGroupName(Microsoft.Maui.Controls.BindableObject bindable, string groupName) -> void
@@ -6399,7 +6389,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static Microsoft.Maui.Controls.Routing.UnRegisterRoute(string route) -> void
 ~static Microsoft.Maui.Controls.ScrollView.ControlsScrollViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IScrollView, Microsoft.Maui.Handlers.ScrollViewHandler>
 ~static Microsoft.Maui.Controls.SearchBar.ControlsSearchBarMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.ISearchBar, Microsoft.Maui.Handlers.SearchBarHandler>
-~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
+~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
 ~static Microsoft.Maui.Controls.SearchHandler.SelectedItemProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static Microsoft.Maui.Controls.SemanticProperties.GetDescription(Microsoft.Maui.Controls.BindableObject bindable) -> string
 ~static Microsoft.Maui.Controls.SemanticProperties.GetHeadingLevel(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.SemanticHeadingLevel
@@ -7425,3 +7415,36 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~virtual Microsoft.Maui.Controls.Toolbar.TitleView.get -> Microsoft.Maui.Controls.VisualElement
 ~virtual Microsoft.Maui.Controls.Toolbar.TitleView.set -> void
 ~virtual Microsoft.Maui.Controls.View.GetChildElements(Microsoft.Maui.Graphics.Point point) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.GestureElement>
+Microsoft.Maui.Controls.ILayoutManagerFactory
+~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
+static Microsoft.Maui.Controls.Toolbar.MapBackButtonTitle(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBackButtonVisible(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBarBackground(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBarBackgroundColor(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBarTextColor(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapIconColor(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapIsVisible(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapTitle(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapTitleIcon(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapTitleView(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBackButtonTitle(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBackButtonVisible(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBarBackground(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBarBackgroundColor(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapBarTextColor(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapIconColor(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapIsVisible(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapTitle(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapTitleIcon(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapTitleView(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.ToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.ButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void
+~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.EntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
+~static Microsoft.Maui.Controls.Label.MapText(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.LabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.LayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
+~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.RadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
+~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void

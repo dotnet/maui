@@ -74,6 +74,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_viewPager.RegisterOnPageChangeCallback(_listeners);
 		}
 
+		internal IMauiContext MauiContext => _context;
 		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = _context.GetFragmentManager());
 		public bool IsBottomTabPlacement => (Element != null) ? Element.OnThisPlatform().GetToolbarPlacement() == ToolbarPlacement.Bottom : false;
 
@@ -174,13 +175,22 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				var fragment = _tabLayoutFragment;
 				_tabLayoutFragment = null;
-				_ = _context
+
+				var fragmentManager =
+					_context
 						.GetNavigationRootManager()
-						.FragmentManager
-						.BeginTransaction()
-						.Remove(fragment)
-						.SetReorderingAllowed(true)
-						.Commit();
+						.FragmentManager;
+
+				if (fragmentManager.IsAlive() && !fragmentManager.IsDestroyed)
+				{
+					_ = _context
+							.GetNavigationRootManager()
+							.FragmentManager
+							.BeginTransaction()
+							.Remove(fragment)
+							.SetReorderingAllowed(true)
+							.Commit();
+				}
 
 				_tabplacementId = 0;
 			}

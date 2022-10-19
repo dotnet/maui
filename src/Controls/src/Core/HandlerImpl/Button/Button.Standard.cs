@@ -7,5 +7,9 @@
 		public static void MapText(ButtonHandler handler, Button button) { }
 
 		public static void MapLineBreakMode(ButtonHandler handler, Button button) { }
+
+		public static void MapText(IButtonHandler handler, Button button) { }
+
+		public static void MapLineBreakMode(IButtonHandler handler, Button button) { }
 	}
 }
