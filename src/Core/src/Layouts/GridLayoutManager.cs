@@ -679,26 +679,20 @@ namespace Microsoft.Maui.Layouts
 			{
 				if (_grid.VerticalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridHeight))
 				{
-					if (_grid.DesiredSize.Height < targetSize.Height)
-					{
-						// Reset the size on all star rows
-						ZeroOutStarSizes(_rows);
+					// Reset the size on all star rows
+					ZeroOutStarSizes(_rows);
 
-						// And compute them for the actual arrangement height
-						ResolveStarRows(targetSize.Height);
-					}
+					// And compute them for the actual arrangement height
+					ResolveStarRows(targetSize.Height);
 				}
 
 				if (_grid.HorizontalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridWidth))
 				{
-					if (_grid.DesiredSize.Width < targetSize.Width)
-					{
-						// Reset the size on all star rows
-						ZeroOutStarSizes(_columns);
+					// Reset the size on all star columns
+					ZeroOutStarSizes(_columns);
 
-						// And compute them for the actual arrangement width
-						ResolveStarColumns(targetSize.Width);
-					}
+					// And compute them for the actual arrangement width
+					ResolveStarColumns(targetSize.Width);
 				}
 			}
 

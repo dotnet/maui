@@ -52,6 +52,8 @@ body:
         - 6.0.419
         - 6.0.424
         - 6.0.486 (current)
+        - 7.0 Release Candidate 1
+        - 7.0 Release Candidate 2
         - Unknown/Other (please specify)
     validations:
       required: true
@@ -68,6 +70,7 @@ body:
         - 6.0.408
         - 6.0.419
         - 6.0.424
+        - 7.0 Release Candidate 1
         - Unknown/Other
     validations:
       required: true
