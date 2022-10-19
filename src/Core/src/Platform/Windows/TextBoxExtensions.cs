@@ -37,17 +37,27 @@ namespace Microsoft.Maui.Platform
 			if (brush is null)
 				textBox.Resources.RemoveKeys(BackgroundResourceKeys);
 			else
-				textBox.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
+			{
+				textBox.Resources.SetValueForKey(TextControlBackground, brush);
+				textBox.Resources.SetValueForKey(TextControlBackgroundFocused, brush);
+				textBox.Resources.SetValueForKey(TextControlBackgroundPointerOver, brush.Darker());
+				textBox.Resources.SetValueForKey(TextControlBackgroundDisabled, brush.Lighter());
+			}
 
 			textBox.RefreshThemeResources();
 		}
 
+		static readonly string TextControlBackground = "TextControlBackground";
+		static readonly string TextControlBackgroundPointerOver = "TextControlBackgroundPointerOver";
+		static readonly string TextControlBackgroundFocused = "TextControlBackgroundFocused";
+		static readonly string TextControlBackgroundDisabled = "TextControlBackgroundDisabled";
+
 		static readonly string[] BackgroundResourceKeys =
 		{
-			"TextControlBackground",
-			"TextControlBackgroundPointerOver",
-			"TextControlBackgroundFocused",
-			"TextControlBackgroundDisabled",
+			TextControlBackground,
+			TextControlBackgroundPointerOver,
+			TextControlBackgroundFocused,
+			TextControlBackgroundDisabled,
 		};
 
 		public static void UpdateTextColor(this TextBox textBox, ITextStyle textStyle)
