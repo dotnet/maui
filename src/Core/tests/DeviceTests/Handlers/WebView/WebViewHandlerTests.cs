@@ -24,4 +24,5 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() => ValidatePropertyInitValue(webView, () => url, GetNativeSource, url));
 		}
 	}
+
 }
