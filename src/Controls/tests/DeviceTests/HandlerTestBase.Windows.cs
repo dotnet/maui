@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using WAppBarButton = Microsoft.UI.Xaml.Controls.AppBarButton;
 using Xunit;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -88,6 +89,11 @@ namespace Microsoft.Maui.DeviceTests
 			return (navigationRootManager.RootView as WindowRootView).NavigationViewControl;
 		}
 
+		protected WindowRootView GetWindowRootView(IElementHandler handler)
+		{
+			return handler.MauiContext.GetNavigationRootManager().RootView as WindowRootView;
+		}
+
 		protected MauiNavigationView GetMauiNavigationView(IMauiContext mauiContext)
 		{
 			return GetMauiNavigationView(mauiContext.GetNavigationRootManager());
@@ -107,17 +113,21 @@ namespace Microsoft.Maui.DeviceTests
 
 		public bool IsNavigationBarVisible(IMauiContext mauiContext)
 		{
-			var navView = GetMauiNavigationView(mauiContext);
-			var header = navView?.Header as WFrameworkElement;
+			var header = GetPlatformToolbar(mauiContext);
 			return header?.Visibility == UI.Xaml.Visibility.Visible;
 		}
 
-		protected MauiToolbar GetPlatformToolbar(IElementHandler handler)
+		protected MauiToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
-			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
-			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
-			return windowHeader;
+			var navView = (RootNavigationView)GetMauiNavigationView(mauiContext);
+			if (navView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+				return (MauiToolbar)navView.PaneFooter;
+
+			return (MauiToolbar)navView.Header;
 		}
+
+		protected MauiToolbar GetPlatformToolbar(IElementHandler handler) =>
+			GetPlatformToolbar(handler.MauiContext);
 
 		public bool ToolbarItemsMatch(
 			IElementHandler handler,

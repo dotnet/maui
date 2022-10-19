@@ -41,14 +41,24 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_content.BindingContext is INotifyPropertyChanged inpc)
 					inpc.PropertyChanged -= ShellElementPropertyChanged;
 
-				_shell?.RemoveLogicalChild(_content);
+				if (_content.Parent is BaseShellItem bsi)
+					bsi.RemoveLogicalChild(_content);
+				else
+					_shell?.RemoveLogicalChild(_content);
+
 				_content.Cleanup();
 				_content.BindingContext = null;
 				_content.Parent = null;
 				_content = null;
 			}
 
-			var bo = (BindableObject)args.NewValue;
+			BindableObject bo = null;
+
+			if (args.NewValue is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject)
+				bo = bindableObject;
+			else
+				bo = (BindableObject)args.NewValue;
+
 			var element = bo as Element;
 			_shell = element?.FindParentOfType<Shell>();
 			DataTemplate dataTemplate = (_shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
@@ -59,8 +69,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (dataTemplate != null)
 			{
 				_content = (View)dataTemplate.CreateContent();
+
+				// Set binding context before calling AddLogicalChild so parent binding context doesn't propagate to view
 				_content.BindingContext = bo;
-				_shell.AddLogicalChild(_content);
+
+				if (bo is BaseShellItem bsi)
+					bsi.AddLogicalChild(_content);
+				else
+					_shell.AddLogicalChild(_content);
+
 
 				var platformView = _content.ToPlatform(_shell.Handler.MauiContext);
 

@@ -83,6 +83,7 @@ static readonly Microsoft.Maui.Controls.Window.XProperty -> Microsoft.Maui.Contr
 static readonly Microsoft.Maui.Controls.Window.YProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.PointerEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
+~const Microsoft.Maui.Controls.VisualStateManager.CommonStates.PointerOver = "PointerOver" -> string
 ~Microsoft.Maui.Controls.MenuFlyout.Add(Microsoft.Maui.IMenuElement item) -> void
 ~Microsoft.Maui.Controls.MenuFlyout.Contains(Microsoft.Maui.IMenuElement item) -> bool
 ~Microsoft.Maui.Controls.MenuFlyout.CopyTo(Microsoft.Maui.IMenuElement[] array, int arrayIndex) -> void
@@ -92,8 +93,33 @@ virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Contr
 ~Microsoft.Maui.Controls.MenuFlyout.Remove(Microsoft.Maui.IMenuElement item) -> bool
 ~Microsoft.Maui.Controls.MenuFlyout.this[int index].get -> Microsoft.Maui.IMenuElement
 ~Microsoft.Maui.Controls.MenuFlyout.this[int index].set -> void
+~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.DatePicker.MapUpdateMode(Microsoft.Maui.Handlers.IDatePickerHandler handler, Microsoft.Maui.Controls.DatePicker datePicker) -> void
+~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.IEditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void
+~static Microsoft.Maui.Controls.Entry.MapAdjustsFontSizeToFitWidth(Microsoft.Maui.Handlers.IEntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
+~static Microsoft.Maui.Controls.Entry.MapCursorColor(Microsoft.Maui.Handlers.IEntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
+~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.IEntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
 ~static Microsoft.Maui.Controls.FlyoutBase.GetContextFlyout(Microsoft.Maui.Controls.BindableObject b) -> Microsoft.Maui.Controls.FlyoutBase
 ~static Microsoft.Maui.Controls.FlyoutBase.SetContextFlyout(Microsoft.Maui.Controls.BindableObject b, Microsoft.Maui.Controls.FlyoutBase value) -> void
+~static Microsoft.Maui.Controls.Label.MapCharacterSpacing(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapFont(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapLineHeight(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapText(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapTextColor(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapTextDecorations(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Label.MapTextType(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
+~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.ILayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
+~static Microsoft.Maui.Controls.NavigationPage.MapIsNavigationBarTranslucent(Microsoft.Maui.Handlers.INavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
+~static Microsoft.Maui.Controls.NavigationPage.MapPrefersLargeTitles(Microsoft.Maui.Handlers.INavigationViewHandler handler, Microsoft.Maui.Controls.NavigationPage navigationPage) -> void
+~static Microsoft.Maui.Controls.Picker.MapUpdateMode(Microsoft.Maui.Handlers.IPickerHandler handler, Microsoft.Maui.Controls.Picker picker) -> void
+~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
+~static Microsoft.Maui.Controls.ScrollView.MapShouldDelayContentTouches(Microsoft.Maui.Handlers.IScrollViewHandler handler, Microsoft.Maui.Controls.ScrollView scrollView) -> void
+~static Microsoft.Maui.Controls.SearchBar.MapSearchBarStyle(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
+~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
+~static Microsoft.Maui.Controls.TimePicker.MapUpdateMode(Microsoft.Maui.Handlers.ITimePickerHandler handler, Microsoft.Maui.Controls.TimePicker timePicker) -> void
 ~static readonly Microsoft.Maui.Controls.FlyoutBase.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
+Microsoft.Maui.Controls.ILayoutManagerFactory
+~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager

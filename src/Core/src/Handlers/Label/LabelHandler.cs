@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
-#if __IOS__ || TIZEN
+#if IOS || TIZEN
 			[nameof(ILabel.Background)] = MapBackground,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #elif WINDOWS
@@ -37,21 +37,26 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.Text)] = MapText,
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
+#if ANDROID
+			[nameof(ILabel.Background)] = MapBackground,
+#endif
 		};
 
 		public static CommandMapper<ILabel, ILabelHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
 
-		static LabelHandler()
-		{
-		}
-
 		public LabelHandler() : base(Mapper)
 		{
 		}
 
-		public LabelHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public LabelHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public LabelHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

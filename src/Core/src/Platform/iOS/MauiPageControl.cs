@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 		public MauiPageControl()
 		{
 			ValueChanged += MauiPageControlValueChanged;
-			if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14))
 			{
 				AllowsContinuousInteraction = false;
 				BackgroundStyle = UIPageControlBackgroundStyle.Minimal;

@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public ItemContentControl()
 		{
 			DefaultStyleKey = typeof(ItemContentControl);
+			IsTabStop = false;
 		}
 
 		public static readonly DependencyProperty MauiContextProperty = DependencyProperty.Register(

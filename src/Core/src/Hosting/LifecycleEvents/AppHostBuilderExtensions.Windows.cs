@@ -1,3 +1,5 @@
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.LifecycleEvents
@@ -6,6 +8,9 @@ namespace Microsoft.Maui.LifecycleEvents
 	{
 		internal static MauiAppBuilder ConfigureCrossPlatformLifecycleEvents(this MauiAppBuilder builder) =>
 			builder.ConfigureLifecycleEvents(events => events.AddWindows(OnConfigureLifeCycle));
+
+		internal static MauiAppBuilder ConfigureWindowEvents(this MauiAppBuilder builder) =>
+			builder.ConfigureLifecycleEvents(events => events.AddWindows(OnConfigureWindow));
 
 		static void OnConfigureLifeCycle(IWindowsLifecycleBuilder windows)
 		{
@@ -39,6 +44,35 @@ namespace Microsoft.Maui.LifecycleEvents
 				.OnClosed((window, args) =>
 				{
 					window.GetWindow()?.Destroying();
+				});
+		}
+
+		static void OnConfigureWindow(IWindowsLifecycleBuilder windows)
+		{
+			windows
+				.OnPlatformMessage((window, e) =>
+				{
+					if (e.MessageId == PlatformMethods.MessageIds.WM_SETTINGCHANGE ||
+						e.MessageId == PlatformMethods.MessageIds.WM_THEMECHANGE)
+					{
+						if (IPlatformApplication.Current is IPlatformApplication platformApplication)
+						{
+							platformApplication.Application?.ThemeChanged();
+						}
+					}
+					else if (e.MessageId == PlatformMethods.MessageIds.WM_DPICHANGED)
+					{
+						var win = window.GetWindow();
+						if (win is not null)
+						{
+							var dpiX = (short)(long)e.WParam;
+							var dpiY = (short)((long)e.WParam >> 16);
+
+							var density = dpiX / DeviceDisplay.BaseLogicalDpi;
+
+							win.DisplayDensityChanged(density);
+						}
+					}
 				});
 		}
 	}

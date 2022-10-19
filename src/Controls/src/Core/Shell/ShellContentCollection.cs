@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls
 	{
 		public ShellContentCollection() : base()
 		{
-			Inner = new ObservableCollection<ShellContent>();
 		}
 
 		protected override bool IsShellElementVisible(BaseShellItem item)

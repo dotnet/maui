@@ -270,5 +270,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(stream.Length > 0);
 		}
+
+		[Fact]
+		public void HandlersHaveAllExpectedContructors()
+		{
+			bool hasBothMappers = false;
+			var constructors = typeof(THandler).GetConstructors();
+
+			foreach (var ctor in constructors)
+			{
+				var args = ctor.GetParameters();
+				if (args.Length == 2)
+				{
+					if (args[0].ParameterType.IsAssignableTo(typeof(IPropertyMapper)) &&
+						args[1].ParameterType.IsAssignableTo(typeof(CommandMapper)))
+					{
+						hasBothMappers = true;
+					}
+				}
+			}
+
+			Assert.True(hasBothMappers, "Missing constructor with IPropertyMapper and ICommandMapper");
+		}
 	}
 }

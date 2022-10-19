@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false,
 				propertyChanged: (bindable, oldValue, newValue) =>
 				{
+					((CheckBox)bindable).Handler?.UpdateValue(nameof(ICheckBox.Foreground));
 					((CheckBox)bindable).CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
 					((CheckBox)bindable).ChangeVisualState();
 				}, defaultBindingMode: BindingMode.TwoWay);
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, CheckBox> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 		private protected override void OnDisconnectHandler(object platformView)
 		{
 			base.OnDisconnectHandler(platformView);
-			if (platformView is MaterialToolbar mt)
+			if (platformView is MaterialToolbar mt && mt.IsAlive())
 				mt.RemoveFromParent();
 		}
 
