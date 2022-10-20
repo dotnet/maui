@@ -85,10 +85,12 @@ namespace Microsoft.Maui.Devices
 								surface = new SurfaceTexture(0);
 
 #pragma warning disable CS0618 // Camera types are deprecated in Android 10+
+#pragma warning disable CA1416 // Validate platform compatibility
 							camera = Camera.Open();
 
 							// Nexus 5 and some devices require a preview texture
 							camera.SetPreviewTexture(surface);
+
 						}
 
 						var param = camera.GetParameters();
@@ -111,6 +113,7 @@ namespace Microsoft.Maui.Devices
 							camera = null;
 							surface.Dispose();
 							surface = null;
+#pragma warning restore CA1416 // Validate platform compatibility
 						}
 					}
 				}
