@@ -7,8 +7,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SwitchExtensions
 	{
-		static UIColor? OffTrackColor;
-		static bool HasSwitched;
 
 		public static void UpdateIsOn(this UISwitch uiSwitch, ISwitch view)
 		{
@@ -20,25 +18,19 @@ namespace Microsoft.Maui.Platform
 			if (view == null)
 				return;
 
-			UpdateOffTrackColor(uiSwitch);
-
 			var uIView = GetTrackSubview(uiSwitch);
 
 			if (!view.IsOn)
-				uIView.BackgroundColor = OffTrackColor;
-
-			else if (view.TrackColor is not null) {
-				uiSwitch.OnTintColor = view.TrackColor.ToPlatform ();
-				uIView.BackgroundColor = uiSwitch.OnTintColor;
-			}
-		}
-
-		static void UpdateOffTrackColor (UISwitch uiSwitch)
-		{
-			if (!HasSwitched)
 			{
-				OffTrackColor = uiSwitch.GetOffTrackColor();
-				HasSwitched = true;
+				// iOS 13+ uses the UIColor.SecondarySystemFill to support Light and Dark mode
+				// else, use the RGBA equivalent of UIColor.SecondarySystemFill in Light mode
+				uIView.BackgroundColor = OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : UIColor.FromRGBA(120, 120, 128, 40);
+			}
+
+			else if (view.TrackColor is not null)
+			{
+				uiSwitch.OnTintColor = view.TrackColor.ToPlatform();
+				uIView.BackgroundColor = uiSwitch.OnTintColor;
 			}
 		}
 
