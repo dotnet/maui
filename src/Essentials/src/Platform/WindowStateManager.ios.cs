@@ -60,7 +60,9 @@ namespace Microsoft.Maui.ApplicationModel
 				return viewController;
 
 #pragma warning disable CA1416 // TODO: 'UIApplication.KeyWindow' is unsupported on: 'ios' 13.0 and later.
+#pragma warning disable CA1422 // Validate platform compatibility
 			var window = UIApplication.SharedApplication.KeyWindow;
+
 
 			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
 				viewController = window.RootViewController;
@@ -98,6 +100,7 @@ namespace Microsoft.Maui.ApplicationModel
 					.OrderByDescending(w => w.WindowLevel)
 					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
 			}
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 
 			return window;
