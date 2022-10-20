@@ -42,8 +42,11 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_navAnimationInProgress == value)
 					return;
 				_navAnimationInProgress = value;
+
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				if (value)
 					MessagingCenter.Send(this, CloseContextActionsSignalName);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
