@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Graphics
 			};
 		}
 
-		static bool IsValid(this GradientPaint? gradienPaint) =>
-			gradienPaint?.GradientStops?.Length > 0;
+		static bool IsValid(this GradientPaint? gradientPaint) =>
+			gradientPaint?.GradientStops?.Length > 0;
 	}
 }
