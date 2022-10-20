@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				new DetectDuplicateResourceOutputFilenamesTask
 				{
 					Items = items,
-					WarningMessage = "Duplicate Filenames: ",
+					Message = "Duplicate Filenames: ",
 					BuildEngine = this,
 				};
 
@@ -61,7 +61,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				var task = GetNewTask(items);
 
-
 				var success = task.Execute();
 
 				Assert.False(success);
@@ -79,42 +78,45 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 			}
 
-
 			[Fact]
-			public void InvalidFileFails()
+			public void SameMultipleFilesFailsWithCorrectMessage()
 			{
-				var i = new TaskItem("images/appiconfg-red-512.svg");
-				var task = GetNewTask(i);
-
-				var success = task.Execute();
-
-				AssertInvalidFilename(task, i);
-				Assert.False(success);
-			}
-
-			[Fact]
-			public void SingleInvalidFileFailsWithCorrectErrorMessage()
-			{
-				var i = new TaskItem("images/appiconfg-red-512.svg");
-				var task = GetNewTask(i);
-
-				var success = task.Execute();
-				Assert.False(success);
-
-				Assert.Equal("Invalid Filenames: appiconfg-red-512", LogErrorEvents[0].Message);
-			}
-
-			[Fact]
-			public void MultipleInvalidFileFailsWithCorrectErrorMessage()
-			{
-				var i = new TaskItem("images/appiconfg-red-512.svg");
-				var j = new TaskItem("images/appiconfg-red-512.svg");
+				var i = new TaskItem("images/camera.png");
+				var j = new TaskItem("images/camera.png");
 				var task = GetNewTask(i, j);
 
 				var success = task.Execute();
-				Assert.False(success);
+				Assert.True(success);
 
-				Assert.Equal("Invalid Filenames: appiconfg-red-512, appiconfg-red-512", LogErrorEvents[0].Message);
+				Assert.Equal("Duplicate Filenames: camera", LogWarningEvents[0].Message);
+			}
+
+			[Fact]
+			public void DifferentMultipleFilesFailsWithCorrectMessage()
+			{
+				var i = new TaskItem("images/camera.png");
+				var j = new TaskItem("images/camera.svg");
+				var task = GetNewTask(i, j);
+
+				var success = task.Execute();
+				Assert.True(success);
+
+				Assert.Equal("Duplicate Filenames: camera", LogWarningEvents[0].Message);
+			}
+
+			[Fact]
+			public void MultipleMultipleFilesFailsWithCorrectMessage()
+			{
+				var i = new TaskItem("images/camera.png");
+				var j = new TaskItem("images/camera.svg");
+				var k = new TaskItem("images/camera_color.png");
+				var l = new TaskItem("images/camera_color.svg");
+				var task = GetNewTask(i, j, k, l);
+
+				var success = task.Execute();
+				Assert.True(success);
+
+				Assert.Equal("Duplicate Filenames: camera, camera_color", LogWarningEvents[0].Message);
 			}
 		}
 	}

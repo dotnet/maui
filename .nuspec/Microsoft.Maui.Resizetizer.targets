@@ -19,6 +19,10 @@
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.DetectDuplicateResourceOutputFilenamesTask" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.DetectInvalidResourceOutputFilenamesTask" />
 
     <UsingTask
@@ -86,7 +90,8 @@
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
-        <_ResizetizerDefaultInvalidFilenamesErrorMessage>One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: </_ResizetizerDefaultInvalidFilenamesErrorMessage>
+        <_ResizetizerDefaultInvalidFilenamesMessage>One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: </_ResizetizerDefaultInvalidFilenamesMessage>
+        <_ResizetizerDefaultDuplicateFilenamesMessage>One or more duplicate file names were detected.  File names must be unique as they may override other assets: </_ResizetizerDefaultDuplicateFilenamesMessage>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -315,6 +320,17 @@
             <FileWrites Include="$(_MauiFontInputsFile)" />
             <FileWrites Include="$(_MauiSplashInputsFile)" />
         </ItemGroup>
+
+        <DetectDuplicateResourceOutputFilenamesTask
+            Items="@(MauiImage)"
+            Message="$(_ResizetizerDefaultDuplicateFilenamesMessage)">
+        </DetectDuplicateResourceOutputFilenamesTask>
+
+        <DetectInvalidResourceOutputFilenamesTask
+            Items="@(MauiImage)"
+            Message="$(_ResizetizerDefaultInvalidFilenamesMessage)">
+        </DetectInvalidResourceOutputFilenamesTask>
+
     </Target>
 
     <Target Name="ProcessMauiAssets">
@@ -520,23 +536,12 @@
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
-        <ItemGroup>
-            <_MauiImageDistinct Include="@(MauiImage->Distinct())" />
-        </ItemGroup>
-
-        <Warning Text="@(MauiImage)" />
-
-        <DetectInvalidResourceOutputFilenamesTask
-            Items="@(_MauiImageDistinct)"
-            ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
-        </DetectInvalidResourceOutputFilenamesTask>
-
         <!-- Resize the images -->
         <ResizetizeImages
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
-            Images="@(_MauiImageDistinct)">
+            Images="@(MauiImage->Distinct())">
         </ResizetizeImages>
 
         <ItemGroup>

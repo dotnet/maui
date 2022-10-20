@@ -11,10 +11,8 @@ namespace Microsoft.Maui.Resizetizer
 	{
 		public ITaskItem[] Items { get; set; }
 
-		public bool ThrowsError { get; set; } = true;
-
 		[Required]
-		public string ErrorMessage { get; set; }
+		public string Message { get; set; }
 
 		[Output]
 		public string[] InvalidItems { get; set; }
@@ -43,21 +41,18 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					InvalidItems = invalidFilenames.ToArray();
 
-					if (ThrowsError)
+					var builder = new StringBuilder();
+					builder.Append(Message);
+
+					for (var i = 0; i < invalidFilenames.Count; i++)
 					{
-						var builder = new StringBuilder();
-						builder.Append(ErrorMessage);
-
-						for (var i = 0; i < invalidFilenames.Count; i++)
-						{
-							if (i > 0)
-								builder.Append(", ");
-							var file = invalidFilenames[i];
-							builder.Append(Path.GetFileNameWithoutExtension(file));
-						}
-
-						Log.LogError(builder.ToString());
+						if (i > 0)
+							builder.Append(", ");
+						var file = invalidFilenames[i];
+						builder.Append(Path.GetFileNameWithoutExtension(file));
 					}
+
+					Log.LogError(builder.ToString());
 				}
 			}
 

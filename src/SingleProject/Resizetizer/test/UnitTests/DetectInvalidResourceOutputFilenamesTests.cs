@@ -18,8 +18,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				new DetectInvalidResourceOutputFilenamesTask
 				{
 					Items = items,
-					ThrowsError = true,
-					ErrorMessage = "Invalid Filenames: ",
+					Message = "Invalid Filenames: ",
 					BuildEngine = this,
 				};
 
@@ -61,7 +60,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 				var task = GetNewTask(items);
-
 
 				var success = task.Execute();
 

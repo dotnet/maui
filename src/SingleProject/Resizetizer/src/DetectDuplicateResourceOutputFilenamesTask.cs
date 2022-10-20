@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Resizetizer
 		public ITaskItem[] Items { get; set; }
 
 		[Required]
-		public string WarningMessage { get; set; }
+		public string Message { get; set; }
 
 		[Output]
 		public string[] InvalidItems { get; set; }
@@ -40,40 +40,33 @@ namespace Microsoft.Maui.Resizetizer
 
 					// build up the warning
 					var builder = new StringBuilder();
-					builder.Append(WarningMessage);
+					builder.Append(Message);
 
 					// select duplicates
-					var invalidItems = new List<string>();
+					var duplicateItems = new List<string>();
 					var idupe = 0;
 					foreach (var pair in filenames)
 					{
 						if (pair.Value.Count > 1)
 						{
 							if (idupe > 0)
-								builder.Append("; ");
+								builder.Append(", ");
 							idupe++;
 
-							builder.Append(pair.Key + " -> ");
+							builder.Append(pair.Key);
 
-							var ifname = 0;
 							foreach (var item in pair.Value)
 							{
-								if (ifname > 0)
-									builder.Append(", ");
-								ifname++;
-
-								builder.Append(item.Filename);
-
-								invalidItems.Add(item.Filename);
+								duplicateItems.Add(item.Filename);
 							}
 						}
 					}
 
-					if (invalidItems.Count > 0)
+					if (duplicateItems.Count > 0)
 					{
-						InvalidItems = invalidItems.ToArray();
+						InvalidItems = duplicateItems.ToArray();
 
-						Log.LogError(builder.ToString());
+						Log.LogWarning(builder.ToString());
 					}
 				}
 			}
