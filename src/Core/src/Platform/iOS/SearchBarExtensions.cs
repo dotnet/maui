@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 				return searchBar.GetSearchTextField();
 		}
 
-		// TODO: NET7 maybe make this public?
+		// TODO: NET8 maybe make this public?
 		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var background = searchBar.Background;

@@ -35,7 +35,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>Intializes a new <see cref="T:Microsoft.Maui.Controls.BaseMenuItem" /> instance.</summary>
+        <summary>Initializes a new <see cref="T:Microsoft.Maui.Controls.BaseMenuItem" /> instance.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

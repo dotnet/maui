@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
 			IFontManager fontManager,
-			double defaultLineHeight = 0d, // TODO: NET7 should be -1, but too late to change for net6
+			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for net6
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static NSAttributedString ToNSAttributedString(
 			this Span span,
 			IFontManager fontManager,
-			double defaultLineHeight = 0d, // TODO: NET7 should be -1, but too late to change for net6
+			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for NET8
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,

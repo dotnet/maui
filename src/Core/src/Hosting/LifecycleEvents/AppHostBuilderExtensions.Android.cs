@@ -17,7 +17,7 @@ namespace Microsoft.Maui.LifecycleEvents
 			android
 				.OnPostCreate((activity, bundle) =>
 				{
-					// OnCreate is only ever called once when the activity is initally created
+					// OnCreate is only ever called once when the activity is initially created
 					activity.GetWindow()?.Created();
 				})
 				.OnRestart(activity =>

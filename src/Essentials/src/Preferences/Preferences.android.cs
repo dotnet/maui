@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName)
 		{
+			Preferences.CheckIsSupportedType<T>();
+
 			lock (locker)
 			{
 				using (var sharedPreferences = GetSharedPreferences(sharedName))
@@ -78,6 +80,9 @@ namespace Microsoft.Maui.Storage
 								break;
 							case float f:
 								editor.PutFloat(key, f);
+								break;
+							case DateTime dt:
+								editor.PutLong(key, dt.ToBinary());
 								break;
 						}
 					}
@@ -133,6 +138,10 @@ namespace Microsoft.Maui.Storage
 							case string s:
 								// the case when the string is not null
 								value = sharedPreferences.GetString(key, s);
+								break;
+							case DateTime dt:
+								var encodedValue = sharedPreferences.GetLong(key, dt.ToBinary());
+								value = DateTime.FromBinary(encodedValue);
 								break;
 						}
 					}

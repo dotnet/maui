@@ -14,7 +14,7 @@ using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers
 {
-	// TODO: NET7 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
+	// TODO: NET8 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
 	// This type adds support to the SelectionChanged event
 	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
@@ -36,14 +36,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (!_set && PlatformView is MauiAppCompatEditText editText)
 				editText.SelectionChanged += OnSelectionChanged;
 
 			_set = true;
 		}
 
-		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
+		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
 			platformView.TextChanged += OnTextChanged;
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditorAction += OnEditorAction;
 		}
 
-		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
+		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (_set && platformView is MauiAppCompatEditText editText)
 				editText.SelectionChanged -= OnSelectionChanged;
 
@@ -174,11 +174,11 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{
-			var cursorPostion = PlatformView.GetCursorPosition();
+			var cursorPosition = PlatformView.GetCursorPosition();
 			var selectedTextLength = PlatformView.GetSelectedTextLength();
 
-			if (VirtualView.CursorPosition != cursorPostion)
-				VirtualView.CursorPosition = cursorPostion;
+			if (VirtualView.CursorPosition != cursorPosition)
+				VirtualView.CursorPosition = cursorPosition;
 
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
