@@ -61,8 +61,10 @@ namespace Microsoft.Maui.Controls
 				? GroupByParent(radioButton)
 				: GetVisualRoot(radioButton);
 
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			MessagingCenter.Send(radioButton, GroupSelectionChangedMessage,
 				new RadioButtonGroupSelectionChanged(scope));
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		internal static Element GroupByParent(RadioButton radioButton)

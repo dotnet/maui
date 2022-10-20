@@ -52,7 +52,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				}
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<ExampleTemplateCarousel>(this, "remove", (obj) => Items.Remove(obj.BindingContext as CarouselItem));
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Items = new ObservableCollection<CarouselItem>(items);
 			Count = Items.Count - 1;

@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="Type[@FullName='Microsoft.Maui.Controls.MessagingCenter']/Docs/*" />
+	[Obsolete("We recommend migrating to `CommunityToolkit.MVVM.WeakReferenceMessenger`: https://www.nuget.org/packages/CommunityToolkit.Mvvm")]
 	public class MessagingCenter : IMessagingCenter
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="//Member[@MemberName='Instance']/Docs/*" />
