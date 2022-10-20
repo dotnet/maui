@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="callback">An action that is called with successive animation values.</param>
 		/// <param name="start">The fraction into the current animation at which to start the animation.</param>
 		/// <param name="end">The fraction into the current animation at which to end the animation.</param>
-		/// <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+		/// <param name="easing">The easing function to use to transition in, out, or in and out of the animation.</param>
 		/// <param name="beginAt">The fraction into this animation at which the added child animation will begin animating.</param>
 		/// <param name="finishAt">The fraction into this animation at which the added child animation will stop animating.</param>
 		public Animation WithConcurrent(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, double beginAt = 0.0f, double finishAt = 1.0f)
