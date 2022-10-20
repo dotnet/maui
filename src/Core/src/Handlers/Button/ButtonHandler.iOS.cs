@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if MACCATALYST
-		//TODO: make this public on NET7
+		//TODO: make this public on NET8
 		internal static void MapBackground(IButtonHandler handler, IButton button)
 		{
 			//If this is a Mac optimized interface
