@@ -206,9 +206,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		void ILogger.Log(string message)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
 			Log?.LogMessage(message);
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }
