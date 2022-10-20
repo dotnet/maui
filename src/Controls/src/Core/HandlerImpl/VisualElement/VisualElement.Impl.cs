@@ -338,6 +338,9 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(Shadow, BindingContext);
 		}
 
+		/// <summary>
+		/// Indicates if a VisualElement is connected to the main object tree.
+		/// </summary>
 		public bool IsLoaded
 		{
 			get
@@ -352,6 +355,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Occurs when a VisualElement has been constructed and added to the object tree.
+		/// This event may occur before the VisualElement has been measured so should not be relied on for size information.  
+		/// </summary>
 		public event EventHandler? Loaded
 		{
 			add
@@ -369,6 +376,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Occurs when this VisualElement is no longer connected to the main object tree.
+		/// </summary>
 		public event EventHandler? Unloaded
 		{
 			add
