@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="callback">An action that is called with successive animation values.</param>
 		/// <param name="start"> The fraction into the current animation at which to start the animation.</param>
 		/// <param name="end"> The fraction into the current animation at which to end the animation.</param>
-		/// <param name="easing"> The easing function to use to transision in, out, or in and out of the animation.</param>
+		/// <param name="easing"> The easing function to use to transition in, out, or in and out of the animation.</param>
 		/// <param name="finished"> An action to call when the animation is finished.</param>
 		public Animation(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, Action finished = null) : base(callback, start, end - start, easing, finished)
 		{
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="name">The name, or handle, that is used to access and track the animation and its state.</param>
 		/// <param name="rate">The time, in milliseconds, between frames.</param>
 		/// <param name="length">The number of milliseconds over which to interpolate the animation.</param>
-		/// <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+		/// <param name="easing">The easing function to use to transition in, out, or in and out of the animation.</param>
 		/// <param name="finished">An action to call when the animation is finished.</param>
 		/// <param name="repeat">A function that should return true if the animation should continue.</param>
 		public void Commit(IAnimatable owner, string name, uint rate = 16, uint length = 250, Easing easing = null, Action<double, bool> finished = null, Func<bool> repeat = null)
