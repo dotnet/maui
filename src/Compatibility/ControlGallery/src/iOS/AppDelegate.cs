@@ -348,7 +348,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			};
 
 #pragma warning disable CA1416 // TODO: 'UIApplication.KeyWindow' is unsupported on: 'ios' 13.0 and later
+#pragma warning disable CA1422 // Validate platform compatibility
 			var window = UIApplication.SharedApplication.KeyWindow;
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 			var vc = window.RootViewController;
 			while (vc.PresentedViewController != null)
