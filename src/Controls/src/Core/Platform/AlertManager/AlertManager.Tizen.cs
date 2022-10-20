@@ -53,6 +53,8 @@ namespace Microsoft.Maui.Controls.Platform
 			MessagingCenter.Subscribe<Page, AlertArguments>(Window, Page.AlertSignalName, OnAlertRequest);
 			MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName, OnActionSheetRequest);
 			MessagingCenter.Subscribe<Page, PromptArguments>(Window, Page.PromptSignalName, OnPromptRequested);
+#pragma warning restore CS0618 // Type or member is obsolete
+			_modalStack = modalStack;
 		}
 
 		public NWindow Window { get; }
