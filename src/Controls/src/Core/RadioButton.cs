@@ -392,13 +392,15 @@ namespace Microsoft.Maui.Controls
 			{
 				return;
 			}
-
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			MessagingCenter.Send(this, ValueChangedMessage,
 						new RadioButtonValueChanged(RadioButtonGroup.GetVisualRoot(this)));
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnGroupNamePropertyChanged(string oldGroupName, string newGroupName)
 		{
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			if (!string.IsNullOrEmpty(newGroupName))
 			{
 				if (string.IsNullOrEmpty(oldGroupName))
@@ -420,6 +422,7 @@ namespace Microsoft.Maui.Controls
 					MessagingCenter.Unsubscribe<Element, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
 				}
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		bool MatchesScope(RadioButtonScopeMessage message)

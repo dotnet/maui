@@ -278,7 +278,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			base.LayoutSubviews();
 
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 			_watcher.SubscribeToDrawn(this);
 		}
@@ -731,7 +733,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			base.LayoutSubviews();
 
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 			_watcher.SubscribeToDrawn(this);
 		}
@@ -783,7 +787,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			base.LayoutSubviews();
 
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 			_watcher.SubscribeToDrawn(this);
 		}
@@ -1134,7 +1140,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			base.LayoutSubviews();
 
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Instance.Send((IDrawnObservable)this, PerformanceTrackerRenderer.SubviewAddedMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 			_watcher.SubscribeToDrawn(this);
 		}
