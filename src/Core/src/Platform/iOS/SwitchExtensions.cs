@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SwitchExtensions
 	{
-
 		public static void UpdateIsOn(this UISwitch uiSwitch, ISwitch view)
 		{
 			uiSwitch.SetState(view.IsOn, true);
