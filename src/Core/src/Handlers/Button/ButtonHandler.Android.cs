@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
 	{
 		// The padding value has to be done here because in the Material Components,
-		// there is a minumum size of the buttons: 88dp x 48dp
+		// there is a minimum size of the buttons: 88dp x 48dp
 		// So, this is calculated:
 		//   - Vertical: 6dp*2 (inset) + 8.5dp*2 (padding) + 2.5dp*2 (text magic) + 14dp (text size) = 48dp
 		//   - Horizontal: 16dp (from the styles)
