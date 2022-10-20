@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the horizontal text alignment.
+		/// Gets or sets the horizontal text alignment. This is a bindable property.
 		/// </summary>
 		public TextAlignment HorizontalTextAlignment
 		{
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the vertical text alignment.
+		/// Gets or sets the vertical text alignment. This is a bindable property.
 		/// </summary>
 		public TextAlignment VerticalTextAlignment
 		{
@@ -129,6 +129,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets a value that indicates if the entry should visually obscure typed text.
 		/// Value is <see langword="true" /> if the element is a password box; otherwise, <see langword="false" />. Default value is <see langword="false" />.
+		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>Toggling this value does not reset the contents of the entry, therefore it is advisable to be careful about setting <see cref="IsPassword"/> to false, as it may contain sensitive information.</remarks>
 		public bool IsPassword
@@ -139,6 +140,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets a value that indicates whether the font for the text of this entry is bold, italic, or neither.
+		/// This is a bindable property.
 		/// </summary>
 		public FontAttributes FontAttributes
 		{
@@ -147,7 +149,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the font family for the text of this entry.
+		/// Gets or sets the font family for the text of this entry. This is a bindable property.
 		/// </summary>
 		public string FontFamily
 		{
@@ -156,7 +158,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the size of the font for the text of this entry.
+		/// Gets or sets the size of the font for the text of this entry. This is a bindable property.
 		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
@@ -167,6 +169,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Determines whether or not the font of this entry should scale automatically according to the operating system settings. Default value is <see langword="true"/>.
+		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>Typically this should always be enabled for accessibility reasons.</remarks>
 		public bool FontAutoScalingEnabled
@@ -185,7 +188,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Determines what the return key on the on-screen keyboard should look like.
+		/// Determines what the return key on the on-screen keyboard should look like. This is a bindable property.
 		/// </summary>
 		public ReturnType ReturnType
 		{
@@ -195,6 +198,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the position of the cursor. The value must be more than or equal to 0 and less or equal to the length of <see cref="InputView.Text"/>.
+		/// This is a bindable property.
 		/// </summary>
 		public int CursorPosition
 		{
@@ -204,6 +208,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the length of the selection. The selection will start at <see cref="CursorPosition"/>.
+		/// This is a bindable property.
 		/// </summary>
 		public int SelectionLength
 		{
@@ -213,6 +218,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the command to run when the user presses the return key, either physically or on the on-screen keyboard.
+		/// This is a bindable property.
 		/// </summary>
 		public ICommand ReturnCommand
 		{
@@ -222,6 +228,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the parameter object for the <see cref="ReturnCommand" /> that can be used to provide extra information.
+		/// This is a bindable property.
 		/// </summary>
 		public object ReturnCommandParameter
 		{
@@ -230,7 +237,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Determines the behavior of the clear text button on this entry.
+		/// Determines the behavior of the clear text button on this entry. This is a bindable property.
 		/// </summary>
 		public ClearButtonVisibility ClearButtonVisibility
 		{

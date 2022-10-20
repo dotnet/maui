@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
 		/// <summary>
-		/// Gets or sets the padding for the button.
+		/// Gets or sets the padding for the button. This is a bindable property.
 		/// </summary>
 		public Thickness Padding
 		{
@@ -97,6 +97,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Determines how <see cref="Text"/> is shown when the length is overflowing the size of this button.
+		/// This is a bindable property.
 		/// </summary>
 		public LineBreakMode LineBreakMode
 		{
@@ -121,7 +122,7 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Button>> _platformConfigurationRegistry;
 
 		/// <summary>
-		/// Gets or sets a color that describes the border stroke color of the button.
+		/// Gets or sets a color that describes the border stroke color of the button. This is a bindable property.
 		/// </summary>
 		/// <remarks>This property has no effect if <see cref="IBorderElement.BorderWidth" /> is set to 0. On Android this property will not have an effect unless <see cref="VisualElement.BackgroundColor" /> is set to a non-default color.</remarks>
 		public Color BorderColor
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the corner radius for the button, in device-independent units.
+		/// Gets or sets the corner radius for the button, in device-independent units. This is a bindable property.
 		/// </summary>
 		public int CornerRadius
 		{
@@ -140,7 +141,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the width of the border, in device-independent units.
+		/// Gets or sets the width of the border, in device-independent units. This is a bindable property.
 		/// </summary>
 		/// <remarks>Set this value to a non-zero value in order to have a visible border.</remarks>
 		public double BorderWidth
@@ -151,6 +152,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets an object that controls the position of the button image and the spacing between the button's image and the button's text.
+		/// This is a bindable property.
 		/// </summary>
 		public ButtonContentLayout ContentLayout
 		{
@@ -159,7 +161,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the command to invoke when the button is activated.
+		/// Gets or sets the command to invoke when the button is activated. This is a bindable property.
 		/// </summary>
 		/// <remarks>This property is used to associate a command with an instance of a button. This property is most often set in the MVVM pattern to bind callbacks back into the ViewModel. <see cref="VisualElement.IsEnabled" /> is controlled by the <see cref="Command.CanExecute(object)"/> if set.</remarks>
 		public ICommand Command
@@ -170,7 +172,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the parameter to pass to the <see cref="Command"/> property.
-		/// The default value is <see langword="null"/>.
+		/// The default value is <see langword="null"/>. This is a bindable property.
 		/// </summary>
 		public object CommandParameter
 		{
@@ -179,7 +181,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Allows you to display a bitmap image on the Button.
+		/// Allows you to display a bitmap image on the Button. This is a bindable property.
 		/// </summary>
 		/// <remarks>For more options have a look at <see cref="ImageButton"/>.</remarks>
 		public ImageSource ImageSource
@@ -190,7 +192,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the text displayed as the content of the button.
-		/// The default value is <see langword="null"/>.
+		/// The default value is <see langword="null"/>. This is a bindable property.
 		/// </summary>
 		/// <remarks>Changing the text of a button will trigger a layout cycle.</remarks>
 		public string Text
@@ -200,7 +202,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the <see cref="Color" /> for the text of the button.
+		/// Gets or sets the <see cref="Color" /> for the text of the button. This is a bindable property.
 		/// </summary>
 		public Color TextColor
 		{
@@ -210,6 +212,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the spacing between each of the characters of <see cref="Text"/> when displayed on the button.
+		/// This is a bindable property.
 		/// </summary>
 		public double CharacterSpacing
 		{
@@ -262,6 +265,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets a value that indicates whether the font for the text of this button is bold, italic, or neither.
+		/// This is a bindable property.
 		/// </summary>
 		public FontAttributes FontAttributes
 		{
@@ -270,7 +274,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the font family for the text of this entry.
+		/// Gets or sets the font family for the text of this entry. This is a bindable property.
 		/// </summary>
 		public string FontFamily
 		{
@@ -279,7 +283,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the size of the font for the text of this entry.
+		/// Gets or sets the size of the font for the text of this entry. This is a bindable property.
 		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
@@ -290,6 +294,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Determines whether or not the font of this entry should scale automatically according to the operating system settings. Default value is <see langword="true"/>.
+		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>Typically this should always be enabled for accessibility reasons.</remarks>
 		public bool FontAutoScalingEnabled
@@ -300,6 +305,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Applies text transformation to the <see cref="Text"/> displayed on this button.
+		/// This is a bindable property.
 		/// </summary>
 		public TextTransform TextTransform
 		{
