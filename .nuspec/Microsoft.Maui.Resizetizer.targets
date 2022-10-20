@@ -290,6 +290,15 @@
             <MauiImage Include="@(MauiIcon)" IsAppIcon="True" />
         </ItemGroup>
 
+        <GetFileHash Files="@(MauiSplashScreen)" HashEncoding="base64">
+            <Output TaskParameter="Items" ItemName="_MauiSplashScreensWithHashes" />
+        </GetFileHash>
+        <ItemGroup>
+            <_MauiSplashScreensWithHashes
+                Update="@(_MauiSplashScreensWithHashes)"
+                FileHash="$([MSBuild]::ValueOrDefault('%(FileHash)', '').Replace('+','').Replace('/','').Replace('=',''))" />
+        </ItemGroup>
+
         <!-- Write out item spec and metadata to a file we can use as an inputs for the resize target -->
         <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
         <WriteLinesToFile
@@ -367,16 +376,23 @@
         </ItemGroup>
 
         <!-- iOS, but not Catalyst -->
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(TargetPlatformIdentifier)' != 'maccatalyst'">
+            <_MauiSplashScreensWithLink Include="@(_MauiSplashScreensWithHashes->HasMetadata('Link'))" />
+            <_MauiSplashScreensWithoutLink Include="@(_MauiSplashScreensWithHashes)" Exclude="@(_MauiSplashScreensWithLink)" />
+            <_MauiStoryboardSplashScreens Include="@(_MauiSplashScreensWithoutLink)" Link="%(Filename)_%(FileHash)" />
+            <_MauiStoryboardSplashScreens Include="@(_MauiSplashScreensWithLink)" Link="$([System.IO.Path]::GetFilenameWithoutExtension('%(Link)'))_%(FileHash)" />
+        </ItemGroup>
+        <Warning Text="SPLASH: @(_MauiStoryboardSplashScreens)" />
         <GenerateSplashStoryboard
             Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(TargetPlatformIdentifier)' != 'maccatalyst'"
             OutputFile="$(_MauiIntermediateStoryboard)"
-            MauiSplashScreen="@(MauiSplashScreen)"
+            MauiSplashScreen="@(_MauiStoryboardSplashScreens)"
         />
         <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(TargetPlatformIdentifier)' != 'maccatalyst'">
             <_MauiStoryboardForPList>$(_MauiIntermediateStoryboard)</_MauiStoryboardForPList>
         </PropertyGroup>
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(TargetPlatformIdentifier)' != 'maccatalyst'">
-            <MauiImage Include="@(MauiSplashScreen)" />
+            <MauiImage Include="@(_MauiStoryboardSplashScreens)" />
             <InterfaceDefinition Include="$(_MauiIntermediateStoryboard)" Link="$([System.IO.Path]::GetFileName($(_MauiIntermediateStoryboard)))" />
             <FileWrites Include="$(_MauiIntermediateStoryboard)" />
         </ItemGroup>
