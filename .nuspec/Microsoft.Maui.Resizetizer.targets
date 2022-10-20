@@ -290,6 +290,7 @@
             <MauiImage Include="@(MauiIcon)" IsAppIcon="True" />
         </ItemGroup>
 
+        <!-- Add a hash to the splash screen so we can use it later -->
         <GetFileHash Files="@(MauiSplashScreen)" HashEncoding="base64">
             <Output TaskParameter="Items" ItemName="_MauiSplashScreensWithHashes" />
         </GetFileHash>
@@ -315,9 +316,15 @@
 
         <WriteLinesToFile
             File="$(_MauiSplashInputsFile)"
-            Lines="@(MauiSplashScreen->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);ForegroundScale=%(ForegroundScale)')"
+            Lines="@(_MauiSplashScreensWithHashes->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);ForegroundScale=%(ForegroundScale);FileHash=%(FileHash)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
+        <GetFileHash Files="$(_MauiSplashInputsFile)" HashEncoding="base64">
+            <Output TaskParameter="Hash" PropertyName="_MauiSplashInputsFileHash" />
+        </GetFileHash>
+        <PropertyGroup>
+            <_MauiSplashInputsFileHash>$([MSBuild]::ValueOrDefault('$(_MauiSplashInputsFileHash)', '').Replace('+','').Replace('/','').Replace('=',''))</_MauiSplashInputsFileHash>
+        </PropertyGroup>
 
         <ItemGroup>
             <FileWrites Include="$(_ResizetizerInputsFile)" />
@@ -377,12 +384,12 @@
 
         <!-- iOS, but not Catalyst -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(TargetPlatformIdentifier)' != 'maccatalyst'">
+            <!-- Add a Link attribute in the form of '<name>_<inputshash>' -->
             <_MauiSplashScreensWithLink Include="@(_MauiSplashScreensWithHashes->HasMetadata('Link'))" />
             <_MauiSplashScreensWithoutLink Include="@(_MauiSplashScreensWithHashes)" Exclude="@(_MauiSplashScreensWithLink)" />
-            <_MauiStoryboardSplashScreens Include="@(_MauiSplashScreensWithoutLink)" Link="%(Filename)_%(FileHash)" />
-            <_MauiStoryboardSplashScreens Include="@(_MauiSplashScreensWithLink)" Link="$([System.IO.Path]::GetFilenameWithoutExtension('%(Link)'))_%(FileHash)" />
+            <_MauiStoryboardSplashScreens Include="@(_MauiSplashScreensWithoutLink)" Link="%(Filename)_$(_MauiSplashInputsFileHash)" />
+            <_MauiStoryboardSplashScreens Include="@(_MauiSplashScreensWithLink)" Link="$([System.IO.Path]::GetFilenameWithoutExtension('%(Link)'))_$(_MauiSplashInputsFileHash)" />
         </ItemGroup>
-        <Warning Text="SPLASH: @(_MauiStoryboardSplashScreens)" />
         <GenerateSplashStoryboard
             Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(TargetPlatformIdentifier)' != 'maccatalyst'"
             OutputFile="$(_MauiIntermediateStoryboard)"
@@ -530,8 +537,8 @@
     </Target>
 
     <Target Name="ResizetizeImages"
-        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
-        Outputs="$(_ResizetizerStampFile)"
+        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(MauiImage)"
+        Outputs="$(_ResizetizerStampFile);$(_MauiSplashStampFile)"
         AfterTargets="$(ResizetizeAfterTargets)"
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
