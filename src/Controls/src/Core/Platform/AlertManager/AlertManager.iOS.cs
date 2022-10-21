@@ -50,10 +50,12 @@ namespace Microsoft.Maui.Controls.Platform
 				VirtualView = virtualView;
 				PlatformView = platformView;
 
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				MessagingCenter.Subscribe<Page, bool>(PlatformView, Page.BusySetSignalName, OnPageBusy);
 				MessagingCenter.Subscribe<Page, AlertArguments>(PlatformView, Page.AlertSignalName, OnAlertRequested);
 				MessagingCenter.Subscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName, OnPromptRequested);
 				MessagingCenter.Subscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName, OnActionSheetRequested);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			public Window VirtualView { get; }
@@ -62,10 +64,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Dispose()
 			{
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				MessagingCenter.Unsubscribe<Page, bool>(PlatformView, Page.BusySetSignalName);
 				MessagingCenter.Unsubscribe<Page, AlertArguments>(PlatformView, Page.AlertSignalName);
 				MessagingCenter.Unsubscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName);
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			void OnPageBusy(IView sender, bool enabled)

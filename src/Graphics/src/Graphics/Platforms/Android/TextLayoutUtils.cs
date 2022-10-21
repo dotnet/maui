@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (boundedWidth > 0)
 				finalWidth = (int)boundedWidth;
 
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 			var layout = new StaticLayout(
 				text, // Text to layout
 				textPaint, // Text paint (font, size, etc...) to use
@@ -19,6 +21,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				1.0f, // Spacing multiplier
 				0.0f, // Additional spacing
 				false); // Include padding
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 
 			return layout;
 		}
@@ -30,6 +34,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				finalWidth = (int)boundedWidth;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 			var layout = new StaticLayout(
 				spannedString, // Text to layout
 				textPaint, // Text paint (font, size, etc...) to use
@@ -38,6 +44,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				1.0f, // Spacing multiplier
 				0.0f, // Additional spacing
 				false); // Include padding
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			return layout;

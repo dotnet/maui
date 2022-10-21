@@ -65,10 +65,12 @@ namespace Microsoft.Maui.Controls.Platform
 				Activity = context;
 				MauiContext = mauiContext;
 
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				MessagingCenter.Subscribe<Page, bool>(Activity, Page.BusySetSignalName, OnPageBusy);
 				MessagingCenter.Subscribe<Page, AlertArguments>(Activity, Page.AlertSignalName, OnAlertRequested);
 				MessagingCenter.Subscribe<Page, PromptArguments>(Activity, Page.PromptSignalName, OnPromptRequested);
 				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName, OnActionSheetRequested);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			public Activity Activity { get; }
@@ -76,10 +78,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Dispose()
 			{
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				MessagingCenter.Unsubscribe<Page, bool>(Activity, Page.BusySetSignalName);
 				MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
 				MessagingCenter.Unsubscribe<Page, PromptArguments>(Activity, Page.PromptSignalName);
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			public void ResetBusyCount()
@@ -288,9 +292,12 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!SupportsProgress)
 					return;
 #pragma warning disable 612, 618
-
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 				Activity.SetProgressBarIndeterminate(true);
 				Activity.SetProgressBarIndeterminateVisibility(isBusy);
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore 612, 618
 			}
 
