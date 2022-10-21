@@ -342,7 +342,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			Assert.Null(Preferences.Default.Get<string>("RemoveKey1", null, sharedName));
 		}
-		
+
 		[Theory]
 		[InlineData(null, true)]
 		[InlineData(sharedNameTestData, true)]
