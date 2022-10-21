@@ -317,5 +317,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(testText, view0.Text);
 			Assert.Equal(vm, view0.BindingContext);
 		}
+
+		[Fact]
+		public void EnsuresMeasure()
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand
+			};
+
+			var layout = new StackLayout();
+			layout.Add(view0);
+
+			(layout as Maui.ILayout).CrossPlatformArrange(new Rect(0, 0, 100, 100));
+		}
 	}
 }

@@ -27,6 +27,13 @@ namespace Microsoft.Maui.Controls
 
 		public Size ArrangeChildren(Rect bounds)
 		{
+			if (_manager == null)
+			{
+				// This shouldn't really happen, but some compatibility layouts might be 
+				// forcing a layout without a measure, so we'll have to ensure measurement happens here
+				Measure(bounds.Width, bounds.Height);
+			}
+
 			return _manager.ArrangeChildren(bounds);
 		}
 
