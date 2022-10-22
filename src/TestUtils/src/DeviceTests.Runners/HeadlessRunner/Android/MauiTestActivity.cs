@@ -15,20 +15,24 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 		{
 			base.OnCreate(savedInstanceState);
 
-			try
-			{
-				var runner = MauiTestInstrumentation.Current.Services.GetRequiredService<HeadlessTestRunner>();
+			// Do the work on the background thread to avoid a keyDispatchingTimedOut ANR
+            Task.Run(async () =>
+            { 
+				try
+				{
+					var runner = MauiTestInstrumentation.Current.Services.GetRequiredService<HeadlessTestRunner>();
 
-				var bundle = await runner.RunTestsAsync();
+					var bundle = await runner.RunTestsAsync();
 
-				TaskCompletionSource.TrySetResult(bundle);
-			}
-			catch (Exception ex)
-			{
-				TaskCompletionSource.TrySetException(ex);
-			}
+					TaskCompletionSource.TrySetResult(bundle);
+				}
+				catch (Exception ex)
+				{
+					TaskCompletionSource.TrySetException(ex);
+				}
 
-			Finish();
+				Finish();
+			});
 		}
 	}
 }
