@@ -114,8 +114,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Theory]
-		[InlideData(true)]
-		[InlideData(false)]
+		[InlineData(true)]
+		[InlineData(false)]
 		public Task CaptureLayerAsync(bool skipChildren)
 		{
 			return Utils.OnMainThread(async () =>
