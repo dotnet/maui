@@ -25,6 +25,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.HeaderFooterGalleri
 						GalleryBuilder.NavButton("Header/Footer (Grid)", () => new HeaderFooterGrid(), Navigation),
 						GalleryBuilder.NavButton("Footer Only (String)", () => new FooterOnlyString(), Navigation),
 						GalleryBuilder.NavButton("Header/Footer (Grid Horizontal)", () => new HeaderFooterGridHorizontal(), Navigation),
+						GalleryBuilder.NavButton("Header/Footer/EmptyView", () => new HeaderFooterEmptyView(), Navigation),
 					}
 				}
 			};
