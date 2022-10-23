@@ -9,7 +9,6 @@ using CoreAnimation;
 using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
