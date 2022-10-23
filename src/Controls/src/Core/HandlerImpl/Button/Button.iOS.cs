@@ -19,6 +19,12 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(ButtonHandler handler, Button button) =>
 			MapText((IButtonHandler)handler, button);
 
+		public static void MapImageSource(IButtonHandler handler, Button button)
+		{
+			ButtonHandler.MapImageSource(handler, button);
+			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
+		}
+
 		public static void MapLineBreakMode(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateLineBreakMode(button);

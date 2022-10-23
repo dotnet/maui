@@ -128,3 +128,4 @@ static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> 
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
 Microsoft.Maui.Controls.ILayoutManagerFactory
 ~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
+~static Microsoft.Maui.Controls.Button.MapImageSource(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
