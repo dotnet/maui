@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Media
 			return Task.FromResult<IScreenshotResult>(result);
 		}
 
-		public Task<IScreenshotResult> CaptureAsync(UIView view)
+		public Task<IScreenshotResult?> CaptureAsync(UIView view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
@@ -96,12 +96,12 @@ namespace Microsoft.Maui.Media
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 
-			var result = new ScreenshotResult(image);
+			var result = image is null ? null : new ScreenshotResult(image);
 
-			return Task.FromResult<IScreenshotResult>(result);
+			return Task.FromResult<IScreenshotResult?>(result);
 		}
 
-		public Task<IScreenshotResult> CaptureAsync(CALayer layer, bool skipChildren)
+		public Task<IScreenshotResult?> CaptureAsync(CALayer layer, bool skipChildren)
 		{
 			_ = layer ?? throw new ArgumentNullException(nameof(layer));
 
@@ -121,9 +121,9 @@ namespace Microsoft.Maui.Media
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 
-			var result = new ScreenshotResult(image);
+			var result = image is null ? null : new ScreenshotResult(image);
 
-			return Task.FromResult<IScreenshotResult>(result);
+			return Task.FromResult<IScreenshotResult?>(result);
 		}
 
 		static bool TryRender(UIView view, out Exception? error)

@@ -39,14 +39,14 @@ namespace Microsoft.Maui.Media
 			return CaptureAsync(view);
 		}
 
-		public Task<IScreenshotResult> CaptureAsync(View view)
+		public Task<IScreenshotResult?> CaptureAsync(View view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
 			var bitmap = Render(view);
-			var result = new ScreenshotResult(bitmap);
+			var result = bitmap is null ? null :  new ScreenshotResult(bitmap);
 
-			return Task.FromResult<IScreenshotResult>(result);
+			return Task.FromResult<IScreenshotResult?>(result);
 		}
 
 		static Bitmap Render(View view)
