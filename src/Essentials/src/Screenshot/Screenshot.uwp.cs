@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Media
 		public Task<IScreenshotResult> CaptureAsync(Window window) =>
 			CaptureAsync(window.Content);
 
-		public async Task<IScreenshotResult?> CaptureAsync(UIElement element)
+		public async Task<IScreenshotResult> CaptureAsync(UIElement element)
 		{
 			var bmp = new RenderTargetBitmap();
 

@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public Task CaptureAsync()
+		public Task CaptureStaticAsync()
 		{
 			return Utils.OnMainThread(async () =>
 			{
