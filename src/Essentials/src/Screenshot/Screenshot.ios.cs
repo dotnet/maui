@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Media
 			if (currentWindow == null)
 				throw new InvalidOperationException("Unable to find current window.");
 
+#pragma warning disable CS8619
 			return CaptureAsync(currentWindow.Layer, true);
+#pragma warning restore CS8619
 		}
 
 		public Task<IScreenshotResult> CaptureAsync(UIWindow window)

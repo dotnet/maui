@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Media
 		public Task<IScreenshotResult> CaptureAsync(Window window) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public Task<IScreenshotResult?> CaptureAsync(NView view) =>
+		public Task<IScreenshotResult> CaptureAsync(NView view) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 
