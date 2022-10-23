@@ -17,17 +17,17 @@ namespace Microsoft.Maui.Media
 	{
 #if ANDROID
 		Task<IScreenshotResult> CaptureAsync(Android.App.Activity activity);
-		Task<IScreenshotResult> CaptureAsync(Android.Views.View view);
+		Task<IScreenshotResult?> CaptureAsync(Android.Views.View view);
 #elif IOS || MACCATALYST
 		Task<IScreenshotResult> CaptureAsync(UIKit.UIWindow window);
-		Task<IScreenshotResult> CaptureAsync(UIKit.UIView view);
-		//Task<IScreenshotResult> CaptureAsync(CoreAnimation.CALayer layer, bool skipChildren);
+		Task<IScreenshotResult?> CaptureAsync(UIKit.UIView view);
+		Task<IScreenshotResult?> CaptureAsync(CoreAnimation.CALayer layer, bool skipChildren);
 #elif WINDOWS
 		Task<IScreenshotResult> CaptureAsync(UI.Xaml.Window window);
-		Task<IScreenshotResult> CaptureAsync(UI.Xaml.UIElement element);
+		Task<IScreenshotResult?> CaptureAsync(UI.Xaml.UIElement element);
 #elif TIZEN
 		Task<IScreenshotResult> CaptureAsync(Tizen.NUI.Window window);
-		Task<IScreenshotResult> CaptureAsync(Tizen.NUI.BaseComponents.View view);
+		Task<IScreenshotResult?> CaptureAsync(Tizen.NUI.BaseComponents.View view);
 #endif
 	}
 
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Media
 		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Android.App.Activity activity) =>
 			screenshot.AsPlatform().CaptureAsync(activity);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Android.Views.View view) =>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, Android.Views.View view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
 
 #elif IOS || MACCATALYST
@@ -97,18 +97,18 @@ namespace Microsoft.Maui.Media
 		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIWindow window) =>
 			screenshot.AsPlatform().CaptureAsync(window);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIView view) =>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, UIKit.UIView view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
 
-		//public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, CoreAnimation.CALayer layer, bool skipChildren) =>
-		//	screenshot.AsPlatform().CaptureAsync(layer, skipChildren);
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, CoreAnimation.CALayer layer, bool skipChildren) =>
+			screenshot.AsPlatform().CaptureAsync(layer, skipChildren);
 
 #elif WINDOWS
 
 		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UI.Xaml.Window window) =>
 			screenshot.AsPlatform().CaptureAsync(window);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UI.Xaml.UIElement element) =>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, UI.Xaml.UIElement element) =>
 			screenshot.AsPlatform().CaptureAsync(element);
 
 #elif TIZEN
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Media
 		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.Window window) =>
 			screenshot.AsPlatform().CaptureAsync(window);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.BaseComponents.View view) =>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.BaseComponents.View view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
 
 #endif
