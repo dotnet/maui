@@ -18,6 +18,11 @@ using WASDKDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WRect = Windows.Foundation.Rect;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.Maui.Controls;
+using System.Threading.Tasks;
+using HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment;
+using VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -387,7 +392,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var handler = view.ToHandler(MauiContext);
 			var platformView = handler.ContainerView ?? handler.PlatformView;
 
-			return platformView as FrameworkElement;
+			if (platformView == null)
+			{
+				return null;
+			}
+
+			platformView.HorizontalAlignment = view.HorizontalOptions.ToCore() switch
+			{
+				Primitives.LayoutAlignment.Fill => HorizontalAlignment.Stretch,
+				Primitives.LayoutAlignment.Start => HorizontalAlignment.Left,
+				Primitives.LayoutAlignment.Center => HorizontalAlignment.Center,
+				Primitives.LayoutAlignment.End => HorizontalAlignment.Right,
+				_ => throw new ArgumentOutOfRangeException()
+			};
+
+			platformView.VerticalAlignment = view.VerticalOptions.ToCore() switch
+			{
+				Primitives.LayoutAlignment.Fill => VerticalAlignment.Stretch,
+				Primitives.LayoutAlignment.Start => VerticalAlignment.Top,
+				Primitives.LayoutAlignment.Center => VerticalAlignment.Center,
+				Primitives.LayoutAlignment.End => VerticalAlignment.Bottom,
+				_ => throw new ArgumentOutOfRangeException()
+			};
+
+			return platformView;
 		}
 
 		internal void HandleScroll(ScrollViewer scrollViewer)
