@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 
@@ -19,6 +20,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is IWindow window)
 			{
+				(window.Handler as WindowHandler)?.Dispose();
+
 				(window.Handler?.PlatformView as Window)?.Close();
 			}
 		}

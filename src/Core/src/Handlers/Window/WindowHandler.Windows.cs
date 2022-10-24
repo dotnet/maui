@@ -1,7 +1,6 @@
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.ApplicationModel;
 
@@ -33,21 +32,31 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UI.Xaml.Window platformView)
 		{
+			Dispose();
+
+			base.DisconnectHandler(platformView);
+		}
+
+		internal void Dispose()
+		{
 			MauiContext
 				?.GetNavigationRootManager()
 				?.Disconnect();
 
-			if (platformView.Content is WindowRootViewContainer container)
+			if (PlatformView?.Content is WindowRootViewContainer container)
 			{
 				container.Children.Clear();
-				platformView.Content = null;
+				VirtualView?.Content?.Handler?.DisconnectHandler();
+				PlatformView.Content = null;
 			}
 
-			var appWindow = platformView.GetAppWindow();
-			if (appWindow is not null)
-				appWindow.Changed -= OnWindowChanged;
+			var appWindow = PlatformView?.GetAppWindow();
 
-			base.DisconnectHandler(platformView);
+			if (appWindow is not null)
+			{
+				appWindow.Changed -= OnWindowChanged;
+				appWindow.Destroy();
+			}
 		}
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
