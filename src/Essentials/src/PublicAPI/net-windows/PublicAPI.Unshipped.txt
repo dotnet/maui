@@ -1,1 +1,5 @@
 ﻿#nullable enable
+*REMOVED*Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(Microsoft.UI.Xaml.UIElement! element) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(Microsoft.UI.Xaml.UIElement! element) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
+*REMOVED*static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, Microsoft.UI.Xaml.UIElement! element) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, Microsoft.UI.Xaml.UIElement! element) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!

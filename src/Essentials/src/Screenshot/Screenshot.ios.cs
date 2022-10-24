@@ -9,6 +9,7 @@ using CoreAnimation;
 using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
@@ -17,26 +18,13 @@ namespace Microsoft.Maui.Media
 		public bool IsCaptureSupported =>
 			true;
 
-		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		public Task<IScreenshotResult> CaptureAsync()
 		{
-			var scenes = UIApplication.SharedApplication.ConnectedScenes;
-			//#pragma warning disable CA1416 // Known false positive with Lambda expression
-			var currentScene = scenes.ToArray().Where(n => n.ActivationState == UISceneActivationState.ForegroundActive).FirstOrDefault();
-			//#pragma warning restore CA1416
-			if (currentScene == null)
-				throw new InvalidOperationException("Unable to find current scene.");
-
-			var uiWindowScene = currentScene as UIWindowScene;
-			if (uiWindowScene == null)
-				throw new InvalidOperationException("Unable to find current window scene.");
-
-			var currentWindow = uiWindowScene.Windows.FirstOrDefault(n => n.IsKeyWindow);
+			var currentWindow = WindowStateManager.Default.GetCurrentUIWindow();
 			if (currentWindow == null)
 				throw new InvalidOperationException("Unable to find current window.");
 
-			return CaptureAsync(currentWindow.Layer, true);
+			return CaptureAsync(currentWindow);
 		}
 
 		public Task<IScreenshotResult> CaptureAsync(UIWindow window)
@@ -47,25 +35,10 @@ namespace Microsoft.Maui.Media
 			UIGraphics.BeginImageContextWithOptions(window.Bounds.Size, false, window.Screen.Scale);
 			var ctx = UIGraphics.GetCurrentContext();
 
-			if (!TryRender(window, out var error))
+			// ctx will be null if the width/height of the view is zero
+			if (ctx is not null && !TryRender(window, out _))
 			{
-				// FIXME: test/handle this case
-			}
-
-			// Render the status bar with the correct frame size
-			try
-			{
-				TryHideStatusClockView(UIApplication.SharedApplication);
-				var statusbarWindow = GetStatusBarWindow(UIApplication.SharedApplication);
-				if (statusbarWindow != null/* && metrics.StatusBar != null*/)
-				{
-					statusbarWindow.Frame = window.Frame;
-					statusbarWindow.Layer.RenderInContext(ctx);
-				}
-			}
-			catch
-			{
-				// FIXME: test/handle this case
+				// TODO: test/handle this case
 			}
 
 			var image = UIGraphics.GetImageFromCurrentImageContext();
@@ -76,7 +49,7 @@ namespace Microsoft.Maui.Media
 			return Task.FromResult<IScreenshotResult>(result);
 		}
 
-		public Task<IScreenshotResult> CaptureAsync(UIView view)
+		public Task<IScreenshotResult?> CaptureAsync(UIView view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
@@ -85,23 +58,20 @@ namespace Microsoft.Maui.Media
 			var ctx = UIGraphics.GetCurrentContext();
 
 			// ctx will be null if the width/height of the view is zero
-			if (ctx != null)
+			if (ctx is not null && !TryRender(view, out _))
 			{
-				if (!TryRender(view, out var error))
-				{
-					// FIXME: test/handle this case
-				}
+				// TODO: test/handle this case
 			}
 
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 
-			var result = new ScreenshotResult(image);
+			var result = image is null ? null : new ScreenshotResult(image);
 
-			return Task.FromResult<IScreenshotResult>(result);
+			return Task.FromResult<IScreenshotResult?>(result);
 		}
 
-		public Task<IScreenshotResult> CaptureAsync(CALayer layer, bool skipChildren)
+		public Task<IScreenshotResult?> CaptureAsync(CALayer layer, bool skipChildren)
 		{
 			_ = layer ?? throw new ArgumentNullException(nameof(layer));
 
@@ -110,20 +80,17 @@ namespace Microsoft.Maui.Media
 			var ctx = UIGraphics.GetCurrentContext();
 
 			// ctx will be null if the width/height of the view is zero
-			if (ctx != null)
+			if (ctx is not null && !TryRender(layer, ctx, skipChildren, out _))
 			{
-				if (!TryRender(layer, ctx, skipChildren, out var error))
-				{
-					// FIXME: test/handle this case
-				}
+				// TODO: test/handle this case
 			}
 
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 
-			var result = new ScreenshotResult(image);
+			var result = image is null ? null : new ScreenshotResult(image);
 
-			return Task.FromResult<IScreenshotResult>(result);
+			return Task.FromResult<IScreenshotResult?>(result);
 		}
 
 		static bool TryRender(UIView view, out Exception? error)
@@ -192,56 +159,6 @@ namespace Microsoft.Maui.Media
 				sublayer.Key.Hidden = sublayer.Value;
 			}
 		}
-
-		static void TryHideStatusClockView(UIApplication app)
-		{
-			var statusBarWindow = GetStatusBarWindow(app);
-			if (statusBarWindow == null)
-				return;
-
-			var clockView = GetClockView(statusBarWindow);
-			if (clockView != null)
-				clockView.Hidden = true;
-		}
-
-		static UIView? GetClockView(UIWindow window)
-		{
-			var classNames = new[] {
-				"UIStatusBar",
-				"UIStatusBarForegroundView",
-				"UIStatusBarTimeItemView"
-			};
-
-			return FindSubview(window, ((IEnumerable<string>)classNames).GetEnumerator());
-
-			static UIView? FindSubview(UIView view, IEnumerator<string> classNames)
-			{
-				if (!classNames.MoveNext())
-					return view;
-
-				foreach (var subview in view.Subviews)
-				{
-					if (subview.ToString().StartsWith($"<{classNames.Current}:", StringComparison.Ordinal))
-						return FindSubview(subview, classNames);
-				}
-
-				return null;
-			}
-		}
-
-		static UIWindow? GetStatusBarWindow(UIApplication app)
-		{
-			if (!app.RespondsToSelector(statusBarWindowSelector))
-				return null;
-
-			var ptr = IntPtr_objc_msgSend(app.Handle, statusBarWindowSelector.Handle);
-			return ptr != IntPtr.Zero ? Runtime.GetNSObject(ptr) as UIWindow : null;
-		}
-
-		static readonly Selector statusBarWindowSelector = new Selector("statusBarWindow");
-
-		[DllImport(Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
-		static extern IntPtr IntPtr_objc_msgSend(IntPtr receiver, IntPtr selector);
 	}
 
 	partial class ScreenshotResult
