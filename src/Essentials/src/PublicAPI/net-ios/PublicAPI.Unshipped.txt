@@ -3,3 +3,9 @@ override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
 ~override Microsoft.Maui.Devices.Sensors.Location.Equals(object obj) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator !=(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator ==(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
+*REMOVED*Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(UIKit.UIView! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(UIKit.UIView! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
+*REMOVED*static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, UIKit.UIView! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, UIKit.UIView! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
+Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(CoreAnimation.CALayer! layer, bool skipChildren) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
+static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, CoreAnimation.CALayer! layer, bool skipChildren) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
