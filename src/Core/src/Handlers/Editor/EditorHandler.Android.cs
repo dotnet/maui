@@ -2,6 +2,7 @@
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateCharacterSpacing(editor);
 
-		public static void MapMaxLength(IEditorHandler handler, IEditor editor) =>
+		public static void MapMaxLength(IEditorHandler handler, IEditor editor)	=>
 			handler.PlatformView?.UpdateMaxLength(editor);
 
 		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor) =>
@@ -92,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFont(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
 
-		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) =>
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) => 
 			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 
 		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) =>
@@ -130,6 +131,14 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void PlatformArrange(Rect frame)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			this.PrepareForTextViewArrange(frame);
+			base.PlatformArrange(frame);
 		}
 	}
 }
