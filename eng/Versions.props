@@ -18,7 +18,7 @@
     <MicrosoftiOSSdkPackageVersion>16.0.1470</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>16.0.1470</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
-    <SamsungTizenSdkPackageVersion>7.0.100-rc.2.24</SamsungTizenSdkPackageVersion>
+    <SamsungTizenSdkPackageVersion>7.0.100</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptennet7Manifest70100PackageVersion>7.0.0-rtm.22504.3</MicrosoftNETWorkloadEmscriptennet7Manifest70100PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptennet7Manifest70100PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
