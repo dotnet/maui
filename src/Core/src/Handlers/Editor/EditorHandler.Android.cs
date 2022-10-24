@@ -133,9 +133,7 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.SelectionLength = selectedTextLength;
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public override void PlatformArrange(Rect frame)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			this.PrepareForTextViewArrange(frame);
 			base.PlatformArrange(frame);
