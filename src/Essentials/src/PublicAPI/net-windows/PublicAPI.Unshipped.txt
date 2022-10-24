@@ -13,3 +13,7 @@ override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
 *REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.LocationAlways.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
 *REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
 *REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.Microphone.RequiredDeclarations.get -> System.Func<System.Collections.Generic.IEnumerable<string>>
+*REMOVED*Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(Microsoft.UI.Xaml.UIElement! element) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(Microsoft.UI.Xaml.UIElement! element) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
+*REMOVED*static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, Microsoft.UI.Xaml.UIElement! element) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, Microsoft.UI.Xaml.UIElement! element) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!

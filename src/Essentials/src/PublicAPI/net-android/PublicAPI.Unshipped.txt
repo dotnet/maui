@@ -11,3 +11,7 @@ override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
 ~static Microsoft.Maui.Devices.Sensors.Location.operator !=(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator ==(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
 *REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+*REMOVED*Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(Android.Views.View! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+Microsoft.Maui.Media.IPlatformScreenshot.CaptureAsync(Android.Views.View! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
+*REMOVED*static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, Android.Views.View! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
+static Microsoft.Maui.Media.ScreenshotExtensions.CaptureAsync(this Microsoft.Maui.Media.IScreenshot! screenshot, Android.Views.View! view) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
