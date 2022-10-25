@@ -50,7 +50,6 @@ schedules:
 variables:
   - template: /eng/pipelines/common/variables.yml
   - template: templates/common/vs-release-vars.yml@sdk-insertions
-  - Codeql.Enabled: true
 
 parameters:
   - name: provisionatorChannel
