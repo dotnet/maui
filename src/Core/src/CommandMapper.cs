@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 
 		internal void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
 		{
-			    InvokeCore(property, viewHandler, virtualView, args);
+			InvokeCore(property, viewHandler, virtualView, args);
 		}
 
 		public CommandMapper? Chained

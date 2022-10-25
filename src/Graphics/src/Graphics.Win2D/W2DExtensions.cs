@@ -66,122 +66,122 @@ namespace Microsoft.Maui.Graphics.Win2D
 			try
 			{
 #endif
-			builder.SetFilledRegionDetermination(fillMode);
+				builder.SetFilledRegionDetermination(fillMode);
 
-			var pointIndex = 0;
-			var arcAngleIndex = 0;
-			var arcClockwiseIndex = 0;
-			var figureOpen = false;
-			var segmentIndex = -1;
+				var pointIndex = 0;
+				var arcAngleIndex = 0;
+				var arcClockwiseIndex = 0;
+				var figureOpen = false;
+				var segmentIndex = -1;
 
-			var lastOperation = PathOperation.Move;
+				var lastOperation = PathOperation.Move;
 
-			foreach (var type in path.SegmentTypes)
-			{
-				segmentIndex++;
-
-				if (type == PathOperation.Move)
+				foreach (var type in path.SegmentTypes)
 				{
-					if (lastOperation != PathOperation.Close && lastOperation != PathOperation.Move)
+					segmentIndex++;
+
+					if (type == PathOperation.Move)
 					{
-						builder.EndFigure(CanvasFigureLoop.Open);
-					}
+						if (lastOperation != PathOperation.Close && lastOperation != PathOperation.Move)
+						{
+							builder.EndFigure(CanvasFigureLoop.Open);
+						}
 
-					var point = path[pointIndex++];
-					var begin = CanvasFigureFill.Default;
-					builder.BeginFigure(ox + point.X * fx, oy + point.Y * fy, begin);
-					figureOpen = true;
-				}
-				else if (type == PathOperation.Line)
-				{
-					var point = path[pointIndex++];
-					builder.AddLine(ox + point.X * fx, oy + point.Y * fy);
-				}
-
-				else if (type == PathOperation.Quad)
-				{
-					var controlPoint = path[pointIndex++];
-					var endPoint = path[pointIndex++];
-
-					builder.AddQuadraticBezier(
-						new Vector2(ox + controlPoint.X * fx, oy + controlPoint.Y * fy),
-						new Vector2(ox + endPoint.X * fx, oy + endPoint.Y * fy));
-				}
-				else if (type == PathOperation.Cubic)
-				{
-					var controlPoint1 = path[pointIndex++];
-					var controlPoint2 = path[pointIndex++];
-					var endPoint = path[pointIndex++];
-					builder.AddCubicBezier(
-						new Vector2(ox + controlPoint1.X * fx, oy + controlPoint1.Y * fy),
-						new Vector2(ox + controlPoint2.X * fx, oy + controlPoint2.Y * fy),
-						new Vector2(ox + endPoint.X * fx, oy + endPoint.Y * fy));
-				}
-				else if (type == PathOperation.Arc)
-				{
-					var topLeft = path[pointIndex++];
-					var bottomRight = path[pointIndex++];
-					var startAngle = path.GetArcAngle(arcAngleIndex++);
-					var endAngle = path.GetArcAngle(arcAngleIndex++);
-					var clockwise = path.GetArcClockwise(arcClockwiseIndex++);
-
-					while (startAngle < 0)
-					{
-						startAngle += 360;
-					}
-
-					while (endAngle < 0)
-					{
-						endAngle += 360;
-					}
-
-					var rotation = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
-					var absRotation = Math.Abs(rotation);
-
-					var rectX = ox + topLeft.X * fx;
-					var rectY = oy + topLeft.Y * fy;
-					var rectWidth = (ox + bottomRight.X * fx) - rectX;
-					var rectHeight = (oy + bottomRight.Y * fy) - rectY;
-
-					var startPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
-					var endPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
-
-
-					if (!figureOpen)
-					{
+						var point = path[pointIndex++];
 						var begin = CanvasFigureFill.Default;
-						builder.BeginFigure(startPoint.X, startPoint.Y, begin);
+						builder.BeginFigure(ox + point.X * fx, oy + point.Y * fy, begin);
 						figureOpen = true;
 					}
-					else
+					else if (type == PathOperation.Line)
 					{
-						builder.AddLine(startPoint.X, startPoint.Y);
+						var point = path[pointIndex++];
+						builder.AddLine(ox + point.X * fx, oy + point.Y * fy);
 					}
 
-					builder.AddArc(
-						 new Vector2(endPoint.X, endPoint.Y),
-						 rectWidth / 2,
-						 rectHeight / 2,
-						 0,
-						 clockwise ? CanvasSweepDirection.Clockwise : CanvasSweepDirection.CounterClockwise,
-						 absRotation >= 180 ? CanvasArcSize.Large : CanvasArcSize.Small
-						);
+					else if (type == PathOperation.Quad)
+					{
+						var controlPoint = path[pointIndex++];
+						var endPoint = path[pointIndex++];
+
+						builder.AddQuadraticBezier(
+							new Vector2(ox + controlPoint.X * fx, oy + controlPoint.Y * fy),
+							new Vector2(ox + endPoint.X * fx, oy + endPoint.Y * fy));
+					}
+					else if (type == PathOperation.Cubic)
+					{
+						var controlPoint1 = path[pointIndex++];
+						var controlPoint2 = path[pointIndex++];
+						var endPoint = path[pointIndex++];
+						builder.AddCubicBezier(
+							new Vector2(ox + controlPoint1.X * fx, oy + controlPoint1.Y * fy),
+							new Vector2(ox + controlPoint2.X * fx, oy + controlPoint2.Y * fy),
+							new Vector2(ox + endPoint.X * fx, oy + endPoint.Y * fy));
+					}
+					else if (type == PathOperation.Arc)
+					{
+						var topLeft = path[pointIndex++];
+						var bottomRight = path[pointIndex++];
+						var startAngle = path.GetArcAngle(arcAngleIndex++);
+						var endAngle = path.GetArcAngle(arcAngleIndex++);
+						var clockwise = path.GetArcClockwise(arcClockwiseIndex++);
+
+						while (startAngle < 0)
+						{
+							startAngle += 360;
+						}
+
+						while (endAngle < 0)
+						{
+							endAngle += 360;
+						}
+
+						var rotation = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
+						var absRotation = Math.Abs(rotation);
+
+						var rectX = ox + topLeft.X * fx;
+						var rectY = oy + topLeft.Y * fy;
+						var rectWidth = (ox + bottomRight.X * fx) - rectX;
+						var rectHeight = (oy + bottomRight.Y * fy) - rectY;
+
+						var startPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -startAngle);
+						var endPoint = GeometryUtil.EllipseAngleToPoint(rectX, rectY, rectWidth, rectHeight, -endAngle);
+
+
+						if (!figureOpen)
+						{
+							var begin = CanvasFigureFill.Default;
+							builder.BeginFigure(startPoint.X, startPoint.Y, begin);
+							figureOpen = true;
+						}
+						else
+						{
+							builder.AddLine(startPoint.X, startPoint.Y);
+						}
+
+						builder.AddArc(
+							 new Vector2(endPoint.X, endPoint.Y),
+							 rectWidth / 2,
+							 rectHeight / 2,
+							 0,
+							 clockwise ? CanvasSweepDirection.Clockwise : CanvasSweepDirection.CounterClockwise,
+							 absRotation >= 180 ? CanvasArcSize.Large : CanvasArcSize.Small
+							);
+					}
+					else if (type == PathOperation.Close)
+					{
+						builder.EndFigure(CanvasFigureLoop.Closed);
+					}
+
+					lastOperation = type;
 				}
-				else if (type == PathOperation.Close)
+
+				if (segmentIndex >= 0 && lastOperation != PathOperation.Close)
 				{
-					builder.EndFigure(CanvasFigureLoop.Closed);
+					builder.EndFigure(CanvasFigureLoop.Open);
 				}
 
-				lastOperation = type;
-			}
-
-			if (segmentIndex >= 0 && lastOperation != PathOperation.Close)
-			{
-				builder.EndFigure(CanvasFigureLoop.Open);
-			}
-
-			var geometry = CanvasGeometry.CreatePath(builder);
-			return geometry;
+				var geometry = CanvasGeometry.CreatePath(builder);
+				return geometry;
 #if DEBUG
 			}
 			catch (Exception exc)
