@@ -69,7 +69,9 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		/// <inheritdoc cref="FontElement.FontAutoScalingEnabledProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="FontAutoScalingEnabled" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <summary>
