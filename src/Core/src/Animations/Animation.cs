@@ -334,8 +334,8 @@ namespace Microsoft.Maui.Animations
 		}
 
 		/// <summary>
-		/// Removes this animation from it's <see cref="Parent"/>.
-		/// If there is no <see cref="Parent"/>, nothing will happen.
+		/// Removes this animation from it's parent.
+		/// If there is no parent, nothing will happen.
 		/// </summary>
 		public void RemoveFromParent()
 		{
