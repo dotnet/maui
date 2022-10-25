@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationModel.xml" path="//Member[@MemberName='LastRoot']/Docs/*" />
 		public Page LastRoot
 		{
 			get

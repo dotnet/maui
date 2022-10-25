@@ -9,7 +9,6 @@ namespace Microsoft.Maui
 		AspectFill,
 		/// <include file="../../docs/Microsoft.Maui/Aspect.xml" path="//Member[@MemberName='Fill']/Docs/*" />
 		Fill,
-		/// <include file="../../docs/Microsoft.Maui/Aspect.xml" path="//Member[@MemberName='Center']/Docs/*" />
 		Center
 	}
 }

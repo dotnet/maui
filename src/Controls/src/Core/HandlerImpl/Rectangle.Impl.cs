@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Controls.Shapes
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="//Member[@MemberName='GetPath']/Docs/*" />
 		public override PathF GetPath()
 		{
 			var path = new PathF();
