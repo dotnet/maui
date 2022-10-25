@@ -10,7 +10,7 @@ using Windows.Graphics;
 
 namespace Microsoft.Maui
 {
-	public class MauiWinUIWindow : UI.Xaml.Window, IPlatformSizeRestrictedWindow
+	public class MauiWinUIWindow : UI.Xaml.Window, IPlatformSizeRestrictedWindow, IDisposable
 	{
 		static readonly SizeInt32 DefaultMinimumSize = new SizeInt32(0, 0);
 		static readonly SizeInt32 DefaultMaximumSize = new SizeInt32(int.MaxValue, int.MaxValue);
@@ -178,6 +178,16 @@ namespace Microsoft.Maui
 
 		[DllImport("user32.dll", SetLastError = true)]
 		static extern int DestroyIcon(IntPtr hIcon);
+
+		public void Dispose()
+		{
+			Activated -= OnActivated;
+			Closed -= OnClosedPrivate;
+			VisibilityChanged -= OnVisibilityChanged;
+
+			if (_windowManager != null)
+				_windowManager.Dispose();
+		}
 	}
 
 	interface IPlatformSizeRestrictedWindow

@@ -57,6 +57,9 @@ namespace Microsoft.Maui.Handlers
 				appWindow.Changed -= OnWindowChanged;
 				appWindow.Destroy();
 			}
+
+			if (PlatformView is MauiWinUIWindow mauiWinUIWindow)
+				mauiWinUIWindow.Dispose();
 		}
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
