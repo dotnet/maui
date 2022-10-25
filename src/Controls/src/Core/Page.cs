@@ -189,7 +189,6 @@ namespace Microsoft.Maui.Controls
 			return DisplayActionSheet(title, cancel, destruction, FlowDirection.MatchParent, buttons);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet'][2]/Docs/*" />
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
 		{
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);

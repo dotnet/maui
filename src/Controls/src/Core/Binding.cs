@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="Type[@FullName='Microsoft.Maui.Controls.Binding']/Docs/*" />
 	public sealed class Binding : BindingBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='SelfPath']/Docs/*" />
 		public const string SelfPath = ".";
 		IValueConverter _converter;
 		object _converterParameter;

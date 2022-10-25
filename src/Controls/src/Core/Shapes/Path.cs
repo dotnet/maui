@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public Path(Geometry data) : this()
 		{
 			Data = data;

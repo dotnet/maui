@@ -36,7 +36,6 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/AlertArguments.xml" path="//Member[@MemberName='Result']/Docs/*" />
 		public TaskCompletionSource<bool> Result { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/AlertArguments.xml" path="//Member[@MemberName='FlowDirection']/Docs/*" />
 		public FlowDirection FlowDirection { get; set; }
 
 		/// <summary>

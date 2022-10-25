@@ -17,11 +17,9 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: (bindable, oldvalue, newvalue) => ((UriImageSource)bindable).OnUriChanged(),
 			validateValue: (bindable, value) => value == null || ((Uri)value).IsAbsoluteUri);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='CacheValidityProperty']/Docs/*" />
 		public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(
 			nameof(CacheValidity), typeof(TimeSpan), typeof(UriImageSource), TimeSpan.FromDays(1));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='CachingEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(
 			nameof(CachingEnabled), typeof(bool), typeof(UriImageSource), true);
 
