@@ -338,7 +338,7 @@ Task("dotnet-pack-docs")
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
-            CopyDirectory($"{d}/ref", $"{destDir}");
+            CopyDirectory($"{d}", $"{destDir}");
         }
 
         // Get the docs for Graphics
@@ -348,7 +348,7 @@ Task("dotnet-pack-docs")
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
-            CopyDirectory($"{d}/ref", $"{destDir}");
+            CopyDirectory($"{d}", $"{destDir}");
         }
 
         CleanDirectories(tempDir);
