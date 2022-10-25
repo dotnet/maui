@@ -76,7 +76,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (BackPressed != null && BackPressed(this, EventArgs.Empty))
 				return;
+#pragma warning disable CA1416, CA1422 // Validate platform compatibility
 			base.OnBackPressed();
+#pragma warning restore CA1416, CA1422 // Validate platform compatibility
 		}
 
 		public override void OnConfigurationChanged(Configuration newConfig)
