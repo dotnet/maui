@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
-	/// <inheritdoc/>
+	/// <inheritdoc cref="IFontRegistrar"/>
 	public partial class FontRegistrar : IFontRegistrar
 	{
 		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts = new();
