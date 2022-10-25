@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
 		/// <summary>
-		/// Backing store for the <see cref="TextAlignmentElement.HorizontalTextAlignmentProperty"/> property.
+		/// Backing store for the <see cref="HorizontalTextAlignment"/> property.
 		/// </summary>
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 

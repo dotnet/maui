@@ -344,12 +344,13 @@ namespace Microsoft.Maui.Animations
 				view?.RemoveAnimation(this);
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Gets a value that specifies if this animation has been disposed.
+		/// </summary>
 		public bool IsDisposed => _disposedValue;
 
 		private bool _disposedValue = false; // To detect redundant calls
 
-		/// <inheritdoc/>
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!_disposedValue)

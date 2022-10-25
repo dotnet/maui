@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls
 	{
 		const double DefaultSpacing = 10;
 
-		/// <inheritdoc cref="ButtonElement.CommandProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="Command" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty CommandProperty = ButtonElement.CommandProperty;
 
 		/// <summary>
@@ -37,22 +39,34 @@ namespace Microsoft.Maui.Controls
 			nameof(Text), typeof(string), typeof(Button), null,
 			propertyChanged: (bindable, oldVal, newVal) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
-		/// <inheritdoc cref="TextElement.TextColorProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="TextColor" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
-		/// <inheritdoc cref="TextElement.CharacterSpacingProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="CharacterSpacing" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		/// <inheritdoc cref="FontElement.FontFamilyProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="FontFamily" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		/// <inheritdoc cref="FontElement.FontSizeProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="FontSize" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <inheritdoc cref="TextElement.TextTransformProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="TextTransform" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
-		/// <inheritdoc cref="FontElement.FontAttributesProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="FontAttributes" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
 		/// <inheritdoc cref="FontElement.FontAutoScalingEnabledProperty"/>
@@ -63,7 +77,9 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(nameof(BorderWidth), typeof(double), typeof(Button), -1d);
 
-		/// <inheritdoc cref="BorderElement.BorderColorProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="BorderColor" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
 		/// <summary>
@@ -71,10 +87,14 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(int), typeof(Button), defaultValue: BorderElement.DefaultCornerRadius);
 
-		/// <inheritdoc cref="ImageElement.ImageSourceProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="ImageSource" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty ImageSourceProperty = ImageElement.ImageSourceProperty;
 
-		/// <inheritdoc cref="PaddingElement.PaddingProperty"/>
+		/// <summary>
+		/// The backing store for the <see cref="Padding" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		/// <summary>
@@ -110,14 +130,12 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-
 		internal static readonly BindablePropertyKey IsPressedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsPressed), typeof(bool), typeof(Button), default(bool));
 		
 		/// <summary>
 		/// The backing store for the <see cref="IsPressed"/> bindable property.
 		/// </summary>
 		public static readonly BindableProperty IsPressedProperty = IsPressedPropertyKey.BindableProperty;
-
 
 		readonly Lazy<PlatformConfigurationRegistry<Button>> _platformConfigurationRegistry;
 
