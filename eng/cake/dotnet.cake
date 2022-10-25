@@ -338,17 +338,30 @@ Task("dotnet-pack-docs")
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
-            CopyDirectory($"{d}", $"{destDir}");
+            DeleteFiles($"{d}/**/*.pdb");
+            CopyDirectory($"{d}/lib", $"{destDir}");
         }
 
         // Get the docs for Graphics
-        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Graphics.*.nupkg"))
+        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.Graphics.*.nupkg"))
         {
             var d = $"{tempDir}/{nupkg.GetFilename()}";
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
-            CopyDirectory($"{d}", $"{destDir}");
+            DeleteFiles($"{d}/**/*.pdb");
+            CopyDirectory($"{d}/lib", $"{destDir}");
+        }
+
+        // Get the docs for Foldable
+        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Foldable.*.nupkg"))
+        {
+            var d = $"{tempDir}/{nupkg.GetFilename()}";
+            Unzip(nupkg, d);
+            DeleteFiles($"{d}/**/*.pri");
+            DeleteFiles($"{d}/**/*.aar");
+            DeleteFiles($"{d}/**/*.pdb");
+            CopyDirectory($"{d}/lib", $"{destDir}");
         }
 
         CleanDirectories(tempDir);
