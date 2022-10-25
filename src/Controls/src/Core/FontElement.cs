@@ -4,19 +4,31 @@ namespace Microsoft.Maui.Controls
 {
 	static class FontElement
 	{
+		/// <summary>
+		/// The backing store for the <see cref="IFontElement.FontFamily" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontFamilyProperty =
 			BindableProperty.Create("FontFamily", typeof(string), typeof(IFontElement), default(string),
 									propertyChanged: OnFontFamilyChanged);
 
+		/// <summary>
+		/// The backing store for the <see cref="IFontElement.FontSize" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontSizeProperty =
 			BindableProperty.Create("FontSize", typeof(double), typeof(IFontElement), 0d,
 									propertyChanged: OnFontSizeChanged,
 									defaultValueCreator: FontSizeDefaultValueCreator);
 
+		/// <summary>
+		/// The backing store for the <see cref="IFontElement.FontAttributes" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontAttributesProperty =
 			BindableProperty.Create("FontAttributes", typeof(FontAttributes), typeof(IFontElement), FontAttributes.None,
 									propertyChanged: OnFontAttributesChanged);
 
+		/// <summary>
+		/// The backing store for the <see cref="IFontElement.FontAutoScalingEnabled" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty =
 			BindableProperty.Create("FontAutoScalingEnabled", typeof(bool), typeof(IFontElement), true,
 									propertyChanged: OnFontAutoScalingEnabledChanged);

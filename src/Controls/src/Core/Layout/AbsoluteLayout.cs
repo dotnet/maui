@@ -63,7 +63,6 @@ namespace Microsoft.Maui.Controls
 
 		#endregion
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutFlags'][2]/Docs/*" />
 		public AbsoluteLayoutFlags GetLayoutFlags(IView view)
 		{
 			return view switch
@@ -73,7 +72,6 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='GetLayoutBounds'][2]/Docs/*" />
 		public Rect GetLayoutBounds(IView view)
 		{
 			return view switch

@@ -2,7 +2,6 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerAction.xml" path="Type[@FullName='Microsoft.Maui.Controls.TriggerAction' and position()=0]/Docs/*" />
 	public abstract class TriggerAction
 	{
 		internal TriggerAction(Type associatedType)

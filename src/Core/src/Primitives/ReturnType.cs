@@ -1,21 +1,39 @@
-using System;
-
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/ReturnType.xml" path="Type[@FullName='Microsoft.Maui.ReturnType']/Docs/*" />
+	/// <summary>
+	/// Enumerates return button styles.
+	/// Typically the operating system on-screen keyboard will visually style the return key based on this value.
+	/// </summary>
 	public enum ReturnType
 	{
-		/// <include file="../../docs/Microsoft.Maui/ReturnType.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>
+		/// Indicates the default style on the platform.
+		/// </summary>
 		Default,
-		/// <include file="../../docs/Microsoft.Maui/ReturnType.xml" path="//Member[@MemberName='Done']/Docs/*" />
+
+		/// <summary>
+		/// Indicates a "Done" button.
+		/// </summary>
 		Done,
-		/// <include file="../../docs/Microsoft.Maui/ReturnType.xml" path="//Member[@MemberName='Go']/Docs/*" />
+
+		/// <summary>
+		/// Indicates a "Go" button.
+		/// </summary>
 		Go,
-		/// <include file="../../docs/Microsoft.Maui/ReturnType.xml" path="//Member[@MemberName='Next']/Docs/*" />
+		
+		/// <summary>
+		/// Indicates a "Next" button. 
+		/// </summary>
 		Next,
-		/// <include file="../../docs/Microsoft.Maui/ReturnType.xml" path="//Member[@MemberName='Search']/Docs/*" />
+
+		/// <summary>
+		/// Indicates a "Search" button.
+		/// </summary>
 		Search,
-		/// <include file="../../docs/Microsoft.Maui/ReturnType.xml" path="//Member[@MemberName='Send']/Docs/*" />
+		
+		/// <summary>
+		/// Indicates a "Send" button.
+		/// </summary>
 		Send,
 	}
 }

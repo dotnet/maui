@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public Line(double x1, double y1, double x2, double y2) : this()
 		{
 			X1 = x1;

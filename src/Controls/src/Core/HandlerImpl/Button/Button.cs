@@ -6,12 +6,13 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.Button']/Docs/*" />
 	public partial class Button
 	{
 		// IButton does not include the ContentType property, so we map it here to handle Image Positioning
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='ControlsButtonMapper']/Docs/*" />
+		/// <summary>
+		/// The property mapper that maps the abstract properties to the platform-specific methods for further processing.
+		/// </summary>
 		public static IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper)
 		{
 			[nameof(ContentLayout)] = MapContentLayout,
@@ -32,7 +33,11 @@ namespace Microsoft.Maui.Controls
 			ButtonHandler.Mapper = ControlsButtonMapper;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='MapContentLayout']/Docs/*" />
+		/// <summary>
+		/// Maps the abstract <see cref="ContentLayout"/> property to the platform implementation.
+		/// </summary>
+		/// <param name="handler">The handler associated to this control.</param>
+		/// <param name="button">The abstract control that is being mapped.</param>
 		public static void MapContentLayout(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView.UpdateContentLayout(button);

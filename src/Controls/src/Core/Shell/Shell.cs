@@ -68,12 +68,9 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(newHandler, bindable.BindingContext);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutItemIsVisibleProperty']/Docs/*" />
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
 			BindableProperty.CreateAttached(nameof(IsVisible), typeof(bool), typeof(Shell), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetFlyoutItemIsVisible']/Docs/*" />
 		public static bool GetFlyoutItemIsVisible(BindableObject obj) => (bool)obj.GetValue(FlyoutItemIsVisibleProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetFlyoutItemIsVisible']/Docs/*" />
 		public static void SetFlyoutItemIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(FlyoutItemIsVisibleProperty, isVisible);
 
 		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
@@ -125,14 +122,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetFlyoutBehavior']/Docs/*" />
 		public static void SetFlyoutBehavior(BindableObject obj, FlyoutBehavior value) => obj.SetValue(FlyoutBehaviorProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetFlyoutWidth']/Docs/*" />
 		public static double GetFlyoutWidth(BindableObject obj) => (double)obj.GetValue(FlyoutWidthProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetFlyoutWidth']/Docs/*" />
 		public static void SetFlyoutWidth(BindableObject obj, double value) => obj.SetValue(FlyoutWidthProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetFlyoutHeight']/Docs/*" />
 		public static double GetFlyoutHeight(BindableObject obj) => (double)obj.GetValue(FlyoutHeightProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetFlyoutHeight']/Docs/*" />
 		public static void SetFlyoutHeight(BindableObject obj, double value) => obj.SetValue(FlyoutHeightProperty, value);
 
 
@@ -228,12 +221,10 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateAttached("FlyoutBackdrop", typeof(Brush), typeof(Shell), Brush.Default,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutWidthProperty']/Docs/*" />
 		public static readonly BindableProperty FlyoutWidthProperty =
 			BindableProperty.CreateAttached("FlyoutWidth", typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutHeightProperty']/Docs/*" />
 		public static readonly BindableProperty FlyoutHeightProperty =
 			BindableProperty.CreateAttached("FlyoutHeight", typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);
@@ -696,7 +687,6 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='AddLogicalChild']/Docs/*" />
 		public void AddLogicalChild(Element element)
 		{
 			if (element == null)
@@ -713,7 +703,6 @@ namespace Microsoft.Maui.Controls
 			VisualDiagnostics.OnChildAdded(this, element);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='RemoveLogicalChild']/Docs/*" />
 		public void RemoveLogicalChild(Element element)
 		{
 			if (element == null)
@@ -766,7 +755,6 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutHeader), typeof(object), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutHeaderChanging);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutFooterProperty']/Docs/*" />
 		public static readonly BindableProperty FlyoutFooterProperty =
 			BindableProperty.Create(nameof(FlyoutFooter), typeof(object), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutFooterChanging);
@@ -776,7 +764,6 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutHeaderTemplateChanging);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutFooterTemplateProperty']/Docs/*" />
 		public static readonly BindableProperty FlyoutFooterTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutFooterTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutFooterTemplateChanging);
@@ -997,14 +984,12 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FlyoutBackdropProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutWidth']/Docs/*" />
 		public double FlyoutWidth
 		{
 			get => (double)GetValue(FlyoutWidthProperty);
 			set => SetValue(FlyoutWidthProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutHeight']/Docs/*" />
 		public double FlyoutHeight
 		{
 			get => (double)GetValue(FlyoutHeightProperty);
@@ -1025,7 +1010,6 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FlyoutHeaderProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutFooter']/Docs/*" />
 		public object FlyoutFooter
 		{
 			get => GetValue(FlyoutFooterProperty);
@@ -1046,7 +1030,6 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FlyoutHeaderTemplateProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutFooterTemplate']/Docs/*" />
 		public DataTemplate FlyoutFooterTemplate
 		{
 			get => (DataTemplate)GetValue(FlyoutFooterTemplateProperty);
@@ -1114,7 +1097,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendFlyoutItemsChanged() => _flyoutManager.CheckIfFlyoutItemsChanged();
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutItems']/Docs/*" />
 		public IEnumerable FlyoutItems => _flyoutManager.FlyoutItems;
 
 		List<List<Element>> IShellController.GenerateFlyoutGrouping() =>
@@ -1580,24 +1562,20 @@ namespace Microsoft.Maui.Controls
 		#region Shell Flyout Content
 
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutContentProperty']/Docs/*" />
 		public static readonly BindableProperty FlyoutContentProperty =
 			BindableProperty.Create(nameof(FlyoutContent), typeof(object), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentChanging);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutContentTemplateProperty']/Docs/*" />
 		public static readonly BindableProperty FlyoutContentTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutContentTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentTemplateChanging);
 
 		View _flyoutContentView;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutContent']/Docs/*" />
 		public object FlyoutContent
 		{
 			get => GetValue(FlyoutContentProperty);
 			set => SetValue(FlyoutContentProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutContentTemplate']/Docs/*" />
 		public DataTemplate FlyoutContentTemplate
 		{
 			get => (DataTemplate)GetValue(FlyoutContentTemplateProperty);
