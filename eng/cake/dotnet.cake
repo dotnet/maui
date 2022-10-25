@@ -321,7 +321,28 @@ Task("dotnet-pack-docs")
         EnsureDirectoryExists(destDir);
         CleanDirectories(destDir);
 
+        // Get the docs for .NET MAUI
         foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.*.nupkg"))
+        {
+            var d = $"{tempDir}/{nupkg.GetFilename()}";
+            Unzip(nupkg, d);
+            DeleteFiles($"{d}/**/*.pri");
+            DeleteFiles($"{d}/**/*.aar");
+            CopyDirectory($"{d}/ref", $"{destDir}");
+        }
+
+        // Get the docs for Maps
+        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Maps.*.nupkg"))
+        {
+            var d = $"{tempDir}/{nupkg.GetFilename()}";
+            Unzip(nupkg, d);
+            DeleteFiles($"{d}/**/*.pri");
+            DeleteFiles($"{d}/**/*.aar");
+            CopyDirectory($"{d}/ref", $"{destDir}");
+        }
+
+        // Get the docs for Graphics
+        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Graphics.*.nupkg"))
         {
             var d = $"{tempDir}/{nupkg.GetFilename()}";
             Unzip(nupkg, d);
