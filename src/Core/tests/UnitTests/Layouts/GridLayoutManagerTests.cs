@@ -1436,6 +1436,26 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(expectedHeight, measure.Height);
 		}
 
+		[Theory]
+		[InlineData("*", "*")]
+		[InlineData("auto", "auto")]
+		public void MeasureRespectsLargestChildMinimumSize(string columns, string rows)
+		{
+			var grid = CreateGridLayout(columns: columns, rows: rows);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(200, 200));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1);
+
+			var layoutManager = new GridLayoutManager(grid);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(200, measure.Height);
+			Assert.Equal(200, measure.Width);
+		}
+
 		[Category(GridAbsoluteSizing)]
 		[Theory]
 		[InlineData(50, 10, 50)]
