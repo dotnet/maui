@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -595,6 +596,46 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 			});
 		}
+
+#if IOS16_0_OR_GREATER
+		[Fact(DisplayName = "TitleView renders correctly on iOS 16")]
+		public async Task TitleViewRendersOniOS16()
+		{
+			SetupBuilder();
+
+			var page = new ContentPage();
+
+			var shellTitleView = new Image
+			{
+				Background = Colors.Black,
+				Source = "red.png",
+			};
+	
+			var shell = await CreateShellAsync((shell) =>
+			{
+				Shell.SetTitleView(shell, shellTitleView);
+
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item",
+							Content = page
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page);
+
+				await shellTitleView.ToPlatform().AssertContainsColor(Colors.Red);
+			});
+		}
+#endif
 
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
