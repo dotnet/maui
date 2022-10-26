@@ -475,26 +475,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// https://developer.apple.com/design/human-interface-guidelines/components/navigation-and-search/tab-bars/
 		UIImage GetTabBarItemIcon(UIImage source)
 		{
-			CGSize imageSize = CGSize.Empty;
-
-			var scale = UIScreen.MainScreen.Scale;
-
-			if (scale == 3)
-				imageSize = new CGSize(51, 51);
-
-			if (scale == 2)
-				imageSize = new CGSize(34, 34);
+			nfloat tabBarItemIconSize = 17f;
+			nfloat scale = UIScreen.MainScreen.Scale;
+			nfloat imageSize = tabBarItemIconSize * scale;
 
 			return ResizeTabBarItemIcon(source, imageSize);
 		}
 
-		UIImage ResizeTabBarItemIcon(UIImage source, CGSize size)
+		UIImage ResizeTabBarItemIcon(UIImage source, nfloat size)
 		{
 			if (source == null)
 				return null;
 
 			CGSize sourceSize = source.Size;
-			double resizeFactor = Math.Min(size.Width / sourceSize.Width, size.Height / sourceSize.Height);
+			double resizeFactor = Math.Min(size / sourceSize.Width, size / sourceSize.Height);
 
 			if (resizeFactor > 1)
 				return source;
