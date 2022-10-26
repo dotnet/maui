@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			base.OnCreate(savedInstanceState);
 
 			// Do the work on the background thread to avoid a keyDispatchingTimedOut ANR
-            Task.Run(async () =>
-            { 
+			Task.Run(async () =>
+			{
 				try
 				{
 					var runner = MauiTestInstrumentation.Current.Services.GetRequiredService<HeadlessTestRunner>();
