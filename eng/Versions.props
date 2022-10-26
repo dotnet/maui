@@ -48,7 +48,7 @@
     <!-- must be kept in sync with the binding library version to it here: -->
     <_XamarinAndroidGlideVersion>4.13.2.2</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.7.0</_XamarinGoogleCryptoTinkAndroidVersion>
+    <_XamarinGoogleCryptoTinkAndroidVersion>1.7.0.1</_XamarinGoogleCryptoTinkAndroidVersion>
     <!-- Android Maps -->
     <XamarinGooglePlayServicesMaps>118.1.0</XamarinGooglePlayServicesMaps>
     <!--
