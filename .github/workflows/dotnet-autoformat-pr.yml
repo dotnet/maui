@@ -1,0 +1,17 @@
+name: PR code format check
+on: pull_request
+
+# This action only need a single permission in order to autoformat the code.
+permissions:
+  contents: read
+  
+jobs:
+  autoformat-code:
+    name: code format check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 'Autoformat'
+      uses: rolfbjarne/autoformat@v0.1
+      with:
+        projects: "Microsoft.Maui.sln"
