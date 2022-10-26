@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
@@ -466,9 +467,47 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
-				TabBarItem = new UITabBarItem(ShellSection.Title, icon?.Value, null);
+				TabBarItem = new UITabBarItem(ShellSection.Title, GetTabBarItemIcon(icon?.Value), null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
 			});
+		}
+
+		// https://developer.apple.com/design/human-interface-guidelines/components/navigation-and-search/tab-bars/
+		UIImage GetTabBarItemIcon(UIImage source)
+		{
+			CGSize imageSize = CGSize.Empty;
+
+			var scale = UIScreen.MainScreen.Scale;
+
+			if (scale == 3)
+				imageSize = new CGSize(51, 51);
+
+			if (scale == 2)
+				imageSize = new CGSize(34, 34);
+
+			return ResizeTabBarItemIcon(source, imageSize);
+		}
+
+		UIImage ResizeTabBarItemIcon(UIImage source, CGSize size)
+		{
+			if (source == null)
+				return null;
+
+			CGSize sourceSize = source.Size;
+			double resizeFactor = Math.Min(size.Width / sourceSize.Width, size.Height / sourceSize.Height);
+
+			if (resizeFactor > 1)
+				return source;
+
+			double resizeWidth = sourceSize.Width * resizeFactor;
+			double resizeHeight = sourceSize.Height * resizeFactor;
+
+			UIGraphics.BeginImageContextWithOptions(new CGSize(resizeWidth, resizeHeight), false, 0.0f);
+			source.Draw(new CGRect(0, 0, resizeWidth, resizeHeight));
+			UIImage scaledImage = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return scaledImage;
 		}
 
 		void DisposePage(Page page, bool calledFromDispose = false)
