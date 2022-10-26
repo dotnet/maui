@@ -4,6 +4,7 @@
 	{
 		public const string MauiContext = "MauiContext";
 
+		public const string Accessibility = "Accessibility";
 		public const string Application = "Application";
 		public const string ActivityIndicator = "ActivityIndicator";
 		public const string Border = "Border";

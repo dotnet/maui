@@ -23,4 +23,14 @@
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.MultiTargeting.targets" />
 
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <ProjectReference Include="..\AccessibilityCheck.Droid\AccessibilityCheck.Droid.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
+    <PackageReference Include="Xamarin.Protobuf.JavaLite">
+      <Version>3.21.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  
 </Project>

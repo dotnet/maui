@@ -1,0 +1,42 @@
+﻿<metadata>
+  
+  <!-- Normalize the namespaces for .NET -->
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.checks']"
+    name="managedName">AccessibilityCheck.Droid.Checks</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']"
+      name="managedName">AccessibilityCheck.Droid</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.utils.contrast']"
+    name="managedName">AccessibilityCheck.Droid.Utils.Contrast</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.uielement']"
+    name="managedName">AccessibilityCheck.Droid.UIElement</attr>
+
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']/class[@name='AnnouncementEventCheck']/method[@name='runCheckOnEvent' and count(parameter)=1 and parameter[1][@type='android.view.accessibility.AccessibilityEvent']]"
+        name="visibility">protected</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']/class[@name='AccessibilityCheck.Category']"
+        name="managedName">ACategory</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.utils.contrast']/class[@name='BitmapImage']/method[@name='crop' and count(parameter)=4 and parameter[1][@type='int'] and parameter[2][@type='int'] and parameter[3][@type='int'] and parameter[4][@type='int']]"
+        name="return">com.google.android.apps.common.testing.accessibility.framework.utils.contrast.Image</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.replacements']/class[@name='Spans.URLSpan']/field[@name='ANDROID_CLASS_NAME']"
+        name="managedName">AndroidClassName2</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.suggestions']/class[@name='MaterialDesignColor']/method[@name='getName' and count(parameter)=0]"
+        name="managedName">ColorName</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']/class[@name='HashMapResultMetadata']/method[@name='clone' and count(parameter)=0]"
+        name="return">com.google.android.apps.common.testing.accessibility.framework.ResultMetadata</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']/interface[@name='ResultMetadata']/method[@name='clone' and count(parameter)=0]"
+        name="managedName">ResultMetaDataClone</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']/class[@name='HashMapResultMetadata']/method[@name='clone' and count(parameter)=0]"
+        name="managedName">ResultMetaDataClone</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.strings']/class[@name='AndroidXMLResourceBundle']/method[@name='handleGetObject' and count(parameter)=1 and parameter[1][@type='java.lang.String']]"
+        name="visibility">public</attr>
+  <attr path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']/class[@name='AccessibilityCheckResult']/method[@name='getMessage' and count(parameter)=0]"
+        name="deprecated">not deprecated</attr>
+  
+  <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.uielement']/class[@name='AccessibilityHierarchyAndroid.ViewElementClassNamesAndroid']"/>
+  <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.uielement']/class[@name='AccessibilityHierarchy']/field[@name='viewElementClassNames']"/>
+  <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']/class[@name='AnnouncementEventCheck']/method[@name='shouldHandleEvent' and count(parameter)=1 and parameter[1][@type='android.view.accessibility.AccessibilityEvent']]" />
+  <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']/class[@name='AccessibilityViewCheckResult']" />
+  <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework']/class[@name='AccessibilityViewHierarchyCheck']" />
+  <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.integrations.espresso']/class[@name='AccessibilityViewCheckException']" />
+  <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.integrations']/class[@name='AccessibilityViewCheckException']" />
+
+</metadata>
