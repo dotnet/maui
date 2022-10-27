@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.Logging;
@@ -57,13 +58,22 @@ namespace Microsoft.Maui.Platform
 				dicts.Add(session.UserInfo);
 			if (session.StateRestorationActivity?.UserInfo is not null)
 				dicts.Add(session.StateRestorationActivity.UserInfo);
-			if (connectionOptions.UserActivities is not null)
+			try
 			{
-				foreach (var u in connectionOptions.UserActivities)
+				using var activities = connectionOptions.UserActivities;
+				if (activities is not null)
 				{
-					if (u is NSUserActivity userActivity && userActivity.UserInfo is not null)
-						dicts.Add(userActivity.UserInfo);
+					foreach (var u in activities)
+					{
+						if (u is NSUserActivity userActivity && userActivity.UserInfo is not null)
+							dicts.Add(userActivity.UserInfo);
+					}
 				}
+			}
+			catch (InvalidCastException)
+			{
+				// HACK: Workaround for https://github.com/xamarin/xamarin-macios/issues/13704
+				//       This only throws if the collection is empty.
 			}
 
 			var window = CreatePlatformWindow(application, scene as UIWindowScene, dicts.ToArray());
