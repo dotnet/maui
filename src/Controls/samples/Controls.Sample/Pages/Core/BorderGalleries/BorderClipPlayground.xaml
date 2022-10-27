@@ -22,7 +22,8 @@
         </Grid.RowDefinitions>
        
         <Border x:Name="BorderView" Margin="5"
-                Background="Yellow" Stroke="Red">
+                Stroke="Red" Padding="0"
+                HorizontalOptions="Center" HeightRequest="100" WidthRequest="100">
             <Image x:Name="BorderContent" Aspect="AspectFill" Source="oasis.jpg" />
         </Border>
 
@@ -75,7 +76,7 @@
                     <Slider
                         x:Name="TopRightCornerSlider" 
                         Maximum="60" 
-                        Minimum="6" 
+                        Minimum="0" 
                         ValueChanged="OnCornerRadiusChanged" />
                     <Label 
                         Text="{Binding Source={x:Reference BottomLeftCornerSlider}, Path=Value, StringFormat='{}Bottom Left Corner Radius: {0}'}"
@@ -83,7 +84,7 @@
                     <Slider 
                         x:Name="BottomLeftCornerSlider" 
                         Maximum="60" 
-                        Minimum="6" 
+                        Minimum="0" 
                         ValueChanged="OnCornerRadiusChanged" />
                     <Label 
                         Text="{Binding Source={x:Reference BottomRightCornerSlider}, Path=Value, StringFormat='{}Bottom Right Corner Radius: {0}'}"
