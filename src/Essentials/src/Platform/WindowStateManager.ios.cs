@@ -101,9 +101,18 @@ namespace Microsoft.Maui.ApplicationModel
 			// if we have scene support, use that
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
-				var scenes = UIApplication.SharedApplication.ConnectedScenes;
-				var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
-				return windowScene?.Windows.FirstOrDefault();
+				try
+				{
+					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+					var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
+					return windowScene?.Windows.FirstOrDefault();
+				}
+				catch (InvalidCastException)
+				{
+					// HACK: Workaround for https://github.com/xamarin/xamarin-macios/issues/13704
+					//       This only throws if the collection is empty.
+					return null;
+				}
 			}
 
 			// use the windows property (up to 13.0)
@@ -115,9 +124,18 @@ namespace Microsoft.Maui.ApplicationModel
 			// if we have scene support, use that
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
-				var scenes = UIApplication.SharedApplication.ConnectedScenes;
-				var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
-				return windowScene?.Windows;
+				try
+				{
+					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+					var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
+					return windowScene?.Windows;
+				}
+				catch (InvalidCastException)
+				{
+					// HACK: Workaround for https://github.com/xamarin/xamarin-macios/issues/13704
+					//       This only throws if the collection is empty.
+					return null;
+				}
 			}
 
 			// use the windows property (up to 15.0)
