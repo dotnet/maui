@@ -1,11 +1,19 @@
 ﻿namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.Button']/Docs/*" />
 	public partial class Button
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='MapText']/Docs/*" />
+		/// <summary>
+		/// Maps the abstract <see cref="Text"/> property to the platform implementation.
+		/// </summary>
+		/// <param name="handler">The handler associated to this control.</param>
+		/// <param name="button">The abstract control that is being mapped.</param>
 		public static void MapText(ButtonHandler handler, Button button) { }
 
+		/// <summary>
+		/// Maps the abstract <see cref="LineBreakMode"/> property to the platform implementation.
+		/// </summary>
+		/// <param name="handler">The handler associated to this control.</param>
+		/// <param name="button">The abstract control that is being mapped.</param>
 		public static void MapLineBreakMode(ButtonHandler handler, Button button) { }
 
 		public static void MapText(IButtonHandler handler, Button button) { }
