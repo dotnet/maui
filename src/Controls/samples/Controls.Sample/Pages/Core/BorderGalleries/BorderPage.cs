@@ -23,6 +23,8 @@ namespace Maui.Controls.Sample.Pages
 						descriptionLabel,
 						GalleryBuilder.NavButton("Border Playground", () =>
 							new BorderPlayground(), Navigation),
+						GalleryBuilder.NavButton("Border Clipping Playground", () =>
+							new BorderClipPlayground(), Navigation),
 						GalleryBuilder.NavButton("Border using styles", () =>
 							new BorderStyles(), Navigation),
 					}
