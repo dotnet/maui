@@ -331,30 +331,11 @@ Task("dotnet-pack-docs")
             CopyDirectory($"{d}/ref", $"{destDir}");
         }
 
-        // Get the docs for Maps
-        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Maps.*.nupkg"))
-        {
-            var d = $"{tempDir}/{nupkg.GetFilename()}";
-            Unzip(nupkg, d);
-            DeleteFiles($"{d}/**/*.pri");
-            DeleteFiles($"{d}/**/*.aar");
-            DeleteFiles($"{d}/**/*.pdb");
-            CopyDirectory($"{d}/lib", $"{destDir}");
-        }
-
-        // Get the docs for Graphics
-        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.Graphics.*.nupkg"))
-        {
-            var d = $"{tempDir}/{nupkg.GetFilename()}";
-            Unzip(nupkg, d);
-            DeleteFiles($"{d}/**/*.pri");
-            DeleteFiles($"{d}/**/*.aar");
-            DeleteFiles($"{d}/**/*.pdb");
-            CopyDirectory($"{d}/lib", $"{destDir}");
-        }
-
-        // Get the docs for Foldable
-        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Foldable.*.nupkg"))
+        // Get the docs for Maps, Graphics and Foldable
+        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Maps.*.nupkg",
+            "./artifacts/Microsoft.Maui.Maps.*.nupkg",
+            "./artifacts/Microsoft.Maui.Graphics.*.nupkg",
+            "./artifacts/Microsoft.Maui.*.Foldable.*.nupkg"))
         {
             var d = $"{tempDir}/{nupkg.GetFilename()}";
             Unzip(nupkg, d);
