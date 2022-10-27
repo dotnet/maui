@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
-    <MicrosoftMauiPreviousDotNetReleasedVersion>6.0.545</MicrosoftMauiPreviousDotNetReleasedVersion>
+    <MicrosoftMauiPreviousDotNetReleasedVersion>6.0.546</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
     <MicrosoftDotnetSdkInternalPackageVersion>7.0.100-rtm.22519.39</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
@@ -13,10 +13,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>33.0.4</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>15.4.2367</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.3.2367</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>16.0.1472</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>16.0.1472</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.4.2371</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.3.2371</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>16.0.1477</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>16.0.1477</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>7.0.100</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
