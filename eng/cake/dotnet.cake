@@ -331,18 +331,18 @@ Task("dotnet-pack-docs")
             CopyDirectory($"{d}/ref", $"{destDir}");
         }
 
-        // Get the docs for Maps, Graphics and Foldable
-        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Maps.*.nupkg",
-            "./artifacts/Microsoft.Maui.Maps.*.nupkg",
-            "./artifacts/Microsoft.Maui.Graphics.*.nupkg",
-            "./artifacts/Microsoft.Maui.*.Foldable.*.nupkg"))
+        // Get the docs for libraries separately distributed as NuGets
+        foreach (var pattern in NuGetOnlyPackages)
         {
-            var d = $"{tempDir}/{nupkg.GetFilename()}";
-            Unzip(nupkg, d);
-            DeleteFiles($"{d}/**/*.pri");
-            DeleteFiles($"{d}/**/*.aar");
-            DeleteFiles($"{d}/**/*.pdb");
-            CopyDirectory($"{d}/lib", $"{destDir}");
+            foreach (var nupkg in GetFiles(pattern))
+            {
+                var d = $"{tempDir}/{nupkg.GetFilename()}";
+                Unzip(nupkg, d);
+                DeleteFiles($"{d}/**/*.pri");
+                DeleteFiles($"{d}/**/*.aar");
+                DeleteFiles($"{d}/**/*.pdb");
+                CopyDirectory($"{d}/lib", $"{destDir}");
+            }
         }
 
         CleanDirectories(tempDir);
