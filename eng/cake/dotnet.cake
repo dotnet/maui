@@ -334,7 +334,7 @@ Task("dotnet-pack-docs")
         // Get the docs for libraries separately distributed as NuGets
         foreach (var pattern in NuGetOnlyPackages)
         {
-            foreach (var nupkg in GetFiles(pattern))
+            foreach (var nupkg in GetFiles($"./artifacts/{pattern}"))
             {
                 var d = $"{tempDir}/{nupkg.GetFilename()}";
                 Unzip(nupkg, d);
