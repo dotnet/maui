@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='GetPath']/Docs/*" />
 		public abstract PathF GetPath();
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='FillProperty']/Docs/*" />
@@ -154,7 +153,6 @@ namespace Microsoft.Maui.Controls.Shapes
 				_ => LineJoin.Round
 			};
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeDashPattern']/Docs/*" />
 		public float[] StrokeDashPattern
 			=> StrokeDashArray.Select(a => (float)a).ToArray();
 

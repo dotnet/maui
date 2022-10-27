@@ -54,7 +54,6 @@ namespace Microsoft.Maui.Devices
 		public static IDeviceDisplay Current =>
 			currentImplementation ??= new DeviceDisplayImplementation();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='SetCurrent']/Docs/*" />
 		internal static void SetCurrent(IDeviceDisplay? implementation) =>
 			currentImplementation = implementation;
 	}

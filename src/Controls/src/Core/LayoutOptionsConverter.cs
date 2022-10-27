@@ -11,16 +11,13 @@ namespace Microsoft.Maui.Controls
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.LayoutOptionsConverter")]
 	public sealed class LayoutOptionsConverter : TypeConverter
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs/*" />
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs/*" />
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
 #pragma warning disable CS0618 // Type or member is obsolete (AndExpand options)
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs/*" />
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -59,7 +56,6 @@ namespace Microsoft.Maui.Controls
 		}
 #pragma warning restore CS0618 // Type or member is obsolete
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs/*" />
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not LayoutOptions options)
@@ -75,15 +71,12 @@ namespace Microsoft.Maui.Controls
 			throw new NotSupportedException();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='GetStandardValuesSupported']/Docs/*" />
 		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
 			=> true;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='GetStandardValuesExclusive']/Docs/*" />
 		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
 			=> false;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptionsConverter.xml" path="//Member[@MemberName='GetStandardValues']/Docs/*" />
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
 			=> new(new[] {
 				"Start",
