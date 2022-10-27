@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Platform
 			if (IsBorderDashed())
 				ctx.SetLineDash(_strokeDashOffset * _strokeThickness, _strokeDash);
 
-			ctx.SetLineWidth(_strokeThickness);
+			ctx.SetLineWidth(2 * _strokeThickness);
 
 			ctx.SetLineCap(_strokeLineCap);
 			ctx.SetLineJoin(_strokeLineJoin);
