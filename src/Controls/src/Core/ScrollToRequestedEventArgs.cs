@@ -74,7 +74,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ToRequest']/Docs/*" />
 		public ScrollToRequest ToRequest()
 		{
 			return new ScrollToRequest(ScrollX, ScrollY, !ShouldAnimate);
