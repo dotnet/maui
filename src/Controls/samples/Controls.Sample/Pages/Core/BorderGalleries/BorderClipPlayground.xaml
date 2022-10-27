@@ -68,7 +68,7 @@
                         x:Name="TopLeftCornerSlider"
                         Maximum="60" 
                         Minimum="0" 
-                        Value="20"
+                        Value="60"
                         ValueChanged="OnCornerRadiusChanged" />
                     <Label 
                         Text="{Binding Source={x:Reference TopRightCornerSlider}, Path=Value, StringFormat='{}Top Right Corner Radius: {0}'}"
