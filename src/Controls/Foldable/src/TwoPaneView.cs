@@ -8,6 +8,17 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Foldable
 {
+	/// <summary>
+	/// Layout container with two panes that will position the child content
+	/// side-by-side or vertically. The relative size of the two panes can be 
+	/// configured, but on a foldable Android device the split will be aligned 
+	/// with the hinge or screen fold.
+	/// </summary>
+	/// <remarks>
+	/// Requires <see cref="Microsoft.Maui.Foldable.HostBuilderExtensions.UseFoldable(Maui.Hosting.MauiAppBuilder)"/>
+	/// be configured in the .NET MAUI app to configure the Android lifecycle
+	/// to detect and adapt to foldable device hinges and screen folds.
+	/// </remarks>
 	[ContentProperty("")]
 	public partial class TwoPaneView : Grid
 	{
@@ -68,6 +79,10 @@ namespace Microsoft.Maui.Controls.Foldable
 		public static readonly BindableProperty Pane2LengthProperty
 			= BindableProperty.Create("Pane2Length", typeof(GridLength), typeof(TwoPaneView), defaultValue: GridLength.Star, propertyChanged: TwoPaneViewLayoutPropertyChanged);
 
+		/// <summary>
+		/// Event when the <see cref="Microsoft.Maui.Controls.Foldable.TwoPaneViewMode"/>
+		/// changes on a foldable device.
+		/// </summary>
 		public event EventHandler ModeChanged;
 
 		static object OnMinModePropertyCreate(BindableObject bindable)
@@ -106,54 +121,87 @@ namespace Microsoft.Maui.Controls.Foldable
 			twoPaneView.UpdateMode();
 		}
 
+		/// <summary>
+		/// Gets or sets the minimum height at which panes are shown in tall mode.
+		/// </summary>
 		public double MinTallModeHeight
 		{
 			get { return (double)GetValue(MinTallModeHeightProperty); }
 			set { SetValue(MinTallModeHeightProperty, value); }
 		}
+
+		/// <summary>
+		/// Gets or sets the minimum width at which panes are shown in wide mode.
+		/// </summary>
 		public double MinWideModeWidth
 		{
 			get { return (double)GetValue(MinWideModeWidthProperty); }
 			set { SetValue(MinWideModeWidthProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets the calculated width (in wide mode) or height (in tall mode) of pane 1, or sets the GridLength value of pane 1.
+		/// </summary>
 		public GridLength Pane1Length
 		{
 			get { return (GridLength)GetValue(Pane1LengthProperty); }
 			set { SetValue(Pane1LengthProperty, value); }
 		}
+
+		/// <summary>
+		/// Gets the calculated width (in wide mode) or height (in tall mode) of pane 2, or sets the GridLength value of pane 2.
+		/// </summary>
 		public GridLength Pane2Length
 		{
 			get { return (GridLength)GetValue(Pane2LengthProperty); }
 			set { SetValue(Pane2LengthProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets a <see cref="Microsoft.Maui.Controls.Foldable.TwoPaneViewMode"/> value
+		/// that indicates how panes are shown.
+		/// </summary>
 		public TwoPaneViewMode Mode { get => (TwoPaneViewMode)GetValue(ModeProperty); }
 
+		/// <summary>
+		/// Gets or sets a value that indicates how panes are shown in tall mode.
+		/// </summary>
 		public TwoPaneViewTallModeConfiguration TallModeConfiguration
 		{
 			get { return (TwoPaneViewTallModeConfiguration)GetValue(TallModeConfigurationProperty); }
 			set { SetValue(TallModeConfigurationProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a value that indicates how panes are shown in wide mode.
+		/// </summary>
 		public TwoPaneViewWideModeConfiguration WideModeConfiguration
 		{
 			get { return (TwoPaneViewWideModeConfiguration)GetValue(WideModeConfigurationProperty); }
 			set { SetValue(WideModeConfigurationProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the content of pane 1.
+		/// </summary>
 		public View Pane1
 		{
 			get { return (View)GetValue(Pane1Property); }
 			set { SetValue(Pane1Property, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the content of pane 2.
+		/// </summary>
 		public View Pane2
 		{
 			get { return (View)GetValue(Pane2Property); }
 			set { SetValue(Pane2Property, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a value that indicates which pane has priority.
+		/// </summary>
 		public TwoPaneViewPriority PanePriority
 		{
 			get { return (TwoPaneViewPriority)GetValue(PanePriorityProperty); }
