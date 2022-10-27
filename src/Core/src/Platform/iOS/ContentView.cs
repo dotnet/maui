@@ -116,21 +116,22 @@ namespace Microsoft.Maui.Platform
 			if (Subviews.Length == 0)
 				return;
 
-			var mask = ChildMaskLayer;
+			var maskLayer = ChildMaskLayer;
 
-			if (mask == null && Clip == null)
+			if (maskLayer == null && Clip == null)
 				return;
 
-			mask ??= ChildMaskLayer = new CAShapeLayer();
+			maskLayer ??= ChildMaskLayer = new CAShapeLayer();
 
 			var frame = Frame;
-
-			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
+			var strokeThickness = (float)(Clip?.StrokeThickness ?? 0);
+			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * 2), (float)frame.Height - (strokeThickness * 2));
 
 			IShape? clipShape = Clip?.Shape;
 			var path = clipShape?.PathForBounds(bounds);
 			var nativePath = path?.AsCGPath();
-			mask.Path = nativePath;
+
+			maskLayer.Path = nativePath;
 		}
 	}
 }
