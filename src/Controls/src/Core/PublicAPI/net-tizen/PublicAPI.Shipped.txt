@@ -5609,6 +5609,8 @@ Microsoft.Maui.Controls.Platform.GestureHandler.NativeDetector.get -> Tizen.NUI.
 Microsoft.Maui.Controls.Platform.GestureHandler.NativeView.get -> Tizen.NUI.BaseComponents.View?
 Microsoft.Maui.Controls.Platform.GestureHandler.Recognizer.get -> Microsoft.Maui.Controls.IGestureRecognizer!
 Microsoft.Maui.Controls.Platform.GestureHandler.View.get -> Microsoft.Maui.Controls.View?
+Microsoft.Maui.Controls.Platform.IconConverter
+Microsoft.Maui.Controls.Platform.IconConverter.IconConverter() -> void
 Microsoft.Maui.Controls.Platform.ImageExtensions
 Microsoft.Maui.Controls.Platform.INavigationContentView
 Microsoft.Maui.Controls.Platform.INavigationContentView.Content.get -> Tizen.NUI.BaseComponents.View?
@@ -5652,11 +5654,11 @@ Microsoft.Maui.Controls.Platform.PlatformEffect
 Microsoft.Maui.Controls.Platform.PlatformEffect.PlatformEffect() -> void
 Microsoft.Maui.Controls.Platform.SearchBarExtensions
 Microsoft.Maui.Controls.Platform.SemanticExtensions
-Microsoft.Maui.Controls.Platform.ShellDataTemplateSelector
-Microsoft.Maui.Controls.Platform.ShellDataTemplateSelector.ShellDataTemplateSelector() -> void
 Microsoft.Maui.Controls.Platform.ShellItemView
+Microsoft.Maui.Controls.Platform.ShellItemView.DefaultBackdropColor -> Tizen.NUI.Color!
 Microsoft.Maui.Controls.Platform.ShellItemView.DefaultBackgroundColor -> Tizen.NUI.Color!
 Microsoft.Maui.Controls.Platform.ShellItemView.MauiContext.get -> Microsoft.Maui.IMauiContext!
+Microsoft.Maui.Controls.Platform.ShellItemView.MaxBottomItems -> int
 Microsoft.Maui.Controls.Platform.ShellItemView.Shell.get -> Microsoft.Maui.Controls.Shell!
 Microsoft.Maui.Controls.Platform.ShellItemView.ShellItem.get -> Microsoft.Maui.Controls.ShellItem!
 Microsoft.Maui.Controls.Platform.ShellItemView.ShellItemView(Microsoft.Maui.Controls.ShellItem! item, Microsoft.Maui.IMauiContext! context) -> void
@@ -7139,7 +7141,6 @@ override Microsoft.Maui.Controls.Page.OnParentSet() -> void
 override Microsoft.Maui.Controls.Page.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.Platform.PanGestureHandler.CreateNativeDetector(Microsoft.Maui.Controls.IGestureRecognizer! recognizer) -> Tizen.NUI.GestureDetector!
 override Microsoft.Maui.Controls.Platform.PinchGestureHandler.CreateNativeDetector(Microsoft.Maui.Controls.IGestureRecognizer! recognizer) -> Tizen.NUI.GestureDetector!
-override Microsoft.Maui.Controls.Platform.ShellDataTemplateSelector.OnSelectTemplate(object! item, Microsoft.Maui.Controls.BindableObject! container) -> Microsoft.Maui.Controls.DataTemplate!
 override Microsoft.Maui.Controls.Platform.ShellSectionStackManager.Disconnect() -> void
 override Microsoft.Maui.Controls.Platform.ShellSectionStackManager.InitializeStack(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IView!>! newStack, bool animated) -> System.Threading.Tasks.Task!
 override Microsoft.Maui.Controls.Platform.SwipeGestureHandler.CreateNativeDetector(Microsoft.Maui.Controls.IGestureRecognizer! recognizer) -> Tizen.NUI.GestureDetector!
@@ -7409,7 +7410,7 @@ virtual Microsoft.Maui.Controls.Page.OnBackButtonPressed() -> bool
 virtual Microsoft.Maui.Controls.Page.OnDisappearing() -> void
 virtual Microsoft.Maui.Controls.Platform.GestureHandler.Dispose(bool disposing) -> void
 virtual Microsoft.Maui.Controls.Platform.GestureHandler.Element.get -> Microsoft.Maui.Controls.VisualElement?
-virtual Microsoft.Maui.Controls.Platform.ShellItemView.CreateItemAdaptor() -> Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor!
+virtual Microsoft.Maui.Controls.Platform.ShellItemView.CreateItemAdaptor(System.Collections.IEnumerable! items) -> Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor!
 virtual Microsoft.Maui.Controls.Platform.ShellSectionView.CreateItemAdaptor() -> Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor!
 virtual Microsoft.Maui.Controls.Platform.ShellView.CreateItemAdaptor() -> Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor!
 virtual Microsoft.Maui.Controls.Platform.ShellView.CreateNavigationContentView() -> Microsoft.Maui.Controls.Platform.INavigationContentView!

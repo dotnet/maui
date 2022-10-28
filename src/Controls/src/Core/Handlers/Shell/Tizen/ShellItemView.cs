@@ -1,7 +1,9 @@
 #nullable enable
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
@@ -10,6 +12,7 @@ using GColor = Microsoft.Maui.Graphics.Color;
 using NCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 using NColor = Tizen.NUI.Color;
 using NLayoutGroup = Tizen.NUI.LayoutGroup;
+using NShadow = Tizen.NUI.Shadow;
 using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -32,6 +35,8 @@ namespace Microsoft.Maui.Controls.Platform
 		protected IMauiContext MauiContext { get; private set; }
 
 		protected NColor DefaultBackgroundColor = NColor.White;
+		protected NColor DefaultBackdropColor = new NColor(0.2f, 0.2f, 0.2f, 0.2f);
+		protected int MaxBottomItems = 5;
 
 		public ShellItemView(ShellItem item, IMauiContext context) : base()
 		{
@@ -99,9 +104,9 @@ namespace Microsoft.Maui.Controls.Platform
 				_tabbedView.BackgroundColor = color?.ToNUIColor();
 		}
 
-		protected virtual ItemTemplateAdaptor CreateItemAdaptor()
+		protected virtual ItemTemplateAdaptor CreateItemAdaptor(IEnumerable items)
 		{
-			return new ShellItemTemplateAdaptor(ShellItem, ShellItem.Items);
+			return new ShellSectionItemAdaptor(ShellItem, items);
 		}
 
 		void OnTabItemSelected(object? sender, CollectionViewSelectionChangedEventArgs e)
@@ -119,7 +124,53 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				Shell.CurrentItem = shellContent;
 			}
+			else
+			{
+				MakeSimplePopup()?.Open();
+			} 
 		}
+
+		Popup? MakeSimplePopup()
+		{
+			Popup popup = new Popup
+			{
+				Layout = new LinearLayout
+				{
+					VerticalAlignment = VerticalAlignment.Bottom
+				},
+				BackgroundColor = DefaultBackdropColor,
+			};
+
+			var items = ShellItem.Items.ToList().GetRange(MaxBottomItems - 1, ShellItem.Items.Count - MaxBottomItems + 1);
+			var itemsView = new NCollectionView
+			{
+				WidthSpecification = LayoutParamPolicies.MatchParent,
+				LayoutManager = new LinearLayoutManager(false),
+				SelectionMode = CollectionViewSelectionMode.SingleAlways,
+				SizeHeight = 50d.ToScaledPixel() * items.Count,
+			};
+
+			var adaptor = new ShellFlyoutItemAdaptor(Shell, items, false);
+			adaptor.SelectionChanged += (s, e) =>
+			{
+				popup.Close();
+				OnTabItemSelected(s, e);
+			};
+
+			itemsView.Adaptor = adaptor;
+			itemsView.ScrollView.HideScrollbar = true;
+			itemsView.BoxShadow = new NShadow(10d.ToPixel(), DefaultBackdropColor);
+
+			popup.OutsideClicked += (s, e) =>
+			{
+				popup.Close();
+			};
+
+			popup.Content = itemsView;
+
+			return popup;
+		}
+
 
 		void OnShellItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -159,26 +210,48 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					SizeHeight = 80d.ToScaledPixel(),
 					WidthSpecification = LayoutParamPolicies.MatchParent,
-					LayoutManager = new LinearLayoutManager(true),
 					SelectionMode = CollectionViewSelectionMode.SingleAlways,
 					BackgroundColor = DefaultBackgroundColor
 				};
 				_tabbedView.ScrollView.HideScrollbar = true;
+				_tabbedView.ScrollView.ScrollEnabled = false;
 				Add(_tabbedView);
 			}
 
 			if (_adaptor != null)
 				_adaptor.SelectionChanged -= OnTabItemSelected;
 
-			_tabbedView.Adaptor = _adaptor = CreateItemAdaptor();
+			if (ShellItem.Items.Count <= MaxBottomItems)
+			{
+				_adaptor = CreateItemAdaptor(ShellItem.Items);
+			}
+			else
+			{
+				var items = ShellItem.Items.ToList<object>().GetRange(0, MaxBottomItems - 1);
+				items.Add(new MoreItem());
+				_adaptor = CreateItemAdaptor(items);
+			}
+
+			_tabbedView.LayoutManager = new GridLayoutManager(false, ShellItem.Items.Count > MaxBottomItems ? MaxBottomItems : ShellItem.Items.Count);
+			_tabbedView.Adaptor = _adaptor;
 			_adaptor.SelectionChanged += OnTabItemSelected;
-			_cachedGroups = ShellItem.Items;
+			
+			_cachedGroups = ShellItem.Items.ToList();
 		}
 
 		void HideTabBar()
 		{
 			if (_tabbedView != null)
 				Remove(_tabbedView);
+		}
+
+		class MoreItem
+		{
+			const string PathMoreVert = "M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z";
+
+			public string Title { get; set; } = "More";
+
+			public string? IconPath { get; set; } = PathMoreVert;
 		}
 	}
 }

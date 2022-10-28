@@ -184,7 +184,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_itemsView = new NCollectionView
 				{
-					SizeHeight = 60d.ToScaledPixel(),
 					WidthSpecification = LayoutParamPolicies.MatchParent,
 					LayoutManager = new LinearLayoutManager(false),
 					SelectionMode = CollectionViewSelectionMode.SingleAlways,
@@ -252,7 +251,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual ItemTemplateAdaptor CreateItemAdaptor()
 		{
-			return new ShellFlyoutItemTemplateAdaptor(Element!, Element!.Items, HeaderOnMenu);
+			return new ShellFlyoutItemAdaptor(Element!, Element!.Items, HeaderOnMenu);
 		}
 
 		void OnIconPressed(object? sender, EventArgs e)

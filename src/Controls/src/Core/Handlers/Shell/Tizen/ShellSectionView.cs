@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual ItemTemplateAdaptor CreateItemAdaptor()
 		{
-			return new ShellItemTemplateAdaptor(ShellSection, ShellSection.Items);
+			return new ShellContentItemAdaptor(ShellSection, ShellSection.Items);
 		}
 
 		void OnTabItemSelected(object? sender, CollectionViewSelectionChangedEventArgs e)

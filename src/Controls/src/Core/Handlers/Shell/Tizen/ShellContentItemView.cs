@@ -4,9 +4,9 @@ using GColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class ShellContentItemTemplatedView : Frame
+	class ShellContentItemView : Frame
 	{
-		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellContentItemTemplatedView), false, propertyChanged: (b, o, n) => ((ShellContentItemTemplatedView)b).UpdateSelectedState());
+		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellContentItemView), false, propertyChanged: (b, o, n) => ((ShellContentItemView)b).UpdateSelectedState());
 
 		BoxView _bar;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 #pragma warning disable CS8618
-		public ShellContentItemTemplatedView()
+		public ShellContentItemView()
 #pragma warning restore CS8618
 		{
 			InitializeComponent();
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 			VisualState selected = new VisualState()
 			{
 				Name = VisualStateManager.CommonStates.Selected,
-				TargetType = typeof(ShellContentItemTemplatedView),
+				TargetType = typeof(ShellContentItemView),
 				Setters =
 				{
 					new Setter
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 			VisualState normal = new VisualState()
 			{
 				Name = VisualStateManager.CommonStates.Normal,
-				TargetType = typeof(ShellContentItemTemplatedView),
+				TargetType = typeof(ShellContentItemView),
 				Setters =
 				{
 					new Setter

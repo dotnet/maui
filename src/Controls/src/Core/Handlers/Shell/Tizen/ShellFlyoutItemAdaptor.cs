@@ -5,12 +5,12 @@ using Microsoft.Maui.Controls.Handlers.Items;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class ShellFlyoutItemTemplateAdaptor : ItemTemplateAdaptor
+	class ShellFlyoutItemAdaptor : ItemTemplateAdaptor
 	{
 		Shell _shell;
 		bool _hasHeader;
 
-		public ShellFlyoutItemTemplateAdaptor(Shell shell, IEnumerable items, bool hasHeader) : base(shell, items, GetTemplate())
+		public ShellFlyoutItemAdaptor(Shell shell, IEnumerable items, bool hasHeader) : base(shell, items, GetTemplate())
 		{
 			_shell = shell;
 			_hasHeader = hasHeader;
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			return new DataTemplate(() =>
 			{
-				return new ShellItemTemplatedView();
+				return new ShellFlyoutItemView();
 			});
 		}
 	}
