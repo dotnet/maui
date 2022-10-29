@@ -7448,3 +7448,6 @@ static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.T
 ~static Microsoft.Maui.Controls.Layout.MapInputTransparent(Microsoft.Maui.Handlers.LayoutHandler handler, Microsoft.Maui.Controls.Layout layout) -> void
 ~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.RadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
+Microsoft.Maui.Controls.IImageSourceHttpClientFactory
+Microsoft.Maui.Controls.IImageSourceHttpClientFactory.ShouldDispose.get -> bool
+Microsoft.Maui.Controls.IImageSourceHttpClientFactory.CreateClient(System.Uri! imageUri) -> System.Net.Http.HttpClient!

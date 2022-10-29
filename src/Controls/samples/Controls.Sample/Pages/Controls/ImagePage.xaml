@@ -4,15 +4,23 @@
     x:Class="Maui.Controls.Sample.Pages.ImagePage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Image">
-    <views:BasePage.Content>
+
+  <views:BasePage.Resources>
+    <Style TargetType="Image">
+      <Setter Property="MaximumHeightRequest" Value="400" />
+      <Setter Property="MaximumWidthRequest" Value="400" />
+    </Style>
+  </views:BasePage.Resources>
+
+  <views:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout
                 Margin="12">
                 <Label
-                    Text="UriSource"
+                    Text="UriSource using ImageSourceHttpClientFactory"
                     Style="{StaticResource Headline}"/>
                 <Image 
-                    Source="https://aka.ms/campus.jpg"
+                    Source="https://news.microsoft.com/wp-content/uploads/prod/2022/07/hexagon_print.gif"
                     />
                 <Label
                     Text="FileSource"

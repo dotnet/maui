@@ -3,14 +3,27 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
+	sealed class DefaultImageSourceHttpClientFactory : IImageSourceHttpClientFactory
+	{
+		public bool ShouldDispose => true;
+
+		public HttpClient CreateClient(Uri _)
+			=> new HttpClient();
+	}
+
 	// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
 	/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.UriImageSource']/Docs/*" />
 	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
 	{
+		readonly IImageSourceHttpClientFactory _httpClientFactory
+			= Application.Current?.FindMauiContext()?.Services.GetService<IImageSourceHttpClientFactory>() 
+			  ?? new DefaultImageSourceHttpClientFactory();
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='UriProperty']/Docs/*" />
 		public static readonly BindableProperty UriProperty = BindableProperty.Create(
 			nameof(Uri), typeof(Uri), typeof(UriImageSource), default(Uri),
@@ -113,11 +126,20 @@ namespace Microsoft.Maui.Controls
 		{
 			try
 			{
-				using var client = new HttpClient();
-
-				// Do not remove this await otherwise the client will dispose before
-				// the stream even starts
-				return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+				if (_httpClientFactory.ShouldDispose)
+				{
+					using var client = _httpClientFactory.CreateClient(uri);
+					// Do not remove this await otherwise the client will dispose before
+					// the stream even starts
+					return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+				}
+				else
+				{
+					var client = _httpClientFactory.CreateClient(uri);
+					// Do not remove this await otherwise the client will dispose before
+					// the stream even starts
+					return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+				}
 			}
 			catch (Exception ex)
 			{

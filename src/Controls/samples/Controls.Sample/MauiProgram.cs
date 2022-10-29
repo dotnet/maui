@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http.Headers;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
@@ -118,6 +120,14 @@ namespace Maui.Controls.Sample
 				logging.AddConsole();
 #endif
 			});
+
+			services.AddSingleton<IImageSourceHttpClientFactory, ImageSourceHttpClientFactory>();
+			services
+				.AddHttpClient(ImageSourceHttpClientFactory.DefaultHttpClientName, httpClient =>
+				{
+					httpClient.Timeout = TimeSpan.FromSeconds(5);
+					httpClient.DefaultRequestVersion = HttpVersion.Version20;
+				});
 
 			services.AddSingleton<ITextService, TextService>();
 			services.AddTransient<MainViewModel>();

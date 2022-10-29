@@ -128,3 +128,6 @@ static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> 
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
 Microsoft.Maui.Controls.ILayoutManagerFactory
 ~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
+Microsoft.Maui.Controls.IImageSourceHttpClientFactory
+Microsoft.Maui.Controls.IImageSourceHttpClientFactory.ShouldDispose.get -> bool
+Microsoft.Maui.Controls.IImageSourceHttpClientFactory.CreateClient(System.Uri! imageUri) -> System.Net.Http.HttpClient!
