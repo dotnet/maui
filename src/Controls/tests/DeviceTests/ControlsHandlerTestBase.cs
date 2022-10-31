@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,9 +34,11 @@ namespace Microsoft.Maui.DeviceTests
 		// There's definitely a chance that the code written to manage this process could be improved		
 		public const string RunInNewWindowCollection = "Serialize test because it has to add itself to the main window";
 
-		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
-			mauiAppBuilder.ConfigureTestBuilder();
-
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
+		{
+			mauiAppBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
+			return mauiAppBuilder.ConfigureTestBuilder();
+		}
 
 		protected void SetupShellHandlers(IMauiHandlersCollection handlers)
 		{
