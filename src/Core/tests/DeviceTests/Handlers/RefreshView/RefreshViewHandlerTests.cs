@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category("RefreshViewHandler")]
-	public partial class RefreshViewHandlerTests : HandlerTestBase<RefreshViewHandler, RefreshViewStub>
+	public partial class RefreshViewHandlerTests : CoreHandlerTestBase<RefreshViewHandler, RefreshViewStub>
 	{
 		[Theory(DisplayName = "Is Refreshing Initializes Correctly")]
 		[InlineData(false)]

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ElementTests : HandlerTestBase
+	public partial class ElementTests : CoreHandlerTestBase
 	{
 		[Fact]
 		public void ElementToHandlerReturnsIElementHandler()

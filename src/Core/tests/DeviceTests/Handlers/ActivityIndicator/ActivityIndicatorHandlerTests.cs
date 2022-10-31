@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ActivityIndicator)]
-	public partial class ActivityIndicatorHandlerTests : HandlerTestBase<ActivityIndicatorHandler, ActivityIndicatorStub>
+	public partial class ActivityIndicatorHandlerTests : CoreHandlerTestBase<ActivityIndicatorHandler, ActivityIndicatorStub>
 	{
 		[Theory(DisplayName = "IsRunning Initializes Correctly")]
 		[InlineData(true)]

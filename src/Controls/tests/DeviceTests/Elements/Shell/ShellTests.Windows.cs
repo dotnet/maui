@@ -15,7 +15,7 @@ using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
-	public partial class ShellTests : HandlerTestBase
+	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		protected Task CheckFlyoutState(ShellHandler handler, bool desiredState)
 		{

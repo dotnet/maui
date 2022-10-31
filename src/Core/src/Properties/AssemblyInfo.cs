@@ -33,3 +33,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
 [assembly: InternalsVisibleTo("Reloadify-emit")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.TestUtils.DeviceTests.Runners")]

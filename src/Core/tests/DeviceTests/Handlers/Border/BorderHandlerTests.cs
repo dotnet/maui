@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Border)]
-	public partial class BorderHandlerTests : HandlerTestBase<BorderHandler, BorderStub>
+	public partial class BorderHandlerTests : CoreHandlerTestBase<BorderHandler, BorderStub>
 	{
 		[Theory(DisplayName = "Background Initializes Correctly")]
 		[InlineData(0xFF0000)]
