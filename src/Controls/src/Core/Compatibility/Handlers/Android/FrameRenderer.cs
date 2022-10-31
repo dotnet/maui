@@ -28,7 +28,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				[Frame.CornerRadiusProperty.PropertyName] = (h, _) => h.UpdateCornerRadius(),
 				[Frame.BorderColorProperty.PropertyName] = (h, _) => h.UpdateBorderColor(),
 				[Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty.PropertyName] = (h, _) => h.UpdateClippedToBounds(),
-				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent()
+				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent(),
+				[nameof(IView.AutomationId)] = (h, v) => ViewHandler.MapAutomationId(h, v),
+				[nameof(IView.IsEnabled)] = (h, v) => ViewHandler.MapIsEnabled(h, v),
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 			};
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
@@ -317,9 +320,54 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		#region IPlatformViewHandler
-		bool IViewHandler.HasContainer { get => false; set { } }
 
-		object? IViewHandler.ContainerView => null;
+		bool NeedsContainer
+		{
+			get
+			{
+				var virtualView = Element as IView;
+				return virtualView?.Clip != null || virtualView?.Shadow != null
+					|| (virtualView as IBorder)?.Border != null || virtualView?.InputTransparent == true;
+			}
+		}
+
+		static void MapContainerView(IViewHandler handler, IView view)
+		{
+			if (handler is FrameRenderer frameRenderer)
+			{
+				handler.HasContainer = frameRenderer.NeedsContainer;
+			}
+		}
+
+		bool _hasContainer;
+		AView? _containerView;
+		bool IViewHandler.HasContainer
+		{
+			get => _hasContainer;
+			set
+			{
+				if (_hasContainer == value)
+					return;
+
+				_hasContainer = value;
+
+				if (value)
+				{
+					this.SetupContainerFromHandler((handler) =>
+					{
+						var view = new WrapperView(handler!.MauiContext!.Context);
+						_containerView = view;
+						return view;
+					});
+				}
+				else
+				{
+					this.RemoveContainerFromHandler(_ => _containerView = null);
+				}
+			}
+		}
+
+		object? IViewHandler.ContainerView => _containerView;
 
 		IView? IViewHandler.VirtualView => Element;
 
@@ -331,7 +379,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		AView IPlatformViewHandler.PlatformView => this;
 
-		AView? IPlatformViewHandler.ContainerView => this;
+		AView? IPlatformViewHandler.ContainerView => _containerView;
 
 		void IViewHandler.PlatformArrange(Graphics.Rect rect) =>
 			this.PlatformArrangeHandler(rect);

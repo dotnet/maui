@@ -14,5 +14,18 @@ namespace Maui.Controls.Sample
 		{
 			InitializeComponent();
 		}
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+		}
+
+		protected override void OnNavigatedTo(NavigatedToEventArgs args)
+		{
+			base.OnNavigatedTo(args);
+
+			var activity = Window?.Handler?.PlatformView;
+		}
 	}
 }

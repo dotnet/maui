@@ -252,13 +252,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
-			if (oldElement?.Handler != null)
-				oldElement.Handler = null;
-
 			currentVirtualView = (TElement)view;
 
 			if (currentVirtualView.Handler != nativeViewHandler)
 				currentVirtualView.Handler = nativeViewHandler;
+
+			// We set the previous virtual view to null after setting it on the incoming virtual view.
+			// This makes it easier for the incoming virtual view to have influence
+			// on how the exchange of handlers happens.
+			// We will just set the handler to null ourselves as a last resort cleanup
+			if (oldElement?.Handler != null)
+				oldElement.Handler = null;
 
 			_mapper = _defaultMapper;
 

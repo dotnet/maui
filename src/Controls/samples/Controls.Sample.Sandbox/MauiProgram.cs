@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 
 namespace Maui.Controls.Sample
 {
@@ -18,6 +19,6 @@ namespace Maui.Controls.Sample
 	class App : Application
 	{
 		protected override Window CreateWindow(IActivationState activationState) =>
-			new Window(new NavigationPage(new MainPage()));
+			new Window(new MainPage());
 	}
 }

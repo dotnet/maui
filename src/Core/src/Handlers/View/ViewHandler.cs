@@ -100,7 +100,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract void RemoveContainer();
 
-		public PlatformView? ContainerView { get; private protected set; }
+		public PlatformView? ContainerView 
+		{ 
+			get; 
+			private protected set; 
+		}
 
 		object? IViewHandler.ContainerView => ContainerView;
 

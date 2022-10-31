@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -13,26 +14,103 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public class FrameStub : Frame, IStubBase
 	{
-		public double MaximumWidth { get; set; }
-		public double MaximumHeight { get; set; }
-		public double MinimumWidth { get; set; }
-		public double MinimumHeight { get; set; }
-		public Visibility Visibility { get; set; }
-		public Semantics Semantics { get; set; }
-		double IStubBase.Width { get; set; }
-		double IStubBase.Height { get; set; }
-		Paint IStubBase.Background { get; set; }
-		IShape IStubBase.Clip { get; set; }
-		IElement IStubBase.Parent { get; set; }
+		public double MaximumWidth
+		{
+			get => base.MaximumWidthRequest;
+			set => base.MaximumWidthRequest = value;
+		}
+
+		public double MaximumHeight
+		{
+			get => base.MaximumHeightRequest;
+			set => base.MaximumHeightRequest = value;
+		}
+
+		public double MinimumWidth
+		{
+			get => base.MinimumWidthRequest;
+			set => base.MinimumWidthRequest = value;
+		}
+
+		public double MinimumHeight
+		{
+			get => base.MinimumHeightRequest;
+			set => base.MinimumHeightRequest = value;
+		}
+
+		public Visibility Visibility
+		{
+			get => base.IsVisible ? Visibility.Visible : Visibility.Hidden;
+			set
+			{
+				if (value == Visibility.Visible)
+					base.IsVisible = true;
+				else
+					base.IsVisible = false;
+			}
+		}
+
+		public Semantics Semantics
+		{
+			get;
+			set;
+		}
+
+		double IStubBase.Width
+		{
+			get => base.WidthRequest;
+			set => base.WidthRequest = value;
+		}
+
+		double IStubBase.Height
+		{
+			get => base.HeightRequest;
+			set => base.HeightRequest = value;
+		}
+
+		Paint IStubBase.Background
+		{
+			get => base.Background;
+			set => base.Background = value;
+		}
+
+		IShape IStubBase.Clip
+		{
+			get;
+			set;
+		}
+
+		IShape IView.Clip
+		{
+			get => (this as IStubBase).Clip;
+		}
+
+
+		IElement IStubBase.Parent
+		{
+			get => (IElement)base.Parent;
+			set => base.Parent = (Element)value;
+		}
 	}
 
 	[Category(TestCategory.Frame)]
-	public class FrameHandlerTest : HandlerTestBase<FrameRenderer, FrameStub>
+	public class FrameHandlerTest : HandlerTestBase<FrameRendererTest, FrameStub>
 	{
 		public FrameHandlerTest()
 		{
 
 		}
+	}
+
+	public class FrameRendererTest : FrameRenderer
+	{
+#if ANDROID
+
+		public FrameRendererTest() : base(MauiProgramDefaults.DefaultContext)
+		{
+		}
+
+#endif
 	}
 
 	[Category(TestCategory.Frame)]
