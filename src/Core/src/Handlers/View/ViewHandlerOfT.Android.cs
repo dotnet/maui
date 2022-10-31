@@ -17,42 +17,15 @@ namespace Microsoft.Maui.Handlers
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
-		protected override void SetupContainer()
-		{
-			if (Context == null || PlatformView == null || ContainerView != null)
-				return;
+		protected override void SetupContainer() =>
+			this.SetupContainerFromHandler((handler) =>
+			{
+				var view = new WrapperView(handler!.MauiContext!.Context);
+				((ViewHandler<TVirtualView, TPlatformView>)handler).ContainerView = view;
+				return view;
+			});
 
-			var oldParent = (ViewGroup?)PlatformView.Parent;
-
-			var oldIndex = oldParent?.IndexOfChild(PlatformView);
-			oldParent?.RemoveView(PlatformView);
-
-			ContainerView ??= new WrapperView(Context);
-			((ViewGroup)ContainerView).AddView(PlatformView);
-
-			if (oldIndex is int idx && idx >= 0)
-				oldParent?.AddView(ContainerView, idx);
-			else
-				oldParent?.AddView(ContainerView);
-		}
-
-		protected override void RemoveContainer()
-		{
-			if (Context == null || PlatformView == null || ContainerView == null || PlatformView.Parent != ContainerView)
-				return;
-
-			var oldParent = (ViewGroup?)ContainerView.Parent;
-
-			var oldIndex = oldParent?.IndexOfChild(ContainerView);
-			oldParent?.RemoveView(ContainerView);
-
-			((ViewGroup)ContainerView).RemoveAllViews();
-			ContainerView = null;
-
-			if (oldIndex is int idx && idx >= 0)
-				oldParent?.AddView(PlatformView, idx);
-			else
-				oldParent?.AddView(PlatformView);
-		}
+		protected override void RemoveContainer() =>
+			this.RemoveContainerFromHandler((handler) => ((ViewHandler<TVirtualView, TPlatformView>)handler).ContainerView = null);
 	}
 }
