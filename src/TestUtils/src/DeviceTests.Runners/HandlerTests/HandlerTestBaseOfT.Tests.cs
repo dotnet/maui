@@ -211,6 +211,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// TODO:
 			}
+#if ANDROID
+			else if (size == 1 && view is ISwitch)
+			{
+				// https://github.com/dotnet/maui/issues/11020
+			}
+#endif
 			else if (view is IProgress)
 			{
 				if (!CloseEnough(size, nativeBoundingBox.Size.Width))
