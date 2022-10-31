@@ -146,15 +146,23 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			}
 
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<Bugzilla40911>(this, Bugzilla40911.ReadyToSetUp40911Test, SetUp40911Test);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<Issue5503>(this, Issue5503.ChangeUITableViewAppearanceBgColor, (s) =>
 			{
 				UITableView.Appearance.BackgroundColor = UITableView.Appearance.BackgroundColor == null ? UIColor.Red : null;
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return base.FinishedLaunching(uiApplication, launchOptions);
 		}

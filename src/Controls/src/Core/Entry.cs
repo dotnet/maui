@@ -5,113 +5,161 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Entry']/Docs/*" />
+	/// <summary>
+	/// Entry is a single line text entry. It is best used for collecting small discrete pieces of information, like usernames and passwords.
+	/// </summary>
 	public partial class Entry : InputView, IFontElement, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='ReturnTypeProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="ReturnType"/> property.
+		/// </summary>
 		public static readonly BindableProperty ReturnTypeProperty = BindableProperty.Create(nameof(ReturnType), typeof(ReturnType), typeof(Entry), ReturnType.Default);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='ReturnCommandProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="ReturnCommand"/> property.
+		/// </summary>
 		public static readonly BindableProperty ReturnCommandProperty = BindableProperty.Create(nameof(ReturnCommand), typeof(ICommand), typeof(Entry), default(ICommand));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='ReturnCommandParameterProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="ReturnCommandParameter"/> property.
+		/// </summary>
 		public static readonly BindableProperty ReturnCommandParameterProperty = BindableProperty.Create(nameof(ReturnCommandParameter), typeof(object), typeof(Entry), default(object));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='PlaceholderProperty']/Docs/*" />
+		/// <inheritdoc cref="InputView.PlaceholderProperty"/>
 		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='PlaceholderColorProperty']/Docs/*" />
+		/// <inheritdoc cref="InputView.PlaceholderColorProperty"/>
 		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='IsPasswordProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="IsPassword"/> property.
+		/// </summary>
 		public static readonly BindableProperty IsPasswordProperty = BindableProperty.Create(nameof(IsPassword), typeof(bool), typeof(Entry), default(bool));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
+		/// <inheritdoc cref="InputView.TextProperty"/>
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <inheritdoc cref="InputView.TextColorProperty"/>
 		public new static readonly BindableProperty TextColorProperty = InputView.TextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='KeyboardProperty']/Docs/*" />
+		/// <inheritdoc cref="InputView.KeyboardProperty"/>
 		public new static readonly BindableProperty KeyboardProperty = InputView.KeyboardProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
+		/// <inheritdoc cref="InputView.CharacterSpacingProperty"/>
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='HorizontalTextAlignmentProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="HorizontalTextAlignment"/> property.
+		/// </summary>
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='VerticalTextAlignmentProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="ReturnType"/> property.
+		/// </summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='FontFamilyProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="ReturnType"/> property.
+		/// </summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='FontSizeProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="ReturnType"/> property.
+		/// </summary>
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='FontAttributesProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="ReturnType"/> property.
+		/// </summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='FontAutoScalingEnabledProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="ReturnType"/> property.
+		/// </summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='IsTextPredictionEnabledProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="IsTextPredictionEnabled"/> property.
+		/// </summary>
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Entry), true, BindingMode.OneTime);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='CursorPositionProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="CursorPosition"/> property.
+		/// </summary>
 		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(Entry), 0, validateValue: (b, v) => (int)v >= 0);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='SelectionLengthProperty']/Docs/*" />
+		/// <summary>
+		/// Backing store for the <see cref="SelectionLength"/> property.
+		/// </summary>
 		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(Entry), 0, validateValue: (b, v) => (int)v >= 0);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='ClearButtonVisibilityProperty']/Docs/*" />
-		public static readonly BindableProperty ClearButtonVisibilityProperty = BindableProperty.Create(nameof(ClearButtonVisibility), typeof(ClearButtonVisibility), typeof(Entry), ClearButtonVisibility.Never);
+		/// <summary>
+		/// Backing store for the <see cref="SelectionLength"/> property.
+		/// </summary>
+		public static readonly BindableProperty ClearButtonVisibilityProperty = BindableProperty.Create(nameof(SelectionLength), typeof(ClearButtonVisibility), typeof(Entry), ClearButtonVisibility.Never);
 
 		readonly Lazy<PlatformConfigurationRegistry<Entry>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Creates a new <see cref="Entry"/> object with default values.
+		/// </summary>
 		public Entry()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Entry>>(() => new PlatformConfigurationRegistry<Entry>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the horizontal text alignment. This is a bindable property.
+		/// </summary>
 		public TextAlignment HorizontalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='VerticalTextAlignment']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the vertical text alignment. This is a bindable property.
+		/// </summary>
 		public TextAlignment VerticalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.VerticalTextAlignmentProperty); }
 			set { SetValue(TextAlignmentElement.VerticalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='IsPassword']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that indicates if the entry should visually obscure typed text.
+		/// Value is <see langword="true" /> if the element is a password box; otherwise, <see langword="false" />. Default value is <see langword="false" />.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>Toggling this value does not reset the contents of the entry, therefore it is advisable to be careful about setting <see cref="IsPassword"/> to false, as it may contain sensitive information.</remarks>
 		public bool IsPassword
 		{
 			get { return (bool)GetValue(IsPasswordProperty); }
 			set { SetValue(IsPasswordProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that indicates whether the font for the text of this entry is bold, italic, or neither.
+		/// This is a bindable property.
+		/// </summary>
 		public FontAttributes FontAttributes
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the font family for the text of this entry. This is a bindable property.
+		/// </summary>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the size of the font for the text of this entry. This is a bindable property.
+		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -119,56 +167,78 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='FontAutoScalingEnabled']/Docs/*" />
+		/// <summary>
+		/// Determines whether or not the font of this entry should scale automatically according to the operating system settings. Default value is <see langword="true"/>.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>Typically this should always be enabled for accessibility reasons.</remarks>
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='IsTextPredictionEnabled']/Docs/*" />
+		/// <summary>
+		/// Determines whether text prediction and automatic text correction is enabled. Default value is <see langword="true"/>.
+		/// </summary>
 		public bool IsTextPredictionEnabled
 		{
 			get { return (bool)GetValue(IsTextPredictionEnabledProperty); }
 			set { SetValue(IsTextPredictionEnabledProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='ReturnType']/Docs/*" />
+		/// <summary>
+		/// Determines what the return key on the on-screen keyboard should look like. This is a bindable property.
+		/// </summary>
 		public ReturnType ReturnType
 		{
 			get => (ReturnType)GetValue(ReturnTypeProperty);
 			set => SetValue(ReturnTypeProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='CursorPosition']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the position of the cursor. The value must be more than or equal to 0 and less or equal to the length of <see cref="InputView.Text"/>.
+		/// This is a bindable property.
+		/// </summary>
 		public int CursorPosition
 		{
 			get { return (int)GetValue(CursorPositionProperty); }
 			set { SetValue(CursorPositionProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='SelectionLength']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the length of the selection. The selection will start at <see cref="CursorPosition"/>.
+		/// This is a bindable property.
+		/// </summary>
 		public int SelectionLength
 		{
 			get { return (int)GetValue(SelectionLengthProperty); }
 			set { SetValue(SelectionLengthProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='ReturnCommand']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to run when the user presses the return key, either physically or on the on-screen keyboard.
+		/// This is a bindable property.
+		/// </summary>
 		public ICommand ReturnCommand
 		{
 			get => (ICommand)GetValue(ReturnCommandProperty);
 			set => SetValue(ReturnCommandProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='ReturnCommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter object for the <see cref="ReturnCommand" /> that can be used to provide extra information.
+		/// This is a bindable property.
+		/// </summary>
 		public object ReturnCommandParameter
 		{
 			get => GetValue(ReturnCommandParameterProperty);
 			set => SetValue(ReturnCommandParameterProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='ClearButtonVisibility']/Docs/*" />
+		/// <summary>
+		/// Determines the behavior of the clear text button on this entry. This is a bindable property.
+		/// </summary>
 		public ClearButtonVisibility ClearButtonVisibility
 		{
 			get => (ClearButtonVisibility)GetValue(ClearButtonVisibilityProperty);
@@ -196,9 +266,15 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
+		/// <summary>
+		/// Occurs when the user finalizes the text in an entry with the return key.
+		/// </summary>
 		public event EventHandler Completed;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Entry.xml" path="//Member[@MemberName='SendCompleted']/Docs/*" />
+		/// <summary>
+		/// Internal method to trigger <see cref="Completed"/> and <see cref="ReturnCommand"/>.
+		/// Should not be called manually outside of .NET MAUI.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCompleted()
 		{

@@ -44,7 +44,6 @@ namespace Microsoft.Maui.Controls.Internals
 		/// </summary>
 		public string Title { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='FlowDirection']/Docs/*" />
 		public FlowDirection FlowDirection { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='SetResult']/Docs/*" />

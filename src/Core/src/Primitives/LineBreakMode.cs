@@ -1,19 +1,39 @@
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/LineBreakMode.xml" path="Type[@FullName='Microsoft.Maui.LineBreakMode']/Docs/*" />
+	/// <summary>
+	/// Enumeration specifying various options for line breaking.
+	/// </summary>
+	/// <remarks>How lines are broken or text is truncated might be different depending on the platform.</remarks>
 	public enum LineBreakMode
 	{
-		/// <include file="../../docs/Microsoft.Maui/LineBreakMode.xml" path="//Member[@MemberName='NoWrap']/Docs/*" />
+		/// <summary>
+		/// Do not wrap text.
+		/// </summary>
 		NoWrap,
-		/// <include file="../../docs/Microsoft.Maui/LineBreakMode.xml" path="//Member[@MemberName='WordWrap']/Docs/*" />
+
+		/// <summary>
+		/// Wrap at word boundaries.
+		/// </summary>
 		WordWrap,
-		/// <include file="../../docs/Microsoft.Maui/LineBreakMode.xml" path="//Member[@MemberName='CharacterWrap']/Docs/*" />
+
+		/// <summary>
+		/// Wrap at character boundaries.
+		/// </summary>
 		CharacterWrap,
-		/// <include file="../../docs/Microsoft.Maui/LineBreakMode.xml" path="//Member[@MemberName='HeadTruncation']/Docs/*" />
+
+		/// <summary>
+		/// Truncate the head of text.
+		/// </summary>
 		HeadTruncation,
-		/// <include file="../../docs/Microsoft.Maui/LineBreakMode.xml" path="//Member[@MemberName='TailTruncation']/Docs/*" />
+
+		/// <summary>
+		/// Truncate the tail of text.
+		/// </summary>
 		TailTruncation,
-		/// <include file="../../docs/Microsoft.Maui/LineBreakMode.xml" path="//Member[@MemberName='MiddleTruncation']/Docs/*" />
+
+		/// <summary>
+		/// Truncate the middle of text. This may be done, for example, by replacing it with an ellipsis.
+		/// </summary>
 		MiddleTruncation
 	}
 }

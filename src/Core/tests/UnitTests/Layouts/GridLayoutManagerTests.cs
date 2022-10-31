@@ -1436,6 +1436,26 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(expectedHeight, measure.Height);
 		}
 
+		[Theory]
+		[InlineData("*", "*")]
+		[InlineData("auto", "auto")]
+		public void MeasureRespectsLargestChildMinimumSize(string columns, string rows)
+		{
+			var grid = CreateGridLayout(columns: columns, rows: rows);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(200, 200));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1);
+
+			var layoutManager = new GridLayoutManager(grid);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(200, measure.Height);
+			Assert.Equal(200, measure.Width);
+		}
+
 		[Category(GridAbsoluteSizing)]
 		[Theory]
 		[InlineData(50, 10, 50)]
@@ -2315,6 +2335,29 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			_ = MeasureAndArrange(grid, 200, screenHeight);
 
 			AssertArranged(view1, new Rect(20, 0, 20, 500));
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarsExpandToFixedSizes()
+		{
+			var grid = CreateGridLayout();
+			grid.DesiredSize.Returns(new Size(100, 120));
+			grid.Width.Returns(100);
+			grid.Height.Returns(120);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			view0.Width.Returns(20);
+			view0.Height.Returns(20);
+			view0.HorizontalLayoutAlignment.Returns(LayoutAlignment.End);
+			view0.VerticalLayoutAlignment.Returns(LayoutAlignment.Start);
+
+			SetLocation(grid, view0);
+			SubstituteChildren(grid, view0);
+
+			_ = MeasureAndArrange(grid);
+
+			AssertArranged(view0, new Rect(0, 0, 100, 120));
 		}
 	}
 }

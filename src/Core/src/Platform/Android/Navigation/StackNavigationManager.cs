@@ -72,9 +72,9 @@ namespace Microsoft.Maui.Platform
 		 * This is also the reason why we aren't using the custom animation features on the navigation component itself.
 		 * Because we might be popping but visually pushing.
 		 * 
-		 * The Fragments that are on the stack also do not have a hard connection to the page they originally rendereded.
+		 * The Fragments that are on the stack also do not have a hard connection to the page they originally rendered.
 		 * Whenever a fragment is the "visible" fragment it just figures out what the current page is and displays that.
-		 * Fragments are recreated everytime they are pushed on the stack but the handler renderer is not.
+		 * Fragments are recreated every time they are pushed on the stack but the handler renderer is not.
 		 * It's just attached to a new fragment
 		 * */
 		void ApplyNavigationRequest(NavigationRequest args)
@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Platform
 
 		// Fragments are always destroyed if they aren't visible
 		// The Handler/PlatformView associated with the visible IView remain intact
-		// The performance hit of destorying/recreating fragments should be negligible
+		// The performance hit of destroying/recreating fragments should be negligible
 		// Hopefully this behavior survives implementation
 		// This will need to be tested with Maps and WebViews to make sure they behave efficiently
 		// being removed and then added back to a different Fragment

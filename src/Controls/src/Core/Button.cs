@@ -8,69 +8,107 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.Button']/Docs/*" />
+	/// <summary>
+	/// A button <see cref="View" /> that reacts to touch events.
+	/// </summary>
 	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, IImageElement
 	{
 		const double DefaultSpacing = 10;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="Command" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty CommandProperty = ButtonElement.CommandProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="CommandParameter" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty CommandParameterProperty = ButtonElement.CommandParameterProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='ContentLayoutProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="ContentLayout" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty ContentLayoutProperty = BindableProperty.Create(
 			nameof(ContentLayout), typeof(ButtonContentLayout), typeof(Button), new ButtonContentLayout(ButtonContentLayout.ImagePosition.Left, DefaultSpacing),
 			propertyChanged: (bindable, oldVal, newVal) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="Text" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(
 			nameof(Text), typeof(string), typeof(Button), null,
 			propertyChanged: (bindable, oldVal, newVal) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="TextColor" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="CharacterSpacing" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='FontFamilyProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="FontFamily" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='FontSizeProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="FontSize" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='TextTransformProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="TextTransform" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='FontAttributesProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="FontAttributes" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='FontAutoScalingEnabledProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="FontAutoScalingEnabled" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='BorderWidthProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="BorderWidth"/> bindable property.
+		/// </summary>
 		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(nameof(BorderWidth), typeof(double), typeof(Button), -1d);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='BorderColorProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="BorderColor" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='CornerRadiusProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="CornerRadius"/> bindable property.
+		/// </summary>
 		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(int), typeof(Button), defaultValue: BorderElement.DefaultCornerRadius);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='ImageSourceProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="ImageSource" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty ImageSourceProperty = ImageElement.ImageSourceProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='PaddingProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="Padding" /> bindable property.
+		/// </summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='LineBreakModeProperty']/Docs/*" />
+		/// <summary>
+		/// The backing store for the <see cref="LineBreakMode"/> bindable property.
+		/// </summary>
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create(
 			nameof(LineBreakMode), typeof(LineBreakMode), typeof(Button), LineBreakMode.NoWrap,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='Padding']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the padding for the button. This is a bindable property.
+		/// </summary>
 		public Thickness Padding
 		{
 			get { return (Thickness)GetValue(PaddingElement.PaddingProperty); }
@@ -79,7 +117,10 @@ namespace Microsoft.Maui.Controls
 
 		Thickness IPaddingElement.PaddingDefaultValueCreator() => new Thickness(double.NaN);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='LineBreakMode']/Docs/*" />
+		/// <summary>
+		/// Determines how <see cref="Text"/> is shown when the length is overflowing the size of this button.
+		/// This is a bindable property.
+		/// </summary>
 		public LineBreakMode LineBreakMode
 		{
 			get { return (LineBreakMode)GetValue(LineBreakModeProperty); }
@@ -91,78 +132,108 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-
 		internal static readonly BindablePropertyKey IsPressedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsPressed), typeof(bool), typeof(Button), default(bool));
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='IsPressedProperty']/Docs/*" />
+		
+		/// <summary>
+		/// The backing store for the <see cref="IsPressed"/> bindable property.
+		/// </summary>
 		public static readonly BindableProperty IsPressedProperty = IsPressedPropertyKey.BindableProperty;
-
 
 		readonly Lazy<PlatformConfigurationRegistry<Button>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='BorderColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a color that describes the border stroke color of the button. This is a bindable property.
+		/// </summary>
+		/// <remarks>This property has no effect if <see cref="IBorderElement.BorderWidth" /> is set to 0. On Android this property will not have an effect unless <see cref="VisualElement.BackgroundColor" /> is set to a non-default color.</remarks>
 		public Color BorderColor
 		{
 			get { return (Color)GetValue(BorderElement.BorderColorProperty); }
 			set { SetValue(BorderElement.BorderColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='CornerRadius']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the corner radius for the button, in device-independent units. This is a bindable property.
+		/// </summary>
 		public int CornerRadius
 		{
 			get { return (int)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='BorderWidth']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the width of the border, in device-independent units. This is a bindable property.
+		/// </summary>
+		/// <remarks>Set this value to a non-zero value in order to have a visible border.</remarks>
 		public double BorderWidth
 		{
 			get { return (double)GetValue(BorderWidthProperty); }
 			set { SetValue(BorderWidthProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='ContentLayout']/Docs/*" />
+		/// <summary>
+		/// Gets or sets an object that controls the position of the button image and the spacing between the button's image and the button's text.
+		/// This is a bindable property.
+		/// </summary>
 		public ButtonContentLayout ContentLayout
 		{
 			get { return (ButtonContentLayout)GetValue(ContentLayoutProperty); }
 			set { SetValue(ContentLayoutProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to invoke when the button is activated. This is a bindable property.
+		/// </summary>
+		/// <remarks>This property is used to associate a command with an instance of a button. This property is most often set in the MVVM pattern to bind callbacks back into the ViewModel. <see cref="VisualElement.IsEnabled" /> is controlled by the <see cref="Command.CanExecute(object)"/> if set.</remarks>
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
 			set { SetValue(CommandProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to the <see cref="Command"/> property.
+		/// The default value is <see langword="null"/>. This is a bindable property.
+		/// </summary>
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='ImageSource']/Docs/*" />
+		/// <summary>
+		/// Allows you to display a bitmap image on the Button. This is a bindable property.
+		/// </summary>
+		/// <remarks>For more options have a look at <see cref="ImageButton"/>.</remarks>
 		public ImageSource ImageSource
 		{
 			get { return (ImageSource)GetValue(ImageSourceProperty); }
 			set { SetValue(ImageSourceProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the text displayed as the content of the button.
+		/// The default value is <see langword="null"/>. This is a bindable property.
+		/// </summary>
+		/// <remarks>Changing the text of a button will trigger a layout cycle.</remarks>
 		public string Text
 		{
 			get { return (string)GetValue(TextProperty); }
 			set { SetValue(TextProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="Color" /> for the text of the button. This is a bindable property.
+		/// </summary>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
 			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='CharacterSpacing']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the spacing between each of the characters of <see cref="Text"/> when displayed on the button.
+		/// This is a bindable property.
+		/// </summary>
 		public double CharacterSpacing
 		{
 			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
@@ -174,21 +245,32 @@ namespace Microsoft.Maui.Controls
 			set { SetValueCore(IsEnabledProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='SendClicked']/Docs/*" />
+		/// <summary>
+		/// Internal method to trigger the <see cref="Clicked"/> event.
+		/// Should not be called manually outside of .NET MAUI.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendClicked() => ButtonElement.ElementClicked(this, this);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='IsPressed']/Docs/*" />
+		/// <summary>
+		/// Gets whether or not the button is currently pressed.
+		/// </summary>
 		public bool IsPressed => (bool)GetValue(IsPressedProperty);
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		void IButtonElement.SetIsPressed(bool isPressed) => SetValue(IsPressedPropertyKey, isPressed);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='SendPressed']/Docs/*" />
+		/// <summary>
+		/// Internal method to trigger the <see cref="Pressed"/> event.
+		/// Should not be called manually outside of .NET MAUI.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendPressed() => ButtonElement.ElementPressed(this, this);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='SendReleased']/Docs/*" />
+		/// <summary>
+		/// Internal method to trigger the <see cref="Released"/> event.
+		/// Should not be called manually outside of .NET MAUI.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendReleased() => ButtonElement.ElementReleased(this, this);
 
@@ -201,21 +283,28 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		void IButtonElement.PropagateUpReleased() => Released?.Invoke(this, EventArgs.Empty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that indicates whether the font for the text of this button is bold, italic, or neither.
+		/// This is a bindable property.
+		/// </summary>
 		public FontAttributes FontAttributes
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the font family for the text of this entry. This is a bindable property.
+		/// </summary>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the size of the font for the text of this entry. This is a bindable property.
+		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -223,26 +312,45 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='FontAutoScalingEnabled']/Docs/*" />
+		/// <summary>
+		/// Determines whether or not the font of this entry should scale automatically according to the operating system settings. Default value is <see langword="true"/>.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>Typically this should always be enabled for accessibility reasons.</remarks>
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='TextTransform']/Docs/*" />
+		/// <summary>
+		/// Applies text transformation to the <see cref="Text"/> displayed on this button.
+		/// This is a bindable property.
+		/// </summary>
 		public TextTransform TextTransform
 		{
 			get => (TextTransform)GetValue(TextTransformProperty);
 			set => SetValue(TextTransformProperty, value);
 		}
 
+		/// <summary>
+		/// Occurs when the button is clicked/tapped.
+		/// </summary>
 		public event EventHandler Clicked;
+
+		/// <summary>
+		/// Occurs when the button is pressed.
+		/// </summary>
 		public event EventHandler Pressed;
 
+		/// <summary>
+		/// Occurs when the button is released.
+		/// </summary>
 		public event EventHandler Released;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Button"/> class.
+		/// </summary>
 		public Button()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Button>>(() => new PlatformConfigurationRegistry<Button>(this));
@@ -347,14 +455,26 @@ namespace Microsoft.Maui.Controls
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
 			=> InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Button.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		/// <summary>
+		/// Applies the <see cref="TextTransform"/> to <see cref="Text"/>.
+		/// </summary>
+		/// <remarks>For internal use by the .NET MAUI platform mostly.</remarks>
+		/// <param name="source">The text to transform.</param>
+		/// <param name="textTransform">The transform to apply to <paramref name="source"/>.</param>
+		/// <returns>The transformed text.</returns>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
+		/// <summary>
+		/// Represents the layout of the button content whenever an image is shown.
+		/// </summary>
 		[DebuggerDisplay("Image Position = {Position}, Spacing = {Spacing}")]
 		[System.ComponentModel.TypeConverter(typeof(ButtonContentTypeConverter))]
 		public sealed class ButtonContentLayout
 		{
+			/// <summary>
+			/// Enumerates values that determine the position of the image on the button.
+			/// </summary>
 			public enum ImagePosition
 			{
 				Left,
@@ -363,19 +483,37 @@ namespace Microsoft.Maui.Controls
 				Bottom
 			}
 
+			/// <summary>
+			/// Initializes a new instance of the this class.
+			/// </summary>
+			/// <param name="position">The position of the image.</param>
+			/// <param name="spacing">The spacing for the button content.</param>
 			public ButtonContentLayout(ImagePosition position, double spacing)
 			{
 				Position = position;
 				Spacing = spacing;
 			}
 
+			/// <summary>
+			/// Gets the position of the image on the button.
+			/// </summary>
 			public ImagePosition Position { get; }
 
+			/// <summary>
+			/// Gets the spacing for the button content.
+			/// </summary>
 			public double Spacing { get; }
 
+			/// <summary>
+			/// Gets the string representation of this object.
+			/// </summary>
+			/// <returns>Prints out the values of <see cref="Position"/> and <see cref="Spacing"/>.</returns>
 			public override string ToString() => $"Image Position = {Position}, Spacing = {Spacing}";
 		}
 
+		/// <summary>
+		/// A converter to convert a string to a <see cref="ButtonContentLayout"/> object.
+		/// </summary>
 		public sealed class ButtonContentTypeConverter : TypeConverter
 		{
 			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

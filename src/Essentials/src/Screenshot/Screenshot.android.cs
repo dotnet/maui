@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Media
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
 			var bitmap = Render(view);
-			var result = new ScreenshotResult(bitmap);
+			var result = bitmap is null ? null : new ScreenshotResult(bitmap);
 
 			return Task.FromResult<IScreenshotResult>(result);
 		}

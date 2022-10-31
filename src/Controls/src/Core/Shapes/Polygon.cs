@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public Polygon(PointCollection points) : this()
 		{
 			Points = points;

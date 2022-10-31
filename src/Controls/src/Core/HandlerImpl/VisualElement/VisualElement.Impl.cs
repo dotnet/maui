@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls
 
 		Rect _frame = new Rect(0, 0, -1, -1);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs/*" />
 		public Rect Frame
 		{
 			get => _frame;
@@ -30,7 +29,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Handler']/Docs/*" />
 		new public IViewHandler? Handler
 		{
 			get => (IViewHandler?)base.Handler;
@@ -62,7 +60,6 @@ namespace Microsoft.Maui.Controls
 
 		IShadow IView.Shadow => Shadow;
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ShadowProperty']/Docs/*" />
 		public static readonly BindableProperty ShadowProperty =
  			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -76,7 +73,6 @@ namespace Microsoft.Maui.Controls
 						(bindable as VisualElement)?.NotifyShadowChanges();
 				});
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Shadow']/Docs/*" />
 		public Shadow Shadow
 		{
 			get { return (Shadow)GetValue(ShadowProperty); }
@@ -95,17 +91,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ZIndex']/Docs/*" />
 		public int ZIndex
 		{
 			get { return (int)GetValue(ZIndexProperty); }
 			set { SetValue(ZIndexProperty, value); }
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='DesiredSize']/Docs/*" />
 		public Size DesiredSize { get; protected set; }
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Arrange']/Docs/*" />
 		public void Arrange(Rect bounds)
 		{
 			Layout(bounds);
@@ -352,6 +345,9 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(Shadow, BindingContext);
 		}
 
+		/// <summary>
+		/// Indicates if a VisualElement is connected to the main object tree.
+		/// </summary>
 		public bool IsLoaded
 		{
 			get
@@ -366,6 +362,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Occurs when a VisualElement has been constructed and added to the object tree.
+		/// This event may occur before the VisualElement has been measured so should not be relied on for size information.  
+		/// </summary>
 		public event EventHandler? Loaded
 		{
 			add
@@ -383,6 +383,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Occurs when this VisualElement is no longer connected to the main object tree.
+		/// </summary>
 		public event EventHandler? Unloaded
 		{
 			add

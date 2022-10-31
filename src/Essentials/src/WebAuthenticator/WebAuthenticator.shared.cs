@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Authentication
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
 			=> Current.AuthenticateAsync(url, callbackUrl);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][2]/Docs/*" />
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 			=> Current.AuthenticateAsync(webAuthenticatorOptions);
 
