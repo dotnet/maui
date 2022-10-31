@@ -7,15 +7,5 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		PlatformTouchGraphicsView GetPlatformGraphicsView(GraphicsViewHandler graphicsViewHandler) =>
 			graphicsViewHandler.PlatformView;
-
-		Task ValidateHasColor(IGraphicsView graphicsView, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var PlatformGraphicsView = GetPlatformGraphicsView(CreateHandler(graphicsView));
-				action?.Invoke();
-				PlatformGraphicsView.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

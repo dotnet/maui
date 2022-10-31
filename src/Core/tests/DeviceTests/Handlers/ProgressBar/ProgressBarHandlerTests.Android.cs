@@ -16,15 +16,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		Task ValidateNativeProgressColor(IProgress progressBar, Color color, Action action = null) =>
 			 ValidateHasColor(progressBar, color, action);
-
-		Task ValidateHasColor(IProgress progressBar, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformProgressBar = GetNativeProgressBar(CreateHandler(progressBar));
-				action?.Invoke();
-				platformProgressBar.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

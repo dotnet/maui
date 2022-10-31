@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			formattedLabel.TextColor = expected;
 
-			await ValidateHasColor(formattedLabel, expected);
+			await ValidateHasColor<LabelHandler>(formattedLabel, expected);
 		}
 
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
@@ -46,15 +46,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetPlatformMaxLines(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).MaxLines;
-
-		Task ValidateHasColor(Label label, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(async () =>
-			{
-				var labelHandler = CreateHandler<LabelHandler>(label);
-				action?.Invoke();
-				await labelHandler.PlatformView.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

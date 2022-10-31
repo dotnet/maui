@@ -27,16 +27,6 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).PlaceholderText;
 
-		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
-				action?.Invoke();
-				nativeSearchBar.AssertContainsColorAsync(color);
-			});
-		}
-
 		double GetInputFieldHeight(SearchBarHandler searchBarHandler)
 		{
 			return GetNativeSearchBar(searchBarHandler).ActualHeight;

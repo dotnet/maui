@@ -23,15 +23,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		Task ValidateThumbColor(ISwitch switchStub, Color color, Action action = null) =>
 			ValidateHasColor(switchStub, color, action);
-
-		Task ValidateHasColor(ISwitch switchStub, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeSwitch = GetNativeSwitch(CreateHandler(switchStub));
-				action?.Invoke();
-				return nativeSwitch.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

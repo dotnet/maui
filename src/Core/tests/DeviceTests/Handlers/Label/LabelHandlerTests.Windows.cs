@@ -27,15 +27,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		UI.Xaml.TextAlignment GetNativeHorizontalTextAlignment(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).TextAlignment;
-
-		Task ValidateHasColor(ILabel label, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformLabel = GetPlatformLabel(CreateHandler(label));
-				action?.Invoke();
-				platformLabel.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

@@ -44,16 +44,6 @@ namespace Microsoft.Maui.DeviceTests
 				shapeableImageView.ContentPaddingBottom);
 		}
 
-		Task ValidateHasColor(IImageButton imageButton, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformImageButton = GetPlatformImageButton(CreateHandler(imageButton));
-				action?.Invoke();
-				platformImageButton.AssertContainsColorAsync(color);
-			});
-		}
-
 		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>
 			imageButtonHandler.PlatformView.Drawable != null;
 	}

@@ -215,16 +215,6 @@ namespace Microsoft.Maui.DeviceTests
 			return editText.TextAlignment;
 		}
 
-		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
-				action?.Invoke();
-				nativeSearchBar.AssertContainsColorAsync(color);
-			});
-		}
-
 		bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);

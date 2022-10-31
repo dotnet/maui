@@ -16,15 +16,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		Task ValidateColor(ICheckBox checkBoxStub, Color color, Action action = null) =>
 			ValidateHasColor(checkBoxStub, color, action);
-
-		Task ValidateHasColor(ICheckBox checkBoxStub, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeSwitch = GetNativeCheckBox(CreateHandler(checkBoxStub));
-				action?.Invoke();
-				nativeSwitch.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

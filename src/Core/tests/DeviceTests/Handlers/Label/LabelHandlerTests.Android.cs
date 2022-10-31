@@ -124,15 +124,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		float GetNativeLineHeight(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).LineSpacingMultiplier;
-
-		Task ValidateHasColor(ILabel label, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformLabel = GetPlatformLabel(CreateHandler(label));
-				action?.Invoke();
-				platformLabel.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

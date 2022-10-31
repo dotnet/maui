@@ -16,15 +16,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetNativeMinimum(StepperHandler stepperHandler) =>
 			GetNativeStepper(stepperHandler).Minimum;
-
-		Task ValidateHasColor(IStepper stepper, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformStepper = GetNativeStepper(CreateHandler(stepper));
-				action?.Invoke();
-				platformStepper.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

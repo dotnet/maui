@@ -13,15 +13,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
 			GetNativeActivityIndicator(activityIndicatorHandler).IsActive;
-
-		Task ValidateHasColor(IActivityIndicator activityIndicator, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeActivityIndicator = GetNativeActivityIndicator(CreateHandler(activityIndicator));
-				action?.Invoke();
-				nativeActivityIndicator.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

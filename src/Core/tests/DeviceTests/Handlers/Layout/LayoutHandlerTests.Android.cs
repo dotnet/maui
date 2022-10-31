@@ -61,16 +61,6 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			return layoutHandler.PlatformView;
 		}
 
-		Task ValidateHasColor(ILayout layout, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeLayout = GetNativeLayout(CreateHandler(layout));
-				action?.Invoke();
-				nativeLayout.AssertContainsColorAsync(color);
-			});
-		}
-
 		string GetNativeText(AView view)
 		{
 			return (view as TextView).Text;

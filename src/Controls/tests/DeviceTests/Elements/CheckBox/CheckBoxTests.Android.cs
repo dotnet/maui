@@ -13,16 +13,5 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		AppCompatCheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
 			checkBoxHandler.PlatformView;
-
-		Task ValidateHasColor(ICheckBox checkBox, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<CheckBoxHandler>(checkBox);
-				var nativeSwitch = GetNativeCheckBox(handler);
-				action?.Invoke();
-				nativeSwitch.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

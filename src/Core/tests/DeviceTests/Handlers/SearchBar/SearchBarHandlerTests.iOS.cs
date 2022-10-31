@@ -215,15 +215,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			return !uiSearchBar.UserInteractionEnabled;
 		}
-
-		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
-				action?.Invoke();
-				nativeSearchBar.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

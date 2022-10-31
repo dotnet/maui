@@ -8,15 +8,5 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		W2DGraphicsView GetNativeBoxView(ShapeViewHandler boxViewHandler) =>
 			boxViewHandler.PlatformView;
-
-		Task ValidateHasColor(IShapeView boxView, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeBoxView = GetNativeBoxView(CreateHandler(boxView));
-				action?.Invoke();
-				nativeBoxView.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }

@@ -39,15 +39,5 @@ namespace Microsoft.Maui.DeviceTests
 				return GetPlatformShapeView(CreateHandler(shapeView)).AssertContainsColorAsync(color);
 			});
 		}
-
-		Task ValidateHasColor(IView shape, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeShape = GetPlatformShapeView(CreateHandler(shape));
-				action?.Invoke();
-				nativeShape.AssertContainsColorAsync(color);
-			});
-		}
 	}
 }
