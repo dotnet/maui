@@ -50,7 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var platformImageButton = GetPlatformImageButton(CreateHandler(imageButton));
 				action?.Invoke();
-				platformImageButton.AssertContainsColor(color);
+				platformImageButton.AssertContainsColorAsync(color);
 			});
 		}
 

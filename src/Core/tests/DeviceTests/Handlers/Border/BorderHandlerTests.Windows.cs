@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var nativeBorder = GetNativeBorder(CreateHandler(border));
 				action?.Invoke();
-				nativeBorder.AssertContainsColor(color);
+				nativeBorder.AssertContainsColorAsync(color);
 			});
 		}
 	}

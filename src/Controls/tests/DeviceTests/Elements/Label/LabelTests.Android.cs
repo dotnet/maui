@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var labelHandler = CreateHandler<LabelHandler>(label);
 				action?.Invoke();
-				await labelHandler.PlatformView.AssertContainsColor(color);
+				await labelHandler.PlatformView.AssertContainsColorAsync(color);
 			});
 		}
 	}

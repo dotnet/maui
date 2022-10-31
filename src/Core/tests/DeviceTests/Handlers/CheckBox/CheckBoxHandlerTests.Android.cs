@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var nativeSwitch = GetNativeCheckBox(CreateHandler(checkBoxStub));
 				action?.Invoke();
-				nativeSwitch.AssertContainsColor(color);
+				nativeSwitch.AssertContainsColorAsync(color);
 			});
 		}
 	}

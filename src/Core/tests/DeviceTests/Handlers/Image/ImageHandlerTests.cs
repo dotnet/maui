@@ -54,21 +54,21 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler(image);
 				var platformView = GetPlatformImageView(handler);
 
-				await platformView.AttachAndRun(async () =>
+				await platformView.AttachAndRunAsync(async () =>
 				{
 					// the first one works
 					image.Source = new FileImageSourceStub(firstPath);
 					handler.UpdateValue(nameof(IImage.Source));
 					await image.Wait();
 
-					await platformView.AssertContainsColor(Colors.Blue.ToPlatform());
+					await platformView.AssertContainsColorAsync(Colors.Blue.ToPlatform());
 
 					// the second one does not
 					image.Source = new FileImageSourceStub(secondPath);
 					handler.UpdateValue(nameof(IImage.Source));
 					await image.Wait();
 
-					await platformView.AssertContainsColor(expectedColor.ToPlatform());
+					await platformView.AssertContainsColorAsync(expectedColor.ToPlatform());
 				});
 			});
 		}
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var expectedColor = Color.FromArgb(colorHex);
 
-				await handler.PlatformView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColorAsync(expectedColor);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(True)" }, order);
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await GetPlatformImageView(handler).AttachAndRun(() =>
+				await GetPlatformImageView(handler).AttachAndRunAsync(() =>
 				{
 					Assert.Equal(isAnimating, GetNativeIsAnimationPlaying(handler));
 				});
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.DeviceTests
 				handler.PlatformView.SetMinimumWidth(1);
 #endif
 
-				await handler.PlatformView.AssertContainsColor(color);
+				await handler.PlatformView.AssertContainsColorAsync(color);
 			});
 
 			Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(new[] { "Before Starting", "Starting", "DoWork", "Finishing", "After Finishing" }, order.ToArray());
 
 				// make sure it did actually work
-				await handler.PlatformView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColorAsync(Colors.Blue);
 
 				return handler.ImageEvents;
 			});
@@ -304,7 +304,7 @@ namespace Microsoft.Maui.DeviceTests
 				await image.Wait();
 
 				// make sure it did actually work
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColorAsync(Colors.Red);
 
 				return handler.ImageEvents;
 			});
@@ -335,7 +335,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Empty(handler.ImageEvents);
 
-				await handler.PlatformView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColorAsync(expectedColor);
 			});
 		}
 
@@ -354,7 +354,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColorAsync(Colors.Red);
 
 				Assert.Single(handler.ImageEvents);
 				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);
@@ -383,7 +383,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColorAsync(Colors.Red);
 
 				handler.ImageEvents.Clear();
 
@@ -392,7 +392,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.PlatformView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColorAsync(Colors.Blue);
 
 				Assert.Single(handler.ImageEvents);
 				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var platformProgressBar = GetNativeProgressBar(CreateHandler(progressBar));
 				action?.Invoke();
-				platformProgressBar.AssertContainsColor(color);
+				platformProgressBar.AssertContainsColorAsync(color);
 			});
 		}
 	}

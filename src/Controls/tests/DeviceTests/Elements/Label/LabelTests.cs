@@ -261,12 +261,12 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
-				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmapAsync();
 
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
-				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+				var normalBitmap = await normalHandler.PlatformView.ToBitmapAsync();
 
-				await normalBitmap.AssertEqual(formattedBitmap);
+				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
 		}
 
@@ -298,15 +298,15 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var initialHandler = CreateHandler<LabelHandler>(initialLabel);
-				var initialBitmap = await initialHandler.PlatformView.ToBitmap();
+				var initialBitmap = await initialHandler.PlatformView.ToBitmapAsync();
 
 				var updatedHandler = CreateHandler<LabelHandler>(updatedLabel);
 
 				updatedLabel.FormattedText = GetFormattedString();
 
-				var updatedBitmap = await updatedHandler.PlatformView.ToBitmap();
+				var updatedBitmap = await updatedHandler.PlatformView.ToBitmapAsync();
 
-				await updatedBitmap.AssertEqual(initialBitmap);
+				await updatedBitmap.AssertEqualAsync(initialBitmap);
 			});
 
 			static FormattedString GetFormattedString() =>
@@ -358,12 +358,12 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
-				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmapAsync();
 
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
-				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+				var normalBitmap = await normalHandler.PlatformView.ToBitmapAsync();
 
-				await normalBitmap.AssertEqual(formattedBitmap);
+				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
 		}
 

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var nativeBoxView = GetNativeBoxView(CreateHandler(boxView));
 				action?.Invoke();
-				nativeBoxView.AssertContainsColor(color);
+				nativeBoxView.AssertContainsColorAsync(color);
 			});
 		}
 	}

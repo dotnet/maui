@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<SliderHandler>(slider);
 				await Task.Delay(1000);
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColorAsync(Colors.Red);
 			});
 		}
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				return GetNativeSlider(CreateHandler(slider)).AssertContainsColor(color);
+				return GetNativeSlider(CreateHandler(slider)).AssertContainsColorAsync(color);
 			});
 		}
 

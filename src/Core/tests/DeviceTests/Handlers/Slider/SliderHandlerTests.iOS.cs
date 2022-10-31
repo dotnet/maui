@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<SliderHandler>(slider);
 				await Task.Delay(1000);
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColorAsync(Colors.Red);
 			});
 		}
 

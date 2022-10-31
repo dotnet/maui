@@ -119,18 +119,18 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				_ = CreateHandler<LabelHandler>(initialLabel);
 				var initialHandler = CreateHandler<LayoutHandler>(initialLayout);
-				var initialBitmap = await initialHandler.PlatformView.ToBitmap();
+				var initialBitmap = await initialHandler.PlatformView.ToBitmapAsync();
 
 				_ = CreateHandler<LabelHandler>(updatingLabel);
 				var updatingHandler = CreateHandler<LayoutHandler>(updatingLayout);
-				var updatingBitmap = await updatingHandler.PlatformView.AttachAndRun(() =>
+				var updatingBitmap = await updatingHandler.PlatformView.AttachAndRunAsync(() =>
 				{
 					updatingLabel.HorizontalOptions = layoutOptions;
 
-					return updatingHandler.PlatformView.ToBitmap();
+					return updatingHandler.PlatformView.ToBitmapAsync();
 				});
 
-				await initialBitmap.AssertEqual(updatingBitmap);
+				await initialBitmap.AssertEqualAsync(updatingBitmap);
 			});
 
 			static void CreateLayout(Type layoutType, out Layout layout, out Label label)

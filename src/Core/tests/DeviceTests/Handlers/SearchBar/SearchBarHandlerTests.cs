@@ -150,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler(searchBar);
-				await AssertionExtensions.AttachAndRun(handler.PlatformView, () =>
+				await AssertionExtensions.AttachAndRunAsync(handler.PlatformView, () =>
 				{
 					var height = GetInputFieldHeight(handler);
 					Assert.True(height >= 44);

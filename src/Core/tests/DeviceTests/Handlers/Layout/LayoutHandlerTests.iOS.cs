@@ -62,7 +62,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			{
 				var nativeLayout = GetNativeLayout(CreateHandler(layout));
 				action?.Invoke();
-				nativeLayout.AssertContainsColor(color);
+				nativeLayout.AssertContainsColorAsync(color);
 			});
 		}
 

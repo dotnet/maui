@@ -62,28 +62,28 @@ namespace Microsoft.Maui.DeviceTests
 			return data.GetBase64EncodedString(NSDataBase64EncodingOptions.None);
 		}
 
-		public static Task AttachAndRun(this UIView view, Action action) =>
-			view.AttachAndRun(() =>
+		public static Task AttachAndRunAsync(this UIView view, Action action) =>
+			view.AttachAndRunAsync(() =>
 			{
 				action();
 				return Task.FromResult(true);
 			});
 
-		public static Task<T> AttachAndRun<T>(this UIView view, Func<T> action) =>
-			view.AttachAndRun(() =>
+		public static Task<T> AttachAndRunAsync<T>(this UIView view, Func<T> action) =>
+			view.AttachAndRunAsync(() =>
 			{
 				var result = action();
 				return Task.FromResult(result);
 			});
 
-		public static Task AttachAndRun(this UIView view, Func<Task> action) =>
-			view.AttachAndRun(async () =>
+		public static Task AttachAndRunAsync(this UIView view, Func<Task> action) =>
+			view.AttachAndRunAsync(async () =>
 			{
 				await action();
 				return true;
 			});
 
-		public static async Task<T> AttachAndRun<T>(this UIView view, Func<Task<T>> action)
+		public static async Task<T> AttachAndRunAsync<T>(this UIView view, Func<Task<T>> action)
 		{
 			var currentView = FindContentView();
 			currentView.AddSubview(view);
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.DeviceTests
 			return attachParent ?? currentView;
 		}
 
-		public static Task<UIImage> ToBitmap(this UIView view)
+		public static Task<UIImage> ToBitmapAsync(this UIView view)
 		{
 			if (view.Superview is WrapperView wrapper)
 				view = wrapper;
@@ -246,50 +246,50 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, (int)bitmap.Size.Width - 1, (int)bitmap.Size.Height - 1);
 		}
 
-		public static async Task<UIImage> AssertColorAtPoint(this UIView view, UIColor expectedColor, int x, int y)
+		public static async Task<UIImage> AssertColorAtPointAsync(this UIView view, UIColor expectedColor, int x, int y)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmapAsync();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<UIImage> AssertColorAtCenter(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtCenterAsync(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmapAsync();
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtBottomLeftAsync(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmapAsync();
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtBottomRightAsync(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmapAsync();
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtTopLeftAsync(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmapAsync();
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtTopRight(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtTopRightAsync(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmapAsync();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertContainsColorAsync(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmapAsync();
 			return bitmap.AssertContainsColor(expectedColor);
 		}
 
-		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToPlatform());
+		public static Task<UIImage> AssertContainsColorAsync(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
+			AssertContainsColorAsync(view, expectedColor.ToPlatform());
 
 		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor)
 		{
@@ -308,7 +308,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task AssertEqual(this UIImage bitmap, UIImage other)
+		public static Task AssertEqualAsync(this UIImage bitmap, UIImage other)
 		{
 			Assert.NotNull(bitmap);
 			Assert.NotNull(other);

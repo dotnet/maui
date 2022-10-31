@@ -54,7 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(imageLoaded);
 				var expectedColor = Color.FromArgb(colorHex);
-				await handler.PlatformView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColorAsync(expectedColor);
 			});
 		}
 

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var nativeActivityIndicator = GetNativeActivityIndicator(CreateHandler(activityIndicator));
 				action?.Invoke();
-				nativeActivityIndicator.AssertContainsColor(color);
+				nativeActivityIndicator.AssertContainsColorAsync(color);
 			});
 		}
 

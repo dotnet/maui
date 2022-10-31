@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var PlatformGraphicsView = GetPlatformGraphicsView(CreateHandler(graphicsView));
 				action?.Invoke();
-				PlatformGraphicsView.AssertContainsColor(color);
+				PlatformGraphicsView.AssertContainsColorAsync(color);
 			});
 		}
 	}

@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var nativeSwitch = GetNativeSwitch(CreateHandler(switchStub));
 				action?.Invoke();
-				return nativeSwitch.AssertContainsColor(color);
+				return nativeSwitch.AssertContainsColorAsync(color);
 			});
 		}
 	}

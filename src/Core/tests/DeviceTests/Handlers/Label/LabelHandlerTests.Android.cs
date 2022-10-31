@@ -131,7 +131,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var platformLabel = GetPlatformLabel(CreateHandler(label));
 				action?.Invoke();
-				platformLabel.AssertContainsColor(color);
+				platformLabel.AssertContainsColorAsync(color);
 			});
 		}
 	}

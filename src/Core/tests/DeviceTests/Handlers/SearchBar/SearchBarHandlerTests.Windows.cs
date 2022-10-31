@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
 				action?.Invoke();
-				nativeSearchBar.AssertContainsColor(color);
+				nativeSearchBar.AssertContainsColorAsync(color);
 			});
 		}
 

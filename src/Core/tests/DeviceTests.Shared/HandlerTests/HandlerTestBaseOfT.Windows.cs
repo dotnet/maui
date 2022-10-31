@@ -150,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected Task<Maui.Graphics.Rect> GetPlatformViewBounds(IViewHandler viewHandler)
 		{
 			var fe = viewHandler.VirtualView.ToPlatform();
-			return fe.AttachAndRun(() => fe.GetPlatformViewBounds());
+			return fe.AttachAndRunAsync(() => fe.GetPlatformViewBounds());
 		}
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected Task<Maui.Graphics.Rect> GetBoundingBox(IViewHandler viewHandler)
 		{
 			var fe = viewHandler.VirtualView.ToPlatform();
-			return fe.AttachAndRun(() => fe.GetBoundingBox());
+			return fe.AttachAndRunAsync(() => fe.GetBoundingBox());
 		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>

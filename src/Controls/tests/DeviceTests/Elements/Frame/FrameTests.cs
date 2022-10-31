@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var labelFrame =
 				await InvokeOnMainThreadAsync(() =>
-					frame.ToPlatform(MauiContext).AttachAndRun(async () =>
+					frame.ToPlatform(MauiContext).AttachAndRunAsync(async () =>
 					{
 						(frame as IView).Measure(300, 300);
 						(frame as IView).Arrange(new Graphics.Rect(0, 0, 300, 300));

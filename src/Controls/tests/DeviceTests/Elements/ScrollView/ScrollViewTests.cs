@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await handler.PlatformView.AttachAndRun(async () =>
+				await handler.PlatformView.AttachAndRunAsync(async () =>
 				{
 					var expectedSize = new Size(100, 100);
 					await AssertContentSize(() => scroll.ContentSize, expectedSize);
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await handler.PlatformView.AttachAndRun(async () =>
+				await handler.PlatformView.AttachAndRunAsync(async () =>
 				{
 					var expectedSize = new Size(100, 100);
 					await AssertContentSize(() => scroll.ContentSize, expectedSize);
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await handler.PlatformView.AttachAndRun(async () =>
+				await handler.PlatformView.AttachAndRunAsync(async () =>
 				{
 					var expectedSize = new Size(expectedWidth, expectedHeight);
 					await AssertContentSize(() => scroll.ContentSize, expectedSize);

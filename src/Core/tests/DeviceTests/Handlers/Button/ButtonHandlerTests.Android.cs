@@ -164,7 +164,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var platformButton = GetNativeButton(CreateHandler(button));
 				action?.Invoke();
-				platformButton.AssertContainsColor(color);
+				platformButton.AssertContainsColorAsync(color);
 			});
 		}
 	}
