@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
-	};
+			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
 		{
@@ -97,10 +97,10 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract void RemoveContainer();
 
-		public PlatformView? ContainerView 
-		{ 
-			get; 
-			private protected set; 
+		public PlatformView? ContainerView
+		{
+			get;
+			private protected set;
 		}
 
 		object? IViewHandler.ContainerView => ContainerView;
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(element);
 
-			if (element is IView view)SetupContainerFromHandler
+			if (element is IView view)
 			{
 				((PlatformView?)PlatformView)?.Initialize(view);
 			}

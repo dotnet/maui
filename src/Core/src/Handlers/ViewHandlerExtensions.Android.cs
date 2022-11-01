@@ -1,5 +1,4 @@
 ﻿using System;
-using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
