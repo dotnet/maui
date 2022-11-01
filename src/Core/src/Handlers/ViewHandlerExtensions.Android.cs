@@ -133,50 +133,5 @@ namespace Microsoft.Maui
 
 			viewHandler.Invoke(nameof(IView.Frame), frame);
 		}
-
-		internal static void SetupContainerFromHandler(this IPlatformViewHandler viewHandler, Func<IPlatformViewHandler, View> createContainerView)
-		{
-			var context = viewHandler.MauiContext?.Context;
-			var platformView = viewHandler.PlatformView;
-			var containerView = viewHandler.ContainerView;
-
-			if (context == null || platformView == null || containerView != null)
-				return;
-
-			var oldParent = (ViewGroup?)platformView.Parent;
-			var oldIndex = oldParent?.IndexOfChild(platformView);
-			oldParent?.RemoveView(platformView);
-
-			containerView = viewHandler.ContainerView ?? createContainerView.Invoke(viewHandler);
-			((ViewGroup)containerView).AddView(platformView);
-
-			if (oldIndex is int idx && idx >= 0)
-				oldParent?.AddView(containerView, idx);
-			else
-				oldParent?.AddView(containerView);
-		}
-
-		internal static void RemoveContainerFromHandler(this IPlatformViewHandler viewHandler, Action<IPlatformViewHandler> clearContainerView)
-		{
-			var context = viewHandler.MauiContext?.Context;
-			var platformView = viewHandler.PlatformView;
-			var containerView = viewHandler.ContainerView;
-
-			if (context == null || platformView == null || containerView == null || platformView.Parent != containerView)
-				return;
-
-			var oldParent = (ViewGroup?)containerView.Parent;
-
-			var oldIndex = oldParent?.IndexOfChild(containerView);
-			oldParent?.RemoveView(containerView);
-
-			((ViewGroup)containerView).RemoveAllViews();
-			clearContainerView.Invoke(viewHandler);
-
-			if (oldIndex is int idx && idx >= 0)
-				oldParent?.AddView(platformView, idx);
-			else
-				oldParent?.AddView(platformView);
-		}
 	}
 }
