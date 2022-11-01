@@ -23,8 +23,16 @@ namespace Microsoft.Maui
 
 		static Keyboard? s_chat;
 
+		static Keyboard? s_none;
+
 		internal Keyboard()
 		{
+		}
+
+		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Plain']/Docs/*" />
+		public static Keyboard None
+		{
+			get { return s_none ??= new NoneKeyboard(); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Plain']/Docs/*" />

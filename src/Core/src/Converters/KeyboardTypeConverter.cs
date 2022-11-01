@@ -62,6 +62,8 @@ namespace Microsoft.Maui.Converters
 				return nameof(Keyboard.Text);
 			if (keyboard == Keyboard.Url)
 				return nameof(Keyboard.Url);
+			if (keyboard == Keyboard.None)
+				return nameof(Keyboard.None);
 
 			throw new NotSupportedException();
 		}
