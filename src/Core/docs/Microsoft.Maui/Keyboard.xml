@@ -28,6 +28,26 @@
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
+    <Member MemberName="None">
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Keyboard None { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Microsoft.Maui.Keyboard None" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Keyboard.None" />
+      <MemberSignature Language="F#" Value="member this.None : Microsoft.Maui.Keyboard" Usage="Microsoft.Maui.Keyboard.None" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Keyboard</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets an instance of type "NoneKeyboard".</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Chat">
       <MemberSignature Language="C#" Value="public static Microsoft.Maui.Keyboard Chat { get; }" />
       <MemberSignature Language="ILAsm" Value=".property class Microsoft.Maui.Keyboard Chat" />
