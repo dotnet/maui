@@ -29,13 +29,18 @@
             <Label
                 Text="Shadow"
                 Style="{StaticResource Headline}"/>
-            <Frame      
+            <Frame
+                x:Name="HasShadowFrame"
                 BackgroundColor="LightGray"
                 BorderColor="Red"
                 HasShadow="True">
                 <Label 
                     Text="Has Shadow" />
             </Frame>
+            <Button
+                Text="Update HasShadow"
+                Clicked="OnHasShadowButtonClicked"
+                Margin="0, 6"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
