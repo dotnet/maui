@@ -24,11 +24,6 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				// Accessibility Traits are none if VO is off
-				// So we return None until we detect that it's been turned on
-				if (base.AccessibilityTraits == UIAccessibilityTrait.None)
-					return UIAccessibilityTrait.None;
-
 				if (s_switchAccessibilityTraits == null ||
 					s_switchAccessibilityTraits == UIKit.UIAccessibilityTrait.None)
 				{
@@ -47,7 +42,7 @@ namespace Microsoft.Maui.Platform
 
 		public override string? AccessibilityValue
 		{
-			get => (_radioButton.IsChecked) ? "1" : "0";
+			get => _radioButton.IsChecked ? "1" : "0";
 			set { }
 		}
 	}
