@@ -1,3 +1,6 @@
+variables:
+  Codeql.Enabled: true
+
 stages:
   - stage: security_compliance
     displayName: Security and Compliance checks
