@@ -33,6 +33,7 @@ steps:
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Additional Software'
       condition: eq(variables['provisioning'], 'true')
+      continueOnError: true 
       inputs:
         provisioning_script: $(provisionator.path)
         provisioning_extra_args: $(provisionator.extraArguments)
