@@ -83,7 +83,9 @@ namespace Microsoft.Maui.Platform
 			{
 				var day = format.Count(x => x == 'd');
 
-				if (day == 3)
+				if (day == 2)
+					return "{day.integer(2)}";
+				else if (day == 3)
 					return "{day dayofweek.abbreviated}";
 				else if (day == 4)
 					return "{dayofweek.full}";
@@ -114,8 +116,10 @@ namespace Microsoft.Maui.Platform
 			{
 				var month = format.Count(x => x == 'M');
 
-				if (month <= 2)
+				if (month < 2)
 					return "{month.integer}";
+				else if (month == 2)
+					return "{month.integer(2)}";
 				else if (month == 3)
 					return "{month.abbreviated}";
 				else
