@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
-using static Microsoft.Maui.Layouts.LayoutManager;
+﻿using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -25,7 +20,7 @@ namespace Microsoft.Maui.Controls
 				// so on iOS we just return the shadow that was hard coded into the renderer
 				// On Android it sets the elevation on the CardView and on WinUI Forms just ignored HasShadow
 				if(HasShadow)
-					return new Shadow() { Radius = 5, Opacity = 0.8f, Offset = new Point(0, 0), Brush = SolidColorBrush.Black };
+					return new Shadow() { Radius = 5, Opacity = 0.8f, Offset = new Point(0, 0), Brush = Brush.Black };
 #endif
 
 				return null;
