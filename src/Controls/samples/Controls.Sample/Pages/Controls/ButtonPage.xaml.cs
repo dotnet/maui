@@ -76,6 +76,8 @@ namespace Maui.Controls.Sample.Pages
 
 	public class ButtonPageViewModel : BindableObject
 	{
+		public string ButtonBackground => "#fc87ad";
+
 		public ICommand ButtonCommand => new Command(OnExecuteImageButtonCommand);
 
 		void OnExecuteImageButtonCommand()
