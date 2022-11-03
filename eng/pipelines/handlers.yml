@@ -144,12 +144,6 @@ stages:
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
-                  parameters:
-                    UninstallMono: false
-                    UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -226,15 +220,6 @@ stages:
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
-                  parameters:
-                    UninstallMono: false
-                    UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
-                    AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
-                    SelfHealPowerShell: false
-              
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -288,12 +273,6 @@ stages:
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
               steps:
-                - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                  - template: agent-cleanser/v1.yml@xamarin-templates
-                    parameters:
-                      UninstallMono: false
-                      UninstallXamarinMac: false
-                      CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
                 - template: common/provision.yml
                   parameters:
                     platform: ${{ BuildPlatform.name }}
