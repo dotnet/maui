@@ -106,7 +106,12 @@ namespace Microsoft.Maui.Platform
 		public static WKWebViewConfiguration CreateConfiguration()
 		{
 			var config = new WKWebViewConfiguration();
-
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(10) || OperatingSystem.IsIOSVersionAtLeast(10))
+			{
+				config.AllowsPictureInPictureMediaPlayback = true;
+				config.AllowsInlineMediaPlayback = true;
+				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
+			}
 			if (SharedPool == null)
 				SharedPool = config.ProcessPool;
 			else
