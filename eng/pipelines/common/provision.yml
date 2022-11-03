@@ -27,7 +27,7 @@ steps:
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Xcode
     - ${{ if ne(parameters.skipXcode, 'true') }}:
-      - task: xamops.azdevex.provisionator-task.provisionator@1
+      - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Xcode'
         condition: ne(variables['REQUIRED_XCODE'], '')
         inputs:
@@ -37,7 +37,7 @@ steps:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
           AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
-    - task: xamops.azdevex.provisionator-task.provisionator@1
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
       condition: eq(variables['provisioning'], 'true')
       continueOnError: true 
@@ -101,7 +101,7 @@ steps:
           msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
         }
       displayName: 'Install PowerShell Core'
-    - task: xamops.azdevex.provisionator-task.provisionator@1
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Visual Studio'
       condition: eq(variables['provisioningVS'], 'true')
       inputs:
