@@ -101,5 +101,11 @@ namespace Maui.Controls.Sample.Pages
 		{
 			MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().EnableZoomControls(true);
 		}
+
+		void OnLoadHtml5VideoClicked(object sender, EventArgs e)
+		{
+			var html = @"<html><body><video autoplay muted loop playsinline=1 style='width:100%'><source src='https://download.samplelib.com/mp4/sample-5s.mp4' type='video/mp4'></video></body></html>";
+			MauiWebView.Source = new HtmlWebViewSource { Html = html };
+		}
 	}
 }
