@@ -1,8 +1,8 @@
 using System;
 using System.Windows.Input;
-using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
-using WApplication = Microsoft.UI.Xaml.Application;
 using Microsoft.Maui.Controls.Internals;
+using WApplication = Microsoft.UI.Xaml.Application;
+using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {

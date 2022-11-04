@@ -1,7 +1,7 @@
 #nullable enable
 using System;
-using Microsoft.Maui.Graphics;
 using System.Windows.Input;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {

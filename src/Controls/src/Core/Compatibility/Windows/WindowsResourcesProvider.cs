@@ -1,11 +1,11 @@
 using System;
-using Windows.UI.Text;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Maui.Controls.Internals;
-using WStyle = Microsoft.UI.Xaml.Style;
-using Microsoft.UI.Text;
+using Windows.UI.Text;
 using FWeight = Windows.UI.Text.FontWeight;
+using WStyle = Microsoft.UI.Xaml.Style;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

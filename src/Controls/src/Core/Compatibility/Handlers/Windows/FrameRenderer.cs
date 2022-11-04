@@ -1,12 +1,12 @@
+using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Maui.Controls.Platform;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WRect = Windows.Foundation.Rect;
-using System;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {

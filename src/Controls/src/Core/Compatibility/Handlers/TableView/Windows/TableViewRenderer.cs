@@ -1,10 +1,10 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using WItemsControl = Microsoft.UI.Xaml.Controls.ItemsControl;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
