@@ -51,8 +51,7 @@ namespace Microsoft.Maui
 			if (index != -1)
 			{
 				string font = cleansedFont.Substring(0, index);
-				string style = cleansedFont.Substring(index + 1);
-				return $"{font}:style={style}";
+				return $"{font}";
 			}
 			else
 			{
@@ -79,8 +78,7 @@ namespace Microsoft.Maui
 			if (index != -1)
 			{
 				string font = cleansedFont.Substring(0, index);
-				string style = cleansedFont.Substring(index + 1);
-				return $"{font}:style={style}";
+				return $"{font}";
 			}
 			else
 			{
