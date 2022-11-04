@@ -205,7 +205,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedSource", "SharedSourc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.Droid", "src\Core\tests\Benchmarks.Droid\Benchmarks.Droid.csproj", "{5B56A734-D53C-4635-A53E-F889FCFCDD66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maps", "src\Core\maps\src\Maps.csproj", "{E8728693-3537-4007-A4DB-9F9634548755}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maps", "src\Core\maps\src\Maps.csproj", "{E8728693-3537-4007-A4DB-9F9634548755}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Graphics", "Graphics", "{E4884871-4A1B-43BC-814F-E3D6E52B1673}"
 EndProject
@@ -254,6 +254,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicsTester.Skia.Gtk", "src\Graphics\samples\GraphicsTester.Skia.Gtk\GraphicsTester.Skia.Gtk.csproj", "{F351A992-18E4-473C-8ADD-2BA0BAA7B5A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.Design.UnitTests", "src\Controls\tests\Core.Design.UnitTests\Controls.Core.Design.UnitTests.csproj", "{F68932B0-81A2-4CC3-A4F7-28091EE91B23}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests.Shared", "src\Core\tests\DeviceTests.Shared\Core.DeviceTests.Shared.csproj", "{66CC98E3-6A1A-4C44-A23C-B575E82106EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -637,6 +639,10 @@ Global
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66CC98E3-6A1A-4C44-A23C-B575E82106EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66CC98E3-6A1A-4C44-A23C-B575E82106EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66CC98E3-6A1A-4C44-A23C-B575E82106EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66CC98E3-6A1A-4C44-A23C-B575E82106EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -755,6 +761,7 @@ Global
 		{F26D31D3-CE4C-4F32-A77F-E2905C948674} = {42AB9AE1-631D-4AD4-85B7-910FF0940BDB}
 		{F351A992-18E4-473C-8ADD-2BA0BAA7B5A2} = {1BA0121E-0B83-4C8F-81BE-C293E7E35DCE}
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
+		{66CC98E3-6A1A-4C44-A23C-B575E82106EC} = {C564DDD6-DE79-45CD-88EA-3F690481572A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
