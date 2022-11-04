@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -102,6 +103,21 @@ namespace Microsoft.Maui.DeviceTests
 				ti.Text = text;
 			else
 				stub.GetType().GetProperty("Text").SetValue(stub, text);
+		}
+
+
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
+		{
+			return 
+				base.ConfigureBuilder(mauiAppBuilder)
+					.ConfigureFonts(fonts =>
+					{
+						fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+						fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+						fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+						fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+						fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
+					});
 		}
 	}
 }
