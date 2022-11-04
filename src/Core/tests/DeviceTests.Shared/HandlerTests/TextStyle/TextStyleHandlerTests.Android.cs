@@ -4,6 +4,7 @@ using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -17,6 +18,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Dokdo")]
 		public async Task FontFamilyInitializesCorrectly(string family)
 		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder
+					.ConfigureFonts(fonts =>
+					{
+						fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+					});
+			});
+
 			var view = new TStub();
 
 			view.GetType().GetProperty("Font").SetValue(view, Font.OfSize(family, 10));

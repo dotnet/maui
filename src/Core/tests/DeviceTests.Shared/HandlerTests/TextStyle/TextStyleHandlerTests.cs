@@ -74,6 +74,15 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		public async Task FontFamilyAndAttributesInitializesCorrectly(string family, FontWeight weight, FontSlant slant)
 		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder
+					.ConfigureFonts(fonts =>
+					{
+						fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+					});
+			});
+
 			var label = new TStub();
 
 			SetFont(label, Font.OfSize(family, 30, weight, slant));
@@ -103,21 +112,6 @@ namespace Microsoft.Maui.DeviceTests
 				ti.Text = text;
 			else
 				stub.GetType().GetProperty("Text").SetValue(stub, text);
-		}
-
-
-		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
-		{
-			return 
-				base.ConfigureBuilder(mauiAppBuilder)
-					.ConfigureFonts(fonts =>
-					{
-						fonts.AddFont("dokdo_regular.ttf", "Dokdo");
-						fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
-						fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
-						fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
-						fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
-					});
 		}
 	}
 }
