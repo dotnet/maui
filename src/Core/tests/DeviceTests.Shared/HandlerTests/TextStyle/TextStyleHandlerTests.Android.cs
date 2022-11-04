@@ -18,8 +18,6 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task FontFamilyInitializesCorrectly(string family)
 		{
 			var view = new TStub();
-			if (view is not ITextStyle)
-				return;
 
 			view.GetType().GetProperty("Font").SetValue(view, Font.OfSize(family, 10));
 			var handler = (await CreateHandlerAsync(view)) as ElementHandler;

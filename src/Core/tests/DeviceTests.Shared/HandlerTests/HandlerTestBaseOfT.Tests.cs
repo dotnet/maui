@@ -1,4 +1,4 @@
-#if PLATFORM
+#if PLATFORM && !TIZEN
 using System;
 using System.IO;
 using System.Threading;
