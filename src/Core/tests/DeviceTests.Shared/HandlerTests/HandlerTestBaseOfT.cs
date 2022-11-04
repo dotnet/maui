@@ -1,4 +1,4 @@
-#if PLATFORM
+#if PLATFORM && !TIZEN
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;

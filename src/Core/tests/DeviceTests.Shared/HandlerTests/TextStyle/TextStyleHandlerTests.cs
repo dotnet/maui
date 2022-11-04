@@ -1,4 +1,4 @@
-#if PLATFORM
+#if PLATFORM && !TIZEN
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -89,9 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(weight == FontWeight.Bold, isBold);
 			Assert.Equal(slant == FontSlant.Italic, isItalic);
 		}
-
-
-
+#endif
 		protected virtual void SetFont(TStub stub, Font font)
 		{
 			stub.GetType().GetProperty("Font").SetValue(stub, font);
@@ -105,7 +103,6 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				stub.GetType().GetProperty("Text").SetValue(stub, text);
 		}
-#endif
 	}
 }
 #endif
