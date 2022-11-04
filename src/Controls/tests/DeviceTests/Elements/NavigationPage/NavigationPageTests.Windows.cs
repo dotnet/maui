@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
-using Microsoft.Maui.Platform;
-using Microsoft.Extensions.DependencyInjection;
-using Xunit;
-using WPanel = Microsoft.UI.Xaml.Controls.Panel;
-using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
-using WWindow = Microsoft.UI.Xaml.Window;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
+using Xunit;
 using WAppBarButton = Microsoft.UI.Xaml.Controls.AppBarButton;
+using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
+using WPanel = Microsoft.UI.Xaml.Controls.Panel;
+using WWindow = Microsoft.UI.Xaml.Window;
 
 namespace Microsoft.Maui.DeviceTests
 {
