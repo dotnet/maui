@@ -11,7 +11,7 @@
     <MicrosoftExtensionsServicingPackageVersion>7.0.0</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>7.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>33.0.5</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>33.0.6</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdkPackageVersion>15.4.2372</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.3.2372</MicrosoftmacOSSdkPackageVersion>
