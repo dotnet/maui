@@ -6,12 +6,6 @@ parameters:
   provisionatorChannel: 'latest'
 
 steps:
-  - template: agent-cleanser/v1.yml@xamarin-templates
-    parameters:
-      UninstallMono: false
-      UninstallXamarinMac: false
-      CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
-
   - template: provision.yml
     parameters:
       platform: macos

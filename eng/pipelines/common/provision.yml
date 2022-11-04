@@ -5,22 +5,20 @@ parameters:
   provisionatorChannel: 'latest'
 
 steps:
-  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
-    displayName: 'Use .NET SDK 6'
-    inputs:
-      packageType: sdk
-      version: 6.0.x
-
-  - pwsh: |
-      dotnet --version
-      dotnet --list-sdks
-    displayName: 'Show .NET SDK info'
+  
 
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
+    - template: agent-cleanser/v1.yml@xamarin-templates
+      parameters:
+        UninstallMono: false
+        UninstallXamarinMac: false
+        CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
+        SelfHealPowerShell: false
+        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Xcode
     - ${{ if ne(parameters.skipXcode, 'true') }}:
-      - task: xamops.azdevex.provisionator-task.provisionator@1
+      - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Xcode'
         condition: ne(variables['REQUIRED_XCODE'], '')
         inputs:
@@ -30,9 +28,10 @@ steps:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
           AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
-    - task: xamops.azdevex.provisionator-task.provisionator@1
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
-      condition: and(eq(variables['provisioning'], 'true'),ne('${{ parameters.poolName }}', 'Azure Pipelines'))
+      condition: eq(variables['provisioning'], 'true')
+      continueOnError: true 
       inputs:
         provisioning_script: $(provisionator.path)
         provisioning_extra_args: $(provisionator.extraArguments)
@@ -81,7 +80,6 @@ steps:
       inputs:
         certSecureFile: 'Components Mac Certificate.p12'
 
-
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
     - powershell: |
@@ -93,7 +91,7 @@ steps:
           msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
         }
       displayName: 'Install PowerShell Core'
-    - task: xamops.azdevex.provisionator-task.provisionator@1
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Visual Studio'
       condition: eq(variables['provisioningVS'], 'true')
       inputs:
@@ -106,6 +104,17 @@ steps:
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
+
+  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+    displayName: 'Use .NET SDK 6'
+    inputs:
+      packageType: sdk
+      version: 6.0.x
+
+  - pwsh: |
+      dotnet --version
+      dotnet --list-sdks
+    displayName: 'Show .NET SDK info'
 
   # Prepare Both
   - pwsh: ./build.ps1 --target provision
