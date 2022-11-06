@@ -628,8 +628,11 @@ namespace Microsoft.Maui.Controls
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)
 			{
-				window.ModalNavigationManager.PageAttachedHandler();
-				window.AlertManager.Subscribe();
+				if (sender is IView view && view.Handler != null)
+				{
+					window.ModalNavigationManager.PageAttachedHandler();
+					window.AlertManager.Subscribe();
+				}
 			}
 
 			void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)

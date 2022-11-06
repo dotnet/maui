@@ -248,10 +248,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool PageIsInThisWindow(Page page)
 			{
-				var window = page?.Window;
-				var platformWindow = window?.MauiContext.GetPlatformWindow();
-
-				if (platformWindow?.GetHashCode() == Window.GetHashCode())
+				if (page?.Handler?.MauiContext?.GetPlatformWindow() == Window)
 					return true;
 
 				return false;
