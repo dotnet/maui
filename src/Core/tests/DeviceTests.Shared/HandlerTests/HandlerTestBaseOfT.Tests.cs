@@ -211,6 +211,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// TODO:
 			}
+#if IOS || MACCATALYST
+			else if (view is ISearchBar)
+			{
+				//Search bar currently only measures to one size
+				//https://github.com/dotnet/maui/issues/11136
+			}
+#endif
 #if ANDROID
 			else if (size == 1 && view is ISwitch)
 			{
