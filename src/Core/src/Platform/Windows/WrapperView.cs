@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Numerics;
+using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
-using System.Numerics;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Shapes;
 using WSize = Windows.Foundation.Size;
 
