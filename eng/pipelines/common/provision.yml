@@ -18,7 +18,7 @@ steps:
 
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
-    - template: agent-cleanser/v1.yml@xamarin-templates
+    - template: agent-cleanser/v1.yml@yaml-templates
       parameters:
         UninstallMono: false
         UninstallXamarinMac: false

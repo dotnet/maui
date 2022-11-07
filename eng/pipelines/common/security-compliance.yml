@@ -11,9 +11,9 @@ stages:
       steps:
       - checkout: self
 
-      - template: security/policheck/v1.yml@xamarin-templates
+      - template: security/policheck/v1.yml@yaml-templates
 
-      - template: security/xa-static-analysis/v2.yml@xamarin-templates
+      - template: security/xa-static-analysis/v2.yml@yaml-templates
         parameters:
           credScanSuppressionsFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
 
