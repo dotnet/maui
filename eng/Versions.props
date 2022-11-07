@@ -13,7 +13,7 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>33.0.4</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>16.1.1458-ci.release-7-0-1xx</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>16.1.1459-ci.release-7-0-1xx</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>13.0.2014-ci.release-7-0-1xx</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>16.1.1459-ci.release-7-0-1xx</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>16.1.1459-ci.release-7-0-1xx</MicrosofttvOSSdkPackageVersion>
