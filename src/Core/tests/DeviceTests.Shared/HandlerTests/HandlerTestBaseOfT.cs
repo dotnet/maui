@@ -1,3 +1,4 @@
+#if PLATFORM && !TIZEN
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -9,8 +10,6 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub> : HandlerTestBase
-		where THandler : class, IViewHandler, new()
-		where TStub : StubBase, IView, new()
 	{
 		public static Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
 			AssertionExtensions.Wait(exitCondition, timeout);
@@ -160,3 +159,4 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
+#endif

@@ -21,7 +21,7 @@ using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFl
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Toolbar)]
-	public partial class ToolbarTests : HandlerTestBase
+	public partial class ToolbarTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{

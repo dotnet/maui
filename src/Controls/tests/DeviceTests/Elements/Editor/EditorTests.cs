@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Editor)]
-	public partial class EditorTests : HandlerTestBase
+	public partial class EditorTests : ControlsHandlerTestBase
 	{
 
 #if !IOS && !MACCATALYST
