@@ -105,7 +105,7 @@ steps:
       condition: eq(variables['provisioningVS'], 'true')
 
   # Prepare Both
- - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
     displayName: 'Use .NET SDK 6'
     inputs:
       packageType: sdk
