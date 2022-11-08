@@ -69,7 +69,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public event EventHandler ConfigurationChanged;
 
+		[Obsolete]
+#pragma warning disable 809
 		public override void OnBackPressed()
+#pragma warning restore 809
 		{
 			if (BackPressed != null && BackPressed(this, EventArgs.Empty))
 				return;
