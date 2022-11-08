@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -18,7 +19,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			bool result = await InvokeOnMainThreadAsync(() =>
 			{
-
 				var entry = new EntryStub() { Text = "In a ScrollView" };
 				var entryHandler = Activator.CreateInstance<EntryHandler>();
 				entryHandler.SetMauiContext(MauiContext);
@@ -34,8 +34,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				foreach (var platformView in scrollViewHandler.PlatformView.Subviews)
 				{
-					// ScrollView on iOS uses an intermediate ContentView to handle conetent measurement/arrangement
-					if (platformView is ContentView contentView)
+					// ScrollView on iOS uses an intermediate ContentView to handle content measurement/arrangement
+					if (platformView is Microsoft.Maui.Platform.ContentView contentView)
 					{
 						foreach (var content in contentView.Subviews)
 						{
@@ -51,6 +51,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.True(result, $"Expected (but did not find) a {nameof(MauiTextField)} in the Subviews array");
+		}
+
+		[Fact]
+		public async Task ScrollViewContentSizeSet() 
+		{
+			var scrollView = new ScrollViewStub();
+
+			var scrollViewHandler = await InvokeOnMainThreadAsync(() =>
+			{
+				return CreateHandler(scrollView);
+			});
+
+			await InvokeOnMainThreadAsync(async () => {
+				await scrollViewHandler.PlatformView.AttachAndRun(() =>
+				{
+				
+					var entry = new EntryStub() { Text = "In a ScrollView", Height = 10000 };
+					var entryHandler = Activator.CreateInstance<EntryHandler>();
+					entryHandler.SetMauiContext(MauiContext);
+					entryHandler.SetVirtualView(entry);
+					entry.Handler = entryHandler;
+
+					scrollView.Content = entry;
+
+					// Simulate a bunch of things that would happen if this were a real app
+					scrollViewHandler.UpdateValue(nameof(IScrollView.Content));
+					scrollViewHandler.PlatformArrange(new Rect(0, 0, 50, 50));
+					scrollViewHandler.PlatformView.SetNeedsLayout();
+					scrollViewHandler.PlatformView.LayoutIfNeeded();
+
+					Assert.Equal(10000, scrollViewHandler.PlatformView.ContentSize.Height);
+				});
+			});
 		}
 	}
 }
