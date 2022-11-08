@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using Android.App;
 using Android.Content;
@@ -14,7 +14,6 @@ namespace Microsoft.Maui.ApplicationModel
 		static readonly Lazy<string> _name = new Lazy<string>(() => Application.Context.ApplicationInfo.LoadLabel(Application.Context.PackageManager));
 		static readonly Lazy<string> _packageName = new Lazy<string>(() => Application.Context.PackageName);
 		static readonly Lazy<PackageInfo> _packageInfo = new Lazy<PackageInfo>(() => Application.Context.PackageManager.GetPackageInfo(_packageName.Value, PackageInfoFlags.MetaData));
-		static readonly Lazy<AppTheme> _requestedTheme = new Lazy<AppTheme>(GetRequestedTheme);
 		static readonly Lazy<LayoutDirection> _layoutDirection = new Lazy<LayoutDirection>(GetLayoutDirection);
 
 		public string PackageName => _packageName.Value;
@@ -44,14 +43,13 @@ namespace Microsoft.Maui.ApplicationModel
 			context.StartActivity(settingsIntent);
 		}
 
-		static AppTheme GetRequestedTheme() => (Application.Context.Resources.Configuration.UiMode & UiMode.NightMask) switch
-		{
-			UiMode.NightYes => AppTheme.Dark,
-			UiMode.NightNo => AppTheme.Light,
-			_ => AppTheme.Unspecified
-		};
-
-		public AppTheme RequestedTheme => _requestedTheme.Value;
+		public AppTheme RequestedTheme
+			=> (Application.Context.Resources.Configuration.UiMode & UiMode.NightMask) switch
+			{
+				UiMode.NightYes => AppTheme.Dark,
+				UiMode.NightNo => AppTheme.Light,
+				_ => AppTheme.Unspecified
+			};
 
 		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 
