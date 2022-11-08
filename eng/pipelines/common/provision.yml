@@ -5,22 +5,18 @@ parameters:
   provisionatorChannel: 'latest'
 
 steps:
-  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
-    displayName: 'Use .NET SDK 6'
-    inputs:
-      packageType: sdk
-      version: 6.0.x
-
-  - pwsh: |
-      dotnet --version
-      dotnet --list-sdks
-    displayName: 'Show .NET SDK info'
-
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
+    - template: agent-cleanser/v1.yml@yaml-templates
+      parameters:
+        UninstallMono: false
+        UninstallXamarinMac: false
+        CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
+        SelfHealPowerShell: false
+        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Xcode
     - ${{ if ne(parameters.skipXcode, 'true') }}:
-      - task: xamops.azdevex.provisionator-task.provisionator@1
+      - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Xcode'
         condition: ne(variables['REQUIRED_XCODE'], '')
         inputs:
@@ -30,9 +26,10 @@ steps:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
           AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
-    - task: xamops.azdevex.provisionator-task.provisionator@1
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
       condition: eq(variables['provisioning'], 'true')
+      continueOnError: true 
       inputs:
         provisioning_script: $(provisionator.path)
         provisioning_extra_args: $(provisionator.extraArguments)
@@ -81,7 +78,6 @@ steps:
       inputs:
         certSecureFile: 'Components Mac Certificate.p12'
 
-
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
     - powershell: |
@@ -93,13 +89,14 @@ steps:
           msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
         }
       displayName: 'Install PowerShell Core'
-    - task: xamops.azdevex.provisionator-task.provisionator@1
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Visual Studio'
       condition: eq(variables['provisioningVS'], 'true')
       inputs:
         provisioning_script: $(provisionator.vs)
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
     - pwsh: |
         $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
@@ -108,6 +105,17 @@ steps:
       condition: eq(variables['provisioningVS'], 'true')
 
   # Prepare Both
+  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+    displayName: 'Use .NET SDK 6'
+    inputs:
+      packageType: sdk
+      version: 6.0.x
+
+  - pwsh: |
+      dotnet --version
+      dotnet --list-sdks
+    displayName: 'Show .NET SDK info'
+
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
@@ -125,14 +133,14 @@ steps:
 
 
   # Prepare for Reunion packages
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - task: NuGetAuthenticate@0
-      displayName: 'Authenticate Reunion NuGet sources'
-      inputs:
-        nuGetServiceConnections: Project.Reunion.nuget.internal
-    - pwsh: |
-        $path = '$(Build.SourcesDirectory)\NuGet.config'
-        [xml]$xml = Get-Content $path
-        $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
-        $xml.Save($path)
-      displayName: 'Add "wasdk-internal" to NuGet.config'
+  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  #   - task: NuGetAuthenticate@0
+  #     displayName: 'Authenticate Reunion NuGet sources'
+  #     inputs:
+  #       nuGetServiceConnections: Project.Reunion.nuget.internal
+  #   - pwsh: |
+  #       $path = '$(Build.SourcesDirectory)\NuGet.config'
+  #       [xml]$xml = Get-Content $path
+  #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
+  #       $xml.Save($path)
+  #     displayName: 'Add "wasdk-internal" to NuGet.config'

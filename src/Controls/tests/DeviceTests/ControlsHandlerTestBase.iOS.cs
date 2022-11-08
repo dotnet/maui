@@ -10,7 +10,7 @@ using UIKit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class HandlerTestBase
+	public partial class ControlsHandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
 		{

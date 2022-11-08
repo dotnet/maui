@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class HandlerTestBase<THandler, TStub>
+	public partial class TextStyleHandlerTests<THandler, TStub>
 	{
 		[Theory(DisplayName = "Font Family Initializes Correctly")]
 		[InlineData(null)]

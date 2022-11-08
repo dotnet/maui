@@ -1,10 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Drawing;
-using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
@@ -43,7 +40,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				_actualView.CrossPlatformArrange = (e.NewElement as IContentView).CrossPlatformArrange;
 				_actualView.CrossPlatformMeasure = (e.NewElement as IContentView).CrossPlatformMeasure;
+
 				SetupLayer();
+				UpdateShadow();
 			}
 		}
 
@@ -54,11 +53,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
 				e.PropertyName == VisualElement.BackgroundProperty.PropertyName ||
 				e.PropertyName == Microsoft.Maui.Controls.Frame.BorderColorProperty.PropertyName ||
-				e.PropertyName == Microsoft.Maui.Controls.Frame.HasShadowProperty.PropertyName ||
 				e.PropertyName == Microsoft.Maui.Controls.Frame.CornerRadiusProperty.PropertyName ||
 				e.PropertyName == Microsoft.Maui.Controls.Frame.IsClippedToBoundsProperty.PropertyName ||
 				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
 				SetupLayer();
+			else if (e.PropertyName == Controls.Frame.HasShadowProperty.PropertyName)
+				UpdateShadow();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -121,6 +121,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_actualView.Layer.RasterizationScale = UIScreen.MainScreen.Scale;
 			_actualView.Layer.ShouldRasterize = true;
 			_actualView.Layer.MasksToBounds = Element.IsClippedToBounds;
+		}
+
+		void UpdateShadow()
+		{
+			if (Element is IElement element)
+				element.Handler?.UpdateValue(nameof(IView.Shadow));
 		}
 
 		public override void LayoutSubviews()

@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	partial class SolidPaintStub : SolidPaint
+	public partial class SolidPaintStub : SolidPaint
 	{
 		public SolidPaintStub(Color color)
 		{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 #elif __ANDROID__
 		public Android.Graphics.Drawables.Drawable ToDrawable()
 		{
-			var drawable = new Microsoft.Maui.Graphics.MauiDrawable(MauiProgram.DefaultContext);
+			var drawable = new Microsoft.Maui.Graphics.MauiDrawable(MauiProgramDefaults.DefaultContext);
 			drawable.SetBackgroundColor(Color.ToPlatform());
 			return drawable;
 		}

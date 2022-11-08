@@ -107,7 +107,7 @@ parameters:
 
 resources:
   repositories:
-    - repository: xamarin-templates
+    - repository: yaml-templates
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
@@ -144,12 +144,6 @@ stages:
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
-                  parameters:
-                    UninstallMono: false
-                    UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
@@ -226,17 +220,12 @@ stages:
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
-                  parameters:
-                    UninstallMono: false
-                    UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -284,12 +273,6 @@ stages:
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
               steps:
-                - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                  - template: agent-cleanser/v1.yml@xamarin-templates
-                    parameters:
-                      UninstallMono: false
-                      UninstallXamarinMac: false
-                      CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
                 - template: common/provision.yml
                   parameters:
                     platform: ${{ BuildPlatform.name }}

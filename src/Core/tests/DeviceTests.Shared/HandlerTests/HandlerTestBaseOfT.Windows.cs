@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -134,7 +135,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uie = await GetValueAsync(view, handler => GetHitTestVisible(handler));
 
 			// HitTestVisible should be the opposite value of InputTransparent 
-			if (view is LayoutStub && inputTransparent)
+			if (view is ILayout && inputTransparent)
 			{
 				// InputTransparent doesn't actually affect hit test visibility for LayoutPanel. 
 				// The panel itself needs to always be hit test visible so it can relay input to non-transparent children.

@@ -4,6 +4,7 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
@@ -112,7 +113,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task InputTransparencyInitializesCorrectly(bool inputTransparent)
 		{
-			if (typeof(TStub) == typeof(LayoutStub))
+			if (typeof(TStub).IsAssignableTo(typeof(ILayout)))
 			{
 				// The platform type for Layouts (LayoutView) always has UserInteractionEnabled
 				// to allow for its children to be interacted with

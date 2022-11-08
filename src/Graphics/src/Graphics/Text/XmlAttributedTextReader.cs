@@ -1,11 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.Maui.Graphics.Text;
 using System.IO;
 using System.Text;
 using System.Xml;
+using Microsoft.Maui.Graphics.Text;
 using XmlNames = Microsoft.Maui.Graphics.Text.XmlAttributedTextNames;
-using System;
 
 namespace Microsoft.Maui.Graphics.Text
 {
