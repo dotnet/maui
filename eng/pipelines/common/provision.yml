@@ -110,7 +110,7 @@ steps:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
-    - task: xamops.azdevex.provisionator-task.provisionator@1
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
       condition: and(eq('${{ parameters.provisioning }}', 'true'),ne('${{ parameters.poolName }}', 'Azure Pipelines'))
       inputs:
