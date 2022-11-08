@@ -93,6 +93,7 @@ virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Contr
 ~Microsoft.Maui.Controls.MenuFlyout.Remove(Microsoft.Maui.IMenuElement item) -> bool
 ~Microsoft.Maui.Controls.MenuFlyout.this[int index].get -> Microsoft.Maui.IMenuElement
 ~Microsoft.Maui.Controls.MenuFlyout.this[int index].set -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~static Microsoft.Maui.Controls.Button.MapContentLayout(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Button.MapText(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.DatePicker.MapUpdateMode(Microsoft.Maui.Handlers.IDatePickerHandler handler, Microsoft.Maui.Controls.DatePicker datePicker) -> void

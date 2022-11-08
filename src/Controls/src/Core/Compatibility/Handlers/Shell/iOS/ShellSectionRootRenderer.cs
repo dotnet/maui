@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -129,7 +129,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			LayoutHeader();
 		}
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
 
+			var currentItem = ShellSection.CurrentItem;
+
+			if (!_renderers.ContainsKey(currentItem))
+				return;
+
+			var currentItemHandler = _renderers[currentItem];
+
+			var application = currentItemHandler.GetRequiredService<IApplication>();
+			application?.ThemeChanged();
+
+		}
 
 		void IDisconnectable.Disconnect()
 		{
