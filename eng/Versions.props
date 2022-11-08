@@ -7,7 +7,7 @@
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
     <MicrosoftExtensionsPackageVersion>6.0.0</MicrosoftExtensionsPackageVersion>
     <MicrosoftExtensionsServicingPackageVersion>6.0.1</MicrosoftExtensionsServicingPackageVersion>
-    <MicrosoftExtensionsNewServicingPackageVersion>6.0.2</MicrosoftExtensionsNewServicingPackageVersion>
+    <MicrosoftExtensionsNewServicingPackageVersion>7.0.0</MicrosoftExtensionsNewServicingPackageVersion>
     <SystemCodeDomPackageVersion>6.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>32.0.478</MicrosoftAndroidSdkWindowsPackageVersion>
