@@ -19,8 +19,8 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
-	public partial class ShellTests : HandlerTestBase
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{

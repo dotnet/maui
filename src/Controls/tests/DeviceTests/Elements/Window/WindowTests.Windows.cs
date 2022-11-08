@@ -11,7 +11,7 @@ using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class WindowTests : HandlerTestBase
+	public partial class WindowTests : ControlsHandlerTestBase
 	{
 		[Fact]
 		public async Task AdornerLayerAdded()

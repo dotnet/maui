@@ -11,7 +11,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ImageButton)]
-	public partial class ImageButtonHandlerTests : HandlerTestBase<ImageButtonHandler, ImageButtonStub>
+	public partial class ImageButtonHandlerTests : CoreHandlerTestBase<ImageButtonHandler, ImageButtonStub>
 	{
 		const int Precision = 4;
 

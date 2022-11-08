@@ -2,13 +2,15 @@ using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class HandlerTestBase<THandler, TStub>
+	public abstract partial class TextStyleHandlerTests<THandler, TStub>
 	{
 		[Theory(DisplayName = "Font Family Initializes Correctly")]
 		[InlineData(null)]
@@ -16,9 +18,16 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Dokdo")]
 		public async Task FontFamilyInitializesCorrectly(string family)
 		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder
+					.ConfigureFonts(fonts =>
+					{
+						fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+					});
+			});
+
 			var view = new TStub();
-			if (view is not ITextStyle)
-				return;
 
 			view.GetType().GetProperty("Font").SetValue(view, Font.OfSize(family, 10));
 			var handler = (await CreateHandlerAsync(view)) as ElementHandler;

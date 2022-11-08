@@ -28,9 +28,9 @@ namespace Microsoft.Maui.DeviceTests
 
 	[Category(TestCategory.Window)]
 #if ANDROID || IOS || MACCATALYST
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
-	public partial class WindowTests : HandlerTestBase
+	public partial class WindowTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{

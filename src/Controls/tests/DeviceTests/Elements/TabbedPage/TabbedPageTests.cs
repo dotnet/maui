@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.TabbedPage)]
-	public partial class TabbedPageTests : HandlerTestBase
+	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{

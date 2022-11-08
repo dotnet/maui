@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ScrollViewHandlerTests : HandlerTestBase<ScrollViewHandler, ScrollViewStub>
+	public partial class ScrollViewHandlerTests : CoreHandlerTestBase<ScrollViewHandler, ScrollViewStub>
 	{
 		[Fact]
 		public async Task ContentInitializesCorrectly()

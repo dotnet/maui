@@ -10,7 +10,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Picker)]
-	public partial class PickerTests : HandlerTestBase
+	public partial class PickerTests : ControlsHandlerTestBase
 	{
 		protected Task<string> GetPlatformControlText(MauiPicker platformView)
 		{

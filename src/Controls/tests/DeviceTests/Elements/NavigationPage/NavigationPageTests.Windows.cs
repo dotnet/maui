@@ -19,7 +19,7 @@ using WWindow = Microsoft.UI.Xaml.Window;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
-	public partial class NavigationPageTests : HandlerTestBase
+	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
 
 		string GetToolbarTitle(IElementHandler handler) =>

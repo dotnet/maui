@@ -4,6 +4,8 @@
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiGraphicsPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Graphics.Skia</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Skia</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

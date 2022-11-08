@@ -321,6 +321,7 @@ Task("dotnet-pack-docs")
         EnsureDirectoryExists(destDir);
         CleanDirectories(destDir);
 
+        // Get the docs for .NET MAUI
         foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.*.nupkg"))
         {
             var d = $"{tempDir}/{nupkg.GetFilename()}";
@@ -328,6 +329,20 @@ Task("dotnet-pack-docs")
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
             CopyDirectory($"{d}/ref", $"{destDir}");
+        }
+
+        // Get the docs for libraries separately distributed as NuGets
+        foreach (var pattern in NuGetOnlyPackages)
+        {
+            foreach (var nupkg in GetFiles($"./artifacts/{pattern}"))
+            {
+                var d = $"{tempDir}/{nupkg.GetFilename()}";
+                Unzip(nupkg, d);
+                DeleteFiles($"{d}/**/*.pri");
+                DeleteFiles($"{d}/**/*.aar");
+                DeleteFiles($"{d}/**/*.pdb");
+                CopyDirectory($"{d}/lib", $"{destDir}");
+            }
         }
 
         CleanDirectories(tempDir);

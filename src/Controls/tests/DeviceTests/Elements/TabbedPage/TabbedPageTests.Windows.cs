@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.TabbedPage)]
-	public partial class TabbedPageTests : HandlerTestBase
+	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
 		[Fact(DisplayName = "Toolbar Visible When Pushing To TabbedPage")]
 		public async Task ToolbarVisibleWhenPushingToTabbedPage()

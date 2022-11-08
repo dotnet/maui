@@ -12,7 +12,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Image)]
-	public partial class ImageTests : HandlerTestBase
+	public partial class ImageTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
