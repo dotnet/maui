@@ -16,20 +16,6 @@
   <!-- Framework references -->
   <ItemGroup>
     <KnownFrameworkReference
-        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
-        Include="Microsoft.Maui.Core"
-        TargetFramework="$(MauiWorkloadTargetFramework)"
-        RuntimeFrameworkName="Microsoft.Maui.Core"
-        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        TargetingPackName="Microsoft.Maui.Core.Ref.$(_MauiPlatformName)"
-        TargetingPackVersion="$(_MauiRuntimePackVersion)"
-        RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
-        Profile="$(TargetPlatformIdentifier)"
-        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
-    />
-    <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' "
         Include="Microsoft.Maui.Controls"
         TargetFramework="$(MauiWorkloadTargetFramework)"

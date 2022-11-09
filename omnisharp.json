@@ -27,7 +27,6 @@
       "src/Templates/**",
       "src/Workload/Microsoft.Maui.Controls.Ref/Microsoft.Maui.Controls.Ref.csproj",
       "src/Workload/Microsoft.Maui.Controls.Runtime/Microsoft.Maui.Controls.Runtime.csproj",
-      "src/Workload/Microsoft.Maui.Core.Runtime/Microsoft.Maui.Core.Runtime.csproj",
       "src/Workload/Microsoft.Maui.Essentials.Ref/Microsoft.Maui.Essentials.Ref.csproj",
       "Microsoft.Maui.Packages.slnf",
       "Microsoft.Maui.Samples.slnf",
