@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='ContainsKey']/Docs/*" />
 		public bool ContainsKey(string key)
 		{
-			return _innerDictionary.ContainsKey(key);
+			return _innerDictionary.ContainsKey(key) || (_mergedInstance?._innerDictionary?.ContainsKey(key) ?? false);
 		}
 
 		[IndexerName("Item")]
