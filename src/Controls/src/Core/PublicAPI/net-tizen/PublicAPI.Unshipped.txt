@@ -1,1 +1,4 @@
 #nullable enable
+*REMOVED*Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundCorlor -> Tizen.NUI.Color!
+readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackdropColor -> Tizen.NUI.Color!
+readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundColor -> Tizen.NUI.Color!
