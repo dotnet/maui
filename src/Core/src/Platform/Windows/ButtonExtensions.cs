@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 
 			platformButton.RefreshThemeResources();
 		}
-
+	
 		static readonly string[] StrokeColorResourceKeys =
 		{
 			"ButtonBorderBrush",
@@ -79,11 +79,22 @@ namespace Microsoft.Maui.Platform
 					? UI.Xaml.Visibility.Collapsed
 					: UI.Xaml.Visibility.Visible;
 			}
+			else
+			{
+				platformButton.Content = text;
+			}
 		}
 
 		public static void UpdateBackground(this Button platformButton, IButton button)
 		{
-			var brush = button.Background?.ToPlatform();
+			var brush = button.Background;
+
+			platformButton.UpdateBackground(brush);
+		}
+
+		public static void UpdateBackground(this Button platformButton, Paint? background)
+		{
+			var brush = background?.ToPlatform();
 
 			if (brush is null)
 				platformButton.Resources.RemoveKeys(BackgroundResourceKeys);

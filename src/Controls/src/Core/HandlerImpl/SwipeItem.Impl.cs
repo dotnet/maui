@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -9,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		Paint ISwipeItemMenuItem.Background => new SolidPaint(BackgroundColor);
 
-		Visibility ISwipeItemMenuItem.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
+		Visibility ISwipeItemMenuItem.Visibility => IsVisible ? Visibility.Visible : Visibility.Collapsed;
 
 		void Maui.ISwipeItem.OnInvoked()
 		{

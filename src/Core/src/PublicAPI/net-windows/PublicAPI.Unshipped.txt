@@ -2,6 +2,9 @@
 Microsoft.Maui.Handlers.ApplicationHandler.ApplicationHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Handlers.BorderHandler.BorderHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Handlers.BorderHandler.BorderHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
+Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.PlatformView.get -> Microsoft.UI.Xaml.Controls.Button!
+Microsoft.Maui.Handlers.ISwipeItemViewHandler.PlatformView.get -> Microsoft.Maui.Platform.ContentPanel!
+Microsoft.Maui.Handlers.ISwipeViewHandler.PlatformView.get -> Microsoft.Maui.Platform.MauiSwipeView!
 Microsoft.Maui.Handlers.PickerHandler.PickerHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Handlers.PickerHandler.PickerHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 Microsoft.Maui.Handlers.ProgressBarHandler.ProgressBarHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
@@ -99,6 +102,9 @@ Microsoft.Maui.IMenuFlyoutSeparator
 Microsoft.Maui.IToolTipElement
 Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
 Microsoft.Maui.IWindow.FrameChanged(Microsoft.Maui.Graphics.Rect frame) -> void
+Microsoft.Maui.Platform.MauiSwipeView
+Microsoft.Maui.Platform.MauiSwipeView.Dispose() -> void
+Microsoft.Maui.Platform.MauiSwipeView.MauiSwipeView() -> void
 Microsoft.Maui.ToolTip
 Microsoft.Maui.ToolTip.Content.get -> object?
 Microsoft.Maui.ToolTip.Content.set -> void
@@ -114,6 +120,15 @@ Microsoft.Maui.IWindow.Y.get -> double
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Controls.MenuFlyout!
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.SetVirtualView(Microsoft.Maui.IElement! view) -> void
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator!
+override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.Button! platformView) -> void
+override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Controls.Button!
+override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.Button! platformView) -> void
+override Microsoft.Maui.Handlers.SwipeItemViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentPanel!
+override Microsoft.Maui.Handlers.SwipeItemViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.SwipeViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiSwipeView! platformView) -> void
+override Microsoft.Maui.Handlers.SwipeViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiSwipeView!
+override Microsoft.Maui.Handlers.SwipeViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiSwipeView! platformView) -> void
+override Microsoft.Maui.Platform.MauiSwipeView.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyout!, Microsoft.Maui.Handlers.IMenuFlyoutHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapAdd(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapClear(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
@@ -139,6 +154,7 @@ static Microsoft.Maui.Handlers.WindowHandler.MapMinimumWidth(Microsoft.Maui.Hand
 static Microsoft.Maui.Handlers.WindowHandler.MapWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapX(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapY(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.Button! platformButton, Microsoft.Maui.Graphics.Paint? background) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
 static Microsoft.Maui.Platform.WindowExtensions.UpdateHeight(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumHeight(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void

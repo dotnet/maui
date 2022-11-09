@@ -3,7 +3,7 @@ using PlatformView = UIKit.UIButton;
 #elif MONOANDROID
 using PlatformView = Android.Views.View;
 #elif WINDOWS
-using PlatformView = Microsoft.UI.Xaml.Controls.SwipeItem;
+using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif TIZEN
 using PlatformView = Tizen.UIExtensions.NUI.Button;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SwipeItemMenuItemHandler : ISwipeItemMenuItemHandler
 	{
 		public static IPropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> Mapper =
-			new PropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler>(ViewHandler.ElementMapper)
+			new PropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler>(ElementMapper)
 			{
 				[nameof(ISwipeItemMenuItem.Visibility)] = MapVisibility,
 				[nameof(IView.Background)] = MapBackground,
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			};
 
 		public static CommandMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> CommandMapper =
-			new(ElementHandler.ElementCommandMapper)
+			new(ElementCommandMapper)
 			{
 			};
 
@@ -68,7 +68,6 @@ namespace Microsoft.Maui.Handlers
 				return platformHandler.SourceLoader.UpdateImageSourceAsync();
 			return Task.CompletedTask;
 		}
-
 #endif
 	}
 }

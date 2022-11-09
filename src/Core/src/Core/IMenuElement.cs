@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Graphics;
-
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	public interface IMenuElement : IElement, IImageSourcePart, IText
 	{

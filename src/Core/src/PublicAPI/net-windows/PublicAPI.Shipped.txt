@@ -478,13 +478,10 @@ Microsoft.Maui.Handlers.IStepperHandler
 Microsoft.Maui.Handlers.IStepperHandler.PlatformView.get -> Microsoft.Maui.Platform.MauiStepper!
 Microsoft.Maui.Handlers.IStepperHandler.VirtualView.get -> Microsoft.Maui.IStepper!
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler
-Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.PlatformView.get -> Microsoft.UI.Xaml.Controls.SwipeItem!
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.VirtualView.get -> Microsoft.Maui.ISwipeItemMenuItem!
 Microsoft.Maui.Handlers.ISwipeItemViewHandler
-Microsoft.Maui.Handlers.ISwipeItemViewHandler.PlatformView.get -> Microsoft.UI.Xaml.FrameworkElement!
 Microsoft.Maui.Handlers.ISwipeItemViewHandler.VirtualView.get -> Microsoft.Maui.ISwipeItemView!
 Microsoft.Maui.Handlers.ISwipeViewHandler
-Microsoft.Maui.Handlers.ISwipeViewHandler.PlatformView.get -> Microsoft.UI.Xaml.Controls.SwipeControl!
 Microsoft.Maui.Handlers.ISwipeViewHandler.VirtualView.get -> Microsoft.Maui.ISwipeView!
 Microsoft.Maui.Handlers.ISwitchHandler
 Microsoft.Maui.Handlers.ISwitchHandler.PlatformView.get -> Microsoft.UI.Xaml.Controls.ToggleSwitch!
@@ -1915,13 +1912,6 @@ override Microsoft.Maui.Handlers.ShapeViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.SliderHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.Slider! platformView) -> void
 override Microsoft.Maui.Handlers.SliderHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.Slider!
 override Microsoft.Maui.Handlers.SliderHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.Slider! platformView) -> void
-override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.SwipeItem! platformView) -> void
-override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.Controls.SwipeItem!
-override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.SwipeItem! platformView) -> void
-override Microsoft.Maui.Handlers.SwipeItemViewHandler.CreatePlatformView() -> Microsoft.UI.Xaml.FrameworkElement!
-override Microsoft.Maui.Handlers.SwipeViewHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.SwipeControl! platformView) -> void
-override Microsoft.Maui.Handlers.SwipeViewHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.SwipeControl!
-override Microsoft.Maui.Handlers.SwipeViewHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.SwipeControl! platformView) -> void
 override Microsoft.Maui.Handlers.SwipeViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.SwitchHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.ToggleSwitch! platformView) -> void
 override Microsoft.Maui.Handlers.SwitchHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.ToggleSwitch!

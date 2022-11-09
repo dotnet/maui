@@ -19,11 +19,8 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				}
 			};
 
-			if (DeviceInfo.Platform != DevicePlatform.WinUI)
-			{
-				layout.Children.Add(GalleryBuilder.NavButton("SwipeItemView Gallery", () => new CustomSwipeItemViewGallery(), Navigation));
-				layout.Children.Add(GalleryBuilder.NavButton("CustomSwipeItem Size Gallery", () => new CustomSizeSwipeViewGallery(), Navigation));
-			}
+			layout.Children.Add(GalleryBuilder.NavButton("SwipeItemView Gallery", () => new CustomSwipeItemViewGallery(), Navigation));
+			layout.Children.Add(GalleryBuilder.NavButton("CustomSwipeItem Size Gallery", () => new CustomSizeSwipeViewGallery(), Navigation));
 
 			Content = layout;
 		}
