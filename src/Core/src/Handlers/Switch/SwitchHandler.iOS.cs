@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsOn(ISwitchHandler handler, ISwitch view)
 		{
 			handler.PlatformView?.UpdateIsOn(view);
+			UpdateIsOn(handler);
 		}
 
 		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
@@ -47,6 +48,11 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			VirtualView.IsOn = PlatformView.On;
+		}
+
+		static void UpdateIsOn (ISwitchHandler handler)
+		{
+			handler.UpdateValue(nameof(ISwitch.TrackColor));
 		}
 	}
 }

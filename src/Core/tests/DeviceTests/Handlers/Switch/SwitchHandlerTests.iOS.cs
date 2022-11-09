@@ -42,5 +42,37 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expected, color);
 		}
+
+		async Task ValidateVisualTrackColor(ISwitch switchStub, UIColor color)
+		{
+			var actualBackgroundColor = await GetValueAsync(switchStub, handler =>
+			{
+				var uISwitch = GetNativeSwitch(handler);
+				var uIView = uISwitch.GetTrackSubview();
+				return uIView?.BackgroundColor;
+			});
+
+			Assert.NotNull(actualBackgroundColor);
+
+			// Compare the actual RGBA values since UIColor can be picky
+			actualBackgroundColor.GetRGBA (out var actualRed, out var actualGreen, out var actualBlue, out var actualAlpha);
+			color.GetRGBA (out var colorRed, out var colorGreen, out var colorBlue, out var colorAlpha);
+
+			Assert.True(actualRed == colorRed);
+			Assert.True(actualGreen == colorGreen);
+			Assert.True(actualBlue == colorBlue);
+			Assert.True(actualAlpha == colorAlpha);
+		}
+
+		async Task ValidateTrackSubViewExists(ISwitch switchStub)
+		{
+			var uIView = await GetValueAsync(switchStub, handler =>
+			{
+				var uISwitch = GetNativeSwitch(handler);
+				return uISwitch.GetTrackSubview();
+			});
+
+			Assert.NotNull(uIView);
+		}
 	}
 }

@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Platform
 
 			var uIView = GetTrackSubview(uiSwitch);
 
+			if (uIView is null)
+				return;
+
 			if (!view.IsOn)
 			{
 				// iOS 13+ uses the UIColor.SecondarySystemFill to support Light and Dark mode
@@ -43,17 +46,17 @@ namespace Microsoft.Maui.Platform
 				uiSwitch.ThumbTintColor = thumbColor?.ToPlatform();
 		}
 
-		internal static UIView GetTrackSubview(this UISwitch uISwitch)
+		internal static UIView? GetTrackSubview(this UISwitch uISwitch)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-				return uISwitch.Subviews[0].Subviews[0];
+				return uISwitch.Subviews?[0]?.Subviews?[0];
 			else
-				return uISwitch.Subviews[0].Subviews[0].Subviews[0];
+				return uISwitch.Subviews?[0]?.Subviews?[0]?.Subviews?[0];
 		}
 
-		internal static UIColor? GetOffTrackColor(this UISwitch uISwitch)
+		internal static UIColor? GetTrackColor(this UISwitch uISwitch)
 		{
-			return uISwitch.GetTrackSubview().BackgroundColor;
+			return uISwitch.GetTrackSubview()?.BackgroundColor;
 		}
 	}
 }
