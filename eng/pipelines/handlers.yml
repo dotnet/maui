@@ -142,11 +142,6 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              demands:
-                - macOS.Name -equals Monterey
-                - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
             steps:
               - template: common/provision.yml
                 parameters:
@@ -188,11 +183,6 @@ stages:
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
-            demands:
-              - macOS.Name -equals Monterey
-              - macOS.Architecture -equals x64
-              - Agent.HasDevices -equals False
-              - Agent.IsPaired -equals False
           steps:
             - template: common/pack.yml
               parameters:
@@ -219,11 +209,6 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              demands:
-                - macOS.Name -equals Monterey
-                - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
             steps:
               - template: common/provision.yml
                 parameters:
@@ -273,11 +258,6 @@ stages:
               pool:
                 name: ${{ BuildPlatform.poolName }}
                 vmImage: ${{ BuildPlatform.vmImage }}
-                demands:
-                  - macOS.Name -equals Monterey
-                  - macOS.Architecture -equals x64
-                  - Agent.HasDevices -equals False
-                  - Agent.IsPaired -equals False
               steps:
                 - template: common/provision.yml
                   parameters:
