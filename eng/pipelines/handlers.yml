@@ -134,7 +134,7 @@ stages:
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 120
+            timeoutInMinutes: 240
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
@@ -184,7 +184,7 @@ stages:
           workspace:
             clean: all
           displayName: ${{ PackPlatform.name }}
-          timeoutInMinutes: 120
+          timeoutInMinutes: 240
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
@@ -211,7 +211,7 @@ stages:
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 120
+             timeoutInMinutes: 240
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
@@ -265,7 +265,7 @@ stages:
               workspace:
                 clean: all
               displayName: ${{ BuildPlatform.name }} ${{ TestTFM.tfm }} (${{ BuildConfiguration }})
-              timeoutInMinutes: 120
+              timeoutInMinutes: 240
               condition: or(
                 ${{ parameters.BuildEverything }},
                 ne(variables['Build.Reason'], 'PullRequest'),
