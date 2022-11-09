@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public EventHandler CheckedChanged;
 		bool _disposed;
 
-#pragma warning disable CA1416 // TODO: ContentEdgeInsets, AdjustsImageWhenDisabled, AdjustsImageWhenHighlighted unsupported from version 15.0
+#pragma warning disable CA1416, CA1422 // TODO: ContentEdgeInsets, AdjustsImageWhenDisabled, AdjustsImageWhenHighlighted unsupported from version 15.0
 		internal float MinimumViewSize
 		{
 			get { return _minimumViewSize; }
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			AdjustsImageWhenDisabled = false;
 			AdjustsImageWhenHighlighted = false;
 		}
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 
 		void OnTouchUpInside(object sender, EventArgs e)
 		{
