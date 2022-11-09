@@ -65,6 +65,11 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
+    <PackageReference Include="Microsoft.Maui.Core" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
   <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true'  or '$(UseMauiEssentials)' == 'true') and ('$(TargetPlatformIdentifier)' == 'android') ">
     <PackageReference Include="Xamarin.Android.Glide" Version="@_XamarinAndroidGlideVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
