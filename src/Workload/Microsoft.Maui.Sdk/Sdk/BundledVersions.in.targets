@@ -13,38 +13,6 @@
     <_MauiRuntimePackAlwaysCopyLocal Condition=" '$(_MauiPlatformName)' == 'any' ">true</_MauiRuntimePackAlwaysCopyLocal>
   </PropertyGroup>
 
-  <!-- Framework references -->
-  <ItemGroup>
-    <KnownFrameworkReference
-        Condition=" '$(UseMaui)' == 'true' "
-        Include="Microsoft.Maui.Controls"
-        TargetFramework="$(MauiWorkloadTargetFramework)"
-        RuntimeFrameworkName="Microsoft.Maui.Controls"
-        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        TargetingPackName="Microsoft.Maui.Controls.Ref.$(_MauiPlatformName)"
-        TargetingPackVersion="$(_MauiRuntimePackVersion)"
-        RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
-        Profile="$(TargetPlatformIdentifier)"
-        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
-    />
-    <KnownFrameworkReference
-        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
-        Include="Microsoft.Maui.Essentials"
-        TargetFramework="$(MauiWorkloadTargetFramework)"
-        RuntimeFrameworkName="Microsoft.Maui.Essentials"
-        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        TargetingPackName="Microsoft.Maui.Essentials.Ref.$(_MauiPlatformName)"
-        TargetingPackVersion="$(_MauiRuntimePackVersion)"
-        RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
-        Profile="$(TargetPlatformIdentifier)"
-        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
-    />
-  </ItemGroup>
-
   <!-- These implicit <PackageReference/> pull dependencies from NuGet transitively -->
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="@MicrosoftExtensionsServicingPackageVersion@" IsImplicitlyDefined="true">
@@ -65,8 +33,24 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Core" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Maui.Controls.Xaml" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
