@@ -94,9 +94,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(Entry), 0, validateValue: (b, v) => (int)v >= 0);
 
 		/// <summary>
-		/// Backing store for the <see cref="SelectionLength"/> property.
+		/// Backing store for the <see cref="ClearButtonVisibility"/> property.
 		/// </summary>
-		public static readonly BindableProperty ClearButtonVisibilityProperty = BindableProperty.Create(nameof(SelectionLength), typeof(ClearButtonVisibility), typeof(Entry), ClearButtonVisibility.Never);
+		public static readonly BindableProperty ClearButtonVisibilityProperty = BindableProperty.Create(nameof(ClearButtonVisibility), typeof(ClearButtonVisibility), typeof(Entry), ClearButtonVisibility.Never);
 
 		readonly Lazy<PlatformConfigurationRegistry<Entry>> _platformConfigurationRegistry;
 
