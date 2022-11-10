@@ -4,6 +4,7 @@ parameters:
   poolName: ''
   provisionatorChannel: 'latest'
   installSimulators: false
+  iosSimulator: 'ios-simulator-64_16.1'
 
 steps:
   
@@ -80,10 +81,6 @@ steps:
       displayName: 'Install the macOS certificate'
       inputs:
         certSecureFile: 'Components Mac Certificate.p12'
-    - ${{ if ne(parameters.installSimulators, 'true') }}:
-      - pwsh: ./build.ps1  -Script eng/devices/ios.cake --target=install-simulator --id="ios-simulator-64_16.1" --verbosity=diagnostic
-        displayName: 'Install simulators 16.1'
-        continueOnError: true
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
     - powershell: |
@@ -119,6 +116,12 @@ steps:
       dotnet --version
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
+
+  #try install 
+  - ${{ if and(eq(parameters.platform, 'macos'), ne(parameters.installSimulators, 'true')) }}:
+      - pwsh: ./build.ps1  -Script eng/devices/ios.cake --target=install-simulator --id="{{parameters.iosSimulator}}" --verbosity=diagnostic
+        displayName: 'Install simulators 16.1'
+        continueOnError: true
 
   # Prepare Both
   - pwsh: ./build.ps1 --target provision
