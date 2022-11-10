@@ -20,7 +20,7 @@ steps:
   - ${{ if eq(parameters.platform, 'macos') }}:
     # Provision Xcode
     - ${{ if ne(parameters.skipXcode, 'true') }}:
-      - task: xamops.azdevex.provisionator-task.provisionator@1
+      - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Xcode'
         condition: ne(variables['REQUIRED_XCODE'], '')
         inputs:
@@ -30,7 +30,7 @@ steps:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
           AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
-    - task: xamops.azdevex.provisionator-task.provisionator@1
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
       condition: eq(variables['provisioning'], 'true')
       inputs:
@@ -93,13 +93,14 @@ steps:
           msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
         }
       displayName: 'Install PowerShell Core'
-    - task: xamops.azdevex.provisionator-task.provisionator@1
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Visual Studio'
       condition: eq(variables['provisioningVS'], 'true')
       inputs:
         provisioning_script: $(provisionator.vs)
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Additional Software'
@@ -129,15 +130,15 @@ steps:
     displayName: 'Clear all NuGet caches'
 
 
-  # Prepare for Reunion packages
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - task: NuGetAuthenticate@0
-      displayName: 'Authenticate Reunion NuGet sources'
-      inputs:
-        nuGetServiceConnections: Project.Reunion.nuget.internal
-    - pwsh: |
-        $path = '$(Build.SourcesDirectory)\NuGet.config'
-        [xml]$xml = Get-Content $path
-        $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
-        $xml.Save($path)
-      displayName: 'Add "wasdk-internal" to NuGet.config'
+  # # Prepare for Reunion packages
+  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  #   - task: NuGetAuthenticate@0
+  #     displayName: 'Authenticate Reunion NuGet sources'
+  #     inputs:
+  #       nuGetServiceConnections: Project.Reunion.nuget.internal
+  #   - pwsh: |
+  #       $path = '$(Build.SourcesDirectory)\NuGet.config'
+  #       [xml]$xml = Get-Content $path
+  #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
+  #       $xml.Save($path)
+  #     displayName: 'Add "wasdk-internal" to NuGet.config'
