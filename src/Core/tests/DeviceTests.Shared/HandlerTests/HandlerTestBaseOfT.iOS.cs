@@ -145,7 +145,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected CATransform3D GetLayerTransform(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).Layer.Transform;
+			((UIView)viewHandler.ToPlatform()).Layer.Transform;
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			((UIView)viewHandler.PlatformView).AccessibilityIdentifier;
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.DeviceTests
 			viewHandler.VirtualView.ToPlatform().GetBoundingBox();
 
 		protected System.Numerics.Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).GetViewTransform();
+			((UIView)viewHandler.ToPlatform()).GetViewTransform();
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
 			GetAccessiblePlatformView(viewHandler).AccessibilityLabel;
@@ -203,11 +203,11 @@ namespace Microsoft.Maui.DeviceTests
 				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
 		protected nfloat GetOpacity(IViewHandler viewHandler) =>
-			((UIView)viewHandler.PlatformView).Alpha;
+			((UIView)viewHandler.ToPlatform()).Alpha;
 
 		protected Visibility GetVisibility(IViewHandler viewHandler)
 		{
-			var platformView = (UIView)viewHandler.PlatformView;
+			var platformView = (UIView)viewHandler.ToPlatform();
 
 			foreach (var constraint in platformView.Constraints)
 			{
