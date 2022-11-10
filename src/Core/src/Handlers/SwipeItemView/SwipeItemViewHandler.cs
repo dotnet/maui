@@ -7,7 +7,7 @@ using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 using PlatformView = Microsoft.Maui.Platform.ContentPanel;
 #elif TIZEN
 using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
+#elif NETSTANDARD || !PLATFORM || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 
@@ -18,7 +18,10 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<ISwipeItemView, ISwipeItemViewHandler> Mapper = new PropertyMapper<ISwipeItemView, ISwipeItemViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(ISwipeItemView.Content)] = MapContent,
-			[nameof(ISwipeItemView.Visibility)] = MapVisibility
+			[nameof(ISwipeItemView.Visibility)] = MapVisibility,
+#if WINDOWS
+			[nameof(ISwipeItemView.IsEnabled)] = MapIsEnabled
+#endif
 		};
 
 		public static CommandMapper<ISwipeItemView, ISwipeItemViewHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)

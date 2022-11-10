@@ -70,7 +70,8 @@ namespace Microsoft.Maui.Platform
 			platformButton.UpdateText(text.Text);
 		}
 
-		public static void UpdateText(this Button platformButton, string text)
+		// TODO: NET8 make this public
+		internal static void UpdateText(this Button platformButton, string text)
 		{
 			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
 			{

@@ -30,6 +30,13 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateContent();
 		}
 
+		// TODO: NET8 make this public
+		internal static void MapIsEnabled(ISwipeViewHandler handler, ISwipeView swipeView)
+		{
+			handler.PlatformView.UpdateIsSwipeEnabled(swipeView.IsEnabled);
+			ViewHandler.MapIsEnabled(handler, swipeView);
+		}
+
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
 		}
