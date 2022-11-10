@@ -118,7 +118,7 @@ steps:
     displayName: 'Show .NET SDK info'
 
   #try install 
-  - ${{ if and(eq(parameters.platform, 'macos'), ne(parameters.installSimulators, 'true')) }}:
+  - ${{ if and(eq(parameters.platform, 'macos'), eq(parameters.installSimulators, 'true')) }}:
       - pwsh: ./build.ps1  -Script eng/devices/ios.cake --target=install-simulator --id="{{parameters.iosSimulator}}" --verbosity=diagnostic
         displayName: 'Install simulators 16.1'
         continueOnError: true
