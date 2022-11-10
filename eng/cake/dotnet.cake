@@ -330,8 +330,8 @@ Task("dotnet-pack-docs")
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
-            CopyFiles($"{d}/lib/**/net*(standard)?.?/**/*.dll", $"{destDir}");
-            CopyFiles($"{d}/lib/**/net*(standard)?.?/**/*.xml", $"{destDir}");
+            CopyFiles($"{d}/ref/**/net*(standard)?.?/**/*.dll", $"{destDir}");
+            CopyFiles($"{d}/ref/**/net*(standard)?.?/**/*.xml", $"{destDir}");
         }
 
         // Get the docs for libraries separately distributed as NuGets
