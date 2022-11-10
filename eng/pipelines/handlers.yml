@@ -155,10 +155,6 @@ stages:
                 env:
                   DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                   PRIVATE_BUILD: $(PrivateBuild)
-              - ${{ if eq(BuildPlatform.name, 'macos') }}:
-                - pwsh: ./build.ps1  -Script eng/devices/ios.cake --target=install-simulator --id="ios-simulator-64_16.1" --verbosity=diagnostic
-                  displayName: 'Install simulators 16.1'
-                  continueOnError: true
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic

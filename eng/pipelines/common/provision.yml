@@ -3,6 +3,7 @@ parameters:
   skipXcode: false
   poolName: ''
   provisionatorChannel: 'latest'
+  installSimulators: false
 
 steps:
   
@@ -79,7 +80,10 @@ steps:
       displayName: 'Install the macOS certificate'
       inputs:
         certSecureFile: 'Components Mac Certificate.p12'
-
+    - ${{ if ne(parameters.installSimulators, 'true') }}:
+      - pwsh: ./build.ps1  -Script eng/devices/ios.cake --target=install-simulator --id="ios-simulator-64_16.1" --verbosity=diagnostic
+        displayName: 'Install simulators 16.1'
+        continueOnError: true
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
     - powershell: |
