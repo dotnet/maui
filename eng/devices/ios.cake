@@ -16,8 +16,6 @@ DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrE
 var TEST_APP = Argument("app", EnvironmentVariable("IOS_TEST_APP") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS") ?? "");
 
-var SIMULATOR_ID = Argument("id", EnvironmentVariable("IOS_SIMULATOR_ID") ?? "ios-simulator-64_16.1");
-
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
 string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimulator-x64" : "ios-x64";
@@ -179,7 +177,7 @@ Task("install-simulator")
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
-		$"{SIMULATOR_ID} " +
+		$"{TEST_DEVICE} " +
 		$"--verbosity=\"Debug\" ")
 	};
 

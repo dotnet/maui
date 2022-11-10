@@ -119,7 +119,7 @@ steps:
 
   #try install 
   - ${{ if and(eq(parameters.platform, 'macos'), eq(parameters.installSimulators, 'true')) }}:
-      - pwsh: ./build.ps1  -Script eng/devices/ios.cake --target=install-simulator --id="{{parameters.iosSimulator}}" --verbosity=diagnostic
+      - pwsh: ./build.ps1  -Script eng/devices/ios.cake --target=install-simulator --device="{{parameters.iosSimulator}}" --verbosity=diagnostic
         displayName: 'Install simulators 16.1'
         continueOnError: true
 
@@ -127,6 +127,7 @@ steps:
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
+    continueOnError: true
 
   - task: PowerShell@2
     condition: eq(variables['PrivateBuild'], 'true')
