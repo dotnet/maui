@@ -5,7 +5,7 @@ string TARGET = Argument("target", "Test");
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? "");
-string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? "ios-simulator-64_14.4"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
+string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? "ios-simulator-64_16.1"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
@@ -16,7 +16,7 @@ DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrE
 var TEST_APP = Argument("app", EnvironmentVariable("IOS_TEST_APP") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS") ?? "");
 
-var SIMULATOR_ID = Argument("id", EnvironmentVariable("IOS_SIMULATOR_ID") ?? "");
+var SIMULATOR_ID = Argument("id", EnvironmentVariable("IOS_SIMULATOR_ID") ?? "ios-simulator-64_16.1");
 
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
@@ -28,6 +28,7 @@ Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
+Information("Simulator: {0}", SIMULATOR_ID);
 
 Setup(context =>
 {
@@ -175,14 +176,14 @@ Task("Test")
 Task("install-simulator")
 	.Does(() =>
 {
-	var settings = new DotNetCoreToolSettings {
-		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
-		$"{SIMULATOR_ID} " +
-		$"--verbosity=\"Debug\" ")
-	};
+	// var settings = new DotNetCoreToolSettings {
+	// 	DiagnosticOutput = true,
+	// 	ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
+	// 	$"{SIMULATOR_ID} " +
+	// 	$"--verbosity=\"Debug\" ")
+	// };
 
-	DotNetCoreTool("tool", settings);
+	// DotNetCoreTool("tool", settings);
 });
 
 RunTarget(TARGET);
