@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 
@@ -22,6 +23,22 @@ namespace Microsoft.Maui.Handlers
 			return platformView;
 		}
 
+		private protected override void OnConnectHandler(object platformView)
+		{
+			base.OnConnectHandler(platformView);
+
+			if (platformView is Button button)
+				button.Loaded += OnSwipeItemMenuItemLoaded;
+		}
+
+		private protected override void OnDisconnectHandler(object platformView)
+		{
+			base.OnDisconnectHandler(platformView);
+
+			if (platformView is Button button)
+				button.Loaded -= OnSwipeItemMenuItemLoaded;
+		}
+
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
 			handler.PlatformView.UpdateTextColor(view);
 
@@ -43,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			var swipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();	
+			var swipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 			swipeView?.UpdateIsVisibleSwipeItem(view);
 
 			handler.PlatformView.UpdateVisibility(view.Visibility);
@@ -84,6 +101,43 @@ namespace Microsoft.Maui.Handlers
 			{
 				VirtualView.OnInvoked();
 			}
+		}
+
+		void OnSwipeItemMenuItemLoaded(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			var button = sender as Button;
+
+			if (button == null)
+				return;
+
+			if (button.Content is not StackPanel container)
+				return;
+
+			var image = button.GetContent<Image>();
+
+			if (image == null)
+				return;
+
+			container.Orientation = Orientation.Vertical;
+
+			var iconSize = GetIconSize();
+			image.MaxHeight = image.MaxWidth = iconSize;
+		}
+
+		double GetIconSize()
+		{
+			if (VirtualView is not IImageSourcePart imageSourcePart || imageSourcePart.Source == null)
+				return 0;
+
+			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
+
+			if (mauiSwipeView == null || MauiContext == null)
+				return 0;
+
+			double contentHeight = mauiSwipeView.ActualHeight;
+			double contentWidth = SwipeViewExtensions.SwipeItemWidth;
+
+			return Math.Min(contentHeight, contentWidth) / 2;
 		}
 	}
 }
