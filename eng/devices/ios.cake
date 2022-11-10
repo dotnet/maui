@@ -26,7 +26,6 @@ Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
-Information("Simulator: {0}", SIMULATOR_ID);
 
 Setup(context =>
 {
