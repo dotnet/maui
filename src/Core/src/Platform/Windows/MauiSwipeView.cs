@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Platform
 		double _swipeOffset;
 		double _swipeThreshold;
 		OpenSwipeItem _previousOpenSwipeItem;
+		bool _isSwipeEnabled;
 
 		public MauiSwipeView()
 		{
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Platform
 			ManipulationStarted += OnSwipeControlManipulationStarted;
 			ManipulationDelta += OnSwipeControlManipulationDelta;
 			ManipulationCompleted += OnSwipeControlManipulationCompleted;
+			Tapped += OnSwipeViewTapped;
 		}
 
 		internal ISwipeView? Element { get; private set; }
@@ -57,8 +59,9 @@ namespace Microsoft.Maui.Platform
 			ManipulationStarted -= OnSwipeControlManipulationStarted;
 			ManipulationDelta -= OnSwipeControlManipulationDelta;
 			ManipulationCompleted -= OnSwipeControlManipulationCompleted;
+			Tapped += OnSwipeViewTapped;
 
-			if(_content != null)
+			if (_content != null)
 				_content.Tapped -= OnContentTapped;
 		}
 
@@ -99,6 +102,42 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal void UpdateIsVisibleSwipeItem(ISwipeItem item)
+		{
+			if (!_isOpen)
+				return;
+
+			_swipeItems.TryGetValue(item, out object? view);
+
+			if (view != null && view is FrameworkElement)
+			{
+				_swipeThreshold = 0;
+				LayoutSwipeItems(GetNativeSwipeItems());
+				SwipeToThreshold();
+			}
+		}
+
+		internal void UpdateIsSwipeEnabled(bool isEnabled)
+		{
+			_isSwipeEnabled = isEnabled;
+		}
+
+		List<FrameworkElement> GetNativeSwipeItems()
+		{
+			var swipeItems = new List<FrameworkElement>();
+
+			if (_actionView == null)
+				return swipeItems;
+
+			foreach (var children in _actionView.Children)
+			{
+				if (children is FrameworkElement swipeItem)
+					swipeItems.Add(swipeItem);
+			}
+
+			return swipeItems;
+		}
+
 		void OnSwipeControlManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 		{
 			if (_isSwiping || _isTouchDown || _content == null)
@@ -110,6 +149,9 @@ namespace Microsoft.Maui.Platform
 
 		void OnSwipeControlManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 		{
+			if (!_isSwipeEnabled)
+				return;
+
 			if (_content == null || _initialPoint == null)
 				return;
 
@@ -157,6 +199,14 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			ValidateSwipeThreshold();
+		}
+
+		void OnSwipeViewTapped(object sender, TappedRoutedEventArgs e)
+		{
+			var point = e.GetPosition(this);
+
+			if (CanProcessTouchSwipeItems(point))
+				ProcessTouchSwipeItems(point);
 		}
 
 		void OnContentTapped(object sender, TappedRoutedEventArgs e)
@@ -785,6 +835,63 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return contentHeight;
+		}
+
+		bool CanProcessTouchSwipeItems(Point point)
+		{
+			// We only invoke the SwipeItem command if we tap on the SwipeItems area
+			// and the SwipeView is fully open.
+
+			//if (TouchInsideContent(point))
+			//	return false;
+
+			if (_swipeOffset == _swipeThreshold)
+				return true;
+
+			return false;
+		}
+
+		void ProcessTouchSwipeItems(Point point)
+		{
+			if (_isResettingSwipe)
+				return;
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems == null || _actionView == null)
+				return;
+
+			foreach(var child in _actionView.Children)
+			{
+				var button = child as FrameworkElement;
+
+				if (button != null && button.Visibility == UI.Xaml.Visibility.Visible)
+				{
+					var swipeItemX = Canvas.GetLeft(button);
+					var swipeItemY = Canvas.GetTop(button);
+					var swipeItemHeight = button.ActualHeight;
+					var swipeItemWidth = button.ActualWidth;
+
+					if (TouchInsideContent(swipeItemX, swipeItemY, swipeItemWidth, swipeItemHeight, point.X, point.Y))
+					{
+						if (button is ISwipeItem swipeItem)
+							ExecuteSwipeItem(swipeItem);
+
+						if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+							ResetSwipe();
+
+						break;
+					}
+				}
+			}
+		}
+
+		bool TouchInsideContent(double x1, double y1, double x2, double y2, double x, double y)
+		{
+			if (x > x1 && x < (x1 + x2) && y > y1 && y < (y1 + y2))
+				return true;
+
+			return false;
 		}
 
 		void ExecuteSwipeItem(ISwipeItem item)
