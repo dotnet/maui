@@ -176,14 +176,14 @@ Task("Test")
 Task("install-simulator")
 	.Does(() =>
 {
-	// var settings = new DotNetCoreToolSettings {
-	// 	DiagnosticOutput = true,
-	// 	ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
-	// 	$"{SIMULATOR_ID} " +
-	// 	$"--verbosity=\"Debug\" ")
-	// };
+	var settings = new DotNetCoreToolSettings {
+		DiagnosticOutput = true,
+		ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
+		$"{SIMULATOR_ID} " +
+		$"--verbosity=\"Debug\" ")
+	};
 
-	// DotNetCoreTool("tool", settings);
+	DotNetCoreTool("tool", settings);
 });
 
 RunTarget(TARGET);
