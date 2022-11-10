@@ -330,7 +330,8 @@ Task("dotnet-pack-docs")
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
-            CopyDirectory($"{d}/ref", $"{destDir}");
+            CopyFiles($"{d}/lib/**/net*(standard)?.?/**/*.dll", $"{destDir}");
+            CopyFiles($"{d}/lib/**/net*(standard)?.?/**/*.xml", $"{destDir}");
         }
 
         // Get the docs for libraries separately distributed as NuGets
@@ -343,11 +344,12 @@ Task("dotnet-pack-docs")
                 DeleteFiles($"{d}/**/*.pri");
                 DeleteFiles($"{d}/**/*.aar");
                 DeleteFiles($"{d}/**/*.pdb");
-                CopyDirectory($"{d}/lib", $"{destDir}");
+                CopyFiles($"{d}/lib/**/net*(standard)?.?/*.dll", $"{destDir}");
+                CopyFiles($"{d}/lib/**/net*(standard)?.?/*.xml", $"{destDir}");
             }
         }
 
-        CleanDirectories(tempDir);
+        //CleanDirectories(tempDir);
     });
 
 Task("dotnet-pack")
