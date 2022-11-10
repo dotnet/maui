@@ -69,6 +69,23 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: NET8 make this public
+		internal static void UpdateVisibility(this FrameworkElement platformView, Visibility visibility)
+		{
+			switch (visibility)
+			{
+				case Visibility.Visible:
+					platformView.Visibility = UI.Xaml.Visibility.Visible;
+					break;
+				case Visibility.Hidden:
+					platformView.Visibility = UI.Xaml.Visibility.Visible;
+					break;
+				case Visibility.Collapsed:
+					platformView.Visibility = UI.Xaml.Visibility.Collapsed;
+					break;
+			}
+		}
+	
 		public static void UpdateClip(this FrameworkElement platformView, IView view)
 		{
 			if (platformView is WrapperView wrapper)

@@ -30,8 +30,11 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapVisibility(ISwipeItemViewHandler handler, ISwipeItemView view)
-		{
-		}
+			=> handler.PlatformView.UpdateVisibility(view.Visibility);
+
+		// TODO: NET8 make this public
+		internal static void MapIsEnabled(ISwipeItemViewHandler handler, ISwipeItemView view)
+			=> handler.PlatformView.UpdateIsEnabled(view);
 
 		void UpdateContent()
 		{
