@@ -23,7 +23,7 @@
     <MicrosoftNETWorkloadEmscriptennet7Manifest70100PackageVersion>7.0.0-rtm.22504.3</MicrosoftNETWorkloadEmscriptennet7Manifest70100PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptennet7Manifest70100PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
-    <MicrosoftWindowsAppSDKPackageVersion>1.1.5</MicrosoftWindowsAppSDKPackageVersion>
+    <MicrosoftWindowsAppSDKPackageVersion>1.2.221109.1</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.1</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.0.4</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
