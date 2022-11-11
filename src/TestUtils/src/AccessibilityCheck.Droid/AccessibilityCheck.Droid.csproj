@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Google.Guava" Version="31.1.0.4" />
+    <PackageReference Include="Xamarin.Protobuf.JavaLite" Version="3.21.9" />
   </ItemGroup>
 </Project>
