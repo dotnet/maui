@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Platform
 	//TODO make this public on NET8
 	internal static class CalendarDatePickerExtensions
 	{
-		internal static string ToDateFormat(this string dateFormat)
+		public static string ToDateFormat(this string dateFormat)
 		{
 			// The WinUI CalendarDatePicker DateFormat property use this formatter:
 			// https://docs.microsoft.com/en-us/uwp/api/Windows.Globalization.DateTimeFormatting.DateTimeFormatter?redirectedfrom=MSDN&view=winrt-22621#code-snippet-2

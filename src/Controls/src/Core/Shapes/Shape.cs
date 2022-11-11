@@ -192,11 +192,22 @@ namespace Microsoft.Maui.Controls.Shapes
 			viewBounds.Height -= StrokeThickness;
 
 			Matrix3x2 transform;
+
 			if (Aspect == Stretch.None)
 			{
-				transform = Matrix3x2.CreateTranslation(
-					(float)(viewBounds.Left - pathBounds.Left),
-					(float)(viewBounds.Top - pathBounds.Top));
+				bool requireAdjustX = viewBounds.Left > pathBounds.Left;
+				bool requireAdjustY = viewBounds.Top > pathBounds.Top;
+
+				if (requireAdjustX || requireAdjustY)
+				{
+					transform = Matrix3x2.CreateTranslation(
+						(float)(pathBounds.X + viewBounds.Left - pathBounds.Left),
+						(float)(pathBounds.Y + viewBounds.Top - pathBounds.Top));
+				}
+				else
+				{
+					transform = Matrix3x2.Identity;
+				}
 			}
 			else
 			{
@@ -255,6 +266,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+
 			if (result.Width != 0 && result.Height != 0)
 			{
 				return result;
@@ -262,7 +274,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			// TODO: not using this.GetPath().Bounds.Size;
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
-			SizeF boundsByFlattening = this.GetPath().GetBoundsByFlattening(1).Size;
+			RectF pathBounds = this.GetPath().GetBoundsByFlattening(1);
+			SizeF boundsByFlattening = pathBounds.Size;
+
 			result.Height = boundsByFlattening.Height;
 			result.Width = boundsByFlattening.Width;
 
@@ -277,6 +291,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			switch (Aspect)
 			{
 				case Stretch.None:
+					result.Height += pathBounds.Y;
+					result.Width += pathBounds.X;
 					break;
 
 				case Stretch.Fill:

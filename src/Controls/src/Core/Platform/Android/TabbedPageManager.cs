@@ -764,7 +764,6 @@ namespace Microsoft.Maui.Controls.Handlers
 #pragma warning disable CS0618 // Type or member is obsolete
 			TabLayout.IOnTabSelectedListener,
 #pragma warning restore CS0618 // Type or member is obsolete
-			ViewPager.IOnPageChangeListener,
 			NavigationBarView.IOnItemSelectedListener,
 			TabLayoutMediator.ITabConfigurationStrategy
 		{
@@ -845,16 +844,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				_tabbedPageManager.SetIconColorFilter(tab, false);
 			}
-			void ViewPager.IOnPageChangeListener.OnPageScrolled(int position, float positionOffset, int positionOffsetPixels)
-			{
-			}
-
-			void ViewPager.IOnPageChangeListener.OnPageScrollStateChanged(int state)
-			{
-			}
-
-			void ViewPager.IOnPageChangeListener.OnPageSelected(int position) =>
-				OnPageSelected(position);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿#nullable enable
 *REMOVED*Microsoft.Maui.ApplicationModel.IWindowStateManager.ActiveWindowDisplayChanged -> System.EventHandler!
-*REMOVED*Microsoft.Maui.ApplicationModel.IWindowStateManager.OnWindowMessage(System.IntPtr hWnd, uint msg, System.IntPtr wParam, System.IntPtr lParam) -> void
-*REMOVED*static Microsoft.Maui.ApplicationModel.Platform.OnWindowMessage(System.IntPtr hWnd, uint msg, System.IntPtr wParam, System.IntPtr lParam) -> void
+*REMOVED*Microsoft.Maui.ApplicationModel.IWindowStateManager.OnWindowMessage(nint hWnd, uint msg, nint wParam, nint lParam) -> void
+*REMOVED*static Microsoft.Maui.ApplicationModel.Platform.OnWindowMessage(nint hWnd, uint msg, nint wParam, nint lParam) -> void
 override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
 ~override Microsoft.Maui.Devices.Sensors.Location.Equals(object obj) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator !=(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
