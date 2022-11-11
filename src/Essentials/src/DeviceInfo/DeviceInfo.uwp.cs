@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Devices
 		static bool GetIsInTabletMode()
 		{
 			var supportsTablet = GetSystemMetrics(SM_TABLETPC) != 0;
-			var inTabletMode = GetSystemMetrics(SM_CONVERTIBLESLATEMODE) != 0;
+			var inTabletMode = GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0;
 			return inTabletMode && supportsTablet;
 		}
 	}
