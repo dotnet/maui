@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
-#if ANDROID || IOS || MACCATALYST || TIZEN
+#if ANDROID || IOS || MACCATALYST || TIZEN || WINDOWS
 			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #if ANDROID || IOS || MACCATALYST
 			handlersCollection.AddHandler<Shell, ShellRenderer>();
