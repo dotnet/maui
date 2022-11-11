@@ -169,6 +169,8 @@ stages:
                 displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
+              - ${{ if eq(BuildPlatform.name, 'macos') }}: 
+                - template: sdk-unified/steps/mac-agent-info/v1.yml@xamarin-templates
 
   - stage: pack_net6
     displayName: Pack .NET MAUI
@@ -247,6 +249,8 @@ stages:
                 displayName: publish artifacts
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
+              - ${{ if eq(BuildPlatform.name, 'macos') }}: 
+                  - template: sdk-unified/steps/mac-agent-info/v1.yml@xamarin-templates
 
   - stage: templates_net6
     displayName: Build .NET MAUI Templates
@@ -299,6 +303,8 @@ stages:
                   displayName: publish artifacts
                   inputs:
                     ArtifactName: ${{ BuildPlatform.artifact }}
+                - ${{ if eq(BuildPlatform.name, 'macos') }}: 
+                  - template: sdk-unified/steps/mac-agent-info/v1.yml@xamarin-templates
 
   - template: common/security-compliance.yml
 

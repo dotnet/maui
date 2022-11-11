@@ -5,7 +5,7 @@ string TARGET = Argument("target", "Test");
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? "");
-string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? "ios-simulator-64_14.4"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
+string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? "ios-simulator-64_16.1"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
@@ -168,6 +168,19 @@ Task("Test")
 	if (!string.IsNullOrEmpty(failed)) {
 		throw new Exception($"At least {failed} test(s) failed.");
 	}
+});
+
+Task("install-simulator")
+	.Does(() =>
+{
+	var settings = new DotNetCoreToolSettings {
+		DiagnosticOutput = true,
+		ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
+		$"{TEST_DEVICE} " +
+		$"--verbosity=\"Debug\" ")
+	};
+
+	DotNetCoreTool("tool", settings);
 });
 
 RunTarget(TARGET);

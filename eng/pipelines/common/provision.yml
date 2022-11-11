@@ -3,6 +3,8 @@ parameters:
   skipXcode: false
   poolName: ''
   provisionatorChannel: 'latest'
+  installSimulators: false
+  iosSimulator: 'ios-simulator-64_16.1'
 
 steps:
   
@@ -79,7 +81,7 @@ steps:
       displayName: 'Install the macOS certificate'
       inputs:
         certSecureFile: 'Components Mac Certificate.p12'
-
+    - template: sdk-unified/steps/mac-agent-info/v1.yml@xamarin-templates
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
     - powershell: |
@@ -116,10 +118,17 @@ steps:
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
 
+  #try install 
+  - ${{ if and(eq(parameters.platform, 'macos'), eq(parameters.installSimulators, 'true')) }}:
+      - pwsh: ./build.ps1  -Script eng/devices/ios.cake --target=install-simulator --device="{{parameters.iosSimulator}}" --verbosity=diagnostic
+        displayName: 'Install simulators 16.1'
+        continueOnError: true
+
   # Prepare Both
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
+    continueOnError: true
 
   - task: PowerShell@2
     condition: eq(variables['PrivateBuild'], 'true')
@@ -134,14 +143,14 @@ steps:
 
 
   # Prepare for Reunion packages
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - task: NuGetAuthenticate@0
-      displayName: 'Authenticate Reunion NuGet sources'
-      inputs:
-        nuGetServiceConnections: Project.Reunion.nuget.internal
-    - pwsh: |
-        $path = '$(Build.SourcesDirectory)\NuGet.config'
-        [xml]$xml = Get-Content $path
-        $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
-        $xml.Save($path)
-      displayName: 'Add "wasdk-internal" to NuGet.config'
+  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  #   - task: NuGetAuthenticate@0
+  #     displayName: 'Authenticate Reunion NuGet sources'
+  #     inputs:
+  #       nuGetServiceConnections: Project.Reunion.nuget.internal
+  #   - pwsh: |
+  #       $path = '$(Build.SourcesDirectory)\NuGet.config'
+  #       [xml]$xml = Get-Content $path
+  #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
+  #       $xml.Save($path)
+  #     displayName: 'Add "wasdk-internal" to NuGet.config'
