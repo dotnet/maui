@@ -23,6 +23,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' and '$(TargetFramework)' == '$(_MauiDotNetTfm)'">
     <ProjectReference Include="..\..\..\Controls\src\Core.Design\Controls.Core.Design.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
