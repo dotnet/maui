@@ -318,7 +318,11 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateSwipeItemViewLayout(ISwipeItemView swipeItemView)
 		{
-			swipeItemView?.Handler?.ToPlatform().InvalidateMeasure(swipeItemView);
+			if (swipeItemView?.Handler is not IPlatformViewHandler handler)
+				return;
+
+			var swipeItemSize = GetSwipeItemSize(swipeItemView);
+			handler.LayoutVirtualView(new Size(swipeItemSize.Width, swipeItemSize.Height));
 		}
 
 		void LayoutSwipeItems(List<FrameworkElement> childs)
