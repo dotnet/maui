@@ -347,8 +347,8 @@ Task("dotnet-pack-docs")
                 DeleteFiles($"{d}/**/*.pri");
                 DeleteFiles($"{d}/**/*.aar");
                 DeleteFiles($"{d}/**/*.pdb");
-                CopyFiles($"{d}/lib/**/net*(standard)?.?/**/*.dll", $"{destDir}");
-                CopyFiles($"{d}/lib/**/net*(standard)?.?/**/*.xml", $"{destDir}");
+                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.dll", $"{destDir}");
+                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.xml", $"{destDir}");
             }
         }
 
