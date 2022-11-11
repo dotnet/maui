@@ -17,6 +17,7 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Graphics.*.nupkg",
     "Microsoft.Maui.Controls.Maps.*.nupkg",
     "Microsoft.Maui.Maps.*.nupkg",
+    "Microsoft.AspNetCore.Components.WebView.Maui.*.nupkg",
 };
 
 ProcessTFMSwitches();
@@ -327,7 +328,10 @@ Task("dotnet-pack-docs")
         foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.any.*.nupkg"))
         {
             var d = $"{tempDir}/{nupkg.GetFilename()}";
-            Information(d);
+
+            if (d.Contains(".DesignTools."))
+                continue;
+
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
@@ -335,7 +339,7 @@ Task("dotnet-pack-docs")
             CopyFiles($"{d}/ref/**/net?.?/**/*.xml", $"{destDir}");
         }
 
-        // Get the docs for libraries separately distributed as NuGets
+        // Get the docs for libraries separately distributed as NuGets (and BlazorWebView)
         foreach (var pattern in NuGetOnlyPackages)
         {
             foreach (var nupkg in GetFiles($"./artifacts/{pattern}"))
@@ -350,7 +354,7 @@ Task("dotnet-pack-docs")
             }
         }
 
-        CleanDirectories(tempDir);
+        //CleanDirectories(tempDir);
     });
 
 Task("dotnet-pack")
