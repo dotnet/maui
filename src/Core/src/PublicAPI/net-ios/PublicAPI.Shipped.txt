@@ -2109,6 +2109,7 @@ override Microsoft.Maui.Handlers.SwipeViewHandler.SetVirtualView(Microsoft.Maui.
 override Microsoft.Maui.Handlers.SwitchHandler.ConnectHandler(UIKit.UISwitch! platformView) -> void
 override Microsoft.Maui.Handlers.SwitchHandler.CreatePlatformView() -> UIKit.UISwitch!
 override Microsoft.Maui.Handlers.SwitchHandler.DisconnectHandler(UIKit.UISwitch! platformView) -> void
+override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.TabbedViewHandler.CreatePlatformView() -> UIKit.UIView!
 override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiTimePicker! platformView) -> void
 override Microsoft.Maui.Handlers.TimePickerHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiTimePicker!

@@ -1,4 +1,6 @@
 variables:
+- name: Codeql.Enabled
+  value: true
 - name: BuildVersion
   value: $[counter('buildversion-counter', 5000)]
 - name: NUGET_VERSION

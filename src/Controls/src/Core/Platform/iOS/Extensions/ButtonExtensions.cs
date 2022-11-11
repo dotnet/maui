@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			platformButton.UpdatePadding(button);
 
-#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios15.0")]
+#pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios15.0")]
 			if (platformButton.ImageEdgeInsets != imageInsets ||
 				platformButton.TitleEdgeInsets != titleInsets)
 			{
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls.Platform
 				platformButton.TitleEdgeInsets = titleInsets;
 				platformButton.Superview?.SetNeedsLayout();
 			}
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 		}
 
 		public static void UpdateText(this UIButton platformButton, Button button)

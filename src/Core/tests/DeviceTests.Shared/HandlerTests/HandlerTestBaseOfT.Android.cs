@@ -3,6 +3,8 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -162,9 +164,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync(view);
 
-			var viewHandler = handler as ViewHandler;
-
-			Assert.True(viewHandler.NeedsContainer);
+			if (handler is ViewHandler vh)
+				Assert.True(vh.NeedsContainer);
 		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>

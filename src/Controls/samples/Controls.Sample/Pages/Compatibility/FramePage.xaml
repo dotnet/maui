@@ -29,7 +29,8 @@
             <Label
                 Text="Shadow"
                 Style="{StaticResource Headline}"/>
-            <Frame      
+            <Frame
+                x:Name="HasShadowFrame"
                 BackgroundColor="LightGray"
                 BorderColor="Red"
                 HasShadow="True">

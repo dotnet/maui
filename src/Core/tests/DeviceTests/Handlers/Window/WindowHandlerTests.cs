@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Window)]
-	public partial class WindowHandlerTests : HandlerTestBase
+	public partial class WindowHandlerTests : CoreHandlerTestBase
 	{
 		//TODO: Fix this test on Android, it fails a lot of times
 #if !ANDROID

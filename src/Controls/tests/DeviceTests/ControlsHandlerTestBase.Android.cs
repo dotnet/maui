@@ -21,7 +21,7 @@ using ImportantForAccessibility = Android.Views.ImportantForAccessibility;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class HandlerTestBase
+	public partial class ControlsHandlerTestBase
 	{
 		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
 			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;

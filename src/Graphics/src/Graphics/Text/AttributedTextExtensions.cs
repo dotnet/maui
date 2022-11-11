@@ -1,8 +1,8 @@
+using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics.Text;
 using System.IO;
 using System.Linq;
-using System;
+using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Text
 {

@@ -164,11 +164,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.LayoutSubviews();
 
-#pragma warning disable CA1416 // TODO:  'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and late
+#pragma warning disable CA1416, CA1422 // TODO:  'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and late
 				// simple algorithm to generally line up entries
 				var start = (nfloat)Math.Round(Math.Max(Frame.Width * 0.3, TextLabel.Frame.Right + 10));
 				TextField.Frame = new RectangleF(start, (Frame.Height - 30) / 2, Frame.Width - TextLabel.Frame.Left - start, 30);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 				// Centers TextField Content  (iOS6)
 				TextField.VerticalAlignment = UIControlContentVerticalAlignment.Center;
 			}
