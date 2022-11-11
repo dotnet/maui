@@ -20,7 +20,11 @@
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
   </ItemGroup>
-
+  
+  <PropertyGroup>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\tests\DeviceTests.Shared\Core.DeviceTests.Shared.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />

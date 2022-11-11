@@ -125,7 +125,7 @@
                     Style="{StaticResource Headline}"/>
                 <Button 
                     x:Name="positionChange" ContentLayout="Top" TextColor="White" Background="Black" 
-                    ImageSource="settings.png" Text="settings" />
+                    ImageSource="settings.png" Text="settings" Clicked="OnPositionChange" />
                 <Button 
                     WidthRequest="200"  HorizontalOptions="Fill" x:Name="decreaseSpacing" Text="Decrease Spacing" 
                     Clicked="OnDecreaseSpacing" TextColor="White" Background="Black" ></Button>

@@ -97,12 +97,22 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
-
     - pwsh: |
         $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
       condition: eq(variables['provisioningVS'], 'true')
+
+    # Provision Additional Software
+    - task: xamops.azdevex.provisionator-task.provisionator@2
+      displayName: 'Provision Additional Software'
+      condition: eq('${{ parameters.provisioning }}', 'true')
+      inputs:
+        provisioning_script: $(provisionator.path)
+        provisioning_extra_args: $(provisionator.extraArguments)
+      env:
+        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
   # Prepare Both
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
@@ -130,7 +140,6 @@ steps:
       Token: $(dn-bot-dnceng-artifact-feeds-rw)
   - pwsh: dotnet nuget locals all --clear
     displayName: 'Clear all NuGet caches'
-
 
   # Prepare for Reunion packages
   # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:

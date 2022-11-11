@@ -90,10 +90,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var titleRect = platformButton.GetTitleBoundingRect();
 				var titleWidth = titleRect.Width;
+				var titleHeight = titleRect.Height;
 				var imageWidth = image.Size.Width;
 				var imageHeight = image.Size.Height;
 				var buttonWidth = platformButton.Bounds.Width;
 				var buttonHeight = platformButton.Bounds.Height;
+				var sharedSpacing = spacing / 2;
 
 				// These are just used to shift the image and title to center
 				// Which makes the later math easier to follow
@@ -110,11 +112,11 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					else
 					{
-						imageInsets.Top -= (buttonHeight - imageHeight) / 2;
-						imageInsets.Bottom += (buttonHeight - imageHeight) / 2;
+						imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
+						imageInsets.Bottom += titleHeight / 2;
 
-						titleInsets.Top += (imageHeight / 2 + spacing);
-						titleInsets.Bottom -= imageHeight / 2;
+						titleInsets.Top += imageHeight / 2;
+						titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
 					}
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
@@ -125,11 +127,11 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					else
 					{
-						imageInsets.Top += (buttonHeight - imageHeight) / 2;
-						imageInsets.Bottom -= (buttonHeight - imageHeight) / 2;
+						imageInsets.Top += titleHeight / 2;
+						imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
 					}
 
-					titleInsets.Top -= (imageHeight / 2 + spacing);
+					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom += imageHeight / 2;
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
@@ -140,12 +142,12 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					else
 					{
-						imageInsets.Left -= (buttonWidth - imageWidth) / 2;
-						imageInsets.Right += (buttonWidth - imageWidth) / 2;
+						imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
+						imageInsets.Right += titleWidth / 2;
 					}
 
-					titleInsets.Left += (imageWidth / 2);
-					titleInsets.Right -= (imageWidth / 2 + spacing);
+					titleInsets.Left += imageWidth / 2;
+					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
@@ -155,12 +157,12 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					else
 					{
-						imageInsets.Left += (buttonWidth - imageWidth) / 2;
-						imageInsets.Right -= (buttonWidth - imageWidth) / 2;
+						imageInsets.Left += titleWidth / 2;
+						imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
 					}
 
-					titleInsets.Left -= (imageWidth / 2 + spacing);
-					titleInsets.Right += (imageWidth / 2);
+					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
+					titleInsets.Right += imageWidth / 2;
 				}
 			}
 
@@ -179,7 +181,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			platformButton.UpdatePadding(button);
 
-#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios15.0")]
+#pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios15.0")]
 			if (platformButton.ImageEdgeInsets != imageInsets ||
 				platformButton.TitleEdgeInsets != titleInsets)
 			{
@@ -187,7 +189,7 @@ namespace Microsoft.Maui.Controls.Platform
 				platformButton.TitleEdgeInsets = titleInsets;
 				platformButton.Superview?.SetNeedsLayout();
 			}
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 		}
 
 		public static void UpdateText(this UIButton platformButton, Button button)

@@ -1,4 +1,5 @@
 <Project>
+
   <PropertyGroup>
     <_MauiRuntimePackVersion>$(MauiVersion)</_MauiRuntimePackVersion>
     <_MauiRuntimePackVersion Condition=" '$(_MauiRuntimePackVersion)' == '' ">**FromWorkload**</_MauiRuntimePackVersion>
@@ -14,7 +15,6 @@
 
   <!-- Framework references -->
   <ItemGroup>
-    <_MauiRuntimeIdentifiers Include="android;ios;maccatalyst;win;tizen" />
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
@@ -64,19 +64,62 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="@MicrosoftExtensionsServicingPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="@MicrosoftExtensionsServicingPackageVersion@" IsImplicitlyDefined="true">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="@MicrosoftExtensionsPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="@MicrosoftExtensionsPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="@MicrosoftExtensionsNewServicingPackageVersion@" IsImplicitlyDefined="true">
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="@MicrosoftExtensionsServicingPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true'  or '$(UseMauiEssentials)' == 'true') and ('$(TargetPlatformIdentifier)' == 'android') ">
+    <PackageReference Include="Xamarin.Android.Glide" Version="@_XamarinAndroidGlideVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Browser" Version="@_XamarinAndroidXBrowserVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="@_XamarinAndroidXLegacySupportV4Version@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="@_XamarinAndroidXLifecycleLiveDataVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="@_XamarinAndroidXNavigationVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" Version="@_XamarinAndroidXNavigationVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" Version="@_XamarinAndroidXNavigationVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" Version="@_XamarinAndroidXNavigationVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="@_XamarinGoogleAndroidMaterialVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" Version="@_XamarinAndroidXSecurityVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" Version="@_XamarinGoogleCryptoTinkAndroidVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true') and ('$(TargetPlatformIdentifier)' == 'tizen') ">
+    <PackageReference Include="Tizen.UIExtensions.NUI" Version="@TizenUIExtensionsVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
@@ -85,6 +128,12 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') ">
+    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="@MicrosoftWindowsAppSDKPackageVersion@" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="@MicrosoftWindowsSDKBuildToolsPackageVersion@" IsImplicitlyDefined="true" PrivateAssets="all" />
   </ItemGroup>
 
