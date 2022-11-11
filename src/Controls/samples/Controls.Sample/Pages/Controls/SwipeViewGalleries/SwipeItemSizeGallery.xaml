@@ -10,66 +10,6 @@
                 Padding="12">
                 <Label
                     FontAttributes="Bold"
-                    Text="Different icon sizes"/>
-                <Label
-                    Text="128x128 Icon"/>
-                <SwipeView>
-                    <SwipeView.LeftItems>
-                        <SwipeItem
-                            BackgroundColor="Red"
-                            IconImageSource="https://image.flaticon.com/icons/png/128/61/61848.png"
-                            Text="Delete"
-                            Invoked="OnSwipeItemInvoked"/> 
-                    </SwipeView.LeftItems>
-                    <Grid
-                        HeightRequest="60"
-                        BackgroundColor="LightGray">
-                        <Label
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"
-                            Text="Swipe to Left"/>
-                    </Grid>
-                </SwipeView>
-                <Label
-                    Text="256x256 Icon"/>
-                <SwipeView>
-                    <SwipeView.LeftItems>
-                        <SwipeItem
-                            BackgroundColor="Red"
-                            IconImageSource="https://image.flaticon.com/icons/png/256/61/61848.png"
-                            Text="Delete"
-                            Invoked="OnSwipeItemInvoked"/> 
-                    </SwipeView.LeftItems>
-                    <Grid
-                        HeightRequest="60"
-                        BackgroundColor="LightGray">
-                        <Label
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"
-                            Text="Swipe to Left"/>
-                    </Grid>
-                </SwipeView>
-                <Label
-                    Text="512x512 Icon"/>
-                <SwipeView>
-                    <SwipeView.LeftItems>
-                        <SwipeItem
-                            BackgroundColor="Red"
-                            IconImageSource="https://image.flaticon.com/icons/png/512/61/61848.png"
-                            Text="Delete"
-                            Invoked="OnSwipeItemInvoked"/> 
-                    </SwipeView.LeftItems>
-                    <Grid
-                        HeightRequest="60"
-                        BackgroundColor="LightGray">
-                        <Label
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"
-                            Text="Swipe to Left"/>
-                    </Grid>
-                </SwipeView>
-                <Label
-                    FontAttributes="Bold"
                     Text="Different SwipeView sizes"/>
                 <Label
                     Text="SwipeView 128 Height"/>
@@ -77,7 +17,7 @@
                     <SwipeView.LeftItems>
                         <SwipeItem
                             BackgroundColor="Red"
-                            IconImageSource="https://image.flaticon.com/icons/png/512/61/61848.png"
+                            IconImageSource="coffee.png"
                             Text="Delete"
                             Invoked="OnSwipeItemInvoked"/> 
                     </SwipeView.LeftItems>
@@ -96,7 +36,7 @@
                     <SwipeView.LeftItems>
                         <SwipeItem
                             BackgroundColor="Red"
-                            IconImageSource="https://image.flaticon.com/icons/png/512/61/61848.png"
+                            IconImageSource="coffee.png"
                             Text="Delete"
                             Invoked="OnSwipeItemInvoked"/> 
                     </SwipeView.LeftItems>
@@ -115,7 +55,7 @@
                     <SwipeView.LeftItems>
                         <SwipeItem
                             BackgroundColor="Red"
-                            IconImageSource="https://image.flaticon.com/icons/png/512/61/61848.png"
+                            IconImageSource="coffee.png"
                             Text="Delete"
                             Invoked="OnSwipeItemInvoked"/> 
                     </SwipeView.LeftItems>
@@ -134,7 +74,7 @@
                     <SwipeView.LeftItems>
                         <SwipeItem
                             BackgroundColor="Red"
-                            IconImageSource="https://image.flaticon.com/icons/png/512/61/61848.png"
+                            IconImageSource="coffee.png"
                             Text="Delete"
                             Invoked="OnSwipeItemInvoked"/> 
                     </SwipeView.LeftItems>
