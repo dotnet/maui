@@ -18,8 +18,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Core\Controls.Core.csproj" />
+		<ProjectReference Include="..\..\..\Controls\srcCore\Controls.Core.csproj" />
 		<ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+		<ProjectReference Include="..\..\..\Controls\src\Xaml.Design\Controls.Xaml.Design.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<ItemGroup>
