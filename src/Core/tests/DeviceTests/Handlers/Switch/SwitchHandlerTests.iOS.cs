@@ -74,6 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.NotNull(uIView);
+		}
 
 		/// <summary>
 		/// If a UISwitch grows beyond 101 pixels it's no longer
@@ -92,6 +93,62 @@ namespace Microsoft.Maui.DeviceTests
 			var width = await GetValueAsync(switchStub, handler => GetNativeSwitch(handler).Bounds.Width);
 
 			Assert.True(width < 100, $"UISwitch width is too much {width}");
+		}
+
+		[Fact(DisplayName = "Track Color's view is set when toggled on")]
+		public async Task OnTrackColorSetVisually()
+		{
+			var switchStub = new SwitchStub()
+			{
+				IsOn = false,
+				TrackColor = Colors.Red,
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await ValidatePropertyUpdatesValue(
+					view: switchStub,
+					property: nameof(ISwitch.IsOn),
+					GetPlatformValue: (handler) => handler.PlatformView.On,
+					expectedSetValue: true,
+					expectedUnsetValue: false);
+
+				await ValidateVisualTrackColor(switchStub, UIColor.Red);
+			});
+		}
+
+		[Fact(DisplayName = "Track Color's view is default color when toggled off")]
+		public async Task OffTrackColorSetToDefaultColor()
+		{
+			var switchStub = new SwitchStub()
+			{
+				IsOn = true,
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await ValidatePropertyUpdatesValue(
+					view: switchStub,
+					property: nameof(ISwitch.IsOn),
+					GetPlatformValue: (handler) => handler.PlatformView.On,
+					expectedSetValue: false,
+					expectedUnsetValue: true);
+
+				var color = OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : UIColor.FromRGBA(120, 120, 128, 40);
+
+				await ValidateVisualTrackColor(switchStub, color);
+			});
+		}
+
+		[Fact(DisplayName = "Apple Changed UITrack Subviews")]
+		public async Task UIViewSubviewExists()
+		{
+			var switchStub = new SwitchStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await ValidateTrackSubViewExists(switchStub);
+			});
 		}
 	}
 }
