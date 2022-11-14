@@ -76,7 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 				frame.ToPlatform(MauiContext).AttachAndRun(() =>
 				{
 					var handler = frame.ToHandler(MauiContext);
-					if (!isClipped)
+					if (isClipped == false)
 						Assert.False(handler.PlatformView.ClipsToBounds);
 					else
 						Assert.True(handler.PlatformView.ClipsToBounds);
