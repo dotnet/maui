@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <_JsonInputFile Include="WorkloadManifest.in.json" OutputPath="$(IntermediateOutputPath)WorkloadManifest.json" Pack="true" />
+    <_JsonInputFile Include="WorkloadManifest.in.targets" OutputPath="$(IntermediateOutputPath)WorkloadManifest.targets" Pack="true" />
     <_JsonInputFile Include="Rollback.in.json" OutputPath="$(IntermediateOutputPath)Rollback.json" Pack="false" />
     <_JsonInputFile Include="SdkInstaller.in.json" OutputPath="$(IntermediateOutputPath)SdkInstaller.json" Pack="false" />
   </ItemGroup>
@@ -51,9 +52,14 @@
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebViewPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreMetadataPackageVersion" />
       <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftMauiGraphicsVersion" />
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
-      <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion" PropertyName="MicrosoftMauiGraphicsVersion" />
+      <_VersionsToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+      <_VersionsToReplace Include="MAUI_DOTNET_VERSION_MAJOR" PropertyName="_MauiDotNetVersionMajor" />
+      <_VersionsToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_MAJOR" PropertyName="_MauiPreviousDotNetVersionMajor" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION" PropertyName="_MauiPreviousDotNetVersion" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
+      <_VersionsToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
     </ItemGroup>
     <CreateItem
         Include="@(_JsonInputFile)"
@@ -62,23 +68,9 @@
             TaskParameter="Include"
             ItemName="_JsonVariableMatrix"/>
     </CreateItem>
-    <ReplaceText
-        Input="%(_JsonInputFile.Identity)"
-        Output="%(_JsonInputFile.OutputPath)"
-        OldValue="@VERSION@"
-        NewValue="$(PackageReferenceVersion)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)WorkloadManifest.json"
-        Output="$(IntermediateOutputPath)WorkloadManifest.json"
-        OldValue="@MAUI_GRAPHICS_VERSION@"
-        NewValue="$(MicrosoftMauiGraphicsVersion)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)WorkloadManifest.json"
-        Output="$(IntermediateOutputPath)WorkloadManifest.json"
-        OldValue="@MAUI_DOTNET_VERSION@"
-        NewValue="$(_MauiDotNetVersion)"
+    <Copy
+        SourceFiles="%(_JsonInputFile.Identity)"
+        DestinationFiles="%(_JsonInputFile.OutputPath)"
     />
     <ReplaceText
         Input="%(_JsonVariableMatrix.OutputPath)"
@@ -92,9 +84,22 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_GenerateVSWorkloadProps" AfterTargets="Build" Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/automation/vs-workload.template.props" Outputs="$(PackageOutputPath)/vs-workload.temp.props;$(PackageOutputPath)/vs-workload.props">
-    <ReplaceText Input="$(MauiRootDirectory)eng/automation/vs-workload.template.props" Output="$(PackageOutputPath)/vs-workload.temp.props" OldValue="@PACK_VERSION_LONG@" NewValue="$(PackageReferenceVersion)" />
-    <ReplaceText Input="$(PackageOutputPath)/vs-workload.temp.props" Output="$(PackageOutputPath)/vs-workload.props" OldValue="@VS_COMPONENT_VERSION@" NewValue="$(VSComponentVersion)" />
+  <Target Name="_GenerateVSWorkloadProps" AfterTargets="Build" Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/automation/vs-workload.template.props" Outputs="$(PackageOutputPath)/vs-workload.props">
+    <ItemGroup>
+      <_WorkloadPropsReplacements Include="@PACK_VERSION_LONG@"     NewValue="$(PackageReferenceVersion)" />
+      <_WorkloadPropsReplacements Include="@VS_COMPONENT_VERSION@"  NewValue="$(VSComponentVersion)" />
+      <_WorkloadPropsReplacements Include="@VSMAN_VERSION@"         NewValue="net7.0" /> <!-- TODO: Replace with $(_MauiDotNetTfm) -->
+    </ItemGroup>
+    <Copy
+      SourceFiles="$(MauiRootDirectory)eng/automation/vs-workload.template.props"
+      DestinationFiles="$(PackageOutputPath)/vs-workload.props"
+    />
+    <ReplaceText
+        Input="$(PackageOutputPath)/vs-workload.props"
+        Output="$(PackageOutputPath)/vs-workload.props"
+        OldValue="%(_WorkloadPropsReplacements.Identity)"
+        NewValue="%(_WorkloadPropsReplacements.NewValue)"
+    />
     <ItemGroup>
       <FileWrites Include="$(PackageOutputPath)/vs-workload.props" />
     </ItemGroup>

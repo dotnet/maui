@@ -137,7 +137,11 @@ namespace Microsoft.Maui.Networking
 					var manager = ConnectivityManager;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 					var networks = manager.GetAllNetworks();
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 
 					// some devices running 21 and 22 only use the older api.
@@ -157,13 +161,13 @@ namespace Microsoft.Maui.Networking
 								continue;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 							var info = manager.GetNetworkInfo(network);
-#pragma warning restore CS0618 // Type or member is obsolete
 
-#pragma warning disable CS0618 // Type or member is obsolete
 							if (info == null || !info.IsAvailable)
-#pragma warning restore CS0618 // Type or member is obsolete
 								continue;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 							// Check to see if it has the internet capability
 							if (!capabilities.HasCapability(NetCapability.Internet))
@@ -196,10 +200,13 @@ namespace Microsoft.Maui.Networking
 					{
 						if (info == null || !info.IsAvailable)
 							return;
+
 						if (info.IsConnected)
 							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
 						else if (info.IsConnectedOrConnecting)
 							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 					}
 
@@ -221,6 +228,8 @@ namespace Microsoft.Maui.Networking
 
 				var manager = ConnectivityManager;
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 				var networks = manager.GetAllNetworks();
 #pragma warning restore CS0618 // Type or member is obsolete
 				foreach (var network in networks)
@@ -245,11 +254,15 @@ namespace Microsoft.Maui.Networking
 #pragma warning disable CS0618 // Type or member is obsolete
 				static ConnectionProfile? ProcessNetworkInfo(NetworkInfo info)
 				{
+
 					if (info == null || !info.IsAvailable || !info.IsConnectedOrConnecting)
 						return null;
 
+
 					return GetConnectionType(info.Type, info.TypeName);
 				}
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
