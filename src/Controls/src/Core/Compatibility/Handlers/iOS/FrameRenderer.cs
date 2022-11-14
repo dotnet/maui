@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_actualView.Layer.RasterizationScale = UIScreen.MainScreen.Scale;
 			_actualView.Layer.ShouldRasterize = true;
-			_actualView.Layer.MasksToBounds = Element.IsClippedToBounds;
+			_actualView.Layer.MasksToBounds = Element.IsSet(Layout.IsClippedToBoundsProperty) ? Element.IsClippedToBounds: true;
 		}
 
 		void UpdateShadow()
