@@ -17,7 +17,6 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Graphics.*.nupkg",
     "Microsoft.Maui.Controls.Maps.*.nupkg",
     "Microsoft.Maui.Maps.*.nupkg",
-    "Microsoft.AspNetCore.Components.WebView.Maui.*.nupkg",
 };
 
 ProcessTFMSwitches();
@@ -337,7 +336,7 @@ Task("dotnet-pack-docs")
             CopyFiles($"{d}/ref/**/net?.?/**/*.xml", $"{destDir}");
         }
 
-        // Get the docs for libraries separately distributed as NuGets (and BlazorWebView)
+        // Get the docs for libraries separately distributed as NuGets
         foreach (var pattern in NuGetOnlyPackages)
         {
             foreach (var nupkg in GetFiles($"./artifacts/{pattern}"))
