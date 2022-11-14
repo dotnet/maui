@@ -591,9 +591,9 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal BindablePropertyContext GetContext(BindableProperty property)
 		{
-			var p = _properties.TryGetValue(property, out var result);
+			var isValueFound = _properties.TryGetValue(property, out var result);
 
-			if (result is not null)
+			if (isValueFound)
 				return result;
 
 			// Some properties may not be found due to the dictionary's BindableProperty class key
