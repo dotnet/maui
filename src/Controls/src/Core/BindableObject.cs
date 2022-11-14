@@ -611,7 +611,6 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext GetOrCreateContext(BindableProperty property) => GetContext(property) ?? CreateAndAddContext(property);
 
-
 		void RemoveBinding(BindableProperty property, BindablePropertyContext context)
 		{
 			context.Binding.Unapply();
