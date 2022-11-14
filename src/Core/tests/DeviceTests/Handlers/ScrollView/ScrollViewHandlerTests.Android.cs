@@ -99,5 +99,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expected, result);
 		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new ScrollViewStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

@@ -126,5 +126,13 @@ namespace Microsoft.Maui.DeviceTests
 			var mauiDatePicker = GetNativeDatePicker(datePickerHandler);
 			return mauiDatePicker.LetterSpacing;
 		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new DatePickerStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

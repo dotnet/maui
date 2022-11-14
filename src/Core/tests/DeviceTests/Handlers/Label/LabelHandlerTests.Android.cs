@@ -134,5 +134,13 @@ namespace Microsoft.Maui.DeviceTests
 				platformLabel.AssertContainsColor(color);
 			});
 		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new LabelStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

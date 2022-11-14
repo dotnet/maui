@@ -167,5 +167,18 @@ namespace Microsoft.Maui.DeviceTests
 				platformButton.AssertContainsColor(color);
 			});
 		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new ButtonStub();
+
+			// A button won't be considered accessible if it doesn't have text
+			// for a screen reader 
+			view.Text = "Button Text";
+
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

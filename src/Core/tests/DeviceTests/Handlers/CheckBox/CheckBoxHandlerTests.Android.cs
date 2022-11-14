@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
@@ -25,6 +26,14 @@ namespace Microsoft.Maui.DeviceTests
 				action?.Invoke();
 				nativeSwitch.AssertContainsColor(color);
 			});
+		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new CheckBoxStub();
+			await AssertPlatformViewIsAccessible(view);
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using AProgressBar = Android.Widget.ProgressBar;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -25,6 +26,14 @@ namespace Microsoft.Maui.DeviceTests
 				action?.Invoke();
 				platformProgressBar.AssertContainsColor(color);
 			});
+		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new ProgressBarStub();
+			await AssertPlatformViewIsAccessible(view);
 		}
 	}
 }

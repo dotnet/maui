@@ -75,5 +75,13 @@ namespace Microsoft.Maui.DeviceTests
 				platformStepper.AssertContainsColor(color);
 			});
 		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new StepperStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

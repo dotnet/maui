@@ -56,5 +56,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>
 			imageButtonHandler.PlatformView.Drawable != null;
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new ImageButtonStub();
+			
+			view.Semantics = new Semantics() { Description = "Button Description" };
+
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Handlers;
+﻿using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -9,5 +11,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetPlatformIsRefreshing(RefreshViewHandler RefreshViewHandler) =>
 			GetNativeRefreshView(RefreshViewHandler).Refreshing;
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new RefreshViewStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

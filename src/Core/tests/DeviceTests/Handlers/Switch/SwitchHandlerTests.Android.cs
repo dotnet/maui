@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -32,6 +33,14 @@ namespace Microsoft.Maui.DeviceTests
 				action?.Invoke();
 				return nativeSwitch.AssertContainsColor(color);
 			});
+		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new SwitchStub();
+			await AssertPlatformViewIsAccessible(view);
 		}
 	}
 }

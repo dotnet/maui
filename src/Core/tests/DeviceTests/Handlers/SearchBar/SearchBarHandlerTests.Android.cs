@@ -235,5 +235,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			return !editText.Focusable && !editText.FocusableInTouchMode;
 		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new SearchBarStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

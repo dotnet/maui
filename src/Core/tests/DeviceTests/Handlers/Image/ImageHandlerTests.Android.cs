@@ -89,5 +89,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			throw new ArgumentOutOfRangeException("Aspect");
 		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new TStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

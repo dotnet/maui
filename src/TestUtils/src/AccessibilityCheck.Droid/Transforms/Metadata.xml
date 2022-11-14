@@ -62,5 +62,10 @@
   <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.uielement.proto']/class[@name='AndroidFrameworkProtos.CharSequenceProto.Builder']"/>
   <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.uielement.proto']/class[@name='AndroidFrameworkProtos.RectProto.Builder']"/>
   <remove-node path="/api/package[@name='com.google.android.apps.common.testing.accessibility.framework.uielement.proto']/class[@name='AndroidFrameworkProtos.SpanProto.Builder']"/>
-  
+
+  <remove-node path="/api/package[@name='org.jsoup.select']"/>
+  <remove-node path="/api/package[@name='org.jsoup.helper']"/>
+  <remove-node path="/api/package[@name='org.jsoup.internal']"/>
+  <remove-node path="/api/package[@name='org.jsoup.nodes']"/>
+
 </metadata>

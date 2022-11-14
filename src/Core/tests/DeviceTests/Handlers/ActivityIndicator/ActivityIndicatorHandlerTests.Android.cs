@@ -42,5 +42,13 @@ namespace Microsoft.Maui.DeviceTests
 			var id = await GetValueAsync(view, handler => GetVisibility(handler));
 			Assert.Equal(view.Visibility, id);
 		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new ActivityIndicatorStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

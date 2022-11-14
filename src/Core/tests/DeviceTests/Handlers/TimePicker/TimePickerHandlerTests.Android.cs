@@ -72,5 +72,13 @@ namespace Microsoft.Maui.DeviceTests
 			AColor currentTextColor = new AColor(currentTextColorInt);
 			return currentTextColor.ToColor();
 		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new TimePickerStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

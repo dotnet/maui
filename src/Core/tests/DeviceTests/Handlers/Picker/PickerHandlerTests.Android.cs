@@ -122,5 +122,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		GravityFlags GetNativeVerticalTextAlignment(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Gravity;
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new PickerStub();
+			await AssertPlatformViewIsAccessible(view);
+		}
 	}
 }

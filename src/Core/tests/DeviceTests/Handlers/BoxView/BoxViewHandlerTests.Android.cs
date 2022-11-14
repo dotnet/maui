@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
@@ -18,6 +19,14 @@ namespace Microsoft.Maui.DeviceTests
 				action?.Invoke();
 				nativeBoxView.AssertContainsColor(color);
 			});
+		}
+
+		[Fact(DisplayName = "Control meets basic accessibility requirements")]
+		[Category(TestCategory.Accessibility)]
+		public async Task PlatformViewIsAccessible()
+		{
+			var view = new BoxViewStub();
+			await AssertPlatformViewIsAccessible(view);
 		}
 	}
 }
