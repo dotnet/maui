@@ -4,10 +4,18 @@
     <AssemblyName>Microsoft.Maui.Controls.Foldable</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Foldable</RootNamespace>
     <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
-    <IsPackable>true</IsPackable>
+    <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
+
+    <!-- Add specifics for this NuGet -->
+    <IsPackable>True</IsPackable>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>dotnet-maui;maui;foldable;android;surface-duo</PackageTags>
+    <Title>.NET MAUI Foldable</Title>
+    <Description>.NET MAUI Foldable provides additional APIs to better support foldable mobile devices.</Description>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -21,10 +29,17 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' and '$(TargetPlatformIdentifier)' == 'android' ">
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" />
+  </ItemGroup>
+
+  <!-- Add icon for NuGet -->
+  <ItemGroup>
+    <None Include="..\..\..\..\Assets\icon.png" PackagePath="icon.png" Pack="true" />
   </ItemGroup>
 </Project>

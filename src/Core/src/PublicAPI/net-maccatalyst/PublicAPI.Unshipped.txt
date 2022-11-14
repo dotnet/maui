@@ -133,6 +133,7 @@ override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Mau
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> UIKit.UIMenu!
 override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.EntryHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.WindowHandler.ConnectHandler(UIKit.UIWindow! platformView) -> void
 override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView!

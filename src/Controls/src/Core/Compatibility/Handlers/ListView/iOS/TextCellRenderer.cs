@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			tvc.Cell = textCell;
 			tvc.PropertyChanged = HandleCellPropertyChanged;
 
-#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel', DetailTextLabel is unsupported on: 'ios' 14.0 and later
+#pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel', DetailTextLabel is unsupported on: 'ios' 14.0 and later
 			tvc.TextLabel.Text = textCell.Text;
 			tvc.DetailTextLabel.Text = textCell.Detail;
 			tvc.TextLabel.TextColor = (textCell.TextColor ?? DefaultTextColor).ToPlatform();
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
 			UpdateIsEnabled(tvc, textCell);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 
 			UpdateBackground(tvc, item);
 
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var textCell = (TextCell)sender;
 			var tvc = (CellTableViewCell)GetRealCell(textCell);
 
-#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel', DetailTextLabel is unsupported on: 'ios' 14.0 and later
+#pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel', DetailTextLabel is unsupported on: 'ios' 14.0 and later
 			if (args.PropertyName == TextCell.TextProperty.PropertyName)
 			{
 				tvc.TextLabel.Text = ((TextCell)tvc.Cell).Text;
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateIsEnabled(tvc, textCell);
 			else if (args.PropertyName == TextCell.AutomationIdProperty.PropertyName)
 				UpdateAutomationId(tvc, textCell);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 
 			HandlePropertyChanged(tvc, args);
 		}
