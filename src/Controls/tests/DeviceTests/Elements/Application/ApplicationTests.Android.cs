@@ -43,32 +43,48 @@ namespace Microsoft.Maui.DeviceTests
 
 				await InvokeOnMainThreadAsync(() =>
 				{
-					// Setup application stub
-					var app = MauiContext.Services.GetService<IApplication>() as SoftInputModeApplication;
-					app.Handler = app.ToHandler(MauiContext);
+					var handlers = new List<IElementHandler>();
 
-					// Setup window
-					var windowHandler = (SoftInputWindowHandlerStub)app.Window.ToHandler(MauiContext);
-					app.Window.Handler = windowHandler;
+					try
+					{
+						// Setup application stub
+						var app = MauiContext.Services.GetService<IApplication>() as SoftInputModeApplication;
+						app.Handler = app.ToHandler(MauiContext);
 
-					// Validate that the Soft Input initializes to AdjustPan
-					Assert.Equal(ASoftInput.AdjustPan, windowHandler.LastASoftInputSet);
+						handlers.Add(app.Handler);
 
-					// Set to Resize
-					Controls.PlatformConfiguration.AndroidSpecific.Application.SetWindowSoftInputModeAdjust(
-						app,
-						Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Resize);
+						// Setup window
+						var windowHandler = (SoftInputWindowHandlerStub)app.Window.ToHandler(MauiContext);
+						app.Window.Handler = windowHandler;
 
-					// Validate the mapper on the window handler is called with correct value
-					Assert.Equal(ASoftInput.AdjustResize, windowHandler.LastASoftInputSet);
+						handlers.Insert(0, app.Window.Handler);
 
-					// Set to Pan
-					Controls.PlatformConfiguration.AndroidSpecific.Application.SetWindowSoftInputModeAdjust(
-						app,
-						Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Pan);
+						// Validate that the Soft Input initializes to AdjustPan
+						Assert.Equal(ASoftInput.AdjustPan, windowHandler.LastASoftInputSet);
 
-					// Validate the mapper on the window handler is called with correct value
-					Assert.Equal(ASoftInput.AdjustPan, windowHandler.LastASoftInputSet);
+						// Set to Resize
+						Controls.PlatformConfiguration.AndroidSpecific.Application.SetWindowSoftInputModeAdjust(
+							app,
+							Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Resize);
+
+						// Validate the mapper on the window handler is called with correct value
+						Assert.Equal(ASoftInput.AdjustResize, windowHandler.LastASoftInputSet);
+
+						// Set to Pan
+						Controls.PlatformConfiguration.AndroidSpecific.Application.SetWindowSoftInputModeAdjust(
+							app,
+							Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Pan);
+
+						// Validate the mapper on the window handler is called with correct value
+						Assert.Equal(ASoftInput.AdjustPan, windowHandler.LastASoftInputSet);
+					}
+					finally
+					{
+						foreach (var handler in handlers)
+						{
+							handler.DisconnectHandler();
+						}
+					}
 				});
 			}
 
