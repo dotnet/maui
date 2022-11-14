@@ -202,7 +202,7 @@ stages:
                 poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
-            - ${{ if eq(BuildPlatform.name, 'macos') }}: 
+            - ${{ if eq(PackPlatform.name, 'macos') }}: 
                 - template: sdk-unified/steps/mac-agent-info/v1.yml@xamarin-templates
 
   - stage: samples_net6
