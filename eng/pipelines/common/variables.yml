@@ -56,7 +56,7 @@ variables:
 - name: Codeql.Enabled
   value: $[and(
             eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-            eq(variables['Build.DefinitionName'], 'MAUI-private')
+            eq(variables['Build.DefinitionName'], 'MAUI')
          )]
 - ${{ if ne(variables['Build.DefinitionName'], 'MAUI-private') }}:
   - name: PrivateBuild
