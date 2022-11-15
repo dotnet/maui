@@ -40,11 +40,18 @@ namespace Microsoft.Maui
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
-			if (!viewHandler.CanInvokeMappers())
-				return;
+			try
+			{
+				if (!viewHandler.CanInvokeMappers())
+					return;
 
-			var action = GetProperty(key);
-			action?.Invoke(viewHandler, virtualView);
+				var action = GetProperty(key);
+				action?.Invoke(viewHandler, virtualView);
+			}
+			catch (InvalidCastException exc)
+			{
+				throw new Exception(key, exc);
+			}
 		}
 
 		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
