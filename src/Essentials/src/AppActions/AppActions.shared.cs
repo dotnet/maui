@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.ApplicationModel
 {
 	/// <summary>
-	/// The AppActions API let you create and respond to app shortcuts from the app icon.
+	/// The AppActions API lets you create and respond to app shortcuts from the app icon.
 	/// </summary>
 	public interface IAppActions
 	{
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.ApplicationModel
 	}
 
 	/// <summary>
-	/// The AppActions API let you create and respond to app shortcuts from the app icon.
+	/// The AppActions API lets you create and respond to app shortcuts from the app icon.
 	/// </summary>
 	public static class AppActions
 	{
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.ApplicationModel
 			=> Current.SetAsync(actions);
 
 		/// <summary>
-		/// Event triggered when an app action is activated.
+		/// Occurs when an app action is activated.
 		/// </summary>
 		public static event EventHandler<AppActionEventArgs>? OnAppAction
 		{
