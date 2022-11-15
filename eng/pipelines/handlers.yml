@@ -4,6 +4,7 @@ trigger:
     - main
     - release/*
     - net7.0
+    - net8.0
     - loc
   tags:
     include:
@@ -28,6 +29,7 @@ pr:
     - main
     - release/*
     - net7.0
+    - net8.0
   paths:
     include:
     - '*'
