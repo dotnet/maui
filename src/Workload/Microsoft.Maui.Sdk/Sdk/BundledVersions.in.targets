@@ -134,6 +134,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="@MicrosoftWindowsAppSDKPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="@MicrosoftWindowsSDKBuildToolsPackageVersion@" IsImplicitlyDefined="true" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
