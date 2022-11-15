@@ -13,20 +13,8 @@ namespace Microsoft.Maui.Handlers
 		bool _set;
 
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
-		protected override AppCompatEditText CreatePlatformView()
-		{
-			var editText = new MauiAppCompatEditText(Context)
-			{
-				ImeOptions = ImeAction.Done,
-				Gravity = GravityFlags.Top,
-				TextAlignment = Android.Views.TextAlignment.ViewStart,
-			};
-
-			editText.SetSingleLine(false);
-			editText.SetHorizontallyScrolling(false);
-
-			return editText;
-		}
+		protected override AppCompatEditText CreatePlatformView() =>
+			new MauiAppCompatEditText(Context);
 
 		public override void SetVirtualView(IView view)
 		{

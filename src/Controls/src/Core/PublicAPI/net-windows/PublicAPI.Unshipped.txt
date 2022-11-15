@@ -121,6 +121,7 @@ static readonly Microsoft.Maui.Controls.ToolTipProperties.TextProperty -> Micros
 ~static Microsoft.Maui.Controls.RefreshView.MapRefreshPullDirection(Microsoft.Maui.Handlers.IRefreshViewHandler handler, Microsoft.Maui.Controls.RefreshView refreshView) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
+~static Microsoft.Maui.Controls.Window.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow, Microsoft.Maui.Handlers.IWindowHandler>
 ~static readonly Microsoft.Maui.Controls.FlyoutBase.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?

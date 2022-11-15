@@ -117,6 +117,7 @@ virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Contr
 ~static Microsoft.Maui.Controls.ScrollView.MapShouldDelayContentTouches(Microsoft.Maui.Handlers.IScrollViewHandler handler, Microsoft.Maui.Controls.ScrollView scrollView) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapSearchBarStyle(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
+~static Microsoft.Maui.Controls.Window.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow, Microsoft.Maui.Handlers.IWindowHandler>
 ~static Microsoft.Maui.Controls.TimePicker.MapUpdateMode(Microsoft.Maui.Handlers.ITimePickerHandler handler, Microsoft.Maui.Controls.TimePicker timePicker) -> void
 ~static readonly Microsoft.Maui.Controls.FlyoutBase.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!

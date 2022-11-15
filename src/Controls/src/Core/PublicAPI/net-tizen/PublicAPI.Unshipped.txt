@@ -6490,6 +6490,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static Microsoft.Maui.Controls.WebViewSource.implicit operator Microsoft.Maui.Controls.WebViewSource(string url) -> Microsoft.Maui.Controls.WebViewSource
 ~static Microsoft.Maui.Controls.WebViewSource.implicit operator Microsoft.Maui.Controls.WebViewSource(System.Uri url) -> Microsoft.Maui.Controls.WebViewSource
 ~static Microsoft.Maui.Controls.Window.ControlsWindowMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow, Microsoft.Maui.Handlers.WindowHandler>
+~static Microsoft.Maui.Controls.Window.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow, Microsoft.Maui.Handlers.IWindowHandler>
 ~static readonly Microsoft.Maui.Controls.AbsoluteLayout.LayoutBoundsProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.AbsoluteLayout.LayoutFlagsProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ActivityIndicator.ColorProperty -> Microsoft.Maui.Controls.BindableProperty

@@ -123,6 +123,7 @@ static readonly Microsoft.Maui.Controls.VisualElement.ZIndexProperty -> Microsof
 ~static Microsoft.Maui.Controls.WebView.MapDisplayZoomControls(Microsoft.Maui.Handlers.IWebViewHandler handler, Microsoft.Maui.Controls.WebView webView) -> void
 ~static Microsoft.Maui.Controls.WebView.MapEnableZoomControls(Microsoft.Maui.Handlers.IWebViewHandler handler, Microsoft.Maui.Controls.WebView webView) -> void
 ~static Microsoft.Maui.Controls.WebView.MapMixedContentMode(Microsoft.Maui.Handlers.IWebViewHandler handler, Microsoft.Maui.Controls.WebView webView) -> void
+~static Microsoft.Maui.Controls.Window.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow, Microsoft.Maui.Handlers.IWindowHandler>
 ~static readonly Microsoft.Maui.Controls.FlyoutBase.ContextFlyoutProperty -> Microsoft.Maui.Controls.BindableProperty
 static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> Microsoft.Maui.Controls.BindableProperty!
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?

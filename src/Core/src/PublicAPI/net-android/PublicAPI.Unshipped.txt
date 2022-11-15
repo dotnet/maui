@@ -98,6 +98,12 @@ Microsoft.Maui.IMenuFlyoutSeparator
 Microsoft.Maui.IToolTipElement
 Microsoft.Maui.IToolTipElement.ToolTip.get -> Microsoft.Maui.ToolTip?
 Microsoft.Maui.IWindow.FrameChanged(Microsoft.Maui.Graphics.Rect frame) -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText
+Microsoft.Maui.Platform.MauiAppCompatEditText.MauiAppCompatEditText(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText.MauiAppCompatEditText(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText.MauiAppCompatEditText(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText.MauiAppCompatEditText(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText.SelectionChanged -> System.EventHandler?
 Microsoft.Maui.Platform.MauiSearchView
 Microsoft.Maui.Platform.MauiSearchView.MauiSearchView(Android.Content.Context! context) -> void
 Microsoft.Maui.ToolTip
@@ -132,6 +138,7 @@ override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibi
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle? args) -> bool
 override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+override Microsoft.Maui.Platform.MauiAppCompatEditText.OnSelectionChanged(int selStart, int selEnd) -> void
 override Microsoft.Maui.Platform.NavigationViewFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyout!, Microsoft.Maui.Handlers.IMenuFlyoutHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapAdd(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
