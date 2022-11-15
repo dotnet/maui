@@ -5,10 +5,12 @@
     <RootNamespace>Microsoft.Maui.Resizetizer</RootNamespace>
     <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
-    <PackageId>Microsoft.Maui.Resizetizer.Sdk</PackageId>
-    <Description>.NET MAUI SDK support for images, fonts, etc. Enabled via &lt;UseMauiAssets&gt;true&lt;/UseMauiAssets&gt;.</Description>
-    <IsPackable>false</IsPackable>
+    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
+    <Description>.NET MAUI SDK support for images, fonts, etc.</Description>
+    <IsPackable>true</IsPackable>
     <_SkiaPackagePath>build\</_SkiaPackagePath>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +23,9 @@
     <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="build/%(Arch)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="build" />
     <None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="build" />
-    <None Include="$(MauiNuSpecDirectory)Microsoft.Maui.Resizetizer.targets" Visible="false" Pack="true" PackagePath="build/$(PackageId).targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(MauiNuSpecDirectory)Microsoft.Maui.Resizetizer.targets" Visible="false" Pack="true" PackagePath="build/$(PackageId).After.targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Microsoft.Maui.Resizetizer.targets" Visible="false" Pack="true" PackagePath="build/$(PackageId).targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Microsoft.Maui.Resizetizer.targets" Visible="false" Pack="true" PackagePath="buildTransitive/$(PackageId).targets" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="_CopyToNuspecDir" AfterTargets="Build">

@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)..\build\Microsoft.Maui.Resizetizer.After.targets</AfterMicrosoftNETSdkTargets>
+  </PropertyGroup>
+</Project>
