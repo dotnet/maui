@@ -46,6 +46,4 @@ steps:
 
   - template: agent-rebooter/mac.v1.yml@yaml-templates
     parameters:
-      Organization: xamarin
-      Project: public
       AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
