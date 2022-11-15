@@ -6,27 +6,27 @@ using Microsoft.Maui.ApplicationModel;
 namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <summary>
-	/// Accelerometer data of the acceleration of the device in three dimensional space.
+	/// Accelerometer data of the acceleration of the device in three-dimensional space.
 	/// </summary>
 	public interface IAccelerometer
 	{
 		/// <summary>
-		/// Event triggered when reading of sensor changes.
+		/// Occurs when the sensor reading changes.
 		/// </summary>
 		event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
 
 		/// <summary>
-		/// Event triggered when a shake has been detected on the device.
+		/// Occurs when the accelerometer detects that the device has been shaken.
 		/// </summary>
 		event EventHandler? ShakeDetected;
 
 		/// <summary>
-		/// Gets if reading the accelerometer is supported on this device.
+		/// Gets a value indicating whether reading the accelerometer is supported on this device.
 		/// </summary>
 		bool IsSupported { get; }
 
 		/// <summary>
-		/// Gets if accelerometer is being monitored.
+		/// Gets a value indicating whether the accelerometer is being monitored.
 		/// </summary>
 		bool IsMonitoring { get; }
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	public static class Accelerometer
 	{
 		/// <summary>
-		/// Event triggered when reading of sensor changes.
+		/// Occurs when the accelerometer reading changes.
 		/// </summary>
 		public static event EventHandler<AccelerometerChangedEventArgs> ReadingChanged
 		{
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <summary>
-		/// Event triggered when a shake has been detected on the device.
+		/// Occurs when the accelerometer detects that the device has been shaken.
 		/// </summary>
 		public static event EventHandler ShakeDetected
 		{
@@ -69,13 +69,13 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <summary>
-		/// Gets if reading the accelerometer is supported on this device.
+		/// Gets a value indicating whether reading the accelerometer is supported on this device.
 		/// </summary>
 		public static bool IsSupported
 			=> Default.IsSupported;
 
 		/// <summary>
-		/// Gets if accelerometer is being monitored.
+		/// Gets a value indicating whether the accelerometer is being monitored.
 		/// </summary>
 		public static bool IsMonitoring => Default.IsMonitoring;
 
