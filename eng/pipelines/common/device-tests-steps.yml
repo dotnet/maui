@@ -8,6 +8,9 @@ parameters:
   agentPoolAccessToken: ''
 
 steps:
+  - pwsh: echo "Agent pool ${{ parameters.agentPoolName }}"
+    displayName: 'Show agent pool'
+
   - template: provision.yml
     parameters:
       platform: macos
@@ -44,9 +47,6 @@ steps:
     condition: always()
     inputs:
       artifactName: $(System.PhaseName)
-
-  - pwsh: echo "Agent pool ${{ parameters.agentPoolName }}"
-    displayName: 'Show agent pool'
 
   - ${{ if eq(parameters.agentPoolName, 'MAUI') }}:
     - template: agent-rebooter/mac.v1.yml@yaml-templates
