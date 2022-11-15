@@ -43,8 +43,8 @@ pr:
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
-  - group: Xamarin-Secrets
   - template: /eng/pipelines/common/variables.yml
+  - group: Xamarin-Secrets
 
 parameters:
   - name: provisionatorChannel
