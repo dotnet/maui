@@ -45,8 +45,7 @@ steps:
     inputs:
       artifactName: $(System.PhaseName)
 
-  - powershell: |
-      Write-Host "Agent pool: ${{ parameters.agentPool }}"
+  - pwsh: echo "Agent pool ${{ parameters.agentPool }}"
     displayName: 'Show agent pool'
 
   - ${{ if eq(parameters.agentPool, 'MAUI') }}:
