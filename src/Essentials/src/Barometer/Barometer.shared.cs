@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Devices.Sensors
 	public interface IBarometer
 	{
 		/// <summary>
-		/// Gets if reading the barometer is supported on this device.
+		/// Gets a value indicating whether reading the barometer is supported on this device.
 		/// </summary>
 		bool IsSupported { get; }
 
 		/// <summary>
-		/// Gets if the barometer is actively being monitored.
+		/// Gets a value indicating whether the barometer is actively being monitored.
 		/// </summary>
 		bool IsMonitoring { get; }
 
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		void Start(SensorSpeed sensorSpeed);
 
 		/// <summary>
-		/// Event triggered when barometer reading changes.
+		/// Occurs when the barometer reading changes.
 		/// </summary>
 		event EventHandler<BarometerChangedEventArgs>? ReadingChanged;
 
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	public static class Barometer
 	{
 		/// <summary>
-		/// Event triggered when barometer reading changes.
+		/// Occurs when barometer reading changes.
 		/// </summary>
 		public static event EventHandler<BarometerChangedEventArgs> ReadingChanged
 		{
@@ -51,12 +51,12 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <summary>
-		/// Gets if reading the accelerometer is supported on this device.
+		/// Gets a value indicating whether reading the accelerometer is supported on this device.
 		/// </summary>
 		public static bool IsSupported => Default.IsSupported;
 
 		/// <summary>
-		/// Gets if the barometer is actively being monitored.
+		/// Gets a value indicating whether the barometer is actively being monitored.
 		/// </summary>
 		public static bool IsMonitoring
 			=> Default.IsMonitoring;
