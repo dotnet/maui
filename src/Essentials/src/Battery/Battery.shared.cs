@@ -36,12 +36,12 @@ namespace Microsoft.Maui.Devices
 		EnergySaverStatus EnergySaverStatus { get; }
 
 		/// <summary>
-		/// Event trigger when battery properties have changed.
+		/// Occurs when battery properties change.
 		/// </summary>
 		event EventHandler<BatteryInfoChangedEventArgs> BatteryInfoChanged;
 
 		/// <summary>
-		/// Event that is triggered when energy saver status changes.
+		/// Occurs when the energy saver status changes.
 		/// </summary>
 		event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged;
 	}
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Devices
 		}
 
 		/// <summary>
-		/// Event that is triggered when energy saver status changes.
+		/// Occurs when the energy saver status changes.
 		/// </summary>
 		public static event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged
 		{
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Devices
 	}
 
 	/// <summary>
-	/// Enumerates states of the battery.
+	/// Describes possible states of the battery.
 	/// </summary>
 	public enum BatteryState
 	{
