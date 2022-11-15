@@ -39,6 +39,7 @@ stages:
                       path: ${{ project.android }}
                       device: android-emulator-32_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPool: ${{ parameters.androidPool }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
   - stage: ios_device_tests
@@ -66,4 +67,5 @@ stages:
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPool: ${{ parameters.iosPool }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}

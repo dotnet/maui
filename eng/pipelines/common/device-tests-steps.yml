@@ -4,6 +4,7 @@ parameters:
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
   provisionatorChannel: 'latest'
+  agentPool: ''
   agentPoolAccessToken: ''
 
 steps:
@@ -44,7 +45,9 @@ steps:
     inputs:
       artifactName: $(System.PhaseName)
 
-  - ${{ if and(ne(parameters.agentPoolAccessToken, ''), startswith(variables['Agent.Name'], 'xambot-')) }}:
+  - ${{ if and(ne(parameters.agentPoolAccessToken, ''), eq(parameters.agentPool, 'MAUI')) }}:
     - template: agent-rebooter/mac.v1.yml@yaml-templates
       parameters:
+        Organization: xamarin
+        Project: public
         AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
