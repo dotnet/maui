@@ -45,7 +45,7 @@ steps:
     inputs:
       artifactName: $(System.PhaseName)
 
-  - pwsh: |
+  - powershell: |
       Write-Host "Agent pool: ${{ parameters.agentPool }}"
     displayName: 'Show agent pool'
 
