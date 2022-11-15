@@ -13,7 +13,7 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.1.50</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>15.4.2372</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>16.1.585-net8-p1</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.3.2372</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>16.0.1478</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>16.0.1478</MicrosofttvOSSdkPackageVersion>
@@ -69,8 +69,8 @@
     <FizzlerPackageVersion>1.2.0</FizzlerPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">7.0.100</DotNetVersionBand>
-    <DotNetSdkManifestsFolder>$(DotNetVersionBand)$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `\-(preview|rc).\d+`))</DotNetSdkManifestsFolder>
+    <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">8.0.100</DotNetVersionBand>
+    <DotNetSdkManifestsFolder>$(DotNetVersionBand)$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `\-(preview|rc|alpha).\d+`))</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetMauiManifestVersionBand>
     <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
