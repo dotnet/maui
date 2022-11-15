@@ -33,7 +33,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Start monitoring for changes to accelerometer.
 		/// </summary>
-		/// <remarks>Will throw <see cref="FeatureNotSupportedException"/> if not supported on device. Will throw <see cref="ArgumentNullException"/> if handler is null.</remarks>
+		/// <remarks>
+		/// Will throw <see cref="FeatureNotSupportedException"/> if <see cref="IsSupported"/> is <see langword="false"/>.
+		/// Will throw <see cref="InvalidOperationException"/> if <see cref="IsMonitoring"/> is <see langword="true"/>.</remarks>
 		/// <param name="sensorSpeed">Speed to monitor the sensor.</param>
 		void Start(SensorSpeed sensorSpeed);
 
@@ -48,31 +50,45 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// </summary>
 	public static class Accelerometer
 	{
-		/// <inheritdoc/>
+		/// <summary>
+		/// Event triggered when reading of sensor changes.
+		/// </summary>
 		public static event EventHandler<AccelerometerChangedEventArgs> ReadingChanged
 		{
 			add => Default.ReadingChanged += value;
 			remove => Default.ReadingChanged -= value;
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Event triggered when a shake has been detected on the device.
+		/// </summary>
 		public static event EventHandler ShakeDetected
 		{
 			add => Default.ShakeDetected += value;
 			remove => Default.ShakeDetected -= value;
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Gets if reading the accelerometer is supported on this device.
+		/// </summary>
 		public static bool IsSupported
 			=> Default.IsSupported;
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Gets if accelerometer is being monitored.
+		/// </summary>
 		public static bool IsMonitoring => Default.IsMonitoring;
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Start monitoring for changes to accelerometer.
+		/// </summary>
+		/// <remarks>Will throw <see cref="FeatureNotSupportedException"/> if not supported on device. Will throw <see cref="ArgumentNullException"/> if handler is null.</remarks>
+		/// <param name="sensorSpeed">Speed to monitor the sensor.</param>
 		public static void Start(SensorSpeed sensorSpeed) => Default.Start(sensorSpeed);
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Stop monitoring for changes to accelerometer.
+		/// </summary>
 		public static void Stop() => Default.Stop();
 
 		static IAccelerometer? defaultImplementation;
@@ -145,17 +161,31 @@ namespace Microsoft.Maui.Devices.Sensors
 		public bool Equals(AccelerometerData other) =>
 			Acceleration.Equals(other.Acceleration);
 
+		/// <summary>
+		///	Equality operator for equals.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Left to compare.</param>
+		/// <returns><see langword="true"/> if objects are equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator ==(AccelerometerData left, AccelerometerData right) =>
 			left.Equals(right);
 
+		/// <summary>
+		/// Inequality operator.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Left to compare.</param>
+		/// <returns><see langword="true"/> if objects are not equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator !=(AccelerometerData left, AccelerometerData right) =>
 			!left.Equals(right);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
 		public override int GetHashCode() =>
 			Acceleration.GetHashCode();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AccelerometerData.xml" path="//Member[@MemberName='ToString']/Docs/*" />
+		/// <summary>
+		/// Returns a string representation of the current values of <see cref="Acceleration"/>.
+		/// </summary>
+		/// <returns>A string representation of this instance in the format of <c>X: x, Y: y, Z: z</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(Acceleration.X)}: {Acceleration.X}, " +
 			$"{nameof(Acceleration.Y)}: {Acceleration.Y}, " +
@@ -182,6 +212,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		public bool IsMonitoring { get; private set; }
 
 		/// <inheritdoc/>
+		/// <exception cref="FeatureNotSupportedException">Thrown if <see cref="IsSupported"/> returns <see langword="false"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if <see cref="IsMonitoring"/> returns <see langword="true"/>.</exception>
 		public void Start(SensorSpeed sensorSpeed)
 		{
 			if (!IsSupported)
@@ -205,6 +237,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <inheritdoc/>
+		/// <exception cref="FeatureNotSupportedException">Thrown if <see cref="IsSupported"/> returns <see langword="false"/>.</exception>
 		public void Stop()
 		{
 			if (!IsSupported)
