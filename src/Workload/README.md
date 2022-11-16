@@ -18,10 +18,13 @@ The idea, is a project to be able to set `$(UseMaui)`:
 
 * `Microsoft.NET.Sdk.Maui`
 * `Microsoft.Maui.Sdk`
-* `Microsoft.Maui.Resizetizer`
-* `Microsoft.Maui.Core`
-* `Microsoft.Maui.Controls`
-* `Microsoft.Maui.Essentials`
+* `Microsoft.Maui.Resizetizer.Sdk`
+* `Microsoft.Maui.Core.Ref.[platform]`
+* `Microsoft.Maui.Core.Runtime.[platform]`
+* `Microsoft.Maui.Controls.Ref.[platform]`
+* `Microsoft.Maui.Controls.Runtime.[platform]`
+* `Microsoft.Maui.Essentials.Ref.[platform]`
+* `Microsoft.Maui.Essentials.Runtime.[platform]`
 * `Microsoft.Maui.Templates`
 
 BlazorWebView is an addition to MAUI, project can currently opt into
@@ -45,17 +48,17 @@ This will automatically add these dependencies:
 If you are a .NET 6 project, but don't want to use
 Microsoft.Maui.Controls you could bring in partial parts of MAUI.
 
-`$(UseMauiAssets)` brings in:
-
-`Microsoft.Maui.Resizetizer`
+`$(UseMauiAssets)` brings in `Microsoft.Maui.Resizetizer.Sdk`.
 
 `$(UseMauiCore)` brings in:
 
-* `Microsoft.Maui.Core`
+* `Microsoft.Maui.Core.Ref.[platform]`
+* `Microsoft.Maui.Core.Runtime.[platform]`
 
 `$(UseMauiEssentials)` brings in:
 
-* `Microsoft.Maui.Essentials`
+* `Microsoft.Maui.Essentials.Ref.[platform]`
+* `Microsoft.Maui.Essentials.Runtime.[platform]`
 
 Special files:
 
@@ -126,6 +129,7 @@ system-wide install.
 One issue is that any MSBuild tasks no longer update via `$(MauiVersion)`:
 
 * `Microsoft.Maui.Sdk`: source generators and XamlC
+* `Microsoft.Maui.Resizetizer.Sdk`: MSBuild tasks
 
 ## Using the .NET MAUI Workload
 
