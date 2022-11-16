@@ -4,46 +4,45 @@ using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui.Platform;
+
+internal class MauiRadioButton : ContentView
 {
-	public class MauiRadioButton : ContentView
+	IRadioButton _radioButton;
+	UIAccessibilityTrait _accessibilityTraits;
+
+	internal MauiRadioButton(IRadioButton virtualView)
 	{
-		IRadioButton _radioButton;
-		UIAccessibilityTrait _accessibilityTraits;
+		_radioButton = virtualView;
+		CrossPlatformMeasure = virtualView.CrossPlatformMeasure;
+		CrossPlatformArrange = virtualView.CrossPlatformArrange;
+		IsAccessibilityElement = true;
+	}
 
-		public MauiRadioButton(IRadioButton virtualView)
+	static UIKit.UIAccessibilityTrait? s_switchAccessibilityTraits;
+	UIKit.UIAccessibilityTrait SwitchAccessibilityTraits
+	{
+		get
 		{
-			_radioButton = virtualView;
-			CrossPlatformMeasure = virtualView.CrossPlatformMeasure;
-			CrossPlatformArrange = virtualView.CrossPlatformArrange;
-			IsAccessibilityElement = true;
-		}
-
-		static UIKit.UIAccessibilityTrait? s_switchAccessibilityTraits;
-		UIKit.UIAccessibilityTrait SwitchAccessibilityTraits
-		{
-			get
+			if (s_switchAccessibilityTraits == null ||
+				s_switchAccessibilityTraits == UIKit.UIAccessibilityTrait.None)
 			{
-				if (s_switchAccessibilityTraits == null ||
-					s_switchAccessibilityTraits == UIKit.UIAccessibilityTrait.None)
-				{
-					s_switchAccessibilityTraits = new UIKit.UISwitch().AccessibilityTraits;
-				}
-
-				return s_switchAccessibilityTraits ?? UIKit.UIAccessibilityTrait.None;
+				s_switchAccessibilityTraits = new UIKit.UISwitch().AccessibilityTraits;
 			}
-		}
 
-		public override UIAccessibilityTrait AccessibilityTraits
-		{
-			get => _accessibilityTraits |= SwitchAccessibilityTraits;
-			set => _accessibilityTraits = value | SwitchAccessibilityTraits;
+			return s_switchAccessibilityTraits ?? UIKit.UIAccessibilityTrait.None;
 		}
+	}
 
-		public override string? AccessibilityValue
-		{
-			get => _radioButton.IsChecked ? "1" : "0";
-			set { }
-		}
+	public override UIAccessibilityTrait AccessibilityTraits
+	{
+		get => _accessibilityTraits |= SwitchAccessibilityTraits;
+		set => _accessibilityTraits = value | SwitchAccessibilityTraits;
+	}
+
+	public override string? AccessibilityValue
+	{
+		get => _radioButton.IsChecked ? "1" : "0";
+		set { }
 	}
 }
