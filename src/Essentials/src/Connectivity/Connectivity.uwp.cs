@@ -75,6 +75,7 @@ namespace Microsoft.Maui.Networking
 					}
 					catch (global::System.Exception ex)
 					{
+						// TODO Add Logging?
 						Debug.WriteLine($"Unable to get Network Adapter, returning Unknown: {ex.Message}");
 					}
 
