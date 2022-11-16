@@ -112,6 +112,7 @@ Microsoft.Maui.IWindow.MinimumHeight.get -> double
 Microsoft.Maui.IWindow.MinimumWidth.get -> double
 Microsoft.Maui.IWindow.X.get -> double
 Microsoft.Maui.IWindow.Y.get -> double
+override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
