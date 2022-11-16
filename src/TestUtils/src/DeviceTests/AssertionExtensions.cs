@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(diff <= epsilon, $"Expected: {expected}. Actual: {actual}. Diff: {diff} Epsilon: {epsilon}.{message}");
 		}
 
-
+#if !TIZEN
 
 		public static Task WaitForKeyboardToShow(this IView view, int timeout = 1000)
 		{
@@ -127,5 +127,9 @@ namespace Microsoft.Maui.DeviceTests
 			return view.ToPlatform().FocusView(timeout);
 #endif
 		}
+
+
+#endif
+
 	}
 }
