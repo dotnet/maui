@@ -12,6 +12,41 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static Task WaitForKeyboardToShow(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task WaitForKeyboardToHide(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task SendValueToKeyboard(this UIView view, char value, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task SendKeyboardReturnType(this UIView view, ReturnType returnType, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task WaitForFocused(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task FocusView(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task ShowKeyboardForView(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static string CreateColorAtPointError(this UIImage bitmap, UIColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
