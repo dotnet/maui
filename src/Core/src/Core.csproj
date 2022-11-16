@@ -42,5 +42,8 @@
     <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\Graphics\src\Graphics\Graphics.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="nuget\**" PackagePath="" Pack="true" />
+  </ItemGroup>
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 </Project>

@@ -1,6 +1,6 @@
 <Project>
   <Import Project="..\..\..\..\..\..\..\..\..\.nuspec\AutoImport.InTree.props" />
-  <Import Project="..\..\..\..\..\..\..\..\..\.nuspec\Microsoft.Maui.Core.props" />
+  <Import Project="..\..\..\..\..\..\..\..\..\src\Core\src\nuget\buildTransitive\Microsoft.Maui.Core.targets" />
   <Import Project="..\..\..\..\..\..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
   <Import Project="..\..\..\..\..\..\..\..\..\Directory.Build.props" />
 </Project> 

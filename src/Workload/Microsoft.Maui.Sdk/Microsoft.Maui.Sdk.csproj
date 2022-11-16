@@ -10,8 +10,6 @@
   <ItemGroup>
     <None Remove="**/*.in.*" />
     <None Update="@(None)" PackagePath="" />
-    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
-    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.props" />

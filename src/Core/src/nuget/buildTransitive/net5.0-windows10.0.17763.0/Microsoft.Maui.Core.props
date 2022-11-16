@@ -1,0 +1,8 @@
+<Project>
+
+  <PropertyGroup>
+    <EnableMsixTooling Condition=" '$(EnableMsixTooling)' == '' ">true</EnableMsixTooling>
+    <EnablePreviewMsixTooling Condition=" '$(EnablePreviewMsixTooling)' == '' ">$(EnableMsixTooling)</EnablePreviewMsixTooling>
+  </PropertyGroup>
+
+</Project>
