@@ -76,7 +76,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/dev/bond/rebooter-org   # UNDONE: DO NOT MERGE TO MAIN
+      ref: refs/heads/main
       
 stages:
 
