@@ -10,7 +10,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	public interface IClipboard
 	{
 		/// <summary>
-		/// Gets whether there is any text on the clipboard.
+		/// Gets a value indicating whether there is any text on the clipboard.
 		/// </summary>
 		bool HasText { get; }
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		Task<string?> GetTextAsync();
 
 		/// <summary>
-		/// Event that is triggered when the clipboard content changes.
+		/// Occurs when the clipboard content changes.
 		/// </summary>
 		event EventHandler<EventArgs> ClipboardContentChanged;
 	}
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			=> Default.SetTextAsync(text ?? string.Empty);
 
 		/// <summary>
-		/// Gets whether there is any text on the clipboard.
+		/// Gets a value indicating whether there is any text on the clipboard.
 		/// </summary>
 		public static bool HasText
 			=> Default.HasText;
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			=> Default.GetTextAsync();
 
 		/// <summary>
-		/// Event that is triggered when the clipboard content changes.
+		/// Occurs when the clipboard content changes.
 		/// </summary>
 		public static event EventHandler<EventArgs> ClipboardContentChanged
 		{
