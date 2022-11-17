@@ -1,6 +1,8 @@
 ﻿#nullable enable
 Microsoft.Maui.Controls.FlyoutBase
 Microsoft.Maui.Controls.FlyoutBase.FlyoutBase() -> void
+Microsoft.Maui.Controls.Handlers.BoxViewHandler
+Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 Microsoft.Maui.Controls.MenuFlyout
 Microsoft.Maui.Controls.MenuFlyout.Clear() -> void
 Microsoft.Maui.Controls.MenuFlyout.MenuFlyout() -> void
