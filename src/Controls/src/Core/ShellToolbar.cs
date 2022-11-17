@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls
 			void OnBackButtonCanExecuteChanged(object sender, EventArgs e)
 			{
 				BackButtonEnabled =
-					_backButtonCommand.CanExecute(_backButtonBehavior.CommandParameter);
+					_backButtonCommand != null && _backButtonCommand.CanExecute(_backButtonBehavior?.CommandParameter);
 			}
 		}
 
