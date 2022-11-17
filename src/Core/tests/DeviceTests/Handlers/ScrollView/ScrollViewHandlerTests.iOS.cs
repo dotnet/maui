@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -17,13 +18,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ContentInitializesCorrectly()
 		{
+			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<EntryStub, EntryHandler>(); }); });
+
 			bool result = await InvokeOnMainThreadAsync(() =>
 			{
 				var entry = new EntryStub() { Text = "In a ScrollView" };
-				var entryHandler = Activator.CreateInstance<EntryHandler>();
-				entryHandler.SetMauiContext(MauiContext);
-				entryHandler.SetVirtualView(entry);
-				entry.Handler = entryHandler;
 
 				var scrollView = new ScrollViewStub()
 				{
@@ -56,7 +55,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ScrollViewContentSizeSet() 
 		{
+			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<EntryStub, EntryHandler>(); }); });
+
 			var scrollView = new ScrollViewStub();
+			var entry = new EntryStub() { Text = "In a ScrollView", Height = 10000 };
+			scrollView.Content = entry;
 
 			var scrollViewHandler = await InvokeOnMainThreadAsync(() =>
 			{
@@ -66,15 +69,6 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () => {
 				await scrollViewHandler.PlatformView.AttachAndRun(() =>
 				{
-				
-					var entry = new EntryStub() { Text = "In a ScrollView", Height = 10000 };
-					var entryHandler = Activator.CreateInstance<EntryHandler>();
-					entryHandler.SetMauiContext(MauiContext);
-					entryHandler.SetVirtualView(entry);
-					entry.Handler = entryHandler;
-
-					scrollView.Content = entry;
-
 					// Simulate a bunch of things that would happen if this were a real app
 					scrollViewHandler.UpdateValue(nameof(IScrollView.Content));
 					scrollViewHandler.PlatformArrange(new Rect(0, 0, 50, 50));
