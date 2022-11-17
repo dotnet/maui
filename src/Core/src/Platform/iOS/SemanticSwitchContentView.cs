@@ -6,14 +6,12 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform;
 
-internal class MauiRadioButton : ContentView
+internal class SemanticSwitchContentView : ContentView
 {
-	IRadioButton _radioButton;
 	UIAccessibilityTrait _accessibilityTraits;
 
-	internal MauiRadioButton(IRadioButton virtualView)
+	internal SemanticSwitchContentView(IRadioButton virtualView)
 	{
-		_radioButton = virtualView;
 		CrossPlatformMeasure = virtualView.CrossPlatformMeasure;
 		CrossPlatformArrange = virtualView.CrossPlatformArrange;
 		IsAccessibilityElement = true;
@@ -38,11 +36,5 @@ internal class MauiRadioButton : ContentView
 	{
 		get => _accessibilityTraits |= SwitchAccessibilityTraits;
 		set => _accessibilityTraits = value | SwitchAccessibilityTraits;
-	}
-
-	public override string? AccessibilityValue
-	{
-		get => _radioButton.IsChecked ? "1" : "0";
-		set { }
 	}
 }
