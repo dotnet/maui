@@ -46,7 +46,7 @@ namespace Microsoft.Maui.ApplicationModel
 		AppTheme RequestedTheme { get; }
 
 		/// <summary>
-		/// Gets whether this app is distributed as packaged or unpackaged.
+		/// Gets the packaging model of this application.
 		/// </summary>
 		/// <remarks>On other platforms than Windows, this will always return <see cref="AppPackagingModel.Packaged"/>.</remarks>
 		AppPackagingModel PackagingModel { get; }
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.ApplicationModel
 		public static AppTheme RequestedTheme => Current.RequestedTheme;
 
 		/// <summary>
-		/// Gets whether this app is distributed as packaged or unpackaged.
+		/// Gets the packaging model of this application.
 		/// </summary>
 		/// <remarks>On other platforms than Windows, this will always return <see cref="AppPackagingModel.Packaged"/>.</remarks>
 		public static AppPackagingModel PackagingModel => Current.PackagingModel;
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.ApplicationModel
 	}
 
 	/// <summary>
-	/// Enumerates values that describe how a Windows app is packaged.
+	/// Describes packaging options for a Windows app.
 	/// </summary>
 	public enum AppPackagingModel
 	{
