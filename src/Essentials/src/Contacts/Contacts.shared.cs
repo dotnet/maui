@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
 	/// <summary>
-	/// The Contacts APIs lets a user pick a contact and retrieve information about it.
+	/// The Contacts API lets a user pick a contact and retrieve information about it.
 	/// </summary>
 	public interface IContacts
 	{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	}
 
 	/// <summary>
-	/// The Contacts APIs lets a user pick a contact and retrieve information about it.
+	/// The Contacts API lets a user pick a contact and retrieve information about it.
 	/// </summary>
 	public static class Contacts
 	{
