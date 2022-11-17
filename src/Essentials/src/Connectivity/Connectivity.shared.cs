@@ -8,7 +8,7 @@ using Microsoft.Maui.Networking;
 namespace Microsoft.Maui.Networking
 {
 	/// <summary>
-	/// The Connectivity APIs lets you monitor for changes in the device's network conditions, check the current network access, and how it is currently connected.
+	/// The Connectivity API lets you monitor for changes in the device's network conditions, check the current network access, and determine how it is currently connected.
 	/// </summary>
 	public interface IConnectivity
 	{
