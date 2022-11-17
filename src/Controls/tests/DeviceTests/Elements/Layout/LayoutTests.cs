@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Layout)]
-	public partial class LayoutTests : HandlerTestBase
+	public partial class LayoutTests : ControlsHandlerTestBase
 	{
 		[Theory]
 		[InlineData(true, true, true)]

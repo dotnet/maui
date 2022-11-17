@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Label)]
-	public partial class LabelTests : HandlerTestBase
+	public partial class LabelTests : ControlsHandlerTestBase
 	{
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]

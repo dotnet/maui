@@ -15,7 +15,7 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ShellTests : HandlerTestBase
+	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		[Fact]
 		public async Task LogicalChildrenPropagateCorrectly()

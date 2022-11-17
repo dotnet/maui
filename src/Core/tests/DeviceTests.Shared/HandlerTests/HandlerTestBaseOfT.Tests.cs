@@ -1,3 +1,4 @@
+#if PLATFORM && !TIZEN
 using System;
 using System.IO;
 using System.Threading;
@@ -10,6 +11,8 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
+		where THandler : class, IViewHandler, new()
+		where TStub : IStubBase, IView, new()
 	{
 		[Fact]
 		public async Task DisconnectHandlerDoesntCrash()
@@ -208,6 +211,19 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// TODO:
 			}
+#if IOS || MACCATALYST
+			else if (view is ISearchBar)
+			{
+				//Search bar currently only measures to one size
+				//https://github.com/dotnet/maui/issues/11136
+			}
+#endif
+#if ANDROID
+			else if (size == 1 && view is ISwitch)
+			{
+				// https://github.com/dotnet/maui/issues/11020
+			}
+#endif
 			else if (view is IProgress)
 			{
 				if (!CloseEnough(size, nativeBoundingBox.Size.Width))
@@ -294,3 +310,4 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
+#endif

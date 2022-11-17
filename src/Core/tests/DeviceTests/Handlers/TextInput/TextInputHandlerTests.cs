@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public abstract partial class TextInputHandlerTests<THandler, TStub> : HandlerTestBase
+	public abstract partial class TextInputHandlerTests<THandler, TStub> : CoreHandlerTestBase
 		where THandler : class, IViewHandler, new()
 		where TStub : StubBase, ITextInputStub, new()
 	{

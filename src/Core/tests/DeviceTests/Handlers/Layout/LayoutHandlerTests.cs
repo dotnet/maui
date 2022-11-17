@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
 	[Category(TestCategory.Layout)]
-	public partial class LayoutHandlerTests : HandlerTestBase<LayoutHandler, LayoutStub>
+	public partial class LayoutHandlerTests : CoreHandlerTestBase<LayoutHandler, LayoutStub>
 	{
 		[Fact(DisplayName = "Empty layout")]
 		public async Task EmptyLayout()

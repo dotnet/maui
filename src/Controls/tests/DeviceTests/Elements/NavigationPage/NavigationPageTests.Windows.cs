@@ -19,7 +19,7 @@ using WAppBarButton = Microsoft.UI.Xaml.Controls.AppBarButton;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
-	public partial class NavigationPageTests : HandlerTestBase
+	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
 
 		string GetToolbarTitle(IElementHandler handler) =>

@@ -10,7 +10,7 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class PickerTests : HandlerTestBase
+	public partial class PickerTests : ControlsHandlerTestBase
 	{
 		protected Task<string> GetPlatformControlText(ComboBox platformView)
 		{
