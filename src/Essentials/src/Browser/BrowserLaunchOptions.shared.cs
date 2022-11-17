@@ -55,10 +55,10 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>Only applicable to Android: launches a new activity adjacent to the current activity if available.</summary>
 		LaunchAdjacent = 1,
 
-		/// <summary>Only applicable iOS: launches the browser as a page sheet with the system preferred browser where supported.</summary>
+		/// <summary>Only applicable to iOS: launches the browser as a page sheet with the system preferred browser where supported.</summary>
 		PresentAsPageSheet = 2,
 
-		/// <summary>Only applicable to iOS: launches the browser as a form sheet with the system preferred browser where supported.</summary>
+		/// <summary>Only applicable to iOS: launches the browser as a form sheet withÂ the system preferred browserÂ where supported.</summary>
 		PresentAsFormSheet = 4
 	}
 }
