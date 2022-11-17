@@ -1,8 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
+    <PackageId>Microsoft.Maui.Controls.Core</PackageId>
     <Nullable>disable</Nullable>
     <IsPackable>true</IsPackable>
     <IsTrimmable>false</IsTrimmable>
@@ -44,11 +46,11 @@
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);
-      _MauiPackXamlDesignAssemblies
+      _MauiPackDesignAssemblies
     </TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
-  <Target Name="_MauiPackXamlDesignAssemblies">
+  <Target Name="_MauiPackDesignAssemblies">
     <ItemGroup>
       <BuildOutputInPackage Include="..\Core.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.DesignTools.dll">
         <TargetPath>Design\Microsoft.Maui.Controls.DesignTools.dll</TargetPath>

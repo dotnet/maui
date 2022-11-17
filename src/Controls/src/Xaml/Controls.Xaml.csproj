@@ -31,13 +31,13 @@
 	</ItemGroup>
 
 	<PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
-	<TargetsForTfmSpecificBuildOutput>
-		$(TargetsForTfmSpecificBuildOutput);
-		_MauiPackXamlDesignAssemblies
-	</TargetsForTfmSpecificBuildOutput>
+		<TargetsForTfmSpecificBuildOutput>
+			$(TargetsForTfmSpecificBuildOutput);
+			_MauiPackDesignAssemblies
+		</TargetsForTfmSpecificBuildOutput>
 	</PropertyGroup>
 
-	<Target Name="_MauiPackXamlDesignAssemblies">
+	<Target Name="_MauiPackDesignAssemblies">
 		<ItemGroup>
 			<BuildOutputInPackage Include="..\Xaml.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.Xaml.DesignTools.dll">
 				<TargetPath>Design\Microsoft.Maui.Controls.Xaml.DesignTools.dll</TargetPath>
