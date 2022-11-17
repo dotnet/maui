@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Networking
 		/// <summary>The ethernet data connection.</summary>
 		Ethernet = 3,
 
-		/// <summary>The WiFi data connection.</summary>
+		/// <summary>The Wi-Fi data connection.</summary>
 		WiFi = 4
 	}
 
