@@ -12,7 +12,7 @@ internal class SemanticSwitchContentView : ContentView
 {
 	UIAccessibilityTrait _accessibilityTraits;
 
-	internal SemanticSwitchContentView(IRadioButton virtualView)
+	internal SemanticSwitchContentView(IContentView virtualView)
 	{
 		CrossPlatformMeasure = virtualView.CrossPlatformMeasure;
 		CrossPlatformArrange = virtualView.CrossPlatformArrange;
