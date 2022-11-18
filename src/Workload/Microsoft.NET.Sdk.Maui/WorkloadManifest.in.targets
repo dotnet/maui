@@ -1,8 +1,14 @@
 <Project>
 
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
-    <ProjectCapability Include="UseMauiCore" />
-    <ProjectCapability Condition=" '$(UseMaui)' == 'true' " Include="UseMaui" />
+  <ItemGroup>
+    <ProjectCapability Include="Maui"           Condition=" '$(UseMaui)' == 'true' " />
+    <ProjectCapability Include="MauiAssets"     Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' " />
+    <ProjectCapability Include="MauiBlazor"     Condition=" '$(UsingMicrosoftNETSdkRazor)' == 'true' " />
+    <ProjectCapability Include="MauiCore"       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
+    <ProjectCapability Include="MauiEssentials" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
+    <!-- these 2 are potentially obsolete -->
+    <ProjectCapability Include="UseMaui"        Condition=" '$(UseMaui)' == 'true' " />
+    <ProjectCapability Include="UseMauiCore"    Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
   </ItemGroup>
 
   <Import

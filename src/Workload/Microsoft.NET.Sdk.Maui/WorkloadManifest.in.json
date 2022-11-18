@@ -117,6 +117,18 @@
       "kind": "library",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Controls.Build.Tasks": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Core": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Xaml": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Graphics": {
       "kind": "library",
       "version": "@VERSION@"

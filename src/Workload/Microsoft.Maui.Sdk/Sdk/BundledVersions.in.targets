@@ -47,7 +47,13 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Maui.Controls.Core" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Maui.Controls.Xaml" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Maui.Controls.Build.Tasks" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" IsImplicitlyDefined="true">

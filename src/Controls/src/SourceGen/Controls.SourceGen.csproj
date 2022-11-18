@@ -6,12 +6,8 @@
     <AssemblyName>Microsoft.Maui.Controls.SourceGen</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.SourceGen</RootNamespace>
     <PackageId>Microsoft.Maui.Controls.SourceGen</PackageId>
-    <IsPackable>true</IsPackable>
+    <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
-    <!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-    <!-- Change the default location where NuGet will put the build output -->
-    <BuildOutputTargetFolder>analyzers/dotnet/cs</BuildOutputTargetFolder>
   </PropertyGroup>
 
   <ItemGroup>

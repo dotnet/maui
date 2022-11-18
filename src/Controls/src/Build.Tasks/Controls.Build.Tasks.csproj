@@ -26,17 +26,19 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" />
 		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj" />
+		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 	
+	<ItemGroup>
+		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<Compile Update="ErrorMessages.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
 			<DependentUpon>ErrorMessages.resx</DependentUpon>
 		</Compile>
-	</ItemGroup>
-
-	<ItemGroup>
 		<EmbeddedResource Update="ErrorMessages.resx">
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
@@ -59,6 +61,8 @@
 	</PropertyGroup>
 	<Target Name="_MauiPackAdditionalAssemblies">
 		<ItemGroup>
+			<BuildOutputInPackage Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll" />
+			<BuildOutputInPackage Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" />
 			<BuildOutputInPackage Include="$(OutputPath)Microsoft.Maui.*" />
 			<BuildOutputInPackage Include="$(OutputPath)Mono.Cecil.*" />
 			<BuildOutputInPackage Include="$(OutputPath)System.CodeDom.*" />
@@ -66,7 +70,7 @@
 			<BuildOutputInPackage Remove="$(OutputPath)*.xml" />
 		</ItemGroup>
 	</Target>
-	
+
 	<!-- Workaround for https://github.com/dotnet/sdk/issues/1458 -->
 	<Target Name="AddReferenceRelatedPathsToCopyLocal" AfterTargets="ResolveAssemblyReferences">
 		<ItemGroup>
