@@ -1,7 +1,4 @@
-﻿using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
-
-namespace Microsoft.Maui.DeviceTests.Stubs
+﻿namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class ScrollViewStub : StubBase, IScrollView
 	{
@@ -27,22 +24,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Size CrossPlatformArrange(Rect bounds)
 		{
-			if (this is IScrollView scrollView)
-			{
-				return scrollView.ArrangeScrollViewContent(bounds);
-			}
-
 			return bounds.Size;
 		}
 
 		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			if (PresentedContent != null)
-			{
-				return PresentedContent.Measure(widthConstraint, heightConstraint);
-			}
-
-			return Size.Zero;
+			return new Size(widthConstraint, heightConstraint);
 		}
 	}
 }
