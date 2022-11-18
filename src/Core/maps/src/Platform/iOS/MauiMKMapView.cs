@@ -114,6 +114,19 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 		}
 
+		internal void ClearMapElements()
+		{
+			var elements = Overlays;
+
+			if (elements == null)
+				return;
+
+			foreach (IMKOverlay overlay in elements)
+			{
+				RemoveOverlay(overlay);
+			}
+		}
+
 		internal void AddElements(IList elements)
 		{
 			foreach (IMapElement element in elements)
