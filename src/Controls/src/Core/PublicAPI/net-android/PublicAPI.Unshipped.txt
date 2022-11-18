@@ -128,6 +128,4 @@ static readonly Microsoft.Maui.Controls.TapGestureRecognizer.ButtonsProperty -> 
 *REMOVED*Microsoft.Maui.Controls.TapGestureRecognizer.Tapped -> System.EventHandler?
 Microsoft.Maui.Controls.ILayoutManagerFactory
 ~Microsoft.Maui.Controls.ILayoutManagerFactory.CreateLayoutManager(Microsoft.Maui.Controls.Layout layout) -> Microsoft.Maui.Layouts.ILayoutManager
-Microsoft.Maui.Controls.FrameExtensions
-~static Microsoft.Maui.Controls.FrameExtensions.IsClippedToBoundsSet(this Microsoft.Maui.Controls.Frame frame, bool defaultValue) -> bool
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size

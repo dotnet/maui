@@ -1,7 +1,6 @@
 ﻿#nullable enable
 Microsoft.Maui.Controls.FlyoutBase
 Microsoft.Maui.Controls.FlyoutBase.FlyoutBase() -> void
-Microsoft.Maui.Controls.FrameExtensions
 Microsoft.Maui.Controls.MenuFlyout
 Microsoft.Maui.Controls.MenuFlyout.Clear() -> void
 Microsoft.Maui.Controls.MenuFlyout.MenuFlyout() -> void
@@ -103,7 +102,6 @@ virtual Microsoft.Maui.Controls.TappedEventArgs.GetPosition(Microsoft.Maui.Contr
 ~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.IEntryHandler handler, Microsoft.Maui.Controls.Entry entry) -> void
 ~static Microsoft.Maui.Controls.FlyoutBase.GetContextFlyout(Microsoft.Maui.Controls.BindableObject b) -> Microsoft.Maui.Controls.FlyoutBase
 ~static Microsoft.Maui.Controls.FlyoutBase.SetContextFlyout(Microsoft.Maui.Controls.BindableObject b, Microsoft.Maui.Controls.FlyoutBase value) -> void
-~static Microsoft.Maui.Controls.FrameExtensions.IsClippedToBoundsSet(this Microsoft.Maui.Controls.Frame frame, bool defaultValue) -> bool
 ~static Microsoft.Maui.Controls.Label.MapCharacterSpacing(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
 ~static Microsoft.Maui.Controls.Label.MapFont(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
 ~static Microsoft.Maui.Controls.Label.MapLineHeight(Microsoft.Maui.Handlers.ILabelHandler handler, Microsoft.Maui.Controls.Label label) -> void
