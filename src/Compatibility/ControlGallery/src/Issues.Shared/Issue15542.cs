@@ -2,8 +2,9 @@
 using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
-using NUnit.Framework;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
+using NUnit.Framework;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
