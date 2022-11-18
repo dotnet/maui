@@ -14,12 +14,12 @@ namespace Microsoft.Maui.Devices
 		bool KeepScreenOn { get; set; }
 
 		/// <summary>
-		/// Gets the main screens display info.
+		/// Gets the main screen's display info.
 		/// </summary>
 		DisplayInfo MainDisplayInfo { get; }
 
 		/// <summary>
-		/// Occurs when the main display info changes.
+		/// Occurs when the main display's info changes.
 		/// </summary>
 		event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged;
 	}
@@ -57,12 +57,12 @@ namespace Microsoft.Maui.Devices
 		}
 
 		/// <summary>
-		/// Gets the main screens display info.
+		/// Gets the main screen's display info.
 		/// </summary>
 		public static DisplayInfo MainDisplayInfo => Current.MainDisplayInfo;
 
 		/// <summary>
-		/// Occurs when the main display info changes.
+		/// Occurs when the main display's info changes.
 		/// </summary>
 		public static event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
 		{
