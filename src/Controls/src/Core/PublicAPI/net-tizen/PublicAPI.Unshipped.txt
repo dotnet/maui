@@ -7450,3 +7450,4 @@ static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.T
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
 Microsoft.Maui.Controls.FrameExtensions
 ~static Microsoft.Maui.Controls.FrameExtensions.IsClippedToBoundsSet(this Microsoft.Maui.Controls.Frame frame, bool defaultValue) -> bool
+*REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
