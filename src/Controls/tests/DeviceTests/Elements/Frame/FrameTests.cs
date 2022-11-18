@@ -11,7 +11,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Frame)]
-	public partial class FrameTests : HandlerTestBase
+	public partial class FrameTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{

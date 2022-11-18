@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class CustomImageCacheStub
+	public class CustomImageCacheStub
 	{
 		readonly Dictionary<Color, (UIImage Image, int Count)> _cache = new Dictionary<Color, (UIImage, int)>();
 

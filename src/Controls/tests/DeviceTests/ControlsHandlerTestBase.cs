@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,12 +25,8 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class HandlerTestBase : TestBase, IDisposable
+	public partial class ControlsHandlerTestBase : HandlerTestBase, IDisposable
 	{
-		bool _isCreated;
-		protected MauiApp MauiApp { get; private set; }
-		IMauiContext _mauiContext;
-
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
 		// that way all the lifecycle events related to being attached to the window will fire
 		// adding/removing that many fragments in parallel to the decor view was causing the tests to be unreliable
@@ -37,61 +34,11 @@ namespace Microsoft.Maui.DeviceTests
 		// There's definitely a chance that the code written to manage this process could be improved		
 		public const string RunInNewWindowCollection = "Serialize test because it has to add itself to the main window";
 
-		public void EnsureHandlerCreated(Action<MauiAppBuilder> additionalCreationActions = null)
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
-			if (_isCreated)
-			{
-				return;
-			}
-
-			_isCreated = true;
-			var appBuilder = MauiApp
-				.CreateBuilder()
-				.RemapForControls()
-				.ConfigureLifecycleEvents(lifecycle =>
-				{
-#if IOS || MACCATALYST
-					lifecycle
-						.AddiOS(iOS => iOS
-							.OpenUrl((app, url, options) =>
-								ApplicationModel.Platform.OpenUrl(app, url, options))
-							.ContinueUserActivity((application, userActivity, completionHandler) =>
-								ApplicationModel.Platform.ContinueUserActivity(application, userActivity, completionHandler))
-							.PerformActionForShortcutItem((application, shortcutItem, completionHandler) =>
-								ApplicationModel.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler)));
-#elif WINDOWS
-					lifecycle
-						.AddWindows(windows =>
-						{
-							windows
-								.OnLaunched((app, e) =>
-									ApplicationModel.Platform.OnLaunched(e));
-							windows
-								.OnActivated((window, e) =>
-									ApplicationModel.Platform.OnActivated(window, e));
-						});
-#endif
-				})
-				.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
-					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-					handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
-					handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
-					handlers.AddHandler(typeof(MauiAppNewWindowStub), typeof(ApplicationHandler));
-				});
-
-			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
-			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
-			appBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
-
-			additionalCreationActions?.Invoke(appBuilder);
-
-			MauiApp = appBuilder.Build();
-
-			_mauiContext = new ContextStub(MauiApp.Services);
+			mauiAppBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
+			return mauiAppBuilder.ConfigureTestBuilder();
 		}
-
 
 		protected void SetupShellHandlers(IMauiHandlersCollection handlers)
 		{
@@ -114,98 +61,23 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
-		public void Dispose()
-		{
-			((IDisposable)MauiApp)?.Dispose();
-
-			MauiApp = null;
-			_mauiContext = null;
-		}
-
-		protected IMauiContext MauiContext
-		{
-			get
-			{
-				EnsureHandlerCreated();
-				return _mauiContext;
-			}
-		}
-
 		protected THandler CreateHandler<THandler>(IElement view)
-			where THandler : IElementHandler
+			where THandler : IElementHandler, new()
 		{
 			return CreateHandler<THandler>(view, MauiContext);
 		}
 
-		protected THandler CreateHandler<THandler>(IElement element, IMauiContext mauiContext)
-			where THandler : IElementHandler
-		{
-			var handler = Activator.CreateInstance<THandler>();
-
-			handler.SetMauiContext(mauiContext);
-
-			handler.SetVirtualView(element);
-			element.Handler = handler;
-
-			if (element is IView view && handler is IViewHandler viewHandler)
-			{
-#if ANDROID
-				// If the Android views don't have LayoutParams set, updating some properties (e.g., Text)
-				// can run into issues when deciding whether a re-layout is required. Normally this isn't
-				// an issue because the LayoutParams get set when the view is added to a ViewGroup, but 
-				// since we're not doing that here, we need to ensure they have LayoutParams so that tests
-				// which update properties don't crash. 
-
-				var aView = viewHandler.PlatformView as Android.Views.View;
-				if (aView.LayoutParameters == null)
-				{
-					aView.LayoutParameters =
-						new Android.Views.ViewGroup.LayoutParams(
-							Android.Views.ViewGroup.LayoutParams.WrapContent,
-							Android.Views.ViewGroup.LayoutParams.WrapContent);
-				}
-
-				var size = view.Measure(view.Width, view.Height);
-				var w = size.Width;
-				var h = size.Height;
-#elif IOS || MACCATALYST
-				var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
-				var w = size.Width;
-				var h = size.Height;
-#else
-				// Windows cannot measure without the view being loaded
-				// iOS needs more love when I get an IDE again
-				var w = view.Width.Equals(double.NaN) ? -1 : view.Width;
-				var h = view.Height.Equals(double.NaN) ? -1 : view.Height;
-#endif
-
-				view.Arrange(new Rect(0, 0, w, h));
-				viewHandler.PlatformArrange(view.Frame);
-			}
-
-			return handler;
-		}
-
-		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view) where THandler : IElementHandler =>
+		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view) 
+			where THandler : IElementHandler, new() =>
 			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
 
 		protected Task<TValue> GetValueAsync<TValue, THandler>(IElement view, Func<THandler, TValue> func)
-			 where THandler : IElementHandler
+			 where THandler : IElementHandler, new()
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<THandler>(view);
 				return func(handler);
-			});
-		}
-
-		protected Task SetValueAsync<TValue, THandler>(IView view, TValue value, Action<THandler, TValue> func)
-			where THandler : IElementHandler
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<THandler>(view);
-				func(handler, value);
 			});
 		}
 
@@ -304,7 +176,7 @@ namespace Microsoft.Maui.DeviceTests
 			Func<TValue> GetValue,
 			Func<THandler, TValue> GetPlatformValue,
 			TValue expectedValue)
-			where THandler : IElementHandler
+			where THandler : IElementHandler, new()
 		{
 			var values = await GetValueAsync(view, (THandler handler) =>
 			{
@@ -325,7 +197,7 @@ namespace Microsoft.Maui.DeviceTests
 			Func<THandler, TValue> GetPlatformValue,
 			TValue expectedSetValue,
 			TValue expectedUnsetValue)
-			where THandler : IElementHandler
+			where THandler : IElementHandler, new()
 		{
 			var propInfo = view.GetType().GetProperty(property);
 

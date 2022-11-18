@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Button)]
-	public partial class ButtonTests : HandlerTestBase
+	public partial class ButtonTests : ControlsHandlerTestBase
 	{
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]

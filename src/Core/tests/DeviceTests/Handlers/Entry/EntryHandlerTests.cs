@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Entry)]
-	public partial class EntryHandlerTests : HandlerTestBase<EntryHandler, EntryStub>
+	public partial class EntryHandlerTests : CoreHandlerTestBase<EntryHandler, EntryStub>
 	{
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
@@ -492,6 +492,11 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeHorizontalTextAlignment,
 				nameof(IEntry.CharacterSpacing),
 				() => entry.CharacterSpacing = newSize);
+		}
+
+		[Category(TestCategory.Entry)]
+		public class EntryTextStyleTests : TextStyleHandlerTests<EntryHandler, EntryStub>
+		{
 		}
 	}
 }
