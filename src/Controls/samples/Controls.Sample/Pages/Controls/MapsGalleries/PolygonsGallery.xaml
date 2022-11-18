@@ -28,9 +28,9 @@
             </x:Arguments>
             <Map.MapElements>
                 <maps:Polygon 
-                StrokeColor="#FF9900"
-                StrokeWidth="8"
-                FillColor="#88FF9900">
+                    StrokeColor="#FF9900"
+                    StrokeWidth="8"
+                    FillColor="#88FF9900">
                     <maps:Polygon.Geopath>
                         <sensors:Location>
                             <x:Arguments>
