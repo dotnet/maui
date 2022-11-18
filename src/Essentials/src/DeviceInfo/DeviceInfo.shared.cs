@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Devices
 		/// <summary>An unknown device type.</summary>
 		Unknown = 0,
 
-		/// <summary>The device is a physical device, such as an iPhone, Android tablet or Windows/macOS desktop.</summary>
+		/// <summary>The device is a physical device, such as an iPhone, Android tablet, or Windows/macOS desktop.</summary>
 		Physical = 1,
 
-		/// <summary>The device is virtual, such as the iOS Simulator, Android emulators or Windows emulators.</summary>
+		/// <summary>The device is virtual, such as the iOS Simulator, Android emulators, or Windows emulators.</summary>
 		Virtual = 2
 	}
 
