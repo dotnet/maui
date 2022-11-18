@@ -131,4 +131,73 @@
     <Copy SourceFiles="@(_Files)" DestinationFolder="$(DotNetSdkManifestsDirectory)$(MSBuildProjectName.ToLowerInvariant())" />
   </Target>
 
+  <!-- These are the darc dependency items we need to solicit feeds from  -->
+  <ItemGroup>
+    <_DarcDependency Include="Microsoft.Dotnet.Sdk.Internal" Version="$(MicrosoftDotnetSdkInternalPackageVersion)" />
+    <_DarcDependency Include="Microsoft.NETCore.App.Ref" Version="$(MicrosoftNETCoreAppRefPackageVersion)" />
+    <_DarcDependency Include="Microsoft.Android.Sdk.Windows" Version="$(MicrosoftAndroidSdkWindowsPackageVersion)" />
+    <_DarcDependency Include="Microsoft.MacCatalyst.Sdk" Version="$(MicrosoftMacCatalystSdkPackageVersion)" />
+    <_DarcDependency Include="Microsoft.macOS.Sdk" Version="$(MicrosoftmacOSSdkPackageVersion)" />
+    <_DarcDependency Include="Microsoft.iOS.Sdk" Version="$(MicrosoftiOSSdkPackageVersion)" />
+    <_DarcDependency Include="Microsoft.tvOS.Sdk" Version="$(MicrosofttvOSSdkPackageVersion)" />
+    <_DarcDependency Include="$(MicrosoftNETWorkloadEmscriptenSdkDarcName)" Version="$(MicrosoftNETWorkloadEmscriptenPackageVersion)" />
+    <_DarcDependency Include="Microsoft.AspNetCore.Authorization" Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)" />
+  </ItemGroup>
+
+  <!-- For each dependency item, execute darc get-asset to list out the version info with feeds -->
+  <Target Name="_DarcGetAssetNugetFeeds" AfterTargets="Build" Outputs="%(_DarcDependency.Identity)">
+
+    <Exec Command="darc get-asset --name %(_DarcDependency.Identity) --version %(_DarcDependency.Version) --max-age 90"
+      ConsoleToMSBuild="True">
+      <Output TaskParameter="ConsoleOutput" ItemName="_DarcGetAssetOutput" />
+    </Exec>
+
+    <!-- Reverse the output since we always want the last feed in the list/output -->
+    <ItemGroup>
+      <_DarcGetAssetOutputReverse
+        Include="@(_DarcGetAssetOutput->Reverse())" />
+    </ItemGroup>
+
+    <!-- Get the first url matching the pattern: ` - https://[feedurlhere]/index.json (NugetFeed)` -->
+    <!-- Using regex for each line of the darc tool output -->
+    <PropertyGroup>
+      <_DarcGetCurrentAssetFeed
+        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_DarcGetAssetOutputReverse.Identity)', '-\s+http.+/index\.json\s+\(NugetFeed\)'))">$([System.Text.RegularExpressions.Regex]::Match('%(_DarcGetAssetOutputReverse.Identity)', 'http\S+/index\.json'))</_DarcGetCurrentAssetFeed>
+    </PropertyGroup>
+
+    <!-- Finally, add the regex extracted feed to the itemgroup  -->
+    <ItemGroup>
+      <_DarcAssetFeed Include="$(_DarcGetCurrentAssetFeed)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Takes all the batched up feeds and writes out a nuget.config file -->
+  <Target Name="_DarcAssetFeedCreateNuGetConfig" AfterTargets="_DarcGetAssetNugetFeeds">
+
+    <Message Text="Darc Asset Feeds:" />
+    <Message Text="  %(_DarcAssetFeed.Identity)" />
+
+    <!-- First create an empty nuget config file -->
+    <Exec Command="dotnet new nugetconfig --force --output $(OutputPath)" />
+
+    <!-- Remove the default nuget url since the new template already has it -->
+    <ItemGroup>
+      <_DarcAssetFeed
+        Remove="https://api.nuget.org/v3/index.json"
+        Condition="'%(_DarcAssetFeed.Identity)' == 'https://api.nuget.org/v3/index.json'" />
+    </ItemGroup>
+
+    <!-- Add each of the aggregated feeds to the nuget config -->
+    <Exec Command="dotnet nuget add source %(_DarcAssetFeed.Identity) --configfile $(OutputPath)nuget.config" />
+
+    <!-- Copy to the artifact folders to be archived -->
+    <Copy SourceFiles="$(OutputPath)nuget.config" DestinationFiles="$(PackageOutputPath)/metadata/feeds/$(Version)/$(GitSha)/NuGet.Config" />
+    <Copy SourceFiles="$(OutputPath)nuget.config" DestinationFiles="$(PackageOutputPath)/metadata/feeds/$(Version)/$(GitSemVerLabel).$(BUILDVERSION)/NuGet.Config" />
+    <Copy SourceFiles="$(OutputPath)nuget.config" DestinationFiles="$(PackageOutputPath)/metadata/feeds/$(Version)/$(GitSemVerLabel)/NuGet.Config" />
+    <Copy SourceFiles="$(OutputPath)nuget.config" DestinationFiles="$(PackageOutputPath)/metadata/feeds/$(Version)/$(PackageReferenceVersion)/NuGet.Config" />
+    <Copy SourceFiles="$(OutputPath)nuget.config" DestinationFiles="$(PackageOutputPath)/metadata/feeds/$(GitSha)/NuGet.Config" />
+    <Copy SourceFiles="$(OutputPath)nuget.config" DestinationFiles="$(PackageOutputPath)/metadata/feeds/$(GitSemVerLabel)/NuGet.Config" />
+    <Copy SourceFiles="$(OutputPath)nuget.config" DestinationFiles="$(PackageOutputPath)/metadata/feeds/$(GitBranch)/NuGet.Config" />
+    <Copy SourceFiles="$(OutputPath)nuget.config" DestinationFiles="$(PackageOutputPath)/metadata/feeds/$(PackageReferenceVersion)/NuGet.Config" />
+  </Target>
 </Project>

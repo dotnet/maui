@@ -22,6 +22,9 @@
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptennet7Manifest70100PackageVersion>7.0.0-rtm.22504.3</MicrosoftNETWorkloadEmscriptennet7Manifest70100PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptennet7Manifest70100PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
+    <!-- emsdk darc name - this is the Dependency Name attribute from the Version.Details.xml -->
+    <MicrosoftNETWorkloadEmscriptenSdkDarcName>Microsoft.NET.Workload.Emscripten.net7.Manifest-7.0.100</MicrosoftNETWorkloadEmscriptenSdkDarcName>
+
     <!-- wasdk -->
     <MicrosoftWindowsAppSDKPackageVersion>1.2.221109.1</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.755</MicrosoftWindowsSDKBuildToolsPackageVersion>
