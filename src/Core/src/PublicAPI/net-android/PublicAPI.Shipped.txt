@@ -1427,7 +1427,7 @@ Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityStarted(Andr
 Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityStopped(Android.App.Activity! activity) -> void
 Microsoft.Maui.MauiApplication.Application.get -> Microsoft.Maui.IApplication!
 Microsoft.Maui.MauiApplication.Application.set -> void
-Microsoft.Maui.MauiApplication.MauiApplication(System.IntPtr handle, Android.Runtime.JniHandleOwnership ownership) -> void
+Microsoft.Maui.MauiApplication.MauiApplication(nint handle, Android.Runtime.JniHandleOwnership ownership) -> void
 Microsoft.Maui.MauiApplication.Services.get -> System.IServiceProvider!
 Microsoft.Maui.MauiApplication.Services.set -> void
 Microsoft.Maui.MauiContext
@@ -1440,7 +1440,7 @@ Microsoft.Maui.MauiViewGroup
 Microsoft.Maui.MauiViewGroup.MauiViewGroup(Android.Content.Context? context) -> void
 Microsoft.Maui.MauiViewGroup.MauiViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.MauiViewGroup.MauiViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
-Microsoft.Maui.MauiViewGroup.MauiViewGroup(System.IntPtr javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.MauiViewGroup.MauiViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.MissingMapperAttribute
 Microsoft.Maui.MissingMapperAttribute.Description.get -> string?
 Microsoft.Maui.MissingMapperAttribute.Description.set -> void
@@ -1494,7 +1494,7 @@ Microsoft.Maui.Platform.CheckBoxExtensions
 Microsoft.Maui.Platform.ColorExtensions
 Microsoft.Maui.Platform.ContainerView
 Microsoft.Maui.Platform.ContainerView.ContainerView(Microsoft.Maui.IMauiContext! context) -> void
-Microsoft.Maui.Platform.ContainerView.ContainerView(System.IntPtr javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.ContainerView.ContainerView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.ContainerView.CurrentView.get -> Microsoft.Maui.IElement?
 Microsoft.Maui.Platform.ContainerView.CurrentView.set -> void
 Microsoft.Maui.Platform.ContainerView.MainView.get -> Android.Views.View?
@@ -1505,7 +1505,7 @@ Microsoft.Maui.Platform.ContentViewGroup.ContentViewGroup(Android.Content.Contex
 Microsoft.Maui.Platform.ContentViewGroup.ContentViewGroup(Android.Content.Context! context, Android.Util.IAttributeSet! attrs) -> void
 Microsoft.Maui.Platform.ContentViewGroup.ContentViewGroup(Android.Content.Context! context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
 Microsoft.Maui.Platform.ContentViewGroup.ContentViewGroup(Android.Content.Context! context, Android.Util.IAttributeSet! attrs, int defStyleAttr, int defStyleRes) -> void
-Microsoft.Maui.Platform.ContentViewGroup.ContentViewGroup(System.IntPtr javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.ContentViewGroup.ContentViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.ContextExtensions
 Microsoft.Maui.Platform.DatePickerExtensions
 Microsoft.Maui.Platform.DrawableExtensions
@@ -1554,7 +1554,7 @@ Microsoft.Maui.Platform.LayoutViewGroup.LayoutViewGroup(Android.Content.Context!
 Microsoft.Maui.Platform.LayoutViewGroup.LayoutViewGroup(Android.Content.Context! context, Android.Util.IAttributeSet! attrs) -> void
 Microsoft.Maui.Platform.LayoutViewGroup.LayoutViewGroup(Android.Content.Context! context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
 Microsoft.Maui.Platform.LayoutViewGroup.LayoutViewGroup(Android.Content.Context! context, Android.Util.IAttributeSet! attrs, int defStyleAttr, int defStyleRes) -> void
-Microsoft.Maui.Platform.LayoutViewGroup.LayoutViewGroup(System.IntPtr javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.LayoutViewGroup.LayoutViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.LayoutViewGroupExtensions
 Microsoft.Maui.Platform.LocalizedDigitsKeyListener
 Microsoft.Maui.Platform.LocalizedDigitsKeyListener.LocalizedDigitsKeyListener(Android.Text.InputTypes inputTypes, char decimalSeparator) -> void
@@ -1571,7 +1571,7 @@ Microsoft.Maui.Platform.MauiDatePicker.HidePicker.set -> void
 Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context) -> void
 Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs) -> void
 Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
-Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(System.IntPtr javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.MauiDatePicker.OnClick(Android.Views.View? v) -> void
 Microsoft.Maui.Platform.MauiDatePicker.ShowPicker.get -> System.Action?
 Microsoft.Maui.Platform.MauiDatePicker.ShowPicker.set -> void
@@ -1593,7 +1593,7 @@ Microsoft.Maui.Platform.MauiScrollView
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView(Android.Content.Context! context, Android.Util.IAttributeSet! attrs) -> void
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView(Android.Content.Context! context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
-Microsoft.Maui.Platform.MauiScrollView.MauiScrollView(System.IntPtr javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiScrollView.MauiScrollView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.MauiScrollView.ScrollTo(int x, int y, bool instant, System.Action! finished) -> void
 Microsoft.Maui.Platform.MauiScrollView.SetContent(Android.Views.View! content) -> void
 Microsoft.Maui.Platform.MauiScrollView.SetHorizontalScrollBarVisibility(Microsoft.Maui.ScrollBarVisibility scrollBarVisibility) -> void
@@ -1616,7 +1616,7 @@ Microsoft.Maui.Platform.MauiTimePicker.HidePicker.set -> void
 Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context? context) -> void
 Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs) -> void
 Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(Android.Content.Context? context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
-Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(System.IntPtr javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.MauiTimePicker.OnClick(Android.Views.View? v) -> void
 Microsoft.Maui.Platform.MauiTimePicker.ShowPicker.get -> System.Action?
 Microsoft.Maui.Platform.MauiTimePicker.ShowPicker.set -> void
@@ -1632,7 +1632,7 @@ Microsoft.Maui.Platform.NavigationRootManager.NavigationRootManager(Microsoft.Ma
 Microsoft.Maui.Platform.NavigationRootManager.RootView.get -> Android.Views.View?
 Microsoft.Maui.Platform.NavigationViewFragment
 Microsoft.Maui.Platform.NavigationViewFragment.NavigationViewFragment() -> void
-Microsoft.Maui.Platform.NavigationViewFragment.NavigationViewFragment(System.IntPtr javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.NavigationViewFragment.NavigationViewFragment(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.PickerExtensions
 Microsoft.Maui.Platform.PlatformTouchGraphicsView
 Microsoft.Maui.Platform.PlatformTouchGraphicsView.Connect(Microsoft.Maui.IGraphicsView! graphicsView) -> void
@@ -1975,7 +1975,7 @@ override Microsoft.Maui.Font.ToString() -> string!
 override Microsoft.Maui.FontImageSourceService.GetDrawableAsync(Microsoft.Maui.IImageSource! imageSource, Android.Content.Context! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult<Android.Graphics.Drawables.Drawable!>?>!
 override Microsoft.Maui.FontImageSourceService.LoadDrawableAsync(Microsoft.Maui.IImageSource! imageSource, Android.Widget.ImageView! imageView, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult?>!
 override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
-override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect? bounds) -> void
+override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
 override Microsoft.Maui.GridLength.Equals(object? obj) -> bool
 override Microsoft.Maui.GridLength.GetHashCode() -> int
@@ -2103,7 +2103,7 @@ override Microsoft.Maui.MauiApplication.OnLowMemory() -> void
 override Microsoft.Maui.MauiApplication.OnTrimMemory(Android.Content.TrimMemory level) -> void
 override Microsoft.Maui.MauiViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.MauiViewGroup.OnLayout(bool changed, int l, int t, int r, int b) -> void
-override Microsoft.Maui.MauiViewGroup.ThresholdClass.get -> System.IntPtr
+override Microsoft.Maui.MauiViewGroup.ThresholdClass.get -> nint
 override Microsoft.Maui.MauiViewGroup.ThresholdType.get -> System.Type!
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.DispatchPopulateAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> bool
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View! host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat!
@@ -2115,7 +2115,7 @@ override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAcces
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEvent(Android.Views.View! host, int eventType) -> void
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
 override Microsoft.Maui.Platform.BorderDrawable.Dispose(bool disposing) -> void
-override Microsoft.Maui.Platform.BorderDrawable.OnBoundsChange(Android.Graphics.Rect? bounds) -> void
+override Microsoft.Maui.Platform.BorderDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 override Microsoft.Maui.Platform.BorderDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
 override Microsoft.Maui.Platform.ContentViewGroup.DispatchDraw(Android.Graphics.Canvas? canvas) -> void
 override Microsoft.Maui.Platform.ContentViewGroup.OnLayout(bool changed, int left, int top, int right, int bottom) -> void

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers.Memory
 	/// which is why we only currently run these on API 30+
 	/// </summary>
 	[TestCaseOrderer("Microsoft.Maui.Handlers.Memory.MemoryTestOrdering", "Microsoft.Maui.Core.DeviceTests")]
-	public class MemoryTests : HandlerTestBase, IClassFixture<MemoryTestFixture>
+	public class MemoryTests : CoreHandlerTestBase, IClassFixture<MemoryTestFixture>
 	{
 		MemoryTestFixture _fixture;
 		public MemoryTests(MemoryTestFixture fixture)

@@ -37,10 +37,32 @@
                 <Label 
                     Text="Has Shadow" />
             </Frame>
-            <Button
-                Text="Update HasShadow"
-                Clicked="OnHasShadowButtonClicked"
-                Margin="0, 6"/>
+            <Label
+                Text="IsClippedToBounds (False)"
+                Style="{StaticResource Headline}"/>
+            <Frame
+                IsClippedToBounds="False"
+                Padding="0"
+                BackgroundColor="LightGray"
+                BorderColor="Red"
+                CornerRadius="24">
+                <Image 
+                    Aspect="AspectFill"
+                    Source="cover1.jpg" />
+            </Frame>
+            <Label
+                Text="IsClippedToBounds (True)"
+                Style="{StaticResource Headline}"/>
+            <Frame
+                IsClippedToBounds="True"
+                Padding="0"
+                BackgroundColor="LightGray"
+                BorderColor="Red"
+                CornerRadius="24">
+                <Image 
+                    Aspect="AspectFill"
+                    Source="cover1.jpg" />
+            </Frame>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

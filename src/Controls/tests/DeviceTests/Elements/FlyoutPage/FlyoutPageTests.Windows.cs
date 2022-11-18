@@ -20,7 +20,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.FlyoutPage)]
-	public partial class FlyoutPageTests : HandlerTestBase
+	public partial class FlyoutPageTests : ControlsHandlerTestBase
 	{
 		[Fact(DisplayName = "FlyoutPage Initializes with FlyoutCustomContent Set")]
 		public async Task FlyoutPageInitializesWithFlyoutCustomContentSet()

@@ -30,7 +30,7 @@ jobs:
       blobName: $(NupkgCommitStatusName)
       packagePrefix: maui
       artifactsPath: $(Build.StagingDirectory)\nuget
-      yamlResourceName: xamarin-templates
+      yamlResourceName: yaml-templates
   - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
     parameters:
       githubToken: $(github--pat--vs-mobiletools-engineering-service2)
@@ -38,7 +38,7 @@ jobs:
       blobName: $(VSDropCommitStatusName)
       packagePrefix: maui
       artifactsPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
-      yamlResourceName: xamarin-templates
+      yamlResourceName: yaml-templates
       downloadSteps:
       - task: DownloadPipelineArtifact@2
         inputs:
@@ -51,7 +51,7 @@ jobs:
       blobName: $(MultiTargetVSDropCommitStatusName)
       packagePrefix: maui
       artifactsPath: $(Build.StagingDirectory)/$(MultiTargetVSDropCommitStatusName)
-      yamlResourceName: xamarin-templates
+      yamlResourceName: yaml-templates
       downloadSteps:
       - task: DownloadPipelineArtifact@2
         inputs:

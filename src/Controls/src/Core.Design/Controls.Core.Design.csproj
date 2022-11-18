@@ -4,6 +4,7 @@
 		<AssemblyName>Microsoft.Maui.Controls.DesignTools</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
 		<IsPackable>False</IsPackable>
+		<IsTrimmable>false</IsTrimmable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
@@ -26,7 +27,7 @@
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="FontSizeDesignTypeConverter.cs" />
 		<Compile Include="FlexEnumDesignTypeConverters.cs" />
-		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.3.32804.24" />
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.4.33103.184" />
 	</ItemGroup>
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
 	<!-- load the toolbox metadata from.                                                           -->

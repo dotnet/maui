@@ -1,5 +1,5 @@
-using Microsoft.Graphics.Canvas;
 using System.Threading;
+using Microsoft.Graphics.Canvas;
 
 namespace Microsoft.Maui.Graphics.Win2D
 {

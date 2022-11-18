@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
-using Windows.Media.PlayTo;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Media.PlayTo;
 using UWPPoint = Windows.Foundation.Point;
 using UWPSize = Windows.Foundation.Size;
 

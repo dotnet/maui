@@ -55,6 +55,24 @@
     <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/SourceGen/Controls.SourceGen.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ValuesToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+    <_ValuesToReplace Include="TFM" PropertyName="_MauiDotNetTfm" />
+    <_ValuesToReplace Include="PREVIOUS_TFM" PropertyName="_MauiPreviousDotNetTfm" />
+    <_ValuesToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
+    <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION" PropertyName="_MauiPreviousDotNetVersion" />
+    <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
+    <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
+    <_ValuesToReplace Include="MicrosoftWindowsAppSDKPackageVersion" PropertyName="MicrosoftWindowsAppSDKPackageVersion" />
+    <_ValuesToReplace Include="MicrosoftWindowsSDKBuildToolsPackageVersion" PropertyName="MicrosoftWindowsSDKBuildToolsPackageVersion" />
+    <_ValuesToReplace Include="MicrosoftExtensionsPackageVersion" PropertyName="MicrosoftExtensionsPackageVersion" />
+    <_ValuesToReplace Include="MicrosoftExtensionsServicingPackageVersion" PropertyName="MicrosoftExtensionsServicingPackageVersion" />
+    <_ValuesToReplace Include="TizenUIExtensionsVersion" PropertyName="TizenUIExtensionsVersion" />
+    <_ValuesToReplace Include="_XamarinAndroidGlideVersion" PropertyName="_XamarinAndroidGlideVersion" />
+    <_ValuesToReplace Include="_XamarinAndroidXSecurityVersion" PropertyName="_XamarinAndroidXSecurityVersion" />
+    <_ValuesToReplace Include="_XamarinGoogleCryptoTinkAndroidVersion" PropertyName="_XamarinGoogleCryptoTinkAndroidVersion" />
+  </ItemGroup>
+
   <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
 
   <Target Name="_GenerateBundledVersions"
@@ -62,41 +80,47 @@
       DependsOnTargets="SetVersions"
       Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;Sdk/BundledVersions.in.targets"
       Outputs="$(IntermediateOutputPath)BundledVersions.targets">
-    <ReplaceText
-        Input="Sdk/BundledVersions.in.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@VERSION@"
-        NewValue="$(PackageReferenceVersion)"
+    <XmlPeek
+        XmlInputPath="$(MauiRootDirectory)eng\AndroidX.targets"
+        Query="/Project/ItemGroup/PackageReference[@Update='Xamarin.AndroidX.Browser']/@Version">
+      <Output TaskParameter="Result" PropertyName="_XamarinAndroidXBrowserVersion" />
+    </XmlPeek>
+    <XmlPeek
+        XmlInputPath="$(MauiRootDirectory)eng\AndroidX.targets"
+        Query="/Project/ItemGroup/PackageReference[@Update='Xamarin.AndroidX.Legacy.Support.V4']/@Version">
+      <Output TaskParameter="Result" PropertyName="_XamarinAndroidXLegacySupportV4Version" />
+    </XmlPeek>
+    <XmlPeek
+        XmlInputPath="$(MauiRootDirectory)eng\AndroidX.targets"
+        Query="/Project/ItemGroup/PackageReference[@Update='Xamarin.AndroidX.Lifecycle.LiveData']/@Version">
+      <Output TaskParameter="Result" PropertyName="_XamarinAndroidXLifecycleLiveDataVersion" />
+    </XmlPeek>
+    <XmlPeek
+        XmlInputPath="$(MauiRootDirectory)eng\AndroidX.targets"
+        Query="/Project/ItemGroup/PackageReference[@Update='Xamarin.AndroidX.Navigation.UI']/@Version">
+      <Output TaskParameter="Result" PropertyName="_XamarinAndroidXNavigationVersion" />
+    </XmlPeek>
+    <XmlPeek
+        XmlInputPath="$(MauiRootDirectory)eng\AndroidX.targets"
+        Query="/Project/ItemGroup/PackageReference[@Update='Xamarin.Google.Android.Material']/@Version">
+      <Output TaskParameter="Result" PropertyName="_XamarinGoogleAndroidMaterialVersion" />
+    </XmlPeek>
+    <ItemGroup>
+      <_ValuesToReplace Include="_XamarinAndroidXBrowserVersion"              PropertyName="_XamarinAndroidXBrowserVersion" />
+      <_ValuesToReplace Include="_XamarinAndroidXLegacySupportV4Version"      PropertyName="_XamarinAndroidXLegacySupportV4Version" />
+      <_ValuesToReplace Include="_XamarinAndroidXLifecycleLiveDataVersion"    PropertyName="_XamarinAndroidXLifecycleLiveDataVersion" />
+      <_ValuesToReplace Include="_XamarinAndroidXNavigationVersion"           PropertyName="_XamarinAndroidXNavigationVersion" />
+      <_ValuesToReplace Include="_XamarinGoogleAndroidMaterialVersion"        PropertyName="_XamarinGoogleAndroidMaterialVersion" />
+    </ItemGroup>
+    <Copy
+        SourceFiles="Sdk/BundledVersions.in.targets"
+        DestinationFiles="$(IntermediateOutputPath)BundledVersions.targets"
     />
     <ReplaceText
         Input="$(IntermediateOutputPath)BundledVersions.targets"
         Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@TFM@"
-        NewValue="$(_MauiDotNetTfm)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)BundledVersions.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@MicrosoftWindowsSDKBuildToolsPackageVersion@"
-        NewValue="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)BundledVersions.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@MicrosoftExtensionsPackageVersion@"
-        NewValue="$(MicrosoftExtensionsPackageVersion)"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)BundledVersions.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@MicrosoftExtensionsServicingPackageVersion@"
-        NewValue="$(MicrosoftExtensionsServicingPackageVersion)"
-    />
-     <ReplaceText
-        Input="$(IntermediateOutputPath)BundledVersions.targets"
-        Output="$(IntermediateOutputPath)BundledVersions.targets"
-        OldValue="@MicrosoftExtensionsNewServicingPackageVersion@"
-        NewValue="$(MicrosoftExtensionsNewServicingPackageVersion)"
+        OldValue="@%(_ValuesToReplace.Identity)@"
+        NewValue="$(%(_ValuesToReplace.PropertyName))"
     />
     <ItemGroup>
       <None

@@ -118,21 +118,23 @@
     <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
         <ResizetizerPlatformType>ios</ResizetizerPlatformType>
 
-        <ResizetizeCollectItemsBeforeTargets>
-            $(ResizetizeCollectItemsBeforeTargets);
-            _CollectBundleResources;
-            _BeforeCoreCompileImageAssets;
-        </ResizetizeCollectItemsBeforeTargets>
+        <!-- We don't want to resizetize anything for an inner build when building a universal app, it's enough to only do it in the outer build -->
+        <DisableResizetizer Condition="'$(_IsMultiRidBuild)' == 'true'">true</DisableResizetizer>
+
+        <CollectBundleResourcesDependsOn>
+            $(CollectBundleResourcesDependsOn);
+            ResizetizeCollectItems;
+        </CollectBundleResourcesDependsOn>
+
+        <CompileImageAssetsDependsOn>
+            $(CompileImageAssetsDependsOn);
+            ResizetizeCollectItems;
+        </CompileImageAssetsDependsOn>
 
         <ResizetizeAfterTargets>
             $(ResizetizeAfterTargets);
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
-
-        <ProcessMauiFontsBeforeTargets>
-            $(ProcessMauiFontsBeforeTargets);
-            _BeforeCoreCompileImageAssets;
-        </ProcessMauiFontsBeforeTargets>
 
         <CollectAppManifestsDependsOn>
             ProcessMauiFonts;
@@ -237,7 +239,7 @@
 
     <!-- Collect images from referenced projects -->
     <Target Name="ResizetizeCollectItems"
-        Condition="'$(_ResizetizerIsCompatibleApp)' == 'True'"
+        Condition="'$(_ResizetizerIsCompatibleApp)' == 'True' And '$(DisableResizetizer)' != 'true'"
         BeforeTargets="$(ResizetizeCollectItemsBeforeTargets)"
         AfterTargets="$(ResizetizeCollectItemsAfterTargets)">
 
@@ -406,7 +408,7 @@
             <_MauiSplashScreens Include="$(_MauiIntermediateSplashScreen)splash\*" />
             <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
-
+        <MakeDir Directories="$(IntermediateOutputPath)"/>
         <!-- Stamp file for Outputs -->
         <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
         <ItemGroup>

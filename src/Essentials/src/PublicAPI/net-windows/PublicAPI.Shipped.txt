@@ -207,7 +207,7 @@ Microsoft.Maui.ApplicationModel.IWindowStateManager.ActiveWindowChanged -> Syste
 Microsoft.Maui.ApplicationModel.IWindowStateManager.ActiveWindowDisplayChanged -> System.EventHandler!
 Microsoft.Maui.ApplicationModel.IWindowStateManager.GetActiveWindow() -> Microsoft.UI.Xaml.Window?
 Microsoft.Maui.ApplicationModel.IWindowStateManager.OnActivated(Microsoft.UI.Xaml.Window! window, Microsoft.UI.Xaml.WindowActivatedEventArgs! args) -> void
-Microsoft.Maui.ApplicationModel.IWindowStateManager.OnWindowMessage(System.IntPtr hWnd, uint msg, System.IntPtr wParam, System.IntPtr lParam) -> void
+Microsoft.Maui.ApplicationModel.IWindowStateManager.OnWindowMessage(nint hWnd, uint msg, nint wParam, nint lParam) -> void
 Microsoft.Maui.ApplicationModel.Launcher
 Microsoft.Maui.ApplicationModel.LauncherExtensions
 Microsoft.Maui.ApplicationModel.LayoutDirection
@@ -854,7 +854,7 @@ static Microsoft.Maui.ApplicationModel.Platform.MapServiceToken.get -> string?
 static Microsoft.Maui.ApplicationModel.Platform.MapServiceToken.set -> void
 static Microsoft.Maui.ApplicationModel.Platform.OnActivated(Microsoft.UI.Xaml.Window! window, Microsoft.UI.Xaml.WindowActivatedEventArgs! args) -> void
 static Microsoft.Maui.ApplicationModel.Platform.OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs! e) -> void
-static Microsoft.Maui.ApplicationModel.Platform.OnWindowMessage(System.IntPtr hWnd, uint msg, System.IntPtr wParam, System.IntPtr lParam) -> void
+static Microsoft.Maui.ApplicationModel.Platform.OnWindowMessage(nint hWnd, uint msg, nint wParam, nint lParam) -> void
 static Microsoft.Maui.ApplicationModel.VersionTracking.BuildHistory.get -> System.Collections.Generic.IEnumerable<string!>!
 static Microsoft.Maui.ApplicationModel.VersionTracking.CurrentBuild.get -> string!
 static Microsoft.Maui.ApplicationModel.VersionTracking.CurrentVersion.get -> string!

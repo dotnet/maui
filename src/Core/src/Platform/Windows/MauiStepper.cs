@@ -2,14 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Graphics;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
-using WVisualStateGroup = Microsoft.UI.Xaml.VisualStateGroup;
 using WVisualState = Microsoft.UI.Xaml.VisualState;
+using WVisualStateGroup = Microsoft.UI.Xaml.VisualStateGroup;
+using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 
 namespace Microsoft.Maui.Platform
 {

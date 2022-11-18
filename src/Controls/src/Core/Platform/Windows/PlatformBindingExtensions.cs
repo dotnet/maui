@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.UI.Xaml;
 using static System.String;
 
 namespace Microsoft.Maui.Controls.Platform

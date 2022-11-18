@@ -1,7 +1,7 @@
-using Microsoft.Maui.Graphics.Text;
 using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
+using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Platform.Text
 {

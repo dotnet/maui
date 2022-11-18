@@ -33,8 +33,10 @@ namespace Microsoft.Maui.Platform
 			HorizontalAlignment = UIControlContentHorizontalAlignment.Center;
 			VerticalAlignment = UIControlContentVerticalAlignment.Center;
 #pragma warning disable CA1416 // TODO: both has [UnsupportedOSPlatform("ios15.0")]
+#pragma warning disable CA1422 // Validate platform compatibility
 			AdjustsImageWhenDisabled = false;
 			AdjustsImageWhenHighlighted = false;
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 			TouchUpInside += OnTouchUpInside;
 		}
