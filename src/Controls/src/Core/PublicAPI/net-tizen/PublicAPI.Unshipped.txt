@@ -1,4 +1,6 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.Handlers.BoxViewHandler
+Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 abstract Microsoft.Maui.Controls.Brush.IsEmpty.get -> bool
 abstract Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildren(double x, double y, double width, double height) -> void
 abstract Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView<TItemsView>.GetItemsLayout() -> Microsoft.Maui.Controls.IItemsLayout!
