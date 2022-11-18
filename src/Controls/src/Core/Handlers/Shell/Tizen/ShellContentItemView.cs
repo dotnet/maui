@@ -1,19 +1,44 @@
 #nullable enable
 
+using GColor = Microsoft.Maui.Graphics.Color;
 using GColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	class ShellContentItemView : Frame
 	{
-		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellContentItemView), false, propertyChanged: (b, o, n) => ((ShellContentItemView)b).UpdateSelectedState());
+		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellContentItemView), false, propertyChanged: (b, o, n) => ((ShellContentItemView)b).UpdateViewColors());
+		internal static readonly BindableProperty SelectedTextColorProperty = BindableProperty.Create(nameof(SelectedTextColor), typeof(GColor), typeof(ShellContentItemView), null, propertyChanged: (b, o, n) => ((ShellContentItemView)b).UpdateViewColors());
+		internal static readonly BindableProperty SelectedBarColorProperty = BindableProperty.Create(nameof(SelectedBarColor), typeof(GColor), typeof(ShellContentItemView), null, propertyChanged: (b, o, n) => ((ShellContentItemView)b).UpdateViewColors());
+		internal static readonly BindableProperty UnselectedColorProperty = BindableProperty.Create(nameof(UnselectedColor), typeof(GColor), typeof(ShellContentItemView), null, propertyChanged: (b, o, n) => ((ShellContentItemView)b).UpdateViewColors());
 
+		Label _label;
 		BoxView _bar;
 
 		public bool IsSelected
 		{
 			get => (bool)GetValue(SelectedStateProperty);
 			set => SetValue(SelectedStateProperty, value);
+		}
+
+
+		public GColor SelectedTextColor
+		{
+			get => (GColor)GetValue(SelectedTextColorProperty);
+			set => SetValue(SelectedTextColorProperty, value);
+		}
+
+		public GColor SelectedBarColor
+		{
+			get => (GColor)GetValue(SelectedBarColorProperty);
+			set => SetValue(SelectedBarColorProperty, value);
+		}
+
+
+		public GColor UnselectedColor
+		{
+			get => (GColor)GetValue(UnselectedColorProperty);
+			set => SetValue(UnselectedColorProperty, value);
 		}
 
 #pragma warning disable CS8618
@@ -27,24 +52,24 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			Padding = new Thickness(0);
 			HasShadow = false;
-			BorderColor = GColors.DarkGray;
-			BackgroundColor = GColors.White;
+			BorderColor = GColors.Transparent;
+			BackgroundColor = GColors.Transparent;
 
-			var label = new Label
+			_label = new Label
 			{
 				Margin = new Thickness(20, 0),
 				FontSize = 16,
 				HorizontalTextAlignment = TextAlignment.Center,
 				VerticalTextAlignment = TextAlignment.Center,
 			};
-			label.SetBinding(Label.TextProperty, new Binding("Title"));
+			_label.SetBinding(Label.TextProperty, new Binding("Title"));
 
 			_bar = new BoxView
 			{
 				Color = GColors.Transparent,
 			};
 
-			var grid = new Controls.Grid
+			var grid = new Grid
 			{
 				RowDefinitions =
 				{
@@ -56,9 +81,9 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						Height = 5,
 					}
-				}
+				},
 			};
-			grid.Add(label, 0, 0);
+			grid.Add(_label, 0, 0);
 			grid.Add(_bar, 0, 1);
 			Content = grid;
 
@@ -102,16 +127,10 @@ namespace Microsoft.Maui.Controls.Platform
 			VisualStateManager.SetVisualStateGroups(this, groups);
 		}
 
-		void UpdateSelectedState()
+		void UpdateViewColors()
 		{
-			if (IsSelected)
-			{
-				_bar.Color = GColors.DarkGray;
-			}
-			else
-			{
-				_bar.Color = GColors.Transparent;
-			}
+			_label.TextColor = IsSelected ? SelectedTextColor : UnselectedColor;
+			_bar.Color = IsSelected ? SelectedBarColor : GColors.Transparent;
 		}
 	}
 }

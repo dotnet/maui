@@ -1,21 +1,37 @@
 #nullable enable
 
 using Microsoft.Maui.Controls.Shapes;
+using GColor = Microsoft.Maui.Graphics.Color;
 using GColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	class ShellSectionItemView : Frame
 	{
-		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellSectionItemView), false, propertyChanged: (b, o, n) => ((ShellSectionItemView)b).UpdateSelectedState());
+		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellSectionItemView), false, propertyChanged: (b, o, n) => ((ShellSectionItemView)b).UpdateViewColors());
+		internal static readonly BindableProperty SelectedColorProperty = BindableProperty.Create(nameof(SelectedColor), typeof(GColor), typeof(ShellSectionItemView), null, propertyChanged: (b, o, n) => ((ShellSectionItemView)b).UpdateViewColors());
+		internal static readonly BindableProperty UnselectedColorProperty = BindableProperty.Create(nameof(UnselectedColor), typeof(GColor), typeof(ShellSectionItemView), null, propertyChanged: (b, o, n) => ((ShellSectionItemView)b).UpdateViewColors());
 
-		BoxView _bar;
+		Label _label;
+		View _icon;
 		bool _isMoreItem;
 
 		public bool IsSelected
 		{
 			get => (bool)GetValue(SelectedStateProperty);
 			set => SetValue(SelectedStateProperty, value);
+		}
+
+		public GColor SelectedColor
+		{
+			get => (GColor)GetValue(SelectedColorProperty);
+			set => SetValue(SelectedColorProperty, value);
+		}
+
+		public GColor UnselectedColor
+		{
+			get => (GColor)GetValue(UnselectedColorProperty);
+			set => SetValue(UnselectedColorProperty, value);
 		}
 
 #pragma warning disable CS8618
@@ -30,10 +46,12 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			Padding = new Thickness(0);
 			HasShadow = false;
-			BorderColor = GColors.DarkGray;
+			BorderColor = GColors.Transparent;
+			BackgroundColor = GColors.Transparent;
 
 			var grid = new Grid
 			{
+				RowSpacing = 0,
 				RowDefinitions =
 				{
 					new RowDefinition
@@ -44,21 +62,11 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						Height = 20
 					},
-					new RowDefinition
-					{
-						Height = 5,
-					}
 				},
-			};
-
-			_bar = new BoxView
-			{
-				Color = GColors.Transparent,
 			};
 
 			grid.Add(CreateIconView(), 0, 0);
 			grid.Add(CreateTextView(), 0, 1);
-			grid.Add(_bar, 0, 2);
 
 			var groups = new VisualStateGroupList();
 
@@ -72,13 +80,13 @@ namespace Microsoft.Maui.Controls.Platform
 				Name = VisualStateManager.CommonStates.Selected,
 				TargetType = typeof(ShellSectionItemView),
 				Setters =
+				{
+					new Setter
 					{
-						new Setter
-						{
-							Property = SelectedStateProperty,
-							Value = true,
-						},
+						Property = SelectedStateProperty,
+						Value = true,
 					},
+				},
 			};
 
 			VisualState normal = new VisualState()
@@ -86,13 +94,13 @@ namespace Microsoft.Maui.Controls.Platform
 				Name = VisualStateManager.CommonStates.Normal,
 				TargetType = typeof(ShellSectionItemView),
 				Setters =
+				{
+					new Setter
 					{
-						new Setter
-						{
-							Property = SelectedStateProperty,
-							Value = false,
-						},
-					}
+						Property = SelectedStateProperty,
+						Value = false,
+					},
+				}
 			};
 			group.States.Add(normal);
 			group.States.Add(selected);
@@ -106,53 +114,53 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_isMoreItem)
 			{
-				var icon = new Path
+				_icon = new Path
 				{
 					Stroke = GColors.DarkGray,
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center,
-					Fill = GColors.DarkGray,
 				};
 
-				icon.SetBinding(Path.DataProperty, new Binding("IconPath", converter: new IconConverter()));
-				return icon;
+				_icon.SetBinding(Path.DataProperty, new Binding("IconPath", converter: new IconConverter()));
+				return _icon;
 			}
 			else
 			{
-				var icon = new Image
+				_icon = new Image
 				{
-					Margin = new Thickness(20, 0),
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center,
 				};
 
-				icon.SetBinding(Image.SourceProperty, new Binding("Icon"));
-				return icon;
+				_icon.SetBinding(Image.SourceProperty, new Binding("Icon"));
+				return _icon;
 			}
 		}
 
 		View CreateTextView()
 		{
-			var label = new Label
+			_label = new Label
 			{
 				Margin = new Thickness(20, 0),
 				FontSize = 16,
 				HorizontalTextAlignment = TextAlignment.Center,
 				VerticalTextAlignment = TextAlignment.Center,
 			};
-			label.SetBinding(Label.TextProperty, new Binding("Title"));
-			return label;
+			_label.SetBinding(Label.TextProperty, new Binding("Title"));
+			return _label;
 		}
 
-		void UpdateSelectedState()
+		void UpdateViewColors()
 		{
-			if (IsSelected)
+			var selectedColor = IsSelected ? SelectedColor : UnselectedColor;
+			_label.TextColor = selectedColor;
+			if (_isMoreItem)
 			{
-				_bar.Color = GColors.DarkGray;
+				((Path)_icon).Stroke = selectedColor;
 			}
 			else
 			{
-				_bar.Color = GColors.Transparent;
+				// TODO : Implement color blending
 			}
 		}
 	}
