@@ -6,6 +6,8 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform;
 
+// This class should remain internal until further refactored.
+// It is currently being used only for RadioButton accessibility on iOS.
 internal class SemanticSwitchContentView : ContentView
 {
 	UIAccessibilityTrait _accessibilityTraits;
