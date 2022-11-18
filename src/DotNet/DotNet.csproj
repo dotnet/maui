@@ -127,7 +127,7 @@
     <_WorkloadIds Include="macos" />
     <_WorkloadIds Include="ios" />
     <_WorkloadIds Include="tvos" />
-    <_WorkloadIds Include="tizen" />
+    <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloadManifests"
