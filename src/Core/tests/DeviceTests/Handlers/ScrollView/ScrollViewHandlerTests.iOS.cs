@@ -58,24 +58,25 @@ namespace Microsoft.Maui.DeviceTests
 			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<EntryStub, EntryHandler>(); }); });
 
 			var scrollView = new ScrollViewStub();
-			var entry = new EntryStub() { Text = "In a ScrollView", Height = 10000 };
+			var entry = new EntryStub() { Text = "In a ScrollView" };
 			scrollView.Content = entry;
 
 			var scrollViewHandler = await InvokeOnMainThreadAsync(() =>
 			{
-				return CreateHandler(scrollView);
+				var handler = CreateHandler(scrollView);
+				
+				// Setting an arbitrary value so we can verify that the handler is setting
+				// the UIScrollView's ContentSize property during AttachAndRun
+				handler.PlatformView.ContentSize = new CoreGraphics.CGSize(100, 100);
+				return handler;
 			});
 
 			await InvokeOnMainThreadAsync(async () => {
 				await scrollViewHandler.PlatformView.AttachAndRun(() =>
 				{
-					// Simulate a bunch of things that would happen if this were a real app
-					scrollViewHandler.UpdateValue(nameof(IScrollView.Content));
-					scrollViewHandler.PlatformArrange(new Rect(0, 0, 50, 50));
-					scrollViewHandler.PlatformView.SetNeedsLayout();
-					scrollViewHandler.PlatformView.LayoutIfNeeded();
-
-					Assert.Equal(10000, scrollViewHandler.PlatformView.ContentSize.Height);
+					// Verify that the ContentSize values have been modified
+					Assert.NotEqual(100, scrollViewHandler.PlatformView.ContentSize.Height);
+					Assert.NotEqual(100, scrollViewHandler.PlatformView.ContentSize.Width);
 				});
 			});
 		}

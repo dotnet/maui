@@ -189,24 +189,35 @@ namespace Microsoft.Maui.Layouts
 			return size;
 		}
 
-		internal static Size ArrangeScrollViewContent(this IScrollView scrollView, Rect bounds) 
+		/// <summary>
+		/// Arranges content which can exceed the bounds of the IContentView.
+		/// </summary>
+		/// <remarks>
+		/// Useful for arranging content where the IContentView provides a viewport to a portion of the content (e.g, 
+		/// the content of an IScrollView).
+		/// </remarks>
+		/// <param name="contentView"></param>
+		/// <param name="bounds"></param>
+		/// <returns>The Size of the arranged content</returns>
+		public static Size ArrangeContentUnbounded(this IContentView contentView, Rect bounds)
 		{
-			var presentedContent = scrollView.PresentedContent;
+			var presentedContent = contentView.PresentedContent;
 
 			if (presentedContent == null)
 			{
-				return Size.Zero;
+				return bounds.Size;
 			}
 
-			var padding = scrollView.Padding;
+			var padding = contentView.Padding;
 
 			// Normally we'd just want the content to be arranged within the ContentView's Frame,
-			// but ScrollView content might be larger than the ScrollView itself (for obvious reasons)
+			// but in this case the content may exceed the size of the Frame.
 			// So in each dimension, we assume the larger of the two values.
+
 			bounds.Width = Math.Max(bounds.Width, presentedContent.DesiredSize.Width + padding.HorizontalThickness);
 			bounds.Height = Math.Max(bounds.Height, presentedContent.DesiredSize.Height + padding.VerticalThickness);
 
-			scrollView.ArrangeContent(bounds);
+			contentView.ArrangeContent(bounds);
 
 			return bounds.Size;
 		}

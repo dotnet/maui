@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (this is IScrollView scrollView)
 			{
-				return scrollView.ArrangeScrollViewContent(bounds);
+				return scrollView.ArrangeContentUnbounded(bounds);
 			}
 
 			return bounds.Size;
