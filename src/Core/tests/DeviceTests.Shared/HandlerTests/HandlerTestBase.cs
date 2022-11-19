@@ -30,13 +30,14 @@ namespace Microsoft.Maui.DeviceTests
 			_isCreated = true;
 
 
-			var appBuilder = ConfigureBuilder(MauiApp.CreateBuilder());
+			var appBuilder = MauiApp.CreateBuilder();
 
+			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+			appBuilder.Services.AddSingleton<IApplication>((_) => new CoreApplicationStub());
+
+			appBuilder = ConfigureBuilder(appBuilder);
 			additionalCreationActions?.Invoke(appBuilder);
-
-			appBuilder.Services.TryAddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
-			appBuilder.Services.TryAddScoped<IDispatcher>(svc => TestDispatcher.Current);
-			appBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
 
 			_mauiApp = appBuilder.Build();
 			_servicesProvider = _mauiApp.Services;
