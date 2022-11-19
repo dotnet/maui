@@ -56,14 +56,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage)
+		[ClassData(typeof(ChangingToNewMauiContextDoesntCrashTestCases))]
+		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage, Type rootPageType)
 		{
 			SetupBuilder();
-
-			var rootPage = new NavigationPage(new TabbedPage() { Children = { new ContentPage() } });
 			IWindow window;
+			var rootPage = (Page)Activator.CreateInstance(rootPageType);
 
 			if (useAppMainPage)
 			{
@@ -82,8 +80,12 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
-				await OnLoadedAsync(rootPage.CurrentPage);
-				await OnNavigatedToAsync(rootPage.CurrentPage);
+				if (rootPage is IPageContainer<Page> pc)
+				{
+					await OnLoadedAsync(pc.CurrentPage);
+					await OnNavigatedToAsync(pc.CurrentPage);
+				}
+
 				await Task.Delay(100);
 
 			}, mauiContextStub1);
@@ -95,8 +97,12 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
-				await OnLoadedAsync(rootPage.CurrentPage);
-				await OnNavigatedToAsync(rootPage.CurrentPage);
+				if (rootPage is IPageContainer<Page> pc)
+				{
+					await OnLoadedAsync(pc.CurrentPage);
+					await OnNavigatedToAsync(pc.CurrentPage);
+				}
+
 				await Task.Delay(100);
 
 			}, mauiContextStub2);
