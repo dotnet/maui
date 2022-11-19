@@ -14,6 +14,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Devices;
 using System;
+using Microsoft.Maui.Controls.Platform;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
@@ -38,12 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Image, ImageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Toolbar, ToolbarHandler>();
+					SetupShellHandlers(handlers);
 
 #if ANDROID || WINDOWS
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
@@ -55,16 +51,58 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
 #endif
 
-#if WINDOWS
-					handlers.AddHandler<ShellItem, ShellItemHandler>();
-					handlers.AddHandler<ShellSection, ShellSectionHandler>();
-					handlers.AddHandler<ShellContent, ShellContentHandler>();
-#endif
 					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Editor, EditorHandler>();
 					handlers.AddHandler<SearchBar, SearchBarHandler>();
 				});
 			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage)
+		{
+			SetupBuilder();
+
+			var rootPage = new NavigationPage(new TabbedPage() { Children = { new ContentPage() } });
+			IWindow window;
+
+			if (useAppMainPage)
+			{
+				var app = ApplicationServices.GetService<IApplication>() as ApplicationStub;
+				app.MainPage = rootPage;
+				window = (app as IApplication).CreateWindow(null);
+
+			}
+			else
+				window = new Window(rootPage);
+
+			var mauiContextStub1 = new ContextStub(ApplicationServices);
+#if ANDROID
+			var activity = mauiContextStub1.GetActivity();
+			mauiContextStub1.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+#endif
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				await OnLoadedAsync(rootPage.CurrentPage);
+				await OnNavigatedToAsync(rootPage.CurrentPage);
+				await Task.Delay(100);
+
+			}, mauiContextStub1);
+
+			var mauiContextStub2 = new ContextStub(ApplicationServices);
+
+#if ANDROID
+			mauiContextStub2.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+#endif
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				await OnLoadedAsync(rootPage.CurrentPage);
+				await OnNavigatedToAsync(rootPage.CurrentPage);
+				await Task.Delay(100);
+
+			}, mauiContextStub2);
 		}
 
 		[Theory]

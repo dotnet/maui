@@ -17,8 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IMauiContext _mauiContext;
 		Action<AView> _onCreateCallback;
 		AView _pageContainer;
-		IPlatformViewHandler _viewhandler;
-		AView PlatformView => _viewhandler?.PlatformView as AView;
+		ViewGroup _parent;
 
 		public FragmentContainer(IMauiContext mauiContext)
 		{
@@ -43,29 +42,14 @@ namespace Microsoft.Maui.Controls.Platform
 			_onCreateCallback = callback;
 		}
 
-		ViewGroup _parent;
-
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			_parent = container ?? _parent;
 
 			if (Page != null)
 			{
-				_pageContainer = Page?.Handler?.PlatformView as AView;
-
-				if (_pageContainer == null)
-				{
-					var scopedContext =
-						_mauiContext.MakeScoped(inflater, ChildFragmentManager);
-
-					_pageContainer = Page.ToPlatform(scopedContext);
-					_viewhandler = (IPlatformViewHandler)Page.Handler;
-				}
-				else
-				{
-					_parent = _parent ?? (_pageContainer.Parent as ViewGroup);
-				}
-
+				_pageContainer = Page.ToPlatform(_mauiContext, RequireContext(), inflater, ChildFragmentManager);
+				_parent = _parent ?? (_pageContainer.Parent as ViewGroup);
 				_onCreateCallback?.Invoke(_pageContainer);
 
 				return _pageContainer;

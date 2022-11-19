@@ -169,6 +169,8 @@ namespace Microsoft.Maui.DeviceTests
 						}
 
 						await OnLoadedAsync(content as VisualElement);
+
+						window.Activated();
 #if WINDOWS
 						await Task.Delay(10);
 #endif
@@ -180,6 +182,10 @@ namespace Microsoft.Maui.DeviceTests
 							await action((THandler)cp.Content.Handler);
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
+
+						window.Deactivated();
+						window.Destroying();
+
 					}, mauiContext);
 				}
 				finally

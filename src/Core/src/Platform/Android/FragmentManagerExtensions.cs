@@ -1,8 +1,9 @@
 #nullable disable
 
+using System;
 using AndroidX.Fragment.App;
 
-namespace Microsoft.Maui.Controls.Platform
+namespace Microsoft.Maui.Platform
 {
 	// This is a way to centralize all fragment modifications which makes it a lot easier to debug
 	internal static class FragmentManagerExtensions
@@ -55,6 +56,32 @@ namespace Microsoft.Maui.Controls.Platform
 		public static FragmentTransaction BeginTransactionEx(this FragmentManager fragmentManager)
 		{
 			return fragmentManager.BeginTransaction();
+		}
+
+		public static bool IsDestroyed(this FragmentManager? obj)
+		{
+			if (obj == null)
+				return true;
+
+			if (obj.IsDestroyed)
+				return true;
+
+			return obj.IsDisposed();
+		}
+
+		public static bool IsDestroyed(this Android.App.FragmentManager? obj)
+		{
+			if (obj == null)
+				return true;
+
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
+			if (OperatingSystem.IsAndroidVersionAtLeast(21) && obj.IsDestroyed)
+				return true;
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+
+			return obj.IsDisposed();
 		}
 	}
 }
