@@ -19,7 +19,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		protected override Window CreateWindow(IActivationState activationState)
 		{
-			return _window;
+			return _window ?? base.CreateWindow(activationState);
+			;
 		}
 	}
 }
