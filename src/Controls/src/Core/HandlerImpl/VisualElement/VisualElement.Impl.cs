@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void UpdateSemantics()
+		private protected virtual void UpdateSemantics()
 		{
 			if (!this.IsSet(SemanticProperties.HintProperty) &&
 				!this.IsSet(SemanticProperties.DescriptionProperty) &&
