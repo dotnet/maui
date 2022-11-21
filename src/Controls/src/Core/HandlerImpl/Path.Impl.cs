@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (propertyName == DataProperty.PropertyName)
 			{
-				HeightRequest = this.WidthRequest = double.NaN;
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
 			}
 		}

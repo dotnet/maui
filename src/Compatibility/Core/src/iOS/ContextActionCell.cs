@@ -386,9 +386,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				button.SetBackgroundImage(DestructiveBackground, UIControlState.Normal);
 
 			button.SetTitle(item.Text, UIControlState.Normal);
-#pragma warning disable CA1416 // TODO: 'UIButton.TitleEdgeInsets.set' is unsupported on: 'ios' 15.0 and later
+#pragma warning disable CA1416, CA1422  // TODO: 'UIButton.TitleEdgeInsets.set' is unsupported on: 'ios' 15.0 and later
 			button.TitleEdgeInsets = new UIEdgeInsets(0, 15, 0, 15);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 
 			button.Enabled = item.IsEnabled;
 
@@ -557,9 +557,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				var button = new UIButton(new RectangleF(0, 0, largestWidth, height));
 				button.SetBackgroundImage(NormalBackground, UIControlState.Normal);
-#pragma warning disable CA1416 // TODO: 'UIButton.TitleEdgeInsets.set' is unsupported on: 'ios' 15.0 and later
+#pragma warning disable CA1416, CA1422  // TODO: 'UIButton.TitleEdgeInsets.set' is unsupported on: 'ios' 15.0 and later
 				button.TitleEdgeInsets = new UIEdgeInsets(0, 15, 0, 15);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 				button.SetTitle(StringResources.More, UIControlState.Normal);
 
 				var moreWidth = button.TitleLabel.SizeThatFits(new SizeF(width, height)).Width + 30;

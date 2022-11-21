@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public IFileInfo GetFileInfo(string subpath)
 			=> new AndroidMauiAssetFileInfo(_assets, Path.Combine(_contentRootDir, subpath));
 
-		public IChangeToken? Watch(string filter)
-			=> null;
+		public IChangeToken Watch(string filter)
+			=> NullChangeToken.Singleton;
 
 		private sealed class AndroidMauiAssetFileInfo : IFileInfo
 		{

@@ -1,6 +1,6 @@
-using Windows.System;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {

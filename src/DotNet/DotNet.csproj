@@ -65,7 +65,7 @@
     <CopyWorkloadFiles
         Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
-        WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetVersionBand)"
+        WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetSdkManifestsFolder)"
     />
     <RemoveDir Directories="$(_InstallTempDirectory)" />
 
@@ -114,12 +114,13 @@
   </Target>
 
   <ItemGroup>
-    <!-- These are past workload names -->
-    <_PacksToRemove Include="Microsoft.NET.Workload.Android" />
-    <_PacksToRemove Include="Microsoft.NET.Workload.MacCatalyst" />
-    <_PacksToRemove Include="Microsoft.NET.Workload.iOS" />
-    <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
-    <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
+    <_PacksToRemove Include="microsoft.net.sdk.android" />
+    <_PacksToRemove Include="microsoft.net.sdk.maccatalyst" />
+    <_PacksToRemove Include="microsoft.net.sdk.ios" />
+    <_PacksToRemove Include="microsoft.net.sdk.tvos" />
+    <_PacksToRemove Include="microsoft.net.sdk.macos" />
+    <_PacksToRemove Include="microsoft.net.workload.emscripten" />
+    <_PacksToRemove Include="microsoft.net.workload.mono.toolchain" />
     <!-- Ids for 'dotnet workload install' -->
     <_WorkloadIds Include="android" />
     <_WorkloadIds Include="maccatalyst" />
@@ -135,7 +136,11 @@
     <PropertyGroup>
       <_WorkloadManifestDir>$(DotNetTempDirectory)workload/</_WorkloadManifestDir>
     </PropertyGroup>
-    <RemoveDir Directories="$(_WorkloadManifestDir);@(_PacksToRemove->'$(DotNetSdkManifestsDirectory)%(Identity)')" />
+    <ItemGroup>
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)" />
+      <_WorkloadDirectoriesToRemove Include="@(_PacksToRemove->'$(DotNetDirectory)sdk-manifests/$(DotNetSdkManifestsFolder)/%(Identity)')" />
+    </ItemGroup>
+    <RemoveDir Directories="$(_WorkloadManifestDir);@(_WorkloadDirectoriesToRemove)" />
     <MakeDir Directories="$(_WorkloadManifestDir)" />
     <Exec
         Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(PackageOutputPath)/DotNetWorkloads.binlog"

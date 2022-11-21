@@ -11,6 +11,24 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		[Theory(DisplayName = "Gradient Background Initializes Correctly")]
+		[InlineData(0xFF0000)]
+		[InlineData(0x00FF00)]
+		[InlineData(0x0000FF)]
+		public async Task GradientBackgroundInitializesCorrectly(uint color)
+		{
+			var expected = Color.FromUint(color);
+
+			var brush = new LinearGradientPaintStub(Colors.Black, expected);
+
+			var searchBar = new SearchBarStub
+			{
+				Background = brush,
+			};
+
+			await ValidateHasColor(searchBar, expected);
+		}
+
 		[Fact]
 		public async Task ShouldShowCancelButtonToggles()
 		{

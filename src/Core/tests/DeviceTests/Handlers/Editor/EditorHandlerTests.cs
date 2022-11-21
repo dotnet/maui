@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Editor)]
-	public partial class EditorHandlerTests : HandlerTestBase<EditorHandler, EditorStub>
+	public partial class EditorHandlerTests : CoreHandlerTestBase<EditorHandler, EditorStub>
 	{
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
@@ -368,6 +368,11 @@ namespace Microsoft.Maui.DeviceTests
 			var editor = new EditorStub() { Keyboard = keyboard };
 
 			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsChatKeyboard, expected);
+		}
+
+		[Category(TestCategory.Editor)]
+		public class EditorTextStyleTests : TextStyleHandlerTests<EditorHandler, EditorStub>
+		{
 		}
 	}
 }

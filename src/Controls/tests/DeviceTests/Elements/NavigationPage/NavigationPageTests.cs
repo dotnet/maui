@@ -13,8 +13,8 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
-	public partial class NavigationPageTests : HandlerTestBase
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
