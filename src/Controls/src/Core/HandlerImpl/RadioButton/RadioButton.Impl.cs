@@ -20,19 +20,22 @@ namespace Microsoft.Maui.Controls
 
 		int IButtonStroke.CornerRadius => (int)GetValue(CornerRadiusProperty);
 
-		Semantics _semantics;
-
-		private protected override void UpdateSemantics()
+		private protected override Semantics UpdateSemantics()
 		{
-			base.UpdateSemantics();
+			var semantics = base.UpdateSemantics();
 
 			if (ControlTemplate != null)
 			{
-				_semantics ??= new Semantics();
-				_semantics.Description = SemanticProperties.GetDescription(this) ?? ContentAsString();
-			}
-		}
+				string contentAsString = ContentAsString();
 
-		Semantics IView.Semantics => _semantics;
+				if (!string.IsNullOrWhiteSpace(contentAsString) && string.IsNullOrWhiteSpace(semantics?.Description))
+				{
+					semantics ??= new Semantics();
+					semantics.Description = contentAsString;
+				}
+			}
+
+			return semantics;
+		}
 	}
 }
