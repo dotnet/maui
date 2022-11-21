@@ -167,24 +167,24 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				UpdateSemantics();
-				return _semantics;
+				return UpdateSemantics();
 			}
 		}
 
-		private protected virtual void UpdateSemantics()
+		private protected virtual Semantics UpdateSemantics()
 		{
 			if (!this.IsSet(SemanticProperties.HintProperty) &&
 				!this.IsSet(SemanticProperties.DescriptionProperty) &&
 				!this.IsSet(SemanticProperties.HeadingLevelProperty))
 			{
-				return;
+				return _semantics;
 			}
 
 			_semantics ??= new Semantics();
 			_semantics.Description = SemanticProperties.GetDescription(this);
 			_semantics.HeadingLevel = SemanticProperties.GetHeadingLevel(this);
 			_semantics.Hint = SemanticProperties.GetHint(this);
+			return _semantics;
 		}
 
 		static double EnsurePositive(double value)
