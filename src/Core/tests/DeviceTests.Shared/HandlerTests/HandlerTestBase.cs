@@ -107,11 +107,9 @@ namespace Microsoft.Maui.DeviceTests
 				var w = size.Width;
 				var h = size.Height;
 
-				if (double.IsPositiveInfinity(w))
-					w = view.Width;
-
-				if (double.IsPositiveInfinity(h))
-					h = view.Height;
+				// No measure method should be returning infinite values
+				Assert.False(double.IsPositiveInfinity(w));
+				Assert.False(double.IsPositiveInfinity(h));
 
 #else
 				// Windows cannot measure without the view being loaded
