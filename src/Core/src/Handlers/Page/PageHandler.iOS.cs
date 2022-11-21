@@ -24,24 +24,6 @@ namespace Microsoft.Maui.Handlers
 			throw new InvalidOperationException($"PageViewController.View must be a {nameof(ContentView)}");
 		}
 
-		protected override void ConnectHandler(ContentView nativeView)
-		{
-			var uiTapGestureRecognizer = new UITapGestureRecognizer(a => nativeView?.EndEditing(true));
-
-			uiTapGestureRecognizer.ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true;
-			uiTapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
-			uiTapGestureRecognizer.DelaysTouchesBegan =
-				uiTapGestureRecognizer.DelaysTouchesEnded = uiTapGestureRecognizer.CancelsTouchesInView = false;
-			nativeView.AddGestureRecognizer(uiTapGestureRecognizer);
-
-			base.ConnectHandler(nativeView);
-		}
-
-		protected override void DisconnectHandler(ContentView nativeView)
-		{
-			base.DisconnectHandler(nativeView);
-		}
-
 		public static void MapTitle(IPageHandler handler, IContentView page)
 		{
 			if (handler is IPlatformViewHandler invh && invh.ViewController != null)
@@ -50,25 +32,6 @@ namespace Microsoft.Maui.Handlers
 				{
 					invh.ViewController.Title = titled.Title;
 				}
-			}
-		}
-
-		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
-		{
-			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
-			{
-				if (v != null && (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder))
-					return false;
-			}
-			return true;
-		}
-
-		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
-		{
-			while (view != null)
-			{
-				yield return view;
-				view = view.Superview;
 			}
 		}
 	}

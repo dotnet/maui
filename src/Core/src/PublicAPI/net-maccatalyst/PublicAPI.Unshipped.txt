@@ -142,6 +142,8 @@ override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.get -> bool
 override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
 *REMOVED*override Microsoft.Maui.Handlers.LabelHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Platform.MauiTextField.WillMoveToWindow(UIKit.UIWindow? window) -> void
+override Microsoft.Maui.Platform.MauiTextView.WillMoveToWindow(UIKit.UIWindow? window) -> void
 static Microsoft.Maui.Handlers.EditorHandler.MapIsEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Platform.TextViewExtensions.UpdateIsEnabled(this UIKit.UITextView! textView, Microsoft.Maui.IEditor! editor) -> void
@@ -266,3 +268,5 @@ static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microso
 Microsoft.Maui.Handlers.ContentViewHandler.ContentViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Handlers.ContentViewHandler.ContentViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 *REMOVED*Microsoft.Maui.Handlers.ButtonHandler.ButtonHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+*REMOVED*override Microsoft.Maui.Handlers.PageHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.PageHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
