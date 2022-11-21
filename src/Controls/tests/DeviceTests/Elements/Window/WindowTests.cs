@@ -55,6 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !IOS
 		[Theory]
 		[ClassData(typeof(ChangingToNewMauiContextDoesntCrashTestCases))]
 		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage, Type rootPageType)
@@ -67,11 +68,11 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var app = ApplicationServices.GetService<IApplication>() as ApplicationStub;
 				app.MainPage = rootPage;
-				window = (app as IApplication).CreateWindow(null);
+				window = await InvokeOnMainThreadAsync(() => (app as IApplication).CreateWindow(null));
 
 			}
 			else
-				window = new Window(rootPage);
+				window = await InvokeOnMainThreadAsync(() => new Window(rootPage));
 
 			var mauiContextStub1 = new ContextStub(ApplicationServices);
 #if ANDROID
@@ -107,6 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			}, mauiContextStub2);
 		}
+#endif
 
 		[Theory]
 		[ClassData(typeof(WindowPageSwapTestCases))]

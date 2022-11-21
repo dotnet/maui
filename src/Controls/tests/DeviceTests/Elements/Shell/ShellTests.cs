@@ -574,6 +574,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !IOS
 		[Fact]
 		public async Task ChangingToNewMauiContextDoesntCrash()
 		{
@@ -613,6 +614,7 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.GoToAsync("//FlyoutItem2");
 			}, mauiContextStub2);
 		}
+#endif
 
 		[Theory]
 		[ClassData(typeof(ShellBasicNavigationTestCases))]
