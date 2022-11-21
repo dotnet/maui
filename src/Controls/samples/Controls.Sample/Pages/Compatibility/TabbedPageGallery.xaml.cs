@@ -15,6 +15,12 @@ namespace Maui.Controls.Sample.Pages
 			this.Children.Add(new NavigationPage(new NavigationGallery()) { Title = "With Nav Page" });
 		}
 
+
+		void SetNewMainPage(Page page)
+		{
+			Application.Current.Windows[0].Page = page;
+		}
+
 		void OnTabbedPageAsRoot(object sender, EventArgs e)
 		{
 			var topTabs =
@@ -27,9 +33,7 @@ namespace Maui.Controls.Sample.Pages
 					}
 				};
 
-			this.Handler?.DisconnectHandler();
-			Application.Current.MainPage?.Handler?.DisconnectHandler();
-			Application.Current.MainPage = topTabs;
+			SetNewMainPage(topTabs);
 		}
 
 		void OnSetToBottomTabs(object sender, EventArgs e)
@@ -43,9 +47,7 @@ namespace Maui.Controls.Sample.Pages
 				}
 			};
 
-			this.Handler?.DisconnectHandler();
-			Application.Current.MainPage?.Handler?.DisconnectHandler();
-
+			SetNewMainPage(bottomTabs);
 			AndroidSpecific.TabbedPage.SetToolbarPlacement(bottomTabs, AndroidSpecific.ToolbarPlacement.Bottom);
 			Application.Current.MainPage = bottomTabs;
 		}
