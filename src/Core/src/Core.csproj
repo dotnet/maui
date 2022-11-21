@@ -10,6 +10,7 @@
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
   </PropertyGroup>
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiRootDirectory)eng/ReadyToRun.targets" />
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />

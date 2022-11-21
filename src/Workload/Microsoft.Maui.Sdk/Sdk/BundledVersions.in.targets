@@ -10,6 +10,8 @@
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' != 'windows' ">$(TargetPlatformIdentifier.ToLowerInvariant())</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(_MauiPlatformName)' == '' ">any</_MauiPlatformName>
+    <_MauiRuntimePackRuntimeIdentifiers Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win-x64;win-x86;win-arm64</_MauiRuntimePackRuntimeIdentifiers>
+    <_MauiRuntimePackRuntimeIdentifiers Condition=" '$(_MauiRuntimePackRuntimeIdentifiers)' == '' ">$(_MauiPlatformName)</_MauiRuntimePackRuntimeIdentifiers>
     <_MauiRuntimePackAlwaysCopyLocal Condition=" '$(_MauiPlatformName)' == 'any' ">true</_MauiRuntimePackAlwaysCopyLocal>
   </PropertyGroup>
 
@@ -25,7 +27,7 @@
         TargetingPackName="Microsoft.Maui.Core.Ref.$(_MauiPlatformName)"
         TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
+        RuntimePackRuntimeIdentifiers="$(_MauiRuntimePackRuntimeIdentifiers)"
         Profile="$(TargetPlatformIdentifier)"
         RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
@@ -39,7 +41,7 @@
         TargetingPackName="Microsoft.Maui.Controls.Ref.$(_MauiPlatformName)"
         TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
+        RuntimePackRuntimeIdentifiers="$(_MauiRuntimePackRuntimeIdentifiers)"
         Profile="$(TargetPlatformIdentifier)"
         RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
@@ -53,7 +55,7 @@
         TargetingPackName="Microsoft.Maui.Essentials.Ref.$(_MauiPlatformName)"
         TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
+        RuntimePackRuntimeIdentifiers="$(_MauiRuntimePackRuntimeIdentifiers)"
         Profile="$(TargetPlatformIdentifier)"
         RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />

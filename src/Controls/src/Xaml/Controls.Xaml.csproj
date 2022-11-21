@@ -12,6 +12,8 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
+	<Import Project="$(MauiRootDirectory)eng/ReadyToRun.targets" />
+
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
 		<NoWarn>$(NoWarn);CA1416</NoWarn>
 		<DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>

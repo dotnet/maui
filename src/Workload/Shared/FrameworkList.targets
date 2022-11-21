@@ -6,6 +6,11 @@
   </ItemGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Build.Tasks.SharedFramework.Sdk" Version="6.0.0-beta.21065.3" />
+  <ItemGroup>
+    <!-- Workaround a NuGet restore error -->
+    <PackageReference Remove="Microsoft.DotNet.Build.Tasks.Installers" />
+    <PackageReference Remove="Microsoft.DotNet.Build.Tasks.Packaging" />
+  </ItemGroup>
   <UsingTask TaskName="CreateFrameworkListFile" AssemblyFile="$(DotNetBuildTasksSharedFrameworkTaskFile)"/>
 
   <!-- https://github.com/dotnet/runtime/blob/0647ec314948904319da5eb15e9931f7c85ed1e2/src/installer/pkg/projects/Directory.Build.targets#L281 -->

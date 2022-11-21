@@ -123,6 +123,33 @@
     }
   },
   "packs": {
+    "Microsoft.Maui.Core.Runtime.win": {
+      "kind": "framework",
+      "version": "@VERSION@",
+      "alias-to": {
+        "win-x86": "Microsoft.Maui.Core.Runtime.win-x86",
+        "win-x64": "Microsoft.Maui.Core.Runtime.win-x64",
+        "win-arm64": "Microsoft.Maui.Core.Runtime.win-arm64"
+      }
+    },
+    "Microsoft.Maui.Controls.Runtime.win": {
+      "kind": "framework",
+      "version": "@VERSION@",
+      "alias-to": {
+        "win-x86": "Microsoft.Maui.Controls.Runtime.win-x86",
+        "win-x64": "Microsoft.Maui.Controls.Runtime.win-x64",
+        "win-arm64": "Microsoft.Maui.Controls.Runtime.win-arm64"
+      }
+    },
+    "Microsoft.Maui.Essentials.Runtime.win": {
+      "kind": "framework",
+      "version": "@VERSION@",
+      "alias-to": {
+        "win-x86": "Microsoft.Maui.Essentials.Runtime.win-x86",
+        "win-x64": "Microsoft.Maui.Essentials.Runtime.win-x64",
+        "win-arm64": "Microsoft.Maui.Essentials.Runtime.win-arm64"
+      }
+    },
     "Microsoft.AspNetCore.Components.WebView.Maui": {
       "kind": "library",
       "version": "@VERSION@"
@@ -167,7 +194,15 @@
       "kind": "framework",
       "version": "@VERSION@"
     },
-    "Microsoft.Maui.Core.Runtime.win": {
+    "Microsoft.Maui.Core.Runtime.win-x86": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Runtime.win-x64": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Runtime.win-arm64": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -215,7 +250,15 @@
       "kind": "framework",
       "version": "@VERSION@"
     },
-    "Microsoft.Maui.Controls.Runtime.win": {
+    "Microsoft.Maui.Controls.Runtime.win-x86": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Runtime.win-x64": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Runtime.win-arm64": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -263,7 +306,15 @@
       "kind": "framework",
       "version": "@VERSION@"
     },
-    "Microsoft.Maui.Essentials.Runtime.win": {
+    "Microsoft.Maui.Essentials.Runtime.win-x86": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Runtime.win-x64": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Runtime.win-arm64": {
       "kind": "framework",
       "version": "@VERSION@"
     },

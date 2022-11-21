@@ -1,8 +1,10 @@
 <Project>
 
   <PropertyGroup Condition=" '$(MauiPlatformName)' != '' ">
-    <!-- NOTE: $(MauiPlatformName) is expected to be passed in: android, maccatalyst, ios, or win -->
+    <!-- NOTE: $(MauiPlatformName) is expected to be passed in: android, maccatalyst, ios, win-x86, win-x64, or win-arm64 -->
     <PackageId>$(PackageId).$(MauiPlatformName)</PackageId>
+    <!-- If $(MauiPlatformName) is a $(RuntimeIdentifier), use /publish/ -->
+    <OutputPathSuffix Condition=" $(MauiPlatformName.Contains('-')) ">$(MauiPlatformName)/publish/</OutputPathSuffix>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(MauiPlatformName)' == '' ">
     <IsPackable>false</IsPackable>
@@ -16,35 +18,35 @@
         Tfm="net$(_MauiDotNetVersion)"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'android' "
+        Condition=" $(MauiPlatformName.StartsWith('android')) "
         Include="net$(_MauiDotNetVersion)-android$(AndroidTargetFrameworkVersion)"
         FullTfm="%(Identity)"
         Tfm="net$(_MauiDotNetVersion)-android"
         Profile="Android"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'ios' "
+        Condition=" $(MauiPlatformName.StartsWith('ios')) "
         Include="net$(_MauiDotNetVersion)-ios$(IosTargetFrameworkVersion)"
         FullTfm="%(Identity)"
         Tfm="net$(_MauiDotNetVersion)-ios"
         Profile="iOS"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'maccatalyst' "
+        Condition=" $(MauiPlatformName.StartsWith('maccatalyst')) "
         Include="net$(_MauiDotNetVersion)-maccatalyst$(MacCatalystTargetFrameworkVersion)"
         FullTfm="%(Identity)"
         Tfm="net$(_MauiDotNetVersion)-maccatalyst"
         Profile="MacCatalyst"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'win' "
+        Condition=" $(MauiPlatformName.StartsWith('win')) "
         Include="net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion)"
         FullTfm="%(Identity)"
         Tfm="net$(_MauiDotNetVersion)-windows$(WindowsTargetFrameworkVersion)"
         Profile="Windows"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'tizen' "
+        Condition=" $(MauiPlatformName.StartsWith('tizen')) "
         Include="net$(_MauiDotNetVersion)-tizen$(TizenTargetFrameworkVersion)"
         FullTfm="%(Identity)"
         Tfm="net$(_MauiDotNetVersion)-tizen"
@@ -57,11 +59,30 @@
   <ItemGroup>
     <_Platforms Include="any;android;maccatalyst;ios" />
     <_Platforms Include="tizen" Condition="'$(IncludeTizenTargetFrameworks)' == 'true'" />
-    <_Platforms Include="win" Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'" />
+    <!-- NOTE: we leave out "win" on purpose, they are explicitly built per-RID -->
   </ItemGroup>
 
   <Target Name="_PackPerPlatform" Condition=" '$(MauiPlatformName)' == '' " AfterTargets="Build">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Properties="MauiPlatformName=%(_Platforms.Identity)" />
+    <ItemGroup>
+      <_RIDs Include="$(WindowsMauiRuntimeIdentifiers)" />
+      <_Project Include="$(MSBuildProjectFullPath)" AdditionalProperties="MauiPlatformName=%(_Platforms.Identity)" />
+      <!-- Windows runtime packs for each RID -->
+      <_Project
+          Condition=" '$(IncludeWindowsTargetFrameworks)' == 'true' and $(MSBuildProjectName.Contains('.Runtime')) "
+          Include="$(MSBuildProjectFullPath)"
+          AdditionalProperties="MauiPlatformName=%(_RIDs.Identity)"
+      />
+      <_Project
+          Condition=" '$(IncludeWindowsTargetFrameworks)' == 'true' and !$(MSBuildProjectName.Contains('.Runtime')) "
+          Include="$(MSBuildProjectFullPath)"
+          AdditionalProperties="MauiPlatformName=win"
+      />
+    </ItemGroup>
+    <MSBuild
+        Projects="@(_Project)"
+        Targets="Pack"
+        BuildInParallel="$(BuildInParallel)"
+    />
   </Target>
 
 </Project>

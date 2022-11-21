@@ -27,6 +27,9 @@ The idea, is a project to be able to set `$(UseMaui)`:
 * `Microsoft.Maui.Essentials.Runtime.[platform]`
 * `Microsoft.Maui.Templates`
 
+Note that `[platform]` on Windows will be a `RuntimeIdentifier` such
+as `win-x86`, `win-x64`, or `win-arm64`.
+
 BlazorWebView is an addition to MAUI, project can currently opt into
 it by adding `.Razor` to the `Sdk` attribute.
 

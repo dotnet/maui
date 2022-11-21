@@ -20,6 +20,7 @@
   </PropertyGroup>
 
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiRootDirectory)eng/ReadyToRun.targets" />
 
   <ItemGroup>
     <Compile Remove="GTK\**" />

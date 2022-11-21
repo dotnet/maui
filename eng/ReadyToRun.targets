@@ -1,0 +1,42 @@
+<!-- Setup for packing R2R images on Windows -->
+<Project>
+
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'true' ">
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <RuntimeIdentifiers>$(WindowsMauiRuntimeIdentifiers)</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <!-- Avoid NETSDK1094 when RuntimeIdentifier is blank -->
+  <Target Name="_AfterResolveFrameworkReferences" AfterTargets="ResolveFrameworkReferences">
+    <PropertyGroup>
+      <PublishReadyToRun Condition=" '$(RuntimeIdentifier)' == '' ">false</PublishReadyToRun>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_PackForRuntimeIdentifiers"
+      Condition=" '$(_MauiTargetPlatformIsWindows)' == 'true' and '$(RuntimeIdentifier)' == '' "
+      AfterTargets="Build">
+    <ItemGroup>
+      <_RIDs Include="$(RuntimeIdentifiers)" />
+      <_Project Include="$(MSBuildProjectFile)" AdditionalProperties="RuntimeIdentifier=%(_RIDs.Identity)" />
+    </ItemGroup>
+    <!--
+      NOTE: running Build+Publish in two steps
+      1) The ReadyToRun MSBuild targets seem to just skip unless NoBuild=true
+      2) The ReadyToRun MSBuild targets fail if Build hasn't been run...
+    -->
+    <MSBuild
+        Projects="@(_Project)"
+        Targets="Build"
+        Properties="TargetFramework=$(TargetFramework)"
+        BuildInParallel="$(BuildInParallel)"
+    />
+    <MSBuild
+        Projects="@(_Project)"
+        Targets="Publish"
+        Properties="TargetFramework=$(TargetFramework);NoBuild=true"
+        BuildInParallel="$(BuildInParallel)"
+    />
+  </Target>
+
+</Project>
