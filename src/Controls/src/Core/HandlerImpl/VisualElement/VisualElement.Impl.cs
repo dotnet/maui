@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
 	public partial class VisualElement : IView
 	{
-		Semantics _semantics;
+		Semantics? _semantics;
 		bool _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
@@ -163,20 +163,15 @@ namespace Microsoft.Maui.Controls
 
 		Visibility IView.Visibility => IsVisible.ToVisibility();
 
-		Semantics IView.Semantics
-		{
-			get
-			{
-				return UpdateSemantics();
-			}
-		}
+		Semantics? IView.Semantics => UpdateSemantics();
 
-		private protected virtual Semantics UpdateSemantics()
+		private protected virtual Semantics? UpdateSemantics()
 		{
 			if (!this.IsSet(SemanticProperties.HintProperty) &&
 				!this.IsSet(SemanticProperties.DescriptionProperty) &&
 				!this.IsSet(SemanticProperties.HeadingLevelProperty))
 			{
+				_semantics = null;
 				return _semantics;
 			}
 
