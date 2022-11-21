@@ -1,5 +1,4 @@
 using System;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
