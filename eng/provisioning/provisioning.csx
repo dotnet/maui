@@ -1,5 +1,8 @@
-ForceJavaCleanup();
-MicrosoftOpenJdk ("11.0.13.8.1");
+if (IsMac)
+{
+	ForceJavaCleanup();
+	MicrosoftOpenJdk ("11.0.13.8.1");
+}
 
 string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
 
