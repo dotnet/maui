@@ -30,7 +30,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override long GetItemId(int position)
 		{
+			// https://github.com/dotnet/maui/issues/11529
+			// This should be updated to not use `GetHashCode`
 			return _page.Children[position].GetHashCode();
+		}
+
+		public override bool ContainsItem(long itemId)
+		{
+			foreach (var item in _page.Children)
+			{
+				if (item.GetHashCode() == itemId)
+					return true;
+			}
+
+			return false;
 		}
 	}
 }

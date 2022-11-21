@@ -343,7 +343,13 @@ namespace Microsoft.Maui.DeviceTests
 			await OnLoadedAsync(page, timeOut);
 
 			if (page.HasNavigatedTo)
+			{
+				// TabbedPage fires OnNavigated earlier than it should
+				if (page.Parent is TabbedPage)
+					await Task.Delay(10);
+
 				return;
+			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
@@ -351,6 +357,11 @@ namespace Microsoft.Maui.DeviceTests
 			page.NavigatedTo += NavigatedTo;
 
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// TabbedPage fires OnNavigated earlier than it should
+			if (page.Parent is TabbedPage)
+				await Task.Delay(10);
+
 			void NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
 				taskCompletionSource.SetResult(true);
