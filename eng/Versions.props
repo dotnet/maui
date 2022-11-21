@@ -12,7 +12,7 @@
     <MicrosoftAndroidSdkWindowsPackageVersion>32.0.482</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftiOSSdkPackageVersion>16.1.224</MicrosoftiOSSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>16.1.223</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>16.1.224</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>13.0.779</MicrosoftmacOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>16.1.224</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
