@@ -22,18 +22,17 @@ namespace Microsoft.Maui.Controls
 
 		Semantics _semantics;
 
-		Semantics IView.Semantics
+		private protected override void UpdateSemantics()
 		{
-			get
-			{
-				if (ControlTemplate != null)
-				{
-					_semantics ??= new Semantics();
-					_semantics.Description = SemanticProperties.GetDescription(this) ?? this.ContentAsString();
-				}
+			base.UpdateSemantics();
 
-				return _semantics;
+			if (ControlTemplate != null)
+			{
+				_semantics ??= new Semantics();
+				_semantics.Description = SemanticProperties.GetDescription(this) ?? ContentAsString();
 			}
 		}
+
+		Semantics IView.Semantics => _semantics;
 	}
 }
