@@ -835,15 +835,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				// This only happens if all the pages have been removed
 				if (Element.Children.Count > 0)
 				{
-					try
-					{
-						Element.CurrentPage = Element.Children[position];
-						Element.CurrentPage.SendAppearing();
-					}
-					catch
-					{
-
-					}
+					Element.CurrentPage = Element.Children[position];
+					Element.CurrentPage.SendAppearing();
 				}
 
 				if (IsBottomTabPlacement)
