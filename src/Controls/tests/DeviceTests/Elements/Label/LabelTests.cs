@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Label)]
-	public partial class LabelTests : HandlerTestBase
+	public partial class LabelTests : ControlsHandlerTestBase
 	{
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]
@@ -267,7 +267,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if IOS
+#if IOS || MACCATALYST
 			Skip = "iOS has issues with null graphics contexts."
 #endif
 		)]

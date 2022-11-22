@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -339,6 +340,14 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return default;
+		}
+
+		internal static IList<IGestureRecognizer>? GetCompositeGestureRecognizers(this Element element)
+		{
+			if (element is IGestureController gc)
+				return gc.CompositeGestureRecognizers;
+
+			return null;
 		}
 
 		internal static IEnumerable<Element> GetParentsPath(this Element self)

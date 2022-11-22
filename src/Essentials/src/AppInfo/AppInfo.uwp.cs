@@ -1,13 +1,9 @@
 using System;
-using System.Globalization;
-using Windows.ApplicationModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
-#if WINDOWS
 using Microsoft.UI.Xaml;
-#else
-using Windows.UI.Xaml;
-#endif
+using Windows.ApplicationModel;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -19,11 +15,16 @@ namespace Microsoft.Maui.ApplicationModel
 
 		ApplicationTheme? _applicationTheme;
 
+		readonly ActiveWindowTracker _activeWindowTracker;
+
+		/// <summary>
+		/// Intializes a new <see cref="AppInfoImplementation"/> object with default values.
+		/// </summary>
 		public AppInfoImplementation()
 		{
-			// TODO: NET7 use new public events
-			if (WindowStateManager.Default is WindowStateManagerImplementation impl)
-				impl.ActiveWindowThemeChanged += OnActiveWindowThemeChanged;
+			_activeWindowTracker = new(WindowStateManager.Default);
+			_activeWindowTracker.Start();
+			_activeWindowTracker.WindowMessage += OnWindowMessage;
 
 			if (MainThread.IsMainThread)
 				OnActiveWindowThemeChanged();
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.ApplicationModel
 			? Package.Current.Id.Name
 			: _launchingAssembly.GetAppInfoValue("PackageName") ?? _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
 
-		// TODO: NET7 add this as a actual data point and public property if it is valid on platforms
+		// TODO: NET8 add this as a actual data point and public property if it is valid on platforms
 		internal static string PublisherName => AppInfoUtils.IsPackagedApp
 			? Package.Current.PublisherDisplayName
 			: _launchingAssembly.GetAppInfoValue("PublisherName") ?? _launchingAssembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? string.Empty;
@@ -78,7 +79,14 @@ namespace Microsoft.Maui.ApplicationModel
 		public LayoutDirection RequestedLayoutDirection =>
 			CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? LayoutDirection.RightToLeft : LayoutDirection.LeftToRight;
 
-		void OnActiveWindowThemeChanged(object sender = null, EventArgs e = null)
+		void OnWindowMessage(object sender, WindowMessageEventArgs e)
+		{
+			if (e.MessageId == PlatformMethods.MessageIds.WM_SETTINGCHANGE ||
+				e.MessageId == PlatformMethods.MessageIds.WM_THEMECHANGE)
+				OnActiveWindowThemeChanged();
+		}
+
+		void OnActiveWindowThemeChanged()
 		{
 			if (Application.Current is Application app)
 				_applicationTheme = app.RequestedTheme;
@@ -102,11 +110,25 @@ namespace Microsoft.Maui.ApplicationModel
 			return false;
 		});
 
+		/// <summary>
+		/// Gets if this app is a packaged app.
+		/// </summary>
 		public static bool IsPackagedApp => _isPackagedAppLazy.Value;
 
+		/// <summary>
+		/// Converts a <see cref="PackageVersion"/> object to a <see cref="Version"/> object.
+		/// </summary>
+		/// <param name="version">The <see cref="PackageVersion"/> to convert.</param>
+		/// <returns>A new <see cref="Version"/> object with the version information of this app.</returns>
 		public static Version ToVersion(this PackageVersion version) =>
 			new Version(version.Major, version.Minor, version.Build, version.Revision);
 
+		/// <summary>
+		/// Gets the version information for this app.
+		/// </summary>
+		/// <param name="assembly">The assembly to retrieve the version information for.</param>
+		/// <param name="name">The key that is used to retrieve the version information from the metadata.</param>
+		/// <returns><see langword="null"/> if <paramref name="name"/> is <see langword="null"/> or empty, or no version information could be found with the value of <paramref name="name"/>.</returns>
 		public static Version GetAppInfoVersionValue(this Assembly assembly, string name)
 		{
 			if (assembly.GetAppInfoValue(name) is string value && !string.IsNullOrEmpty(value))
@@ -115,9 +137,21 @@ namespace Microsoft.Maui.ApplicationModel
 			return null;
 		}
 
+		/// <summary>
+		/// Gets the app info from this apps' metadata.
+		/// </summary>
+		/// <param name="assembly">The assembly to retrieve the app info for.</param>
+		/// <param name="name">The key of the metadata to be retrieved (e.g. PackageName, PublisherName or Name).</param>
+		/// <returns>The value that corresponds to the given key in <paramref name="name"/>.</returns>
 		public static string GetAppInfoValue(this Assembly assembly, string name) =>
 			assembly.GetMetadataAttributeValue("Microsoft.Maui.ApplicationModel.AppInfo." + name);
 
+		/// <summary>
+		/// Gets the value for a given key from the assembly metadata.
+		/// </summary>
+		/// <param name="assembly">The assembly to retrieve the information for.</param>
+		/// <param name="key">The key of the metadata to be retrieved (e.g. PackageName, PublisherName or Name).</param>
+		/// <returns>The value that corresponds to the given key in <paramref name="key"/>.</returns>
 		public static string GetMetadataAttributeValue(this Assembly assembly, string key)
 		{
 			foreach (var attr in assembly.GetCustomAttributes<AssemblyMetadataAttribute>())

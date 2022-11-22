@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.Maui.Storage
 {
@@ -162,11 +163,11 @@ namespace Microsoft.Maui.Storage
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Get'][9]/Docs/*" />
 		public static DateTime Get(string key, DateTime defaultValue, string? sharedName) =>
-			DateTime.FromBinary(Current.Get<long>(key, defaultValue.ToBinary(), sharedName));
+			Current.Get<DateTime>(key, defaultValue, sharedName);
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/Preferences.xml" path="//Member[@MemberName='Set'][9]/Docs/*" />
 		public static void Set(string key, DateTime value, string? sharedName) =>
-			Current.Set<long>(key, value.ToBinary(), sharedName);
+			Current.Set<DateTime>(key, value, sharedName);
 
 		static IPreferences Current => Storage.Preferences.Default;
 
@@ -180,5 +181,25 @@ namespace Microsoft.Maui.Storage
 
 		internal static void SetDefault(IPreferences? implementation) =>
 			defaultImplementation = implementation;
+
+		internal static Type[] SupportedTypes = new Type[]
+		{
+			typeof(string),
+			typeof(int),
+			typeof(bool),
+			typeof(long),
+			typeof(double),
+			typeof(float),
+			typeof(DateTime),
+		};
+
+		internal static void CheckIsSupportedType<T>()
+		{
+			var type = typeof(T);
+			if (!SupportedTypes.Contains(type))
+			{
+				throw new NotSupportedException($"Preferences using '{type}' type is not supported");
+			}
+		}
 	}
 }

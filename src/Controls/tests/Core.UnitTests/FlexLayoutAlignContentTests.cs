@@ -1,16 +1,16 @@
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using FlexLayout = Microsoft.Maui.Controls.Compatibility.FlexLayout;
 
-	[TestFixture]
+
 	public class FlexLayoutAlignContentTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestAlignContentFlexStart()
 		{
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
@@ -44,15 +44,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 130, 100));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 130, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 50, 10)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rect(50, 0, 50, 10)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rect(0, 10, 50, 10)));
-			Assert.That(view3.Bounds, Is.EqualTo(new Rect(50, 10, 50, 10)));
-			Assert.That(view4.Bounds, Is.EqualTo(new Rect(0, 20, 50, 10)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 130, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 50, 10));
+			Assert.Equal(view1.Bounds, new Rect(50, 0, 50, 10));
+			Assert.Equal(view2.Bounds, new Rect(0, 10, 50, 10));
+			Assert.Equal(view3.Bounds, new Rect(50, 10, 50, 10));
+			Assert.Equal(view4.Bounds, new Rect(0, 20, 50, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentFlexStartWithoutHeightOnChildren()
 		{
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
@@ -83,15 +83,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Children.Add(view4);
 
 			layout.Layout(new Rect(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 50, 10)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rect(0, 10, 50, 10)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rect(0, 20, 50, 10)));
-			Assert.That(view3.Bounds, Is.EqualTo(new Rect(0, 30, 50, 10)));
-			Assert.That(view4.Bounds, Is.EqualTo(new Rect(0, 40, 50, 10)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 50, 10));
+			Assert.Equal(view1.Bounds, new Rect(0, 10, 50, 10));
+			Assert.Equal(view2.Bounds, new Rect(0, 20, 50, 10));
+			Assert.Equal(view3.Bounds, new Rect(0, 30, 50, 10));
+			Assert.Equal(view4.Bounds, new Rect(0, 40, 50, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentFlexStartWithFlex()
 		{
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(0, 0));
@@ -137,15 +137,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 100, 120));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 120)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 50, 40)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rect(0, 40, 50, 40)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rect(0, 80, 50, 0)));
-			Assert.That(view3.Bounds, Is.EqualTo(new Rect(0, 80, 50, 40)));
-			Assert.That(view4.Bounds, Is.EqualTo(new Rect(0, 120, 50, 0)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 120));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 50, 40));
+			Assert.Equal(view1.Bounds, new Rect(0, 40, 50, 40));
+			Assert.Equal(view2.Bounds, new Rect(0, 80, 50, 0));
+			Assert.Equal(view3.Bounds, new Rect(0, 80, 50, 40));
+			Assert.Equal(view4.Bounds, new Rect(0, 120, 50, 0));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentFlexEnd()
 		{
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
@@ -186,16 +186,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var measure = layout.Measure(100, 100);
 			layout.Layout(new Rect(0, 0, 100, 100));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(50, 0, 50, 10)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rect(50, 10, 50, 10)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rect(50, 20, 50, 10)));
-			Assert.That(view3.Bounds, Is.EqualTo(new Rect(50, 30, 50, 10)));
-			Assert.That(view4.Bounds, Is.EqualTo(new Rect(50, 40, 50, 10)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(50, 0, 50, 10));
+			Assert.Equal(view1.Bounds, new Rect(50, 10, 50, 10));
+			Assert.Equal(view2.Bounds, new Rect(50, 20, 50, 10));
+			Assert.Equal(view3.Bounds, new Rect(50, 30, 50, 10));
+			Assert.Equal(view4.Bounds, new Rect(50, 40, 50, 10));
 
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentStretch()
 		{
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(0, 0));
@@ -232,38 +232,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 150, 100));
 
-			Assert.AreEqual(0f, layout.X);
-			Assert.AreEqual(0f, layout.Y);
-			Assert.AreEqual(150f, layout.Width);
-			Assert.AreEqual(100f, layout.Height);
+			Assert.Equal(0f, layout.X);
+			Assert.Equal(0f, layout.Y);
+			Assert.Equal(150f, layout.Width);
+			Assert.Equal(100f, layout.Height);
 
-			Assert.AreEqual(0f, view0.X);
-			Assert.AreEqual(0f, view0.Y);
-			Assert.AreEqual(50f, view0.Width);
-			Assert.AreEqual(0f, view0.Height);
+			Assert.Equal(0f, view0.X);
+			Assert.Equal(0f, view0.Y);
+			Assert.Equal(50f, view0.Width);
+			Assert.Equal(0f, view0.Height);
 
-			Assert.AreEqual(0f, view1.X);
-			Assert.AreEqual(0f, view1.Y);
-			Assert.AreEqual(50f, view1.Width);
-			Assert.AreEqual(0f, view1.Height);
+			Assert.Equal(0f, view1.X);
+			Assert.Equal(0f, view1.Y);
+			Assert.Equal(50f, view1.Width);
+			Assert.Equal(0f, view1.Height);
 
-			Assert.AreEqual(0f, view2.X);
-			Assert.AreEqual(0f, view2.Y);
-			Assert.AreEqual(50f, view2.Width);
-			Assert.AreEqual(0f, view2.Height);
+			Assert.Equal(0f, view2.X);
+			Assert.Equal(0f, view2.Y);
+			Assert.Equal(50f, view2.Width);
+			Assert.Equal(0f, view2.Height);
 
-			Assert.AreEqual(0f, view3.X);
-			Assert.AreEqual(0f, view3.Y);
-			Assert.AreEqual(50f, view3.Width);
-			Assert.AreEqual(0f, view3.Height);
+			Assert.Equal(0f, view3.X);
+			Assert.Equal(0f, view3.Y);
+			Assert.Equal(50f, view3.Width);
+			Assert.Equal(0f, view3.Height);
 
-			Assert.AreEqual(0f, view4.X);
-			Assert.AreEqual(0f, view4.Y);
-			Assert.AreEqual(50f, view4.Width);
-			Assert.AreEqual(0f, view4.Height);
+			Assert.Equal(0f, view4.X);
+			Assert.Equal(0f, view4.Y);
+			Assert.Equal(50f, view4.Width);
+			Assert.Equal(0f, view4.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentSpaceBetween()
 		{
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
@@ -296,15 +296,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 130, 100));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 130, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 50, 10)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rect(50, 0, 50, 10)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rect(0, 45, 50, 10)));
-			Assert.That(view3.Bounds, Is.EqualTo(new Rect(50, 45, 50, 10)));
-			Assert.That(view4.Bounds, Is.EqualTo(new Rect(0, 90, 50, 10)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 130, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 50, 10));
+			Assert.Equal(view1.Bounds, new Rect(50, 0, 50, 10));
+			Assert.Equal(view2.Bounds, new Rect(0, 45, 50, 10));
+			Assert.Equal(view3.Bounds, new Rect(50, 45, 50, 10));
+			Assert.Equal(view4.Bounds, new Rect(0, 90, 50, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentSpaceAround()
 		{
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
@@ -336,15 +336,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 140, 120));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 140, 120)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 15, 50, 10)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rect(50, 15, 50, 10)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rect(0, 55, 50, 10)));
-			Assert.That(view3.Bounds, Is.EqualTo(new Rect(50, 55, 50, 10)));
-			Assert.That(view4.Bounds, Is.EqualTo(new Rect(0, 95, 50, 10)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 140, 120));
+			Assert.Equal(view0.Bounds, new Rect(0, 15, 50, 10));
+			Assert.Equal(view1.Bounds, new Rect(50, 15, 50, 10));
+			Assert.Equal(view2.Bounds, new Rect(0, 55, 50, 10));
+			Assert.Equal(view3.Bounds, new Rect(50, 55, 50, 10));
+			Assert.Equal(view4.Bounds, new Rect(0, 95, 50, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentStretchRow()
 		{
 			var layout = new FlexLayout
@@ -379,38 +379,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 150, 100));
 
-			Assert.AreEqual(0f, layout.X);
-			Assert.AreEqual(0f, layout.Y);
-			Assert.AreEqual(150f, layout.Width);
-			Assert.AreEqual(100f, layout.Height);
+			Assert.Equal(0f, layout.X);
+			Assert.Equal(0f, layout.Y);
+			Assert.Equal(150f, layout.Width);
+			Assert.Equal(100f, layout.Height);
 
-			Assert.AreEqual(0f, view0.X);
-			Assert.AreEqual(0f, view0.Y);
-			Assert.AreEqual(50f, view0.Width);
-			Assert.AreEqual(20f, view0.Height);
+			Assert.Equal(0f, view0.X);
+			Assert.Equal(0f, view0.Y);
+			Assert.Equal(50f, view0.Width);
+			Assert.Equal(20f, view0.Height);
 
-			Assert.AreEqual(50f, view1.X);
-			Assert.AreEqual(0f, view1.Y);
-			Assert.AreEqual(50f, view1.Width);
-			Assert.AreEqual(20f, view1.Height);
+			Assert.Equal(50f, view1.X);
+			Assert.Equal(0f, view1.Y);
+			Assert.Equal(50f, view1.Width);
+			Assert.Equal(20f, view1.Height);
 
-			Assert.AreEqual(100f, view2.X);
-			Assert.AreEqual(0f, view2.Y);
-			Assert.AreEqual(50f, view2.Width);
-			Assert.AreEqual(20f, view2.Height);
+			Assert.Equal(100f, view2.X);
+			Assert.Equal(0f, view2.Y);
+			Assert.Equal(50f, view2.Width);
+			Assert.Equal(20f, view2.Height);
 
-			Assert.AreEqual(0f, view3.X);
-			Assert.AreEqual(50f, view3.Y);
-			Assert.AreEqual(50f, view3.Width);
-			Assert.AreEqual(20f, view3.Height);
+			Assert.Equal(0f, view3.X);
+			Assert.Equal(50f, view3.Y);
+			Assert.Equal(50f, view3.Width);
+			Assert.Equal(20f, view3.Height);
 
-			Assert.AreEqual(50f, view4.X);
-			Assert.AreEqual(50f, view4.Y);
-			Assert.AreEqual(50f, view4.Width);
-			Assert.AreEqual(20f, view4.Height);
+			Assert.Equal(50f, view4.X);
+			Assert.Equal(50f, view4.Y);
+			Assert.Equal(50f, view4.Width);
+			Assert.Equal(20f, view4.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentStretchRowWithChildren()
 		{
 			var layout = new FlexLayout
@@ -446,40 +446,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 150, 100));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 150, 100)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 150, 100));
 
-			Assert.AreEqual(0f, view0.X);
-			Assert.AreEqual(0f, view0.Y);
-			Assert.AreEqual(50f, view0.Width);
-			Assert.AreEqual(50f, view0.Height);
+			Assert.Equal(0f, view0.X);
+			Assert.Equal(0f, view0.Y);
+			Assert.Equal(50f, view0.Width);
+			Assert.Equal(50f, view0.Height);
 
-			//Assert.AreEqual(0f, view0_child0.X);
-			//Assert.AreEqual(0f, view0_child0.Y);
-			//Assert.AreEqual(50f, view0_child0.Width);
-			//Assert.AreEqual(50f, view0_child0.Height);
+			//Assert.Equal(0f, view0_child0.X);
+			//Assert.Equal(0f, view0_child0.Y);
+			//Assert.Equal(50f, view0_child0.Width);
+			//Assert.Equal(50f, view0_child0.Height);
 
-			Assert.AreEqual(50f, view1.X);
-			Assert.AreEqual(0f, view1.Y);
-			Assert.AreEqual(50f, view1.Width);
-			Assert.AreEqual(50f, view1.Height);
+			Assert.Equal(50f, view1.X);
+			Assert.Equal(0f, view1.Y);
+			Assert.Equal(50f, view1.Width);
+			Assert.Equal(50f, view1.Height);
 
-			Assert.AreEqual(100f, view2.X);
-			Assert.AreEqual(0f, view2.Y);
-			Assert.AreEqual(50f, view2.Width);
-			Assert.AreEqual(50f, view2.Height);
+			Assert.Equal(100f, view2.X);
+			Assert.Equal(0f, view2.Y);
+			Assert.Equal(50f, view2.Width);
+			Assert.Equal(50f, view2.Height);
 
-			Assert.AreEqual(0f, view3.X);
-			Assert.AreEqual(50f, view3.Y);
-			Assert.AreEqual(50f, view3.Width);
-			Assert.AreEqual(50f, view3.Height);
+			Assert.Equal(0f, view3.X);
+			Assert.Equal(50f, view3.Y);
+			Assert.Equal(50f, view3.Width);
+			Assert.Equal(50f, view3.Height);
 
-			Assert.AreEqual(50f, view4.X);
-			Assert.AreEqual(50f, view4.Y);
-			Assert.AreEqual(50f, view4.Width);
-			Assert.AreEqual(50f, view4.Height);
+			Assert.Equal(50f, view4.X);
+			Assert.Equal(50f, view4.Y);
+			Assert.Equal(50f, view4.Width);
+			Assert.Equal(50f, view4.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentStretchRowWithFlex()
 		{
 			var layout = new FlexLayout
@@ -513,15 +513,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 150, 100));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 150, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 50, 100)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rect(50, 0, 0, 100)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rect(50, 0, 50, 100)));
-			Assert.That(view3.Bounds, Is.EqualTo(new Rect(100, 0, 0, 100)));
-			Assert.That(view4.Bounds, Is.EqualTo(new Rect(100, 0, 50, 100)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 150, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 50, 100));
+			Assert.Equal(view1.Bounds, new Rect(50, 0, 0, 100));
+			Assert.Equal(view2.Bounds, new Rect(50, 0, 50, 100));
+			Assert.Equal(view3.Bounds, new Rect(100, 0, 0, 100));
+			Assert.Equal(view4.Bounds, new Rect(100, 0, 50, 100));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentStretchRowWithFlexNoShrink()
 		{
 			var layout = new FlexLayout
@@ -555,39 +555,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 150, 100));
 
-			Assert.AreEqual(0f, layout.X);
-			Assert.AreEqual(0f, layout.Y);
-			Assert.AreEqual(150f, layout.Width);
-			Assert.AreEqual(100f, layout.Height);
+			Assert.Equal(0f, layout.X);
+			Assert.Equal(0f, layout.Y);
+			Assert.Equal(150f, layout.Width);
+			Assert.Equal(100f, layout.Height);
 
-			Assert.AreEqual(0f, view0.X);
-			Assert.AreEqual(0f, view0.Y);
-			Assert.AreEqual(50f, view0.Width);
-			Assert.AreEqual(100f, view0.Height);
+			Assert.Equal(0f, view0.X);
+			Assert.Equal(0f, view0.Y);
+			Assert.Equal(50f, view0.Width);
+			Assert.Equal(100f, view0.Height);
 
-			Assert.AreEqual(50f, view1.X);
-			Assert.AreEqual(0f, view1.Y);
-			Assert.AreEqual(0f, view1.Width);
-			Assert.AreEqual(100f, view1.Height);
+			Assert.Equal(50f, view1.X);
+			Assert.Equal(0f, view1.Y);
+			Assert.Equal(0f, view1.Width);
+			Assert.Equal(100f, view1.Height);
 
-			Assert.AreEqual(50f, view2.X);
-			Assert.AreEqual(0f, view2.Y);
-			Assert.AreEqual(50f, view2.Width);
-			Assert.AreEqual(100f, view2.Height);
+			Assert.Equal(50f, view2.X);
+			Assert.Equal(0f, view2.Y);
+			Assert.Equal(50f, view2.Width);
+			Assert.Equal(100f, view2.Height);
 
-			Assert.AreEqual(100f, view3.X);
-			Assert.AreEqual(0f, view3.Y);
-			Assert.AreEqual(0f, view3.Width);
-			Assert.AreEqual(100f, view3.Height);
+			Assert.Equal(100f, view3.X);
+			Assert.Equal(0f, view3.Y);
+			Assert.Equal(0f, view3.Width);
+			Assert.Equal(100f, view3.Height);
 
-			Assert.AreEqual(100f, view4.X);
-			Assert.AreEqual(0f, view4.Y);
-			Assert.AreEqual(50f, view4.Width);
-			Assert.AreEqual(100f, view4.Height);
+			Assert.Equal(100f, view4.X);
+			Assert.Equal(0f, view4.Y);
+			Assert.Equal(50f, view4.Width);
+			Assert.Equal(100f, view4.Height);
 		}
 
-		[Test]
-		[Ignore("")]
+		[Fact(Skip = "")]
 		public void TestAlignContentStretchRowWithMargin()
 		{
 			var layout = new FlexLayout
@@ -645,15 +644,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 150, 100));
 
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 150, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 50, 20)));
-			Assert.That(view1.Bounds, Is.EqualTo(new Rect(60, 10, 50, 20)));
-			Assert.That(view2.Bounds, Is.EqualTo(new Rect(0, 40, 50, 20)));
-			Assert.That(view3.Bounds, Is.EqualTo(new Rect(60, 50, 50, 20)));
-			Assert.That(view4.Bounds, Is.EqualTo(new Rect(0, 80, 50, 20)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 150, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 50, 20));
+			Assert.Equal(view1.Bounds, new Rect(60, 10, 50, 20));
+			Assert.Equal(view2.Bounds, new Rect(0, 40, 50, 20));
+			Assert.Equal(view3.Bounds, new Rect(60, 50, 50, 20));
+			Assert.Equal(view4.Bounds, new Rect(0, 80, 50, 20));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentStretchRowWithSingleRow()
 		{
 			var layout = new FlexLayout
@@ -675,23 +674,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 150, 100));
 
-			Assert.AreEqual(0f, layout.X);
-			Assert.AreEqual(0f, layout.Y);
-			Assert.AreEqual(150f, layout.Width);
-			Assert.AreEqual(100f, layout.Height);
+			Assert.Equal(0f, layout.X);
+			Assert.Equal(0f, layout.Y);
+			Assert.Equal(150f, layout.Width);
+			Assert.Equal(100f, layout.Height);
 
-			Assert.AreEqual(0f, view0.X);
-			Assert.AreEqual(0f, view0.Y);
-			Assert.AreEqual(50f, view0.Width);
-			Assert.AreEqual(100f, view0.Height);
+			Assert.Equal(0f, view0.X);
+			Assert.Equal(0f, view0.Y);
+			Assert.Equal(50f, view0.Width);
+			Assert.Equal(100f, view0.Height);
 
-			Assert.AreEqual(50f, view1.X);
-			Assert.AreEqual(0f, view1.Y);
-			Assert.AreEqual(50f, view1.Width);
-			Assert.AreEqual(100f, view1.Height);
+			Assert.Equal(50f, view1.X);
+			Assert.Equal(0f, view1.Y);
+			Assert.Equal(50f, view1.Width);
+			Assert.Equal(100f, view1.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignContentStretchRowWithFixedHeight()
 		{
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(0, 0));
@@ -729,35 +728,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Layout(new Rect(0, 0, 150, 100));
 
-			Assert.AreEqual(0f, layout.X);
-			Assert.AreEqual(0f, layout.Y);
-			Assert.AreEqual(150f, layout.Width);
-			Assert.AreEqual(100f, layout.Height);
+			Assert.Equal(0f, layout.X);
+			Assert.Equal(0f, layout.Y);
+			Assert.Equal(150f, layout.Width);
+			Assert.Equal(100f, layout.Height);
 
-			Assert.AreEqual(0f, view0.X);
-			Assert.AreEqual(0f, view0.Y);
-			Assert.AreEqual(50f, view0.Width);
-			Assert.AreEqual(0f, view0.Height);
+			Assert.Equal(0f, view0.X);
+			Assert.Equal(0f, view0.Y);
+			Assert.Equal(50f, view0.Width);
+			Assert.Equal(0f, view0.Height);
 
-			Assert.AreEqual(50f, view1.X);
-			Assert.AreEqual(0f, view1.Y);
-			Assert.AreEqual(50f, view1.Width);
-			Assert.AreEqual(60f, view1.Height);
+			Assert.Equal(50f, view1.X);
+			Assert.Equal(0f, view1.Y);
+			Assert.Equal(50f, view1.Width);
+			Assert.Equal(60f, view1.Height);
 
-			Assert.AreEqual(100f, view2.X);
-			Assert.AreEqual(0f, view2.Y);
-			Assert.AreEqual(50f, view2.Width);
-			Assert.AreEqual(0f, view2.Height);
+			Assert.Equal(100f, view2.X);
+			Assert.Equal(0f, view2.Y);
+			Assert.Equal(50f, view2.Width);
+			Assert.Equal(0f, view2.Height);
 
-			Assert.AreEqual(0f, view3.X);
-			Assert.AreEqual(80f, view3.Y);
-			Assert.AreEqual(50f, view3.Width);
-			Assert.AreEqual(0f, view3.Height);
+			Assert.Equal(0f, view3.X);
+			Assert.Equal(80f, view3.Y);
+			Assert.Equal(50f, view3.Width);
+			Assert.Equal(0f, view3.Height);
 
-			Assert.AreEqual(50f, view4.X);
-			Assert.AreEqual(80f, view4.Y);
-			Assert.AreEqual(50f, view4.Width);
-			Assert.AreEqual(0f, view4.Height);
+			Assert.Equal(50f, view4.X);
+			Assert.Equal(80f, view4.Y);
+			Assert.Equal(50f, view4.Width);
+			Assert.Equal(0f, view4.Height);
 		}
 	}
 }

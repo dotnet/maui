@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					viewgroup.LayoutUpdated += OnContentLayoutUpdated;
 				}
-			} 
+			}
 			UpdateContentSize();
 		}
 
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				var x = request.HoriztonalOffset;
+				var x = request.HorizontalOffset;
 				var y = request.VerticalOffset;
 
 				var pos = scrollView.Orientation == ScrollOrientation.Vertical ? y : x;

@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="Type[@FullName='Microsoft.Maui.Controls.Binding']/Docs/*" />
 	public sealed class Binding : BindingBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='SelfPath']/Docs/*" />
 		public const string SelfPath = ".";
 		IValueConverter _converter;
 		object _converterParameter;
@@ -132,7 +131,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				object bindingContext = src ?? Context ?? context;
-				if (_expression == null && bindingContext != null)
+				if (_expression == null)
 					_expression = new BindingExpression(this, SelfPath);
 				_expression.Apply(bindingContext, bindObj, targetProperty);
 			}

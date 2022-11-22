@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 			if (_webViewClient is MauiWebViewClient mauiWebViewClient)
 				mauiWebViewClient.Disconnect();
 
-			_webChromeClient?.Dispose();
+			_webChromeClient?.Disconnect();
 			platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
@@ -152,6 +152,7 @@ namespace Microsoft.Maui.Handlers
 				return true;
 
 			PlatformView?.UpdateCanGoBackForward(VirtualView);
+
 			UrlCanceled = cancel ? null : url;
 
 			return cancel;

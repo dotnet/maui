@@ -78,9 +78,9 @@ namespace Microsoft.Maui
 
 			Directory.CreateDirectory(directory);
 
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
+#pragma warning disable CA1416, CA1422 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var result = imageData.Save(path, true);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 
 			if (result == false)
 				throw new InvalidOperationException($"Unable to cache image at '{path}'.");

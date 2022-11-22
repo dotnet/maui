@@ -72,8 +72,6 @@
         <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
         <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
         <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
-        <_MauiIntermediateColors>$(_MauiIntermediateSplashScreen)maui_colors.xml</_MauiIntermediateColors>
-        <_MauiIntermediateDrawable>$(_MauiIntermediateSplashScreen)maui_splash_image.xml</_MauiIntermediateDrawable>
         <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
 
         <_ResizetizerPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_ResizetizerPlatformIdentifier>
@@ -120,21 +118,23 @@
     <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
         <ResizetizerPlatformType>ios</ResizetizerPlatformType>
 
-        <ResizetizeCollectItemsBeforeTargets>
-            $(ResizetizeCollectItemsBeforeTargets);
-            _CollectBundleResources;
-            _BeforeCoreCompileImageAssets;
-        </ResizetizeCollectItemsBeforeTargets>
+        <!-- We don't want to resizetize anything for an inner build when building a universal app, it's enough to only do it in the outer build -->
+        <DisableResizetizer Condition="'$(_IsMultiRidBuild)' == 'true'">true</DisableResizetizer>
+
+        <CollectBundleResourcesDependsOn>
+            $(CollectBundleResourcesDependsOn);
+            ResizetizeCollectItems;
+        </CollectBundleResourcesDependsOn>
+
+        <CompileImageAssetsDependsOn>
+            $(CompileImageAssetsDependsOn);
+            ResizetizeCollectItems;
+        </CompileImageAssetsDependsOn>
 
         <ResizetizeAfterTargets>
             $(ResizetizeAfterTargets);
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
-
-        <ProcessMauiFontsBeforeTargets>
-            $(ProcessMauiFontsBeforeTargets);
-            _BeforeCoreCompileImageAssets;
-        </ProcessMauiFontsBeforeTargets>
 
         <CollectAppManifestsDependsOn>
             ProcessMauiFonts;
@@ -239,7 +239,7 @@
 
     <!-- Collect images from referenced projects -->
     <Target Name="ResizetizeCollectItems"
-        Condition="'$(_ResizetizerIsCompatibleApp)' == 'True'"
+        Condition="'$(_ResizetizerIsCompatibleApp)' == 'True' And '$(DisableResizetizer)' != 'true'"
         BeforeTargets="$(ResizetizeCollectItemsBeforeTargets)"
         AfterTargets="$(ResizetizeCollectItemsAfterTargets)">
 
@@ -357,15 +357,15 @@
         <!-- Android -->
         <GenerateSplashAndroidResources
             Condition="'$(_ResizetizerIsAndroidApp)' == 'True'"
-            ColorsFile="$(_MauiIntermediateColors)"
-            DrawableFile="$(_MauiIntermediateDrawable)"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             MauiSplashScreen="@(MauiSplashScreen)"
         />
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
             <MauiImage Include="@(MauiSplashScreen)" />
-            <AndroidResource Include="$(_MauiIntermediateDrawable)" Link="Resources\drawable\$([System.IO.Path]::GetFileName($(_MauiIntermediateDrawable)))" />
-            <AndroidResource Include="$(_MauiIntermediateColors)"   Link="Resources\values\$([System.IO.Path]::GetFileName($(_MauiIntermediateColors)))" />
-            <FileWrites Include="$(_MauiIntermediateColors);$(_MauiIntermediateDrawable)" />
+            <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
+                <StampFile>$(_ResizetizerStampFile)</StampFile>
+            </LibraryResourceDirectories>
+            <FileWrites Include="$(_MauiIntermediateSplashScreen)**\*" />
         </ItemGroup>
 
         <!-- iOS, but not Catalyst -->
@@ -408,7 +408,7 @@
             <_MauiSplashScreens Include="$(_MauiIntermediateSplashScreen)splash\*" />
             <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
-
+        <MakeDir Directories="$(IntermediateOutputPath)"/>
         <!-- Stamp file for Outputs -->
         <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
         <ItemGroup>

@@ -7,15 +7,12 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/MatrixTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.MatrixTypeConverter']/Docs/*" />
 	public class MatrixTypeConverter : TypeConverter
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/MatrixTypeConverter.xml" path="//Member[@MemberName='CanConvertFrom']/Docs/*" />
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/MatrixTypeConverter.xml" path="//Member[@MemberName='CanConvertTo']/Docs/*" />
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/MatrixTypeConverter.xml" path="//Member[@MemberName='ConvertFrom']/Docs/*" />
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			=> CreateMatrix(value?.ToString());
 
@@ -38,7 +35,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			return new Matrix(values[0], values[1], values[2], values[3], values[4], values[5]);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/MatrixTypeConverter.xml" path="//Member[@MemberName='ConvertTo']/Docs/*" />
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not Matrix matrix)

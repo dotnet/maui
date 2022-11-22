@@ -23,10 +23,8 @@ The idea, is a project to be able to set `$(UseMaui)`:
 * `Microsoft.Maui.Core.Runtime.[platform]`
 * `Microsoft.Maui.Controls.Ref.[platform]`
 * `Microsoft.Maui.Controls.Runtime.[platform]`
-* `Microsoft.Maui.Dependencies`
 * `Microsoft.Maui.Essentials.Ref.[platform]`
 * `Microsoft.Maui.Essentials.Runtime.[platform]`
-* `Microsoft.Maui.Extensions`
 * `Microsoft.Maui.Templates`
 
 BlazorWebView is an addition to MAUI, project can currently opt into

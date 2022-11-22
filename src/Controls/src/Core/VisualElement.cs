@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -312,10 +312,8 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MinimumHeightRequestProperty']/Docs/*" />
 		public static readonly BindableProperty MinimumHeightRequestProperty = BindableProperty.Create(nameof(MinimumHeightRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MaximumWidthRequestProperty']/Docs/*" />
 		public static readonly BindableProperty MaximumWidthRequestProperty = BindableProperty.Create(nameof(MaximumWidthRequest), typeof(double), typeof(VisualElement), double.PositiveInfinity, propertyChanged: OnRequestChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MaximumHeightRequestProperty']/Docs/*" />
 		public static readonly BindableProperty MaximumHeightRequestProperty = BindableProperty.Create(nameof(MaximumHeightRequest), typeof(double), typeof(VisualElement), double.PositiveInfinity, propertyChanged: OnRequestChanged);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsFocusedPropertyKey']/Docs/*" />
@@ -501,14 +499,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(MinimumWidthRequestProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MaximumHeightRequest']/Docs/*" />
 		public double MaximumHeightRequest
 		{
 			get { return (double)GetValue(MaximumHeightRequestProperty); }
 			set { SetValue(MaximumHeightRequestProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MaximumWidthRequest']/Docs/*" />
 		public double MaximumWidthRequest
 		{
 			get { return (double)GetValue(MaximumWidthRequestProperty); }
@@ -643,7 +639,6 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool DisableLayout { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsInPlatformLayout']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IsInPlatformLayout
 		{
@@ -665,7 +660,6 @@ namespace Microsoft.Maui.Controls
 			set { _isInPlatformLayout = value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsPlatformStateConsistent']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IsPlatformStateConsistent
 		{
@@ -696,8 +690,6 @@ namespace Microsoft.Maui.Controls
 				_isPlatformEnabled = value;
 				if (value && IsPlatformStateConsistent)
 					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
-
-				InvalidateStateTriggers(IsPlatformEnabled);
 
 				OnIsPlatformEnabledChanged();
 				PlatformEnabledChanged?.Invoke(this, EventArgs.Empty);
@@ -764,7 +756,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='PlatformSizeChanged']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void PlatformSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
@@ -1087,10 +1078,27 @@ namespace Microsoft.Maui.Controls
 
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
 
+		bool _isPointerOver;
+
+		internal bool IsPointerOver
+		{
+			get { return _isPointerOver; }
+			private protected set
+			{
+				if (value == _isPointerOver)
+					return;
+
+				_isPointerOver = value;
+				ChangeVisualState();
+			}
+		}
+
 		protected internal virtual void ChangeVisualState()
 		{
 			if (!IsEnabled)
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+			else if (IsPointerOver)
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
 			else if (IsFocused)
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Focused);
 			else

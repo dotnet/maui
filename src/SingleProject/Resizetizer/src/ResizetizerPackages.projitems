@@ -20,7 +20,8 @@
     <PackageReference Include="Fizzler" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Memory" Version="4.5.5" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Buffers" Version="4.5.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" Version="6.0.5" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.IO.UnmanagedMemoryStream" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" GeneratePathProperty="true" PrivateAssets="all" />
@@ -31,6 +32,8 @@
   <ItemGroup>
     <_ResizetizerFiles Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Buffers)\lib\netstandard2.0\System.Buffers.dll" />
+    <_ResizetizerFiles Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" />
+    <_ResizetizerFiles Include="$(PkgMicrosoft_Bcl_AsyncInterfaces)\lib\netstandard2.0\Microsoft.Bcl.AsyncInterfaces.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_ObjectModel)\lib\netstandard1.3\System.ObjectModel.dll" />
@@ -62,7 +65,6 @@
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-arm64\native\libHarfBuzzSharp.so" Link="arm64\libHarfBuzzSharp.so" Arch="arm64/" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-musl-x64\native\libHarfBuzzSharp.so" Link="musl-x64\libHarfBuzzSharp.so" Arch="musl-x64/" />
     <_ResizetizerFiles Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-x64\native\libHarfBuzzSharp.so" Link="x64\libHarfBuzzSharp.so" Arch="x64/" />
-    <_ResizetizerFiles Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" />
   </ItemGroup>
 
 </Project>

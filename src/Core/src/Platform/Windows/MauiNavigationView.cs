@@ -1,15 +1,15 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WGridLength = Microsoft.UI.Xaml.GridLength;
-using WThickness = Microsoft.UI.Xaml.Thickness;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
-using System.Collections.Generic;
-using Microsoft.UI.Xaml.Media;
-using System.Collections;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
 {
@@ -93,7 +93,6 @@ namespace Microsoft.Maui.Platform
 			PaneHeaderContentBorderRow = (RowDefinition)GetTemplateChild("PaneHeaderContentBorderRow");
 
 			UpdateNavigationBackButtonSize();
-			UpdateNavigationViewContentMargin();
 			UpdateNavigationViewBackButtonMargin();
 			UpdateNavigationViewButtonHolderGridMargin();
 			OnApplyTemplateCore();
@@ -224,29 +223,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (ButtonHolderGrid != null)
 				ButtonHolderGrid.Margin = NavigationViewButtonHolderGridMargin;
-		}
-		#endregion
-
-		#region NavigationViewContentMargin
-		internal static readonly DependencyProperty NavigationViewContentMarginProperty
-			= DependencyProperty.Register(nameof(NavigationViewContentMargin), typeof(WThickness), typeof(MauiNavigationView),
-				new PropertyMetadata(new WThickness(), OnNavigationViewContentMarginChanged));
-
-		internal WThickness NavigationViewContentMargin
-		{
-			get => (WThickness)GetValue(NavigationViewContentMarginProperty);
-			set => SetValue(NavigationViewContentMarginProperty, value);
-		}
-
-		static void OnNavigationViewContentMarginChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			((MauiNavigationView)d).UpdateNavigationViewContentMargin();
-		}
-
-		void UpdateNavigationViewContentMargin()
-		{
-			if (ContentGrid != null)
-				ContentGrid.Margin = NavigationViewContentMargin;
 		}
 		#endregion
 

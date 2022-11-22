@@ -31,7 +31,6 @@ namespace Microsoft.Maui.Storage
 		public static Task<string> GetAsync(string key) =>
 			Current.GetAsync(key);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='SetAsync'][0 and position()=0]/Docs/*" />
 		public static Task SetAsync(string key, string value) =>
 			Current.SetAsync(key, value);
 
@@ -97,7 +96,7 @@ namespace Microsoft.Maui.Storage
 
 	partial class SecureStorageImplementation
 	{
-#if !(NETSTANDARD || !PLATFORM)
+#if !NETSTANDARD && PLATFORM
 		// Special Alias that is only used for Secure Storage. All others should use: Preferences.GetPrivatePreferencesSharedName
 		internal static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
 #endif

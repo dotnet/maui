@@ -1,8 +1,8 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class StateTriggerTests
 	{
 		const string NormalStateName = "Normal";
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return stateGroups;
 		}
 
-		[Test]
+		[Fact]
 		public void InitialStateIsNormalIfAvailable()
 		{
 			var label1 = new Label();
@@ -44,10 +44,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
 
-			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(NormalStateName));
+			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
 		}
 
-		[Test]
+		[Fact]
 		public void StateTriggerDefaultVisualState()
 		{
 			var grid = new Grid();
@@ -60,10 +60,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var groups = VisualStateManager.GetVisualStateGroups(grid);
 
-			Assert.That(groups[0].CurrentState.Name, Is.EqualTo(RedStateName));
+			Assert.Equal(groups[0].CurrentState.Name, RedStateName);
 		}
 
-		[Test]
+		[Fact]
 		public void StateTriggerChangedVisualState()
 		{
 			var grid = new Grid();
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var groups = VisualStateManager.GetVisualStateGroups(grid);
 
-			Assert.That(groups[0].CurrentState.Name, Is.EqualTo(GreenStateName));
+			Assert.Equal(groups[0].CurrentState.Name, GreenStateName);
 		}
 	}
 }

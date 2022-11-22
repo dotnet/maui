@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Controls
 		public DoubleCollection()
 		{ }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DoubleCollection.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public DoubleCollection(double[] values)
 			: base(values)
 		{

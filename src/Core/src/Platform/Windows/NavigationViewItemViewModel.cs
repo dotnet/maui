@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WIconElement = Microsoft.UI.Xaml.Controls.IconElement;
-using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Platform
 {
@@ -29,6 +29,26 @@ namespace Microsoft.Maui.Platform
 
 	internal static class NavigationViewItemViewModelExtensions
 	{
+		public static NavigationViewItemViewModel? GetWithData(this IEnumerable<NavigationViewItemViewModel> dest, object data)
+		{
+			foreach (var item in dest)
+			{
+				if (item.Data == data)
+				{
+					return item;
+				}
+			}
+
+			return null;
+		}
+
+		public static bool TryGetWithData(this IEnumerable<NavigationViewItemViewModel> dest, object data, out NavigationViewItemViewModel? vm)
+		{
+			var result = GetWithData(dest, data);
+			vm = result;
+			return result != null;
+		}
+
 		public static void SyncItems<T>(
 			this ObservableCollection<NavigationViewItemViewModel> dest,
 			IList<T> source,

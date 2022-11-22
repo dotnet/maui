@@ -72,18 +72,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
 		{
-			var context = textView.Context;
-
-			if (context == null)
-			{
-				return;
-			}
-
 			textView.SetPadding(
-				(int)context.ToPixels(label.Padding.Left),
-				(int)context.ToPixels(label.Padding.Top),
-				(int)context.ToPixels(label.Padding.Right),
-				(int)context.ToPixels(label.Padding.Bottom));
+				(int)textView.ToPixels(label.Padding.Left),
+				(int)textView.ToPixels(label.Padding.Top),
+				(int)textView.ToPixels(label.Padding.Right),
+				(int)textView.ToPixels(label.Padding.Bottom));
 		}
 
 		public static void UpdateTextDecorations(this TextView textView, ILabel label)
@@ -111,11 +104,11 @@ namespace Microsoft.Maui.Platform
 					break;
 				case FlowDirection.RightToLeft:
 					platformView.LayoutDirection = ALayoutDirection.Rtl;
-					platformView.TextDirection = ATextDirection.Rtl;
+					platformView.TextDirection = ATextDirection.FirstStrongRtl;
 					break;
 				case FlowDirection.LeftToRight:
 					platformView.LayoutDirection = ALayoutDirection.Ltr;
-					platformView.TextDirection = ATextDirection.Ltr;
+					platformView.TextDirection = ATextDirection.FirstStrongLtr;
 					break;
 			}
 		}

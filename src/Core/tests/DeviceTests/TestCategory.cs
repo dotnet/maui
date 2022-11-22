@@ -15,6 +15,7 @@
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";
+		public const string FlowDirection = "FlowDirection";
 		public const string FlyoutView = "FlyoutView";
 		public const string Fonts = "Fonts";
 		public const string GraphicsView = "GraphicsView";
@@ -27,6 +28,7 @@
 		public const string Page = "Page";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";
+		public const string RadioButton = "RadioButton";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string ShapeView = "ShapeView";

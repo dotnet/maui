@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.TemplatedView)]
-	public partial class TemplatedViewTests : HandlerTestBase
+	public partial class TemplatedViewTests : ControlsHandlerTestBase
 	{
 		public TemplatedViewTests()
 		{

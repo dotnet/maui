@@ -232,6 +232,10 @@ namespace Microsoft.Maui.Platform
 			platformView.UpdateSize(new Tizen.UIExtensions.Common.Size(view.Width, view.Height));
 		}
 
+		public static void UpdateToolTip(this NView platformView, ToolTip? tooltip)
+		{
+		}
+
 		internal static Rect GetPlatformViewBounds(this IView view)
 		{
 			var platformView = view?.ToPlatform();
@@ -247,8 +251,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformView == null)
 				return new Rect();
-			var screenPostion = platformView.ScreenPosition;
-			return new TRect(screenPostion.X, screenPostion.Y, platformView.SizeWidth, platformView.SizeHeight).ToDP();
+			var screenPosition = platformView.ScreenPosition;
+			return new TRect(screenPosition.X, screenPosition.Y, platformView.SizeWidth, platformView.SizeHeight).ToDP();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)

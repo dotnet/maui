@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ShapeView)]
-	public partial class ShapeViewHandlerTests : HandlerTestBase<ShapeViewHandler, ShapeViewStub>
+	public partial class ShapeViewHandlerTests : CoreHandlerTestBase<ShapeViewHandler, ShapeViewStub>
 	{
 		[Theory(DisplayName = "Shape Background Initializes Correctly")]
 		[InlineData(0xFF0000)]

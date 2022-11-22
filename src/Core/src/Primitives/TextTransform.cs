@@ -1,15 +1,28 @@
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/TextTransform.xml" path="Type[@FullName='Microsoft.Maui.TextTransform']/Docs/*" />
+	/// <summary>
+	/// Enumerates values that determine the text transformation on an element.
+	/// </summary>
 	public enum TextTransform
 	{
-		/// <include file="../../docs/Microsoft.Maui/TextTransform.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>
+		/// No text transformation is applied.
+		/// </summary>
 		None = 0,
-		/// <include file="../../docs/Microsoft.Maui/TextTransform.xml" path="//Member[@MemberName='Default']/Docs/*" />
+
+		/// <summary>
+		/// The default text transformation is applied.
+		/// </summary>
 		Default,
-		/// <include file="../../docs/Microsoft.Maui/TextTransform.xml" path="//Member[@MemberName='Lowercase']/Docs/*" />
+
+		/// <summary>
+		/// The text will be transformed into lowercase.
+		/// </summary>
 		Lowercase,
-		/// <include file="../../docs/Microsoft.Maui/TextTransform.xml" path="//Member[@MemberName='Uppercase']/Docs/*" />
+
+		/// <summary>
+		/// The text will be transformed into uppercase.
+		/// </summary>
 		Uppercase
 	}
 }

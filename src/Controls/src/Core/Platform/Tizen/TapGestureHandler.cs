@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnTapped(object source, NTapGestureDetector.DetectedEventArgs e)
 		{
-			if (e.TapGesture.NumberOfTaps == Recognizer.NumberOfTapsRequired)
+			if (e.TapGesture.NumberOfTaps == Recognizer.NumberOfTapsRequired && View != null)
 				Recognizer.SendTapped(View);
 		}
 	}

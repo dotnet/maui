@@ -1,6 +1,9 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Android.Views;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -8,14 +11,14 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class TapGestureHandler
 	{
-		public TapGestureHandler(Func<View> getView, Func<IList<GestureElement>> getChildElements)
+		public TapGestureHandler(Func<View?> getView, Func<IList<GestureElement>> getChildElements)
 		{
 			GetView = getView;
 			GetChildElements = getChildElements;
 		}
 
 		Func<IList<GestureElement>> GetChildElements { get; }
-		Func<View> GetView { get; }
+		Func<View?> GetView { get; }
 
 		public void OnSingleClick()
 		{
@@ -23,12 +26,19 @@ namespace Microsoft.Maui.Controls.Platform
 			if (TapGestureRecognizers(2).Any())
 				return;
 
-			OnTap(1, new Point(-1, -1));
+			OnTap(1, null);
 		}
 
-		public bool OnTap(int count, Point point)
+		public bool OnTap(int count, MotionEvent? e)
 		{
-			View view = GetView();
+			Point point;
+
+			if (e == null)
+				point = new Point(-1, -1);
+			else
+				point = new Point(e.GetX(), e.GetY());
+
+			var view = GetView();
 
 			if (view == null)
 				return false;
@@ -38,11 +48,16 @@ namespace Microsoft.Maui.Controls.Platform
 			var children = view.GetChildElements(point);
 
 			if (children != null)
+			{
 				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(recognizer => recognizer.NumberOfTapsRequired == count))
 				{
-					recognizer.SendTapped(view);
+					if (!CheckButtonMask(recognizer, e))
+						continue;
+
+					recognizer.SendTapped(view, (view) => e.CalculatePosition(GetView(), view));
 					captured = true;
 				}
+			}
 
 			if (captured)
 				return captured;
@@ -50,11 +65,28 @@ namespace Microsoft.Maui.Controls.Platform
 			IEnumerable<TapGestureRecognizer> gestureRecognizers = TapGestureRecognizers(count);
 			foreach (var gestureRecognizer in gestureRecognizers)
 			{
-				gestureRecognizer.SendTapped(view);
+				if (!CheckButtonMask(gestureRecognizer, e))
+					continue;
+
+				gestureRecognizer.SendTapped(view, (view) => e.CalculatePosition(GetView(), view));
 				captured = true;
 			}
 
 			return captured;
+
+			bool CheckButtonMask(TapGestureRecognizer tapGestureRecognizer, MotionEvent? motionEvent)
+			{
+				if (tapGestureRecognizer.Buttons == ButtonsMask.Secondary)
+				{
+					var buttonState = motionEvent?.ButtonState ?? MotionEventButtonState.Primary;
+
+					return
+						buttonState == MotionEventButtonState.Secondary ||
+						buttonState == MotionEventButtonState.StylusSecondary;
+				}
+
+				return (tapGestureRecognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
+			}
 		}
 
 		public bool HasAnyGestures()
@@ -66,7 +98,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public IEnumerable<TapGestureRecognizer> TapGestureRecognizers(int count)
 		{
-			View view = GetView();
+			var view = GetView();
 			if (view == null)
 				return Enumerable.Empty<TapGestureRecognizer>();
 

@@ -104,14 +104,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		Page _contentCache;
-		IList<Element> _logicalChildren = new List<Element>();
-		ReadOnlyCollection<Element> _logicalChildrenReadOnly;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ShellContent() => ((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
 
 		internal bool IsVisibleContent => Parent is ShellSection shellSection && shellSection.IsVisibleSection && shellSection.CurrentItem == this;
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
 
 		internal override void SendDisappearing()
 		{
@@ -188,12 +185,11 @@ namespace Microsoft.Maui.Controls
 				var oldCache = _contentCache;
 				_contentCache = value;
 				if (oldCache != null)
-					OnChildRemoved(oldCache, -1);
+					RemoveLogicalChild(oldCache);
 
 				if (value != null && value.Parent != this)
 				{
-					_logicalChildren.Add(value);
-					OnChildAdded(value);
+					AddLogicalChild(value);
 				}
 
 				if (Parent != null)
@@ -234,8 +230,6 @@ namespace Microsoft.Maui.Controls
 					shellContent.ContentCache = null;
 				}
 
-				// make sure LogicalChildren collection stays consisten
-				shellContent._logicalChildren.Clear();
 				if (newValue is Page newElement)
 				{
 					shellContent.ContentCache = newElement;
@@ -333,8 +327,5 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
-
-		IReadOnlyList<Maui.IVisualTreeElement> GetVisualChildren() => new List<Maui.IVisualTreeElement> { ((IShellContentController)this).Page }.AsReadOnly();
-
 	}
 }

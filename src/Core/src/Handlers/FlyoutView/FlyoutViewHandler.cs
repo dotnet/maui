@@ -37,6 +37,16 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
+		public FlyoutViewHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public FlyoutViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
+		{
+		}
+
 		IFlyoutView IFlyoutViewHandler.VirtualView => VirtualView;
 
 		PlatformView IFlyoutViewHandler.PlatformView => PlatformView;

@@ -1,4 +1,4 @@
-﻿#if !IOS
+﻿#if !IOS && !MACCATALYST
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -8,8 +8,8 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Page)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
-	public partial class PageTests : HandlerTestBase
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	public partial class PageTests : ControlsHandlerTestBase
 	{
 		[Theory("Page Background Initializes Correctly With Background Prooperty")]
 		[InlineData("#FF0000")]

@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -10,7 +11,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public Path(Geometry data) : this()
 		{
 			Data = data;
@@ -46,11 +46,17 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (oldValue != null)
 			{
 				(oldValue as Geometry).PropertyChanged -= (bindable as Path).OnGeometryPropertyChanged;
+
+				if (oldValue is PathGeometry pathGeometry)
+					pathGeometry.InvalidatePathGeometryRequested -= (bindable as Path).OnInvalidatePathGeometryRequested;
 			}
 
 			if (newValue != null)
 			{
 				(newValue as Geometry).PropertyChanged += (bindable as Path).OnGeometryPropertyChanged;
+
+				if (newValue is PathGeometry pathGeometry)
+					pathGeometry.InvalidatePathGeometryRequested += (bindable as Path).OnInvalidatePathGeometryRequested;
 			}
 		}
 
@@ -69,7 +75,12 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void OnGeometryPropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
-			OnPropertyChanged(nameof(Geometry));
+			OnPropertyChanged(nameof(Data));
+		}
+
+		void OnInvalidatePathGeometryRequested(object sender, EventArgs e)
+		{
+			OnPropertyChanged(nameof(Data));
 		}
 
 		void OnTransformPropertyChanged(object sender, PropertyChangedEventArgs args)

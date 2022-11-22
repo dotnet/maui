@@ -76,7 +76,7 @@
 				<Button Text="Toggle IsEnabled" x:Name="Button2_Toggle" Clicked="Button2_Toggle_OnClicked" />
 
 				<!-- This section verifies that the default colors for an entry's text and placeholder are cached and can be reverted to -->
-				<Label Text="This Button uses null for the intial text/background, and colors from the VSM when disabled."/>
+				<Label Text="This Button uses null for the initial text/background, and colors from the VSM when disabled."/>
 				<Button Text="Button" x:Name="Button3" Style="{StaticResource DefaultInInitialState}" TextColor="Default" 
 					BackgroundColor="Default" />
 				<Button Text="Toggle IsEnabled" x:Name="Button3_Toggle" Clicked="Button3_Toggle_OnClicked" />

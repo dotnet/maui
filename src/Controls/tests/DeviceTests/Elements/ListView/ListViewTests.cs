@@ -9,9 +9,9 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	[Category(TestCategory.ListView)]
-	public partial class ListViewTests : HandlerTestBase
+	public partial class ListViewTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
@@ -109,6 +109,47 @@ namespace Microsoft.Maui.DeviceTests
 				listView.ItemsSource = Enumerable.Range(1, 2);
 				await Task.Delay(100);
 				ValidatePlatformCells(listView);
+			});
+		}
+
+		[Fact]
+		public async Task ClearItemsListViewDoesntCrash()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"cat",
+				"dog",
+				"catdog"
+			};
+
+			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					return new ViewCell()
+					{
+						View = new VerticalStackLayout()
+						{
+							new Label()
+						}
+					};
+				}),
+				HasUnevenRows = true,
+				ItemsSource = data
+			};
+
+			var layout = new VerticalStackLayout()
+			{
+				listView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
+			{
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+				data.Clear();
+				await Task.Delay(100);
 			});
 		}
 	}

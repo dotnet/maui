@@ -43,8 +43,10 @@ namespace Microsoft.Maui.Media
 		public async Task<FileResult> PhotoAsync(MediaPickerOptions options, bool photo, bool pickExisting)
 		{
 #pragma warning disable CA1416 // TODO: UIImagePickerControllerSourceType.PhotoLibrary, UTType.Image, UTType.Movie is supported on ios version 14 and above
+#pragma warning disable CA1422 // Validate platform compatibility
 			var sourceType = pickExisting ? UIImagePickerControllerSourceType.PhotoLibrary : UIImagePickerControllerSourceType.Camera;
 			var mediaType = photo ? UTType.Image : UTType.Movie;
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 
 			if (!UIImagePickerController.IsSourceTypeAvailable(sourceType))
@@ -138,13 +140,16 @@ namespace Microsoft.Maui.Media
 					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.OrdinalIgnoreCase))
 						return new UIDocumentFileResult(assetUrl);
 #pragma warning disable CA1416 // TODO: 'UIImagePickerController.PHAsset' is only supported on: 'ios' from version 11.0 to 14.0
+#pragma warning disable CA1422 // Validate platform compatibility
 					phAsset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 				}
 			}
 
 #if !MACCATALYST
 #pragma warning disable CA1416 // TODO: 'UIImagePickerController.ReferenceUrl' is unsupported on 'ios' 11.0 and later
+#pragma warning disable CA1422 // Validate platform compatibility
 			if (phAsset == null)
 			{
 				assetUrl = info[UIImagePickerController.ReferenceUrl] as NSUrl;
@@ -152,6 +157,7 @@ namespace Microsoft.Maui.Media
 				if (assetUrl != null)
 					phAsset = PHAsset.FetchAssets(new NSUrl[] { assetUrl }, null)?.LastObject as PHAsset;
 			}
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // 'PHAsset.FetchAssets(NSUrl[], PHFetchOptions?)' is unsupported on 'ios' 11.0 and later
 #endif
 
@@ -166,7 +172,9 @@ namespace Microsoft.Maui.Media
 			if (phAsset == null || assetUrl == null)
 				return null;
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
+#pragma warning disable CA1422 // Validate platform compatibility
 			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 			return new PHAssetFileResult(assetUrl, phAsset, originalFilename);
 		}
