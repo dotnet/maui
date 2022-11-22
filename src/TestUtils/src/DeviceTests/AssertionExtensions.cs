@@ -118,6 +118,15 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
+		public static Task WaitForUnFocused(this IView view, int timeout = 1000)
+		{
+#if !PLATFORM
+			return Task.CompletedTask;
+#else
+			return view.ToPlatform().WaitForUnFocused(timeout);
+#endif
+		}
+
 		public static Task FocusView(this IView view, int timeout = 1000)
 		{
 

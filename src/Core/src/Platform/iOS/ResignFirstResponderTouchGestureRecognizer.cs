@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	class ResignFirstResponderTouchGestureRecognizer : UITapGestureRecognizer
+	internal class ResignFirstResponderTouchGestureRecognizer : UITapGestureRecognizer
 	{
 		UIView? _targetView;
 		Token? _token;

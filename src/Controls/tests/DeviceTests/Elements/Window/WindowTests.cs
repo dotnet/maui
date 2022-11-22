@@ -60,6 +60,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
 					handlers.AddHandler<ShellContent, ShellContentHandler>();
 #endif
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<Editor, EditorHandler>();
+					handlers.AddHandler<SearchBar, SearchBarHandler>();
 				});
 			});
 		}
