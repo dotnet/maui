@@ -2,24 +2,24 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.TabbedPage)]
-	public partial class TabbedPageTests : HandlerTestBase
+	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
 		[Fact(DisplayName = "Toolbar Visible When Pushing To TabbedPage")]
 		public async Task ToolbarVisibleWhenPushingToTabbedPage()

@@ -41,7 +41,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Point)GetValue(EndPointProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs/*" />
 		public override void AppendPath(PathF path)
 		{
 			float startPointX = (float)StartPoint.X;

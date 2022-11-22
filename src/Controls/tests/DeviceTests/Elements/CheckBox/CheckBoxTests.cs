@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.CheckBox)]
-	public partial class CheckBoxTests : HandlerTestBase
+	public partial class CheckBoxTests : ControlsHandlerTestBase
 	{
 		[Theory("Checkbox Background Updates Correctly With BackgroundColor Property")]
 		[InlineData("#FF0000")]

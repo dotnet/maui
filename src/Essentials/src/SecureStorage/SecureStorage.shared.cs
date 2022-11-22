@@ -31,7 +31,6 @@ namespace Microsoft.Maui.Storage
 		public static Task<string> GetAsync(string key) =>
 			Current.GetAsync(key);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SecureStorage.xml" path="//Member[@MemberName='SetAsync'][0 and position()=0]/Docs/*" />
 		public static Task SetAsync(string key, string value) =>
 			Current.SetAsync(key, value);
 

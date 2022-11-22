@@ -19,7 +19,10 @@ namespace Microsoft.Maui
 				{
 					var callback = new ImageLoaderCallback();
 
-					PlatformInterop.LoadImageFromUri(imageView, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), callback);
+					var cachingEnabled = uriImageSource.CachingEnabled
+						? Java.Lang.Boolean.True
+						: Java.Lang.Boolean.False;
+					PlatformInterop.LoadImageFromUri(imageView, uriImageSource.Uri.OriginalString, cachingEnabled, callback);
 
 					return callback.Result;
 				}
@@ -42,7 +45,10 @@ namespace Microsoft.Maui
 				{
 					var drawableCallback = new ImageLoaderResultCallback();
 
-					PlatformInterop.LoadImageFromUri(context, uriImageSource.Uri.OriginalString, new Java.Lang.Boolean(uriImageSource.CachingEnabled), drawableCallback);
+					var cachingEnabled = uriImageSource.CachingEnabled
+						? Java.Lang.Boolean.True
+						: Java.Lang.Boolean.False;
+					PlatformInterop.LoadImageFromUri(context, uriImageSource.Uri.OriginalString, cachingEnabled, drawableCallback);
 
 					return drawableCallback.Result;
 				}

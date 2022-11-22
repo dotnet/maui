@@ -1,9 +1,9 @@
-﻿using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls;
+﻿using System;
 using System.Collections.Generic;
-using System;
-using Maui.Controls.Sample.Pages.ShellGalleries;
 using System.Linq;
+using Maui.Controls.Sample.Pages.ShellGalleries;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {

@@ -5,6 +5,10 @@ using Microsoft.Maui.Foldable;
 
 namespace Microsoft.Maui.Controls.Foldable
 {
+	/// <summary>
+	/// Triggers a state change when the <see cref="Microsoft.Maui.Controls.Foldable.TwoPaneViewMode"/>
+	/// of the attached layout changes.
+	/// </summary>
 	public sealed class SpanModeStateTrigger : StateTriggerBase
 	{
 		VisualElement _visualElement;
@@ -14,6 +18,10 @@ namespace Microsoft.Maui.Controls.Foldable
 			UpdateState();
 		}
 
+		/// <summary>
+		/// <see cref="Microsoft.Maui.Controls.Foldable.TwoPaneViewMode"/>
+		/// which indicates the span mode to which the visual state should be applied.
+		/// </summary>
 		public TwoPaneViewMode SpanMode
 		{
 			get => (TwoPaneViewMode)GetValue(SpanModeProperty);

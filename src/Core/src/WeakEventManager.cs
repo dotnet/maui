@@ -25,7 +25,6 @@ namespace Microsoft.Maui
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler'][2]/Docs/*" />
 		public void AddEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
@@ -92,7 +91,6 @@ namespace Microsoft.Maui
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='RemoveEventHandler'][2]/Docs/*" />
 		public void RemoveEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
@@ -148,9 +146,7 @@ namespace Microsoft.Maui
 				Handler = handler ?? throw new ArgumentNullException(nameof(handler));
 			}
 
-			/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='Subscriber']/Docs/*" />
 			public readonly WeakReference? Subscriber;
-			/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='Handler']/Docs/*" />
 			public readonly MethodInfo Handler;
 		}
 	}
