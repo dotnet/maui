@@ -596,6 +596,38 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Navigate to Root with BackButtonBehavior no Crash")]
+		public async Task NavigateToRootWithBackButtonBehaviorNoCrash()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				await shell.Navigation.PushAsync(new ContentPage());
+				Assert.True(IsBackButtonVisible(shell.Handler));
+
+				BackButtonBehavior behavior = new BackButtonBehavior()
+				{
+					IsVisible = false
+				};
+
+				Shell.SetBackButtonBehavior(shell.CurrentPage, behavior);
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				behavior.IsVisible = true;
+				NavigationPage.SetHasBackButton(shell.CurrentPage, true);
+
+				await shell.Navigation.PopToRootAsync(false);
+				await Task.Delay(100);
+				Assert.NotNull(shell.Handler);
+			});
+		}
+
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{
