@@ -155,6 +155,7 @@ static Microsoft.Maui.Handlers.WindowHandler.MapWidth(Microsoft.Maui.Handlers.IW
 static Microsoft.Maui.Handlers.WindowHandler.MapX(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapY(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.Button! platformButton, Microsoft.Maui.Graphics.Paint? background) -> void
+static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.ToolTip? tooltip) -> void
 static Microsoft.Maui.Platform.WindowExtensions.UpdateHeight(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Platform.WindowExtensions.UpdateMaximumHeight(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void

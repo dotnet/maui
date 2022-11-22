@@ -176,10 +176,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (cancelAction != null)
 					AddCancelAction(controller, () => cancelAction(controller));
 
-#pragma warning disable CA1416 // TODO:  'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
+#pragma warning disable CA1416, CA1422 // TODO:  'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
 				GetTopViewController(UIApplication.SharedApplication.Windows.FirstOrDefault(m => m.IsKeyWindow)?.RootViewController)?
 					.PresentViewController(controller, true, null);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 			}
 
 			private static UIViewController? GetTopViewController(UIViewController? viewController)
@@ -236,9 +236,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				if (strategy == UrlLoadingStrategy.OpenExternally)
 				{
-#pragma warning disable CA1416 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
+#pragma warning disable CA1416, CA1422 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
 					UIApplication.SharedApplication.OpenUrl(requestUrl);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 				}
 
 				if (strategy != UrlLoadingStrategy.OpenInWebView)
