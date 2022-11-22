@@ -80,7 +80,10 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
 			{
 				var mauiToolBar = GetPlatformToolbar(handler);
-				await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0);
+
+				Assert.NotNull(mauiToolBar);
+				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0));
+
 				var position = mauiToolBar.GetLocationOnScreen();
 				var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
 
@@ -113,7 +116,10 @@ namespace Microsoft.Maui.DeviceTests
 						if (nextRootPage is NavigationPage || nextRootPage is Shell)
 						{
 							var mauiToolBar = GetPlatformToolbar(handler);
-							await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0);
+
+							Assert.NotNull(mauiToolBar);
+							Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0));
+
 							var position = mauiToolBar.GetLocationOnScreen();
 							var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
 

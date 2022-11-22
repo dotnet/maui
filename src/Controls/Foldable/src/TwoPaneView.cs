@@ -142,6 +142,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		/// <summary>
 		/// Gets the calculated width (in wide mode) or height (in tall mode) of pane 1, or sets the GridLength value of pane 1.
 		/// </summary>
+		[System.ComponentModel.TypeConverter(typeof(GridLengthTypeConverter))]
 		public GridLength Pane1Length
 		{
 			get { return (GridLength)GetValue(Pane1LengthProperty); }
@@ -151,6 +152,7 @@ namespace Microsoft.Maui.Controls.Foldable
 		/// <summary>
 		/// Gets the calculated width (in wide mode) or height (in tall mode) of pane 2, or sets the GridLength value of pane 2.
 		/// </summary>
+		[System.ComponentModel.TypeConverter(typeof(GridLengthTypeConverter))]
 		public GridLength Pane2Length
 		{
 			get { return (GridLength)GetValue(Pane2LengthProperty); }
