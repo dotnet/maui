@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
+#if __IOS__
 using Foundation;
+#endif
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
