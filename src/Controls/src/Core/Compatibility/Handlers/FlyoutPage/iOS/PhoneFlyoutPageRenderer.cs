@@ -276,15 +276,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (animated)
 			{
-				UIView.BeginAnimations("Flyout");
-				var view = _detailController.View;
-				view.Frame = target;
-				detailView.Layer.Opacity = (float)opacity;
-#pragma warning disable CA1416 // TODO:  'UIView.SetAnimationCurve(UIViewAnimationCurve)' is unsupported on: 'ios' 13.0 and later
-				UIView.SetAnimationCurve(UIViewAnimationCurve.EaseOut);
-				UIView.SetAnimationDuration(250);
-				UIView.CommitAnimations();
-#pragma warning restore CA1416
+				UIView.Animate(250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+				{
+					var view = _detailController.View;
+					view.Frame = target;
+					detailView.Layer.Opacity = (float)opacity;
+				}, () => { });
 			}
 			else
 			{

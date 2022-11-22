@@ -16,7 +16,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public static bool IsDeclaredInManifest(string permission)
 		{
 			var context = Application.Context;
+#pragma warning disable 618
 			var packageInfo = context.PackageManager.GetPackageInfo(context.PackageName, PackageInfoFlags.Permissions);
+#pragma warning restore 618
 			var requestedPermissions = packageInfo?.RequestedPermissions;
 
 			return requestedPermissions?.Any(r => r.Equals(permission, StringComparison.OrdinalIgnoreCase)) ?? false;
@@ -371,12 +373,16 @@ namespace Microsoft.Maui.ApplicationModel
 					}
 
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 					if (IsDeclaredInManifest(Manifest.Permission.ProcessOutgoingCalls))
 					{
 						if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.Q))
 							System.Diagnostics.Debug.WriteLine($"{Manifest.Permission.ProcessOutgoingCalls} is deprecated in Android 10");
 						permissions.Add((Manifest.Permission.ProcessOutgoingCalls, true));
 					}
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 
 					return permissions.ToArray();

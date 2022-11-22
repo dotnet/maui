@@ -1379,7 +1379,7 @@ Microsoft.Maui.MauiWinUIApplication.Services.get -> System.IServiceProvider!
 Microsoft.Maui.MauiWinUIApplication.Services.set -> void
 Microsoft.Maui.MauiWinUIWindow
 Microsoft.Maui.MauiWinUIWindow.MauiWinUIWindow() -> void
-Microsoft.Maui.MauiWinUIWindow.WindowHandle.get -> System.IntPtr
+Microsoft.Maui.MauiWinUIWindow.WindowHandle.get -> nint
 Microsoft.Maui.MissingMapperAttribute
 Microsoft.Maui.MissingMapperAttribute.Description.get -> string?
 Microsoft.Maui.MissingMapperAttribute.Description.set -> void
@@ -1540,14 +1540,14 @@ Microsoft.Maui.Platform.WindowRootView.BackRequested -> Windows.Foundation.Typed
 Microsoft.Maui.Platform.WindowRootView.NavigationViewControl.get -> Microsoft.Maui.Platform.RootNavigationView?
 Microsoft.Maui.Platform.WindowRootView.WindowRootView() -> void
 Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs
-Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs.Hwnd.get -> System.IntPtr
-Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs.LParam.get -> System.IntPtr
+Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs.Hwnd.get -> nint
+Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs.LParam.get -> nint
 Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs.MessageId.get -> uint
-Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs.WindowsPlatformMessageEventArgs(System.IntPtr hwnd, uint messageId, System.IntPtr wParam, System.IntPtr lParam) -> void
-Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs.WParam.get -> System.IntPtr
+Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs.WindowsPlatformMessageEventArgs(nint hwnd, uint messageId, nint wParam, nint lParam) -> void
+Microsoft.Maui.Platform.WindowsPlatformMessageEventArgs.WParam.get -> nint
 Microsoft.Maui.Platform.WindowsPlatformWindowSubclassedEventArgs
-Microsoft.Maui.Platform.WindowsPlatformWindowSubclassedEventArgs.Hwnd.get -> System.IntPtr
-Microsoft.Maui.Platform.WindowsPlatformWindowSubclassedEventArgs.WindowsPlatformWindowSubclassedEventArgs(System.IntPtr hwnd) -> void
+Microsoft.Maui.Platform.WindowsPlatformWindowSubclassedEventArgs.Hwnd.get -> nint
+Microsoft.Maui.Platform.WindowsPlatformWindowSubclassedEventArgs.WindowsPlatformWindowSubclassedEventArgs(nint hwnd) -> void
 Microsoft.Maui.Platform.WrapperView
 Microsoft.Maui.Platform.WrapperView.Border.get -> Microsoft.Maui.IBorderStroke?
 Microsoft.Maui.Platform.WrapperView.Border.set -> void
@@ -2711,7 +2711,7 @@ static Microsoft.Maui.Platform.WebViewExtensions.UpdateSource(this Microsoft.UI.
 static Microsoft.Maui.Platform.WindowExtensions.GetAppWindow(this Microsoft.UI.Xaml.Window! platformWindow) -> Microsoft.UI.Windowing.AppWindow?
 static Microsoft.Maui.Platform.WindowExtensions.GetDisplayDensity(this Microsoft.UI.Xaml.Window! platformWindow) -> float
 static Microsoft.Maui.Platform.WindowExtensions.GetWindow(this Microsoft.UI.Xaml.Window! platformWindow) -> Microsoft.Maui.IWindow?
-static Microsoft.Maui.Platform.WindowExtensions.GetWindowHandle(this Microsoft.UI.Xaml.Window! platformWindow) -> System.IntPtr
+static Microsoft.Maui.Platform.WindowExtensions.GetWindowHandle(this Microsoft.UI.Xaml.Window! platformWindow) -> nint
 static Microsoft.Maui.Platform.WindowExtensions.UpdateTitle(this Microsoft.UI.Xaml.Window! platformWindow, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Primitives.Dimension.IsExplicitSet(double value) -> bool
 static Microsoft.Maui.Primitives.Dimension.IsMaximumSet(double value) -> bool

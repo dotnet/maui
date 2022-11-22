@@ -1,7 +1,7 @@
-﻿using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Geometry;
-using System;
+﻿using System;
 using System.Numerics;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Geometry;
 
 namespace Microsoft.Maui.Graphics.Win2D
 {

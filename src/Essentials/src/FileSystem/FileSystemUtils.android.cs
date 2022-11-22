@@ -306,7 +306,11 @@ namespace Microsoft.Maui.Storage
 		static string GetDataFilePath(AndroidUri contentUri, string selection = null, string[] selectionArgs = null)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1422 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
 			const string column = MediaStore.Files.FileColumns.Data;
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			// ask the content provider for the data column, which may contain the actual file path

@@ -112,6 +112,7 @@ Microsoft.Maui.IWindow.MinimumHeight.get -> double
 Microsoft.Maui.IWindow.MinimumWidth.get -> double
 Microsoft.Maui.IWindow.X.get -> double
 Microsoft.Maui.IWindow.Y.get -> double
+override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CreatePlatformElement() -> object!
 override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
@@ -147,6 +148,7 @@ static Microsoft.Maui.Handlers.WindowHandler.MapHeight(Microsoft.Maui.Handlers.I
 static Microsoft.Maui.Handlers.WindowHandler.MapWidth(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapX(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapY(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
+static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchThumbDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable?
 static Microsoft.Maui.Platform.SwitchExtensions.GetDefaultSwitchTrackDrawable(this AndroidX.AppCompat.Widget.SwitchCompat! aSwitch) -> Android.Graphics.Drawables.Drawable?
 static Microsoft.Maui.Platform.ViewExtensions.UpdateToolTip(this Android.Views.View! view, Microsoft.Maui.ToolTip? tooltip) -> void

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.MenuFlyout)]
-	public partial class ContextFlyoutTests : HandlerTestBase
+	public partial class ContextFlyoutTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{

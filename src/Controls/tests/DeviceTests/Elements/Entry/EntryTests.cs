@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Entry)]
-	public partial class EntryTests : HandlerTestBase
+	public partial class EntryTests : ControlsHandlerTestBase
 	{
 		[Theory(DisplayName = "Text is Transformed Correctly at Initialization")]
 		[ClassData(typeof(TextTransformCases))]

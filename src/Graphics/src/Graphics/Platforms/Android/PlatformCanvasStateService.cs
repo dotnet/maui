@@ -1,6 +1,6 @@
-﻿using Android.Graphics;
+﻿using System;
+using Android.Graphics;
 using Android.Text;
-using System;
 
 namespace Microsoft.Maui.Graphics.Platform
 {

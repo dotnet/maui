@@ -4,11 +4,19 @@
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Controls.Maps</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Maps</RootNamespace>
-    <IsPackable>true</IsPackable>
+    <IsTrimmable>false</IsTrimmable>
     <Nullable>enable</Nullable>
     <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0022</NoWarn>
+
+    <!-- Add specifics for this NuGet -->
+    <IsPackable>True</IsPackable>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>dotnet-maui;maui;maps;map;ios;android;macos</PackageTags>
+    <Title>.NET MAUI Maps</Title>
+    <Description>.NET MAUI Maps provides a map control for .NET MAUI apps.</Description>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,5 +26,9 @@
   </ItemGroup>
   
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
-  
+
+  <!-- Add icon for NuGet -->
+  <ItemGroup>
+    <None Include="..\..\..\..\Assets\icon.png" PackagePath="icon.png" Pack="true" />
+  </ItemGroup>
 </Project>

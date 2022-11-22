@@ -56,11 +56,12 @@ namespace Microsoft.Maui.Authentication
 		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, Uri uri) =>
 			webAuthenticator.AsPlatformCallback().OpenUrlCallback(uri);
 
-		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options)
+		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options) 
 		{
-			var absUri = url?.AbsoluteString;
-			if (!string.IsNullOrEmpty(absUri))
-				return webAuthenticator.OpenUrl(new Uri(absUri));
+			if(url?.AbsoluteString != null)
+			{
+				return webAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+			}
 			return false;
 		}
 
