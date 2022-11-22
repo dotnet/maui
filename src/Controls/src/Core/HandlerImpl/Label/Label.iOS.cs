@@ -68,8 +68,10 @@ namespace Microsoft.Maui.Controls
 			if (label?.HasFormattedTextSpans ?? false)
 				return;
 
-			if (label?.TextType == TextType.Html)
+			if (label?.TextType == TextType.Html && FontIsDefault(label))
 			{
+				// If no explicit font has been specified and we're displaying HTML, 
+				// let the HTML determine the font
 				return;
 			}
 
@@ -81,8 +83,10 @@ namespace Microsoft.Maui.Controls
 			if (label?.HasFormattedTextSpans ?? false)
 				return;
 
-			if (label?.TextType == TextType.Html)
+			if (label?.TextType == TextType.Html && label.GetValue(TextColorProperty) == null)
 			{
+				// If no explicit text color has been specified and we're displaying HTML, 
+				// let the HTML determine the colors
 				return;
 			}
 
@@ -97,6 +101,26 @@ namespace Microsoft.Maui.Controls
 		public static void MapMaxLines(ILabelHandler handler, Label label)
 		{
 			handler.PlatformView?.UpdateMaxLines(label);
+		}
+
+		static bool FontIsDefault(Label label)
+		{
+			if (label.IsSet(Label.FontAttributesProperty))
+			{
+				return false;
+			}
+
+			if (label.IsSet(Label.FontFamilyProperty))
+			{
+				return false;
+			}
+
+			if (label.IsSet(Label.FontSizeProperty))
+			{
+				return false;
+			}
+
+			return true;
 		}
 	}
 }
