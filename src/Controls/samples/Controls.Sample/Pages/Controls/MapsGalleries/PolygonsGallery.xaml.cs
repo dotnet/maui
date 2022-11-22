@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
 {
@@ -7,6 +8,11 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 		public PolygonsGallery()
 		{
 			InitializeComponent();
+		}
+
+		void OnClearMapElementsClicked(object sender, EventArgs args)
+		{
+			MapElementsMap.MapElements.Clear();
 		}
 	}
 }

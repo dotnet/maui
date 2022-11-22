@@ -3,7 +3,7 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using static Microsoft.Maui.DeviceTests.HandlerTestBase;
+using static Microsoft.Maui.DeviceTests.ControlsHandlerTestBase;
 using AActivity = Android.App.Activity;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;

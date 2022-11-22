@@ -810,7 +810,7 @@ namespace Microsoft.Maui.Layouts
 					{
 						if (updated[n].IsStar)
 						{
-							updated[n].Update(toAdd);
+							updated[n].Size += toAdd;
 						}
 					}
 				}

@@ -53,7 +53,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (double)GetValue(RadiusYProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs/*" />
 		public override void AppendPath(PathF path)
 		{
 			var centerX = (float)Center.X;

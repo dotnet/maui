@@ -76,7 +76,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontSizeProperty']/Docs/*" />
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontAutoScalingEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='BorderColorProperty']/Docs/*" />
@@ -166,7 +165,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontAutoScalingEnabled']/Docs/*" />
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
@@ -392,13 +390,15 @@ namespace Microsoft.Maui.Controls
 			{
 				return;
 			}
-
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			MessagingCenter.Send(this, ValueChangedMessage,
 						new RadioButtonValueChanged(RadioButtonGroup.GetVisualRoot(this)));
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnGroupNamePropertyChanged(string oldGroupName, string newGroupName)
 		{
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			if (!string.IsNullOrEmpty(newGroupName))
 			{
 				if (string.IsNullOrEmpty(oldGroupName))
@@ -420,6 +420,7 @@ namespace Microsoft.Maui.Controls
 					MessagingCenter.Unsubscribe<Element, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
 				}
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		bool MatchesScope(RadioButtonScopeMessage message)

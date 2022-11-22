@@ -42,11 +42,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 	{
 		public static void OnActivated(UI.Xaml.Window window, UI.Xaml.WindowActivatedEventArgs e)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(window, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(window, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Application.Current.PropertyChanged += OnAppPropertyChanged;
 

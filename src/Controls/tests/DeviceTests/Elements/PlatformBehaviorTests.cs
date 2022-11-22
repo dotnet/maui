@@ -22,9 +22,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Behavior)]
 #if ANDROID || IOS || MACCATALYST
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
-	public partial class PlatformBehaviorTests : HandlerTestBase
+	public partial class PlatformBehaviorTests : ControlsHandlerTestBase
 	{
 		[Fact]
 		public async Task BasicLoadUnloadingWorks()

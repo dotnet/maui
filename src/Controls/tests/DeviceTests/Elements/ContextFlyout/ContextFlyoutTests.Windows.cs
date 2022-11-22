@@ -8,7 +8,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ContextFlyoutTests : HandlerTestBase
+	public partial class ContextFlyoutTests : ControlsHandlerTestBase
 	{
 		[Fact(DisplayName = "Context flyout creates expected WinUI elements")]
 		public async Task ContextFlyoutCreatesExpectedWinUIElements()
