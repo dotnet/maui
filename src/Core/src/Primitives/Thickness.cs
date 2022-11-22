@@ -31,7 +31,6 @@ namespace Microsoft.Maui
 		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
 		public bool IsEmpty => Left == 0 && Top == 0 && Right == 0 && Bottom == 0;
 
-		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='IsNaN']/Docs/*" />
 		public bool IsNaN => double.IsNaN(Left) && double.IsNaN(Top) && double.IsNaN(Right) && double.IsNaN(Bottom);
 
 		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
@@ -108,7 +107,6 @@ namespace Microsoft.Maui
 			bottom = Bottom;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Thickness.xml" path="//Member[@MemberName='Zero']/Docs/*" />
 		public static Thickness Zero = new Thickness(0);
 
 		public static Thickness operator +(Thickness left, double addend) =>

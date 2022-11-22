@@ -106,7 +106,6 @@ namespace Microsoft.Maui.Controls
 		readonly Dictionary<Sender, List<Subscription>> _subscriptions =
 			new Dictionary<Sender, List<Subscription>>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="//Member[@MemberName='Send'][1]/Docs/*" />
 		public static void Send<TSender, TArgs>(TSender sender, string message, TArgs args) where TSender : class
 		{
 			Instance.Send(sender, message, args);
@@ -119,7 +118,6 @@ namespace Microsoft.Maui.Controls
 			InnerSend(message, typeof(TSender), typeof(TArgs), sender, args);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="//Member[@MemberName='Send'][2]/Docs/*" />
 		public static void Send<TSender>(TSender sender, string message) where TSender : class
 		{
 			Instance.Send(sender, message);
@@ -132,7 +130,6 @@ namespace Microsoft.Maui.Controls
 			InnerSend(message, typeof(TSender), null, sender, null);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="//Member[@MemberName='Subscribe'][1]/Docs/*" />
 		public static void Subscribe<TSender, TArgs>(object subscriber, string message, Action<TSender, TArgs> callback, TSender source = null) where TSender : class
 		{
 			Instance.Subscribe(subscriber, message, callback, source);
@@ -156,7 +153,6 @@ namespace Microsoft.Maui.Controls
 			InnerSubscribe(subscriber, message, typeof(TSender), typeof(TArgs), target, callback.GetMethodInfo(), filter);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="//Member[@MemberName='Subscribe'][2]/Docs/*" />
 		public static void Subscribe<TSender>(object subscriber, string message, Action<TSender> callback, TSender source = null) where TSender : class
 		{
 			Instance.Subscribe(subscriber, message, callback, source);
@@ -180,7 +176,6 @@ namespace Microsoft.Maui.Controls
 			InnerSubscribe(subscriber, message, typeof(TSender), null, target, callback.GetMethodInfo(), filter);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="//Member[@MemberName='Unsubscribe'][1]/Docs/*" />
 		public static void Unsubscribe<TSender, TArgs>(object subscriber, string message) where TSender : class
 		{
 			Instance.Unsubscribe<TSender, TArgs>(subscriber, message);
@@ -191,7 +186,6 @@ namespace Microsoft.Maui.Controls
 			InnerUnsubscribe(message, typeof(TSender), typeof(TArgs), subscriber);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="//Member[@MemberName='Unsubscribe'][2]/Docs/*" />
 		public static void Unsubscribe<TSender>(object subscriber, string message) where TSender : class
 		{
 			Instance.Unsubscribe<TSender>(subscriber, message);

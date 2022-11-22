@@ -4,7 +4,6 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="Type[@FullName='Microsoft.Maui.Controls.Command' and position()=0]/Docs/*" />
 	public sealed class Command<T> : Command
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />

@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
-using WSwipeControl = Microsoft.UI.Xaml.Controls.SwipeControl;
-using WSwipeItems = Microsoft.UI.Xaml.Controls.SwipeItems;
-using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 using Microsoft.Maui.Graphics;
+using WSwipeControl = Microsoft.UI.Xaml.Controls.SwipeControl;
+using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
+using WSwipeItems = Microsoft.UI.Xaml.Controls.SwipeItems;
 
 namespace Microsoft.Maui.Handlers
 {

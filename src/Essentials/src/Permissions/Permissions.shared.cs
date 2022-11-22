@@ -5,17 +5,14 @@ namespace Microsoft.Maui.ApplicationModel
 	/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Permissions']/Docs/*" />
 	public static partial class Permissions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="//Member[@MemberName='CheckStatusAsync']/Docs/*" />
 		public static Task<PermissionStatus> CheckStatusAsync<TPermission>()
 			where TPermission : BasePermission, new() =>
 				new TPermission().CheckStatusAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="//Member[@MemberName='RequestAsync']/Docs/*" />
 		public static Task<PermissionStatus> RequestAsync<TPermission>()
 			where TPermission : BasePermission, new() =>
 				new TPermission().RequestAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Permissions.xml" path="//Member[@MemberName='ShouldShowRationale']/Docs/*" />
 		public static bool ShouldShowRationale<TPermission>()
 			where TPermission : BasePermission, new() =>
 				new TPermission().ShouldShowRationale();
