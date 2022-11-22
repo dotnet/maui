@@ -47,5 +47,40 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				}));				
 		}
+
+		[Theory(DisplayName = "Frame's Content Clips to Bounds Properly")]
+		[InlineData(true)]
+		[InlineData(false)]
+		[InlineData(null)]
+		public async Task FrameClipsCorrectly(bool? isClipped)
+		{
+			SetupBuilder();
+
+			var frame = new Frame()
+			{
+				HeightRequest = 300,
+				WidthRequest = 300,
+				CornerRadius = 80,
+				Content = new Frame
+				{
+					HeightRequest = 400,
+					WidthRequest = 400,
+					BackgroundColor = Colors.Blue,
+				}
+			};
+
+			if (isClipped is bool clipped)
+				frame.IsClippedToBounds = clipped!;
+
+			await InvokeOnMainThreadAsync(() =>
+				frame.ToPlatform(MauiContext).AttachAndRun(() =>
+				{
+					var handler = frame.ToHandler(MauiContext);
+					if (isClipped == false)
+						Assert.False(handler.PlatformView.ClipsToBounds);
+					else
+						Assert.True(handler.PlatformView.ClipsToBounds);
+				}));
+		}
 	}
 }

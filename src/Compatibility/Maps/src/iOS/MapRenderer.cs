@@ -240,9 +240,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
 			if (mapPin == null)
 			{
-#pragma warning disable CA1416 // TODO: MKPinAnnotationView type has [UnsupportedOSPlatform("macos12.0")], [UnsupportedOSPlatform("ios15.0")], [UnsupportedOSPlatform("tvos15.0")]
+#pragma warning disable CA1416, CA1422 // TODO: MKPinAnnotationView type has [UnsupportedOSPlatform("macos12.0")], [UnsupportedOSPlatform("ios15.0")], [UnsupportedOSPlatform("tvos15.0")]
 				mapPin = new MKPinAnnotationView(annotation, defaultPinId);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 				mapPin.CanShowCallout = true;
 			}
 

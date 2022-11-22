@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 		}
 
-#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
+#pragma warning disable CA1416, CA1422  // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
 			var textCell = (TextCell)item;
@@ -93,6 +93,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			cell.TextLabel.Enabled = entryCell.IsEnabled;
 			cell.DetailTextLabel.Enabled = entryCell.IsEnabled;
 		}
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 	}
 }

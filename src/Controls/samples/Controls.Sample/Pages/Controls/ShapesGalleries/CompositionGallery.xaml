@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ShapesGalleries.CompositionGallery"
+    Title="Composition Gallery">
+    <ContentPage.Content>
+        <StackLayout>
+            <Grid 
+                HorizontalOptions="Start"
+                BackgroundColor="Beige"
+                WidthRequest="250" 
+                HeightRequest="250"
+                Margin="12">
+                <Path
+                    Data="M100 100 200 200"
+                    Stroke="Blue"
+                    StrokeThickness="5"
+                    Opacity=".5" />
+                <Line
+                    X1="100"
+                    Y1="100"
+                    X2="200"
+                    Y2="200"
+                    Stroke="Red"
+                    StrokeThickness="20"
+                    Opacity=".5" />
+                <Polygon
+                    Points="100,100 200,100 100,200"
+                    Fill="Green"
+                    Opacity=".5" />
+                <Path Fill="Yellow" Opacity=".5">
+                    <Path.Data>
+                        <EllipseGeometry
+                            Center="150,150"
+                            RadiusX="50"
+                            RadiusY="50" />
+                    </Path.Data>
+                </Path>
+            </Grid>
+            <Grid 
+                HorizontalOptions="Start"
+                BackgroundColor="Beige"
+                WidthRequest="250" 
+                HeightRequest="250"
+                Margin="12">
+                <Line 
+                    X1="100" 
+                    Y1="100" 
+                    X2="200" 
+                    Y2="200" 
+                    Stroke="Red"/>
+                <Line
+                    X1="0"
+                    Y1="0"
+                    X2="100" 
+                    Y2="100"
+                    Stroke="Blue"/>
+                <Line 
+                    X1="100"
+                    Y1="0" 
+                    X2="100"
+                    Y2="100"
+                    Stroke="green"/>
+            </Grid>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

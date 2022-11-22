@@ -235,9 +235,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (!SupportsProgress)
 					return;
 #pragma warning disable 612, 618
-
+#pragma warning disable CA1416, CA1422 // Validate platform compatibility
 				Activity.SetProgressBarIndeterminate(true);
 				Activity.SetProgressBarIndeterminateVisibility(isBusy);
+#pragma warning restore CA1416, CA1422 // Validate platform compatibility
 #pragma warning restore 612, 618
 			}
 

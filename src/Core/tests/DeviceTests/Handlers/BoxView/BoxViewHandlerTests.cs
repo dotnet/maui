@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.BoxView)]
-	public partial class BoxViewHandlerTests : HandlerTestBase<ShapeViewHandler, BoxViewStub>
+	public partial class BoxViewHandlerTests : CoreHandlerTestBase<ShapeViewHandler, BoxViewStub>
 	{
 		[Theory(DisplayName = "BoxView Initializes Correctly")]
 		[InlineData(0xFF0000)]
