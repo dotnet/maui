@@ -18,7 +18,7 @@
     <MicrosoftiOSSdkPackageVersion>16.1.585-net8-p1</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>16.1.585-net8-p1</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
-    <SamsungTizenSdkPackageVersion>7.0.100</SamsungTizenSdkPackageVersion>
+    <SamsungTizenSdkPackageVersion>7.0.104</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion>8.0.0-alpha.1.22510.1</MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
@@ -76,6 +76,6 @@
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetMaciOSManifestVersionBand>
-    <DotNetTizenManifestVersionBand>7.0.100</DotNetTizenManifestVersionBand>
+    <DotNetTizenManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>
