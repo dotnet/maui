@@ -6,12 +6,6 @@ parameters:
   provisionatorChannel: 'latest'
 
 steps:
-  - template: agent-cleanser/v1.yml@xamarin-templates
-    parameters:
-      UninstallMono: false
-      UninstallXamarinMac: false
-      CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
-
   - template: provision.yml
     parameters:
       platform: macos
@@ -20,6 +14,7 @@ steps:
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
+    retryCountOnTaskFailure: 3
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
@@ -32,6 +27,7 @@ steps:
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
+    retryCountOnTaskFailure: 2
 
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results

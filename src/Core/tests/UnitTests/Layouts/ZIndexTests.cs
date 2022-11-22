@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Primitives;
@@ -56,6 +57,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public bool IgnoreSafeArea { get; }
 			public Thickness Padding { get; }
 			public bool InputTransparent { get; set; }
+
 			IElementHandler IElement.Handler { get; set; }
 
 			public void InvalidateArrange()
@@ -209,7 +211,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			layout.Add(view0);
 			layout.Add(view1);
 
-			var zordered = layout.OrderByZIndex();
+			var zordered = layout.OrderByZIndex().ToArray();
 			Assert.Equal(view1, zordered[0]);
 			Assert.Equal(view0, zordered[1]);
 		}
@@ -228,7 +230,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			layout.Add(view2);
 			layout.Add(view3);
 
-			var zordered = layout.OrderByZIndex();
+			var zordered = layout.OrderByZIndex().ToArray();
 			Assert.Equal(view0, zordered[0]);
 			Assert.Equal(view1, zordered[1]);
 			Assert.Equal(view2, zordered[2]);
@@ -237,7 +239,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Fake an update
 			view3.ZIndex.Returns(5);
 
-			zordered = layout.OrderByZIndex();
+			zordered = layout.OrderByZIndex().ToArray();
 			Assert.Equal(view0, zordered[0]);
 			Assert.Equal(view1, zordered[1]);
 			Assert.Equal(view2, zordered[2]);
@@ -267,7 +269,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			for (int i = 0; i < iterations; i++)
 			{
-				var zordered = layout.OrderByZIndex();
+				var zordered = layout.OrderByZIndex().ToArray();
 
 				for (int n = 0; n < zordered.Length; n++)
 				{

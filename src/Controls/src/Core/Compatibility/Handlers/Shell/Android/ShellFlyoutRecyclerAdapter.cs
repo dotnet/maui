@@ -265,11 +265,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_element == value)
 						return;
 
-					_shell.RemoveLogicalChild(View);
+					if (View.Parent is BaseShellItem bsi)
+						bsi.RemoveLogicalChild(View);
+					else
+						_shell.RemoveLogicalChild(View);
+
 					if (_element != null && _element is BaseShellItem)
 					{
-						// TODO MAUI I don't think this is relevant
-						//_element.ClearValue(AppCompat.Platform.RendererProperty);
 						_element.PropertyChanged -= OnElementPropertyChanged;
 					}
 
@@ -280,9 +282,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (_element != null)
 					{
-						_shell.AddLogicalChild(View);
-						AutomationPropertiesProvider.AccessibilitySettingsChanged(_itemView, value);
-						//_element.SetValue(AppCompat.Platform.RendererProperty, _itemView);
+						if (value is BaseShellItem bsiNew)
+							bsiNew.AddLogicalChild(View);
+						else
+							_shell.AddLogicalChild(View);
+
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();
 					}

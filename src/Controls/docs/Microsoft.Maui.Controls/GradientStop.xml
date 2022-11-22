@@ -32,17 +32,17 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public GradientStop (Microsoft.Maui.Controls.Color color, float offset);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Controls.Color color, float32 offset) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.GradientStop.#ctor(Microsoft.Maui.Controls.Color,System.Single)" />
-      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.GradientStop : Microsoft.Maui.Controls.Color * single -&gt; Microsoft.Maui.Controls.GradientStop" Usage="new Microsoft.Maui.Controls.GradientStop (color, offset)" />
+      <MemberSignature Language="C#" Value="public GradientStop (Microsoft.Maui.Graphics.Color color, float offset);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Graphics.Color color, float32 offset) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.GradientStop.#ctor(Microsoft.Maui.Graphics.Color,System.Single)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.GradientStop : Microsoft.Maui.Graphics.Color * single -&gt; Microsoft.Maui.Controls.GradientStop" Usage="new Microsoft.Maui.Controls.GradientStop (color, offset)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="color" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="color" Type="Microsoft.Maui.Graphics.Color" />
         <Parameter Name="offset" Type="System.Single" />
       </Parameters>
       <Docs>
@@ -53,17 +53,17 @@
       </Docs>
     </Member>
     <Member MemberName="Color">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color Color { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Color" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color Color { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Color" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.GradientStop.Color" />
-      <MemberSignature Language="F#" Value="member this.Color : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.GradientStop.Color" />
+      <MemberSignature Language="F#" Value="member this.Color : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.GradientStop.Color" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

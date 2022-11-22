@@ -32,12 +32,13 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		protected ContentViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? ViewCommandMapper)
+		public ContentViewHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
 		{
 		}
 
-		public ContentViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public ContentViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

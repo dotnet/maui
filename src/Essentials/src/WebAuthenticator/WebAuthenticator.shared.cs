@@ -18,14 +18,13 @@ namespace Microsoft.Maui.Authentication
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs/*" />
 	public static class WebAuthenticator
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][1]/Docs/*" />
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
 			=> Current.AuthenticateAsync(url, callbackUrl);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][2]/Docs" />
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 			=> Current.AuthenticateAsync(webAuthenticatorOptions);
 
@@ -57,8 +56,14 @@ namespace Microsoft.Maui.Authentication
 		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, Uri uri) =>
 			webAuthenticator.AsPlatformCallback().OpenUrlCallback(uri);
 
-		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options) =>
-			webAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options) 
+		{
+			if(url?.AbsoluteString != null)
+			{
+				return webAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+			}
+			return false;
+		}
 
 		public static bool ContinueUserActivity(this IWebAuthenticator webAuthenticator, UIKit.UIApplication application, Foundation.NSUserActivity userActivity, UIKit.UIApplicationRestorationHandler completionHandler)
 		{

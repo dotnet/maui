@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Skia.Views;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
-using Tizen.UIExtensions.NUI.GraphicsView;
 using NExtents = Tizen.NUI.Extents;
 using NLayoutParamPolicies = Tizen.NUI.BaseComponents.LayoutParamPolicies;
 using NLinearLayout = Tizen.NUI.LinearLayout;

@@ -3,6 +3,7 @@ using System.Threading;
 
 namespace Microsoft.Maui.Dispatching
 {
+	/// <inheritdoc/>
 	public partial class Dispatcher : IDispatcher
 	{
 		readonly SynchronizationContext _context;
@@ -40,35 +41,46 @@ namespace Microsoft.Maui.Dispatching
 		}
 	}
 
+	/// <inheritdoc/>
 	partial class DispatcherTimer : IDispatcherTimer
 	{
 		readonly SynchronizationContext _context;
 		readonly Timer _timer;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DispatcherTimer"/> class.
+		/// </summary>
+		/// <param name="context">The context for this dispatcher to use.</param>
 		public DispatcherTimer(SynchronizationContext context)
 		{
 			_context = context;
 			_timer = new Timer((object? state) => _context.Post(OnTimerTick, null), null, Timeout.Infinite, Timeout.Infinite);
 		}
 
+		/// <inheritdoc/>
 		public TimeSpan Interval { get; set; }
 
+		/// <inheritdoc/>
 		public bool IsRepeating { get; set; }
 
+		/// <inheritdoc/>
 		public bool IsRunning { get; private set; }
 
+		/// <inheritdoc/>
 		public event EventHandler? Tick;
 
+		/// <inheritdoc/>
 		public void Start()
 		{
 			if (IsRunning)
 				return;
 
 			IsRunning = true;
-			// set interval separarately to prevent calling callback before `timer' is assigned
+			// set interval separately to prevent calling callback before `timer' is assigned
 			_timer.Change(Interval, Interval);
 		}
 
+		/// <inheritdoc/>
 		public void Stop()
 		{
 			if (!IsRunning)
@@ -94,6 +106,7 @@ namespace Microsoft.Maui.Dispatching
 		}
 	}
 
+	/// <inheritdoc/>
 	public partial class DispatcherProvider
 	{
 		static IDispatcher? GetForCurrentThreadImplementation()

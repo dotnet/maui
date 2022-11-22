@@ -1,8 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
-using Tizen.UIExtensions.NUI;
-using Tizen.UIExtensions.NUI.GraphicsView;
+using Microsoft.Maui.Graphics.Skia.Views;
 using PointStateType = Tizen.NUI.PointStateType;
 
 namespace Microsoft.Maui.Platform

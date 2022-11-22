@@ -122,6 +122,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			public Action<CNContact> DidSelectContactHandler { get; }
 #pragma warning disable CA1416 // picker.DismissModalViewController(bool) has UnsupportedOSPlatform("ios6.0")]. (Deprecated but still works)
+#pragma warning disable CA1422 // Validate platform compatibility
 			public override void ContactPickerDidCancel(CNContactPickerViewController picker)
 			{
 				DidSelectContactHandler?.Invoke(default);
@@ -136,6 +137,8 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			public override void DidSelectContactProperty(CNContactPickerViewController picker, CNContactProperty contactProperty) =>
 				picker.DismissModalViewController(true);
+
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 		}
 #endif

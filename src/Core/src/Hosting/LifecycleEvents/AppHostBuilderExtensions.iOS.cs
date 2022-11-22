@@ -10,41 +10,115 @@ namespace Microsoft.Maui.LifecycleEvents
 		internal static MauiAppBuilder ConfigureCrossPlatformLifecycleEvents(this MauiAppBuilder builder) =>
 			builder.ConfigureLifecycleEvents(events => events.AddiOS(OnConfigureLifeCycle));
 
+		internal static MauiAppBuilder ConfigureWindowEvents(this MauiAppBuilder builder) =>
+			builder.ConfigureLifecycleEvents(events => events.AddiOS(OnConfigureWindow));
+
 		static void OnConfigureLifeCycle(IiOSLifecycleBuilder iOS)
 		{
+			iOS = iOS
+					.OnPlatformWindowCreated((window) =>
+					{
+						window.GetWindow()?.Created();
+					})
+					.WillTerminate(app =>
+					{
+						// By this point if we were a multi window app, the GetWindow would be null anyway
+						app.GetWindow()?.Destroying();
+					})
+					.WillEnterForeground(app =>
+					{
+						if (!app.Delegate.HasSceneManifest())
+							app.GetWindow()?.Resumed();
+					})
+					.OnActivated(app =>
+					{
+						if (!app.Delegate.HasSceneManifest())
+							app.GetWindow()?.Activated();
+					})
+					.OnResignActivation(app =>
+					{
+						if (!app.Delegate.HasSceneManifest())
+							app.GetWindow()?.Deactivated();
+					})
+					.DidEnterBackground(app =>
+					{
+						if (!app.Delegate.HasSceneManifest())
+							app.GetWindow()?.Stopped();
+					});
+
+
+			// Pre iOS 13 doesn't support scenes
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
+
 			iOS
-				.FinishedLaunching((app, launchOptions) =>
+				.SceneWillEnterForeground(scene =>
 				{
-					app.GetWindow()?.Created();
-					return true;
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate windowScene &&
+						scene.ActivationState != UISceneActivationState.Unattached)
+					{
+						windowScene.GetWindow().GetWindow()?.Resumed();
+					}
 				})
-				.WillEnterForeground(app =>
+				.SceneOnActivated(scene =>
 				{
-					app.GetWindow()?.Resumed();
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate sd)
+						sd.GetWindow().GetWindow()?.Activated();
 				})
-				.OnActivated(app =>
+				.SceneOnResignActivation(scene =>
 				{
-					app.GetWindow()?.Activated();
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate sd)
+						sd.GetWindow().GetWindow()?.Deactivated();
 				})
-				.OnResignActivation(app =>
+				.SceneDidEnterBackground(scene =>
 				{
-					app.GetWindow()?.Deactivated();
-				})
-				.DidEnterBackground(app =>
-				{
-					app.GetWindow()?.Stopped();
-				})
-				.WillTerminate(app =>
-				{
-					// By this point if we were a multi window app, the GetWindow would be null anyway
-					app.GetWindow()?.Destroying();
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate sd)
+						sd.GetWindow().GetWindow()?.Stopped();
 				})
 				.SceneDidDisconnect(scene =>
 				{
-					if (scene is UIWindowScene windowScene)
-					{
-						windowScene.GetWindow()?.Destroying();
-					}
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (scene.Delegate is IUIWindowSceneDelegate sd)
+						sd.GetWindow().GetWindow()?.Destroying();
+				});
+		}
+
+		static void OnConfigureWindow(IiOSLifecycleBuilder iOS)
+		{
+			// Pre iOS 13 doesn't support scenes
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
+			iOS = iOS
+				.WindowSceneDidUpdateCoordinateSpace((windowScene, _, _, _) =>
+				{
+					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+						return;
+
+					if (windowScene.Delegate is not IUIWindowSceneDelegate wsd ||
+						wsd.GetWindow() is not UIWindow platformWindow)
+						return;
+
+					var window = platformWindow.GetWindow();
+					if (window is null)
+						return;
+
+					window.FrameChanged(platformWindow.Frame.ToRectangle());
 				});
 		}
 	}

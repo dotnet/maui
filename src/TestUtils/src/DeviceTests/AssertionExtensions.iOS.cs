@@ -12,6 +12,41 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static Task WaitForKeyboardToShow(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task WaitForKeyboardToHide(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task SendValueToKeyboard(this UIView view, char value, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task SendKeyboardReturnType(this UIView view, ReturnType returnType, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task WaitForFocused(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task FocusView(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task ShowKeyboardForView(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static string CreateColorAtPointError(this UIImage bitmap, UIColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
@@ -57,7 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 			await Task.Delay(100);
 
 			var result = await action();
-			
+
 			view.RemoveFromSuperview();
 
 			// Give the UI time to refresh
@@ -66,7 +101,7 @@ namespace Microsoft.Maui.DeviceTests
 			return result;
 		}
 
-		static UIView FindContentView() 
+		static UIView FindContentView()
 		{
 			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 			{
@@ -384,7 +419,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				foreach (var scene in application.ConnectedScenes)
 				{
-					if (scene is UIWindowScene windowScene 
+					if (scene is UIWindowScene windowScene
 						&& windowScene.ActivationState == UISceneActivationState.ForegroundActive)
 					{
 						foreach (var window in windowScene.Windows)

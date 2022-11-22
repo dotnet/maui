@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
 	partial class ClipboardImplementation : IClipboard
 	{
 		public Task SetTextAsync(string? text)

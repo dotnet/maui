@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.SearchBar)]
-	public partial class SearchBarHandlerTests : HandlerTestBase<SearchBarHandler, SearchBarStub>
+	public partial class SearchBarHandlerTests : CoreHandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
 		[Theory(DisplayName = "Background Initializes Correctly")]
 		[InlineData(0xFF0000)]
@@ -138,6 +138,26 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(searchBar);
 		}
 
+		[Fact(DisplayName = "Default Input Field is at least 44dp high")]
+		public async Task DefaultInputFieldIsAtLeast44DpHigh()
+		{
+			var searchBar = new SearchBarStub()
+			{
+				Text = "search bar text",
+				Width = 200
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(searchBar);
+				await AssertionExtensions.AttachAndRun(handler.PlatformView, () =>
+				{
+					var height = GetInputFieldHeight(handler);
+					Assert.True(height >= 44);
+				});
+			});
+		}
+
 #if !WINDOWS
 		[Theory]
 		[InlineData(true)]
@@ -172,5 +192,10 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 #endif
+
+		[Category(TestCategory.SearchBar)]
+		public class SearchBarTextStyleTests : TextStyleHandlerTests<SearchBarHandler, SearchBarStub>
+		{
+		}
 	}
 }

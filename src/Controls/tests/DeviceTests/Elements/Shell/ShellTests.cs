@@ -12,15 +12,15 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
-	public partial class ShellTests : HandlerTestBase
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
@@ -28,25 +28,57 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Image, ImageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Toolbar, ToolbarHandler>();
-					handlers.AddHandler<MenuBar, MenuBarHandler>();
-					handlers.AddHandler<MenuBarItem, MenuBarItemHandler>();
-					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
-					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
-					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
-					handlers.AddHandler<ScrollView, ScrollViewHandler>();
-#if WINDOWS
-					handlers.AddHandler<ShellItem, ShellItemHandler>();
-					handlers.AddHandler<ShellSection, ShellSectionHandler>();
-					handlers.AddHandler<ShellContent, ShellContentHandler>();
-#endif
+					SetupShellHandlers(handlers);
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
 			});
+		}
+
+		[Fact]
+		public async Task FlyoutWithAsMultipleItemsRendersWithoutCrashing()
+		{
+			SetupBuilder();
+
+			Shell shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new FlyoutItem()
+				{
+					FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+					Items =
+					{
+						new ShellSection()
+						{
+							FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+							Items =
+							{
+								new ShellContent()
+								{
+									ContentTemplate = new DataTemplate(() => new ContentPage())
+								}
+							}
+						},
+						new ShellSection()
+						{
+							FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+							Items =
+							{
+								new ShellContent()
+								{
+									ContentTemplate = new DataTemplate(() => new ContentPage())
+								}
+							}
+						}
+					}
+				});
+			});
+
+			bool finished = false;
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (_) =>
+			{
+				finished = true;
+			});
+
+			Assert.True(finished);
 		}
 
 		[Fact(DisplayName = "Appearing Fires Before NavigatedTo")]
@@ -57,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 			int contentPageAppearingFired = 0;
 			int navigatedToFired = 0;
 			int shellNavigatedToFired = 0;
-			
+
 			// If you fail these from the events then
 			// an exception is raised in the middle of the platform
 			// doing platform things which often leads to a crash
@@ -172,7 +204,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
 		public async Task SwapShellRootPageForNavigationPage()
 		{
@@ -192,6 +224,27 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Fact(DisplayName = "PopToRootAsync correctly navigates to root page")]
+		public async Task PopToRootAsyncCorrectlyNavigationsBackToRootPage()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = rootPage;
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PopToRootAsync();
+				await OnLoadedAsync(rootPage);
+			});
+		}
 
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
@@ -215,7 +268,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Flyout Starts as Open correctly")]
 		public async Task FlyoutIsPresented()
 		{
@@ -315,7 +368,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Correctly Adjust to Making Currently Visible Shell Page Invisible")]
 		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
 		{

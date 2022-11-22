@@ -8,22 +8,24 @@
         <viewmodels:FilePickerViewModel />
     </views:BasePage.BindingContext>
 
-    <StackLayout Padding="12" Spacing="6">
-        <Label Text="Pick files from storage." FontAttributes="Bold" />
+    <Grid RowDefinitions="Auto,*">
+        <Label Text="Pick files from storage." FontAttributes="Bold" Margin="12" />
 
-        <FlexLayout Direction="Row" Wrap="Wrap">
-            <Button Text="Pick file" Command="{Binding PickFileCommand}" HorizontalOptions="FillAndExpand" />
-            <Button Text="Pick image" Command="{Binding PickImageCommand}" HorizontalOptions="FillAndExpand" />
-            <Button Text="Pick pdf" Command="{Binding PickPdfCommand}" HorizontalOptions="FillAndExpand" />
-            <Button Text="Pick custom type" Command="{Binding PickCustomTypeCommand}" HorizontalOptions="FillAndExpand" />
-            <Button Text="Pick image and send email" Command="{Binding PickAndSendCommand}" HorizontalOptions="FillAndExpand" />
-            <Button Text="Pick multiple files" Command="{Binding PickMultipleFilesCommand}" HorizontalOptions="FillAndExpand" />
-        </FlexLayout>
+        <ScrollView Grid.Row="1">
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <Button Text="Pick file" Command="{Binding PickFileCommand}" />
+                <Button Text="Pick image" Command="{Binding PickImageCommand}" />
+                <Button Text="Pick pdf" Command="{Binding PickPdfCommand}" />
+                <Button Text="Pick custom type" Command="{Binding PickCustomTypeCommand}" />
+                <Button Text="Pick image and send email" Command="{Binding PickAndSendCommand}" />
+                <Button Text="Pick multiple files" Command="{Binding PickMultipleFilesCommand}" />
 
-        <Label Text="{Binding Text}" HorizontalOptions="FillAndExpand" />
+                <Label Text="{Binding Text}" HorizontalOptions="FillAndExpand" />
 
-        <Image Source="{Binding Image}" IsVisible="{Binding IsImageVisible}"
-               HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" />
-    </StackLayout>
+                <Image Source="{Binding Image}" IsVisible="{Binding IsImageVisible}"
+                       HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" />
+            </StackLayout>
+        </ScrollView>
+    </Grid>
 
 </views:BasePage>

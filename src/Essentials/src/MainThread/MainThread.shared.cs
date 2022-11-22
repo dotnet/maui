@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MainThread']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MainThread']/Docs/*" />
 	public static partial class MainThread
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='IsMainThread']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='IsMainThread']/Docs/*" />
 		public static bool IsMainThread =>
 			PlatformIsMainThread;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='BeginInvokeOnMainThread']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='BeginInvokeOnMainThread']/Docs/*" />
 		public static void BeginInvokeOnMainThread(Action action)
 		{
 			if (IsMainThread)
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][1]/Docs/*" />
 		public static Task InvokeOnMainThreadAsync(Action action)
 		{
 			if (IsMainThread)
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][2]/Docs/*" />
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func)
 		{
 			if (IsMainThread)
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][2]/Docs/*" />
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
 		{
 			if (IsMainThread)
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][1]/Docs/*" />
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask)
 		{
 			if (IsMainThread)
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.ApplicationModel
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='GetMainThreadSynchronizationContextAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='GetMainThreadSynchronizationContextAsync']/Docs/*" />
 		public static async Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync()
 		{
 			SynchronizationContext ret = null;

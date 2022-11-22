@@ -1,14 +1,19 @@
 #nullable enable
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserTitleMode.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BrowserTitleMode']/Docs" />
+	/// <summary>
+	/// Mode for the in-app browser title.
+	/// </summary>
+	/// <remarks>These values only apply to Android.</remarks>
 	public enum BrowserTitleMode
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserTitleMode.xml" path="//Member[@MemberName='Default']/Docs" />
+		/// <summary>Uses the system default.</summary>
 		Default = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserTitleMode.xml" path="//Member[@MemberName='Show']/Docs" />
+
+		/// <summary>Show the title.</summary>
 		Show = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserTitleMode.xml" path="//Member[@MemberName='Hide']/Docs" />
+
+		/// <summary>Hide the title.</summary>
 		Hide = 2
 	}
 }

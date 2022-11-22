@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	/// </summary>
 	internal class TextColorSwitcher
 	{
-		static readonly int[][] s_colorStates = { new[] { global::Android.Resource.Attribute.StateEnabled }, new[] { -global::Android.Resource.Attribute.StateEnabled } };
+		static readonly int[] s_disabledColorState = new[] { -global::Android.Resource.Attribute.StateEnabled };
 
 		readonly ColorStateList _defaultTextColors;
 		readonly bool _useLegacyColorManagement;
@@ -45,13 +45,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_useLegacyColorManagement)
 				{
 					// Set the new enabled state color, preserving the default disabled state color
-					int defaultDisabledColor = _defaultTextColors.GetColorForState(s_colorStates[1], color.ToAndroid());
-					setColor(new ColorStateList(s_colorStates, new[] { color.ToAndroid().ToArgb(), defaultDisabledColor }));
+					int defaultDisabledColor = _defaultTextColors.GetColorForState(s_disabledColorState, color.ToAndroid());
+					ColorStateListExtensions.CreateEditText(color.ToAndroid().ToArgb(), defaultDisabledColor);
 				}
 				else
 				{
 					var acolor = color.ToAndroid().ToArgb();
-					setColor(new ColorStateList(s_colorStates, new[] { acolor, acolor }));
+					ColorStateListExtensions.CreateEditText(acolor, acolor);
 				}
 			}
 		}

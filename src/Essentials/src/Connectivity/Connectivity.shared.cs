@@ -7,26 +7,52 @@ using Microsoft.Maui.Networking;
 
 namespace Microsoft.Maui.Networking
 {
+	/// <summary>
+	/// The Connectivity API lets you monitor for changes in the device's network conditions, check the current network access, and determine how it is currently connected.
+	/// </summary>
 	public interface IConnectivity
 	{
+		/// <summary>
+		/// Gets the active connectivity types for the device.
+		/// </summary>
 		IEnumerable<ConnectionProfile> ConnectionProfiles { get; }
 
+		/// <summary>
+		/// Gets the current state of network access.
+		/// </summary>
 		NetworkAccess NetworkAccess { get; }
 
+		/// <summary>
+		/// Occurs when network access or profile has changed.
+		/// </summary>
 		event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged;
 	}
 
 #nullable enable
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
+	/// <summary>
+	/// The Connectivity APIs lets you monitor for changes in the device's network conditions, check the current network access, and how it is currently connected.
+	/// </summary>
 	public static class Connectivity
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
+		/// <summary>
+		/// Gets the current state of network access.
+		/// </summary>
+		/// <remarks>
+		/// <para>Even when <see cref="NetworkAccess.Internet"/> is returned, full internet access is not guaranteed.</para>
+		/// <para>Can throw <see cref="PermissionException"/> on Android if <c>ACCESS_NETWORK_STATE</c> is not set in manifest.</para>
+		/// </remarks>
 		public static NetworkAccess NetworkAccess => Current.NetworkAccess;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
+		/// <summary>
+		/// Gets the active connectivity types for the device.
+		/// </summary>
+		/// <remarks>Can throw <see cref="PermissionException"/> on Android if <c>ACCESS_NETWORK_STATE</c> is not set in manifest.</remarks>
 		public static IEnumerable<ConnectionProfile> ConnectionProfiles => Current.ConnectionProfiles.Distinct();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="//Member[@MemberName='ConnectivityChanged']/Docs" />
+		/// <summary>
+		/// Occurs when network access or profile has changed.
+		/// </summary>
+		/// <remarks>Can throw <see cref="PermissionException"/> on Android if <c>ACCESS_NETWORK_STATE</c> is not set in manifest.</remarks>
 		public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
 		{
 			add => Current.ConnectivityChanged += value;
@@ -35,6 +61,9 @@ namespace Microsoft.Maui.Networking
 
 		static IConnectivity? currentImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IConnectivity Current =>
 			currentImplementation ??= new ConnectivityImplementation();
 
@@ -43,7 +72,6 @@ namespace Microsoft.Maui.Networking
 	}
 #nullable disable
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Connectivity.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Connectivity']/Docs" />
 	partial class ConnectivityImplementation : IConnectivity
 	{
 		event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
@@ -94,23 +122,40 @@ namespace Microsoft.Maui.Networking
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ConnectivityChangedEventArgs']/Docs" />
+	/// <summary>
+	/// The current connectivity information from the change event.
+	/// </summary>
 	public class ConnectivityChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ConnectivityChangedEventArgs"/> class.
+		/// </summary>
+		/// <param name="access">The current access of the network.</param>
+		/// <param name="connectionProfiles">The connection profiles changing correspondingto this event.</param>
 		public ConnectivityChangedEventArgs(NetworkAccess access, IEnumerable<ConnectionProfile> connectionProfiles)
 		{
 			NetworkAccess = access;
 			ConnectionProfiles = connectionProfiles;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='NetworkAccess']/Docs" />
+		/// <summary>
+		/// Gets the current state of network access.
+		/// </summary>
+		/// <remarks>
+		/// <para>Even when <see cref="NetworkAccess.Internet"/> is returned, full internet access is not guaranteed.</para>
+		/// <para>Can throw <see cref="PermissionException"/> on Android if <c>ACCESS_NETWORK_STATE</c> is not set in manifest.</para>
+		/// </remarks>
 		public NetworkAccess NetworkAccess { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='ConnectionProfiles']/Docs" />
+		/// <summary>
+		/// Gets the active connectivity profiles for the device.
+		/// </summary>
 		public IEnumerable<ConnectionProfile> ConnectionProfiles { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectivityChangedEventArgs.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <summary>
+		/// Returns a string representation of the current values of <see cref="ConnectivityChangedEventArgs"/>.
+		/// </summary>
+		/// <returns>A string representation of this instance in the format of <c>NetworkAccess: {value}, ConnectionProfiles: [{value1}, {value2}]</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(NetworkAccess)}: {NetworkAccess}, " +
 			$"{nameof(ConnectionProfiles)}: [{string.Join(", ", ConnectionProfiles)}]";

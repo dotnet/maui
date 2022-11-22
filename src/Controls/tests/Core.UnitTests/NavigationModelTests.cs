@@ -4,21 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class NavigationModelTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void CurrentNullWhenEmpty()
 		{
 			var navModel = new NavigationModel();
 			Assert.Null(navModel.CurrentPage);
 		}
 
-		[Test]
+		[Fact]
 		public void CurrentGivesLastViewWithoutModal()
 		{
 			var navModel = new NavigationModel();
@@ -29,10 +29,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			navModel.Push(page1, null);
 			navModel.Push(page2, page1);
 
-			Assert.AreEqual(page2, navModel.CurrentPage);
+			Assert.Equal(page2, navModel.CurrentPage);
 		}
 
-		[Test]
+		[Fact]
 		public void CurrentGivesLastViewWithModal()
 		{
 			var navModel = new NavigationModel();
@@ -49,10 +49,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			navModel.PushModal(modal1);
 			navModel.Push(modal2, modal1);
 
-			Assert.AreEqual(modal2, navModel.CurrentPage);
+			Assert.Equal(modal2, navModel.CurrentPage);
 		}
 
-		[Test]
+		[Fact]
 		public void Roots()
 		{
 			var navModel = new NavigationModel();
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(navModel.Roots.SequenceEqual(new[] { page1, modal1 }));
 		}
 
-		[Test]
+		[Fact]
 		public void PushFirstItem()
 		{
 			var navModel = new NavigationModel();
@@ -80,11 +80,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page1 = new ContentPage();
 			navModel.Push(page1, null);
 
-			Assert.AreEqual(page1, navModel.CurrentPage);
-			Assert.AreEqual(page1, navModel.Roots.First());
+			Assert.Equal(page1, navModel.CurrentPage);
+			Assert.Equal(page1, navModel.Roots.First());
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWhenPushingWithoutAncestor()
 		{
 			var navModel = new NavigationModel();
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidNavigationException>(() => navModel.Push(page2, null));
 		}
 
-		[Test]
+		[Fact]
 		public void PushFromNonRootAncestor()
 		{
 			var navModel = new NavigationModel();
@@ -112,10 +112,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			navModel.Push(page2, page1);
 			navModel.Push(page3, page2);
 
-			Assert.AreEqual(page3, navModel.CurrentPage);
+			Assert.Equal(page3, navModel.CurrentPage);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWhenPushFromInvalidAncestor()
 		{
 			var navModel = new NavigationModel();
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidNavigationException>(() => navModel.Push(page2, page1));
 		}
 
-		[Test]
+		[Fact]
 		public void Pop()
 		{
 			var navModel = new NavigationModel();
@@ -139,10 +139,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			navModel.Pop(page1);
 
-			Assert.AreEqual(page1, navModel.CurrentPage);
+			Assert.Equal(page1, navModel.CurrentPage);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsPoppingRootItem()
 		{
 			var navModel = new NavigationModel();
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidNavigationException>(() => navModel.Pop(page1));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsPoppingRootOfModal()
 		{
 			var navModel = new NavigationModel();
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidNavigationException>(() => navModel.Pop(modal1));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsPoppingWithInvalidAncestor()
 		{
 			var navModel = new NavigationModel();
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidNavigationException>(() => navModel.Pop(new ContentPage()));
 		}
 
-		[Test]
+		[Fact]
 		public void PopToRoot()
 		{
 			var navModel = new NavigationModel();
@@ -201,10 +201,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			navModel.PopToRoot(page2);
 
-			Assert.AreEqual(page1, navModel.CurrentPage);
+			Assert.Equal(page1, navModel.CurrentPage);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWhenPopToRootOnRoot()
 		{
 			var navModel = new NavigationModel();
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidNavigationException>(() => navModel.PopToRoot(page1));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWhenPopToRootWithInvalidAncestor()
 		{
 			var navModel = new NavigationModel();
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidNavigationException>(() => navModel.PopToRoot(new ContentPage()));
 		}
 
-		[Test]
+		[Fact]
 		public void PopModal()
 		{
 			var navModel = new NavigationModel();
@@ -242,11 +242,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			navModel.PopModal();
 
-			Assert.AreEqual(child1, navModel.CurrentPage);
-			Assert.AreEqual(1, navModel.Roots.Count());
+			Assert.Equal(child1, navModel.CurrentPage);
+			Assert.Single(navModel.Roots);
 		}
 
-		[Test]
+		[Fact]
 		public void ReturnsCorrectModal()
 		{
 			var navModel = new NavigationModel();
@@ -259,10 +259,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			navModel.PushModal(modal1);
 			navModel.PushModal(modal2);
 
-			Assert.AreEqual(modal2, navModel.PopModal());
+			Assert.Equal(modal2, navModel.PopModal());
 		}
 
-		[Test]
+		[Fact]
 		public void PopTopPageWithoutModals()
 		{
 			var navModel = new NavigationModel();
@@ -273,10 +273,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			navModel.Push(page1, null);
 			navModel.Push(page2, page1);
 
-			Assert.AreEqual(page2, navModel.PopTopPage());
+			Assert.Equal(page2, navModel.PopTopPage());
 		}
 
-		[Test]
+		[Fact]
 		public void PopTopPageWithSinglePage()
 		{
 			var navModel = new NavigationModel();
@@ -288,7 +288,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(navModel.PopTopPage());
 		}
 
-		[Test]
+		[Fact]
 		public void PopTopPageWithModal()
 		{
 			var navModel = new NavigationModel();
@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			navModel.Push(page1, null);
 			navModel.PushModal(modal1);
 
-			Assert.AreEqual(modal1, navModel.PopTopPage());
+			Assert.Equal(modal1, navModel.PopTopPage());
 		}
 	}
 }

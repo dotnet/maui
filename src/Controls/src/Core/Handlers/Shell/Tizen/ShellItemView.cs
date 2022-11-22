@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public void UpdateTabbarBackgroundColor(GColor? color)
 		{
-			if(_tabbedView != null)
+			if (_tabbedView != null)
 				_tabbedView.BackgroundColor = color?.ToNUIColor();
 		}
 

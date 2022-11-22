@@ -4,34 +4,76 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel
 {
+	/// <summary>
+	/// Provides a way to display a web page inside an app.
+	/// </summary>
 	public interface IBrowser
 	{
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="uri">URI to open.</param>
+		/// <param name="options">Launch options for the browser.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Browser']/Docs" />
+	/// <summary>
+	/// Provides a way to display a web page inside an app.
+	/// </summary>
 	public static class Browser
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][1]/Docs" />
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="uri">URI to open.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(string uri) => Default.OpenAsync(uri);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][3]/Docs" />
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="uri">URI to open.</param>
+		/// <param name="launchMode">How to launch the browser.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(string uri, BrowserLaunchMode launchMode) => Default.OpenAsync(uri, launchMode);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][4]/Docs" />
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="uri">URI to open.</param>
+		/// <param name="options">Launch options for the browser.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(string uri, BrowserLaunchOptions options) => Default.OpenAsync(uri, options);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][2]/Docs" />
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="uri">URI to open.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(Uri uri) => Default.OpenAsync(uri);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][5]/Docs" />
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="uri">URI to open.</param>
+		/// <param name="launchMode">How to launch the browser.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(Uri uri, BrowserLaunchMode launchMode) => Default.OpenAsync(uri, launchMode);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Browser.xml" path="//Member[@MemberName='OpenAsync'][6]/Docs" />
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="uri">URI to open.</param>
+		/// <param name="options">Launch options for the browser.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed.  Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions options) => Default.OpenAsync(uri, options);
 
 		static IBrowser? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IBrowser Default =>
 			defaultImplementation ??= new BrowserImplementation();
 
@@ -39,20 +81,56 @@ namespace Microsoft.Maui.ApplicationModel
 			defaultImplementation = implementation;
 	}
 
+	/// <summary>
+	/// This class contains static extension methods for use with <see cref="IBrowser"/>.
+	/// </summary>
 	public static class BrowserExtensions
 	{
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="browser">The <see cref="IBrowser"/> instance to invoke this method on.</param>
+		/// <param name="uri">URI to open.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(this IBrowser browser, string uri) =>
 			browser.OpenAsync(new Uri(uri), new BrowserLaunchOptions());
 
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="browser">The <see cref="IBrowser"/> instance to invoke this method on.</param>
+		/// <param name="uri">URI to open.</param>
+		/// <param name="launchMode">How to launch the browser.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(this IBrowser browser, string uri, BrowserLaunchMode launchMode) =>
 			browser.OpenAsync(new Uri(uri), new BrowserLaunchOptions { LaunchMode = launchMode });
 
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="browser">The <see cref="IBrowser"/> instance to invoke this method on.</param>
+		/// <param name="uri">URI to open.</param>
+		/// <param name="options">Launch options for the browser.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed.  Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(this IBrowser browser, string uri, BrowserLaunchOptions options) =>
 			browser.OpenAsync(new Uri(uri), options);
 
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="browser">The <see cref="IBrowser"/> instance to invoke this method on.</param>
+		/// <param name="uri">URI to open.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(this IBrowser browser, Uri uri) =>
 			browser.OpenAsync(uri, new BrowserLaunchOptions());
 
+		/// <summary>
+		/// Open the browser to specified URI.
+		/// </summary>
+		/// <param name="browser">The <see cref="IBrowser"/> instance to invoke this method on.</param>
+		/// <param name="uri">URI to open.</param>
+		/// <param name="launchMode">How to launch the browser.</param>
+		/// <returns>Completed task when browser is launched, but not necessarily closed. Result indicates if launching was successful or not.</returns>
 		public static Task<bool> OpenAsync(this IBrowser browser, Uri uri, BrowserLaunchMode launchMode) =>
 			browser.OpenAsync(uri, new BrowserLaunchOptions { LaunchMode = launchMode });
 	}

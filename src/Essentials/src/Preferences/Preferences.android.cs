@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName)
 		{
+			Preferences.CheckIsSupportedType<T>();
+
 			lock (locker)
 			{
 				using (var sharedPreferences = GetSharedPreferences(sharedName))
@@ -78,6 +80,9 @@ namespace Microsoft.Maui.Storage
 								break;
 							case float f:
 								editor.PutFloat(key, f);
+								break;
+							case DateTime dt:
+								editor.PutLong(key, dt.ToBinary());
 								break;
 						}
 					}
@@ -134,6 +139,10 @@ namespace Microsoft.Maui.Storage
 								// the case when the string is not null
 								value = sharedPreferences.GetString(key, s);
 								break;
+							case DateTime dt:
+								var encodedValue = sharedPreferences.GetLong(key, dt.ToBinary());
+								value = DateTime.FromBinary(encodedValue);
+								break;
 						}
 					}
 				}
@@ -146,11 +155,15 @@ namespace Microsoft.Maui.Storage
 		{
 			var context = Application.Context;
 
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 			return string.IsNullOrWhiteSpace(sharedName) ?
 #pragma warning disable CS0618 // Type or member is obsolete
 				PreferenceManager.GetDefaultSharedPreferences(context) :
 #pragma warning restore CS0618 // Type or member is obsolete
 					context.GetSharedPreferences(sharedName, FileCreationMode.Private);
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 		}
 	}
 }

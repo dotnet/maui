@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		static async Task<CSSearchableItemAttributeSet> GetAttributeSet(IAppLinkEntry deepLinkUri, string contentType, string id)
 		{
-#pragma warning disable CA1416 // TODO: 'CSSearchableItemAttributeSet' is unsupported on: 'ios' 14.0 and later
+#pragma warning disable CA1416, CA1422  // TODO: 'CSSearchableItemAttributeSet' is unsupported on: 'ios' 14.0 and later
 			var searchableAttributeSet = new CSSearchableItemAttributeSet(contentType)
 			{
 				RelatedUniqueIdentifier = id,
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				ContentDescription = deepLinkUri.Description,
 				Url = new NSUrl(deepLinkUri.AppLinkUri.ToString())
 			};
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 
 			if (deepLinkUri.Thumbnail != null)
 			{

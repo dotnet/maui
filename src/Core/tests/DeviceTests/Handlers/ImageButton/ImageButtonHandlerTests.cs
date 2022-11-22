@@ -11,7 +11,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ImageButton)]
-	public partial class ImageButtonHandlerTests : HandlerTestBase<ImageButtonHandler, ImageButtonStub>
+	public partial class ImageButtonHandlerTests : CoreHandlerTestBase<ImageButtonHandler, ImageButtonStub>
 	{
 		const int Precision = 4;
 
@@ -30,6 +30,69 @@ namespace Microsoft.Maui.DeviceTests
 			await PerformClick(button);
 
 			Assert.True(clicked);
+		}
+
+		[Theory(DisplayName = "ImageSource Initializes Correctly")]
+		[InlineData("red.png", "#FF0000")]
+		[InlineData("green.png", "#00FF00")]
+		[InlineData("black.png", "#000000")]
+		public async Task ImageSourceInitializesCorrectly(string filename, string colorHex)
+		{
+			var imageButton = new ImageButtonStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				ImageSource = new FileImageSourceStub(filename),
+			};
+
+			var order = new List<string>();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(imageButton);
+
+				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
+
+				Assert.True(imageLoaded);
+				var expectedColor = Color.FromArgb(colorHex);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
+			});
+		}
+
+		[Fact(DisplayName = "LoadingCompleted event fires")]
+		public async Task LoadingCompletedEventFires()
+		{
+			bool loadingStarted = false;
+			bool loadingCompleted = false;
+
+			var imageButton = new ImageButtonStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				ImageSource = new FileImageSourceStub("red.png"),
+			};
+
+			imageButton.LoadingStarted += delegate
+			{
+				loadingStarted = true;
+			};
+
+			imageButton.LoadingCompleted += delegate
+			{
+				loadingCompleted = true;
+			};
+
+			var order = new List<string>();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(imageButton);
+
+				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
+
+				Assert.True(imageLoaded);
+			});
+
+			Assert.True(loadingStarted);
+			Assert.True(loadingCompleted);
 		}
 
 		[Theory(DisplayName = "Padding Initializes Correctly")]

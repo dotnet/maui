@@ -61,7 +61,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#pragma warning disable CA1416, CA1422
 		UIEdgeInsets GetNativePadding(ImageButtonHandler imageButtonHandler) =>
 			GetPlatformImageButton(imageButtonHandler).ContentEdgeInsets;
+#pragma warning restore CA1416, CA1422
+
+		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>
+			imageButtonHandler.PlatformView.ImageView.Image != null;
 	}
 }

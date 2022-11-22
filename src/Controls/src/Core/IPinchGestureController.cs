@@ -12,6 +12,6 @@ namespace Microsoft.Maui.Controls
 
 		void SendPinchEnded(Element sender);
 
-		void SendPinchStarted(Element sender, Point intialScalePoint);
+		void SendPinchStarted(Element sender, Point intialScalePoint); //TODO: intial should be initial, but this is a breaking ABI change. Consider changing for .NET 8
 	}
 }

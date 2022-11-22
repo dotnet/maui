@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class CustomImageCacheStub
+	public class CustomImageCacheStub
 	{
 		readonly Dictionary<Color, (ColorDrawable Drawable, int Count)> _cache = new Dictionary<Color, (ColorDrawable, int)>();
 

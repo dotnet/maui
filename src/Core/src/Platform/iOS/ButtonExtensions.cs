@@ -70,11 +70,13 @@ namespace Microsoft.Maui.Platform
 				bottom = AlmostZero;
 
 #pragma warning disable CA1416 // TODO: 'UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later.
+#pragma warning disable CA1422 // Validate platform compatibility
 			platformButton.ContentEdgeInsets = new UIEdgeInsets(
 				(float)top,
 				(float)padding.Left,
 				(float)bottom,
 				(float)padding.Right);
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 		}
 

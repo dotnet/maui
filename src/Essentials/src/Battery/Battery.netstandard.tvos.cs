@@ -2,7 +2,6 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
 	partial class BatteryImplementation : IBattery
 	{
 		void StartBatteryListeners() =>

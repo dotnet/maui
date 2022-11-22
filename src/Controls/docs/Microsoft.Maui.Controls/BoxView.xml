@@ -81,7 +81,7 @@ namespace FormsGallery
 ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/BoxView.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/BoxView.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -110,10 +110,10 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="Color">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color Color { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Color" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color Color { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Color" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.BoxView.Color" />
-      <MemberSignature Language="F#" Value="member this.Color : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.BoxView.Color" />
+      <MemberSignature Language="F#" Value="member this.Color : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.BoxView.Color" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -127,11 +127,11 @@ namespace FormsGallery
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color which will fill the rectangle. This is a bindable property.</summary>
-        <value>The color that is used to fill the rectangle. The default is <see cref="P:Microsoft.Maui.Controls.Color.Default" />.</value>
+        <value>The color that is used to fill the rectangle.</value>
         <remarks>
         </remarks>
       </Docs>
@@ -234,10 +234,10 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
-      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.Controls.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.BoxView.OnSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="boxView.OnSizeRequest (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="boxView.OnSizeRequest (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -256,7 +256,7 @@ namespace FormsGallery
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />

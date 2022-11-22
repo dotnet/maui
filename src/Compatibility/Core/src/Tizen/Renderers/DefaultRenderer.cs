@@ -18,6 +18,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	}
 
 #pragma warning disable CS0612 // Type or member is obsolete
-    public class NativeViewWrapperRenderer : DefaultRenderer { }
+	public class NativeViewWrapperRenderer : DefaultRenderer { }
 #pragma warning restore CS0612 // Type or member is obsolete
 }

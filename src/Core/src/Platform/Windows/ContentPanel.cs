@@ -137,8 +137,8 @@ namespace Microsoft.Maui.Platform
 			if (clipGeometry == null)
 				return;
 
-			double width = Content.ActualWidth;
-			double height = Content.ActualHeight;
+			double width = ActualWidth;
+			double height = ActualHeight;
 
 			if (height <= 0 && width <= 0)
 				return;

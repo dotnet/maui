@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 #if !MACCATALYST
 			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.SetDataContext(this);
 			accessoryView.SetDoneClicked(OnDoneClicked);
 			platformEditor.InputAccessoryView = accessoryView;
 #endif
@@ -145,6 +146,9 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(editor);
 		}
 
+		public static void MapIsEnabled(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateIsEnabled(editor);
+
 		bool OnShouldChangeText(UITextView textView, NSRange range, string replacementString) =>
 			VirtualView.TextWithinMaxLength(textView.Text, range, replacementString);
 
@@ -169,11 +173,11 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{
-			var cursorPostion = PlatformView.GetCursorPosition();
+			var cursorPosition = PlatformView.GetCursorPosition();
 			var selectedTextLength = PlatformView.GetSelectedTextLength();
 
-			if (VirtualView.CursorPosition != cursorPostion)
-				VirtualView.CursorPosition = cursorPostion;
+			if (VirtualView.CursorPosition != cursorPosition)
+				VirtualView.CursorPosition = cursorPosition;
 
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;

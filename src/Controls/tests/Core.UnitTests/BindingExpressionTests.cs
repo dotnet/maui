@@ -1,13 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class BindingExpressionTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void Ctor()
 		{
 			string path = "Foo.Bar";
@@ -15,38 +16,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var be = new BindingExpression(binding, path);
 
-			Assert.AreSame(binding, be.Binding);
-			Assert.AreEqual(path, be.Path);
+			Assert.Same(binding, be.Binding);
+			Assert.Equal(path, be.Path);
 		}
 
-		[Test]
+		[Fact]
 		public void CtorInvalid()
 		{
 			string path = "Foo.Bar";
 			var binding = new Binding(path);
 
-			Assert.Throws<ArgumentNullException>(() => new BindingExpression(binding, null),
-				"Allowed the path to eb null");
+			Assert.Throws<ArgumentNullException>(() => new BindingExpression(binding, null));
 
-			Assert.Throws<ArgumentNullException>(() => new BindingExpression(null, path),
-				"Allowed the binding to be null");
+			Assert.Throws<ArgumentNullException>(() => new BindingExpression(null, path));
 		}
 
-		[Test]
+		[Fact]
 		public void ApplyNull()
 		{
 			const string path = "Foo.Bar";
 			var binding = new Binding(path);
 			var be = new BindingExpression(binding, path);
-			Assert.DoesNotThrow(() => be.Apply(null, new MockBindable(), TextCell.TextProperty));
+			be.Apply(null, new MockBindable(), TextCell.TextProperty);
 		}
 
 		// We only throw on invalid path features, if they give an invalid property
 		// name, it won't have compiled in the first place or they misstyped.
-		[TestCase("Foo.")]
-		[TestCase("Foo[]")]
-		[TestCase("Foo.Bar[]")]
-		[TestCase("Foo[1")]
+		[InlineData("Foo.")]
+		[InlineData("Foo[]")]
+		[InlineData("Foo.Bar[]")]
+		[InlineData("Foo[1")]
+		[Theory]
 		public void InvalidPaths(string path)
 		{
 			var fex = Assert.Throws<FormatException>(() =>
@@ -55,19 +55,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				new BindingExpression(binding, path);
 			});
 
-			Assert.IsFalse(String.IsNullOrWhiteSpace(fex.Message),
+			Assert.False(String.IsNullOrWhiteSpace(fex.Message),
 				"FormatException did not contain an explanation");
 		}
 
-		[Test]
-		public void ValidPaths(
-			[Values (
-				".", "[1]", "[1 ]", ".[1]", ". [1]",
+		public static IEnumerable<object[]> ValidPathsData()
+		{
+			var paths = new List<string> { ".", "[1]", "[1 ]", ".[1]", ". [1]",
 				"Foo", "Foo.Bar", "Foo. Bar", "Foo.Bar[1]",
-				"Foo.Bar [1]")]
+				"Foo.Bar [1]" };
+
+			foreach (var path in paths)
+			{
+				yield return new object[] { path, true, true };
+				yield return new object[] { path, true, false };
+				yield return new object[] { path, false, true };
+				yield return new object[] { path, false, false };
+			}
+		}
+
+		[Theory, MemberData(nameof(ValidPathsData))]
+		public void ValidPaths(
 			string path,
-			[Values(true, false)] bool spaceBefore,
-			[Values(true, false)] bool spaceAfter)
+			bool spaceBefore,
+			bool spaceAfter)
 		{
 			if (spaceBefore)
 				path = " " + path;
@@ -75,7 +86,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				path = path + " ";
 
 			var binding = new Binding(path);
-			Assert.DoesNotThrow(() => new BindingExpression(binding, path));
+			_ = new BindingExpression(binding, path);
 		}
 
 		static object[] TryConvertWithNumbersAndCulturesCases => new object[]
@@ -116,13 +127,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new object[]{ "-0", new CultureInfo("de"), "-0" },
 		};
 
-		[TestCaseSource(nameof(TryConvertWithNumbersAndCulturesCases))]
+		public static IEnumerable<object[]> TryConvertWithNumbersAndCulturesCasesData()
+		{
+			foreach (var testCase in TryConvertWithNumbersAndCulturesCases)
+			{
+				yield return (object[])testCase;
+			}
+		}
+
+		[Theory, MemberData(nameof(TryConvertWithNumbersAndCulturesCasesData))]
 		public void TryConvertWithNumbersAndCultures(object inputString, CultureInfo culture, object expected)
 		{
 			CultureInfo.CurrentCulture = culture;
 			BindingExpression.TryConvert(ref inputString, Entry.TextProperty, expected.GetType(), false);
 
-			Assert.AreEqual(expected, inputString);
+			Assert.Equal(expected, inputString);
 		}
 	}
 }

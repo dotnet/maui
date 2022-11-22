@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
@@ -62,6 +62,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal void UpdateFlowDirection(Shell shell)
 		{
 			_uiSearchBar.UpdateFlowDirection(shell);
+
+			// This UIToolbar variable is only initialized in case the platform is a Phone.
 			_numericAccessoryView?.UpdateFlowDirection(shell);
 
 			var uiTextField = _uiSearchBar.FindDescendantView<UITextField>();
@@ -281,11 +283,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (textField == null)
 				return;
 
-			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatformHorizontal();
-			if (view != null)
-			{
-				textField.TextAlignment = textField.TextAlignment.AdjustForFlowDirection(view);
-			}
+			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatformHorizontal(textField.EffectiveUserInterfaceLayoutDirection);
 		}
 
 		void UpdateSearchBarVerticalTextAlignment(UITextField textField)

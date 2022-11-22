@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (flyoutView.Parent != _sideBySideView)
 			{
-				// When the Flyout is acting as a flyout Android will set the Visibilty to GONE when it's off screen
+				// When the Flyout is acting as a flyout Android will set the Visibility to GONE when it's off screen
 				// This makes sure it's visible
 				flyoutView.Visibility = ViewStates.Visible;
 				flyoutView.RemoveFromParent();
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnDrawerStateChanged(object? sender, DrawerLayout.DrawerStateChangedEventArgs e)
 		{
-			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout)
+			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && _flyoutView != null)
 				VirtualView.IsPresented = DrawerLayout.IsDrawerVisible(_flyoutView);
 		}
 

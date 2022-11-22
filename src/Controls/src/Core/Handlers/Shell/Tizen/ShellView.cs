@@ -1,7 +1,6 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
@@ -22,15 +21,19 @@ namespace Microsoft.Maui.Controls.Platform
 		INavigationView _navigationView;
 		INavigationContentView _navigationContentView;
 
+		View? _headerView;
 		FlyoutHeaderBehavior _headerBehavior;
-		NView? _flyoutView;
+
+		IView? _flyoutView;
+
 		MauiToolbar? _toolbar;
 
-		List<List<Element>>? _cachedGroups;
 		NCollectionView? _itemsView;
 		ItemTemplateAdaptor? _adaptor;
 
 		ShellItemHandler? _currentItemHandler;
+
+		WrapperView? _backdropView;
 
 		bool _isOpen;
 
@@ -42,7 +45,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected bool HeaderOnMenu => _headerBehavior == FlyoutHeaderBehavior.Scroll || _headerBehavior == FlyoutHeaderBehavior.CollapseOnScroll;
 
-		protected NColor DefaultBackgroundCorlor = NColor.White;
+		public readonly NColor DefaultBackgroundColor = NColor.White;
+
+		public readonly NColor DefaultBackdropColor = new NColor(0.1f, 0.1f, 0.1f, 0.5f);
 
 		public event EventHandler? Toggled;
 
@@ -111,20 +116,20 @@ namespace Microsoft.Maui.Controls.Platform
 			_navigationDrawer.DrawerWidth = drawerwidth.ToScaledPixel();
 		}
 
-		public void UpdateFlyout(NView flyout)
+		public void UpdateFlyout(IView? flyout)
 		{
 			_flyoutView = flyout;
 
 			if (_flyoutView != null)
-				_navigationView.Content = _flyoutView;
+				_navigationView.Content = _flyoutView.ToPlatform(MauiContext!);
 		}
 
 		public void UpdateBackgroundColor(GColor? color)
 		{
-			_navigationView.BackgroundColor = color?.ToNUIColor() ?? DefaultBackgroundCorlor;
+			_navigationView.BackgroundColor = color?.ToNUIColor() ?? DefaultBackgroundColor;
 		}
 
-		public void UpdateCurrentItem(ShellItem newItem,  bool animate = true)
+		public void UpdateCurrentItem(ShellItem newItem, bool animate = true)
 		{
 			if (_currentItemHandler != null)
 				_currentItemHandler.Dispose();
@@ -144,16 +149,35 @@ namespace Microsoft.Maui.Controls.Platform
 		public void UpdateFlyoutHeader(Shell shell)
 		{
 			_headerBehavior = shell.FlyoutHeaderBehavior;
-			_navigationView.Header = ShellController.FlyoutHeader?.ToPlatform(MauiContext!);
+
+			if (_flyoutView != null)
+				return;
+
+			// Once _headerView is attached to CollectionView, it will be disposed when the adaptor of CollectionView is changed.
+			// This code is to reset handler after NUI view of header is disposed.
+			if (_headerView != null && _headerView.Handler is IPlatformViewHandler nativeHandler)
+			{
+				nativeHandler.Dispose();
+				_headerView.Handler = null;
+			}
+
+			_headerView = ShellController.FlyoutHeader;
+
+			if (HeaderOnMenu)
+			{
+				_navigationView.Header = null;
+			}
+			else
+			{
+				_navigationView.Header = _headerView?.ToPlatform(MauiContext!);
+			}
+
+			UpdateItems();
 		}
 
 		public void UpdateItems()
 		{
 			if (_flyoutView != null)
-				return;
-
-			var groups = ShellController!.GenerateFlyoutGrouping();
-			if (!IsItemChanged(groups) && !HeaderOnMenu)
 				return;
 
 			if (_itemsView == null)
@@ -174,12 +198,24 @@ namespace Microsoft.Maui.Controls.Platform
 			_itemsView.Adaptor = _adaptor = CreateItemAdaptor();
 			_adaptor.SelectionChanged += OnTabItemSelected;
 
-			_cachedGroups = groups;
 			_navigationView.Content = _itemsView;
 		}
 
 		public void UpdateFlyoutBackDrop(Brush backdrop)
 		{
+			if (_backdropView == null)
+			{
+				_backdropView = new WrapperView()
+				{
+					WidthSpecification = LayoutParamPolicies.MatchParent,
+					HeightSpecification = LayoutParamPolicies.MatchParent,
+					BackgroundColor = DefaultBackdropColor
+				};
+				_navigationDrawer.Backdrop = _backdropView;
+			}
+
+			if (!backdrop.IsEmpty)
+				_backdropView.UpdateBackground(backdrop);
 		}
 
 		public void SetToolbar(MauiToolbar toolbar)
@@ -216,45 +252,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual ItemTemplateAdaptor CreateItemAdaptor()
 		{
-			return new ShellItemTemplateAdaptor(Element!, Element!.Items);
+			return new ShellFlyoutItemTemplateAdaptor(Element!, Element!.Items, HeaderOnMenu);
+		}
+
+		void OnIconPressed(object? sender, EventArgs e)
+		{
+			if (!Element!.Toolbar.BackButtonVisible && ((Element!.Toolbar.IsVisible)))
+				IsOpened = true;
 		}
 
 		void UpdetDrawerToggleVisible()
 		{
 			Element!.Toolbar.DrawerToggleVisible = ((Element!.Toolbar.DrawerToggleVisible) && (Element.FlyoutBehavior == FlyoutBehavior.Flyout));
 			_toolbar?.UpdateBackButton(Element!.Toolbar);
-		}
-
-		bool IsItemChanged(List<List<Element>> groups)
-		{
-			if (_cachedGroups == null)
-				return true;
-
-			if (_cachedGroups.Count != groups.Count)
-				return true;
-
-			for (int i = 0; i < groups.Count; i++)
-			{
-				if (_cachedGroups[i].Count != groups[i].Count)
-					return true;
-
-				for (int j = 0; j < groups[i].Count; j++)
-				{
-					if (_cachedGroups[i][j] != groups[i][j])
-						return true;
-				}
-			}
-
-			_cachedGroups = groups;
-			return false;
-		}
-
-		void OnIconPressed(object? sender, EventArgs e)
-		{
-			if (Element!.Toolbar.BackButtonVisible)
-				MauiContext?.GetPlatformWindow().GetWindow()?.BackButtonClicked();
-			else
-				IsOpened = true;
 		}
 
 		void OnTabItemSelected(object? sender, CollectionViewSelectionChangedEventArgs e)

@@ -1,12 +1,16 @@
 #nullable enable
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchMode.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BrowserLaunchMode']/Docs" />
+	/// <summary>
+	/// Launch type of the browser.
+	/// </summary>
+	/// <remarks>It's recommended to use the <see cref="BrowserLaunchMode.SystemPreferred"/> as it is the default and gracefully falls back if needed.</remarks>
 	public enum BrowserLaunchMode
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchMode.xml" path="//Member[@MemberName='SystemPreferred']/Docs" />
+		/// <summary>Launch the optimized system browser and stay inside of your application. Chrome Custom Tabs on Android and SFSafariViewController on iOS.</summary>
 		SystemPreferred = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchMode.xml" path="//Member[@MemberName='External']/Docs" />
+
+		/// <summary>Use the default external launcher to open the browser outside of the app.</summary>
 		External = 1
 	}
 }
