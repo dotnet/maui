@@ -1,12 +1,12 @@
 ﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Maps;
-using Microsoft.Maui.Controls.Maps;
-using System.Windows.Input;
 using System.Collections;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
+using System.Windows.Input;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Maps;
 using Position = Microsoft.Maui.Devices.Sensors.Location;
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
