@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsOn(this UISwitch uiSwitch, ISwitch view)
 		{
 			uiSwitch.SetState(view.IsOn, true);
+			uiSwitch.UpdateTrackColor(view);
 		}
 
 		public static void UpdateTrackColor(this UISwitch uiSwitch, ISwitch view)
