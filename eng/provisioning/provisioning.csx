@@ -68,24 +68,24 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 			AndroidSystemImageApi.GooglePlayStore,
 			AndroidSystemImageAbi.x86,
 			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API31",
-			AndroidApiLevel.Android_12,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API32",
-			AndroidApiLevel.Android_12sv2,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API33",
-			AndroidApiLevel.Android_13,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
+		// .VirtualDevice(
+		// 	"Android_API31",
+		// 	AndroidApiLevel.Android_12,
+		// 	AndroidSystemImageApi.GooglePlayStore,
+		// 	AndroidSystemImageAbi.x86,
+		// 	AndroidVirtualDevice.NEXUS_5X)
+		// .VirtualDevice(
+		// 	"Android_API32",
+		// 	AndroidApiLevel.Android_12sv2,
+		// 	AndroidSystemImageApi.GooglePlayStore,
+		// 	AndroidSystemImageAbi.x86,
+		// 	AndroidVirtualDevice.NEXUS_5X)
+		// .VirtualDevice(
+		// 	"Android_API33",
+		// 	AndroidApiLevel.Android_13,
+		// 	AndroidSystemImageApi.GooglePlayStore,
+		// 	AndroidSystemImageAbi.x86,
+		// 	AndroidVirtualDevice.NEXUS_5X)
 		.SdkManagerPackage ("build-tools;33.0.0");
 }
 else{
