@@ -177,12 +177,12 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - stage: pack_net6
+  - stage: pack_net
     displayName: Pack .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each PackPlatform in parameters.PackPlatforms }}:
-        - job: pack_net6_${{ PackPlatform.name }}
+        - job: pack_net_${{ PackPlatform.name }}
           workspace:
             clean: all
           displayName: ${{ PackPlatform.name }}
@@ -203,9 +203,9 @@ stages:
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
 
-  - stage: samples_net6
+  - stage: samples_net
     displayName: Build .NET MAUI Samples
-    dependsOn: pack_net6
+    dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
@@ -256,9 +256,9 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - stage: templates_net6
+  - stage: templates_net
     displayName: Build .NET MAUI Templates
-    dependsOn: pack_net6
+    dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
