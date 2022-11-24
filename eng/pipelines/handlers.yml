@@ -4,6 +4,7 @@ trigger:
     - main
     - release/*
     - net7.0
+    - net8.0
     - loc
   tags:
     include:
@@ -28,6 +29,7 @@ pr:
     - main
     - release/*
     - net7.0
+    - net8.0
   paths:
     include:
     - '*'
@@ -104,10 +106,10 @@ parameters:
     default:
       - name: default
         tfm: default
-      - name: net6
-        tfm: net6.0
-      - name: net7
-        tfm: net7.0
+      # - name: net6
+      #   tfm: net6.0
+      - name: net8
+        tfm: net8.0
 
 resources:
   repositories:
@@ -175,12 +177,12 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - stage: pack_net6
+  - stage: pack_net
     displayName: Pack .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each PackPlatform in parameters.PackPlatforms }}:
-        - job: pack_net6_${{ PackPlatform.name }}
+        - job: pack_net_${{ PackPlatform.name }}
           workspace:
             clean: all
           displayName: ${{ PackPlatform.name }}
@@ -201,9 +203,9 @@ stages:
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
 
-  - stage: samples_net6
+  - stage: samples_net
     displayName: Build .NET MAUI Samples
-    dependsOn: pack_net6
+    dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
@@ -254,9 +256,9 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - stage: templates_net6
+  - stage: templates_net
     displayName: Build .NET MAUI Templates
-    dependsOn: pack_net6
+    dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
