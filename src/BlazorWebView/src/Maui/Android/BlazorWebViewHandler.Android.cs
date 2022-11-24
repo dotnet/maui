@@ -20,12 +20,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		protected override AWebView CreatePlatformView()
 		{
+#pragma warning disable CA1416, CA1412, CA1422 // Validate platform compatibility
 			var blazorAndroidWebView = new BlazorAndroidWebView(Context!)
 			{
 #pragma warning disable 618 // This can probably be replaced with LinearLayout(LayoutParams.MatchParent, LayoutParams.MatchParent); just need to test that theory
 				LayoutParameters = new Android.Widget.AbsoluteLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, 0, 0)
 #pragma warning restore 618
 			};
+#pragma warning restore CA1416, CA1412, CA1422 // Validate platform compatibility
 
 			BlazorAndroidWebView.SetWebContentsDebuggingEnabled(enabled: DeveloperTools.Enabled);
 

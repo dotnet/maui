@@ -99,7 +99,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_navigationResult = WebNavigationResult.Timeout;
 			}
 #pragma warning disable 618
+#pragma warning disable CA1416, CA1422 // Validate platform compatibility
 			base.OnReceivedError(view, errorCode, description, failingUrl);
+#pragma warning restore CA1416, CA1422 // Validate platform compatibility
 #pragma warning restore 618
 		}
 

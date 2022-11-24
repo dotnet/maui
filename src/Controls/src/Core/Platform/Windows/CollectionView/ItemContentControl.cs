@@ -1,11 +1,11 @@
 using System;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Maui.Controls.Internals;
-using WThickness = Microsoft.UI.Xaml.Thickness;
 using WSize = Windows.Foundation.Size;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Controls.Platform
 {

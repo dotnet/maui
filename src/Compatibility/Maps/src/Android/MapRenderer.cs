@@ -25,10 +25,10 @@ using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
 using Circle = Microsoft.Maui.Controls.Maps.Circle;
+using IList = System.Collections.IList;
 using Math = System.Math;
 using Polygon = Microsoft.Maui.Controls.Maps.Polygon;
 using Polyline = Microsoft.Maui.Controls.Maps.Polyline;
-using IList = System.Collections.IList;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 {
