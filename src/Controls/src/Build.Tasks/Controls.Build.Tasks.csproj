@@ -45,12 +45,13 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
-	<Target Name="_CopyToNuspecDir" AfterTargets="Build">
+	<Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
 		<ItemGroup>
-			<_CopyItems Include="nuget\**" />
+			<_CopyItems Include="nuget\buildTransitive\**" />
 			<_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll" />
+			<_CopyItems Include="$(TargetDir)*.pdb" Exclude="$(TargetDir)System.*.pdb" />
 		</ItemGroup>
-		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(MauiNuSpecDirectory)" ContinueOnError="true" Retries="0" />
+		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
 	</Target>
 
 	<!-- Add additional packages to the NuGet -->

@@ -18,19 +18,21 @@
   <Import Project="ResizetizerPackages.projitems" />
 
   <ItemGroup>
-    <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="build/%(Arch)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="build" />
-    <None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="build" />
-    <None Include="$(MauiNuSpecDirectory)Microsoft.Maui.Resizetizer.targets" Visible="false" Pack="true" PackagePath="build/$(PackageId).targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="buildTransitive/%(Arch)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="buildTransitive" />
+    <None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="buildTransitive" />
+    <None Include="nuget\**" Pack="true" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="_CopyToNuspecDir" AfterTargets="Build">
+  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
-      <_CopyItems Include="$(TargetDir)**\*.dll" Exclude="$(TargetDir)System.*.dll" />
       <_CopyItems Include="$(TargetDir)**\*.so" />
       <_CopyItems Include="$(TargetDir)**\*.dylib" />
+      <_CopyItems Include="$(TargetDir)**\*.dll" />
+      <_CopyItems Include="$(TargetDir)**\*.pdb" />
+      <_CopyItems Include="nuget\buildTransitive\**" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(MauiNuSpecDirectory)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
 
 </Project>
