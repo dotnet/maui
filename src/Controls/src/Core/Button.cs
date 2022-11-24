@@ -368,10 +368,9 @@ namespace Microsoft.Maui.Controls
 			{
 				VisualStateManager.GoToState(this, ButtonElement.PressedVisualState);
 			}
-			else
-			{
-				base.ChangeVisualState();
-			}
+			
+			// Fall through to handle other states
+			base.ChangeVisualState();
 		}
 
 		protected override void OnBindingContextChanged()
