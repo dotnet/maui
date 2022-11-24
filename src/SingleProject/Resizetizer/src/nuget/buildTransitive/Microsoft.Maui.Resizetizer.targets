@@ -634,6 +634,24 @@
         </ItemGroup>
     </Target>
 
+    <!--
+        Make sure the properties are valid before validating. Instead of an error when the user
+        toggles between modes, just handle it and remove the AppxManifest item.
+    -->
+    <Target Name="_ValidateWindowsPackageTypeBeforeTarget"
+            BeforeTargets="_ValidateWindowsPackageType"
+            DependsOnTargets="_MauiRemoveRemoveAppxManifestForUnpackaged" />
+
+    <Target Name="_MauiRemoveRemoveAppxManifestForUnpackaged"
+            Condition="'$(WindowsPackageType)' == 'None' and '@(AppxManifest)' != ''">
+
+        <ItemGroup>
+            <_MauiAppxManifest Include="@(AppxManifest)" />
+            <AppxManifest Remove="@(AppxManifest)" />
+        </ItemGroup>
+
+    </Target>
+
     <!-- This is required because the "CalculateAppxGenerateProjectPriEnabled" target explicitly depends
          on "_ValidatePresenceOfAppxManifestItems" and we need to get in before then. -->
     <Target Name="_ValidatePresenceOfAppxManifestItemsBeforeTarget"

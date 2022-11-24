@@ -128,30 +128,12 @@
 
   </Target>
 
-  <!--
-    Make sure the properties are valid before validating. Instead of an error when the user
-    toggles between modes, just handle it and remove the AppxManifest item.
-  -->
-  <Target Name="_ValidateWindowsPackageTypeBeforeTarget"
-          BeforeTargets="_ValidateWindowsPackageType"
-          DependsOnTargets="_MauiRemoveRemoveAppxManifestForUnpackaged" />
-
-  <Target Name="_MauiRemoveRemoveAppxManifestForUnpackaged"
-          Condition="'$(WindowsPackageType)' == 'None' and '@(AppxManifest)' != ''">
-
-    <ItemGroup>
-      <_MauiAppxManifest Include="@(AppxManifest)" />
-      <AppxManifest Remove="@(AppxManifest)" />
-    </ItemGroup>
-
-  </Target>
-
   <!-- Import Maui Single Project property pages -->
   <PropertyGroup Condition="'$(MauiDesignTimeTargetsPath)' == ''">
     <MauiDesignTimeTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Maui\Maui.DesignTime.targets</MauiDesignTimeTargetsPath>
   </PropertyGroup>
   <Import Project="$(MauiDesignTimeTargetsPath)" Condition="Exists('$(MauiDesignTimeTargetsPath)')" />
-  
+
   <!-- IDE capabilities -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
     <ProjectCapability Include="Msix" />

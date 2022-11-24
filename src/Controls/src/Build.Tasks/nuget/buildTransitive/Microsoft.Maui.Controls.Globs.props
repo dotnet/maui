@@ -152,4 +152,14 @@
     </Page>
   </ItemGroup>
 
+  <!-- Tizen -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'tizen' and '$(TizenProjectFolder)' != '' ">
+    <TizenResource
+        Include="$(TizenResourcePrefix)\**\*"
+        Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(TizenTpkUserExcludeFiles)" />
+    <TizenSharedResource
+        Include="$(TizenSharedPrefix)\**\*"
+        Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(TizenTpkUserExcludeFiles)" />
+  </ItemGroup>
+
 </Project>
