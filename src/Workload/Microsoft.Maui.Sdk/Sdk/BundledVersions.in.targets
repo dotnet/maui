@@ -28,6 +28,9 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' ">
+    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" IsImplicitlyDefined="true" PrivateAssets="all" />
+  </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Graphics" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>

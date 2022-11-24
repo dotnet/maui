@@ -5,10 +5,13 @@
     <RootNamespace>Microsoft.Maui.Resizetizer</RootNamespace>
     <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
-    <PackageId>Microsoft.Maui.Resizetizer.Sdk</PackageId>
+    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
     <Description>.NET MAUI SDK support for images, fonts, etc. Enabled via &lt;UseMauiAssets&gt;true&lt;/UseMauiAssets&gt;.</Description>
-    <IsPackable>false</IsPackable>
-    <_SkiaPackagePath>build\</_SkiaPackagePath>
+    <IsPackable>true</IsPackable>
+    <!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <!-- Do not include any assemblies from this project as we will do it manually -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +24,7 @@
     <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="buildTransitive/%(Arch)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="buildTransitive" />
     <None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="buildTransitive" />
-    <None Include="nuget\**" Pack="true" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="nuget\**" Pack="true" PackagePath="" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">

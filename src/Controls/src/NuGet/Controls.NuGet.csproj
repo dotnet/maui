@@ -6,7 +6,7 @@
 		<PackageId>Microsoft.Maui.Controls</PackageId>
 		<!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
 		<NoPackageAnalysis>true</NoPackageAnalysis>
-		<!-- Do not include any addemblies from this project as it is a "meta" project -->
+		<!-- Do not include any assemblies from this project as it is a "meta" project -->
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 	</PropertyGroup>
 

@@ -1,5 +1,13 @@
 <Project>
 
-  <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Controls.Build.Tasks.targets" />
+  <PropertyGroup>
+    <UsingMicrosoftMauiControlsSdk>true</UsingMicrosoftMauiControlsSdk>
+  </PropertyGroup>
+
+  <Import Project="Microsoft.Maui.Controls.Build.Tasks.Before.targets" />
+
+  <PropertyGroup>
+    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.After.targets</AfterMicrosoftNETSdkTargets>
+  </PropertyGroup>
 
 </Project>
