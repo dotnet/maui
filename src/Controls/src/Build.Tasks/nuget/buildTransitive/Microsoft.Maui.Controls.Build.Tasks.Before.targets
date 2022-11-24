@@ -1,5 +1,15 @@
 <Project>
 
+  <!-- IMPORTANT:
+    we need the >7.0.50 because there is a missing UseMaui condition in previous AutoImport.props
+    We also need to import when this is .NET 8+ or is not a .NET TFM (like .NET Standard 2.0) for tests
+  -->
+  <Import Project="Microsoft.Maui.Controls.Globs.props"
+          Condition="
+            ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionGreaterThan('$(TargetFrameworkVersion)', '7.0'))) or
+            ('$(TargetFrameworkIdentifier)' != '' and '$(TargetFrameworkIdentifier)' != '.NETCoreApp') or
+            ('$(MauiVersion)' != '' and $([MSBuild]::VersionGreaterThan('$(MauiVersion)', '7.0.50')))" />
+
   <Import Project="Microsoft.Maui.Controls.props" />
 
 </Project>
