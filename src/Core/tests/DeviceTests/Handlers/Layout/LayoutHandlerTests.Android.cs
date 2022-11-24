@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
 	public partial class LayoutHandlerTests
 	{
-		[Fact(DisplayName = "Shadow Initializes Correctly")]
+		[Theory(DisplayName = "Shadow Initializes Correctly")]
 		[InlineData(0xFF0000)]
 		[InlineData(0x00FF00)]
 		[InlineData(0x0000FF)]
