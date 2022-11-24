@@ -15,7 +15,7 @@
     <NoWarn Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(NoWarn);CA1420</NoWarn>
   </PropertyGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
     <Compile Remove="Internals\Legacy\**" />

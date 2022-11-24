@@ -47,6 +47,7 @@
 
 	<Target Name="_CopyToNuspecDir" AfterTargets="Build">
 		<ItemGroup>
+			<_CopyItems Include="nuget\**" />
 			<_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll" />
 		</ItemGroup>
 		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(MauiNuSpecDirectory)" ContinueOnError="true" Retries="0" />

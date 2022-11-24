@@ -3,10 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-.nuspec/**/*.dll
-.nuspec/**/*.dylib
-.nuspec/**/*.so
-.XamarinFormsVersionFile.txt
+.nuspec/
 templatesTest/
 
 # User-specific files
