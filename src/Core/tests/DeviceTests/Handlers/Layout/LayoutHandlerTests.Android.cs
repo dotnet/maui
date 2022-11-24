@@ -14,8 +14,13 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 	public partial class LayoutHandlerTests
 	{
 		[Fact(DisplayName = "Shadow Initializes Correctly")]
-		public async Task ShadowInitializesCorrectly()
+		[InlineData(0xFF0000)]
+		[InlineData(0x00FF00)]
+		[InlineData(0x0000FF)]
+		public async Task ShadowInitializesCorrectly(uint color)
 		{
+			var expected = Color.FromUint(color);
+
 			var xPlatShadow = new ShadowStub
 			{
 				Offset = new Point(10, 10),
@@ -31,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			layout.Shadow = xPlatShadow;
 
-			await ValidateHasColor(layout, Colors.Red, () => xPlatShadow.Paint = new SolidPaint(Colors.Red));
+			await ValidateHasColor(layout, expected, () => xPlatShadow.Paint = new SolidPaint(expected));
 		}
 
 		double GetNativeChildCount(IElementHandler layoutHandler)

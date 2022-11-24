@@ -268,7 +268,8 @@ namespace Microsoft.Maui.Platform
 					else
 					{
 						var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
-						var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
+						var density = Context.GetDisplayDensity();
+						var path = Clip.PathForBounds(bounds)?.AsAndroidPath(scaleX: density, scaleY: density);
 
 						path.Offset(shadowOffsetX, shadowOffsetY);
 
