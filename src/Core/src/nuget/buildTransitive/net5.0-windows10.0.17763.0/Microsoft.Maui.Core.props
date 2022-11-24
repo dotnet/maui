@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <EnableMsixTooling Condition=" '$(EnableMsixTooling)' == '' ">true</EnableMsixTooling>
-    <EnablePreviewMsixTooling Condition=" '$(EnablePreviewMsixTooling)' == '' ">$(EnableMsixTooling)</EnablePreviewMsixTooling>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Core.props" />

@@ -1,9 +1,4 @@
-<!--
-  NOTE: this file is only used by projects in the dotnet/maui repo directly.
-  AutoImport.props should be used by the .NET 6 workload when $(UseMaui) is true.
--->
-
-<!-- "Single Project" support - all <ItemGroup/>'s must check if $(EnableDefaultItems) and $(SingleProject) are true -->
+<!-- all <ItemGroup/>'s must check if $(EnableDefaultMauiItems) is true -->
 <Project>
 
   <ItemDefinitionGroup>
@@ -12,16 +7,41 @@
     </MauiXaml>
   </ItemDefinitionGroup>
 
-  <ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultXamlItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
-    <MauiXaml Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)"/>
+  <ItemGroup Condition=" ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') and '$(TargetFrameworkVersion)' != '' ">
+    <!-- %(Sdk) is only here if something later needs to identify these -->
+    <Using Include="Microsoft.Extensions.DependencyInjection" Sdk="Maui" />
+    <Using Include="Microsoft.Maui" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Controls" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Controls.Hosting" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Controls.Xaml" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Dispatching" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Hosting" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Graphics" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Accessibility" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.ApplicationModel" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.ApplicationModel.Communication" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.ApplicationModel.DataTransfer" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Authentication" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Devices" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Devices.Sensors" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Media" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Networking" Sdk="Maui" />
+    <Using Include="Microsoft.Maui.Storage" Sdk="Maui" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultCssItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
-    <MauiCss Include="**\*.css" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+  <!-- Default .NET MAUI files-->
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(EnableDefaultEmbeddedResourceItems)' == 'true' ">
+    <MauiXaml Condition=" '$(EnableDefaultXamlItems)' == 'true' "  Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+    <MauiCss  Condition=" '$(EnableDefaultCssItems)' == 'true' "   Include="**\*.css"  Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
   </ItemGroup>
+
+  <!--
+    *SingleProject*
+    all <ItemGroup/>'s must check if $(SingleProject) is true
+  -->
 
   <!-- Android -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' and '$(MonoAndroidResourcePrefix)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' and '$(MonoAndroidResourcePrefix)' != '' ">
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.xml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.axml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.png" />
@@ -35,7 +55,7 @@
   </ItemGroup>
 
   <!-- iOS -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' ">
     <None
         Include="$(iOSProjectFolder)Info.plist"
         Condition="Exists('$(iOSProjectFolder)Info.plist')"
@@ -70,7 +90,7 @@
   </ItemGroup>
 
   <!-- MacCatalyst -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' ">
     <None
         Include="$(MacCatalystProjectFolder)Info.plist"
         Condition="Exists('$(MacCatalystProjectFolder)Info.plist')"
@@ -105,7 +125,7 @@
   </ItemGroup>
 
   <!-- Windows -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' ">
     <Manifest
         Include="$(ApplicationManifest)"
         Condition="Exists('$(ApplicationManifest)')" />

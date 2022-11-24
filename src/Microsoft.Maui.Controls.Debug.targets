@@ -1,10 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
 	<PropertyGroup>
 		<MauiKeepXamlResources>True</MauiKeepXamlResources>
 		<_MauiForceXamlCForDebug>True</_MauiForceXamlCForDebug>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.targets" />
 	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll" />
 	
 	<PropertyGroup>
@@ -26,4 +26,5 @@
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"/>
 	</Target>
+
 </Project>
