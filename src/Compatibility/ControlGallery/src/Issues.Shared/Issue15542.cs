@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					SetTitleView(page,
 						new Grid()
 						{
-							BackgroundColor = Color.Red,
+							BackgroundColor = Colors.Red,
 							AutomationId = "TitleViewId",
 							Children = { new Label() { Text = titleView, VerticalTextAlignment = TextAlignment.End } }
 						});
