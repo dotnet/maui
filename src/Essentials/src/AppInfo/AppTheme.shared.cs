@@ -7,7 +7,7 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		/// <summary>Default, unknown or unspecified theme.</summary>
 		Unspecified,
-		
+
 		/// <summary>Light theme.</summary>
 		Light,
 
