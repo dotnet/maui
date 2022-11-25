@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			=> Current.IsSupported;
 
 		/// <summary>
-		/// Gets if compass is actively being monitored.
+		/// Gets a value indicating whether the compass is actively being monitored.
 		/// </summary>
 		public static bool IsMonitoring
 			=> Current.IsMonitoring;
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 #if IOS || MACCATALYST
 		/// <summary>
-		/// Gets or sets if the calibration screen should be displayed.
+		/// Gets or sets a value specifying whether the calibration screen should be displayed.
 		/// </summary>
 		/// <remarks>Only available on iOS.</remarks>
 		public static bool ShouldDisplayHeadingCalibration
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 #if IOS || MACCATALYST
 		/// <summary>
-		/// Gets or sets if the calibration screen should be displayed.
+		/// Gets or sets a value specifying whether the calibration screen should be displayed.
 		/// </summary>
 		/// <remarks>Only available on iOS.</remarks>
 		public static void SetShouldDisplayHeadingCalibration(this ICompass compass, bool shouldDisplay)
@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		///	Equality operator for equals.
 		/// </summary>
 		/// <param name="left">Left to compare.</param>
-		/// <param name="right">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
 		/// <returns><see langword="true"/> if objects are equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator ==(CompassData left, CompassData right) =>
 			left.Equals(right);
@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Inequality operator.
 		/// </summary>
 		/// <param name="left">Left to compare.</param>
-		/// <param name="right">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
 		/// <returns><see langword="true"/> if objects are not equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator !=(CompassData left, CompassData right) =>
 		   !left.Equals(right);
