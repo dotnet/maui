@@ -1,1 +1,9 @@
-<Project />
+<Project>
+
+  <PropertyGroup>
+    <_MauiSkipSdkAutoImport>true</_MauiSkipSdkAutoImport>
+  </PropertyGroup>
+
+  <Import Project="Microsoft.Maui.Controls.Globs.props" />
+
+</Project>
