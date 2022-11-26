@@ -576,7 +576,6 @@ void StartVisualStudioForDotNet6()
     if(localDotnet)
     {
         SetDotNetEnvironmentVariables();
-        SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true");
     }
 
     if (IsRunningOnWindows())

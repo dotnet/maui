@@ -14,7 +14,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectCapability Include="Maui" Condition="'$(_ExcludeMauiProjectCapability)' != 'true'" />
 		<AvailableItemName Include="MauiXaml" />
 		<AvailableItemName Include="MauiCss" />
 	</ItemGroup>
