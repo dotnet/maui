@@ -21,7 +21,7 @@
   <Import Project="ResizetizerPackages.projitems" />
 
   <ItemGroup>
-    <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="buildTransitive/%(Arch)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="buildTransitive/%(Arch)" />
     <None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="buildTransitive" />
     <None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="buildTransitive" />
     <None Include="nuget\**" Pack="true" PackagePath="" CopyToOutputDirectory="PreserveNewest" />
@@ -29,13 +29,12 @@
 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
-      <_CopyItems Include="$(TargetDir)**\*.so" />
-      <_CopyItems Include="$(TargetDir)**\*.dylib" />
-      <_CopyItems Include="$(TargetDir)**\*.dll" />
-      <_CopyItems Include="$(TargetDir)**\*.pdb" />
+      <_CopyItems Include="$(TargetDir)$(AssemblyName).dll" />
+      <_CopyItems Include="$(TargetDir)$(AssemblyName).pdb" />
       <_CopyItems Include="nuget\buildTransitive\**" />
+      <_CopyItems Include="@(_ResizetizerFiles)" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)%(_CopyItems.Arch)" ContinueOnError="true" Retries="0" />
   </Target>
 
 </Project>
