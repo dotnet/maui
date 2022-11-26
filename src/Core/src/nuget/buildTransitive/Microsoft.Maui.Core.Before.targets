@@ -1,9 +1,8 @@
 <Project>
 
-  <PropertyGroup Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
-    <EnableMsixTooling Condition=" '$(EnableMsixTooling)' == '' ">true</EnableMsixTooling>
+  <PropertyGroup>
+    <!-- Include the pre-processed xaml files in the output folder -->
     <GenerateLibraryLayout Condition=" '$(GenerateLibraryLayout)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe' ">true</GenerateLibraryLayout>
-    <WinUISDKReferences Condition=" '$(WinUISDKReferences)' == '' and '$(EnableMsixTooling)' == 'true' ">false</WinUISDKReferences>
   </PropertyGroup>
 
 </Project>

@@ -134,16 +134,4 @@
   </PropertyGroup>
   <Import Project="$(MauiDesignTimeTargetsPath)" Condition="Exists('$(MauiDesignTimeTargetsPath)')" />
 
-  <!-- IDE capabilities -->
-  <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
-    <ProjectCapability Include="Msix" />
-    <ProjectCapability Include="MauiSingleProject" />
-    <ProjectCapability Include="LaunchProfiles" />
-    <!-- If VS is older than Dev17 -->
-    <ProjectCapability Include="XamarinStaticLaunchProfiles" Condition=" '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' &lt; '17.0' " />
-    <!-- Otherwise define LaunchProfilesGroupByPlatformFilters by default -->
-    <ProjectCapability Include="LaunchProfilesGroupByPlatformFilters" Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &gt;= '17.0' " />
-    <ProjectCapability Include="SingleTargetBuildForStartupProjects" Condition=" '$(EnableSingleTargetBuildForStartupProjects)' != 'false' " />
-  </ItemGroup>
-
 </Project>
