@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using System.Runtime.CompilerServices;
-using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.Controls
 {

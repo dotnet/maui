@@ -142,6 +142,7 @@ static Microsoft.Maui.Handlers.MenuFlyoutHandler.Mapper -> Microsoft.Maui.IPrope
 static Microsoft.Maui.Handlers.MenuFlyoutHandler.MapRemove(Microsoft.Maui.Handlers.IMenuFlyoutHandler! handler, Microsoft.Maui.IMenuFlyout! menuElement, object? arg) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
 static Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IMenuFlyoutSeparator!, Microsoft.Maui.Handlers.IMenuFlyoutSeparatorHandler!>!
+static Microsoft.Maui.Handlers.StepperHandler.MapIsEnabled(Microsoft.Maui.Handlers.IStepperHandler! handler, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapToolTip(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.ViewHandler.MapContextFlyout(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapHeight(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! view) -> void
