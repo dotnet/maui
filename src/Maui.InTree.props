@@ -10,7 +10,7 @@
     <Import Project="$(_MauiBuildTasksLocation)net6.0-ios10.0\Microsoft.Maui.Controls.Build.Tasks.props" Condition="$(_MauiTargetPlatformIsiOS)" />
     <Import Project="$(_MauiBuildTasksLocation)net6.0-maccatalyst13.1\Microsoft.Maui.Controls.Build.Tasks.props" Condition="$(_MauiTargetPlatformIsMacCatalyst)" />
     <Import Project="$(_MauiBuildTasksLocation)net6.0-windows10.0.17763.0\Microsoft.Maui.Controls.Build.Tasks.props" Condition="$(_MauiTargetPlatformIsWindows)" />
-    <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.props" Condition="!$(_MauiTargetPlatformIsiOS) and !$(_MauiTargetPlatformIsMacCatalyst) and $(_MauiTargetPlatformIsWindows)" />
+    <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.props" Condition="!$(_MauiTargetPlatformIsiOS) and !$(_MauiTargetPlatformIsMacCatalyst) and !$(_MauiTargetPlatformIsWindows)" />
 
     <!-- Microsoft.Maui.Resizetizer.props -->
     <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.props" />
