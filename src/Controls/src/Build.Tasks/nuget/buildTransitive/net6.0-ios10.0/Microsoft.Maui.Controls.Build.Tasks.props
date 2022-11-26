@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <_MicrosoftMauiControlsPlatformTargets>$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Windows.targets</_MicrosoftMauiControlsPlatformTargets>
+    <_MicrosoftMauiControlsPlatformTargets>$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.iOS.targets</_MicrosoftMauiControlsPlatformTargets>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Controls.Build.Tasks.props" />

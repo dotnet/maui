@@ -1,0 +1,5 @@
+<Project>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Controls.Build.Tasks.targets" />
+
+</Project>

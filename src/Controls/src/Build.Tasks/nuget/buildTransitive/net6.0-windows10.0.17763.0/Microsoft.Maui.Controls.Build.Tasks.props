@@ -1,0 +1,10 @@
+<Project>
+
+  <PropertyGroup>
+    <_MicrosoftMauiControlsPlatformTargets>$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Windows.targets</_MicrosoftMauiControlsPlatformTargets>
+    <MicrosoftMauiSdkPlatformTargets>$(BeforeMicrosoftMauiSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Sdk.Windows.targets</MicrosoftMauiSdkPlatformTargets>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Controls.Build.Tasks.props" />
+
+</Project>
