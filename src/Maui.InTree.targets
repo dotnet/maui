@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="$(MauiSrcDirectory)Workload\Microsoft.Maui.Sdk\Sdk\Microsoft.Maui.Sdk.targets" />
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.targets" Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.targets" Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.targets" Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')" />
