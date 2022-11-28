@@ -2,6 +2,8 @@
 Microsoft.Maui.ApplicationModel.Permissions.PermissionResult
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>!
+Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.get -> Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder?
+Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> void
 ~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.GrantResults.get -> Android.Content.PM.Permission[]
 ~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.PermissionResult(string[] permissions, Android.Content.PM.Permission[] grantResults) -> void
 ~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.Permissions.get -> string[]
