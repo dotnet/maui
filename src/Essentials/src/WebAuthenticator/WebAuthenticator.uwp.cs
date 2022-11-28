@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Authentication
 					case WebAuthenticationStatus.Success:
 						// For GET requests this is a URI:
 						var resultUri = new Uri(r.ResponseData.ToString());
-						return new WebAuthenticatorResult(resultUri);
+						return new WebAuthenticatorResult(resultUri, webAuthenticatorOptions?.ResponseDecoder);
 					case WebAuthenticationStatus.UserCancel:
 						throw new TaskCanceledException();
 					case WebAuthenticationStatus.ErrorHttp:

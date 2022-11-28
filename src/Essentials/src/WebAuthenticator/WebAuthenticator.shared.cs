@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Authentication
@@ -16,6 +18,11 @@ namespace Microsoft.Maui.Authentication
 #elif ANDROID
 		bool OnResumeCallback(Android.Content.Intent intent);
 #endif
+	}
+
+	public interface IWebAuthenticatorResponseDecoder
+	{
+		IDictionary<string, string> DecodeResponse(Uri uri);
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs/*" />
@@ -89,5 +96,7 @@ namespace Microsoft.Maui.Authentication
 		public Uri? CallbackUrl { get; set; }
 
 		public bool PrefersEphemeralWebBrowserSession { get; set; }
+
+		public IWebAuthenticatorResponseDecoder? ResponseDecoder { get; set; }
 	}
 }

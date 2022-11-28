@@ -15,9 +15,10 @@ namespace Microsoft.Maui.Authentication
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
-		public WebAuthenticatorResult(Uri uri)
+		public WebAuthenticatorResult(Uri uri, IWebAuthenticatorResponseDecoder responseDecoder = null)
 		{
-			foreach (var kvp in WebUtils.ParseQueryString(uri.ToString()))
+			var properties = responseDecoder == null ? WebUtils.ParseQueryString(uri.ToString()) : responseDecoder.DecodeResponse(uri);
+			foreach (var kvp in properties)
 			{
 				Properties[kvp.Key] = kvp.Value;
 			}

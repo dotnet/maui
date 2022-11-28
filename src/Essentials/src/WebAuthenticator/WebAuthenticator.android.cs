@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Authentication
 	{
 		TaskCompletionSource<WebAuthenticatorResult> tcsResponse = null;
 		Uri currentRedirectUri = null;
+		WebAuthenticatorOptions currentOptions = null;
 
 		public bool OnResumeCallback(Intent intent)
 		{
@@ -34,8 +35,7 @@ namespace Microsoft.Maui.Authentication
 					tcsResponse.TrySetException(new InvalidOperationException($"Invalid Redirect URI, detected `{intentUri}` but expected a URI in the format of `{currentRedirectUri}`"));
 					return false;
 				}
-
-				tcsResponse?.TrySetResult(new WebAuthenticatorResult(intentUri));
+				tcsResponse?.TrySetResult(new WebAuthenticatorResult(intentUri, currentOptions?.ResponseDecoder));
 				return true;
 			}
 			catch (Exception ex)
@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Authentication
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			currentOptions = webAuthenticatorOptions;
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
 			var packageName = Application.Context.PackageName;
