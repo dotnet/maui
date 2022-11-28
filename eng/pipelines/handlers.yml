@@ -126,13 +126,13 @@ resources:
 
 stages:
 
-  - stage: build_net6
+  - stage: build_net
     displayName: Build .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+          - job: build_net_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
@@ -209,7 +209,7 @@ stages:
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+          - job: build_net_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})

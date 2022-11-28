@@ -1,7 +1,7 @@
 using System;
+using Microsoft.Maui.Devices;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.Maui.Devices;
 using WVisualState = Microsoft.UI.Xaml.VisualState;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP

@@ -83,4 +83,10 @@ namespace Microsoft.Maui.Controls
 
 		bool IBorderElement.IsBorderWidthSet() => false;
 	}
+
+	internal static class FrameExtensions
+	{
+		internal static bool IsClippedToBoundsSet(this Frame frame, bool defaultValue) =>
+			frame.IsSet(Compatibility.Layout.IsClippedToBoundsProperty) ? frame.IsClippedToBounds : defaultValue;
+	}
 }

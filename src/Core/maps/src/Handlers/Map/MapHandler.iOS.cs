@@ -81,6 +81,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapElements(IMapHandler handler, IMap map)
 		{
+			handler.PlatformView.ClearMapElements();
 			handler.PlatformView.AddElements((IList)map.Elements);
 		}
 

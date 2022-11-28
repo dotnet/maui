@@ -1,8 +1,8 @@
+using Android.App;
+using Android.OS;
+using Android.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Android;
-using Android.App;
-using Android.Widget;
-using Android.OS;
 using Microsoft.Maui.Graphics.Platform;
 
 namespace GraphicsTester.Android

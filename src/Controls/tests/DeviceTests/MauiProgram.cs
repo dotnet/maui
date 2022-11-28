@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 		public static Microsoft.UI.Xaml.Window CurrentWindow => MauiProgramDefaults.DefaultWindow;
 #endif
 
-		public static IApplication DefaultTestApp { get; private set; }
+		public static IApplication DefaultTestApp => MauiProgramDefaults.DefaultTestApp;
 
 		public static MauiApp CreateMauiApp() =>
 			MauiProgramDefaults.CreateMauiApp(new List<Assembly>()
