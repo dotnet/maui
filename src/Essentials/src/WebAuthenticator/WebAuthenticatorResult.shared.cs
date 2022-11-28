@@ -15,7 +15,12 @@ namespace Microsoft.Maui.Authentication
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
-		public WebAuthenticatorResult(Uri uri, IWebAuthenticatorResponseDecoder responseDecoder = null)
+		public WebAuthenticatorResult(Uri uri) : this(uri, null)
+		{
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][4]/Docs/*" />
+		public WebAuthenticatorResult(Uri uri, IWebAuthenticatorResponseDecoder responseDecoder)
 		{
 			CallbackUri = uri;
 			var properties = responseDecoder == null ? WebUtils.ParseQueryString(uri.ToString()) : responseDecoder.DecodeResponse(uri);
@@ -32,6 +37,7 @@ namespace Microsoft.Maui.Authentication
 				Properties[kvp.Key] = kvp.Value;
 		}
 
+		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='CallbackUri']/Docs/*" />
 		public Uri CallbackUri { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='Timestamp']/Docs/*" />

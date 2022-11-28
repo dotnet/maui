@@ -66,6 +66,26 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+        <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public WebAuthenticatorResult (Uri uri, IWebAuthenticatorResponseDecoder responseDecoder);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class System.Uri uri, class Microsoft.Maui.Essentials.IWebAuthenticatorResponseDecoder responseDecoder) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Essentials.WebAuthenticatorResult.#ctor(System.Uri,Microsoft.Maui.Essentials.IWebAuthenticatorResponseDecoder)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="uri" Type="System.Uri" />
+        <Parameter Name="responseDecoder" Type="Microsoft.Maui.Essentials.IWebAuthenticatorResponseDecoder" />
+      </Parameters>
+      <Docs>
+        <param name="uri">The callback uri that was used to end the authentication sequence.</param>
+        <param name="responseDecoder">The decoder that can be used to decode the callback uri.</param>
+        <summary>Create a new instance by parsing a Uri's querystring parameters.</summary>
+        <remarks>If the responseDecoder is non-null, then it is used to decode the fragment or query string returned by the authorization service.  Otherwise, a default response decoder is used.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="AccessToken">
       <MemberSignature Language="C#" Value="public string AccessToken { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string AccessToken" />
@@ -84,6 +104,24 @@
         <remarks></remarks>
       </Docs>
     </Member>
+    <Member MemberName="CallbackUri">
+      <MemberSignature Language="C#" Value="public Nullable&lt;Uri&gt; CallbackUri { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance System.Nullable`1&lt;valuetype System.Uri&gt; CallbackUri" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Essentials.WebAuthenticatorResult.CallbackUri" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Uri&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The uri that was used to call back with the access token..</summary>
+        <value>The value of the callback URI, including the fragment or query string bearing the access token and associated information.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>    
     <Member MemberName="ExpiresIn">
       <MemberSignature Language="C#" Value="public Nullable&lt;DateTimeOffset&gt; ExpiresIn { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;valuetype System.DateTimeOffset&gt; ExpiresIn" />

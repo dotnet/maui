@@ -8,7 +8,7 @@ Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> voi
 ~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.PermissionResult(string[] permissions, Android.Content.PM.Permission[] grantResults) -> void
 ~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.Permissions.get -> string[]
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.CallbackUri.get -> System.Uri
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri, Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder responseDecoder = null) -> void
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri, Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder responseDecoder) -> void
 ~override Microsoft.Maui.ApplicationModel.Permissions.LocationAlways.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 ~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 ~virtual Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.DoRequest(string[] permissions) -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.Permissions.PermissionResult>
