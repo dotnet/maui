@@ -1,8 +1,0 @@
-<Project>
-
-  <PropertyGroup>
-    <!-- Generate ReadyToRun (AOT) when building for Release -->
-    <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' and '$(Configuration)' == 'Release' and '$(OutputType)' == 'WinExe' ">true</PublishReadyToRun>
-  </PropertyGroup>
-
-</Project>

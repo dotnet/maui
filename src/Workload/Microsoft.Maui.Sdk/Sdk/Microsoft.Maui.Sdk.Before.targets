@@ -3,6 +3,8 @@
   <PropertyGroup Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
     <!-- All Windows apps require WinExe -->
     <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
+    <!-- Generate ReadyToRun (AOT) when building for Release -->
+    <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' and '$(Configuration)' == 'Release' and '$(OutputType)' == 'WinExe' ">true</PublishReadyToRun>
   </PropertyGroup>
 
   <!-- The Windows App SDK does not support AnyCPU without a RID, so make sure we pick the "best" one we can -->
