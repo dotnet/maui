@@ -14,7 +14,7 @@
   -->
   <Import
       Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@'))) "
-      Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@"
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
   />
 
   <!--
