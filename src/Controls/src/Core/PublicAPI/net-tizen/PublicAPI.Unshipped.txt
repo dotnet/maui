@@ -1719,7 +1719,6 @@ Microsoft.Maui.Controls.Platform.ShellSectionView.MauiContext.set -> void
 Microsoft.Maui.Controls.Platform.ShellSectionView.ShellSection.get -> Microsoft.Maui.Controls.ShellSection!
 Microsoft.Maui.Controls.Platform.ShellSectionView.ShellSectionView(Microsoft.Maui.Controls.ShellSection! section, Microsoft.Maui.IMauiContext! context) -> void
 Microsoft.Maui.Controls.Platform.ShellView
-Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundCorlor -> Tizen.NUI.Color!
 Microsoft.Maui.Controls.Platform.ShellView.Element.get -> Microsoft.Maui.Controls.Shell?
 Microsoft.Maui.Controls.Platform.ShellView.Element.set -> void
 Microsoft.Maui.Controls.Platform.ShellView.HeaderOnMenu.get -> bool
@@ -3236,6 +3235,8 @@ override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.O
 override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnAttachedTo(TView! bindable) -> void
 override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachingFrom(Microsoft.Maui.Controls.BindableObject! bindable) -> void
 override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachingFrom(TView! bindable) -> void
+readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackdropColor -> Tizen.NUI.Color!
+readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundColor -> Tizen.NUI.Color!
 static Microsoft.Maui.Controls.AbsoluteLayout.AutoSize -> double
 static Microsoft.Maui.Controls.Application.AccentColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Controls.Application.AccentColor.set -> void
