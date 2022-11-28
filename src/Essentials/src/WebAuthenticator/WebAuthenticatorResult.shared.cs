@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Authentication
 				Properties[kvp.Key] = kvp.Value;
 		}
 
-		public Uri? CallbackUri { get; }
+		public Uri CallbackUri { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='Timestamp']/Docs/*" />
 		public DateTimeOffset Timestamp { get; set; } = new DateTimeOffset(DateTime.UtcNow);

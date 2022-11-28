@@ -1,8 +1,11 @@
 ﻿#nullable enable
 Microsoft.Maui.ApplicationModel.Permissions.PermissionResult
+Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
+Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>!
 ~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.GrantResults.get -> Android.Content.PM.Permission[]
 ~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.PermissionResult(string[] permissions, Android.Content.PM.Permission[] grantResults) -> void
 ~Microsoft.Maui.ApplicationModel.Permissions.PermissionResult.Permissions.get -> string[]
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.CallbackUri.get -> System.Uri
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri, Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder responseDecoder = null) -> void
 ~override Microsoft.Maui.ApplicationModel.Permissions.LocationAlways.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 ~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
