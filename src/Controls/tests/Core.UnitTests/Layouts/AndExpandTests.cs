@@ -332,5 +332,49 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			(layout as Maui.ILayout).CrossPlatformArrange(new Rect(0, 0, 100, 100));
 		}
+
+		[Fact]
+		public void InvisibleViewsDoNotCreateColumns() 
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = false
+			};
+
+			var view1 = new TestView
+			{
+				Text = "Hello",
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = true
+			};
+
+			var layout = SetUpTestLayout(StackOrientation.Horizontal, view0, view1);
+
+			Assert.Equal(0, view1.Bounds.Left);
+		}
+
+		[Fact]
+		public void InvisibleViewsDoNotCreateRows()
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = false
+			};
+
+			var view1 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = true
+			};
+
+			var layout = SetUpTestLayout(StackOrientation.Vertical, view0, view1);
+
+			Assert.Equal(0, view1.Bounds.Top);
+		}
 	}
 }
