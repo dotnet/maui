@@ -1,6 +1,11 @@
 <Project>
-  <Import Project="..\..\..\..\..\..\..\..\..\src\AutoImport.InTree.props" />
-  <Import Project="..\..\..\..\..\..\..\..\..\.buildtasks\Microsoft.Maui.Core.targets" />
-  <Import Project="..\..\..\..\..\..\..\..\..\.buildtasks\Microsoft.Maui.Controls.props" />
-  <Import Project="..\..\..\..\..\..\..\..\..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <MauiRootDirectory>$(MSBuildThisFileDirectory)..\..\..\..\..\..\..\..\..\</MauiRootDirectory>
+    <MauiSrcDirectory>$(MauiRootDirectory)src\</MauiSrcDirectory>
+    <_MauiBuildTasksLocation>$(MauiRootDirectory).buildtasks\</_MauiBuildTasksLocation>
+  </PropertyGroup>
+
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" />
+
 </Project> 

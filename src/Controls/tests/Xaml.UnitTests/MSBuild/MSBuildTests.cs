@@ -79,28 +79,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			//copy _Directory.Build.[props|targets] in test/
 			var props = IOPath.Combine(testDirectory, "..", "..", "..", "MSBuild", "_Directory.Build.props");
 			var targets = IOPath.Combine(testDirectory, "..", "..", "..", "MSBuild", "_Directory.Build.targets");
+
 			if (!File.Exists(props))
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
 				//https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?view=vsts&tabs=batch#buildsourcesdirectory
-				var sourcesDirectory = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY");
-				if (!string.IsNullOrEmpty(sourcesDirectory))
-				{
-					props = IOPath.Combine(sourcesDirectory, "Microsoft.Maui.Controls.Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
-					targets = IOPath.Combine(sourcesDirectory, "Microsoft.Maui.Controls.Xaml.UnitTests", "MSBuild", "_Directory.Build.targets");
-
-					if (!File.Exists(props))
-						Assert.Fail("Unable to find _Directory.Build.props at path: " + props);
-				}
-				else
-					Assert.Fail("Unable to find _Directory.Build.props at path: " + props);
-
-				Directory.CreateDirectory(IOPath.Combine(testDirectory, "..", "..", "..", "..", ".nuspec"));
-				foreach (var file in Directory.GetFiles(IOPath.Combine(sourcesDirectory, ".nuspec"), "*.targets"))
-					File.Copy(file, IOPath.Combine(testDirectory, "..", "..", "..", "..", ".nuspec", IOPath.GetFileName(file)), true);
-				foreach (var file in Directory.GetFiles(IOPath.Combine(sourcesDirectory, ".nuspec"), "*.props"))
-					File.Copy(file, IOPath.Combine(testDirectory, "..", "..", "..", "..", ".nuspec", IOPath.GetFileName(file)), true);
-				File.Copy(IOPath.Combine(sourcesDirectory, "Directory.Build.props"), IOPath.Combine(testDirectory, "..", "..", "..", "..", "Directory.Build.props"), true);
+				Assert.Fail("Unable to find _Directory.Build.props at path: " + props);
 			}
 
 			File.Copy(props, IOPath.Combine(tempDirectory, "Directory.Build.props"), true);
@@ -146,7 +130,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			//NOTE: we don't want SDK-style projects to auto-add files, tests should be able to control this
 			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("False"));
 			propertyGroup.Add(NewElement("EnableDefaultEmbeddedResourceItems").WithValue("False"));
-			propertyGroup.Add(NewElement("_MauiBuildTasksLocation").WithValue($"{testDirectory}\\"));
 			project.Add(propertyGroup);
 
 			var itemGroup = NewElement("ItemGroup");
