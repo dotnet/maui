@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Authentication
 		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
 		public WebAuthenticatorResult(Uri uri, IWebAuthenticatorResponseDecoder responseDecoder = null)
 		{
+			CallbackUri = uri;
 			var properties = responseDecoder == null ? WebUtils.ParseQueryString(uri.ToString()) : responseDecoder.DecodeResponse(uri);
 			foreach (var kvp in properties)
 			{
@@ -30,6 +31,8 @@ namespace Microsoft.Maui.Authentication
 			foreach (var kvp in properties)
 				Properties[kvp.Key] = kvp.Value;
 		}
+
+		public Uri? CallbackUri { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticatorResult.xml" path="//Member[@MemberName='Timestamp']/Docs/*" />
 		public DateTimeOffset Timestamp { get; set; } = new DateTimeOffset(DateTime.UtcNow);
