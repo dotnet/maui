@@ -88,7 +88,8 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 		// 	AndroidVirtualDevice.NEXUS_5X)
 		.SdkManagerPackage ("build-tools;33.0.0");
 }
-else{
+else
+{
 
 	var androidSDK = AndroidSdk();
 	foreach(var sdk in ANDROID_API_SDKS.Split(','))

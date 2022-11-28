@@ -37,11 +37,18 @@ namespace Microsoft.Maui.Devices.Sensors
 
 	class BarometerListener : Java.Lang.Object, ISensorEventListener, IDisposable
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="BarometerListener"/> class.
+		/// </summary>
+		/// <param name="changeHandler">The handler that is invoked when a change in the barometer reading is detected.</param>
 		public BarometerListener(Action<BarometerData> changeHandler)
 		{
 			ChangeHandler = changeHandler;
 		}
 
+		/// <summary>
+		/// A reference to the action that invoked when a change in the barometer reading has been detected.
+		/// </summary>
 		public readonly Action<BarometerData> ChangeHandler;
 
 		void ISensorEventListener.OnAccuracyChanged(Sensor? sensor, SensorStatus accuracy)
