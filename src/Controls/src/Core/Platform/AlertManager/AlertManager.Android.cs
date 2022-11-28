@@ -323,10 +323,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool PageIsInThisContext(IView page)
 			{
-				if(page.Handler == null)
+				if (page.Handler == null)
 				{
 					return false;
-				}	
+				}
 
 				var platformView = page.ToPlatform();
 
