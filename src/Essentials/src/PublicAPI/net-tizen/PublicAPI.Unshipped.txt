@@ -1,5 +1,11 @@
 ﻿#nullable enable
+Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
+Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>!
+Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.get -> Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder?
+Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> void
 override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.CallbackUri.get -> System.Uri
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri, Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder responseDecoder) -> void
 ~override Microsoft.Maui.Devices.Sensors.Location.Equals(object obj) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator !=(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
 ~static Microsoft.Maui.Devices.Sensors.Location.operator ==(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool

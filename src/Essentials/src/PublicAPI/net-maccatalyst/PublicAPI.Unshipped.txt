@@ -1,4 +1,6 @@
 ﻿#nullable enable
+Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
+Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.get -> Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder?
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> void
 override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
