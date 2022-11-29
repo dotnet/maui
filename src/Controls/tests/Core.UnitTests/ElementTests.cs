@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			root.Children.Add(child);
+			Assert.True(added);
 		}
 
 		[Fact]
@@ -82,6 +83,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			child.Children.Add(child2);
+			Assert.True(added);
 		}
 
 		[Fact]
@@ -133,6 +135,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			root.Children.Remove(child);
+			Assert.True(removed);
 		}
 
 		[Fact]
@@ -155,6 +158,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			child.Children.Remove(child2);
+			Assert.True(removed);
 		}
 
 		[Fact]
@@ -198,13 +202,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var child = new TestElement();
 
+			bool added = false;
 			root.ChildAdded += (sender, args) =>
 			{
 				Assert.Same(root, sender);
 				Assert.Same(child, args.Element);
+				added = true;
 			};
 
 			root.Children.Add(child);
+			Assert.True(added);
 		}
 
 		[Fact]
@@ -215,13 +222,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var child = new TestElement();
 			root.Children.Add(child);
 
+			bool removed = false;
 			root.ChildRemoved += (sender, args) =>
 			{
 				Assert.Same(root, sender);
 				Assert.Same(child, args.Element);
+				removed = true;
 			};
 
 			root.Children.Remove(child);
+			Assert.True(removed);
 		}
 	}
 }
