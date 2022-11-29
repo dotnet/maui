@@ -334,7 +334,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void InvisibleViewsDoNotCreateColumns() 
+		public void InvisibleViewsDoNotCreateColumns()
 		{
 			var view0 = new TestView
 			{
