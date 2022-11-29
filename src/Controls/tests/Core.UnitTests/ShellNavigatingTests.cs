@@ -478,10 +478,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await testShell.GoToAsync("firstPage/secondPage/thirdPage/fourthPage/fifthPage");
 			tab.NavigationsFired.Clear();
 
-			Assert.Equal($"//rootpage/firstPage/secondPage/thirdPage/fourthPage/fifthPage",testShell.CurrentState.Location.ToString());
+			Assert.Equal($"//rootpage/firstPage/secondPage/thirdPage/fourthPage/fifthPage", testShell.CurrentState.Location.ToString());
 
 			await testShell.GoToAsync($"//rootpage/thirdPage/fifthPage");
-			Assert.Equal($"//rootpage/thirdPage/fifthPage",testShell.CurrentState.Location.ToString());
+			Assert.Equal($"//rootpage/thirdPage/fifthPage", testShell.CurrentState.Location.ToString());
 
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[0]);
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[1]);
