@@ -24,7 +24,6 @@ steps:
     parameters:
       platform: ${{ parameters.platform }}
       poolName: ${{ parameters.poolName }}
-      provisioning: true
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - ${{ each step in parameters.prepareSteps }}:
