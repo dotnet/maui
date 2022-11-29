@@ -3,7 +3,7 @@ parameters:
   poolName: ''
   skipXcode: false
   skipVS: true
-  skipProvisioning: $[ne(variables['provisioning'], 'true')]
+  skipProvisioning: $(skipProvisionator)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
   provisionatorVSPath: $(provisionator.vs)
