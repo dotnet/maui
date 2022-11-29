@@ -55,7 +55,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool added = false;
 			root.DescendantAdded += (sender, args) =>
 			{
-				Assert.Same(args.Element, child);
+				Assert.Same(root, sender);
+				Assert.Same(child, args.Element);
 				added = true;
 			};
 
@@ -75,7 +76,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool added = false;
 			root.DescendantAdded += (sender, args) =>
 			{
-				Assert.Same(args.Element, child2);
+				Assert.Same(root, sender);
+				Assert.Same(child2, args.Element);
 				added = true;
 			};
 
@@ -100,6 +102,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool tier2added = false;
 			root.DescendantAdded += (sender, args) =>
 			{
+				Assert.Same(root, sender);
+
 				if (!tier1added)
 					tier1added = ReferenceEquals(child, args.Element);
 				if (!tier2added)
@@ -123,7 +127,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool removed = false;
 			root.DescendantRemoved += (sender, args) =>
 			{
-				Assert.Same(args.Element, child);
+				Assert.Same(root, sender);
+				Assert.Same(child, args.Element);
 				removed = true;
 			};
 
@@ -144,7 +149,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool removed = false;
 			root.DescendantRemoved += (sender, args) =>
 			{
-				Assert.Same(args.Element, child2);
+				Assert.Same(root, sender);
+				Assert.Same(child2, args.Element);
 				removed = true;
 			};
 
@@ -171,6 +177,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool tier2removed = false;
 			root.DescendantRemoved += (sender, args) =>
 			{
+				Assert.Same(root, sender);
+
 				if (!tier1removed)
 					tier1removed = ReferenceEquals(child, args.Element);
 				if (!tier2removed)
@@ -181,6 +189,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(tier1removed);
 			Assert.True(tier2removed);
+		}
+
+		[Fact]
+		public void ChildAdded()
+		{
+			var root = new TestElement();
+
+			var child = new TestElement();
+
+			root.ChildAdded += (sender, args) =>
+			{
+				Assert.Same(root, sender);
+				Assert.Same(child, args.Element);
+			};
+
+			root.Children.Add(child);
+		}
+
+		[Fact]
+		public void ChildRemoved()
+		{
+			var root = new TestElement();
+			
+			var child = new TestElement();
+			root.Children.Add(child);
+
+			root.ChildRemoved += (sender, args) =>
+			{
+				Assert.Same(root, sender);
+				Assert.Same(child, args.Element);
+			};
+
+			root.Children.Remove(child);
 		}
 	}
 }
