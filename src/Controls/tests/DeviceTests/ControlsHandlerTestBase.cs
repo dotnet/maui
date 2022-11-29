@@ -67,7 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 			return CreateHandler<THandler>(view, MauiContext);
 		}
 
-		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view) 
+		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view)
 			where THandler : IElementHandler, new() =>
 			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
 
