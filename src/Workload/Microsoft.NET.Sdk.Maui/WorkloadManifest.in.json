@@ -158,7 +158,7 @@
     },
     "Microsoft.Maui.Resizetizer.Sdk": {
       "kind": "sdk",
-      "version": "@VERSION@"
+      "version": "@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
     },
     "Microsoft.Maui.Templates.net@MAUI_DOTNET_VERSION_MAJOR@": {
       "kind": "template",
