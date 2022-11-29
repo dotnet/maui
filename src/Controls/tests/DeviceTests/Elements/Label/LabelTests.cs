@@ -368,7 +368,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task TextColorAppliesEvenInHtmlMode() 
+		public async Task TextColorAppliesEvenInHtmlMode()
 		{
 			// Note: this is specifically a Controls-level rule that's inherited from Forms
 			// There's no reason other SDKs need to force a TextColor property when dealing 
@@ -398,7 +398,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new Label
 			{
 				TextType = TextType.Html,
-				FontSize = 64, 
+				FontSize = 64,
 				FontFamily = "Baskerville",
 				Text = "<p>Test</p>"
 			};
@@ -421,7 +421,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
-		static void AssertEquivalentFont(LabelHandler handler, Font font) 
+		static void AssertEquivalentFont(LabelHandler handler, Font font)
 		{
 			var fontManager = (IFontManager)handler.MauiContext.Services.GetService(typeof(IFontManager));
 
