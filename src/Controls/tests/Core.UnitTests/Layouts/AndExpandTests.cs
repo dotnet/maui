@@ -376,5 +376,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			Assert.Equal(0, view1.Bounds.Top);
 		}
+
+		[Fact]
+		public void RevisibleViewsDoCreateColumns()
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = false
+			};
+
+			var view1 = new TestView
+			{
+				Text = "Hello",
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = true
+			};
+
+			var layout = SetUpTestLayout(StackOrientation.Horizontal, view0, view1);
+
+			view0.IsVisible = true;
+			MeasureAndArrange(layout);
+			Assert.Equal(TestAreaWidth / 2, view1.Bounds.Left);
+		}
+
+		[Fact]
+		public void RevisibleViewsDoCreateRows()
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = false
+			};
+
+			var view1 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = true
+			};
+
+			var layout = SetUpTestLayout(StackOrientation.Vertical, view0, view1);
+
+			view0.IsVisible = true;
+			MeasureAndArrange(layout);
+			Assert.Equal(TestAreaHeight / 2, view1.Bounds.Top);
+		}
 	}
 }
