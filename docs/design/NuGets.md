@@ -5,7 +5,6 @@ There are several artifacts in the .NET MAUI "universe":
 * Workload packages:
   * `Microsoft.NET.Sdk.Maui.Manifest` - The workload manifest for the .NET SDK
   * `Microsoft.Maui.Sdk` - The actual .NET MAUI workload SDK
-  * `Microsoft.Maui.Resizetizer.Sdk` - Now a "dummy" SDK for .NET 6 (only) support
   * `Microsoft.Maui.Templates.net*` - The current set of templates for this build of .NET MAUI
 * .NET MAUI framework:
   * `Microsoft.Maui.Controls` - The super/root package of .NET MAUI Controls
