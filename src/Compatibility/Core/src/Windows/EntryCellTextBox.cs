@@ -1,7 +1,7 @@
-using Windows.System;
+using System;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using System;
+using Windows.System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

@@ -107,11 +107,9 @@ namespace Microsoft.Maui.DeviceTests
 				var w = size.Width;
 				var h = size.Height;
 
-				if (double.IsPositiveInfinity(w))
-					w = view.Width;
-
-				if (double.IsPositiveInfinity(h))
-					h = view.Height;
+				// No measure method should be returning infinite values
+				Assert.False(double.IsPositiveInfinity(w));
+				Assert.False(double.IsPositiveInfinity(h));
 
 #else
 				// Windows cannot measure without the view being loaded
@@ -129,6 +127,9 @@ namespace Microsoft.Maui.DeviceTests
 			where THandler : IElementHandler, new()
 			where TCustomHandler : THandler, new()
 		{
+			if (element.Handler is TCustomHandler t)
+				return t;
+
 			mauiContext ??= MauiContext;
 			var handler = Activator.CreateInstance<TCustomHandler>();
 			InitializeViewHandler(element, handler, mauiContext);
