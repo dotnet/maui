@@ -137,7 +137,7 @@ PublicAPI
      └─ PublicAPI.Unshipped.txt
 ```
 
-If for some reason a file is not generated, they can be created manually with he contents of:
+If for some reason a file is not generated, they can be created manually with the contents of:
 
 ```
 #nullable enable
