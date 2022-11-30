@@ -117,6 +117,11 @@ namespace Microsoft.Maui.DeviceTests
 
 #else
 
+		public FrameRendererTest()
+		{
+
+		}
+
 		public FrameRendererTest(IPropertyMapper mapper)
 			: base(mapper)
 		{

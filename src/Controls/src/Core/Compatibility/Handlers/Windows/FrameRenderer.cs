@@ -18,7 +18,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
 			= new CommandMapper<Frame, FrameRenderer>(VisualElementRendererCommandMapper);
 
-		public FrameRenderer() : base(Mapper, CommandMapper)
+		public FrameRenderer() : this(Mapper, CommandMapper)
+		{
+			AutoPackage = false;
+		}      
+		
+		// TODO NET8 make public
+		internal FrameRenderer(IPropertyMapper mapper)
+			: this( mapper, CommandMapper)
+		{
+		}
+
+		// TODO NET8 make public
+		internal FrameRenderer(IPropertyMapper mapper, CommandMapper commandMapper) : base(mapper, commandMapper)
 		{
 			AutoPackage = false;
 		}

@@ -24,6 +24,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			AddSubview(_actualView);
 		}
 
+		// TODO NET8 make public
+		internal FrameRenderer(IPropertyMapper mapper)
+			: this(mapper, CommandMapper)
+		{
+		}
+
+		// TODO NET8 make public
+		internal FrameRenderer(IPropertyMapper mapper, CommandMapper commandMapper) : base(mapper, commandMapper)
+		{
+			AutoPackage = false;
+		}
+
 		public override void AddSubview(UIView view)
 		{
 			if (view != _actualView)
