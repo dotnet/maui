@@ -47,7 +47,7 @@ To merge the API files, we just need to run a script - and then comit the change
 .\eng\scripts\mark-shipped.ps1
 ```
 
-Taking the examples above and assumig=ng we had these files:
+Taking the examples above and assuming we had these files:
 
 `PublicAPI.Shipped.txt`:
 ```
