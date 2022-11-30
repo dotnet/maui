@@ -1,8 +1,8 @@
+using AppKit;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Skia.Views;
-using AppKit;
-using CoreGraphics;
 
 namespace GraphicsTester.Skia
 {

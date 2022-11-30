@@ -9,15 +9,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Foldable;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Hosting;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Foldable;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 
 
 #if NET6_0_OR_GREATER
