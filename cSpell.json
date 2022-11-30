@@ -2,7 +2,8 @@
     "version": "0.2",
     "language": "en",
     "words": [
-        "Blazor"
+        "Blazor",
+        "intellisense"
     ],
     "ignoreWords": [],
     "patterns": [
