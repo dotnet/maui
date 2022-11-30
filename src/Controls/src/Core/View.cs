@@ -168,9 +168,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		protected internal override void ChangeVisualState()
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			CheckPointerOver();
 

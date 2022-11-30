@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls
 			ref PointerGestureRecognizer? recognizer)
 		{
 			bool hasPointerOverVSM =
-				element.FindFirstVisualStateByName(VisualStateManager.CommonStates.PointerOver) != null;
+				element.HasVisualState(VisualStateManager.CommonStates.PointerOver);
 
 			if (hasPointerOverVSM && recognizer == null)
 			{

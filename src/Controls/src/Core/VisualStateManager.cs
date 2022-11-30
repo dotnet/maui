@@ -666,20 +666,23 @@ namespace Microsoft.Maui.Controls
 			return actual;
 		}
 
-		internal static VisualState FindFirstVisualStateByName(this VisualElement element, string name)
+		internal static bool HasVisualState(this VisualElement element, string name)
 		{
-			foreach (var group in VisualStateManager.GetVisualStateGroups(element))
+			IList<VisualStateGroup> list = VisualStateManager.GetVisualStateGroups(element);
+			for (var i = 0; i < list.Count; i++)
 			{
-				foreach (var state in group.States)
+				VisualStateGroup group = list[i];
+				for (var j = 0; j < group.States.Count; j++)
 				{
+					VisualState state = group.States[j];
 					if (state.Name == name)
 					{
-						return state;
+						return true;
 					}
 				}
 			}
 
-			return null;
+			return false;
 		}
 	}
 
