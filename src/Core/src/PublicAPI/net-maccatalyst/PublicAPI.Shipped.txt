@@ -2108,7 +2108,6 @@ override Microsoft.Maui.Handlers.SwipeViewHandler.SetVirtualView(Microsoft.Maui.
 override Microsoft.Maui.Handlers.SwitchHandler.ConnectHandler(UIKit.UISwitch! platformView) -> void
 override Microsoft.Maui.Handlers.SwitchHandler.CreatePlatformView() -> UIKit.UISwitch!
 override Microsoft.Maui.Handlers.SwitchHandler.DisconnectHandler(UIKit.UISwitch! platformView) -> void
-override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.TabbedViewHandler.CreatePlatformView() -> UIKit.UIView!
 override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(UIKit.UIDatePicker! platformView) -> void
 override Microsoft.Maui.Handlers.TimePickerHandler.CreatePlatformView() -> UIKit.UIDatePicker!
@@ -2693,7 +2692,6 @@ static Microsoft.Maui.Keyboard.Url.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Layouts.FlexBasis.implicit operator Microsoft.Maui.Layouts.FlexBasis(float length) -> Microsoft.Maui.Layouts.FlexBasis
 static Microsoft.Maui.Layouts.LayoutExtensions.AdjustForFill(this Microsoft.Maui.Graphics.Size size, Microsoft.Maui.Graphics.Rect bounds, Microsoft.Maui.IView! view) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContent(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> void
-static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Layouts.LayoutExtensions.ComputeDesiredSize(this Microsoft.Maui.IView! view, double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Layouts.LayoutExtensions.ComputeFrame(this Microsoft.Maui.IView! view, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Rect
 static Microsoft.Maui.Layouts.LayoutExtensions.MeasureContent(this Microsoft.Maui.IContentView! contentView, double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
