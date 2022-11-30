@@ -6846,6 +6846,7 @@ override Microsoft.Maui.Controls.RadialGradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.RadioButton.ChangeVisualState() -> void
 override Microsoft.Maui.Controls.RadioButton.OnApplyTemplate() -> void
 override Microsoft.Maui.Controls.RadioButton.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
+override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.RoutingEffect.OnAttached() -> void
 override Microsoft.Maui.Controls.RoutingEffect.OnDetached() -> void
 override Microsoft.Maui.Controls.ScrollView.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
