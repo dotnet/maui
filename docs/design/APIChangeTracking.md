@@ -5,7 +5,7 @@
 
 ## Changing APIs
 
-In most cases, you are adding new APIs, so this is pretty simple and intellisense can be used. For chaanges and removes, these need to be properly tracked.
+In most cases, you are adding new APIs, so this is pretty simple and intellisense can be used. For changes and removes, these need to be properly tracked.
 
 ### Adding New APIs
 
