@@ -1,1 +1,3 @@
 #nullable enable
+~static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToFormattedString(this Microsoft.Maui.Controls.Label label) -> Tizen.UIExtensions.Common.FormattedString
+Microsoft.Maui.Controls.Platform.FormattedStringExtensions
