@@ -50,11 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public Semantics Semantics
-		{
-			get;
-			set;
-		}
+		public Semantics Semantics { get; set; } = new Semantics();
 
 		double IStubBase.Width
 		{
@@ -109,7 +105,27 @@ namespace Microsoft.Maui.DeviceTests
 		public FrameRendererTest() : base(MauiProgramDefaults.DefaultContext)
 		{
 		}
+		public FrameRendererTest(IPropertyMapper mapper)
+			: base(MauiProgramDefaults.DefaultContext, mapper)
+		{
+		}
 
+		public FrameRendererTest(IPropertyMapper mapper, CommandMapper commandMapper)
+			: base(MauiProgramDefaults.DefaultContext, mapper, commandMapper)
+		{
+		}
+
+#else
+
+		public FrameRendererTest(IPropertyMapper mapper)
+			: base(mapper)
+		{
+		}
+
+		public FrameRendererTest(IPropertyMapper mapper, CommandMapper commandMapper)
+			: base(mapper, commandMapper)
+		{
+		}
 #endif
 	}
 

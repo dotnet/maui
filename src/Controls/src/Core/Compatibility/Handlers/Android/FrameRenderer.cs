@@ -6,14 +6,17 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Views.Inspectors;
 using AndroidX.CardView.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using static Android.Icu.Text.CaseMap;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -53,9 +56,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
-		public FrameRenderer(Context context) : base(context)
+		public FrameRenderer(Context context) : this(context, Mapper)
 		{
-			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(Mapper, CommandMapper, this);
+		}
+
+		// TODO NET8 make public
+		internal FrameRenderer(Context context, IPropertyMapper mapper)
+			: this(context, mapper, CommandMapper)
+		{
+		}
+
+		internal FrameRenderer(Context context, IPropertyMapper mapper, CommandMapper commandMapper) : base(context)
+		{
+			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(mapper, commandMapper, this);
 		}
 
 		protected CardView Control => this;
@@ -74,8 +87,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		Size IViewHandler.GetDesiredSize(double widthMeasureSpec, double heightMeasureSpec)
 		{
+			double minWidth = 20;
+			if (IsExplicitSet(widthMeasureSpec) && !double.IsInfinity(widthMeasureSpec))
+				minWidth = widthMeasureSpec;
+
+			double minHeight = 20;
+			if (IsExplicitSet(widthMeasureSpec) && !double.IsInfinity(heightMeasureSpec))
+				minHeight = heightMeasureSpec;
+
 			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthMeasureSpec, heightMeasureSpec,
-				new Size(20, 20));
+				new Size(minWidth, minHeight));
 		}
 
 		protected override void Dispose(bool disposing)
