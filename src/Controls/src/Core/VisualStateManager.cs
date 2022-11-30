@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -663,6 +664,22 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return actual;
+		}
+
+		internal static VisualState FindFirstVisualStateByName(this VisualElement element, string name)
+		{
+			foreach (var group in VisualStateManager.GetVisualStateGroups(element))
+			{
+				foreach (var state in group.States)
+				{
+					if (state.Name == name)
+					{
+						return state;
+					}
+				}
+			}
+
+			return null;
 		}
 	}
 

@@ -446,5 +446,60 @@ namespace Microsoft.Maui.DeviceTests
 
 			return null;
 		}
+
+		public static bool IsAccessibilityElement(this UIView platformView)
+		{
+			platformView = platformView.GetAccessiblePlatformView();
+			if (!UIAccessibility.IsVoiceOverRunning)
+			{
+				// even though UIStepper/UIPageControl inherits from UIControl
+				// iOS sets it to not be important for accessibility
+				// most likely because the children elements need to be reachable
+				if (platformView is UIStepper || platformView is UIPageControl)
+					return platformView.IsAccessibilityElement;
+
+				// UILabel will only be an accessibility element if it has text
+				if (platformView is UILabel label && !String.IsNullOrWhiteSpace(label.Text))
+					return true;
+
+				// AFAICT on iOS when you read IsAccessibilityElement it's always false
+				// unless you have Voice Over turned on.
+				// So, though not ideal, the main think we test on iOS is that elements
+				// that should stay false remain false. 
+				// According to the apple docs anything that inherits from UIControl
+				// has isAccessibilityElement set to true by default so we're just
+				// validating that everything that doesn't inherit from UIControl isn't
+				// getting set to true
+				if (platformView is UIControl)
+					return true;
+
+				// These are UIViews that don't inherit from UIControl but
+				// iOS will mark them as Accessibility Elements
+				// I tested each of these controls inside xcode away from any MAUI tampering
+				if (platformView is UITextView || platformView is UIProgressView)
+					return true;
+			}
+
+			return platformView.IsAccessibilityElement;
+		}
+
+		public static bool IsExcludedWithChildren(this UIView platformView)
+		{
+			return platformView.AccessibilityElementsHidden;
+		}
+
+		public static UIView GetAccessiblePlatformView(this UIView platformView)
+		{
+			if (platformView is UISearchBar searchBar)
+				platformView = searchBar.GetSearchTextField()!;
+
+			if (platformView is WrapperView wrapperView)
+			{
+				Assert.False(wrapperView.IsAccessibilityElement);
+				return wrapperView.Subviews[0];
+			}
+
+			return platformView;
+		}
 	}
 }
