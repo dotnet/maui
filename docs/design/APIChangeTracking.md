@@ -9,7 +9,7 @@ In most cases, you are adding new APIs, so this is pretty simple and intellisens
 
 ### Adding New APIs
 
-If you are adding a new API, just go ahead and create the type/member and then use intellisene `ctrl + .` to fix the warning messages. You will have to do this for each TFM in the dropdown.
+If you are adding a new API, just go ahead and create the type/member and then use intellisense `ctrl + .` to fix the warning messages. You will have to do this for each TFM in the dropdown.
 
 If this does not work, you can do it manually by adding the fully qualified type/member name to the `PublicAPI.Unshipped.txt` file in each TFM where it is relevant.
 
