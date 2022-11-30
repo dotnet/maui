@@ -14,25 +14,25 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public class FrameStub : Frame, IStubBase
 	{
-		public double MaximumWidth
+		double IStubBase.MaximumWidth
 		{
 			get => base.MaximumWidthRequest;
 			set => base.MaximumWidthRequest = value;
 		}
 
-		public double MaximumHeight
+		double IStubBase.MaximumHeight
 		{
 			get => base.MaximumHeightRequest;
 			set => base.MaximumHeightRequest = value;
 		}
 
-		public double MinimumWidth
+		double IStubBase.MinimumWidth
 		{
 			get => base.MinimumWidthRequest;
 			set => base.MinimumWidthRequest = value;
 		}
 
-		public double MinimumHeight
+		double IStubBase.MinimumHeight
 		{
 			get => base.MinimumHeightRequest;
 			set => base.MinimumHeightRequest = value;

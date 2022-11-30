@@ -82,9 +82,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			Control.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 			if (Element is IContentView cv)
-				cv.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+			{
+				finalSize = cv.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
+			}
 
-			return finalSize;
+			return new global::Windows.Foundation.Size(Math.Max(0, finalSize.Width), Math.Max(0, finalSize.Height));
 		}
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
@@ -92,7 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var size = base.MeasureOverride(availableSize);
 
 			if (Element is IContentView cv)
-				size = cv.CrossPlatformMeasure(availableSize.Width, availableSize.Height).ToPlatform();
+				_ = cv.CrossPlatformMeasure(size.Width, size.Height);
 
 			return size;
 		}

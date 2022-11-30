@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (child is Maui.IElement childElement && childElement.Handler is IPlatformViewHandler nvh)
 				{
-					var size = nvh.GetDesiredSizeFromHandler(availableSize.Width, availableSize.Height);
+					var size = nvh.GetDesiredSizeFromHandler(width, height);
 					height = Math.Max(height, size.Height);
 					width = Math.Max(width, size.Width);
 				}
