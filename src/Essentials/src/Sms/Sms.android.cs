@@ -23,8 +23,6 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			var intent = CreateIntent(message?.Body, message?.Recipients);
 
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				flags |= ActivityFlags.LaunchAdjacent;
 			intent.SetFlags(flags);
 
 			Application.Context.StartActivity(intent);
