@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Widget;
@@ -9,6 +9,28 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
+		[Fact]
+		public async Task UpdatingSourceWorks()
+		{
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				Source = new FileImageSourceStub("red.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+				await image.Wait();
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
+						
+				image.Source = new FileImageSourceStub("blue.png");
+				handler.UpdateValue(nameof(IImage.Source));
+				await image.Wait();
+				await handler.PlatformView.AssertContainsColor(Colors.Blue);
+			});
+		}
+
 		[Fact]
 		public async Task LoadDrawableAsyncReturnsWithSameImageAndDoesNotHang()
 		{
