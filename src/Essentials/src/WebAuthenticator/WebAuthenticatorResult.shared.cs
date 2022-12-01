@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Authentication
 		public WebAuthenticatorResult(Uri uri, IWebAuthenticatorResponseDecoder responseDecoder)
 		{
 			CallbackUri = uri;
-			var properties = responseDecoder == null ? WebUtils.ParseQueryString(uri.ToString()) : responseDecoder.DecodeResponse(uri);
+			var properties = responseDecoder?.DecodeResponse(uri) ?? WebUtils.ParseQueryString(uri.ToString());
 			foreach (var kvp in properties)
 			{
 				Properties[kvp.Key] = kvp.Value;
