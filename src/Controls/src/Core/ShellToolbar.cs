@@ -155,7 +155,6 @@ namespace Microsoft.Maui.Controls
 		void OnBackButtonCommandPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			ApplyChanges();
-			UpdateBackButtonBehaviorCommand();
 		}
 
 		void UpdateBackButtonBehaviorCommand()
