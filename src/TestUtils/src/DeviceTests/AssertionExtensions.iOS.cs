@@ -466,7 +466,7 @@ namespace Microsoft.Maui.DeviceTests
 				// unless you have VoiceOver turned on.
 				// So, though not ideal, the main think we test on iOS is that elements
 				// that should stay false remain false. 
-				// According to the apple docs anything that inherits from UIControl
+				// According to the Apple docs anything that inherits from UIControl
 				// has isAccessibilityElement set to true by default so we're just
 				// validating that everything that doesn't inherit from UIControl isn't
 				// getting set to true
