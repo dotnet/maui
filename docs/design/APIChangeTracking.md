@@ -37,7 +37,7 @@ All we would do is copy this line from the shipped file and add it to the unship
 
 ## Preparing API Releases
 
-Once everything is ready to be released and the branch is created, we can merge all the unshipped files into the shipped files. Then we can run a git diff on the files and see all the changes made bewtween releases.
+Once everything is ready to be released and the branch is created, we can merge all the unshipped files into the shipped files. Then we can run a git diff on the files and see all the changes made between releases.
 
 ### Merging the API Files
 
