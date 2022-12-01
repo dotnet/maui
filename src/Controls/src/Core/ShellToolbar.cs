@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -10,9 +12,10 @@ namespace Microsoft.Maui.Controls
 	internal class ShellToolbar : Toolbar
 	{
 		Shell _shell;
-		Page _currentPage;
-		BackButtonBehavior _backButtonBehavior;
+		Page? _currentPage;
+		BackButtonBehavior? _backButtonBehavior;
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
+		ICommand? _backButtonCommand;
 #if WINDOWS
 		MenuBarTracker _menuBarTracker = new MenuBarTracker();
 #endif
@@ -77,7 +80,7 @@ namespace Microsoft.Maui.Controls
 			_menuBarTracker.Target = _shell;
 #endif
 
-			Page previousPage = null;
+			Page? previousPage = null;
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
@@ -131,7 +134,6 @@ namespace Microsoft.Maui.Controls
 				DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(currentPage);
 		}
 
-		ICommand _backButtonCommand;
 		void UpdateBackbuttonBehavior()
 		{
 			var bbb = Shell.GetBackButtonBehavior(_currentPage);
@@ -140,37 +142,43 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			if (_backButtonBehavior != null)
-				_backButtonBehavior.PropertyChanged -= OnBackButtonPropertyChanged;
+				_backButtonBehavior.PropertyChanged -= OnBackButtonCommandPropertyChanged;
 
 			_backButtonBehavior = bbb;
 
 			if (_backButtonBehavior != null)
-				_backButtonBehavior.PropertyChanged += OnBackButtonPropertyChanged;
+				_backButtonBehavior.PropertyChanged += OnBackButtonCommandPropertyChanged;
 
-			void OnBackButtonPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-			{
-				ApplyChanges();
-
-				if (_backButtonBehavior.Command == _backButtonCommand)
-					return;
-
-				if (_backButtonCommand != null)
-					_backButtonCommand.CanExecuteChanged -= OnBackButtonCanExecuteChanged;
-
-				_backButtonCommand = _backButtonBehavior.Command;
-
-				if (_backButtonCommand != null)
-					_backButtonCommand.CanExecuteChanged += OnBackButtonCanExecuteChanged;
-			}
-
-			void OnBackButtonCanExecuteChanged(object sender, EventArgs e)
-			{
-				BackButtonEnabled =
-					_backButtonCommand != null && _backButtonCommand.CanExecute(_backButtonBehavior?.CommandParameter);
-			}
+			UpdateBackButtonBehaviorCommand();
 		}
 
-		void OnCurrentPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnBackButtonCommandPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			ApplyChanges();
+			UpdateBackButtonBehaviorCommand();
+		}
+
+		void UpdateBackButtonBehaviorCommand()
+		{
+			if (_backButtonBehavior?.Command == _backButtonCommand)
+				return;
+
+			if (_backButtonCommand != null)
+				_backButtonCommand.CanExecuteChanged -= OnBackButtonCanExecuteChanged;
+
+			_backButtonCommand = _backButtonBehavior?.Command;
+
+			if (_backButtonCommand != null)
+				_backButtonCommand.CanExecuteChanged += OnBackButtonCanExecuteChanged;
+		}
+
+		void OnBackButtonCanExecuteChanged(object? sender, EventArgs e)
+		{
+			BackButtonEnabled =
+				_backButtonCommand != null && _backButtonCommand.CanExecute(_backButtonBehavior?.CommandParameter);
+		}
+
+		void OnCurrentPagePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.Is(Page.TitleProperty))
 				UpdateTitle();
@@ -195,7 +203,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			Page currentPage = _shell.GetCurrentShellPage() as Page;
+			Page? currentPage = _shell.GetCurrentShellPage() as Page;
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
 			{
 				Title = currentPage.Title ?? String.Empty;
