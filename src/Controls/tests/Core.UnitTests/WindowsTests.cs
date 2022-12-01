@@ -447,6 +447,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(double.NaN, coreWindow.MaximumHeight);
 		}
 
+		[Fact]
+		public void ShellTitleChangePropagatesToWindow()
+		{
+			var app = new TestApp();
+			var shell = new ShellTestBase.TestShell() { Title = "test" };
+			var window = app.CreateWindow();
+			bool fired = false;
+			window.Page = shell;
+			window.Handler = new WindowHandlerStub(new PropertyMapper<IWindow, WindowHandlerStub>()
+			{
+				[nameof(IWindow.Title)] = (_, _) => fired = true
+			});
+
+			// reset after setting handler
+			fired = false;
+			shell.Title = "new title";
+
+
+			Assert.Equal(shell.Title, (window as IWindow).Title);
+			Assert.True(fired);
+		}
+
+		[Fact]
+		public void PreviousShellDisconnectsFromWindowPropertyChanged()
+		{
+			var app = new TestApp();
+			var oldShell = new Shell() { Title = "Old Shell" };
+			var window = app.CreateWindow(oldShell);
+			bool fired = false;
+
+			window.Handler = new WindowHandlerStub(new PropertyMapper<IWindow, WindowHandlerStub>()
+			{
+				[nameof(IWindow.Title)] = (_, _) =>
+				{
+					fired = true;
+				}
+			});
+
+			window.Page = new Shell() { Title = "test" };
+
+			// reset after setting handler
+			fired = false;
+
+			oldShell.Title = "new title";
+			Assert.Equal("test", (window as IWindow).Title);
+			Assert.False(fired);
+		}
+
 		[Theory]
 		[InlineData(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)]
 		[InlineData(-1, -1, -1, -1, -1, -1, double.NaN, double.NaN)]
