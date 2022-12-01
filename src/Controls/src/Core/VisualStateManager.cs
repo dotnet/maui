@@ -674,8 +674,7 @@ namespace Microsoft.Maui.Controls
 				VisualStateGroup group = list[i];
 				for (var j = 0; j < group.States.Count; j++)
 				{
-					VisualState state = group.States[j];
-		return state.Name == name;
+					return group.States[j].Name == name;
 				}
 			}
 
