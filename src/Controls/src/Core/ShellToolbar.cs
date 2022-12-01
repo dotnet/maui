@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Input;
@@ -15,7 +16,6 @@ namespace Microsoft.Maui.Controls
 		Page? _currentPage;
 		BackButtonBehavior? _backButtonBehavior;
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
-		ICommand? _backButtonCommand;
 #if WINDOWS
 		MenuBarTracker _menuBarTracker = new MenuBarTracker();
 #endif
@@ -98,13 +98,6 @@ namespace Microsoft.Maui.Controls
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
 			BackButtonEnabled = _backButtonBehavior?.IsEnabled ?? true;
 
-			if (_backButtonBehavior?.Command != null)
-			{
-				BackButtonEnabled =
-					BackButtonEnabled &&
-					_backButtonBehavior.Command.CanExecute(_backButtonBehavior.CommandParameter);
-			}
-
 			UpdateTitle();
 
 			if (_currentPage != null &&
@@ -148,33 +141,11 @@ namespace Microsoft.Maui.Controls
 
 			if (_backButtonBehavior != null)
 				_backButtonBehavior.PropertyChanged += OnBackButtonCommandPropertyChanged;
-
-			UpdateBackButtonBehaviorCommand();
 		}
 
-		void OnBackButtonCommandPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnBackButtonCommandPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			ApplyChanges();
-		}
-
-		void UpdateBackButtonBehaviorCommand()
-		{
-			if (_backButtonBehavior?.Command == _backButtonCommand)
-				return;
-
-			if (_backButtonCommand != null)
-				_backButtonCommand.CanExecuteChanged -= OnBackButtonCanExecuteChanged;
-
-			_backButtonCommand = _backButtonBehavior?.Command;
-
-			if (_backButtonCommand != null)
-				_backButtonCommand.CanExecuteChanged += OnBackButtonCanExecuteChanged;
-		}
-
-		void OnBackButtonCanExecuteChanged(object? sender, EventArgs e)
-		{
-			BackButtonEnabled =
-				_backButtonCommand != null && _backButtonCommand.CanExecute(_backButtonBehavior?.CommandParameter);
 		}
 
 		void OnCurrentPagePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
