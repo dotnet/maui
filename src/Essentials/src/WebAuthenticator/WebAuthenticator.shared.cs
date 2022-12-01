@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Authentication
 
 	public interface IWebAuthenticatorResponseDecoder
 	{
-		IDictionary<string, string> DecodeResponse(Uri uri);
+		IDictionary<string, string>? DecodeResponse(Uri uri);
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs/*" />
