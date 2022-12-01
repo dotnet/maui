@@ -21,7 +21,7 @@ Microsoft.Maui.Controls.PointerEventArgs.PointerEventArgs(int clicks) -> void
 
 ### Changing / Removing APIs
 
-When an API is chnaged, the old API needs to be "removed" and then the new API can be added. Removing an API is as easy as copying the type/member from the `PublicAPI.Shipped.txt` file and added to the `PublicAPI.Unshipped.txt` with a prefixof `*REMOVED*`.
+When an API is changed, the old API needs to be "removed" and then the new API can be added. Removing an API is as easy as copying the type/member from the `PublicAPI.Shipped.txt` file and added to the `PublicAPI.Unshipped.txt` with a prefixof `*REMOVED*`.
 
 For example, if we are removing a default constructor for some reason on the `PointerEventArgs` type:
 
