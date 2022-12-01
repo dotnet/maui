@@ -24,9 +24,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>7c4db9ebe12113e43ef07a3ecc8854443aa8c604</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="16.1.1481">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="16.1.1483">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>9a88bf96c7017d19fd80e850018bf5660a39d923</Sha>
+      <Sha>7c4db9ebe12113e43ef07a3ecc8854443aa8c604</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.net6.Manifest-7.0.100" Version="7.0.0-rtm.22504.3" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
