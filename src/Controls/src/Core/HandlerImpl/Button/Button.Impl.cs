@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Controls
 				Handler?.UpdateValue(nameof(IButtonStroke.StrokeColor));
 			else if (propertyName == BorderWidthProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IButtonStroke.StrokeThickness));
+			else if (propertyName == ImageSourceProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IImage.Source));
 		}
 
 		void IButton.Clicked()
