@@ -475,7 +475,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// These are UIViews that don't inherit from UIControl but
 				// iOS will mark them as Accessibility Elements
-				// I tested each of these controls inside xcode away from any MAUI tampering
+				// I tested each of these controls inside Xcode away from any MAUI tampering
 				if (platformView is UITextView || platformView is UIProgressView)
 					return true;
 			}
