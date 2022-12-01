@@ -27,7 +27,7 @@
     <ComponentResources Include="maui-maccatalyst"  Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Mac Catalyst" Description=".NET SDK Workload for building MAUI applications that target Mac Catalyst." />
     <ComponentResources Include="maui-ios"          Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for iOS" Description=".NET SDK Workload for building MAUI applications that target iOS." />
     <ComponentResources Include="maui-windows"      Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Windows" Description=".NET SDK Workload for building MAUI applications that target Windows." />
-    <WorkloadPackages Include="$(NuGetPackagePath)\Microsoft.NET.Sdk.Maui.Manifest*.nupkg" Version="@VS_COMPONENT_VERSION@" />
+    <WorkloadPackages Include="$(NuGetPackagePath)\Microsoft.NET.Sdk.Maui.Manifest*.nupkg" Version="@VS_COMPONENT_VERSION@" SupportsMachineArch="true" />
     <MultiTargetPackNames Include="Maui.Sdk;Maui.Templates" />
   </ItemGroup>
 </Project>
