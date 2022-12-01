@@ -463,7 +463,7 @@ namespace Microsoft.Maui.DeviceTests
 					return true;
 
 				// AFAICT on iOS when you read IsAccessibilityElement it's always false
-				// unless you have Voice Over turned on.
+				// unless you have VoiceOver turned on.
 				// So, though not ideal, the main think we test on iOS is that elements
 				// that should stay false remain false. 
 				// According to the apple docs anything that inherits from UIControl
