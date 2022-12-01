@@ -41,7 +41,7 @@ Once everything is ready to be released and the branch is created, we can merge 
 
 ### Merging the API Files
 
-To merge the API files, we just need to run a script - and then comit the changes to git:
+To merge the API files, we just need to run a script - and then commit the changes to git:
 
 ```
 .\eng\scripts\mark-shipped.ps1
