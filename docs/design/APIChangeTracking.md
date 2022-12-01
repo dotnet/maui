@@ -2,7 +2,7 @@
 
 .NET MAUI makes use of the `Microsoft.CodeAnalysis.PublicApiAnalyzers` NuGet to generate and track changes to public APIs to ensure that existing assemblies continue working without accidental breaking changes.
 
-To learn more about breaking change guidelines in .NET, including what is considered a "breaking change," check out these resources:
+To learn more about breaking change guidelines in .NET, including what is considered a "breaking change", check out these resources:
 
 * [.NET Runtime Breaking Change Rules](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/breaking-change-rules.md)
 * [.NET Runtime Breaking Change Definitions](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/breaking-change-definitions.md)
