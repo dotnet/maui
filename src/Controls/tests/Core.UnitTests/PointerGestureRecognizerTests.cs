@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void PointerOverVSMGestureOnlyPresentWithVSM()
+		public void PointerOverVsmGestureIsOnlyPresentWithVsm()
 		{
 			var layout = new VerticalStackLayout();
 			IGestureController gestureControllers = layout;
