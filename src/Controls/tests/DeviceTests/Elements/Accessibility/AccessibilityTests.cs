@@ -78,10 +78,6 @@ namespace Microsoft.Maui.DeviceTests
 				foreach (var control in new AllControlsTestCase())
 				{
 					var view = (IView)Activator.CreateInstance((Type)control[0]);
-
-					if (view is RefreshView rv)
-						rv.Content = new VerticalStackLayout();
-
 					if (view is VisualElement ve)
 					{
 						ve.WidthRequest = 50;
