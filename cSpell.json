@@ -2,7 +2,11 @@
     "version": "0.2",
     "language": "en",
     "words": [
-        "Blazor"
+        "Blazor",
+        "Skia",
+        "Resizetizer",
+        "nugets",
+        "netstandard"
     ],
     "ignoreWords": [],
     "patterns": [
