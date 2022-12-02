@@ -37,6 +37,19 @@ namespace Microsoft.Maui.DeviceTests
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
 			mauiAppBuilder.Services.AddSingleton<IApplication>((_) => new ApplicationStub());
+
+#if IOS || MACCATALYST
+			mauiAppBuilder
+				.ConfigureMauiHandlers(handlers =>
+				 {
+					 Element.ControlsElementMapper
+						.PrependToMapping(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, (handler, view) =>
+						{
+							(handler as IPlatformViewHandler).PlatformView.SetupAccessibilityExpectationIfVoiceOverIsOff();
+						});
+				 });
+#endif
+
 			return mauiAppBuilder.ConfigureTestBuilder();
 		}
 

@@ -14,31 +14,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static class ControlsDeviceTestExtensions
 	{
-
-		public static bool IsAccessibilityElement(this VisualElement view)
-		{
-			bool result = AssertionExtensions.IsAccessibilityElement(view);
-
-#if IOS
-			// UIView.IsAccessibilityElement will never be true if VoiceOver isn't running
-			//
-			// Because the 'AssertionExtensions.IsAccessibilityElement' just fakes the actual values
-			// when VO isn't running we can't really test that calling `SetIsInAccessibleTree` with
-			// false works unless we turn on VO
-			if (!UIKit.UIAccessibility.IsVoiceOverRunning)
-			{
-				bool? expected = AutomationProperties.GetIsInAccessibleTree(view);
-
-				if (expected.HasValue && !expected.Value)
-				{
-					return expected.Value;
-				}
-			}
-#endif
-
-			return result;
-		}
-
 		public static MauiAppBuilder ConfigureTestBuilder(this MauiAppBuilder mauiAppBuilder)
 		{
 			return

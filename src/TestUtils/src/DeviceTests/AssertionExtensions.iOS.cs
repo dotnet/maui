@@ -447,20 +447,30 @@ namespace Microsoft.Maui.DeviceTests
 			return null;
 		}
 
-		public static bool IsAccessibilityElement(this UIView platformView)
+		/// <summary>
+		/// If VoiceOver is off iOS just leaves IsAccessibilityElement set to false
+		/// This applies the default value to each control type so we can have some level
+		/// of testing inside simulators and when the VO is turned off.
+		/// These default values were all validated inside Xcode
+		/// </summary>
+		/// <param name="platformView"></param>
+		public static void SetupAccessibilityExpectationIfVoiceOverIsOff(this UIView platformView)
 		{
-			platformView = platformView.GetAccessiblePlatformView();
 			if (!UIAccessibility.IsVoiceOverRunning)
 			{
+				platformView = platformView.GetAccessiblePlatformView();
 				// even though UIStepper/UIPageControl inherits from UIControl
 				// iOS sets it to not be important for accessibility
 				// most likely because the children elements need to be reachable
 				if (platformView is UIStepper || platformView is UIPageControl)
-					return platformView.IsAccessibilityElement;
+					return;
 
 				// UILabel will only be an accessibility element if it has text
 				if (platformView is UILabel label && !String.IsNullOrWhiteSpace(label.Text))
-					return true;
+				{
+					platformView.IsAccessibilityElement = true;
+					return;
+				}
 
 				// AFAICT on iOS when you read IsAccessibilityElement it's always false
 				// unless you have VoiceOver turned on.
@@ -471,15 +481,25 @@ namespace Microsoft.Maui.DeviceTests
 				// validating that everything that doesn't inherit from UIControl isn't
 				// getting set to true
 				if (platformView is UIControl)
-					return true;
+				{
+					platformView.IsAccessibilityElement = true;
+					return;
+				}
 
 				// These are UIViews that don't inherit from UIControl but
 				// iOS will mark them as Accessibility Elements
 				// I tested each of these controls inside Xcode away from any MAUI tampering
 				if (platformView is UITextView || platformView is UIProgressView)
-					return true;
+				{
+					platformView.IsAccessibilityElement = true;
+					return;
+				}
 			}
+		}
 
+		public static bool IsAccessibilityElement(this UIView platformView)
+		{
+			platformView = platformView.GetAccessiblePlatformView();
 			return platformView.IsAccessibilityElement;
 		}
 
