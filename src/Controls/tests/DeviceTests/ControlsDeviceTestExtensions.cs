@@ -4,7 +4,6 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Platform;
 using Xunit;
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
