@@ -56,9 +56,15 @@ namespace Microsoft.Maui.Controls
 				RowSpacing = stackLayout.Spacing,
 			};
 
+			var row = 0;
 			for (int n = 0; n < stackLayout.Count; n++)
 			{
 				var child = stackLayout[n];
+
+				if (child.Visibility != Visibility.Visible)
+				{
+					continue;
+				}
 
 				if (child is View view && view.VerticalOptions.Expands)
 				{
@@ -70,7 +76,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				grid.Add(child);
-				grid.SetRow(child, n);
+				grid.SetRow(child, row);
+
+				row += 1;
 			}
 
 			return grid;
@@ -85,9 +93,15 @@ namespace Microsoft.Maui.Controls
 				ColumnSpacing = stackLayout.Spacing
 			};
 
+			var column = 0;
 			for (int n = 0; n < stackLayout.Count; n++)
 			{
 				var child = stackLayout[n];
+
+				if (child.Visibility != Visibility.Visible)
+				{
+					continue;
+				}
 
 				if (child is View view && view.HorizontalOptions.Expands)
 				{
@@ -99,7 +113,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				grid.Add(child);
-				grid.SetColumn(child, n);
+				grid.SetColumn(child, column);
+
+				column += 1;
 			}
 
 			return grid;

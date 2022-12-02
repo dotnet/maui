@@ -135,7 +135,7 @@ namespace Microsoft.Maui
 			viewHandler.Invoke(nameof(IView.Frame), frame);
 		}
 
-		internal static void PrepareForTextViewArrange(this IViewHandler handler, Rect frame) 
+		internal static void PrepareForTextViewArrange(this IViewHandler handler, Rect frame)
 		{
 			if (frame.Width < 0 || frame.Height < 0)
 			{
@@ -164,7 +164,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal static bool NeedsExactMeasure(this IView virtualView) 
+		internal static bool NeedsExactMeasure(this IView virtualView)
 		{
 			if (virtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill
 				&& virtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill)
@@ -185,7 +185,7 @@ namespace Microsoft.Maui
 			return true;
 		}
 
-		internal static int MakeMeasureSpecExact(this Context context, double size) 
+		internal static int MakeMeasureSpecExact(this Context context, double size)
 		{
 			// Convert to a native size to create the spec for measuring
 			var deviceSize = (int)context!.ToPixels(size);

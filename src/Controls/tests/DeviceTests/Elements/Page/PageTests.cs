@@ -64,7 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory("Page Background Updates Correctly With BackgroundColor Prooperty")]
+		[Theory("Page Background Updates Correctly With BackgroundColor Property")]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#0000FF")]
@@ -80,6 +80,20 @@ namespace Microsoft.Maui.DeviceTests
 				page.BackgroundColor = color;
 
 				await handler.PlatformView.AssertContainsColor(color);
+			});
+		}
+
+		[Fact("No issues using Page IsBusy property")]
+		public async Task UsingIsBusyNoCrash()
+		{
+			var page = new ContentPage();
+			page.IsBusy = true;
+
+			await CreateHandlerAndAddToWindow<PageHandler>(page, (handler) =>
+			{
+				// Validate that no exceptions are thrown
+				((IElementHandler)handler).DisconnectHandler();
+				return Task.CompletedTask;
 			});
 		}
 	}
