@@ -50,9 +50,10 @@ namespace Microsoft.Maui.DeviceTests
 			[Fact]
 			public async Task ValidateIsImportantForAccessibility()
 			{
+				SetupAccessibilityIfVoiceOverIsOff();
+				
 				EnsureHandlerCreated(builder =>
 				{
-					SetupAccessibilityIfVoiceOverIsOff(builder);
 					builder.ConfigureMauiHandlers(handlers =>
 					{
 						handlers.AddMauiControlsHandlers();
