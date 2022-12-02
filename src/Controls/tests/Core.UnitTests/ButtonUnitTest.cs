@@ -70,7 +70,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IButtonController)view).SendReleased();
 
-			Assert.True(released == isEnabled ? true : false);
+			// Released should always fire, even if the button is disabled
+			// Otherwise, a press which disables a button will leave it in the
+			// Pressed state forever
+			Assert.True(released);
 		}
 
 		protected override Button CreateSource()
