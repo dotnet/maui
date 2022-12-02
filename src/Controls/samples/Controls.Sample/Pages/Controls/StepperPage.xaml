@@ -15,7 +15,12 @@
                 Text="Disabled"
                 Style="{StaticResource Headline}"/>
             <Stepper
+                x:Name="EnableStepper"
                 IsEnabled="False"/>
+            <Button
+                x:Name="EnableButton"
+                Text="Enable Stepper"
+                Clicked="OnEnableButtonClicked"/>
             <Label
                 Text="BackgroundColor"
                 Style="{StaticResource Headline}"/>
