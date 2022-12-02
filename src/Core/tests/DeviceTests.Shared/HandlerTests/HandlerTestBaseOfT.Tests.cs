@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Media;
 using Xunit;
 
@@ -82,6 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Setting Semantic Description makes element accessible")]
 		public async Task SettingSemanticDescriptionMakesElementAccessible()
 		{
+			EnsureHandlerCreated(SetupAccessibilityIfVoiceOverIsOff);
 			var view = new TStub();
 			view.Semantics.Description = "Test";
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
@@ -98,6 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Setting Semantic Hint makes element accessible")]
 		public async Task SettingSemanticHintMakesElementAccessible()
 		{
+			EnsureHandlerCreated(SetupAccessibilityIfVoiceOverIsOff);
 			var view = new TStub();
 			view.Semantics.Hint = "Test";
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
@@ -321,6 +324,22 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			Assert.True(hasBothMappers, "Missing constructor with IPropertyMapper and ICommandMapper");
+		}
+
+		void SetupAccessibilityIfVoiceOverIsOff(MauiAppBuilder builder)
+		{
+#if IOS || MACCATALYST
+			builder
+				.ConfigureMauiHandlers(handlers =>
+				{
+					ViewHandler
+						.ViewMapper
+						.PrependToMapping(nameof(IView.Semantics), (handler, view) =>
+						{
+							(handler.PlatformView as UIKit.UIView)?.SetupAccessibilityExpectationIfVoiceOverIsOff();
+						});
+				});
+#endif
 		}
 	}
 }

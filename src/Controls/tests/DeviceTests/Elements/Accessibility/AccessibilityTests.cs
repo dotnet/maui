@@ -22,6 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task IsInAccessibleTree(bool result)
 		{
+			EnsureHandlerCreated(SetupAccessibilityIfVoiceOverIsOff);
 			var button = new Button();
 			AutomationProperties.SetIsInAccessibleTree(button, result);
 			var important = await GetValueAsync<bool, ButtonHandler>(button, handler => button.IsAccessibilityElement());
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task ExcludedWithChildren(bool result)
 		{
+			EnsureHandlerCreated(SetupAccessibilityIfVoiceOverIsOff);
 			var button = new Button();
 			AutomationProperties.SetExcludedWithChildren(button, result);
 			var excluded = await GetValueAsync<bool, ButtonHandler>(button, handler => button.IsExcludedWithChildren());
@@ -50,6 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				EnsureHandlerCreated(builder =>
 				{
+					SetupAccessibilityIfVoiceOverIsOff(builder);
 					builder.ConfigureMauiHandlers(handlers =>
 					{
 						handlers.AddMauiControlsHandlers();
@@ -108,6 +111,22 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(stringBuilder.Length == 0, stringBuilder.ToString());
 			}
+		}
+
+		static void SetupAccessibilityIfVoiceOverIsOff(MauiAppBuilder builder)
+		{
+#if IOS || MACCATALYST
+			builder
+				.ConfigureMauiHandlers(handlers =>
+				{
+					Element
+						.ControlsElementMapper							
+						.PrependToMapping(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, (handler, view) =>
+						{
+							(handler.PlatformView as UIKit.UIView)?.SetupAccessibilityExpectationIfVoiceOverIsOff();
+						});
+				});
+#endif
 		}
 
 		class LabelWithText : Label
