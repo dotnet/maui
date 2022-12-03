@@ -367,7 +367,6 @@ namespace Microsoft.Maui.Controls
 			if (IsEnabled && IsPressed)
 			{
 				VisualStateManager.GoToState(this, ButtonElement.PressedVisualState);
-				System.Diagnostics.Debug.WriteLine($">>>>>> Pressed");
 			}
 			else
 			{
