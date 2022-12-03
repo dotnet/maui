@@ -367,10 +367,12 @@ namespace Microsoft.Maui.Controls
 			if (IsEnabled && IsPressed)
 			{
 				VisualStateManager.GoToState(this, ButtonElement.PressedVisualState);
+				System.Diagnostics.Debug.WriteLine($">>>>>> Pressed");
 			}
-			
-			// Fall through to handle other states
-			base.ChangeVisualState();
+			else
+			{
+				base.ChangeVisualState();
+			}
 		}
 
 		protected override void OnBindingContextChanged()
