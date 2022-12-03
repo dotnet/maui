@@ -1101,11 +1101,11 @@ namespace Microsoft.Maui.Controls
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
 			}
-			else if (IsPointerOver && !transitioned)
+			else if (IsPointerOver)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
 			}
-			else if(!transitioned)
+			else
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
 			}
