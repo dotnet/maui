@@ -1097,21 +1097,17 @@ namespace Microsoft.Maui.Controls
 
 		protected internal virtual void ChangeVisualState()
 		{
-			bool transitioned = false;
-
 			if (!IsEnabled)
 			{
-				transitioned = VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
 			}
 			else if (IsPointerOver && !transitioned)
 			{
-				transitioned = VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-				System.Diagnostics.Debug.WriteLine($">>>>>> PointerOver");
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
 			}
 			else if(!transitioned)
 			{
-				transitioned = VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
-				System.Diagnostics.Debug.WriteLine($">>>>>> Normal");
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
 			}
 
 			if (IsEnabled)
