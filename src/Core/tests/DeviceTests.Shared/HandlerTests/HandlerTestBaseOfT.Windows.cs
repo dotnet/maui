@@ -177,12 +177,14 @@ namespace Microsoft.Maui.DeviceTests
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
 			(SemanticHeadingLevel)AutomationProperties.GetHeadingLevel((FrameworkElement)viewHandler.PlatformView);
 
-		protected double GetOpacity(IViewHandler viewHandler) =>
-			((FrameworkElement)viewHandler.PlatformView).Opacity;
+		protected double GetOpacity(IViewHandler viewHandler)
+		{
+			return viewHandler.ToPlatform().Opacity;
+		}
 
 		double GetTranslationX(IViewHandler viewHandler)
 		{
-			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is CompositeTransform composite)
 				return composite.TranslateX;
@@ -191,7 +193,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetTranslationY(IViewHandler viewHandler)
 		{
-			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is CompositeTransform composite)
 				return composite.TranslateY;
@@ -200,7 +202,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetScaleX(IViewHandler viewHandler)
 		{
-			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is ScaleTransform scale)
 				return scale.ScaleX;
@@ -211,7 +213,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetScaleY(IViewHandler viewHandler)
 		{
-			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is ScaleTransform scale)
 				return scale.ScaleY;
@@ -222,7 +224,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetRotation(IViewHandler viewHandler)
 		{
-			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is CompositeTransform composite)
 				return composite.Rotation;
@@ -231,7 +233,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetRotationX(IViewHandler viewHandler)
 		{
-			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.Projection is PlaneProjection projection)
 				return -projection.RotationX;
@@ -240,7 +242,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		double GetRotationY(IViewHandler viewHandler)
 		{
-			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.Projection is PlaneProjection projection)
 				return -projection.RotationY;
@@ -249,7 +251,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Visibility GetVisibility(IViewHandler viewHandler)
 		{
-			var platformView = (FrameworkElement)viewHandler.PlatformView;
+			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.Visibility == UI.Xaml.Visibility.Visible && platformView.Opacity == 0)
 				return Visibility.Hidden;
