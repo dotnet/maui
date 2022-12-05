@@ -154,8 +154,6 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
-                  provisioning: true
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -231,8 +229,6 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
-                  provisioning: true
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
                   
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
@@ -285,8 +281,7 @@ stages:
                   parameters:
                     platform: ${{ BuildPlatform.name }}
                     poolName: ${{ BuildPlatform.poolName }}
-                    provisioning: true
-                    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                    
                 - task: DownloadBuildArtifacts@0
                   displayName: 'Download Packages'
                   inputs:
