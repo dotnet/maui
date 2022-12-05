@@ -175,8 +175,4 @@
     <MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisCSharpVersion)</MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>
   </PropertyGroup>
 
-  <!-- Don't let it restore lower versions of this package, which can come transitively from NetStandard package restores (CSProj only) -->
-  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'" >
-    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="$(SystemSecurityCryptographyX509CertificatesVersion)" PrivateAssets="All" />
-  </ItemGroup>
 </Project>
