@@ -68,43 +68,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(Math.Abs(((300 - labelFrame.Height) / 2) - labelFrame.Y) < 1);
 		}
 
-		[Fact(DisplayName = "Basic Frame ContentVeew Test")]
-		public async Task BasicContentViewTest()
-		{
-			SetupBuilder();
-
-			var frame = new ContentView()
-			{
-				HeightRequest = 300,
-				WidthRequest = 300,
-				Content = new Label()
-				{
-					VerticalOptions = LayoutOptions.Center,
-					HorizontalOptions = LayoutOptions.Center,
-					Text = "Hello Frame"
-				}
-			};
-
-			var labelFrame =
-				await InvokeOnMainThreadAsync(() =>
-					frame.ToPlatform(MauiContext).AttachAndRun(async () =>
-					{
-						(frame as IView).Measure(300, 300);
-						(frame as IView).Arrange(new Graphics.Rect(0, 0, 300, 300));
-
-						await OnFrameSetToNotEmpty(frame.Content);
-
-						return frame.Content.Frame;
-
-					})
-				);
-
-
-			// validate label is centered in the frame
-			Assert.True(Math.Abs(((300 - labelFrame.Width) / 2) - labelFrame.X) < 1);
-			Assert.True(Math.Abs(((300 - labelFrame.Height) / 2) - labelFrame.Y) < 1);
-		}
-
 		[Fact(DisplayName = "Frame With Entry Measures")]
 		public async Task FrameWithEntryMeasuresCorrectly()
 		{
