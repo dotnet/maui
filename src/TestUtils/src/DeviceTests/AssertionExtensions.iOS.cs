@@ -288,17 +288,30 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertContainsColor(expectedColor);
 		}
 
-		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
+		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, Graphics.RectF? withinRect = null) =>
 			AssertContainsColor(view, expectedColor.ToPlatform());
 
 		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor)
 			=> Task.FromResult(image.AssertContainsColor(expectedColor.ToPlatform()));
 
-		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor)
+		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor, Graphics.RectF? withinRect = null)
 		{
-			for (int x = 0; x < bitmap.Size.Width; x++)
+			var xStart = 0;
+			var yStart = 0;
+			var width = bitmap.Size.Width;
+			var height = bitmap.Size.Height;
+
+			if (withinRect.HasValue)
 			{
-				for (int y = 0; y < bitmap.Size.Height; y++)
+				xStart = (int)withinRect.Value.X;
+				yStart = (int)withinRect.Value.Y;
+				width = (int)withinRect.Value.Width;
+				height = (int)withinRect.Value.Height;
+			}
+
+			for (int x = xStart; x < width; x++)
+			{
+				for (int y = yStart; y < height; y++)
 				{
 					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), expectedColor))
 					{

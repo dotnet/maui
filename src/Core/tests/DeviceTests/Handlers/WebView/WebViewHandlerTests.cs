@@ -82,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 						try
 						{
 							var img = await webView.Capture();
-							await img.AssertContainsColor(expectColorAfterStartsPlaying);
+							await img.AssertContainsColor(expectColorAfterStartsPlaying, new RectF(0,0,300,300));
 							break;
 						}
 						catch (Exception ex)
