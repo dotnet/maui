@@ -21,7 +21,6 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler<ContentView, ContentViewHandler>();
 					handlers.AddHandler<StackLayout, LayoutHandler>();
 					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Frame, FrameRenderer>();
