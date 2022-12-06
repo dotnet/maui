@@ -35,11 +35,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			=> NavigatedDelegate?.Invoke(evnt, url, result);
 
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CS1998 // Ignore method lacks 'await' - Not all platforms need an await
 		public async Task<PlatformImage> Capture()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning restore CS1998 // Ignore method lacks 'await' - Not all platforms need an await
 		{
 #if ANDROID
+			// While this does capture some content, it will not capture video or canvas objects
 			var v = Handler!.PlatformView as Android.Webkit.WebView;
 			var bitmap = Android.Graphics.Bitmap.CreateBitmap(v!.Width, v!.Height, Android.Graphics.Bitmap.Config.Argb8888!);
 			var canvas = new Android.Graphics.Canvas(bitmap!);
