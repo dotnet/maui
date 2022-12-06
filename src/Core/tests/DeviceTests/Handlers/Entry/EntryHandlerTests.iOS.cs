@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
@@ -112,6 +114,160 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
+		}
+
+		[Fact]
+		public async Task NextMovesToNextEntry()
+		{
+			var entry1 = new EntryStub
+			{
+				Text = "Entry 1",
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Next
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform());
+				Assert.True(entry2.IsFocused);
+			}, entry1, entry2);
+		}
+
+		[Fact]
+		public async Task NextMovesPastNotEnabledEntry()
+		{
+			var entry1 = new EntryStub
+			{
+				Text = "Entry 1",
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Next,
+				IsEnabled = false
+			};
+
+			var entry3 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Next
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform());
+				Assert.True(entry3.IsFocused);
+			}, entry1, entry2, entry3);
+		}
+
+		[Fact]
+		public async Task NextMovesToEditor()
+		{
+			var entry = new EntryStub
+			{
+				Text = "Entry",
+				ReturnType = ReturnType.Next
+			};
+
+			var editor = new EditorStub
+			{
+				Text = "Editor"
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform());
+				Assert.True(editor.IsFocused);
+			}, entry, editor);
+		}
+
+		[Fact]
+		public async Task NextMovesPastNotEnabledEditor()
+		{
+			var entry = new EntryStub
+			{
+				Text = "Entry",
+				ReturnType = ReturnType.Next
+			};
+
+			var editor1 = new EditorStub
+			{
+				Text = "Editor1",
+				IsEnabled = false
+			};
+
+			var editor2 = new EditorStub
+			{
+				Text = "Editor2"
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform());
+				Assert.True(editor2.IsFocused);
+			}, entry, editor1, editor2);
+		}
+
+		[Fact]
+		public async Task NextMovesToSearchBar()
+		{
+			var entry = new EntryStub
+			{
+				Text = "Entry",
+				ReturnType = ReturnType.Next
+			};
+
+			var searchBar = new SearchBarStub
+			{
+				Text = "Search Bar"
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform());
+				var uISearchBar = searchBar.Handler.PlatformView as UISearchBar;
+				Assert.True(uISearchBar.GetSearchTextField().IsFirstResponder);
+			}, entry, searchBar);
+		}
+
+		async Task NextMovesHelper(Action action = null, params StubBase[] views)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<EntryStub, EntryHandler>();
+					handler.AddHandler<EditorStub, EditorHandler>();
+					handler.AddHandler<SearchBarStub, SearchBarHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			foreach (var view in views)
+			{
+				layout.Add(view);
+			}
+
+			layout.Width = 100;
+			layout.Height = 150;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
+				await contentViewHandler.PlatformView.AttachAndRun(() =>
+				{
+					action?.Invoke();
+				});
+			});
 		}
 
 		double GetNativeCharacterSpacing(EntryHandler entryHandler)

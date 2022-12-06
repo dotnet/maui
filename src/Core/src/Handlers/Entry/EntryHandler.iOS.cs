@@ -3,6 +3,7 @@ using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -122,9 +123,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual bool OnShouldReturn(UITextField view)
 		{
-			view.ResignFirstResponder();
-
-			// TODO: Focus next View
+			KeyboardAutoManager.GoToNextResponderOrResign(view);
 
 			VirtualView?.Completed();
 
