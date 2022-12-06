@@ -84,7 +84,7 @@ steps:
         scriptPath: eng/common/darc-init.sh
       displayName: 'Install darc'
     - bash: |
-        darc --password $(Bar.Token) --github-pat $(Github.Token) --azdev-pat $(Azdo.Token) --verbose --debug
+        darc --password $(Bar.Token) --github-pat $(github-pat) --azdev-pat $(Azdo.Token) --verbose --debug
       displayName: 'Setup darc'
 
   # Prepare Windows
@@ -129,7 +129,7 @@ steps:
       displayName: 'Install darc'
 
     - pwsh: |
-        darc --password $(Bar.Token) --github-pat $(Github.Token) --azdev-pat $(Azdo.Token) --verbose --debug
+        darc --password $(Bar.Token) --github-pat $(github-pat) --azdev-pat $(Azdo.Token) --verbose --debug
       displayName: 'Setup darc'
 
   # Prepare Both
