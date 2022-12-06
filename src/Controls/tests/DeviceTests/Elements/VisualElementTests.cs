@@ -34,16 +34,19 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder builder)
 			{
-				return builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 
+				return
+					base
+						.ConfigureBuilder(builder)
+						.ConfigureMauiHandlers(handlers =>
+						{
+							handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #if WINDOWS || ANDROID
-					handlers.AddHandler<Toolbar, ToolbarHandler>();
+							handlers.AddHandler<Toolbar, ToolbarHandler>();
 #else
-					handlers.AddHandler<NavigationPage, Controls.Handlers.Compatibility.NavigationRenderer>();
+							handlers.AddHandler<NavigationPage, Controls.Handlers.Compatibility.NavigationRenderer>();
 #endif
-				});
+						});
 			}
 
 			[Fact]
