@@ -79,9 +79,13 @@ steps:
         certSecureFile: 'Components Mac Certificate.p12'
 
     # Install darc
-    - bash: |
-        .\eng\common\darc-init.sh
+    - task: ShellScript@2
+      inputs:
+        scriptPath: .\eng\common\darc-init.sh
       displayName: 'Install darc'
+    - bash: |
+        darc --password $(Bar.Token) --github-pat $(Github.Token) --azdev-pat $(Azdo.Token) --verbose --debug
+      displayName: 'Setup darc'
 
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
@@ -123,6 +127,10 @@ steps:
     - pwsh: |
         .\eng\common\darc-init.ps1
       displayName: 'Install darc'
+      
+    - pwsh: |
+        darc --password $(Bar.Token) --github-pat $(Github.Token) --azdev-pat $(Azdo.Token) --verbose --debug
+      displayName: 'Setup darc'
 
   # Prepare Both
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
