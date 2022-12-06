@@ -78,6 +78,11 @@ steps:
       inputs:
         certSecureFile: 'Components Mac Certificate.p12'
 
+    # Install darc
+    - bash: |
+        .\eng\common\darc-init.sh
+      displayName: 'Install darc'
+
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
     - powershell: |
@@ -113,6 +118,11 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
+    
+    # Install darc
+    - pwsh: |
+        .\eng\common\darc-init.ps1
+      displayName: 'Install darc'
 
   # Prepare Both
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
