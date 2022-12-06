@@ -46,11 +46,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			v.Draw(canvas);
 			return bitmap;
 #elif IOS || MACCATALYST
-			var wwv = Handler.PlatformView as MauiWKWebView;
-			UIKit.UIGraphics.BeginImageContextWithOptions(wwv.Bounds.Size, true, 0);
-			wwv.DrawViewHierarchy(wwv.Bounds, afterScreenUpdates: true);
-			var i = UIKit.UIGraphics.GetImageFromCurrentImageContext();
-			UIKit.UIGraphics.EndImageContext();
+			var v = Handler.PlatformView as MauiWKWebView;
+			var i = await v.TakeSnapshotAsync(new WebKit.WKSnapshotConfiguration
+			{
+				 Rect = v.Frame,
+				 AfterScreenUpdates = false
+			});
 			return i;
 #elif WINDOWS
 			var v = Handler!.PlatformView as MauiWebView;
