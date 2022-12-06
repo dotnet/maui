@@ -81,7 +81,7 @@ steps:
     # Install darc
     - task: ShellScript@2
       inputs:
-        scriptPath: .\eng\common\darc-init.sh
+        scriptPath: eng/common/darc-init.sh
       displayName: 'Install darc'
     - bash: |
         darc --password $(Bar.Token) --github-pat $(Github.Token) --azdev-pat $(Azdo.Token) --verbose --debug
@@ -127,7 +127,7 @@ steps:
     - pwsh: |
         .\eng\common\darc-init.ps1
       displayName: 'Install darc'
-      
+
     - pwsh: |
         darc --password $(Bar.Token) --github-pat $(Github.Token) --azdev-pat $(Azdo.Token) --verbose --debug
       displayName: 'Setup darc'
