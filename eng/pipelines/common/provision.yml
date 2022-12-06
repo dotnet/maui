@@ -131,10 +131,10 @@ steps:
       .\eng\common\darc-init.ps1
     displayName: 'Install darc'
 
-  - pwsh: |
-      darc authenticate --password $(Bar.Token) --github-pat $(github-pat) --azdev-pat $(Azdo.Token) --verbose --debug
-      Stop-Process -Name "notepad"
-    displayName: 'Setup darc'
+  # - pwsh: |
+  #     darc authenticate --password $(Bar.Token) --github-pat $(github-pat) --azdev-pat $(Azdo.Token) --verbose --debug
+  #     Stop-Process -Name "notepad"
+  #   displayName: 'Setup darc'
 
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
