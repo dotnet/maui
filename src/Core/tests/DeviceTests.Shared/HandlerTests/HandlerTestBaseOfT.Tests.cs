@@ -84,6 +84,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task SettingSemanticDescriptionMakesElementAccessible()
 		{
 			var view = new TStub();
+			MockAccessibilityExpectations(view);
+
 			view.Semantics.Description = "Test";
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
 
@@ -94,6 +96,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task SettingSemanticHintMakesElementAccessible()
 		{
 			var view = new TStub();
+			MockAccessibilityExpectations(view);
+
 			view.Semantics.Hint = "Test";
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
 
