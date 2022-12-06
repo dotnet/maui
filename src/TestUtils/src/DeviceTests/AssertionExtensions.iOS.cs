@@ -288,10 +288,10 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertContainsColor(expectedColor);
 		}
 
-		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, Graphics.RectF? withinRect = null) =>
+		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToPlatform());
 
-		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor)
+		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor, Graphics.RectF? withinRect = null)
 			=> Task.FromResult(image.AssertContainsColor(expectedColor.ToPlatform()));
 
 		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor, Graphics.RectF? withinRect = null)
