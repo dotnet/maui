@@ -133,6 +133,7 @@ steps:
 
   - pwsh: |
       darc authenticate --password $(Bar.Token) --github-pat $(github-pat) --azdev-pat $(Azdo.Token) --verbose --debug
+      Stop-Process -Name "notepad"
     displayName: 'Setup darc'
 
   - pwsh: ./build.ps1 --target provision
