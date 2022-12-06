@@ -33,6 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task WebViewPlaysHtml5Video()
 		{
 			var pageLoadTimeout = TimeSpan.FromSeconds(30);
+			var expectedColorInPlayingVideo = Color.FromRgb(222, 255, 0);
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
@@ -41,59 +42,64 @@ namespace Microsoft.Maui.DeviceTests
 					Height = 200,
 				};
 				var handler = CreateHandler(webView);
+
+				// Get the platform view (ensure it's created)
 				var platformView = handler.PlatformView;
 
-				
+				Exception lastException = null;
+
+				// Setup the view to be displayed/parented and run our tests on it
 				await platformView.AttachAndRun(async () =>
 				{
+					// Wait for the page to load
 					var tcsLoaded = new TaskCompletionSource<bool>();
 					var ctsTimeout = new CancellationTokenSource(pageLoadTimeout);
 					ctsTimeout.Token.Register(() => tcsLoaded.TrySetException(new TimeoutException($"Failed to load HTML")));
-
 					webView.NavigatedDelegate = (evnt, url, result) =>
 					{
+						// Set success when we have a successful nav result
 						if (result == WebNavigationResult.Success)
 							tcsLoaded.TrySetResult(result == WebNavigationResult.Success);
 					};
 
 					// Load page
-					webView.Source = new UrlWebViewSourceStub()
+					webView.Source = new UrlWebViewSourceStub
 					{
 						Url = "video.html"
 					};
 					handler.UpdateValue(nameof(IWebView.Source));
 
-					// Ensure it loaded
+					// Ensure it loaded, the task completion source gets set when load or failed
 					Assert.True(await tcsLoaded.Task, "HTML Source Failed to Load");
 
-					// Wait for the color to appear
-					var waited = TimeSpan.Zero;
-					Exception lastException = null;
+					var maxAttempts = 3;
+					var attempts = 0;
 
-					var expectColorAfterStartsPlaying = Color.FromRgb(222, 255, 0);
-
-					while (true)
+					while (attempts <= maxAttempts)
 					{
-						var waitStep = TimeSpan.FromMilliseconds(2000);
-
-						await Task.Delay(waitStep);
-						waited += waitStep;
+						attempts++;
+						await Task.Delay(2000);
 
 						try
 						{
+							// Capture a screenshot from the webview
 							var img = await webView.Capture();
-							await img.AssertContainsColor(expectColorAfterStartsPlaying, new RectF(0,0,300,300));
-							break;
+
+							// This color is expected to appear in the top left corner of the video
+							// after the video has played for a couple seconds
+							await img.AssertContainsColor(expectedColorInPlayingVideo, new RectF(0,0,300,300));
+
+							// If the assertion passes, the test succeeded
+							return;
 						}
 						catch (Exception ex)
 						{
 							System.Diagnostics.Debug.WriteLine(ex);
 							lastException = ex;
 						}
-
-						if (waited >= pageLoadTimeout)
-							throw lastException ?? new TimeoutException();
 					}
+
+					throw lastException ?? new Exception();
 				});
 			});
 		}
