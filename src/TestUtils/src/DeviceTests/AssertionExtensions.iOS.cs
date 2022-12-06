@@ -291,6 +291,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToPlatform());
 
+		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor)
+			=> Task.FromResult(image.AssertContainsColor(expectedColor.ToPlatform()));
+
 		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor)
 		{
 			for (int x = 0; x < bitmap.Size.Width; x++)

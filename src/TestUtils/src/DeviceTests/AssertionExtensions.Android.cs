@@ -289,6 +289,9 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor)
+			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
+
 		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor)
 		{
 			for (int x = 0; x < bitmap.Width; x++)
