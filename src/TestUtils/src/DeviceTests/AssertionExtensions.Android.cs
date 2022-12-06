@@ -289,27 +289,19 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Maui.Graphics.RectF? withinRect = null)
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
 
-		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Maui.Graphics.RectF? withinRect = null)
+		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 		{
-			var xStart = 0;
-			var yStart = 0;
-			var width = bitmap.Width;
-			var height = bitmap.Height;
+			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
 
-			if (withinRect.HasValue)
-			{
-				xStart = (int)withinRect.Value.X;
-				yStart = (int)withinRect.Value.Y;
-				width = (int)withinRect.Value.Width;
-				height = (int)withinRect.Value.Height;
-			}
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
 
-			for (int x = xStart; x < width; x++)
+			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 			{
-				for (int y = yStart; y < height; y++)
+				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 				{
 					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(expectedColor))
 					{

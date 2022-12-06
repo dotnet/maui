@@ -87,7 +87,12 @@ namespace Microsoft.Maui.DeviceTests
 
 							// This color is expected to appear in the top left corner of the video
 							// after the video has played for a couple seconds
-							await img.AssertContainsColor(expectedColorInPlayingVideo, new RectF(0,0,300,300));
+							await img.AssertContainsColor(expectedColorInPlayingVideo, imageRect =>
+								new Graphics.RectF(
+									imageRect.Width * 0.15f,
+									imageRect.Height * 0.15f,
+									imageRect.Width * 0.35f,
+									imageRect.Height * 0.35f));
 
 							// If the assertion passes, the test succeeded
 							return;

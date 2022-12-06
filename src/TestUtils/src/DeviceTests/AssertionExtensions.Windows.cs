@@ -227,25 +227,17 @@ namespace Microsoft.Maui.DeviceTests
 		public static CanvasBitmap AssertColorAtTopRight(this CanvasBitmap bitmap, WColor expectedColor)
 			=> bitmap.AssertColorAtPoint(expectedColor, bitmap.SizeInPixels.Width - 1, bitmap.SizeInPixels.Height - 1);
 
-		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Graphics.RectF? withinRect = null)
+		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor());
 
-		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Graphics.RectF? withinRect = null)
+		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 		{
-			var xStart = 0;
-			var yStart = 0;
-			var width = (int)bitmap.SizeInPixels.Width;
-			var height = (int)bitmap.SizeInPixels.Height;
+			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
 
-			if (withinRect.HasValue)
-			{
-				xStart = (int)withinRect.Value.X;
-				yStart = (int)withinRect.Value.Y;
-				width = (int)withinRect.Value.Width;
-				height = (int)withinRect.Value.Height;
-			}
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
 
-			var colors = bitmap.GetPixelColors(xStart, yStart, width, height);
+			var colors = bitmap.GetPixelColors(imageRect.X, imageRect.Y, imageRect.Width, imageRect.Height);
 
 			foreach (var c in colors)
 			{
