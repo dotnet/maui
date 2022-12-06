@@ -289,14 +289,27 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor)
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Maui.Graphics.RectF? withinRect = null)
 			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
 
-		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor)
+		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Maui.Graphics.RectF? withinRect = null)
 		{
-			for (int x = 0; x < bitmap.Width; x++)
+			var xStart = 0;
+			var yStart = 0;
+			var width = bitmap.Width;
+			var height = bitmap.Height;
+
+			if (withinRect.HasValue)
 			{
-				for (int y = 0; y < bitmap.Height; y++)
+				xStart = (int)withinRect.Value.X;
+				yStart = (int)withinRect.Value.Y;
+				width = (int)withinRect.Value.Width;
+				height = (int)withinRect.Value.Height;
+			}
+
+			for (int x = xStart; x < width; x++)
+			{
+				for (int y = yStart; y < height; y++)
 				{
 					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(expectedColor))
 					{

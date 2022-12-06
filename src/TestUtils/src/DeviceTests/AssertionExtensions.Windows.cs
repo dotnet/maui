@@ -227,12 +227,25 @@ namespace Microsoft.Maui.DeviceTests
 		public static CanvasBitmap AssertColorAtTopRight(this CanvasBitmap bitmap, WColor expectedColor)
 			=> bitmap.AssertColorAtPoint(expectedColor, bitmap.SizeInPixels.Width - 1, bitmap.SizeInPixels.Height - 1);
 
-		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor)
+		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Graphics.RectF? withinRect = null)
 			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor());
 
-		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Graphics.RectF? withinRect = null)
 		{
-			var colors = bitmap.GetPixelColors();
+			var xStart = 0;
+			var yStart = 0;
+			var width = (int)bitmap.SizeInPixels.Width;
+			var height = (int)bitmap.SizeInPixels.Height;
+
+			if (withinRect.HasValue)
+			{
+				xStart = (int)withinRect.Value.X;
+				yStart = (int)withinRect.Value.Y;
+				width = (int)withinRect.Value.Width;
+				height = (int)withinRect.Value.Height;
+			}
+
+			var colors = bitmap.GetPixelColors(xStart, yStart, width, height);
 
 			foreach (var c in colors)
 			{
