@@ -24,9 +24,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>121b0b8d1c535c079fd47b90a352f3c0dc1afb94</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="13.0.789">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="13.0.790">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>827bab3057e1ca73fefa7542d53051640aae4e98</Sha>
+      <Sha>121b0b8d1c535c079fd47b90a352f3c0dc1afb94</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.300" Version="6.0.12" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
