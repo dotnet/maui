@@ -90,7 +90,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(imageLoaded);
 				var expectedColor = Color.FromArgb(colorHex);
-				await handler.PlatformView.AssertContainsColorAsync(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
 		}
 
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await handler.PlatformView.AssertContainsColorAsync(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
 		}
 
@@ -172,12 +172,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await handler.PlatformView.AttachAndRunAsync(async () =>
+				await handler.PlatformView.AttachAndRun(async () =>
 				{
 					button.StrokeColor = expectedColor;
 					handler.UpdateValue(nameof(IButton.StrokeColor));
 
-					await handler.PlatformView.AssertContainsColorAsync(expectedColor);
+					await handler.PlatformView.AssertContainsColor(expectedColor);
 				});
 			});
 		}

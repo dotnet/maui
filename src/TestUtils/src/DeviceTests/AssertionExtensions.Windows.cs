@@ -17,7 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 	public static partial class AssertionExtensions
 	{
 		public static Task<string> CreateColorAtPointErrorAsync(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
-			CreateColorErrorAsync(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 			
 		public static Task WaitForKeyboardToShow(this FrameworkElement view, int timeout = 1000)
 		{
@@ -57,10 +57,10 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<string> CreateColorAtPointError(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
-		public static async Task<string> CreateColorErrorAsync(this CanvasBitmap bitmap, string message) =>
+		public static async Task<string> CreateColorError(this CanvasBitmap bitmap, string message) =>
 			$"{message} This is what it looked like:<img>{await bitmap.ToBase64StringAsync()}</img>";
 
-		public static async Task<string> CreateEqualErrorAsync(this CanvasBitmap bitmap, CanvasBitmap other, string message) =>
+		public static async Task<string> CreateEqualError(this CanvasBitmap bitmap, CanvasBitmap other, string message) =>
 			$"{message} This is what it looked like: <img>{await bitmap.ToBase64StringAsync()}</img> and <img>{await other.ToBase64StringAsync()}</img>";
 
 		public static async Task<string> ToBase64StringAsync(this CanvasBitmap bitmap)
@@ -82,28 +82,28 @@ namespace Microsoft.Maui.DeviceTests
 				: WColor.FromArgb(255, pixel.R, pixel.G, pixel.B);
 		}
 
-		public static Task AttachAndRunAsync(this FrameworkElement view, Action action) =>
-			view.AttachAndRunAsync(() =>
+		public static Task AttachAndRun(this FrameworkElement view, Action action) =>
+			view.AttachAndRun(() =>
 			{
 				action();
 				return Task.FromResult(true);
 			});
 
-		public static Task<T> AttachAndRunAsync<T>(this FrameworkElement view, Func<T> action) =>
-			view.AttachAndRunAsync(() =>
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action) =>
+			view.AttachAndRun(() =>
 			{
 				var result = action();
 				return Task.FromResult(result);
 			});
 
-		public static Task AttachAndRunAsync(this FrameworkElement view, Func<Task> action) =>
-			view.AttachAndRunAsync(async () =>
+		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
+			view.AttachAndRun(async () =>
 			{
 				await action();
 				return true;
 			});
 
-		public static async Task<T> AttachAndRunAsync<T>(this FrameworkElement view, Func<Task<T>> action)
+		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action)
 		{
 			if (view.Parent is Border wrapper)
 				view = wrapper;
@@ -186,8 +186,8 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Task<CanvasBitmap> ToBitmapAsync(this FrameworkElement view) =>
-			view.AttachAndRunAsync(async () =>
+		public static Task<CanvasBitmap> ToBitmap(this FrameworkElement view) =>
+			view.AttachAndRun(async () =>
 			{
 				if (view.Parent is Border wrapper)
 					view = wrapper;
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.DeviceTests
 		public static CanvasBitmap AssertColorAtTopRight(this CanvasBitmap bitmap, WColor expectedColor)
 			=> bitmap.AssertColorAtPoint(expectedColor, bitmap.SizeInPixels.Width - 1, bitmap.SizeInPixels.Height - 1);
 
-		public static async Task<CanvasBitmap> AssertContainsColorAsync(this CanvasBitmap bitmap, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor)
 		{
 			var colors = bitmap.GetPixelColors();
 
@@ -243,52 +243,52 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			Assert.True(false, await CreateColorErrorAsync(bitmap, $"Color {expectedColor} not found."));
+			Assert.True(false, await CreateColorError(bitmap, $"Color {expectedColor} not found."));
 			return bitmap;
 		}
 
-		public static Task<CanvasBitmap> AssertContainsColorAsync(this FrameworkElement view, Maui.Graphics.Color expectedColor) =>
-			AssertContainsColorAsync(view, expectedColor.ToWindowsColor());
+		public static Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, Maui.Graphics.Color expectedColor) =>
+			AssertContainsColor(view, expectedColor.ToWindowsColor());
 
-		public static async Task<CanvasBitmap> AssertContainsColorAsync(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, WColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
-			return await AssertContainsColorAsync(bitmap, expectedColor);
+			var bitmap = await view.ToBitmap();
+			return await AssertContainsColor(bitmap, expectedColor);
 		}
 
 		public static async Task<CanvasBitmap> AssertColorAtPointAsync(this FrameworkElement view, WColor expectedColor, int x, int y)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
 		public static async Task<CanvasBitmap> AssertColorAtCenterAsync(this FrameworkElement view, WColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtBottomLeftAsync(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtBottomLeft(this FrameworkElement view, WColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtBottomRightAsync(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtBottomRight(this FrameworkElement view, WColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtTopLeftAsync(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtTopLeft(this FrameworkElement view, WColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtTopRightAsync(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtTopRight(this FrameworkElement view, WColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
@@ -299,7 +299,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(bitmap.SizeInPixels, other.SizeInPixels);
 
-			Assert.True(IsMatching(), await CreateEqualErrorAsync(bitmap, other, $"Images did not match."));
+			Assert.True(IsMatching(), await CreateEqualError(bitmap, other, $"Images did not match."));
 
 			bool IsMatching()
 			{

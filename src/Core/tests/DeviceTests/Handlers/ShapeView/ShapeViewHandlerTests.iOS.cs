@@ -36,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				return GetPlatformShapeView(CreateHandler(shapeView)).AssertContainsColorAsync(color);
+				return GetPlatformShapeView(CreateHandler(shapeView)).AssertContainsColor(color);
 			});
 		}
 	}

@@ -401,9 +401,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var plaformView = (CreateHandler<THandler>(view) as IPlatformViewHandler).PlatformView;
 				action?.Invoke();
-				await plaformView.AssertContainsColorAsync(color);
+				await plaformView.AssertContainsColor(color);
 			});
-
 		}
 	}
 }

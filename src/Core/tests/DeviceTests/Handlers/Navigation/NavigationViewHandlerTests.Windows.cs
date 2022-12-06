@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var mauiContext = MauiContext.MakeScoped(true);
 				var handler = CreateHandler<NavigationViewHandler>(navigationView, MauiContext);
-				await handler.PlatformView.AttachAndRunAsync(async () =>
+				await handler.PlatformView.AttachAndRun(async () =>
 				{
 					if (navigationView is NavigationViewStub nvs && nvs.NavigationStack?.Count > 0)
 					{

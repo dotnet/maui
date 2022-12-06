@@ -206,7 +206,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var frameworkElement = windowManager.RootView;
 
-				await AssertionExtensions.AttachAndRunAsync(frameworkElement, async () =>
+				await AssertionExtensions.AttachAndRun(frameworkElement, async () =>
 				{
 					frameworkElement.Unloaded += (_, _) =>
 					{

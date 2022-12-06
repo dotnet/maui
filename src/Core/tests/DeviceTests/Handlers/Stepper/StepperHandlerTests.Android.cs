@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var platformStepper = GetNativeStepper(CreateHandler(stepper));
 				action?.Invoke();
-				platformStepper.AssertContainsColorAsync(color);
+				platformStepper.AssertContainsColor(color);
 			});
 		}
 	}

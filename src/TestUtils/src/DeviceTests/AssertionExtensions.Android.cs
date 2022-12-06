@@ -96,7 +96,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(result);
 		}
 
-		public static Task<bool> WaitForLayoutAsync(AView view, int timeout = 1000)
+		public static Task<bool> WaitForLayout(AView view, int timeout = 1000)
 		{
 			var tcs = new TaskCompletionSource<bool>();
 
@@ -154,22 +154,22 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Task AttachAndRunAsync(this AView view, Action action) =>
-			view.AttachAndRunAsync(() =>
+		public static Task AttachAndRun(this AView view, Action action) =>
+			view.AttachAndRun(() =>
 			{
 				action();
 				return Task.FromResult(true);
 			});
 
-		public static Task<T> AttachAndRunAsync<T>(this AView view, Func<T> action) =>
-			view.AttachAndRunAsync(() =>
+		public static Task<T> AttachAndRun<T>(this AView view, Func<T> action) =>
+			view.AttachAndRun(() =>
 			{
 				var result = action();
 				return Task.FromResult(result);
 			});
 
-		public static Task AttachAndRunAsync(this AView view, Func<Task> action) =>
-			view.AttachAndRunAsync(async () =>
+		public static Task AttachAndRun(this AView view, Func<Task> action) =>
+			view.AttachAndRun(async () =>
 			{
 				await action();
 				return true;
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 		// If a view is removed while a different test triggers a layout then you hit
 		// a NRE exception
 		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(1);
-		public static async Task<T> AttachAndRunAsync<T>(this AView view, Func<Task<T>> action)
+		public static async Task<T> AttachAndRun<T>(this AView view, Func<Task<T>> action)
 		{
 			if (view.Parent is WrapperView wrapper)
 				view = wrapper;
@@ -224,15 +224,15 @@ namespace Microsoft.Maui.DeviceTests
 			static async Task<T> Run(AView view, Func<Task<T>> action)
 			{
 				await Task.WhenAll(
-					WaitForLayoutAsync(view),
+					WaitForLayout(view),
 					Wait(() => view.Width > 0 && view.Height > 0));
 
 				return await action();
 			}
 		}
 
-		public static Task<Bitmap> ToBitmapAsync(this AView view) =>
-			view.AttachAndRunAsync(() =>
+		public static Task<Bitmap> ToBitmap(this AView view) =>
+			view.AttachAndRun(() =>
 			{
 				if (view.Parent is WrapperView wrapper)
 					view = wrapper;
@@ -306,48 +306,48 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task<Bitmap> AssertContainsColorAsync(this AView view, Graphics.Color expectedColor) =>
-			AssertContainsColorAsync(view, expectedColor.ToPlatform());
+		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor) =>
+			AssertContainsColor(view, expectedColor.ToPlatform());
 
-		public static async Task<Bitmap> AssertContainsColorAsync(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return AssertContainsColor(bitmap, expectedColor);
 		}
 
 		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
 		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtBottomLeftAsync(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtBottomLeft(this AView view, AColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtBottomRightAsync(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtBottomRight(this AView view, AColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtTopLeftAsync(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtTopLeft(this AView view, AColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtTopRightAsync(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtTopRight(this AView view, AColor expectedColor)
 		{
-			var bitmap = await view.ToBitmapAsync();
+			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 

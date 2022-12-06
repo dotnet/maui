@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<TImageHandler>(image);
 
-				await handler.PlatformView.AttachAndRunAsync(async () =>
+				await handler.PlatformView.AttachAndRun(async () =>
 				{
 					// get the file to load for the first time
 					var firstResult = await service.LoadDrawableAsync(imageSource, handler.PlatformView);
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<TImageHandler>(image);
 
-				await handler.PlatformView.AttachAndRunAsync(async () =>
+				await handler.PlatformView.AttachAndRun(async () =>
 				{
 					var result = await service.LoadDrawableAsync(imageSource, handler.PlatformView);
 

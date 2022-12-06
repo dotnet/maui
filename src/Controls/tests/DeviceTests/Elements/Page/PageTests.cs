@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<PageHandler>(page, async (handler) =>
 			{
-				await handler.PlatformView.AssertContainsColorAsync(color);
+				await handler.PlatformView.AssertContainsColor(color);
 			});
 		}
 
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<PageHandler>(page, async (handler) =>
 			{
-				await handler.PlatformView.AssertContainsColorAsync(color);
+				await handler.PlatformView.AssertContainsColor(color);
 			});
 		}
 
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				page.Background = color;
 
-				await handler.PlatformView.AssertContainsColorAsync(color);
+				await handler.PlatformView.AssertContainsColor(color);
 			});
 		}
 
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				page.BackgroundColor = color;
 
-				await handler.PlatformView.AssertContainsColorAsync(color);
+				await handler.PlatformView.AssertContainsColor(color);
 			});
 		}
 
