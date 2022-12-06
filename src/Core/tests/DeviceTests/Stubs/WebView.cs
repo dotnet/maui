@@ -1,6 +1,15 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+
+#if ANDROID
+using PlatformImage = Android.Graphics.Bitmap;
+#elif IOS || MACCATALYST
+using PlatformImage = UIKit.UIImage;
+#elif WINDOWS
+using PlatformImage = Microsoft.Graphics.Canvas.CanvasBitmap;
+#endif
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -24,5 +33,35 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			=> NavigatingDelegate?.Invoke(evnt, url) ?? false;
 		public void Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result)
 			=> NavigatedDelegate?.Invoke(evnt, url, result);
+
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+		public async Task<PlatformImage> Capture()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+		{
+#if ANDROID
+			var v = Handler!.PlatformView as Android.Webkit.WebView;
+			var bitmap = Android.Graphics.Bitmap.CreateBitmap(v!.Width, v!.Height, Android.Graphics.Bitmap.Config.Argb8888!);
+			var canvas = new Android.Graphics.Canvas(bitmap!);
+			v.Draw(canvas);
+			return bitmap;
+#elif IOS || MACCATALYST
+			var wwv = Handler.PlatformView as MauiWKWebView;
+			UIKit.UIGraphics.BeginImageContextWithOptions(wwv.Bounds.Size, true, 0);
+			wwv.DrawViewHierarchy(wwv.Bounds, afterScreenUpdates: true);
+			var i = UIKit.UIGraphics.GetImageFromCurrentImageContext();
+			UIKit.UIGraphics.EndImageContext();
+			return i;
+#elif WINDOWS
+			var v = Handler!.PlatformView as MauiWebView;
+			using var ms = new MemoryStream();
+			var randomMs = ms.AsRandomAccessStream();
+			await v!.CoreWebView2.CapturePreviewAsync(Web.WebView2.Core.CoreWebView2CapturePreviewImageFormat.Png, randomMs);
+
+			var device = Microsoft.Graphics.Canvas.CanvasDevice.GetSharedDevice();
+			var cb = await Microsoft.Graphics.Canvas.CanvasBitmap.LoadAsync(device, randomMs);
+			return cb;
+#endif
+		}
 	}
 }
