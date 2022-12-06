@@ -394,15 +394,7 @@ namespace Microsoft.Maui.DeviceTests
 						?.Toolbar;
 		}
 
-		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null)
-			where THandler : IElementHandler
-		{
-			return InvokeOnMainThreadAsync(async () =>
-			{
-				var plaformView = (CreateHandler<THandler>(view) as IPlatformViewHandler).PlatformView;
-				action?.Invoke();
-				await plaformView.AssertContainsColor(color);
-			});
-		}
+		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action);
 	}
 }

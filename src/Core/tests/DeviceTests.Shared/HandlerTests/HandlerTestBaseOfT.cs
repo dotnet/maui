@@ -158,15 +158,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(initialNativeVal, newNativeVal);
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(async () =>
-			{
-				var plaformView = (CreateHandler(view) as IPlatformViewHandler).PlatformView;
-				action?.Invoke();
-				await plaformView.AssertContainsColor(color);
-			});
-		}
+		protected Task ValidateHasColor(IView view, Color color, Action action = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action);
 	}
 }
 #endif
