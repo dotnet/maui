@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class VisualStateTestHelpers 
+	public class VisualStateTestHelpers
 	{
 		public const string NormalStateName = "Normal";
 		public const string PressedStateName = "Pressed";
