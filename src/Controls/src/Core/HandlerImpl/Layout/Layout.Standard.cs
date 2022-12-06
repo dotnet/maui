@@ -6,6 +6,16 @@
 
 		public static void MapInputTransparent(ILayoutHandler handler, Layout layout)
 		{
+			if (handler is LayoutHandler h)
+			{
+				MapInputTransparent(h, layout);
+			}
+		}
+
+		static void MapInputTransparent(IViewHandler handler, IView layout)
+		{
+			if (handler is ILayoutHandler lh && layout is Layout l)
+				MapInputTransparent(lh, l);
 		}
 	}
 }
