@@ -23,5 +23,11 @@
 				handler.PlatformView.Sensitive = true;
 			}
 		}
+
+		static void MapInputTransparent(IViewHandler handler, IView layout)
+		{
+			if (handler is ILayoutHandler lh && layout is Layout l)
+				MapInputTransparent(lh, l);
+		}
 	}
 }

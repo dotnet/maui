@@ -9,5 +9,11 @@
 			handler.PlatformView?.UpdateInputTransparent(handler, layout);
 			layout.UpdateDescendantInputTransparent();
 		}
+
+		static void MapInputTransparent(IViewHandler handler, IView layout)
+		{
+			if (handler is ILayoutHandler lh && layout is Layout l)
+				MapInputTransparent(lh, l);
+		}
 	}
 }

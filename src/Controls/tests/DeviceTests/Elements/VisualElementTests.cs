@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Platform;
 using Xunit;
 #if IOS || MACCATALYST
 using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
@@ -13,16 +10,31 @@ using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.Nav
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.VisualElement)]
-#if ANDROID || IOS || MACCATALYST
-	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
-#endif
 	public partial class VisualElementTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		[Fact]
+		public async Task CanCreateHandler()
 		{
-			EnsureHandlerCreated(builder =>
+			var image = new Image();
+			await CreateHandlerAsync<ImageHandler>(image);
+		}
+
+		[Fact]
+		public async Task SettingHandlerDoesNotThrow()
+		{
+			var image = new Image();
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			image.Handler = handler;
+		}
+
+#if ANDROID || IOS || MACCATALYST
+		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+#endif
+		public class NewWindowCollection : ControlsHandlerTestBase
+		{
+			protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder builder)
 			{
-				builder.ConfigureMauiHandlers(handlers =>
+				return builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 
@@ -32,138 +44,116 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<NavigationPage, Controls.Handlers.Compatibility.NavigationRenderer>();
 #endif
 				});
-			});
-		}
+			}
 
-		[Fact]
-		public async Task CanCreateHandler()
-		{
-			var image = new Image();
-
-			await CreateHandlerAsync<ImageHandler>(image);
-		}
-
-		[Fact]
-		public async Task SettingHandlerDoesNotThrow()
-		{
-			var image = new Image();
-
-			var handler = await CreateHandlerAsync<ImageHandler>(image);
-
-			image.Handler = handler;
-		}
-
-		[Fact]
-		public async Task LoadedAndUnloadedFire()
-		{
-			var editor = new Editor();
-
-			int unloaded = 0;
-			int loaded = 0;
-			editor.Loaded += (_, __) => loaded++;
-			editor.Unloaded += (_, __) => unloaded++;
-
-			await CreateHandlerAndAddToWindow<EditorHandler>(editor, (handler) =>
+			[Fact]
+			public async Task LoadedAndUnloadedFire()
 			{
-				Assert.Equal(1, loaded);
-				Assert.Equal(0, unloaded);
-			});
+				var editor = new Editor();
 
-			Assert.Equal(1, loaded);
-			Assert.Equal(1, unloaded);
-		}
+				int unloaded = 0;
+				int loaded = 0;
+				editor.Loaded += (_, __) => loaded++;
+				editor.Unloaded += (_, __) => unloaded++;
 
-		[Fact]
-		public async Task LoadedAndUnloadedFireWhenParentRemoved()
-		{
-			var editor = new Editor();
-			var layout = new VerticalStackLayout()
-			{
-				editor
-			};
-
-			var parentLayout = new VerticalStackLayout()
-			{
-				layout
-			};
-
-			int unloaded = 0;
-			int loaded = 0;
-			editor.Loaded += (_, __) => loaded++;
-			editor.Unloaded += (_, __) => unloaded++;
-
-			await CreateHandlerAndAddToWindow<LayoutHandler>(parentLayout, async (handler) =>
-			{
-				parentLayout.Remove(layout);
-				await OnUnloadedAsync(layout);
-				await OnUnloadedAsync(editor);
+				await CreateHandlerAndAddToWindow<EditorHandler>(editor, (handler) =>
+				{
+					Assert.Equal(1, loaded);
+					Assert.Equal(0, unloaded);
+				});
 
 				Assert.Equal(1, loaded);
 				Assert.Equal(1, unloaded);
+			}
 
-				parentLayout.Add(layout);
-				await OnLoadedAsync(layout);
-				await OnLoadedAsync(editor);
+			[Fact]
+			public async Task LoadedAndUnloadedFireWhenParentRemoved()
+			{
+				var editor = new Editor();
+				var layout = new VerticalStackLayout()
+				{
+					editor
+				};
+
+				var parentLayout = new VerticalStackLayout()
+				{
+					layout
+				};
+
+				int unloaded = 0;
+				int loaded = 0;
+				editor.Loaded += (_, __) => loaded++;
+				editor.Unloaded += (_, __) => unloaded++;
+
+				await CreateHandlerAndAddToWindow<LayoutHandler>(parentLayout, async (handler) =>
+				{
+					parentLayout.Remove(layout);
+					await OnUnloadedAsync(layout);
+					await OnUnloadedAsync(editor);
+
+					Assert.Equal(1, loaded);
+					Assert.Equal(1, unloaded);
+
+					parentLayout.Add(layout);
+					await OnLoadedAsync(layout);
+					await OnLoadedAsync(editor);
+
+					Assert.Equal(2, loaded);
+					Assert.Equal(1, unloaded);
+				});
+
+				await Task.Delay(1000);
 
 				Assert.Equal(2, loaded);
-				Assert.Equal(1, unloaded);
-			});
+				Assert.Equal(2, unloaded);
+			}
 
-			await Task.Delay(1000);
-
-			Assert.Equal(2, loaded);
-			Assert.Equal(2, unloaded);
-		}
-
-		[Fact]
-		public async Task NavigatedToFiresAfterLoaded()
-		{
-			SetupBuilder();
-
-			var navPage = new NavigationPage(new ContentPage());
-			var page = new ContentPage();
-
-			int loaded = 0;
-			bool loadedFired = false;
-
-			page.Loaded += (_, __) => loaded++;
-			page.NavigatedTo += (_, __) => loadedFired = (loaded == 1);
-
-			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+			[Fact]
+			public async Task NavigatedToFiresAfterLoaded()
 			{
-				await navPage.PushAsync(page);
-				Assert.True(loadedFired);
-			});
-		}
+				var navPage = new NavigationPage(new ContentPage());
+				var page = new ContentPage();
 
-		[Fact]
-		public async Task LoadedFiresOnPushedPage()
-		{
-			SetupBuilder();
+				int loaded = 0;
+				bool loadedFired = false;
 
-			var navPage = new NavigationPage(new ContentPage());
-			var page = new ContentPage();
+				page.Loaded += (_, __) => loaded++;
+				page.NavigatedTo += (_, __) => loadedFired = (loaded == 1);
 
-			int unloaded = 0;
-			int loaded = 0;
-			page.Loaded += (_, __) => loaded++;
-			page.Unloaded += (_, __) => unloaded++;
+				await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+				{
+					await navPage.PushAsync(page);
+					Assert.True(loadedFired);
+				});
+			}
 
-			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+			[Fact]
+			public async Task LoadedFiresOnPushedPage()
 			{
-				Assert.Equal(0, loaded);
-				Assert.Equal(0, unloaded);
+				var navPage = new NavigationPage(new ContentPage());
+				var page = new ContentPage();
 
-				await navPage.PushAsync(page);
+				int unloaded = 0;
+				int loaded = 0;
+				page.Loaded += (_, __) => loaded++;
+				page.Unloaded += (_, __) => unloaded++;
 
-				Assert.Equal(1, loaded);
-				Assert.Equal(0, unloaded);
+				await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+				{
+					Assert.Equal(0, loaded);
+					Assert.Equal(0, unloaded);
 
-				await navPage.PopAsync();
+					await navPage.PushAsync(page);
 
-				Assert.Equal(1, loaded);
-				Assert.Equal(1, unloaded);
-			});
+					Assert.Equal(1, loaded);
+					Assert.Equal(0, unloaded);
+
+					await navPage.PopAsync();
+
+					Assert.Equal(1, loaded);
+					Assert.Equal(1, unloaded);
+				});
+			}
 		}
 	}
 }
