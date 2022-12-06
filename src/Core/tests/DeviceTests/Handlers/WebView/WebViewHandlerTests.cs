@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -27,18 +29,16 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() => ValidatePropertyInitValue(webView, () => url, GetNativeSource, url));
 		}
 
-		[Theory]
-		[InlineData("row-video.element")]
-		public async Task WebViewIsHtml5Compatible(params string[] elementIds)
+		[Fact]
+		public async Task WebViewPlaysHtml5Video()
 		{
 			var pageLoadTimeout = TimeSpan.FromSeconds(30);
-			var url = "https://html5test.com/";
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var webView = new WebViewStub { 
-					Width = 500,
-					Height = 500,
+					Width = 300,
+					Height = 200,
 				};
 				var handler = CreateHandler(webView);
 				var platformView = handler.PlatformView;
@@ -48,40 +48,51 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var tcsLoaded = new TaskCompletionSource<bool>();
 					var ctsTimeout = new CancellationTokenSource(pageLoadTimeout);
-					ctsTimeout.Token.Register(() => tcsLoaded.TrySetException(new TimeoutException($"Failed to load {url}")));
+					ctsTimeout.Token.Register(() => tcsLoaded.TrySetException(new TimeoutException($"Failed to load HTML")));
 
 					webView.NavigatedDelegate = (evnt, url, result) =>
 					{
-						if (url.Equals(url, System.StringComparison.OrdinalIgnoreCase))
+						if (result == WebNavigationResult.Success)
 							tcsLoaded.TrySetResult(result == WebNavigationResult.Success);
 					};
 
 					// Load page
-					webView.Source = new UrlWebViewSourceStub() { Url = url };
+					webView.Source = new UrlWebViewSourceStub()
+					{
+						Url = "video.html"
+					};
 					handler.UpdateValue(nameof(IWebView.Source));
-					
+
 					// Ensure it loaded
-					Assert.True(await tcsLoaded.Task, "HTML5Test Page Failed to Load");
+					Assert.True(await tcsLoaded.Task, "HTML Source Failed to Load");
 
-					// Wait for the DOM to settle by polling for a known element to exist
+					// Wait for the color to appear
 					var waited = TimeSpan.Zero;
-					var waitIncrement = TimeSpan.FromSeconds(1);
+					Exception lastException = null;
 
-					while (waited < pageLoadTimeout)
+					var expectColorAfterStartsPlaying = Color.FromRgb(222, 255, 0);
+
+					while (true)
 					{
-						// This is the element we want to wait to see to know 
-						var scoreTxt = await webView.EvaluateJavaScriptAsync($"document.getElementById('score').innerText");
-						if (!string.IsNullOrWhiteSpace(scoreTxt))
+						var waitStep = TimeSpan.FromMilliseconds(2000);
+
+						await Task.Delay(waitStep);
+						waited += waitStep;
+
+						try
+						{
+							var img = await webView.Capture();
+							await img.AssertContainsColor(expectColorAfterStartsPlaying);
 							break;
-						await Task.Delay(waitIncrement);
-						waited += waitIncrement;
-					}
+						}
+						catch (Exception ex)
+						{
+							System.Diagnostics.Debug.WriteLine(ex);
+							lastException = ex;
+						}
 
-					// Assert that all the requested elements exist by id and contain a passing check mark
-					foreach (var elementId in elementIds)
-					{
-						var txt = await webView.EvaluateJavaScriptAsync($"document.getElementById('{elementId}').innerText");
-						Assert.Contains("✔", txt, System.StringComparison.InvariantCultureIgnoreCase);
+						if (waited >= pageLoadTimeout)
+							throw lastException ?? new TimeoutException();
 					}
 				});
 			});
