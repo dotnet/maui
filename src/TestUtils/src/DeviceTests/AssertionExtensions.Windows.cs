@@ -237,7 +237,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (withinRectModifier is not null)
 				imageRect = withinRectModifier.Invoke(imageRect);
 
-			var colors = bitmap.GetPixelColors(imageRect.X, imageRect.Y, imageRect.Width, imageRect.Height);
+			var colors = bitmap.GetPixelColors((int)imageRect.X, (int)imageRect.Y, (int)imageRect.Width, (int)imageRect.Height);
 
 			foreach (var c in colors)
 			{
