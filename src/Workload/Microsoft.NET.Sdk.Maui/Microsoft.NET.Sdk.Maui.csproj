@@ -147,7 +147,7 @@
   <!-- For each dependency item, execute darc get-asset to list out the version info with feeds -->
   <Target Name="_DarcGetAssetNugetFeeds" AfterTargets="Build" Outputs="%(_DarcDependency.Identity)">
 
-    <Exec Command="darc get-asset --name %(_DarcDependency.Identity) --version %(_DarcDependency.Version) --max-age 90 --password $(BAR_TOKEN)"
+    <Exec Command="darc get-asset --name %(_DarcDependency.Identity) --version %(_DarcDependency.Version) --max-age 90 --password $env:BAR_TOKEN"
       ConsoleToMSBuild="True">
       <Output TaskParameter="ConsoleOutput" ItemName="_DarcGetAssetOutput" />
     </Exec>

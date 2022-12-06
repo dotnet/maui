@@ -160,8 +160,13 @@ stages:
                 env:
                   DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                   PRIVATE_BUILD: $(PrivateBuild)
+                  BAR_TOKEN : $(Bar.Token)
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
+                env:
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
+                  BAR_TOKEN : $(Bar.Token)
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Run Unit Tests'
               - task: PublishTestResults@2

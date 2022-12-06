@@ -16,13 +16,14 @@ steps:
     retryCountOnTaskFailure: 3
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-      PRIVATE_BUILD: $(PrivateBuild)
+      PRIVATE_BUILD: $(PrivateBuild) 
   - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
     displayName: 'Pack .NET Maui'
     name: PackMaui
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
+      BAR_TOKEN : $(Bar.Token) 
   - ${{ if eq(parameters.platform, 'Windows') }}:
     - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
       displayName: 'Diff .NET Maui artifacts with NuGet'
