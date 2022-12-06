@@ -29,7 +29,11 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() => ValidatePropertyInitValue(webView, () => url, GetNativeSource, url));
 		}
 
-		[Fact]
+		[Fact("WebBrowser autoplays HTML5 Video"
+#if ANDROID
+			, Skip = "Capturing a screenshot/image of a WebView on Android does not also capture the video canvas contents required for this test."
+#endif
+			)]
 		public async Task WebViewPlaysHtml5Video()
 		{
 			var pageLoadTimeout = TimeSpan.FromSeconds(30);
