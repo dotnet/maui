@@ -132,7 +132,7 @@ steps:
     displayName: 'Install darc'
 
   - pwsh: |
-      darc --password $(Bar.Token) --github-pat $(github-pat) --azdev-pat $(Azdo.Token) --verbose --debug
+      darc authenticate --password $(Bar.Token) --github-pat $(github-pat) --azdev-pat $(Azdo.Token) --verbose --debug
     displayName: 'Setup darc'
 
   - pwsh: ./build.ps1 --target provision
