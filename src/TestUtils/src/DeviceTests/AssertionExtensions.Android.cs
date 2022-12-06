@@ -395,5 +395,12 @@ namespace Microsoft.Maui.DeviceTests
 			OperatingSystem.IsAndroidVersionAtLeast(28)
 				? (FontWeight)typeface.Weight
 				: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
+
+		public static bool IsAccessibilityElement(this AView view) =>
+			view.GetSemanticPlatformElement().IsImportantForAccessibility;
+
+
+		public static bool IsExcludedWithChildren(this AView view) =>
+			view.GetSemanticPlatformElement().ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
 	}
 }
