@@ -16,27 +16,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static IApplication DefaultTestApp { get; private set; }
 
-		public static MauiApp CreateMauiApp()
-		{
-
-#if IOS || MACCATALYST
-
-			// https://github.com/dotnet/maui/issues/11853
-			// I'd like to just have this added to the tests this relates to but 
-			// due to the issue above, I have to do it here for now. 
-			// Once 11853 has been resolved, I'll move this back into the relevant test files.
-			ViewHandler
-				.ViewMapper
-				.ModifyMapping(nameof(IView.Semantics), (handler, view, action) =>
-				{
-					(handler.PlatformView as UIKit.UIView)?.SetupAccessibilityExpectationIfVoiceOverIsOff();
-					action.Invoke(handler, view);
-				});
-#endif
-			return MauiProgramDefaults.CreateMauiApp(new List<Assembly>()
+		public static MauiApp CreateMauiApp() =>
+			MauiProgramDefaults.CreateMauiApp(new List<Assembly>()
 			{
 				typeof(MauiProgram).Assembly
 			});
-		}
 	}
 }

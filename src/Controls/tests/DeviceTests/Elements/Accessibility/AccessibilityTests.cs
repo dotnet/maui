@@ -78,10 +78,17 @@ namespace Microsoft.Maui.DeviceTests
 				foreach (var control in new AllControlsTestCase())
 				{
 					var view = (IView)Activator.CreateInstance((Type)control[0]);
-					if (view is VisualElement ve)
+					if (view is View ve)
 					{
 						ve.WidthRequest = 50;
 						ve.HeightRequest = 50;
+
+						MockAccessibilityExpectations(ve);
+					}
+
+					if (view is IPropertyMapperView pmv)
+					{
+						var viewMapper = pmv.GetPropertyMapperOverrides();
 					}
 
 					layout.Add(view);

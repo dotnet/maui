@@ -146,6 +146,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent as IVisualTreeElement;
 
+		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() =>
+			PropertyMapperOverrides;
+
+		public PropertyMapper PropertyMapperOverrides
+		{
+			get;
+			set;
+		}
 
 		public bool IsLoaded
 		{

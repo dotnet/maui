@@ -160,6 +160,21 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task ValidateHasColor(IView view, Color color, Action action = null) =>
 			ValidateHasColor(view, color, typeof(THandler), action);
+			
+		void MockAccessibilityExpectations(TStub view)
+		{
+#if IOS || MACCATALYST
+			var mapperOverride = new PropertyMapper<TStub, THandler>();
+			view.PropertyMapperOverrides = mapperOverride;
+
+			mapperOverride
+				.ModifyMapping(nameof(IView.Semantics), (handler, view, _) =>
+				{
+					(handler.PlatformView as UIKit.UIView)?.SetupAccessibilityExpectationIfVoiceOverIsOff();
+					mapperOverride.Chained[0]!.UpdateProperty(handler, view, nameof(IView.Semantics));
+				});
+#endif
+		}
 	}
 }
 #endif
