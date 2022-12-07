@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		/// Path to the start page
 		/// </summary>
 		[Category("Behavior")]
-		[Description(@"Path to the start page.")]
+		[Description(@"Path for initial navigation when the application starts.")]
 		public string StartPath { get; set; } = "/";
 
 		// Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8

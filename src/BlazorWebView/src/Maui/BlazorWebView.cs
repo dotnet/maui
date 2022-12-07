@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public string? HostPage { get; set; }
 
 		/// <summary>
-		/// Gets or sets the path to the start page.
+		/// Gets or sets the path for initial navigation when the application starts.
 		/// </summary>
 		public string StartPath { get; set; } = "/";
 

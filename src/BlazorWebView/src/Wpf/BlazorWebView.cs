@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		}
 
 		/// <summary>
-		/// Path to the start page. For example, "/".
+		/// Path for initial navigation when the application starts. For example, "/".
 		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		public string StartPath
