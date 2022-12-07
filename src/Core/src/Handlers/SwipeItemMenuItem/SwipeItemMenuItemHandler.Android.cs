@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override void ConnectHandler(AView platformView)
 		{
-			base.ConnectHandler(platformView);
+			base.ConnectHandler(platformView);	
 			PlatformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 		}
 
@@ -123,6 +123,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				textSize = !string.IsNullOrEmpty(textView.Text) ? (int)textView.TextSize : 0;
 				var icons = textView.GetCompoundDrawables();
+
 				if (icons.Length > 1 && icons[1] != null)
 				{
 					OnSetImageSource(icons[1]);
@@ -130,7 +131,9 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var iconSize = GetIconSize();
-			var buttonPadding = (contentHeight - (iconSize + textSize + 6)) / 2;
+			var density = PlatformView.Context.GetDisplayDensity();
+
+			var buttonPadding = (int)((contentHeight - (iconSize + textSize)) / density);
 			PlatformView.SetPadding(0, buttonPadding, 0, buttonPadding);
 		}
 

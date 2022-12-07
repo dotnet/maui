@@ -46,7 +46,7 @@
                             IconImageSource="books.png"
                             BackgroundColor="Green"/>
                         <SwipeItem
-                            Text="Edit"
+                            Text="Test (Ajg)"
                             IconImageSource="calculator.png"
                             BackgroundColor="Orange"/>
                         <SwipeItem
@@ -80,7 +80,7 @@
                             IconImageSource="books.png"
                             BackgroundColor="Green"/>
                         <SwipeItem
-                            Text="Edit"
+                            Text="Test (Ajg)"
                             IconImageSource="calculator.png"
                             BackgroundColor="Orange"/>
                         <SwipeItem
