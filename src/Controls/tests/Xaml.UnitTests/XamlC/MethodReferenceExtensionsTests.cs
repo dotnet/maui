@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		public void ResolveRowDefAdder()
 		{
 			var propertyType = module.ImportReference(typeof(RowDefinitionCollection));
-			var adderT = propertyType.GetMethods((md, tr) => md.Name == "Add", module).Single();
+			var adderT = propertyType.GetMethods(new XamlCache(), (md, tr) => md.Name == "Add", module).Single();
 			var adder = adderT.Item1;
 			var ptype = adderT.Item2;
 			Assert.AreEqual("System.Void Microsoft.Maui.Controls.DefinitionCollection`1::Add(T)", adder.FullName);
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		{
 			TypeReference declaringTypeReference;
 			var type = module.ImportReference(typeof(Compatibility.StackLayout));
-			var property = type.GetProperty(pd => pd.Name == "Children", out declaringTypeReference);
+			var property = type.GetProperty(new XamlCache(), pd => pd.Name == "Children", out declaringTypeReference);
 			Assert.AreEqual("System.Collections.Generic.IList`1<T> Microsoft.Maui.Controls.Compatibility.Layout`1::Children()", property.FullName);
 			Assert.AreEqual("Microsoft.Maui.Controls.Compatibility.Layout`1<Microsoft.Maui.Controls.View>", declaringTypeReference.FullName);
 			var propertyGetter = property.GetMethod;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		{
 			TypeReference declaringTypeReference;
 			var type = module.ImportReference(typeof(Style));
-			var property = type.GetProperty(pd => pd.Name == "Setters", out declaringTypeReference);
+			var property = type.GetProperty(new XamlCache(), pd => pd.Name == "Setters", out declaringTypeReference);
 			Assert.AreEqual("System.Collections.Generic.IList`1<Microsoft.Maui.Controls.Setter> Microsoft.Maui.Controls.Style::Setters()", property.FullName);
 			Assert.AreEqual("Microsoft.Maui.Controls.Style", declaringTypeReference.FullName);
 			var propertyGetter = property.GetMethod;
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		public void ResolveChildren()
 		{
 			var propertyType = module.ImportReference(typeof(IList<View>));
-			var adderT = propertyType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, module).Single();
+			var adderT = propertyType.GetMethods(new XamlCache(), md => md.Name == "Add" && md.Parameters.Count == 1, module).Single();
 			var adder = adderT.Item1;
 			var ptype = adderT.Item2;
 			Assert.AreEqual("System.Void System.Collections.Generic.ICollection`1::Add(T)", adder.FullName);

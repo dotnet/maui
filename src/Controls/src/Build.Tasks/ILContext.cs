@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	class ILContext
 	{
-		public ILContext(ILProcessor il, MethodBody body, ModuleDefinition module, FieldDefinition parentContextValues = null)
+		public ILContext(ILProcessor il, MethodBody body, ModuleDefinition module, XamlCache cache, FieldDefinition parentContextValues = null)
 		{
 			IL = il;
 			Body = body;
@@ -19,7 +19,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			TypeExtensions = new Dictionary<INode, TypeReference>();
 			ParentContextValues = parentContextValues;
 			Module = module;
+			Cache = cache;
 		}
+
+		public XamlCache Cache { get; private set; }
 
 		public Dictionary<IValueNode, object> Values { get; private set; }
 

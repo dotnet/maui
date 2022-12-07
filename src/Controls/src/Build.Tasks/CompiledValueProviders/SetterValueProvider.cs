@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				valueNode = ((IElementNode)node).CollectionItems[0];
 
 			var bpNode = ((ValueNode)((IElementNode)node).Properties[new XmlName("", "Property")]);
-			var bpRef = (new BindablePropertyConverter()).GetBindablePropertyFieldReference((string)bpNode.Value, module, bpNode);
+			var bpRef = (new BindablePropertyConverter()).GetBindablePropertyFieldReference((string)bpNode.Value, context, module, bpNode);
 
 			if (SetterValueIsCollection(bpRef, module, node, context))
 				yield break;
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			var setterType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Setter");
 
 			//push the setter
-			foreach (var instruction in vardefref.VariableDefinition.LoadAs(module.GetTypeDefinition(setterType), module))
+			foreach (var instruction in vardefref.VariableDefinition.LoadAs(context.Cache, module.GetTypeDefinition(context.Cache, setterType), module))
 				yield return instruction;
 
 			//push the value
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				yield return instruction;
 
 			//set the value
-			yield return Instruction.Create(OpCodes.Callvirt, module.ImportPropertySetterReference(setterType, propertyName: "Value"));
+			yield return Instruction.Create(OpCodes.Callvirt, module.ImportPropertySetterReference(context.Cache, setterType, propertyName: "Value"));
 		}
 
 		static bool SetterValueIsCollection(FieldReference bindablePropertyReference, ModuleDefinition module, BaseNode node, ILContext context)
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				return false;
 
 			// Is this a generic type ?
-			var generic = bindablePropertyReference.GetBindablePropertyType(node, module) as GenericInstanceType;
+			var generic = bindablePropertyReference.GetBindablePropertyType(context.Cache, node, module) as GenericInstanceType;
 
 			// With a single generic argument?
 			if (generic?.GenericArguments.Count != 1)
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (!(items[0] is IElementNode firstItem))
 				return false;
 
-			return context.Variables[firstItem].VariableType.InheritsFromOrImplements(genericType);
+			return context.Variables[firstItem].VariableType.InheritsFromOrImplements(context.Cache, genericType);
 		}
 	}
 }

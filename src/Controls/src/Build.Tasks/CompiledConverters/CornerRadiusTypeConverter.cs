@@ -22,25 +22,25 @@ namespace Microsoft.Maui.Controls.XamlC
 				{
 					case 1:
 						if (double.TryParse(cornerradius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out l))
-							return GenerateIL(module, l);
+							return GenerateIL(context, module, l);
 						break;
 					case 4:
 						if (double.TryParse(cornerradius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out tl)
 							&& double.TryParse(cornerradius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out tr)
 							&& double.TryParse(cornerradius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out bl)
 							&& double.TryParse(cornerradius[3], NumberStyles.Number, CultureInfo.InvariantCulture, out br))
-							return GenerateIL(module, tl, tr, bl, br);
+							return GenerateIL(context, module, tl, tr, bl, br);
 						break;
 				}
 			}
 			throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(CornerRadius));
 		}
 
-		IEnumerable<Instruction> GenerateIL(ModuleDefinition module, params double[] args)
+		IEnumerable<Instruction> GenerateIL(ILContext context, ModuleDefinition module, params double[] args)
 		{
 			foreach (var d in args)
 				yield return Instruction.Create(OpCodes.Ldc_R8, d);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui", "CornerRadius"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui", "Microsoft.Maui", "CornerRadius"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
 		}
 	}
 

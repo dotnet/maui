@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Compatibility.Constraint));
 
 			yield return Create(Ldc_R8, size);
-			yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Compatibility", "Constraint"),
+			yield return Create(Call, module.ImportMethodReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Compatibility", "Constraint"),
 																   methodName: "Constant",
 																   parameterTypes: new[] { ("mscorlib", "System", "Double") },
 																   isStatic: true));

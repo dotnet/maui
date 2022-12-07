@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var typename = member.Substring(0, dotIdx);
 			var membername = member.Substring(dotIdx + 1);
 
-			var typeRef = module.ImportReference(XmlTypeExtensions.GetTypeReference(typename, module, node as BaseNode));
-			var fieldRef = GetFieldReference(typeRef, membername, module);
-			var propertyDef = GetPropertyDefinition(typeRef, membername, module);
+			var typeRef = module.ImportReference(XmlTypeExtensions.GetTypeReference(context.Cache, typename, module, node as BaseNode));
+			var fieldRef = GetFieldReference(context.Cache, typeRef, membername, module);
+			var propertyDef = GetPropertyDefinition(context.Cache, typeRef, membername, module);
 
 			if (fieldRef == null && propertyDef == null)
 				throw new BuildException(BuildExceptionCode.XStaticResolution, node as IXmlLineInfo, null, membername, typename);
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					return new[] { Instruction.Create(OpCodes.Ldc_I8, (ulong)fieldDef.Constant) };
 
 				//enum values
-				if (memberRef.ResolveCached().IsEnum)
+				if (memberRef.ResolveCached(context.Cache).IsEnum)
 				{
 					if (fieldDef.Constant is long)
 						return new[] { Instruction.Create(OpCodes.Ldc_I8, (long)fieldDef.Constant) };
@@ -79,9 +79,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return new[] { Instruction.Create(OpCodes.Call, getterDef) };
 		}
 
-		public static FieldReference GetFieldReference(TypeReference typeRef, string fieldName, ModuleDefinition module)
+		public static FieldReference GetFieldReference(XamlCache cache, TypeReference typeRef, string fieldName, ModuleDefinition module)
 		{
-			FieldReference fRef = typeRef.GetField(fd => fd.Name == fieldName
+			FieldReference fRef = typeRef.GetField(cache, fd => fd.Name == fieldName
 														&& fd.IsStatic
 														&& IsPublicOrVisibleInternal(fd, module), out TypeReference declaringTypeReference);
 			if (fRef != null)
@@ -109,9 +109,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return false;
 		}
 
-		public static PropertyDefinition GetPropertyDefinition(TypeReference typeRef, string propertyName, ModuleDefinition module)
+		public static PropertyDefinition GetPropertyDefinition(XamlCache cache, TypeReference typeRef, string propertyName, ModuleDefinition module)
 		{
-			PropertyDefinition pDef = typeRef.GetProperty(pd => pd.Name == propertyName
+			PropertyDefinition pDef = typeRef.GetProperty(cache, pd => pd.Name == propertyName
 																&& IsPublicOrVisibleInternal(pd.GetMethod, module)
 																&& pd.GetMethod.IsStatic, out TypeReference declaringTypeReference);
 			return pDef;

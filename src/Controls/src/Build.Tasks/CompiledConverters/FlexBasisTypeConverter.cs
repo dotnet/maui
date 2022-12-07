@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				if (value == "Auto")
 				{
 					yield return Instruction.Create(OpCodes.Ldsfld,
-						module.ImportFieldReference(("Microsoft.Maui", "Microsoft.Maui.Layouts", "FlexBasis"),
+						module.ImportFieldReference(context.Cache, ("Microsoft.Maui", "Microsoft.Maui.Layouts", "FlexBasis"),
 							"Auto",
 							isStatic: true));
 					yield break;
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				{
 					yield return Instruction.Create(OpCodes.Ldc_R4, (float)(relflex / 100));
 					yield return Instruction.Create(OpCodes.Ldc_I4_1); //isRelative: true
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui.Layouts", "FlexBasis"), parameterTypes: new[] {
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui", "Microsoft.Maui.Layouts", "FlexBasis"), parameterTypes: new[] {
 						("mscorlib", "System", "Single"),
 						("mscorlib", "System", "Boolean")}));
 					yield break;
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				{
 					yield return Instruction.Create(OpCodes.Ldc_R4, flex);
 					yield return Instruction.Create(OpCodes.Ldc_I4_0); //isRelative: false
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui.Layouts", "FlexBasis"), parameterTypes: new[] {
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui", "Microsoft.Maui.Layouts", "FlexBasis"), parameterTypes: new[] {
 						("mscorlib", "System", "Single"),
 						("mscorlib", "System", "Boolean")}));
 					yield break;

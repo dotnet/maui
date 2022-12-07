@@ -28,12 +28,12 @@ namespace Microsoft.Maui.Controls.XamlC
 			else
 				xmlType = new XmlType(node.NamespaceResolver.LookupNamespace(""), split[0], null);
 
-			var typeRef = xmlType.GetTypeReference(module, (IXmlLineInfo)node);
+			var typeRef = xmlType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (typeRef == null)
 				goto error;
 
 			yield return Create(Ldtoken, module.ImportReference(typeRef));
-			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"),
+			yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"),
 																   methodName: "GetTypeFromHandle",
 																   parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") },
 																   isStatic: true));

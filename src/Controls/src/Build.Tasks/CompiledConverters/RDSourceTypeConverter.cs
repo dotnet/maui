@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.XamlC
 
 			var rdNode = node.Parent as IElementNode;
 
-			var rootTargetPath = XamlCTask.GetPathForType(currentModule, ((ILRootNode)rootNode).TypeReference);
+			var rootTargetPath = XamlCTask.GetPathForType(context.Cache, currentModule, ((ILRootNode)rootNode).TypeReference);
 
 			var module = currentModule;
 			string asmName = null;
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 
 			//fail early
-			var resourceId = XamlCTask.GetResourceIdForPath(module, resourcePath);
+			var resourceId = XamlCTask.GetResourceIdForPath(context.Cache, module, resourcePath);
 			if (resourceId == null)
 				throw new BuildException(BuildExceptionCode.ResourceMissing, node, null, value);
 
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.XamlC
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
-			foreach (var instruction in context.Variables[rdNode].LoadAs(currentModule.GetTypeDefinition(resourceDictionaryType), currentModule))
+			foreach (var instruction in context.Variables[rdNode].LoadAs(context.Cache, currentModule.GetTypeDefinition(context.Cache, resourceDictionaryType), currentModule))
 				yield return instruction;
 			//reappend assembly= in all cases, see other RD converter
 			if (!string.IsNullOrEmpty(asmName))
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.XamlC
 
 			//keep the Uri for later
 			yield return Create(Dup);
-			var uriVarDef = new VariableDefinition(currentModule.ImportReference(("System", "System", "Uri")));
+			var uriVarDef = new VariableDefinition(currentModule.ImportReference(context.Cache, ("System", "System", "Uri")));
 			body.Variables.Add(uriVarDef);
 			yield return Create(Stloc, uriVarDef);
 			yield return Create(Ldstr, resourcePath); //resourcePath
@@ -73,28 +73,29 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (!string.IsNullOrEmpty(asmName))
 			{
 				yield return Create(Ldstr, asmName);
-				yield return Create(Call, currentModule.ImportMethodReference(("mscorlib", "System.Reflection", "Assembly"), methodName: "Load", parameterTypes: new[] { ("mscorlib", "System", "String") }, isStatic: true));
+				yield return Create(Call, currentModule.ImportMethodReference(context.Cache, ("mscorlib", "System.Reflection", "Assembly"), methodName: "Load", parameterTypes: new[] { ("mscorlib", "System", "String") }, isStatic: true));
 			}
 			else //we could use assembly.Load in the 'else' part too, but I don't want to change working code right now
 			{
 				yield return Create(Ldtoken, currentModule.ImportReference(((ILRootNode)rootNode).TypeReference));
-				yield return Create(Call, currentModule.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-				yield return Create(Callvirt, currentModule.ImportPropertyGetterReference(("mscorlib", "System", "Type"), propertyName: "Assembly", flatten: true));
+				yield return Create(Call, currentModule.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+				yield return Create(Callvirt, currentModule.ImportPropertyGetterReference(context.Cache, ("mscorlib", "System", "Type"), propertyName: "Assembly", flatten: true));
 			}
 			foreach (var instruction in node.PushXmlLineInfo(context))
 				yield return instruction; //lineinfo
-			yield return Create(Callvirt, currentModule.ImportMethodReference(resourceDictionaryType,
+			yield return Create(Callvirt, currentModule.ImportMethodReference(context.Cache,
+																	   resourceDictionaryType,
 																	   methodName: "SetAndLoadSource",
 																	   parameterTypes: new[] { ("System", "System", "Uri"), ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
 			//ldloc the stored uri as return value
 			yield return Create(Ldloc, uriVarDef);
 		}
 
-		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
+		internal static string GetPathForType(ILContext context, ModuleDefinition module, TypeReference type)
 		{
 			foreach (var ca in type.Module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;

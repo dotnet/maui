@@ -22,13 +22,14 @@ class BrushTypeConverter : ICompiledTypeConverter
 				foreach (var instruction in colorConverter.ConvertFromString(value, context, node))
 					yield return instruction;
 
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SolidColorBrush"), parameterTypes: new[] {
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "SolidColorBrush"), parameterTypes: new[] {
 						("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Color")}));
 
 				yield break;
 			}
 
-			var propertyGetterReference = module.ImportPropertyGetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Brush"),
+			var propertyGetterReference = module.ImportPropertyGetterReference(context.Cache,
+																				("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Brush"),
 																				value,
 																				isStatic: true,
 																				caseSensitive: false);
