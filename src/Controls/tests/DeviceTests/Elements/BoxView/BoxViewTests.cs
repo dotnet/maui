@@ -1,13 +1,15 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
+
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.BoxView)]
-	public partial class BoxViewHandlerTests : CoreHandlerTestBase<ShapeViewHandler, BoxViewStub>
+	public partial class BoxViewTests : ControlsHandlerTestBase
 	{
 		[Theory(DisplayName = "BoxView Initializes Correctly")]
 		[InlineData(0xFFFF0000)]
@@ -17,14 +19,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var expected = Color.FromUint(color);
 
-			var boxView = new BoxViewStub()
+			var boxView = new BoxView()
 			{
 				Color = expected,
-				Height = 100,
-				Width = 200
+				HeightRequest = 100,
+				WidthRequest = 200
 			};
 
-			await ValidateHasColor(boxView, expected);
+			await ValidateHasColor(boxView, expected, typeof(ShapeViewHandler));
 		}
 	}
 }
