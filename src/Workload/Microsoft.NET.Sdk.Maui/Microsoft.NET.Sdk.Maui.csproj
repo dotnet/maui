@@ -145,7 +145,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
-    <DarcCommand>darc get-asset --name %(_DarcDependency.Identity) --version %(_DarcDependency.Version) --max-age 90 --password $env:BAR_PAT</DarcCommand>
+    <DarcCommand>darc get-asset --name %(_DarcDependency.Identity) --version %(_DarcDependency.Version) --max-age 90 --password $(BAR_PAT)</DarcCommand>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
     <DarcCommand>darc get-asset --name %(_DarcDependency.Identity) --version %(_DarcDependency.Version) --max-age 90 --password $BAR_PAT</DarcCommand>
