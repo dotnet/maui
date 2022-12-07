@@ -1,12 +1,18 @@
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MapLaunchOptions']/Docs/*" />
+	/// <summary>
+	/// Launch options for opening the installed map application.
+	/// </summary>
 	public class MapLaunchOptions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="//Member[@MemberName='NavigationMode']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the navigation mode to use in the map application.
+		/// </summary>
 		public NavigationMode NavigationMode { get; set; } = NavigationMode.None;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MapLaunchOptions.xml" path="//Member[@MemberName='Name']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the name of destination to display to user.
+		/// </summary>
 		public string Name { get; set; } = string.Empty;
 	}
 }
