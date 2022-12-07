@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			AngularVelocity.Equals(other.AngularVelocity);
 
 		/// <summary>
-		///	Equality operator for equals.
+		/// Equality operator for equals.
 		/// </summary>
 		/// <param name="left">Left to compare.</param>
 		/// <param name="right">Right to compare.</param>
