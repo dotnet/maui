@@ -17,8 +17,8 @@
             </Frame>
 
             <Label Text="{Binding ErrorMessage}" FontAttributes="Bold" />
+            <Image Source="{Binding ErrorImage}"></Image>
             <Label Text="{Binding ErrorStackTrace}"/>
-
         </StackLayout>
     </ScrollView>
 

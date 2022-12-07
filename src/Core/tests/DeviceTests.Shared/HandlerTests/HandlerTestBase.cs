@@ -139,6 +139,9 @@ namespace Microsoft.Maui.DeviceTests
 #if PLATFORM
 		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType)
 		{
+			if (view.Handler is IPlatformViewHandler t)
+				return t;
+
 			var handler = (IPlatformViewHandler)Activator.CreateInstance(handlerType);
 			InitializeViewHandler(view, handler, MauiContext);
 			return handler;
