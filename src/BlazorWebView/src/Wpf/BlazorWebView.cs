@@ -33,6 +33,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			typeMetadata: new PropertyMetadata(OnHostPagePropertyChanged));
 
 		/// <summary>
+		/// The backing store for the <see cref="StartPath"/> property.
+		/// </summary>
+		public static readonly DependencyProperty StartPathProperty = DependencyProperty.Register(
+			name: nameof(StartPath),
+			propertyType: typeof(string),
+			ownerType: typeof(BlazorWebView));
+
+		/// <summary>
 		/// The backing store for the <see cref="RootComponent"/> property.
 		/// </summary>
 		public static readonly DependencyProperty RootComponentsProperty = DependencyProperty.Register(
@@ -106,6 +114,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), WebViewTemplateChildName)
 			};
 
+			StartPath = "/";
+
 			ApplyTabNavigation(IsTabStop);
 		}
 
@@ -127,6 +137,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		{
 			get => (string)GetValue(HostPageProperty);
 			set => SetValue(HostPageProperty, value);
+		}
+
+		/// <summary>
+		/// Path to the start page. For example, "/".
+		/// This property must be set to a valid value for the Razor components to start.
+		/// </summary>
+		public string StartPath
+		{
+			get => (string)GetValue(StartPathProperty);
+			set => SetValue(StartPathProperty, value);
 		}
 
 		/// <summary>
@@ -267,7 +287,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
-			_webviewManager.Navigate("/");
+			_webviewManager.Navigate(StartPath);
 		}
 
 		private WpfDispatcher ComponentsDispatcher { get; }

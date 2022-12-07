@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 				}
 			}
-			_webviewManager.Navigate("/");
+			_webviewManager.Navigate(VirtualView.StartPath);
 		}
 
 		internal IFileProvider CreateFileProvider(string contentRootDir)

@@ -16,6 +16,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		string? HostPage { get; }
 
 		/// <summary>
+		/// Gets or sets the path to the start page.
+		/// </summary>
+		public string StartPath { get; set; }
+
+		/// <summary>
 		/// Gets a collection of <see cref="RootComponent"/> items.
 		/// </summary>
 		RootComponentsCollection RootComponents { get; }

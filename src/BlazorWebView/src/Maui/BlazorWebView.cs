@@ -22,13 +22,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			RootComponents = new RootComponentsCollection(_jSComponents);
 		}
 
-		JSComponentConfigurationStore IBlazorWebView.JSComponents => _jSComponents;
+		JSComponentConfigurationStore IBlazorWebView.JSComponents => _jSComponents; 
 
 		/// <summary>
 		/// Gets or sets the path to the HTML file to render.
 		/// <para>This is an app relative path to the file such as <c>wwwroot\index.html</c></para>
 		/// </summary>
 		public string? HostPage { get; set; }
+
+		/// <summary>
+		/// Gets or sets the path to the start page.
+		/// </summary>
+		public string StartPath { get; set; } = "/";
 
 		/// <inheritdoc />
 		public RootComponentsCollection RootComponents { get; }
