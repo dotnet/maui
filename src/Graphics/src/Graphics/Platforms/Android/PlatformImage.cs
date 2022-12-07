@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
 		{
-			using (var context = new PlatformBitmapExportContext((int)width, (int)height))
+			using (var context = new PlatformBitmapExportContext(width: (int)width, height: (int)height, disposeBitmap: disposeOriginal))
 			{
 				var fx = width / Width;
 				var fy = height / Height;

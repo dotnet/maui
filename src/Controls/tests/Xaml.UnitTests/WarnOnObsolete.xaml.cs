@@ -1,10 +1,8 @@
 using System;
-
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.Controls;
-
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests

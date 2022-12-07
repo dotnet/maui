@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Devices
 		DeviceType currentType = DeviceType.Unknown;
 		string systemProductName;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DeviceInfoImplementation"/> class.
+		/// </summary>
 		public DeviceInfoImplementation()
 		{
 			deviceInfo = new EasClientDeviceInformation();
