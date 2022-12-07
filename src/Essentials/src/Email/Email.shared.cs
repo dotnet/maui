@@ -165,8 +165,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		public string? Body { get; set; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the message is in plain text or HTML (not supported on Windows).
+		/// Gets or sets a value indicating whether the message is in plain text or HTML.
 		/// </summary>
+		/// <remarks><see cref="EmailBodyFormat.Html"/> is not supported on Windows.</remarks>
 		public EmailBodyFormat BodyFormat { get; set; }
 
 		/// <summary>
