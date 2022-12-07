@@ -6,9 +6,16 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Layout
 	{
-		public static void MapInputTransparent(LayoutHandler handler, Layout layout) => MapInputTransparent((ILayoutHandler)handler, layout);
+		public static void MapInputTransparent(LayoutHandler handler, Layout layout) =>
+			UpdateInputTransparent(handler, layout);
 
-		public static void MapInputTransparent(ILayoutHandler handler, Layout layout)
+		public static void MapInputTransparent(ILayoutHandler handler, Layout layout) =>
+			UpdateInputTransparent(handler, layout);
+
+		static void MapInputTransparent(IViewHandler handler, IView layout) =>
+			UpdateInputTransparent(handler, layout);
+
+		static void UpdateInputTransparent(IViewHandler handler, IView layout)
 		{
 			if (handler.PlatformView is LayoutViewGroup layoutViewGroup)
 			{
@@ -16,13 +23,10 @@ namespace Microsoft.Maui.Controls
 				layoutViewGroup.InputTransparent = layout.InputTransparent;
 			}
 
-			layout.UpdateDescendantInputTransparent();
-		}
-
-		static void MapInputTransparent(IViewHandler handler, IView layout)
-		{
-			if (handler is ILayoutHandler lh && layout is Layout l)
-				MapInputTransparent(lh, l);
+			if (layout is Layout l)
+			{
+				l.UpdateDescendantInputTransparent();
+			}
 		}
 	}
 }
