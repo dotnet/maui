@@ -5,7 +5,8 @@ namespace Microsoft.Maui.Platform;
 
 internal static class KeyboardAutoManager
 {
-	internal static void GoToNextResponderOrResign(UIView view)
+	// you can provide a topView argument or it will use the most top Superview
+	internal static void GoToNextResponderOrResign(UIView view, UIView? topView = null)
 	{
 		if (!view.CheckIfEligible())
 		{
@@ -13,7 +14,7 @@ internal static class KeyboardAutoManager
 			return;
 		}
 
-		var textFields = GetDeepResponderViews(view.Superview);
+		var textFields = GetDeepResponderViews(topView ?? view.FindTopView());
 
 		// get the index of the current textField and go to the next one
 		var currentIndex = textFields.FindIndex(v => v == view);
@@ -35,6 +36,19 @@ internal static class KeyboardAutoManager
 		return false;
 	}
 
+	static UIView FindTopView (this UIView view)
+	{
+		var curView = view;
+
+		while (curView.Superview is not null)
+		{
+			curView = curView.Superview;
+		}
+
+		return curView;
+	}
+
+	// Find all of the eligible UITextFields and UITextViews inside this view
 	internal static List<UIView> GetDeepResponderViews(UIView view)
 	{
 		var textItems = view.GetResponderViews();
