@@ -2,12 +2,23 @@
 {
 	public partial class Layout
 	{
-		public static void MapInputTransparent(LayoutHandler handler, Layout layout) => MapInputTransparent((ILayoutHandler)handler, layout);
+		public static void MapInputTransparent(LayoutHandler handler, Layout layout) =>
+			UpdateInputTransparent(handler, layout);
 
-		public static void MapInputTransparent(ILayoutHandler handler, Layout layout)
+		public static void MapInputTransparent(ILayoutHandler handler, Layout layout) =>
+			UpdateInputTransparent(handler, layout);
+
+		static void MapInputTransparent(IViewHandler handler, IView layout) =>
+			UpdateInputTransparent(handler, layout);
+
+		static void UpdateInputTransparent(IViewHandler viewHandler, IView view)
 		{
-			if (handler.PlatformView == null)
+			if (viewHandler is not IPlatformViewHandler handler ||
+				handler.PlatformView == null || 
+				view is not Layout layout)
+			{
 				return;
+			}
 
 			if (layout.CascadeInputTransparent)
 			{
@@ -22,12 +33,6 @@
 				handler.PlatformView.InputTransparent = layout.InputTransparent;
 				handler.PlatformView.Sensitive = true;
 			}
-		}
-
-		static void MapInputTransparent(IViewHandler handler, IView layout)
-		{
-			if (handler is ILayoutHandler lh && layout is Layout l)
-				MapInputTransparent(lh, l);
 		}
 	}
 }
