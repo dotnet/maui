@@ -93,7 +93,8 @@ namespace Microsoft.Maui.Platform
 			platformButton.UpdateBackground(brush);
 		}
 
-		public static void UpdateBackground(this Button platformButton, Paint? background)
+		// TODO: Make public for .NET 8
+		internal static void UpdateBackground(this Button platformButton, Paint? background)
 		{
 			var brush = background?.ToPlatform();
 
