@@ -20,9 +20,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>b4761791493d996f98c12ab47081491e59e0e542</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="16.1.1488">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="16.1.1490">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b4761791493d996f98c12ab47081491e59e0e542</Sha>
+      <Sha>4c791582d094518867b402a0cb1d29775592c40c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.tvOS.Sdk" Version="16.1.1488">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
