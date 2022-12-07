@@ -39,7 +39,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			email.ComposeAsync(null);
 
 		/// <summary>
-		/// Opens the default email client to allow the user to send the message with the provided subject, body and recipients.
+		/// Opens the default email client to allow the user to send the message with the provided subject, body, and recipients.
 		/// </summary>
 		/// <param name="email">The object this method is invoked on.</param>
 		/// <param name="subject">The email subject.</param>
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			Default.ComposeAsync();
 
 		/// <summary>
-		/// Opens the default email client to allow the user to send the message with the provided subject, body and recipients.
+		/// Opens the default email client to allow the user to send the message with the provided subject, body, and recipients.
 		/// </summary>
 		/// <param name="subject">The email subject.</param>
 		/// <param name="body">The email body.</param>
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="EmailMessage"/> class with the specified subject, body and recipients.
+		/// Initializes a new instance of the <see cref="EmailMessage"/> class with the specified subject, body, and recipients.
 		/// </summary>
 		/// <param name="subject">The email subject.</param>
 		/// <param name="body">The email body.</param>
