@@ -367,8 +367,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			// Wait for the layout to propagate to the platform
 			await AssertionExtensions.Wait(
-				() => !frameworkElement.GetBoundingBox().Size.Equals(Size.Zero)
-			);
+				() =>
+				{
+					var boundingBox = frameworkElement.GetBoundingBox();
+					if (boundingBox.Height > 0 && boundingBox.Width > 0)
+						return true;
+
+					return false;
+				});
 
 			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
 			{

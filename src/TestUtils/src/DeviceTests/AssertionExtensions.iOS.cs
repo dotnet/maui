@@ -91,12 +91,19 @@ namespace Microsoft.Maui.DeviceTests
 			// Give the UI time to refresh
 			await Task.Delay(100);
 
-			var result = await action();
+			T result;
 
-			view.RemoveFromSuperview();
+			try
+			{
+				result = await action();
+			}
+			finally
+			{
+				view.RemoveFromSuperview();
 
-			// Give the UI time to refresh
-			await Task.Delay(100);
+				// Give the UI time to refresh
+				await Task.Delay(100);
+			}
 
 			return result;
 		}

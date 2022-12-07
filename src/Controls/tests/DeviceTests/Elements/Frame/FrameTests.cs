@@ -98,6 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 						(layout as IView).Arrange(new Graphics.Rect(0, 0, size.Width, size.Height));
 
 						await OnFrameSetToNotEmpty(layout);
+						await OnFrameSetToNotEmpty(frame);
 
 						// verify that the PlatformView was measured
 						var frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
