@@ -1,6 +1,7 @@
 ﻿using System;
 using CoreAnimation;
 using CoreGraphics;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 
@@ -125,7 +126,11 @@ namespace Microsoft.Maui.Platform
 
 			var frame = Frame;
 			var strokeThickness = (float)(Clip?.StrokeThickness ?? 0);
-			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * 2), (float)frame.Height - (strokeThickness * 2));
+
+			var displayInfo = DeviceDisplay.MainDisplayInfo;
+			var displayDensity = (float)displayInfo.Density;
+
+			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * displayDensity), (float)frame.Height - (strokeThickness * displayDensity));
 
 			IShape? clipShape = Clip?.Shape;
 			var path = clipShape?.PathForBounds(bounds);
