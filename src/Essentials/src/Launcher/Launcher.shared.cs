@@ -20,7 +20,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Queries if the device supports opening the given URI scheme.
 		/// </summary>
 		/// <param name="uri">URI scheme to query.</param>
-		/// <returns><see langword="true"/> if opening is supported, otherwise false.</returns>
+		/// <returns><see langword="true"/> if opening is supported, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		Task<bool> CanOpenAsync(Uri uri);
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Opens the app specified by the URI scheme.
 		/// </summary>
 		/// <param name="uri">URI to open.</param>
-		/// <returns><see langword="true"/> if the URI was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		Task<bool> OpenAsync(Uri uri);
 
@@ -36,14 +36,14 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Requests to open a file in an application based on content type.
 		/// </summary>
 		/// <param name="request">Request that contains information on the file to open.</param>
-		/// <returns><see langword="true"/> if the file was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the file was opened, otherwise <see langword="false"/>.</returns>
 		Task<bool> OpenAsync(OpenFileRequest request);
 
 		/// <summary>
 		/// First checks if the provided URI is supported, then opens the app specified by the URI.
 		/// </summary>
 		/// <param name="uri">URI to try and open.</param>
-		/// <returns><see langword="true"/> if the URI was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		Task<bool> TryOpenAsync(Uri uri);
 	}
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Queries if the device supports opening the given URI scheme.
 		/// </summary>
 		/// <param name="uri">URI scheme to query.</param>
-		/// <returns><see langword="true"/> if opening is supported, otherwise false.</returns>
+		/// <returns><see langword="true"/> if opening is supported, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		public static Task<bool> CanOpenAsync(string uri)
 			=> Current.CanOpenAsync(uri);
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Queries if the device supports opening the given URI scheme.
 		/// </summary>
 		/// <param name="uri">URI scheme to query.</param>
-		/// <returns><see langword="true"/> if opening is supported, otherwise false.</returns>
+		/// <returns><see langword="true"/> if opening is supported, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		public static Task<bool> CanOpenAsync(Uri uri)
 			=> Current.CanOpenAsync(uri);
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Opens the app specified by the URI scheme.
 		/// </summary>
 		/// <param name="uri">URI to open.</param>
-		/// <returns><see langword="true"/> if the URI was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		public static Task<bool> OpenAsync(string uri)
 			=> Current.OpenAsync(uri);
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Opens the app specified by the URI scheme.
 		/// </summary>
 		/// <param name="uri">URI to open.</param>
-		/// <returns><see langword="true"/> if the URI was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		public static Task<bool> OpenAsync(Uri uri)
 			=> Current.OpenAsync(uri);
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Requests to open a file in an application based on content type.
 		/// </summary>
 		/// <param name="request">Request that contains information on the file to open.</param>
-		/// <returns><see langword="true"/> if the file was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the file was opened, otherwise <see langword="false"/>.</returns>
 		public static Task<bool> OpenAsync(OpenFileRequest request)
 			=> Current.OpenAsync(request);
 
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// First checks if the provided URI is supported, then opens the app specified by the URI.
 		/// </summary>
 		/// <param name="uri">URI to try and open.</param>
-		/// <returns><see langword="true"/> if the URI was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		public static Task<bool> TryOpenAsync(string uri)
 			=> Current.TryOpenAsync(uri);
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// First checks if the provided URI is supported, then opens the app specified by the URI.
 		/// </summary>
 		/// <param name="uri">URI to try and open.</param>
-		/// <returns><see langword="true"/> if the URI was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		public static Task<bool> TryOpenAsync(Uri uri)
 			=> Current.TryOpenAsync(uri);
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		/// <param name="launcher">The object this method is invoked on.</param>
 		/// <param name="uri">URI scheme to query.</param>
-		/// <returns><see langword="true"/> if opening is supported, otherwise false.</returns>
+		/// <returns><see langword="true"/> if opening is supported, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		public static Task<bool> CanOpenAsync(this ILauncher launcher, string uri) =>
 			launcher.CanOpenAsync(new Uri(uri));
@@ -191,7 +191,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		/// <param name="launcher">The object this method is invoked on.</param>
 		/// <param name="uri">URI to open.</param>
-		/// <returns><see langword="true"/> if the URI was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		public static Task<bool> OpenAsync(this ILauncher launcher, string uri) =>
 			launcher.OpenAsync(new Uri(uri));
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		/// <param name="launcher">The object this method is invoked on.</param>
 		/// <param name="uri">URI to try and open.</param>
-		/// <returns><see langword="true"/> if the URI was opened, otherwise false.</returns>
+		/// <returns><see langword="true"/> if the URI was opened, otherwise <see langword="false"/>.</returns>
 		/// <exception cref="UriFormatException">Thrown when <paramref name="uri"/> is malformed.</exception>
 		public static Task<bool> TryOpenAsync(this ILauncher launcher, string uri) =>
 			launcher.TryOpenAsync(new Uri(uri));
