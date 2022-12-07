@@ -78,7 +78,7 @@ if ($macCatalystVersion)
 
 if ($macVersion)
 {
-    $macVersionNode = $xmlDoc.SelectNodes("//Project//PropertyGroup//MicrosoftMacCatalystSdkPackageVersion")[0]
+    $macVersionNode = $xmlDoc.SelectNodes("//Project//PropertyGroup//MicrosoftmacOSSdkPackageVersion")[0]
     $macVersionNode."#text" = $macVersion
 }
 
@@ -87,5 +87,6 @@ Write-Output("Android version: " + $xmlDoc.Project.PropertyGroup.MicrosoftAndroi
 Write-Output("iOS version: " + $xmlDoc.Project.PropertyGroup.MicrosoftiOSSdkPackageVersion)
 Write-Output("tvOS version: " + $xmlDoc.Project.PropertyGroup.MicrosofttvOSSdkPackageVersion)
 Write-Output("MacCatalyst version: " + $xmlDoc.Project.PropertyGroup.MicrosoftMacCatalystSdkPackageVersion)
+Write-Output("Mac version: " + $xmlDoc.Project.PropertyGroup.MicrosoftmacOSSdkPackageVersion)
 
 $xmlDoc.Save($xmlFileName)
