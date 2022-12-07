@@ -11,10 +11,9 @@
 		static void MapInputTransparent(IViewHandler handler, IView layout) =>
 			UpdateInputTransparent(handler, layout);
 
-		static void UpdateInputTransparent(IViewHandler viewHandler, IView view)
+		static void UpdateInputTransparent(IViewHandler handler, IView view)
 		{
-			if (viewHandler is not IPlatformViewHandler handler ||
-				handler.PlatformView == null || 
+			if (handler.PlatformView is not Microsoft.Maui.Platform.LayoutViewGroup platformView || 
 				view is not Layout layout)
 			{
 				return;
@@ -23,15 +22,15 @@
 			if (layout.CascadeInputTransparent)
 			{
 				// Sensitive property on NUI View was false, disabled all touch event including children
-				handler.PlatformView.Sensitive = !layout.InputTransparent;
-				handler.PlatformView.InputTransparent = false;
+				platformView.Sensitive = !layout.InputTransparent;
+				platformView.InputTransparent = false;
 			}
 			else
 			{
 				// InputTransparent property on LayoutViewGroup was false,
 				// Only LayoutViewGroup event was disabled but children are allowed
-				handler.PlatformView.InputTransparent = layout.InputTransparent;
-				handler.PlatformView.Sensitive = true;
+				platformView.InputTransparent = layout.InputTransparent;
+				platformView.Sensitive = true;
 			}
 		}
 	}
