@@ -135,7 +135,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			if (Handler != null)
 			{
-				return Handler.GetDesiredSize(widthConstraint, heightConstraint);
+				DesiredSize = Handler.GetDesiredSize(widthConstraint, heightConstraint);
+				return DesiredSize;
 			}
 
 			return new Size(widthConstraint, heightConstraint);

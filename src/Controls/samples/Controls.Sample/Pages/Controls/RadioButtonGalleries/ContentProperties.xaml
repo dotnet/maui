@@ -43,6 +43,39 @@
                 
             </RadioButton>
 
+            <Label FontSize="Small" Text="The RadioButton below is the same as above, but also has a Semantic Description set on it for better accessibility."/>
+            
+            <RadioButton GroupName="test"
+                         SemanticProperties.Description="{Binding Source={x:Reference embeddedButton1}, Path=Text}"
+                         TextColor="Green"
+                         TextTransform="Uppercase"
+                         FontAttributes="Bold"
+                         FontSize="12"
+                         FontFamily="Arial">
+                
+                <RadioButton.Content>
+                    <Button x:Name="embeddedButton1" Text="It's a button inside a button." TextColor="Green"></Button>
+                </RadioButton.Content>
+                
+            </RadioButton>
+
+            <Label FontSize="Small" Text="The RadioButton below is the same as above, but  has a Semantic Description and Semantic Hint set on it for better accessibility."/>
+            
+            <RadioButton GroupName="test"
+                         SemanticProperties.Description="{Binding Source={x:Reference embeddedButton2}, Path=Text}"
+                         SemanticProperties.Hint="Tests semantics on a radio button with a button set as its content"
+                         TextColor="Green"
+                         TextTransform="Uppercase"
+                         FontAttributes="Bold"
+                         FontSize="12"
+                         FontFamily="Arial">
+                
+                <RadioButton.Content>
+                    <Button x:Name="embeddedButton2" Text="It's a button inside a button." TextColor="Green"></Button>
+                </RadioButton.Content>
+                
+            </RadioButton>
+
             <Label FontSize="Small" Text="A Content View which already has these properties set/bound should ignore the RadioButton properties."/>
 
             <RadioButton GroupName="test" 

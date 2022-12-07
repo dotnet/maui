@@ -1,7 +1,7 @@
-﻿using SkiaSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
 {

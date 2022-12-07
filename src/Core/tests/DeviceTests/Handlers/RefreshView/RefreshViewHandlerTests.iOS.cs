@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 		MauiRefreshView GetNativeRefreshView(RefreshViewHandler RefreshViewHandler) =>
 			(MauiRefreshView)RefreshViewHandler.PlatformView;
 
-		bool GetNativeIsRefreshing(RefreshViewHandler RefreshViewHandler) =>
+		bool GetPlatformIsRefreshing(RefreshViewHandler RefreshViewHandler) =>
 			GetNativeRefreshView(RefreshViewHandler).IsRefreshing;
 	}
 }

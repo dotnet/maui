@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
@@ -75,6 +75,31 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
 			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
+		}
+
+		[Theory]
+		[InlineData("red.png", "#FF0000")]
+		[InlineData("green.png", "#00FF00")]
+		public async Task ImageSourceUpdatesCorrectly(string filename, string colorHex)
+		{
+			var image = new ButtonStub
+			{
+				ImageSource = new FileImageSourceStub("black.png"),
+			};
+
+			// Update the Button Icon
+			image.ImageSource = new FileImageSourceStub(filename);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(image);
+
+				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
+
+				Assert.True(imageLoaded);
+				var expectedColor = Color.FromArgb(colorHex);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
+			});
 		}
 
 		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
