@@ -144,11 +144,17 @@
     <_DarcDependency Include="Microsoft.AspNetCore.Authorization" Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)" />
   </ItemGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+    <DarcCommand>darc get-asset --name %(_DarcDependency.Identity) --version %(_DarcDependency.Version) --max-age 90 --password $env:BAR_PAT</DarcCommand>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
+    <DarcCommand>darc get-asset --name %(_DarcDependency.Identity) --version %(_DarcDependency.Version) --max-age 90 --password $BAR_PAT</DarcCommand>
+  </PropertyGroup>
+  
   <!-- For each dependency item, execute darc get-asset to list out the version info with feeds -->
   <Target Name="_DarcGetAssetNugetFeeds" AfterTargets="Build" Outputs="%(_DarcDependency.Identity)">
 
-    <Exec Command="darc get-asset --name %(_DarcDependency.Identity) --version %(_DarcDependency.Version) --max-age 90 --password $env:BAR_TOKEN"
-      ConsoleToMSBuild="True">
+    <Exec Command="$(DarcCommand)" ConsoleToMSBuild="True">
       <Output TaskParameter="ConsoleOutput" ItemName="_DarcGetAssetOutput" />
     </Exec>
 
