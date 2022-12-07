@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Devices
 
 		DisplayRequest? displayRequest;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DeviceDisplayImplementation"/> class.
+		/// </summary>
 		public DeviceDisplayImplementation()
 		{
 			_activeWindowTracker = new(WindowStateManager.Default);

@@ -1,7 +1,7 @@
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Skia;
 using System.Windows;
 using GraphicsTester.Scenarios;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Skia;
 
 namespace GraphicsTester.WPF.Skia
 {
