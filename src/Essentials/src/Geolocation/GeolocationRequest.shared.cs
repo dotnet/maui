@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public GeolocationAccuracy DesiredAccuracy { get; set; }
 
 		/// <summary>
-		/// Gets or sets whether to requests full permission to temporarily use location services with full accuracy.
+		/// Gets or sets whether to request full permission to temporarily use location services with full accuracy.
 		/// </summary>
 		/// <remarks>This value is only used on iOS 14+. Using this functionality requires the <c>NSLocationTemporaryUsageDescriptionDictionary</c> key to be present in the <c>info.plist</c> file.</remarks>
 		public bool RequestFullAccuracy { get; set; }

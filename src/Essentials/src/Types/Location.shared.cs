@@ -59,11 +59,11 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude, longitude and timestamp.
+		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude, longitude, and timestamp.
 		/// </summary>
 		/// <param name="latitude">Default latitude for location.</param>
 		/// <param name="longitude">Default longitude for location.</param>
-		/// <param name="timestamp">Timestamp for the location (UTC based).</param>
+		/// <param name="timestamp">UTC timestamp for the location.</param>
 		public Location(double latitude, double longitude, DateTimeOffset timestamp)
 		{
 			Latitude = latitude;
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude, longitude and altitude.
+		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude, longitude, and altitude.
 		/// </summary>
 		/// <param name="latitude">Default latitude for location.</param>
 		/// <param name="longitude">Default longitude for location.</param>
@@ -173,9 +173,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Calculate distance between two locations.
 		/// </summary>
-		/// <param name="latitudeStart">Latitude coordinate of the starting location where is being calculated from.</param>
-		/// <param name="longitudeStart">Longitude coordinate of the starting location where is being calculated from.</param>
-		/// <param name="locationEnd">End location to calculate the distance to.</param>
+		/// <param name="latitudeStart">Latitude coordinate of the starting location.</param>
+		/// <param name="longitudeStart">Longitude coordinate of the starting location.</param>
+		/// <param name="locationEnd">The end location.</param>
 		/// <param name="units">The unit in which the result distance is returned.</param>
 		/// <returns>Distance between two locations in the unit selected.</returns>
 		public static double CalculateDistance(double latitudeStart, double longitudeStart, Location locationEnd, DistanceUnits units) =>
@@ -184,9 +184,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Calculate distance between two locations.
 		/// </summary>
-		/// <param name="locationStart">Start location to calculate from.</param>
-		/// <param name="latitudeEnd">Latitude coordinate of the end location where we're calculating the distance to.</param>
-		/// <param name="longitudeEnd">Longitude coordinate of the end location where we're calculating the distance to.</param>
+		/// <param name="locationStart">The start location.</param>
+		/// <param name="latitudeEnd">Latitude coordinate of the end location.</param>
+		/// <param name="longitudeEnd">Longitude coordinate of the end location.</param>
 		/// <param name="units">The unit in which the result distance is returned.</param>
 		/// <returns>Distance between two locations in the unit selected.</returns>
 		public static double CalculateDistance(Location locationStart, double latitudeEnd, double longitudeEnd, DistanceUnits units) =>
@@ -195,8 +195,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Calculate distance between two locations.
 		/// </summary>
-		/// <param name="locationStart">Start location to calculate from.</param>
-		/// <param name="locationEnd">End location to calculate the distance to.</param>
+		/// <param name="locationStart">The start location.</param>
+		/// <param name="locationEnd">The end location.</param>
 		/// <param name="units">The unit in which the result distance is returned.</param>
 		/// <returns>Distance between two locations in the unit selected.</returns>
 		public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>
@@ -205,10 +205,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Calculate distance between two <see cref="Location"/> instances.
 		/// </summary>
-		/// <param name="latitudeStart">Latitude coordinate of the starting location where is being calculated from.</param>
-		/// <param name="longitudeStart">Longitude coordinate of the starting location where is being calculated from.</param>
-		/// <param name="latitudeEnd">Latitude coordinate of the end location where we're calculating the distance to.</param>
-		/// <param name="longitudeEnd">Longitude coordinate of the end location where we're calculating the distance to.</param>
+		/// <param name="latitudeStart">Latitude coordinate of the starting location.</param>
+		/// <param name="longitudeStart">Longitude coordinate of the starting location.</param>
+		/// <param name="latitudeEnd">Latitude coordinate of the end location.</param>
+		/// <param name="longitudeEnd">Longitude coordinate of the end location.</param>
 		/// <param name="units">The unit in which the result distance is returned.</param>
 		/// <returns>Distance between two locations in the unit selected.</returns>
 		public static double CalculateDistance(
