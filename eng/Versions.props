@@ -39,7 +39,7 @@
     <MicrosoftAspNetCoreMetadataPackageVersion>7.0.0</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>7.0.0</MicrosoftJSInteropPackageVersion>
     <!-- Other packages -->
-    <MicrosoftCodeAnalysisNetAnalyzersVersion>7.0.0-preview1.22559.1</MicrosoftCodeAnalysisNetAnalyzersVersion>
+    <MicrosoftCodeAnalysisNetAnalyzersVersion>7.0.0</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
