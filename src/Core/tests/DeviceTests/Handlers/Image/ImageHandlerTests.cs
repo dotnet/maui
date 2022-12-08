@@ -61,7 +61,9 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(nameof(IImage.Source));
 					await image.Wait();
 
-					await platformView.AssertContainsColor(Colors.Blue.ToPlatform());
+					// TODO: Switch back to Blue to unbreak test
+					// Broken to test the test runner results display
+					await platformView.AssertContainsColor(Colors.Green.ToPlatform());
 
 					// the second one does not
 					image.Source = new FileImageSourceStub(secondPath);
