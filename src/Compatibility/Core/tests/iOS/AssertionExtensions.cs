@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 	internal static class AssertionExtensions
 	{
 		public static string CreateColorTag(string base64image)
-			=> $"![Image](data:image/png;base64,{base64image})";
+			=> $"<img src=\"data:image/png;base64,{base64image}\" alt=\"screenshot\" />";
 
 		public static string CreateColorAtPointError(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{

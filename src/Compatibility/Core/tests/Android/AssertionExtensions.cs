@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 	internal static class AssertionExtensions
 	{
 		public static string CreateColorTag(string base64image)
-			=> $"![Image](data:image/png;base64,{base64image})";
+			=> $"<img src=\"data:image/png;base64,{base64image}\" alt=\"screenshot\" />";
 
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
