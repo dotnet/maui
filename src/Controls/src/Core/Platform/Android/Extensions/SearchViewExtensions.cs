@@ -8,7 +8,10 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this SearchView searchView, InputView inputView)
 		{
-			searchView.SetQuery(TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform), false);
+			if (inputView.TextTransform == TextTransform.Default || inputView.TextTransform == TextTransform.None)
+				return;
+
+			searchView.SetQuery((TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform)), false);
 		}
 	}
 }
