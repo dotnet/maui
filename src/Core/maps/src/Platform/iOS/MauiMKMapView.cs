@@ -172,7 +172,11 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			RegionChanged += MkMapViewOnRegionChanged;
 			DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
-			AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked));
+
+			AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked)
+			{
+				ShouldReceiveTouch = OnShouldReceiveMapTouch
+			});
 		}
 
 		void Cleanup()
@@ -194,9 +198,11 @@ namespace Microsoft.Maui.Maps.Platform
 
 			if (pin == null)
 				return;
+
 			// SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
 			// Hide the info window by deselecting the annotation
 			bool deselect = pin.SendMarkerClick();
+
 			if (deselect)
 				DeselectAnnotation(annotation, false);
 		}
@@ -292,12 +298,22 @@ namespace Microsoft.Maui.Maps.Platform
 			return mapElement?.ToHandler(handler?.MauiContext!).PlatformView as T;
 		}
 
+		bool OnShouldReceiveMapTouch(UIGestureRecognizer recognizer, UITouch touch)
+		{
+			if (touch.View is MKAnnotationView)
+				return false;
+
+			return true;
+		}
+
 		static void OnMapClicked(UITapGestureRecognizer recognizer)
 		{
 			if (recognizer.View is not MauiMKMapView mauiMkMapView)
 				return;
+
 			var tapPoint = recognizer.LocationInView(mauiMkMapView);
 			var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
+
 			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
 				handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
 		}
