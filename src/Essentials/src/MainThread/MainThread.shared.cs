@@ -10,7 +10,7 @@ namespace Microsoft.Maui.ApplicationModel
 	public static partial class MainThread
 	{
 		/// <summary>
-		/// Gets if it is the current main UI thread.
+		/// True if the current thread is the UI thread.
 		/// </summary>
 		public static bool IsMainThread =>
 			PlatformIsMainThread;
