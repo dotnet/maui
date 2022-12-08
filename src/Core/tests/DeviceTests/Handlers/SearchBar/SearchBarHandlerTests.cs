@@ -9,11 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarHandlerTests : CoreHandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
-		[Theory(DisplayName = "Background Initializes Correctly"
-#if IOS
-			,Skip = "This test is currently invalid  https://github.com/dotnet/maui/issues/11948"
-#endif
-			)]
+		[Theory(DisplayName = "Background Initializes Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
 		[InlineData(0xFF0000FF)]
@@ -120,11 +116,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, platformText);
 		}
 
-		[Fact(DisplayName = "CancelButtonColor Initialize Correctly"
-#if IOS
-			,Skip = "This test is currently invalid  https://github.com/dotnet/maui/issues/11948"
-#endif
-			)]
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly",
+			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
 			var searchBar = new SearchBarStub()
