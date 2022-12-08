@@ -11,6 +11,9 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		static readonly Random rnd = new Random();
 
+		public static string CreateColorTag(string base64image)
+			=> $"![Image](data:image/png;base64,{base64image})";
+
 		public static async Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000)
 		{
 			while ((timeout -= 100) > 0)

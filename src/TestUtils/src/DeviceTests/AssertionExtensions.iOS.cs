@@ -51,10 +51,10 @@ namespace Microsoft.Maui.DeviceTests
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
 		public static string CreateColorError(this UIImage bitmap, string message) =>
-			$"{message} This is what it looked like:<img>{bitmap.ToBase64String()}</img>";
+			$"{message} This is what it looked like: {CreateColorTag(bitmap.ToBase64String())}";
 
 		public static string CreateEqualError(this UIImage bitmap, UIImage other, string message) =>
-			$"{message} This is what it looked like: <img>{bitmap.ToBase64String()}</img> and <img>{other.ToBase64String()}</img>";
+			$"{message} This is what it looked like: {CreateColorTag(bitmap.ToBase64String())} and {CreateColorTag(other.ToBase64String())}";
 
 		public static string ToBase64String(this UIImage bitmap)
 		{

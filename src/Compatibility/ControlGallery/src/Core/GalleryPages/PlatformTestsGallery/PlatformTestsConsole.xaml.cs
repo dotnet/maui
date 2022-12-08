@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests;
 using Microsoft.Maui.Controls.Internals;
@@ -311,29 +312,33 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 
 		static void ExtractErrorMessage(List<View> views, string message)
 		{
-			const string openTag = "<img>";
-			const string closeTag = "</img>";
-			var openTagIndex = message.IndexOf("<img>");
-			var closeTagIndex = message.IndexOf("</img>");
+			var rxMdImages = new Regex(@"\!\[.*?\]\(data:.*?;base64,(?<b64>.*?)\)");
 
-			if (openTagIndex >= 0 && closeTagIndex > openTagIndex)
+			var matches = rxMdImages.Matches(message);
+
+			if (matches.Count > 0)
 			{
-				var imgString = message.Substring(openTagIndex + openTag.Length, closeTagIndex - openTagIndex - openTag.Length);
-				var messageBefore = message.Substring(0, openTagIndex);
-				var messageAfter = message.Substring(closeTagIndex + closeTag.Length);
-				var imgBytes = Convert.FromBase64String(imgString);
-				var stream = new MemoryStream(imgBytes);
+				var labels = rxMdImages.Replace(message, "\t").Split('\t');
 
-				if (!string.IsNullOrEmpty(messageBefore))
+				for (int i = 0; i < labels.Length; i++)
 				{
-					views.Add(new Label { Text = messageBefore });
-				}
+					var label = labels[i].Trim();
+					if (string.IsNullOrEmpty(label))
+						continue;
+					views.Add(new Label { Text = label });
 
-				views.Add(new Image { Source = ImageSource.FromStream(() => stream) });
+					if (i < matches.Count)
+					{
+						var b64str = matches[i].Groups["b64"].Value;
 
-				if (!string.IsNullOrEmpty(messageAfter))
-				{
-					views.Add(new Label { Text = messageAfter });
+						if (!string.IsNullOrEmpty(b64str))
+						{
+							var imgBytes = Convert.FromBase64String(b64str);
+							var stream = new MemoryStream(imgBytes);
+
+							views.Add(new Image { Source = ImageSource.FromStream(() => stream) });
+						}
+					}
 				}
 			}
 			else

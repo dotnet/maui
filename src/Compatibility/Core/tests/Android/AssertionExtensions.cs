@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
 	internal static class AssertionExtensions
 	{
+		public static string CreateColorTag(string base64image)
+			=> $"![Image](data:image/png;base64,{base64image})";
+
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
 			return CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
@@ -20,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			{
 				bitmap.Compress(Bitmap.CompressFormat.Png, 0, ms);
 				var imageAsString = Convert.ToBase64String(ms.ToArray());
-				return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
+				return $"{message}. This is what it looked like: {CreateColorTag(imageAsString)}";
 			}
 		}
 

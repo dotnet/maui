@@ -55,10 +55,10 @@ namespace Microsoft.Maui.DeviceTests
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
 		public static async Task<string> CreateColorError(this CanvasBitmap bitmap, string message) =>
-			$"{message} This is what it looked like:<img>{await bitmap.ToBase64String()}</img>";
+			$"{message} This is what it looked like: {CreateColorTag(await bitmap.ToBase64String())}";
 
 		public static async Task<string> CreateEqualError(this CanvasBitmap bitmap, CanvasBitmap other, string message) =>
-			$"{message} This is what it looked like: <img>{await bitmap.ToBase64String()}</img> and <img>{await other.ToBase64String()}</img>";
+			$"{message} This is what it looked like: {CreateColorTag(await bitmap.ToBase64String())} and {CreateColorTag(await other.ToBase64String())}";
 
 		public static async Task<string> ToBase64String(this CanvasBitmap bitmap)
 		{

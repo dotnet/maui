@@ -9,18 +9,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
 	internal static class AssertionExtensions
 	{
+		public static string CreateColorTag(string base64image)
+			=> $"![Image](data:image/png;base64,{base64image})";
+
 		public static string CreateColorAtPointError(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{
 			var data = bitmap.AsPNG();
 			var imageAsString = data.GetBase64EncodedString(Foundation.NSDataBase64EncodingOptions.None);
-			return $"Expected {expectedColor} at point {x},{y} in renderered view. This is what it looked like:<img>{imageAsString}</img>";
+			return $"Expected {expectedColor} at point {x},{y} in renderered view. This is what it looked like: {CreateColorTag(imageAsString)}";
 		}
 
 		public static string CreateColorError(this UIImage bitmap, string message)
 		{
 			var data = bitmap.AsPNG();
 			var imageAsString = data.GetBase64EncodedString(Foundation.NSDataBase64EncodingOptions.None);
-			return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
+			return $"{message}. This is what it looked like: {CreateColorTag(imageAsString)}";
 		}
 
 		public static UIImage ToBitmap(this UIView view)
