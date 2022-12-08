@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		string? HostPage { get; }
 
 		/// <summary>
-		/// Gets or sets the path for initial navigation when the application starts.
+		/// Gets or sets the path for initial navigation within the Blazor navigation context when the Blazor component is finished loading.
 		/// </summary>
 		public string StartPath { get; set; }
 

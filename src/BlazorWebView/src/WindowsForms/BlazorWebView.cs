@@ -80,10 +80,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		}
 
 		/// <summary>
-		/// Path to the start page
+		/// Path for initial navigation within the Blazor navigation context when the Blazor component is finished loading.
 		/// </summary>
 		[Category("Behavior")]
-		[Description(@"Path for initial navigation when the application starts.")]
+		[Description(@"Path for initial navigation within the Blazor navigation context when the Blazor component is finished loading.")]
 		public string StartPath { get; set; } = "/";
 
 		// Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
