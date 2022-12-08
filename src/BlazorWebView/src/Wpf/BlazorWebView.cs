@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		}
 
 		/// <summary>
-		/// Path for initial navigation within the Blazor navigation context when the Blazor component is finished loading. For example, "/".
+		/// Path for initial Blazor navigation when the Blazor component is finished loading. For example, "/".
 		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
 		public string StartPath
