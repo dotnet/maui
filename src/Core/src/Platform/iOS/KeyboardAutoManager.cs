@@ -1,8 +1,8 @@
 ﻿/*
  * This class is adapted from IQKeyboardManager which is an open-source
  * library implemented for iOS to handle Keyboard interactions with
- * UITextFields/UITextViews. Link to their license can be found here:
- * https://github.com/hackiftekhar/IQKeyboardManager/tree/09d22c087732b02d4fb594c7bb61502bf7bb2378#license
+ * UITextFields/UITextViews. Link to their MIT License can be found here:
+ * https://github.com/hackiftekhar/IQKeyboardManager/blob/7399efb730eea084571b45a1a9b36a3a3c54c44f/LICENSE.md
  */
 
 using System.Collections.Generic;
