@@ -1,11 +1,18 @@
-﻿using System.Collections.Generic;
+﻿/*
+ * This class is adapted from IQKeyboardManager which is an open-source
+ * library implemented for iOS to handle Keyboard interactions with
+ * UITextFields/UITextViews. Link to their license can be found here:
+ * https://github.com/hackiftekhar/IQKeyboardManager/tree/09d22c087732b02d4fb594c7bb61502bf7bb2378#license
+ */
+
+using System.Collections.Generic;
 using UIKit;
 
 namespace Microsoft.Maui.Platform;
 
 internal static class KeyboardAutoManager
 {
-	// you can provide a topView argument or it will use the most top Superview
+	// you can provide a topView argument or it will try to find the ContainerViewController
 	internal static void GoToNextResponderOrResign(UIView view, UIView? topView = null)
 	{
 		if (!view.CheckIfEligible())
@@ -14,16 +21,16 @@ internal static class KeyboardAutoManager
 			return;
 		}
 
-		var textFields = GetDeepResponderViews(topView ?? view.FindTopView());
-
-		// get the index of the current textField and go to the next one
-		var currentIndex = textFields.FindIndex(v => v == view);
-		var nextIndex = currentIndex < textFields.Count - 1 ? currentIndex + 1 : -1;
-
-		if (nextIndex != -1)
-			textFields[nextIndex].BecomeFirstResponder();
-		else
+		var targetSuperview = topView ?? view.GetViewController()?.GetContainerViewController();
+		if (targetSuperview is null)
+		{
 			view.ResignFirstResponder();
+			return;
+		}
+
+		var textFields = GetDeepResponderViews(targetSuperview);
+
+		view.MoveToNextField(textFields);
 	}
 
 	static bool CheckIfEligible(this UIView view)
@@ -36,16 +43,32 @@ internal static class KeyboardAutoManager
 		return false;
 	}
 
-	static UIView FindTopView (this UIView view)
+	static UIView? GetContainerViewController(this UIViewController controller)
 	{
-		var curView = view;
+		var curView = controller.View;
 
-		while (curView.Superview is not null)
+		while (curView?.Superview is not null)
 		{
+			var curController = curView.GetViewController();
+			if (curController is ContainerViewController container)
+				return container.View;
+
 			curView = curView.Superview;
 		}
 
-		return curView;
+		return null;
+	}
+
+	static void MoveToNextField (this UIView view, List<UIView> textFields)
+	{
+		// get the index of the current textField and go to the next one
+		var currentIndex = textFields.FindIndex(v => v == view);
+		var nextIndex = currentIndex < textFields.Count - 1 ? currentIndex + 1 : -1;
+
+		if (nextIndex != -1)
+			textFields[nextIndex].BecomeFirstResponder();
+		else
+			view.ResignFirstResponder();
 	}
 
 	// Find all of the eligible UITextFields and UITextViews inside this view
@@ -137,4 +160,3 @@ internal static class KeyboardAutoManager
 		}
 	}
 }
-
