@@ -1,10 +1,10 @@
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using WShape = Microsoft.UI.Xaml.Shapes.Shape;
-using Microsoft.Maui.Controls.Platform;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
+using WShape = Microsoft.UI.Xaml.Shapes.Shape;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

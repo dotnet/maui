@@ -20,7 +20,7 @@ public partial class MainPage : ContentPage
 	private async void Start()
 	{
 		CounterBtn.Text = await CommonMethods.Invoke();
-		_startCompleted= true;
+		_startCompleted = true;
 		LoadFlyoutPage();
 	}
 

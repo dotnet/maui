@@ -1,9 +1,9 @@
 ﻿using System;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 using WWindow = Microsoft.UI.Xaml.Window;
-using Microsoft.Maui.Handlers;
-using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {

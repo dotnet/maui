@@ -1,7 +1,6 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
@@ -34,6 +33,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		ShellItemHandler? _currentItemHandler;
 
+		WrapperView? _backdropView;
+
 		bool _isOpen;
 
 		protected Shell? Element { get; set; }
@@ -44,7 +45,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected bool HeaderOnMenu => _headerBehavior == FlyoutHeaderBehavior.Scroll || _headerBehavior == FlyoutHeaderBehavior.CollapseOnScroll;
 
-		protected NColor DefaultBackgroundCorlor = NColor.White;
+		public readonly NColor DefaultBackgroundColor = NColor.White;
+
+		public readonly NColor DefaultBackdropColor = new NColor(0.1f, 0.1f, 0.1f, 0.5f);
 
 		public event EventHandler? Toggled;
 
@@ -123,7 +126,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public void UpdateBackgroundColor(GColor? color)
 		{
-			_navigationView.BackgroundColor = color?.ToNUIColor() ?? DefaultBackgroundCorlor;
+			_navigationView.BackgroundColor = color?.ToNUIColor() ?? DefaultBackgroundColor;
 		}
 
 		public void UpdateCurrentItem(ShellItem newItem, bool animate = true)
@@ -200,6 +203,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public void UpdateFlyoutBackDrop(Brush backdrop)
 		{
+			if (_backdropView == null)
+			{
+				_backdropView = new WrapperView()
+				{
+					WidthSpecification = LayoutParamPolicies.MatchParent,
+					HeightSpecification = LayoutParamPolicies.MatchParent,
+					BackgroundColor = DefaultBackdropColor
+				};
+				_navigationDrawer.Backdrop = _backdropView;
+			}
+
+			if (!backdrop.IsEmpty)
+				_backdropView.UpdateBackground(backdrop);
 		}
 
 		public void SetToolbar(MauiToolbar toolbar)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NView = Tizen.NUI.BaseComponents.View;
 
@@ -6,6 +7,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LayoutHandler : ViewHandler<ILayout, LayoutViewGroup>
 	{
+		List<IView> _children = new List<IView>();
+
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
 			VirtualView?.Clip != null ||
@@ -39,10 +42,12 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 
 			PlatformView.Children.Clear();
+			_children.Clear();
 
 			foreach (var child in VirtualView.OrderByZIndex())
 			{
 				PlatformView.Children.Add(child.ToPlatform(MauiContext));
+				_children.Add(child);
 			}
 		}
 
@@ -54,6 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			_children.Insert(targetIndex, child);
 			EnsureZIndexOrder(child);
 			PlatformView.SetNeedMeasureUpdate();
 		}
@@ -66,6 +72,7 @@ namespace Microsoft.Maui.Handlers
 			if (child.Handler is IPlatformViewHandler thandler && child?.ToPlatform() is NView childView)
 			{
 				PlatformView.Children.Remove(childView);
+				_children.Remove(child);
 				thandler.Dispose();
 			}
 			PlatformView.MarkChanged();
@@ -83,6 +90,13 @@ namespace Microsoft.Maui.Handlers
 			{
 				child.Dispose();
 			}
+
+			foreach (var child in _children)
+			{
+				(child.Handler as IPlatformViewHandler)?.Dispose();
+			}
+			_children.Clear();
+
 			PlatformView.SetNeedMeasureUpdate();
 		}
 
@@ -94,6 +108,7 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			_children.Insert(targetIndex, child);
 			EnsureZIndexOrder(child);
 			PlatformView.SetNeedMeasureUpdate();
 		}
@@ -107,9 +122,13 @@ namespace Microsoft.Maui.Handlers
 			var toBeRemoved = PlatformView.Children[index];
 			PlatformView.Children.RemoveAt(index);
 			toBeRemoved.Dispose();
+			var childToBeRemoved = _children[index];
+			_children.RemoveAt(index);
+			(childToBeRemoved as IPlatformViewHandler)?.Dispose();
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			_children.Insert(targetIndex, child);
 			EnsureZIndexOrder(child);
 			PlatformView.SetNeedMeasureUpdate();
 		}
