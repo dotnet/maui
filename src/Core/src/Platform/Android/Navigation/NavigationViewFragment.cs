@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 			// This is all a bit silly because the page is just getting added and removed to the same
 			// view. Unfortunately FragmentContainerView is sealed so we can't inherit from it and influence
 			// when the views are being added and removed. If this ends up causing too much shake up
-			// Then we can try some other approachs like just modifying the navbar ourselves to include a back button
+			// Then we can try some other approaches like just modifying the navbar ourselves to include a back button
 			// Even if there's only one page on the stack
 
 			_currentView =

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
@@ -70,9 +70,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='FlyoutBackdrop']/Docs/*" />
 		public Brush FlyoutBackdrop => _brushArray[0];
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='FlyoutWidth']/Docs/*" />
 		public double FlyoutWidth => _doubleArray[0];
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='FlyoutHeight']/Docs/*" />
 		public double FlyoutHeight => _doubleArray[1];
 
 		Color IShellAppearanceElement.EffectiveTabBarBackgroundColor =>

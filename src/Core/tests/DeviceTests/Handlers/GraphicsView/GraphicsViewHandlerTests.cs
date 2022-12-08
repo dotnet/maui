@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.GraphicsView)]
-	public partial class GraphicsViewHandlerTests : HandlerTestBase<GraphicsViewHandler, GraphicsViewStub>
+	public partial class GraphicsViewHandlerTests : CoreHandlerTestBase<GraphicsViewHandler, GraphicsViewStub>
 	{
 		[Theory(DisplayName = "GraphicsView Initializes Correctly")]
 		[InlineData(0xFF0000)]

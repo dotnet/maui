@@ -1,17 +1,17 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Platform;
-using Microsoft.Maui.Handlers;
-using WPanel = Microsoft.UI.Xaml.Controls.Panel;
-using Xunit;
+﻿using System;
 using System.Linq;
-using Microsoft.Maui.Graphics.Win2D;
-using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
+using Xunit;
+using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class WindowTests : HandlerTestBase
+	public partial class WindowTests : ControlsHandlerTestBase
 	{
 		[Fact]
 		public async Task AdornerLayerAdded()
@@ -77,9 +77,13 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 
-			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
 			{
 				var mauiToolBar = GetPlatformToolbar(handler);
+
+				Assert.NotNull(mauiToolBar);
+				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0));
+
 				var position = mauiToolBar.GetLocationOnScreen();
 				var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
 
@@ -112,6 +116,10 @@ namespace Microsoft.Maui.DeviceTests
 						if (nextRootPage is NavigationPage || nextRootPage is Shell)
 						{
 							var mauiToolBar = GetPlatformToolbar(handler);
+
+							Assert.NotNull(mauiToolBar);
+							Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0));
+
 							var position = mauiToolBar.GetLocationOnScreen();
 							var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
 

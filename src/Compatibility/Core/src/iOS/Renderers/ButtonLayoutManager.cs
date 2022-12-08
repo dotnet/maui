@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-#pragma warning disable CA1416 // TOD0: UIButton.ContentEdgeInsets, UIButton.ImageEdgeInsets is unsupported on: 'ios' 15.0 and later
+#pragma warning disable CA1416, CA1422  // TOD0: UIButton.ContentEdgeInsets, UIButton.ImageEdgeInsets is unsupported on: 'ios' 15.0 and later
 		[PortHandler]
 		void UpdatePadding()
 		{
@@ -443,6 +443,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			control.ImageEdgeInsets = imageInsets;
 			control.TitleEdgeInsets = titleInsets;
 		}
-#pragma warning restore CA1416 // UIButton.ContentEdgeInsets, UIButton.ImageEdgeInsets is unsupported on: 'ios' 15.0 and later
+#pragma warning restore CA1416, CA1422  // UIButton.ContentEdgeInsets, UIButton.ImageEdgeInsets is unsupported on: 'ios' 15.0 and later
 	}
 }

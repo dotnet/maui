@@ -36,5 +36,10 @@ namespace Microsoft.Maui.DeviceTests
 				nativeSearchBar.AssertContainsColor(color);
 			});
 		}
+
+		double GetInputFieldHeight(SearchBarHandler searchBarHandler)
+		{
+			return GetNativeSearchBar(searchBarHandler).ActualHeight;
+		}
 	}
 }

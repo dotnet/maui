@@ -74,6 +74,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_viewPager.RegisterOnPageChangeCallback(_listeners);
 		}
 
+		internal IMauiContext MauiContext => _context;
 		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = _context.GetFragmentManager());
 		public bool IsBottomTabPlacement => (Element != null) ? Element.OnThisPlatform().GetToolbarPlacement() == ToolbarPlacement.Bottom : false;
 
@@ -174,13 +175,22 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				var fragment = _tabLayoutFragment;
 				_tabLayoutFragment = null;
-				_ = _context
+
+				var fragmentManager =
+					_context
 						.GetNavigationRootManager()
-						.FragmentManager
-						.BeginTransaction()
-						.Remove(fragment)
-						.SetReorderingAllowed(true)
-						.Commit();
+						.FragmentManager;
+
+				if (fragmentManager.IsAlive() && !fragmentManager.IsDestroyed)
+				{
+					_ = _context
+							.GetNavigationRootManager()
+							.FragmentManager
+							.BeginTransaction()
+							.Remove(fragment)
+							.SetReorderingAllowed(true)
+							.Commit();
+				}
 
 				_tabplacementId = 0;
 			}
@@ -754,7 +764,6 @@ namespace Microsoft.Maui.Controls.Handlers
 #pragma warning disable CS0618 // Type or member is obsolete
 			TabLayout.IOnTabSelectedListener,
 #pragma warning restore CS0618 // Type or member is obsolete
-			ViewPager.IOnPageChangeListener,
 			NavigationBarView.IOnItemSelectedListener,
 			TabLayoutMediator.ITabConfigurationStrategy
 		{
@@ -835,16 +844,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				_tabbedPageManager.SetIconColorFilter(tab, false);
 			}
-			void ViewPager.IOnPageChangeListener.OnPageScrolled(int position, float positionOffset, int positionOffsetPixels)
-			{
-			}
-
-			void ViewPager.IOnPageChangeListener.OnPageScrollStateChanged(int state)
-			{
-			}
-
-			void ViewPager.IOnPageChangeListener.OnPageSelected(int position) =>
-				OnPageSelected(position);
 		}
 	}
 }

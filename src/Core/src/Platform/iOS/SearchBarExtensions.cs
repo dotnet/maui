@@ -15,13 +15,16 @@ namespace Microsoft.Maui.Platform
 				return searchBar.GetSearchTextField();
 		}
 
-		// TODO: NET7 maybe make this public?
+		// TODO: NET8 maybe make this public?
 		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var background = searchBar.Background;
 
 			if (background is SolidPaint solidPaint)
 				uiSearchBar.BarTintColor = solidPaint.Color.ToPlatform();
+
+			if (background is GradientPaint gradientPaint)
+				ViewExtensions.UpdateBackground(uiSearchBar, gradientPaint);
 
 			if (background == null)
 				uiSearchBar.BarTintColor = UISearchBar.Appearance.BarTintColor;

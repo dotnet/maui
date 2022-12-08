@@ -4,12 +4,13 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Entry)]
-	public partial class EntryHandlerTests : HandlerTestBase<EntryHandler, EntryStub>
+	public partial class EntryHandlerTests : CoreHandlerTestBase<EntryHandler, EntryStub>
 	{
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
@@ -492,6 +493,100 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeHorizontalTextAlignment,
 				nameof(IEntry.CharacterSpacing),
 				() => entry.CharacterSpacing = newSize);
+		}
+
+#if ANDROID
+		[Fact]
+		public async Task NextMovesToNextEntrySuccessfully()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<EntryStub, EntryHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			var entry1 = new EntryStub
+			{
+				Text = "Entry 1",
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Next
+			};
+
+			layout.Add(entry1);
+			layout.Add(entry2);
+
+			layout.Width = 100;
+			layout.Height = 150;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
+				await contentViewHandler.PlatformView.AttachAndRun(async () =>
+				{
+					await entry1.SendKeyboardReturnType(ReturnType.Next);
+					await entry2.WaitForFocused();
+					Assert.True(entry2.IsFocused);
+				});
+			});
+		}
+
+		[Fact]
+		public async Task DoneClosesKeyboard()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<EntryStub, EntryHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			var entry1 = new EntryStub
+			{
+				Text = "Entry 1",
+				ReturnType = ReturnType.Done
+			};
+
+			var entry2 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Done
+			};
+
+			layout.Add(entry1);
+			layout.Add(entry2);
+
+			layout.Width = 100;
+			layout.Height = 150;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LayoutHandler>(layout);
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					await entry1.SendKeyboardReturnType(ReturnType.Done);
+					await entry1.WaitForKeyboardToHide();
+				});
+			});
+		}
+#endif
+
+		[Category(TestCategory.Entry)]
+		public class EntryTextStyleTests : TextStyleHandlerTests<EntryHandler, EntryStub>
+		{
 		}
 	}
 }

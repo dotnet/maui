@@ -1,7 +1,7 @@
+using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.Maui.Controls.Platform;
-using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

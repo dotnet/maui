@@ -29,7 +29,6 @@ namespace Microsoft.Maui.Controls
 			return (string)b.GetValue(GroupNameProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButtonGroup.xml" path="//Member[@MemberName='SetGroupName']/Docs/*" />
 		public static void SetGroupName(BindableObject bindable, string groupName)
 		{
 			bindable.SetValue(GroupNameProperty, groupName);
@@ -47,7 +46,6 @@ namespace Microsoft.Maui.Controls
 			return bindableObject.GetValue(SelectedValueProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButtonGroup.xml" path="//Member[@MemberName='SetSelectedValue']/Docs/*" />
 		public static void SetSelectedValue(BindableObject bindable, object selectedValue)
 		{
 			bindable.SetValue(SelectedValueProperty, selectedValue);
@@ -61,8 +59,10 @@ namespace Microsoft.Maui.Controls
 				? GroupByParent(radioButton)
 				: GetVisualRoot(radioButton);
 
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			MessagingCenter.Send(radioButton, GroupSelectionChangedMessage,
 				new RadioButtonGroupSelectionChanged(scope));
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		internal static Element GroupByParent(RadioButton radioButton)

@@ -24,9 +24,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Modal)]
 #if ANDROID || IOS || MACCATALYST
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
-	public partial class ModalTests : HandlerTestBase
+	public partial class ModalTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{

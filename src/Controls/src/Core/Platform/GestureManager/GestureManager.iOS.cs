@@ -55,17 +55,8 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new ArgumentNullException(nameof(handler.VirtualView));
 		}
 
-		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers
-		{
-			get
-			{
-				if (_handler?.VirtualView is IGestureController gc &&
-					gc.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-					return oc;
-
-				return null;
-			}
-		}
+		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers =>
+			(_handler.VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
 
 		internal void Disconnect()
 		{
@@ -232,7 +223,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var pointerGestureRecognizer = recognizer as PointerGestureRecognizer;
-			if (pointerGestureRecognizer != null)
+
+			if (pointerGestureRecognizer != null && OperatingSystem.IsIOSVersionAtLeast(13))
 			{
 				var uiRecognizer = CreatePointerRecognizer(r =>
 				{
@@ -414,6 +406,8 @@ namespace Microsoft.Maui.Controls.Platform
 			return result;
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.0")]
 		CustomHoverGestureRecognizer CreatePointerRecognizer(Action<UIHoverGestureRecognizer> action)
 		{
 			var result = new CustomHoverGestureRecognizer(action);

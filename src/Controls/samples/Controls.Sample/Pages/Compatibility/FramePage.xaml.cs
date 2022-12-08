@@ -6,5 +6,10 @@
 		{
 			InitializeComponent();
 		}
+
+		void OnHasShadowButtonClicked(object sender, System.EventArgs e)
+		{
+			HasShadowFrame.HasShadow = !HasShadowFrame.HasShadow;
+		}
 	}
 }
