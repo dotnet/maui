@@ -6,10 +6,10 @@ This page contains steps to build and run the .NET MAUI repository from source. 
 
 ### Visual Studio
 Follow the instructions here to install .NET MAUI with Visual Studio Stable:
-   - [Windows](https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?view=net-maui-7.0&tabs=vswin)
+   - [Windows](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=vswin)
       - Select the 20348 SDK option inside Individual Components or [install 20348 manually](https://go.microsoft.com/fwlink/?linkid=2164145)
       - If you know you have 20348 installed but are still getting an error around this SDK missing, trying uninstalling and reinstalling the SDK.
-   - [macOS](https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?view=net-maui-7.0&tabs=vsmac)  
+   - [macOS](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=vsmac)  
    
 ### iOS / MacCatalyst
 
