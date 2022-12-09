@@ -311,6 +311,7 @@ namespace Microsoft.Maui.Platform
 			if (IsBorderDashed())
 				ctx.SetLineDash(_strokeDashOffset * _strokeThickness, _strokeDash);
 
+			// The Stroke is inner and we are clipping the outer, for that reason, we use the double to get the correct value.
 			ctx.SetLineWidth(2 * _strokeThickness);
 
 			ctx.SetLineCap(_strokeLineCap);
