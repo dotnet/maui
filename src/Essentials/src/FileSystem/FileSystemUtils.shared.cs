@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Storage
 		/// <param name="filename">The file path to normalize.</param>
 		/// <returns>
 		/// The normalized version of the file path provided in <paramref name="filename"/>.
-		/// Forward and backward slashed will be replaced by <see cref="Path.DirectorySeparatorChar"/>
+		/// Forward and backward slashes will be replaced by <see cref="Path.DirectorySeparatorChar"/>
 		/// so that it is correct for the current platform.
 		/// </returns>
 		public static string NormalizePath(string filename) =>
