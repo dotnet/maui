@@ -1,12 +1,12 @@
 <Project>
 
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiNuGets)' == 'true' or '$(UseMauiCore)' == 'true' ">
     <ProjectCapability Include="UseMauiCore" />
-    <ProjectCapability Condition=" '$(UseMaui)' == 'true' " Include="UseMaui" />
+    <ProjectCapability Condition=" '$(UseMaui)' == 'true' or '$(UseMauiNuGets)' == 'true' " Include="UseMaui" />
   </ItemGroup>
 
   <Import
-      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))) "
+      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiNuGets)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))) "
       Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk.net@MAUI_DOTNET_VERSION_MAJOR@"
   />
   <Import
@@ -15,7 +15,11 @@
   />
 
   <Import
-      Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' "
+      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true') and ('$(UseMauiNuGets)' != 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))) "
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
+  />
+  <Import
+      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@'))) "
       Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
   />
 
