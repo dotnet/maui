@@ -5,20 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
-using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.Controls.Platform;
-using Xunit;
-using AView = Android.Views.View;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.View;
-using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
+using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
+using Xunit;
+using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {

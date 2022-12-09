@@ -4,6 +4,7 @@ parameters:
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
   provisionatorChannel: 'latest'
+  agentPoolAccessToken: ''
 
 steps:
   - template: provision.yml
@@ -42,3 +43,8 @@ steps:
     condition: always()
     inputs:
       artifactName: $(System.PhaseName)
+
+  # This must always be placed as the last step in the job
+  - template: agent-rebooter/mac.v1.yml@yaml-templates
+    parameters:
+      AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}

@@ -1,5 +1,5 @@
-using Microsoft.Maui.Graphics.Text.Renderer;
 using Markdig;
+using Microsoft.Maui.Graphics.Text.Renderer;
 
 namespace Microsoft.Maui.Graphics.Text
 {
