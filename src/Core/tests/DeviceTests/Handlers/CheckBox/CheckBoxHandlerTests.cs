@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.CheckBox)]
-	public partial class CheckBoxHandlerTests : HandlerTestBase<CheckBoxHandler, CheckBoxStub>
+	public partial class CheckBoxHandlerTests : CoreHandlerTestBase<CheckBoxHandler, CheckBoxStub>
 	{
 		[Theory(DisplayName = "IsChecked Initializes Correctly")]
 		[InlineData(true)]

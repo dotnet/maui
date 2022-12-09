@@ -1,8 +1,8 @@
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace GraphicsTester.Scenarios
 {

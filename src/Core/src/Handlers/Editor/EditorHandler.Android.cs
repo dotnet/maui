@@ -2,6 +2,7 @@
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
@@ -130,6 +131,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
+		}
+
+		public override void PlatformArrange(Rect frame)
+		{
+			this.PrepareForTextViewArrange(frame);
+			base.PlatformArrange(frame);
 		}
 	}
 }

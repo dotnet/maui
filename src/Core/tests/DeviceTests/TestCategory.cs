@@ -22,12 +22,14 @@
 		public const string Image = "Image";
 		public const string ImageButton = "ImageButton";
 		public const string ImageSource = "ImageSource";
+		public const string IndicatorView = "IndicatorView";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
 		public const string NavigationView = "NavigationView";
 		public const string Page = "Page";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";
+		public const string RadioButton = "RadioButton";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string ShapeView = "ShapeView";

@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.WebView)]
-	public partial class WebViewHandlerTests : HandlerTestBase<WebViewHandler, WebViewStub>
+	public partial class WebViewHandlerTests : CoreHandlerTestBase<WebViewHandler, WebViewStub>
 	{
 		[Theory(DisplayName = "UrlSource Initializes Correctly")]
 		[InlineData("https://dotnet.microsoft.com/")]

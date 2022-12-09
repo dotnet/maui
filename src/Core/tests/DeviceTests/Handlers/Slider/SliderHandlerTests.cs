@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Slider)]
-	public partial class SliderHandlerTests : HandlerTestBase<SliderHandler, SliderStub>
+	public partial class SliderHandlerTests : CoreHandlerTestBase<SliderHandler, SliderStub>
 	{
 		[Theory(DisplayName = "Percent Value Initializes Correctly")]
 		[InlineData(0, 1, 0)]

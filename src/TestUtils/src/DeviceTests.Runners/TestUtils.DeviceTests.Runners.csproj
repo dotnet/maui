@@ -6,6 +6,7 @@
     <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests.Runners</RootNamespace>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests.Runners</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
+    <NoWarn>$(NoWarn),CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +25,7 @@
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\DeviceTests\TestUtils.DeviceTests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

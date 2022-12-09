@@ -4,6 +4,7 @@
     <TargetFrameworks>$(WindowsMauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</AssemblyName>
+    <IsTrimmable>false</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>

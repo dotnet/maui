@@ -1,0 +1,47 @@
+<Project>
+
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
+    <ProjectCapability Include="UseMauiCore" />
+    <ProjectCapability Condition=" '$(UseMaui)' == 'true' " Include="UseMaui" />
+  </ItemGroup>
+
+  <Import
+      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))) "
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk.net@MAUI_DOTNET_VERSION_MAJOR@"
+  />
+  <Import
+      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@'))) "
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@"
+  />
+
+  <Import
+      Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' "
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
+  />
+
+  <!--
+      Previous versions of the .NET MAUI SDK used **FromWorkload**, so replace with explicit versions.
+      The BundledVersions.targets that is imported is from the previous SDK, so all the other values are correct.
+  -->
+  <ItemGroup Condition=" $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@')) ">
+    <KnownFrameworkReference
+        Update="Microsoft.Maui.Core"
+        DefaultRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+        LatestRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+        TargetingPackVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+    />
+    <KnownFrameworkReference
+        Update="Microsoft.Maui.Controls"
+        DefaultRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+        LatestRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+        TargetingPackVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+    />
+    <KnownFrameworkReference
+        Update="Microsoft.Maui.Essentials"
+        DefaultRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+        LatestRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+        TargetingPackVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+    />
+  </ItemGroup>
+
+</Project>
