@@ -17,7 +17,7 @@ iOS and MacCatalyst will require current stable Xcode. You can get this [here](h
 
 ### Android
 
-If you're missing any of the Android SDKs, Visual Studio should prompt you to intall them. If it doesn't prompt you then use the [Android SDK Manager](https://learn.microsoft.com/en-us/xamarin/android/get-started/installation/android-sdk) to install the necessary SDKs.
+If you're missing any of the Android SDKs, Visual Studio should prompt you to install them. If it doesn't prompt you then use the [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk) to install the necessary SDKs.
 
 ### Opening the Repository
 
