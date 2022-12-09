@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			set => throw new NotImplementedException();
 		}
 
-
 		/// <summary>
 		/// Gets a collection of <see cref="RootComponent"/> items.
 		/// </summary>
