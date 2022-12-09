@@ -21,5 +21,10 @@ namespace Microsoft.Maui.Controls
 		{
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, entry);
 		}
+
+		static void MapFocus(IEntryHandler arg1, IEntry arg2, object arg3)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls
+﻿using System;
+
+namespace Microsoft.Maui.Controls
 {
 	public partial class Entry
 	{
@@ -17,10 +19,22 @@
 				[nameof(TextTransform)] = MapText,
 			};
 
+
+#if ANDROID
+		static CommandMapper<IEntry, IEntryHandler> ControlsEntryCommandMapper = new()
+		{
+			[nameof(IView.Focus)] = MapFocus,
+		};
+
+#endif
+
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors
 			EntryHandler.Mapper = ControlsEntryMapper;
+#if ANDROID
+			EntryHandler.CommandMapper = ControlsEntryCommandMapper;
+#endif
 		}
 	}
 }

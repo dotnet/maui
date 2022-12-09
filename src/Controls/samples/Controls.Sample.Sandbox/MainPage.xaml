@@ -3,5 +3,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+    <VerticalStackLayout
+            Spacing="25"
+            Padding="30,0"
+            VerticalOptions="Center">
 
+        <Entry x:Name="whatwhat"></Entry>
+        <Button Text="Send"></Button>
+    </VerticalStackLayout>
 </ContentPage>
