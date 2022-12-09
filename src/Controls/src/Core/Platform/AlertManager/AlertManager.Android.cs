@@ -94,6 +94,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnPageBusy(IView sender, bool enabled)
 			{
+				// Verify that the page making the request is part of this activity 
+				if (!PageIsInThisContext(sender))
+				{
+					return;
+				}
+
 				_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);
 
 				UpdateProgressBarVisibility(_busyCount > 0);
