@@ -1,30 +1,25 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
-using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
-using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
-using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
-using WWindow = Microsoft.UI.Xaml.Window;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Platform;
-using System.Threading.Tasks;
-using System;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
-using WAppBarButton = Microsoft.UI.Xaml.Controls.AppBarButton;
-using Xunit;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Xunit;
+using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
+using WAppBarButton = Microsoft.UI.Xaml.Controls.AppBarButton;
+using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
+using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
+using WWindow = Microsoft.UI.Xaml.Window;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ControlsHandlerTestBase
 	{
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((DependencyObject)viewHandler.PlatformView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
-			== AccessibilityView.Content;
-
-
 		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{

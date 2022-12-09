@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
@@ -15,6 +16,41 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static Task WaitForKeyboardToShow(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task WaitForKeyboardToHide(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task SendValueToKeyboard(this FrameworkElement view, char value, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task SendKeyboardReturnType(this FrameworkElement view, ReturnType returnType, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task FocusView(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task ShowKeyboardForView(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static Task<string> CreateColorAtPointError(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
@@ -109,16 +145,15 @@ namespace Microsoft.Maui.DeviceTests
 				await tcs.Task;
 				view.Unloaded += OnViewUnloaded;
 
-				// continue with the run
 				T result;
 				try
 				{
 					result = await Run(action);
-					grid.Children.Clear();
 				}
 				finally
 				{
-					await unloadedTcs.Task;
+					grid.Children.Clear();
+					await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 					await Task.Delay(10);
 					window.Close();
 				}
@@ -287,5 +322,15 @@ namespace Microsoft.Maui.DeviceTests
 				LineBreakMode.MiddleTruncation => TextTrimming.WordEllipsis,
 				_ => throw new ArgumentOutOfRangeException(nameof(mode))
 			};
+
+		public static bool IsAccessibilityElement(this FrameworkElement platformView)
+		{
+			return AutomationProperties.GetAccessibilityView(platformView) == UI.Xaml.Automation.Peers.AccessibilityView.Content;
+		}
+
+		public static bool IsExcludedWithChildren(this FrameworkElement platformView)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

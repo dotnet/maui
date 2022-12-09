@@ -2,17 +2,17 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
-using Microsoft.Maui.Controls.Internals;
 using UwpApp = Microsoft.UI.Xaml.Application;
 using UwpDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WRect = Windows.Foundation.Rect;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP

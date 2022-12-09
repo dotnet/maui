@@ -1,5 +1,7 @@
 ﻿using Microsoft.Maui.Primitives;
 using Xunit;
+using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
+
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class VisualElementTests
@@ -67,6 +69,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			visualElement.Background = brush2;
 			Assert.Equal(bc1, brush2.BindingContext);
 
+		}
+
+		[Fact]
+		public void FocusedElementGetsFocusedVisualState()
+		{
+			var vsgList = CreateTestStateGroups();
+			var stateGroup = vsgList[0];
+			var element = new Button();
+			VisualStateManager.SetVisualStateGroups(element, vsgList);
+
+			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			Assert.Equal(stateGroup.CurrentState.Name, FocusedStateName);
 		}
 	}
 }
