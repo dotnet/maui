@@ -13,6 +13,11 @@ namespace Microsoft.Maui.Platform
 		CAShapeLayer? _childMaskLayer;
 		internal event EventHandler? LayoutSubviewsChanged;
 
+		public ContentView()
+		{
+			Layer.CornerCurve = CACornerCurve.Continuous;
+		}
+
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (CrossPlatformMeasure == null)
@@ -125,7 +130,13 @@ namespace Microsoft.Maui.Platform
 			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * displayDensity), (float)frame.Height - (strokeThickness * displayDensity));
 
 			IShape? clipShape = Clip?.Shape;
-			var path = clipShape?.PathForBounds(bounds);
+			PathF? path;
+
+			if (clipShape is IRoundRectangle roundRectangle)
+				path = roundRectangle.InnerPathForBounds(bounds, strokeThickness);
+			else
+				path = clipShape?.PathForBounds(bounds);
+
 			var nativePath = path?.AsCGPath();
 
 			maskLayer.Path = nativePath;
