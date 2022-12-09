@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
@@ -8,7 +9,6 @@ using Microsoft.UI.Xaml.Shapes;
 using WEllipse = Microsoft.UI.Xaml.Shapes.Ellipse;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WShape = Microsoft.UI.Xaml.Shapes.Shape;
-using Microsoft.Maui.Controls.Platform;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP

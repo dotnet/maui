@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.VisualElement;
 using WRect = Windows.Foundation.Rect;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

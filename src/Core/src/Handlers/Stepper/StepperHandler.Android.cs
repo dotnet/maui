@@ -36,6 +36,11 @@ namespace Microsoft.Maui.Handlers
 			return stepperLayout;
 		}
 
+		public static void MapIsEnabled(IStepperHandler handler, IStepper stepper)
+		{
+			handler.PlatformView?.UpdateIsEnabled(stepper);
+		}
+
 		public static void MapMinimum(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateMinimum(stepper);

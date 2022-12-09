@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
-using WVisualStateGroup = Microsoft.UI.Xaml.VisualStateGroup;
 using WVisualState = Microsoft.UI.Xaml.VisualState;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
+using WVisualStateGroup = Microsoft.UI.Xaml.VisualStateGroup;
+using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
