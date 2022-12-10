@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.OnConnectHandler(platformView);
 
-			if(platformView is MauiPageControl pageControl)
+			if (platformView is MauiPageControl pageControl)
 				pageControl.SetIndicatorView(VirtualView);
 		}
 
