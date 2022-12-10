@@ -136,10 +136,10 @@ code in .NET MAUI:
    `$(AndroidUseIntermediateDesignerFile)` to `false`.
 
 2. Build .NET MAUI as you normally would. You will get compiler errors
-   about duplicate fields, but `obj\Debug\net6.0-android\Resource.designer.cs`
+   about duplicate fields, but `obj\Debug\net[current_sdk_version]-android\Resource.designer.cs`
    should now be generated.
 
-3. Open `obj\Debug\net6.0-android\Resource.designer.cs`, and find the
+3. Open `obj\Debug\net[current_sdk_version]-android\Resource.designer.cs`, and find the
    field you need such as:
 
 ```csharp
@@ -161,7 +161,7 @@ This method ensures that the workloads installed by Visual Studio won't get chan
 
 #### Cake
 
-You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
+You can run a `Cake` target to bootstrap .NET SDK in `bin\dotnet` and launch Visual Studio:
 
 ```dotnetcli
 dotnet tool restore
@@ -193,14 +193,14 @@ dotnet cake --pack
 mkdir MyMauiApp
 cd MyMauiApp
 ..\bin\dotnet\dotnet new maui
-..\bin\dotnet\dotnet build -t:Run -f net6.0-android
+..\bin\dotnet\dotnet build -t:Run -f net[current_sdk_version]-android
 ```
 
 You can also run commands individually:
 ```dotnetcli
 # install local tools required to build (cake, pwsh, etc..)
 dotnet tool restore
-# Provision .NET 6 in bin\dotnet
+# Provision .NET SDK in bin\dotnet
 dotnet build src\DotNet\DotNet.csproj
 # Builds Maui MSBuild tasks
 .\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks.slnf
