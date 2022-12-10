@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool _disposed;
 		bool _usingItemTemplate = false;
+		DataTemplateSelector _itemTemplateSelector = null;
 
 		protected internal ItemsViewAdapter(TItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
@@ -95,7 +96,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (_usingItemTemplate)
 			{
-				return ItemViewType.TemplatedItem;
+				// If we're using a template selector, using the 
+				// selected DataTemplate's 'Type'
+				// and get the hashcode to get a reasonably unique
+				// value for the DataTemplate for us to recycle
+				// all views using this DataTemplate with
+				return _itemTemplateSelector?
+					.SelectTemplate(
+						ItemsSource.GetItem(position),
+						ItemsView)
+					?.Type?.GetHashCode() ?? ItemViewType.TemplatedItem;
 			}
 
 			// No template, just use the Text view
@@ -131,6 +141,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateUsingItemTemplate()
 		{
 			_usingItemTemplate = ItemsView.ItemTemplate != null;
+			_itemTemplateSelector = ItemsView.ItemTemplate as DataTemplateSelector;
 		}
 	}
 }
