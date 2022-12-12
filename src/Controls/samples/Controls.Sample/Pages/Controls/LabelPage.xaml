@@ -85,8 +85,7 @@
                     VerticalTextAlignment="End"
                     Text="This should be at the bottom"
                     HeightRequest="100"/>
-                <Label
-                    >
+                <Label>
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Plain old Text" />
@@ -110,7 +109,6 @@
                             <Span Text="Plain old Text" />
                         </FormattedString>
                     </Label.FormattedText>
-
                 </Label>
                 <Label
                     Text="Html text"
