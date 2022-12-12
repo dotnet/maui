@@ -96,7 +96,7 @@
                             <Span Text=" " />
                             <Span Text="Should be uppercase" TextTransform="Uppercase" />
                             <Span Text=" " />
-                            <Span Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
+                            <Span x:Name="GestureSpan" Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
                                 <Span.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="ClickGestureRecognizer_Clicked" />
                                 </Span.GestureRecognizers>

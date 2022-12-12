@@ -10,15 +10,16 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 		}
-		
+
 		void ClickGestureRecognizer_Clicked(System.Object sender, System.EventArgs e)
 		{
+			var label = sender as Label;
+
+			if (label == null)
+				return;
+
 			var rnd = new System.Random();
-
-			var span = sender as Span;
-
-			if (span != null)
-				span.TextColor = Color.FromRgb((byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254));
+			GestureSpan.TextColor = Color.FromRgb((byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254));
 		}
 
 		void ChangeFormattedString_Clicked(object sender, System.EventArgs e)
