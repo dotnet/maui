@@ -22,17 +22,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			if (Count == 0)
 				return ~0;
 
-			for (var i = 0; i < Count; i++)
-			{
-				var existing = this[i];
-				var compare = _comparer.Compare(item, existing);
-				if (compare == 0)
-					return i;
-				if (compare < 0)
-					return ~i;
-			}
-
-			return ~Count;
+			return _list.BinarySearch(item, _comparer);
 		}
 
 		public void Insert(int index, T item)
