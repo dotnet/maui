@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls.Platform
 	class GestureManager : IDisposable
 	{
 		IViewHandler? _handler;
-		Lazy<ScaleGestureDetector> _scaleDetector;
-		Lazy<TapAndPanGestureDetector> _tapAndPanAndSwipeDetector;
-		Lazy<DragAndDropGestureHandler> _dragAndDropGestureHandler;
-		Lazy<PointerGestureHandler> _pointerGestureHandler;
+		readonly Lazy<ScaleGestureDetector> _scaleDetector;
+		readonly Lazy<TapAndPanGestureDetector> _tapAndPanAndSwipeDetector;
+		readonly Lazy<DragAndDropGestureHandler> _dragAndDropGestureHandler;
+		readonly Lazy<PointerGestureHandler> _pointerGestureHandler;
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
@@ -170,10 +170,11 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			var platformView = Control;
+
 			if (platformView == null)
 				return;
 
-			if (View.GestureRecognizers.Count == 0)
+			if (View.GestureController.CompositeGestureRecognizers.Count == 0)
 			{
 				platformView.Touch -= OnPlatformViewTouched;
 			}
@@ -188,6 +189,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_disposed)
 			{
 				var platformView = Control;
+
 				if (platformView != null)
 					platformView.Touch -= OnPlatformViewTouched;
 

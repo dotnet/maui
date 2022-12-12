@@ -78,10 +78,9 @@ namespace Microsoft.Maui.Controls
 				if (platformView == null || virtualView == null)
 					return;
 
-				SpannableString spannableString = null;
-
-				if (virtualView.FormattedText != null)
-					spannableString = virtualView.ToSpannableString();
+				FormattedString formattedText = virtualView.FormattedText ?? virtualView.Text;
+				var fontManager = labelHandler.GetRequiredService<IFontManager>();
+				SpannableString spannableString = formattedText.ToSpannableString(fontManager);
 
 				platformView.RecalculateSpanPositions(virtualView, spannableString, new SizeRequest(new Size(args.Right - args.Left, args.Bottom - args.Top)));
 			}

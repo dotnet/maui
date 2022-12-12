@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -92,8 +92,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public bool HasAnyGestures()
 		{
 			var view = GetView();
+
 			return view != null && view.GestureRecognizers.OfType<TapGestureRecognizer>().Any()
-								|| GetChildElements().GetChildGesturesFor<TapGestureRecognizer>().Any();
+				|| GetChildElements().GetChildGesturesFor<TapGestureRecognizer>().Any();
 		}
 
 		public IEnumerable<TapGestureRecognizer> TapGestureRecognizers(int count)
