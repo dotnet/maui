@@ -128,6 +128,14 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
+#if PLATFORM
+		public static bool IsAccessibilityElement(this IView view) =>
+			view.ToPlatform().IsAccessibilityElement();
+
+
+		public static bool IsExcludedWithChildren(this IView view) =>
+			view.ToPlatform().IsExcludedWithChildren();
+#endif
 
 #endif
 
