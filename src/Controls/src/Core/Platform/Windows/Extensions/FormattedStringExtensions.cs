@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
@@ -127,6 +128,55 @@ namespace Microsoft.Maui.Controls.Platform
 			run.CharacterSpacing = span.CharacterSpacing.ToEm();
 
 			return Tuple.Create(run, span.TextColor, span.BackgroundColor);
+		}
+
+		internal static void RecalculateSpanPositions(this TextBlock control, Label element, IList<double> inlineHeights)
+		{
+			if (element?.FormattedText?.Spans == null	
+				|| element.FormattedText.Spans.Count == 0)
+				return;
+			
+			var labelWidth = control.ActualWidth;
+
+			if (labelWidth <= 0 || control.Height <= 0)
+				return;
+
+			for (int i = 0; i < element.FormattedText.Spans.Count; i++)
+			{
+				var span = element.FormattedText.Spans[i];
+
+				var inline = control.Inlines.ElementAt(i);
+				var startRect = inline.ContentStart.GetCharacterRect(LogicalDirection.Forward);
+				var endRect = inline.ContentEnd.GetCharacterRect(LogicalDirection.Forward);
+
+				var defaultLineHeight = inlineHeights[i];
+				var yaxis = startRect.Top;
+
+				var lineHeights = new List<double>();
+
+				while (yaxis < endRect.Bottom)
+				{
+					double lineHeight;
+
+					if (yaxis == startRect.Top) // First Line
+					{
+						lineHeight = startRect.Bottom - startRect.Top;
+					}
+					else if (yaxis != endRect.Top) // Middle Line(s)
+					{
+						lineHeight = defaultLineHeight;
+					}
+					else // Bottom Line
+					{
+						lineHeight = endRect.Bottom - endRect.Top;
+					}
+
+					lineHeights.Add(lineHeight);
+					yaxis += lineHeight;
+				}
+
+				((ISpatialElement)span).Region = Region.FromLines(lineHeights.ToArray(), labelWidth, startRect.X, endRect.X + endRect.Width, startRect.Top).Inflate(10);
+			}
 		}
 	}
 }
