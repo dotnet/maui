@@ -9,6 +9,7 @@ parameters:
   provisionatorVSPath: $(provisionator.vs)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
+  gitHubToken : $(github--pat--vs-mobiletools-engineering-service2)
 
 steps:
   # Prepare macOS
@@ -27,9 +28,9 @@ steps:
         inputs:
           provisioning_script: ${{ parameters.provisionatorXCodePath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
     - ${{ if ne(parameters.skipProvisioning, 'true') }}:
       - task: xamops.azdevex.provisionator-task.provisionator@2
@@ -38,9 +39,9 @@ steps:
         inputs:
           provisioning_script: ${{ parameters.provisionatorPath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
     # Setup SDK Paths
     - bash: |
@@ -97,12 +98,12 @@ steps:
     - ${{ if ne(parameters.skipVS, 'true') }}:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Visual Studio'
-        condition: eq(variables['provisioningVS'], 'true')
         inputs:
           provisioning_script: ${{ parameters.provisionatorVSPath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
       - pwsh: |
           $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
           echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
@@ -115,9 +116,9 @@ steps:
         inputs:
           provisioning_script: ${{ parameters.provisionatorPath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
   # Prepare Both
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
