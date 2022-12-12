@@ -1,10 +1,35 @@
 ﻿using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
+using UIKit;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Label
 	{
+		MauiLabel _mauiLabel;
+
+		private protected override void OnHandlerChangedCore()
+		{
+			base.OnHandlerChangedCore();
+
+			if (Handler != null)
+			{
+				if (Handler is LabelHandler labelHandler && labelHandler.PlatformView is MauiLabel mauiLabel)
+				{
+					_mauiLabel = mauiLabel;
+					_mauiLabel.LayoutSubviewsChanged += OnLayoutSubviewsChanged;
+				}
+			}
+			else
+			{
+				if (_mauiLabel != null)
+				{
+					_mauiLabel.LayoutSubviewsChanged -= OnLayoutSubviewsChanged;
+					_mauiLabel = null;
+				}
+			}
+		}
+
 		public static void MapTextType(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
 		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
 		public static void MapCharacterSpacing(LabelHandler handler, Label label) => MapCharacterSpacing((ILabelHandler)handler, label);
@@ -121,6 +146,20 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return true;
+		}
+
+		void OnLayoutSubviewsChanged(object sender, System.EventArgs e)
+		{
+			if (Handler is LabelHandler labelHandler)
+			{
+				var platformView = labelHandler.PlatformView as UILabel;
+				var virtualView = labelHandler.VirtualView as Label;
+
+				if (platformView == null || virtualView == null)
+					return;
+
+				platformView.RecalculateSpanPositions(virtualView);
+			}
 		}
 	}
 }

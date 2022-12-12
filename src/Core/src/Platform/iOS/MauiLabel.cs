@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		internal event EventHandler LayoutSubviewsChanged;
+
 		public override void DrawText(RectangleF rect)
 		{
 			rect = TextInsets.InsetRect(rect);
@@ -63,6 +65,13 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return rect;
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public override void InvalidateIntrinsicContentSize()
