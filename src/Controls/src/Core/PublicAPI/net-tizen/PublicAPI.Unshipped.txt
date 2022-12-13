@@ -1,8 +1,6 @@
 #nullable enable
 ~static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToFormattedString(this Microsoft.Maui.Controls.Label label) -> Tizen.UIExtensions.Common.FormattedString
 Microsoft.Maui.Controls.Platform.FormattedStringExtensions
+override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 *REMOVED*Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundCorlor -> Tizen.NUI.Color!
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackdropColor -> Tizen.NUI.Color!
-readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundColor -> Tizen.NUI.Color!
-override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
