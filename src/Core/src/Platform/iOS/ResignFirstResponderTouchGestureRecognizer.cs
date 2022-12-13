@@ -66,31 +66,31 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void Update(UITextView uIControl, UIWindow? window)
+		internal static void Update(UITextView textView, UIWindow? window)
 		{
 			if (window != null)
 			{
-				uIControl.Started += OnEditingDidBegin;
-				uIControl.Ended += OnEditingDidEnd;
+				textView.Started += OnEditingDidBegin;
+				textView.Ended += OnEditingDidEnd;
 			}
 			else
 			{
 				uIControl.Started -= OnEditingDidBegin;
-				uIControl.Ended -= OnEditingDidEnd;
+				textView.Ended -= OnEditingDidEnd;
 			}
 		}
 
-		internal static void Update(UIControl uIControl, UIWindow? window)
+		internal static void Update(UIControl platformControl, UIWindow? window)
 		{
 			if (window != null)
 			{
-				uIControl.EditingDidBegin += OnEditingDidBegin;
-				uIControl.EditingDidEnd += OnEditingDidEnd;
+				platformControl.EditingDidBegin += OnEditingDidBegin;
+				platformControl.EditingDidEnd += OnEditingDidEnd;
 			}
 			else
 			{
 				uIControl.EditingDidBegin -= OnEditingDidBegin;
-				uIControl.EditingDidEnd -= OnEditingDidEnd;
+				platformControl.EditingDidEnd -= OnEditingDidEnd;
 			}
 		}
 
