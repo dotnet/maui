@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				uIControl.Started -= OnEditingDidBegin;
+				textView.Started -= OnEditingDidBegin;
 				textView.Ended -= OnEditingDidEnd;
 			}
 		}
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				uIControl.EditingDidBegin -= OnEditingDidBegin;
+				platformControl.EditingDidBegin -= OnEditingDidBegin;
 				platformControl.EditingDidEnd -= OnEditingDidEnd;
 			}
 		}
