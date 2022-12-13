@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			VisualStateManager.SetVisualStateGroups(element, vsgList);
 
 			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
-			Assert.Equal(stateGroup.CurrentState.Name, FocusedStateName);
+			Assert.Equal(FocusedStateName, stateGroup.CurrentState.Name);
 		}
 	}
 }
