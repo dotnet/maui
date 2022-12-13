@@ -81,6 +81,23 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		protected Task<TValue> GetValueAsync<TValue>(IElement view, Func<IPlatformViewHandler, TValue> func)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = (IPlatformViewHandler)view.ToHandler(MauiContext);
+				return func(handler);
+			});
+		}
+		protected Task<TValue> GetValueAsync<TValue>(IElement view, Func<IPlatformViewHandler, Task<TValue>> func)
+		{
+			return InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = (IPlatformViewHandler)view.ToHandler(MauiContext);
+				return await func(handler);
+			});
+		}
+
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
 			where THandler : class, IElementHandler
 		{
@@ -376,5 +393,8 @@ namespace Microsoft.Maui.DeviceTests
 						.SingleOrDefault(x => x.Toolbar != null)
 						?.Toolbar;
 		}
+
+		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action);
 	}
 }

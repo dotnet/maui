@@ -39,8 +39,6 @@ namespace Microsoft.Maui.ApplicationModel
 			settingsIntent.SetData(global::Android.Net.Uri.Parse("package:" + PackageName));
 
 			var flags = ActivityFlags.NewTask | ActivityFlags.NoHistory | ActivityFlags.ExcludeFromRecents;
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				flags |= ActivityFlags.LaunchAdjacent;
 			settingsIntent.SetFlags(flags);
 
 			context.StartActivity(settingsIntent);
