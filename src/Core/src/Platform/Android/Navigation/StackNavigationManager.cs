@@ -302,8 +302,6 @@ namespace Microsoft.Maui.Platform
 
 			_fragmentContainerView = navigationView.Handler?.PlatformView as FragmentContainerView;
 
-			System.Diagnostics.Debug.WriteLine($"Connect: {_fragmentContainerView}");
-
 			_fragmentManager = MauiContext?.GetFragmentManager();
 
 			_ = _fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
