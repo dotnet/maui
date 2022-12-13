@@ -101,8 +101,17 @@ namespace Microsoft.Maui.DeviceTests
 		NativeTextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
-		NativeVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).VerticalAlignment;
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler)
+		{
+			var textBox = GetNativeEntry(entryHandler);
+
+			var sv = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+			var placeholder = textBox.GetDescendantByName<TextBlock>("PlaceholderTextContentPresenter");
+
+			Assert.Equal(sv.VerticalAlignment, placeholder.VerticalAlignment);
+
+			return sv.VerticalAlignment;
+		}
 
 		NativeVerticalAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
 			textAlignment.ToPlatformVerticalAlignment();
