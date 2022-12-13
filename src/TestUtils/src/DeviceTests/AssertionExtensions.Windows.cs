@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
@@ -145,15 +144,16 @@ namespace Microsoft.Maui.DeviceTests
 				await tcs.Task;
 				view.Unloaded += OnViewUnloaded;
 
+				// continue with the run
 				T result;
 				try
 				{
 					result = await Run(action);
+					grid.Children.Clear();
 				}
 				finally
 				{
-					grid.Children.Clear();
-					await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+					await unloadedTcs.Task;
 					await Task.Delay(10);
 					window.Close();
 				}
@@ -322,15 +322,5 @@ namespace Microsoft.Maui.DeviceTests
 				LineBreakMode.MiddleTruncation => TextTrimming.WordEllipsis,
 				_ => throw new ArgumentOutOfRangeException(nameof(mode))
 			};
-
-		public static bool IsAccessibilityElement(this FrameworkElement platformView)
-		{
-			return AutomationProperties.GetAccessibilityView(platformView) == UI.Xaml.Automation.Peers.AccessibilityView.Content;
-		}
-
-		public static bool IsExcludedWithChildren(this FrameworkElement platformView)
-		{
-			throw new NotImplementedException();
-		}
 	}
 }

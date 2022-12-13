@@ -72,14 +72,6 @@ namespace Maui.Controls.Sample.Pages
 					return LineBreakMode.WordWrap;
 			}
 		}
-
-		int _backgroundCount;
-
-		void OnBackgroundButtonClicked(object sender, System.EventArgs e)
-		{
-			BackgroundButton.Text = $"Background tapped {_backgroundCount} times";
-			_backgroundCount++;
-		}
 	}
 
 	public class ButtonPageViewModel : BindableObject

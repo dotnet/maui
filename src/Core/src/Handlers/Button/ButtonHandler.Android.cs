@@ -44,7 +44,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.SetOnTouchListener(TouchListener);
 
 			platformView.FocusChange += OnNativeViewFocusChange;
-			platformView.LayoutChange += OnPlatformViewLayoutChange;
 
 			base.ConnectHandler(platformView);
 		}
@@ -58,7 +57,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.SetOnTouchListener(null);
 
 			platformView.FocusChange -= OnNativeViewFocusChange;
-			platformView.LayoutChange -= OnPlatformViewLayoutChange;
 
 			ImageSourceLoader.Reset();
 
@@ -157,12 +155,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsFocused = e.HasFocus;
-		}
-
-		void OnPlatformViewLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
-		{
-			if (sender is MaterialButton platformView && VirtualView != null)
-				platformView.UpdateBackground(VirtualView);
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener

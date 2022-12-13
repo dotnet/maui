@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			[nameof(IMenuBarItem.Text)] = MapText,
-			[nameof(IMenuBarItem.IsEnabled)] = MapIsEnabled,
 #endif
 		};
 

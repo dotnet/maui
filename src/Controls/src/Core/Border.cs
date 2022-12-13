@@ -217,8 +217,6 @@ namespace Microsoft.Maui.Controls
 				propertyName == WidthProperty.PropertyName ||
 				propertyName == StrokeShapeProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
-			else if (propertyName == StrokeDashArrayProperty.PropertyName)
-				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
 		}
 
 		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)

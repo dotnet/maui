@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Controls
 		{
 			child.Parent = null;
 
-			ChildRemoved?.Invoke(this, new ElementEventArgs(child));
+			ChildRemoved?.Invoke(child, new ElementEventArgs(child));
 
 			VisualDiagnostics.OnChildRemoved(this, child, oldLogicalIndex);
 
