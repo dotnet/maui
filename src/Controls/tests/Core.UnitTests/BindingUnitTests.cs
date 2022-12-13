@@ -1394,6 +1394,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ConvertBackReturnsUnsetValue()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), "default");
+			bindable.SetBinding(property, new Binding("Object", mode:BindingMode.OneWayToSource, converter: converter));
+			bindable.SetValue(property, "Baz");
+			bindable.BindingContext = vm;
+			Assert.Equal("Baz", vm.Object);
+			bindable.SetValue(property, BindableProperty.UnsetValue);
+			Assert.Equal("Baz", vm.Object);
+		}
+
+		[Fact]
+		public void ConvertBackReturnsDoNothing()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), "default");
+			bindable.SetBinding(property, new Binding("Object", mode: BindingMode.OneWayToSource, converter: converter));
+			bindable.SetValue(property, "Baz");
+			bindable.BindingContext = vm;
+			Assert.Equal("Baz", vm.Object);
+			bindable.SetValue(property, Binding.DoNothing);
+			Assert.Equal("Baz", vm.Object);
+		}
+
+		[Fact]
 		public void ConverterReturnsNull()
 		{
 			var converter = new TestConverterReturn();

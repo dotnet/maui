@@ -971,6 +971,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ConvertBackReturnsUnsetValue()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), "default");
+ 
+			var binding = new TypedBinding<MockViewModel, object>(
+				getter: mvm => (mvm.Object, true),
+				setter: (mvm, s) => mvm.Object = s,
+				handlers: new[] {
+					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Object")
+				})
+			{ Mode = BindingMode.OneWayToSource, Converter = converter };
+			bindable.SetBinding(property, binding);
+
+			bindable.SetValue(property, "Baz");
+			bindable.BindingContext = vm;
+			Assert.Equal("Baz", vm.Object);
+			bindable.SetValue(property, BindableProperty.UnsetValue);
+			Assert.Equal("Baz", vm.Object);
+		}
+
+		[Fact]
+		public void ConvertBackReturnsDoNothing()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), "default");
+
+			var binding = new TypedBinding<MockViewModel, object>(
+				getter: mvm => (mvm.Object, true),
+				setter: (mvm, s) => mvm.Object = s,
+				handlers: new[] {
+					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Object")
+				})
+			{ Mode = BindingMode.OneWayToSource, Converter = converter };
+			bindable.SetBinding(property, binding);
+
+			bindable.SetValue(property, "Baz");
+			bindable.BindingContext = vm;
+			Assert.Equal("Baz", vm.Object);
+			bindable.SetValue(property, Binding.DoNothing);
+			Assert.Equal("Baz", vm.Object);
+		}
+
+		[Fact]
 		public void SelfBindingConverter()
 		{
 			var converter = new TestConverter<int, string>();
