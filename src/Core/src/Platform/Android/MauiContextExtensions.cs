@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var layoutInflater = mauiContext.Services.GetService<LayoutInflater>();
 
-			if (layoutInflater == null && mauiContext.Context != null)
+			if (!layoutInflater.IsAlive() && mauiContext.Context != null)
 			{
 				var activity = mauiContext.Context.GetActivity();
 
