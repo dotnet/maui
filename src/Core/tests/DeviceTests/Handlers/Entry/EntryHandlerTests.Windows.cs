@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Media;
 using Xunit;
 
 using NativeTextAlignment = Microsoft.UI.Xaml.TextAlignment;
-//using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
+using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -101,8 +101,11 @@ namespace Microsoft.Maui.DeviceTests
 		NativeTextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
-		//NativeVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
-		//	GetNativeEntry(entryHandler).VerticalAlignment;
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).VerticalAlignment;
+
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToPlatformVerticalAlignment();
 
 		int GetNativeCursorPosition(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).GetCursorPosition();
