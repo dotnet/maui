@@ -89,17 +89,22 @@ namespace Microsoft.Maui.Controls
 			if (!fromTarget)
 			{
 				var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
-				if (value != Binding.DoNothing)
-				{
-					_applying = true;
-					if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
-					{
-						BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
-						return;
-					}
-					_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
-					_applying = false;
-				}
+
+                if (ReferenceEquals(value, BindableProperty.UnsetValue))
+                {
+                    value = FallbackValue ?? this._targetProperty.GetDefaultValue(this._targetObject);
+                }
+                else if (ReferenceEquals(value, Binding.DoNothing))
+                    return;
+
+                _applying = true;
+                if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+                {
+                    BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+                    return;
+                }
+                _targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
+                _applying = false;
 			}
 			else
 			{
@@ -162,17 +167,22 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
-			if (value != Binding.DoNothing)
-			{
-				_applying = true;
-				if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
-				{
-					BindingDiagnostics.SendBindingFailure(this, context, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
-					return;
-				}
-				_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
-				_applying = false;
-			}
+
+            if (ReferenceEquals(value, BindableProperty.UnsetValue))
+            {
+                value = FallbackValue ?? this._targetProperty.GetDefaultValue(this._targetObject);
+            }
+            else if (ReferenceEquals(value, Binding.DoNothing))
+                return;
+
+            _applying = true;
+            if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+            {
+                BindingDiagnostics.SendBindingFailure(this, context, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+                return;
+            }
+            _targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
+            _applying = false;
 		}
 
 		class ProxyElement : Element
@@ -195,9 +205,6 @@ namespace Microsoft.Maui.Controls
 
 			if (valuearray != null && Converter == null && StringFormat != null && TryFormat(StringFormat, valuearray, out var formatted))
 				return formatted;
-
-			if (ReferenceEquals(BindableProperty.UnsetValue, value))
-				return FallbackValue;
 
 			return base.GetSourceValue(value, targetPropertyType);
 		}

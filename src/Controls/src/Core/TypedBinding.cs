@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (needsGetter)
 			{
-				var value = FallbackValue ?? property.GetDefaultValue(target);
+				var value = BindableProperty.UnsetValue;
 				if (isTSource)
 				{
 					try
@@ -221,6 +221,14 @@ namespace Microsoft.Maui.Controls.Internals
 					{
 					}
 				}
+                
+                if (ReferenceEquals(value, BindableProperty.UnsetValue))
+                {
+                    value = FallbackValue ?? property.GetDefaultValue(target);
+                }
+                else if (ReferenceEquals(value, Binding.DoNothing))
+                    return;
+
 				if (!BindingExpression.TryConvert(ref value, property, property.ReturnType, true))
 				{
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, property.ReturnType);

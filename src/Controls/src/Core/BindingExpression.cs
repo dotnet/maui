@@ -143,13 +143,17 @@ namespace Microsoft.Maui.Controls
 			Debug.Assert(part != null, "There should always be at least the self part in the expression.");
 
 			if (needsGetter)
-			{
-				if (part.TryGetValue(current, out object value) || part.IsSelf)
-				{
-					value = Binding.GetSourceValue(value, property.ReturnType);
-				}
-				else
-					value = Binding.FallbackValue ?? property.GetDefaultValue(target);
+            {
+                object value = part.TryGetValue( current, out value ) || part.IsSelf
+                    ? Binding.GetSourceValue( value, property.ReturnType )
+                    : BindableProperty.UnsetValue;
+
+				if (ReferenceEquals(value, BindableProperty.UnsetValue))
+                {
+                    value = Binding.FallbackValue ?? property.GetDefaultValue(target);
+                }
+				else if (ReferenceEquals(value, Controls.Binding.DoNothing))
+                    return;
 
 				if (!TryConvert(ref value, property, property.ReturnType, true))
 				{
