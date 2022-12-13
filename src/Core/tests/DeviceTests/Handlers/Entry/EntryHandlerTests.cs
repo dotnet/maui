@@ -102,8 +102,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "TextColor Updates Correctly")]
-		[InlineData(0xFF0000, 0x0000FF)]
-		[InlineData(0x0000FF, 0xFF0000)]
+		[InlineData(0xFFFF0000, 0xFF0000FF)]
+		[InlineData(0xFF0000FF, 0xFFFF0000)]
 		public async Task TextColorUpdatesCorrectly(uint setValue, uint unsetValue)
 		{
 			var entry = new EntryStub();
