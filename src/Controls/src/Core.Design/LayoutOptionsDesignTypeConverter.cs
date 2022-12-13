@@ -6,6 +6,8 @@
 		{
 		}
 
+		protected override bool ExclusiveToKnownValues => true;
+
 		protected override string[] KnownValues
 			=> new string[] { "Start", "Center", "End", "Fill", "StartAndExpand", "CenterAndExpand", "EndAndExpand", "FillAndExpand" };
 	}
