@@ -155,7 +155,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		GravityFlags GetNativeVerticalTextAlignment(EditorHandler editorHandler) =>
-			GetNativeEditor(editorHandler).Gravity;
+			GetNativeEditor(editorHandler).Gravity & GravityFlags.VerticalGravityMask;
 
 		GravityFlags GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
 			textAlignment.ToVerticalGravityFlags();
