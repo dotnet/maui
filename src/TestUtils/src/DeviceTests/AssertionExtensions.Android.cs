@@ -84,7 +84,7 @@ namespace Microsoft.Maui.DeviceTests
 					if (e.HasFocus)
 						return;
 
-					view.FocusChange -= OnFocused;
+					view.FocusChange -= OnUnFocused;
 					focusSource.SetResult();
 				}
 			}
