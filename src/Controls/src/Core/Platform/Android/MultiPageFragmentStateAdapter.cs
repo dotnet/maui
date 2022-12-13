@@ -1,7 +1,10 @@
-#nullable disable
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -9,6 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		MultiPage<T> _page;
 		readonly IMauiContext _context;
+		List<ItemKey> keys = new List<ItemKey>();
 
 		public MultiPageFragmentStateAdapter(
 			MultiPage<T> page, FragmentManager fragmentManager, IMauiContext context)
@@ -30,20 +34,125 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override long GetItemId(int position)
 		{
-			// https://github.com/dotnet/maui/issues/11529
-			// This should be updated to not use `GetHashCode`
-			return _page.Children[position].GetHashCode();
+			return GetItemIdByPosition(position).ItemId;
 		}
 
 		public override bool ContainsItem(long itemId)
 		{
-			foreach (var item in _page.Children)
+			return GetItemByItemId(itemId) != null;
+		}
+
+		ItemKey GetItemIdByPosition(int position)
+		{
+			CheckItemKeys();
+			var page = _page.Children[position];
+			for (var i = 0; i < keys.Count; i++)
 			{
-				if (item.GetHashCode() == itemId)
-					return true;
+				ItemKey item = keys[i];
+				if (item.Page == page)
+				{
+					return item;
+				}
 			}
 
-			return false;
+			ItemKey itemKey = new ItemKey(page, (ik) => keys.Remove(ik));
+			keys.Add(itemKey);
+
+			return itemKey;
+		}
+
+		ItemKey? GetItemByItemId(long itemId)
+		{
+			CheckItemKeys();
+			for (var i = 0; i < keys.Count; i++)
+			{
+				ItemKey item = keys[i];
+				if (item.ItemId == itemId)
+				{
+					return item;
+				}
+			}
+
+			return null;
+		}
+
+		void CheckItemKeys()
+		{
+			for (var i = 0; i < keys.Count; i++)
+			{
+				ItemKey item = keys[i];
+
+				if (!_page.Children.Contains(item.Page))
+				{
+					// Disconnect will remove the ItemKey from the keys list
+					item.Disconnect();
+				}
+			}
+		}
+
+		class ItemKey
+		{
+			Page? _page;
+			Action<ItemKey>? _markInvalid;
+			bool _stableView;
+			object? _platformView;
+
+			public ItemKey(Page page, Action<ItemKey> markInvalid)
+			{
+				_page = page;
+				_markInvalid = markInvalid;
+				_page.HandlerChanging += OnHandlerChanging;
+				_page.HandlerChanged += OnHandlerChanged;
+				ItemId = AView.GenerateViewId();
+			}
+
+			public bool Disconnected => _page != null;
+			public Page? Page => _page;
+			public long ItemId { get; }
+			public void Disconnect()
+			{
+				if (_page == null)
+					return;
+
+				_markInvalid?.Invoke(this);
+
+				if (_page != null)
+				{
+					_page.HandlerChanging -= OnHandlerChanging;
+					_page.HandlerChanged -= OnHandlerChanged;
+					_page = null;
+				}
+
+				_platformView = null;
+			}
+
+			public void SetToStableView()
+			{
+				_stableView = true;
+			}
+
+			void OnHandlerChanging(object? sender, HandlerChangingEventArgs e)
+			{
+				if (_stableView && _platformView != null)
+					Disconnect();
+			}
+
+			void OnHandlerChanged(object? sender, EventArgs e)
+			{
+				if (_page == null || _platformView != null)
+				{
+					if (sender is Page page)
+						page.HandlerChanged -= OnHandlerChanged;
+
+					return;
+				}
+
+				_platformView = _page.Handler?.PlatformView;
+
+				if (_platformView != null)
+					_page.HandlerChanged -= OnHandlerChanged;
+			}
+
 		}
 	}
 }

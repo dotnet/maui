@@ -23,9 +23,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			_page = ((IShellContentController)ShellContentTab).GetOrCreateContent();
-
-			var platformView =
-				_page.ToPlatform(_mauiContext, RequireContext(), inflater, ChildFragmentManager);
+			_page.ToPlatform(_mauiContext, RequireContext(), inflater, ChildFragmentManager);
 
 			return new ShellPageContainer(RequireContext(), (IPlatformViewHandler)_page.Handler, true)
 			{

@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view == null)
 			{
-				if (_viewFragment != null && !FragmentManager.IsDestroyed())
+				if (_viewFragment != null && !FragmentManager.IsDestroyed(_mauiContext.Context))
 				{
 					FragmentManager
 						.BeginTransaction()

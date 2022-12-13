@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Handlers
 						.GetNavigationRootManager()
 						.FragmentManager;
 
-				if (!fragmentManager.IsDestroyed())
+				if (!fragmentManager.IsDestroyed(_context?.Context))
 				{
 					SetContentBottomMargin(0);
 
