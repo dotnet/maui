@@ -31,9 +31,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public string? HostPage { get; set; }
 
 		/// <summary>
+		/// Bindable property for StartPath
+		/// </summary>
+		public static readonly BindableProperty StartPathProperty = BindableProperty.Create(nameof(StartPath), typeof(string), typeof(BlazorWebView), "/");
+
+
+		/// <summary>
 		/// Gets or sets the path for initial navigation within the Blazor navigation context when the Blazor component is finished loading.
 		/// </summary>
-		public string StartPath { get; set; } = "/";
+		public string StartPath
+		{
+			get { return (string)GetValue(StartPathProperty); }
+			set { SetValue(StartPathProperty, value); }
+		}
 
 		/// <inheritdoc />
 		public RootComponentsCollection RootComponents { get; }
