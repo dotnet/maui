@@ -163,6 +163,9 @@ namespace Microsoft.Maui.Controls
 			{
 				object value = Binding.GetTargetValue(target.GetValue(property), part.SetterType);
 
+				if (ReferenceEquals(value, Controls.Binding.DoNothing) || ReferenceEquals(value, BindableProperty.UnsetValue))
+					return;
+
 				if (!TryConvert(ref value, property, part.SetterType, false))
 				{
 					BindingDiagnostics.SendBindingFailure(Binding, current, target, property, "Binding", CannotConvertTypeErrorMessage, value, part.SetterType);

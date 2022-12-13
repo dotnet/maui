@@ -251,6 +251,10 @@ namespace Microsoft.Maui.Controls.Internals
 			if (needsSetter && _setter != null && isTSource)
 			{
 				var value = GetTargetValue(target.GetValue(property), typeof(TProperty));
+
+				if (ReferenceEquals(value, Controls.Binding.DoNothing) || ReferenceEquals(value, BindableProperty.UnsetValue))
+					return;
+				
 				if (!BindingExpression.TryConvert(ref value, property, typeof(TProperty), false))
 				{
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, typeof(TProperty));
