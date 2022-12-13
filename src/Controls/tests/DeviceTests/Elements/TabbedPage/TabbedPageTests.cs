@@ -168,7 +168,7 @@ namespace Microsoft.Maui.DeviceTests
 					tabbedPage.CurrentPage = navigationPage;
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
-					await Task.Delay(100);
+					await Task.Delay(200);
 					await navigationPage.PopAsync();
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
