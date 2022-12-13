@@ -1,5 +1,6 @@
 
 using System;
+using Android.Content;
 using AndroidX.Fragment.App;
 
 namespace Microsoft.Maui.Platform
@@ -57,12 +58,18 @@ namespace Microsoft.Maui.Platform
 			return fragmentManager.BeginTransaction();
 		}
 
-		public static bool IsDestroyed(this FragmentManager? obj)
+		public static bool IsDestroyed(this FragmentManager? obj, Context? context)
 		{
 			if (obj == null)
 				return true;
 
+			if (context == null)
+				return true;
+
 			if (obj.IsDestroyed)
+				return true;
+
+			if (context.IsDestroyed())
 				return true;
 
 			return obj.IsDisposed();

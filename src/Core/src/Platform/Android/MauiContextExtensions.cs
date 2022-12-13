@@ -79,14 +79,16 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view.Handler?.MauiContext is MauiContext scopedMauiContext)
 			{
-				// If the incoming mauiContext has the same activity and fragment manager
-				// then we just update the layourInflater for any children that will want to participate
-				// with this inflation flow
+				// If this handler becomes to a different activity then we need to 
+				// recreate the view.
+				// If it's the same activity we just update the layout inflater
+				// and the fragment manager so that the platform view doesn't recreate
+				// underneath the users feet
 				if (scopedMauiContext.GetActivity() == context.GetActivity() &&
-					scopedMauiContext.GetFragmentManager() == childFragmentManager &&
 					view.Handler.PlatformView is View platformView)
 				{
 					scopedMauiContext.AddWeakSpecific(layoutInflater);
+					scopedMauiContext.AddWeakSpecific(childFragmentManager);
 					return platformView;
 				}
 			}

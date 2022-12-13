@@ -18,12 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 		AView _pageContainer;
 		ViewGroup _parent;
 
-		public FragmentContainer(IMauiContext mauiContext)
-		{
-			_mauiContext = mauiContext;
-		}
-
-		public FragmentContainer(Page page, IMauiContext mauiContext) : this(mauiContext)
+		public FragmentContainer(Page page, IMauiContext mauiContext)
 		{
 			_pageRenderer = new WeakReference(page);
 			_mauiContext = mauiContext;
@@ -55,6 +50,13 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			return null;
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			if (Context.IsDestroyed())
+				Page?.Handler?.DisconnectHandler();
 		}
 
 		public override void OnResume()
