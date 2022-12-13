@@ -1,4 +1,8 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {

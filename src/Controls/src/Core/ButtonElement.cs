@@ -110,11 +110,13 @@ namespace Microsoft.Maui.Controls
 		/// <param name="ButtonElementManager">The button element implementation to trigger the commands and events on.</param>
 		public static void ElementReleased(VisualElement visualElement, IButtonElement ButtonElementManager)
 		{
-			// Even if the button is disabled, we still want to remove the Pressed state;
-			// the button may have been disabled by the the pressing action
-			ButtonElementManager.SetIsPressed(false);
-			visualElement.ChangeVisualStateInternal();
-			ButtonElementManager.PropagateUpReleased();
+			if (visualElement.IsEnabled == true)
+			{
+				IButtonController buttonController = ButtonElementManager as IButtonController;
+				ButtonElementManager.SetIsPressed(false);
+				visualElement.ChangeVisualStateInternal();
+				ButtonElementManager.PropagateUpReleased();
+			}
 		}
 	}
 }

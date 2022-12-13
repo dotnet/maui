@@ -298,7 +298,7 @@ namespace Microsoft.Maui.Maps.Platform
 			return mapElement?.ToHandler(handler?.MauiContext!).PlatformView as T;
 		}
 
-		static bool OnShouldReceiveMapTouch(UIGestureRecognizer recognizer, UITouch touch)
+		bool OnShouldReceiveMapTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
 			if (touch.View is MKAnnotationView)
 				return false;

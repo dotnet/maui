@@ -14,8 +14,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (!(recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager))
 				return;
-			if (_itemsSource is null)
-				return;
 
 			var itemSourceCount = _itemsSource.Count;
 
@@ -44,8 +42,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public int GetGoToIndex(RecyclerView recyclerView, int carouselPosition, int newPosition)
 		{
 			if (!(recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager))
-				return -1;
-			if (_itemsSource is null)
 				return -1;
 
 			var currentCarouselPosition = carouselPosition;

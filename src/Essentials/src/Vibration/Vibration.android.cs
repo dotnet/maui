@@ -45,8 +45,6 @@ namespace Microsoft.Maui.Devices
 			Permissions.EnsureDeclared<Permissions.Vibrate>();
 
 			var time = (long)duration.TotalMilliseconds;
-			if (time <= 0)
-				return;
 #if __ANDROID_26__
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{

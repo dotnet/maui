@@ -37,6 +37,8 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			var dialIntent = ResolveDialIntent(phoneNumber);
 
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+				flags |= ActivityFlags.LaunchAdjacent;
 			dialIntent.SetFlags(flags);
 
 			Application.Context.StartActivity(dialIntent);

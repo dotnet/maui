@@ -22,6 +22,10 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri.OriginalString));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+#if __ANDROID_24__
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+				flags |= ActivityFlags.LaunchAdjacent;
+#endif
 			intent.SetFlags(flags);
 
 			Application.Context.StartActivity(intent);
@@ -38,6 +42,10 @@ namespace Microsoft.Maui.ApplicationModel
 
 			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+#if __ANDROID_24__
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+				flags |= ActivityFlags.LaunchAdjacent;
+#endif
 			chooserIntent.SetFlags(flags);
 
 			Application.Context.StartActivity(chooserIntent);

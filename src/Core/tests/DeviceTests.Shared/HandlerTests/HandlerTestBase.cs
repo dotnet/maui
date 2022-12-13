@@ -127,9 +127,6 @@ namespace Microsoft.Maui.DeviceTests
 			where THandler : IElementHandler, new()
 			where TCustomHandler : THandler, new()
 		{
-			if (element.Handler is TCustomHandler t)
-				return t;
-
 			mauiContext ??= MauiContext;
 			var handler = Activator.CreateInstance<TCustomHandler>();
 			InitializeViewHandler(element, handler, mauiContext);

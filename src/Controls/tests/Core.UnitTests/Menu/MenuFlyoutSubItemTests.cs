@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Windows.Input;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -11,38 +10,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 	public class MenuFlyoutSubItemTests :
 		MenuTestBase<MenuFlyoutSubItem, IMenuElement, MenuFlyoutItem, MenuFlyoutSubItemHandlerUpdate>
 	{
-		[Fact]
-		public void StartsEnabled()
-		{
-			MenuBarItem menuBarItem = new MenuBarItem();
-			Assert.True(menuBarItem.IsEnabled);
-		}
-
-		[Fact]
-		public void DisableWorks()
-		{
-			MenuBarItem menuBarItem = new MenuBarItem();
-			menuBarItem.IsEnabled = false;
-			Assert.False(menuBarItem.IsEnabled);
-		}
-
-		[Fact]
-		public void CommandPropertyChangesEnabled()
-		{
-			MenuFlyoutItem menuBarItem = new MenuFlyoutItem();
-
-			bool canExecute = true;
-			var command = new Command((p) => { }, (p) => p != null && (bool)p);
-			menuBarItem.CommandParameter = true;
-			menuBarItem.Command = command;
-
-			Assert.True(menuBarItem.IsEnabled);
-			menuBarItem.CommandParameter = false;
-			Assert.False(menuBarItem.IsEnabled);
-			menuBarItem.CommandParameter = true;
-			Assert.True(menuBarItem.IsEnabled);
-		}
-
 		protected override int GetIndex(MenuFlyoutSubItemHandlerUpdate handlerUpdate) =>
 			handlerUpdate.Index;
 

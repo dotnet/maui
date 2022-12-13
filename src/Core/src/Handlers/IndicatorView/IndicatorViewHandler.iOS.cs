@@ -10,17 +10,14 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiPageControl platformView)
 		{
 			base.ConnectHandler(platformView);
-
-			platformView?.SetIndicatorView(VirtualView);
-
+			PlatformView?.SetIndicatorView(VirtualView);
 			UpdateIndicator();
 		}
 
 		protected override void DisconnectHandler(MauiPageControl platformView)
 		{
 			base.DisconnectHandler(platformView);
-
-			platformView?.SetIndicatorView(null);
+			PlatformView?.SetIndicatorView(null);
 		}
 
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator)
