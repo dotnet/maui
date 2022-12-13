@@ -157,12 +157,22 @@ namespace Microsoft.Maui.Controls.Internals
 			};
 		}
 
-		internal override object GetSourceValue(object value, Type targetPropertyType)
+		internal override object GetSourceValue(object value, BindableObject bindObj, BindableProperty targetProperty)
 		{
 			if (Converter != null)
-				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+			{
+				value = Converter.Convert(value, targetProperty.ReturnType, ConverterParameter, CultureInfo.CurrentUICulture);
 
-			return base.GetSourceValue(value, targetPropertyType);
+				if (ReferenceEquals(value, BindableProperty.UnsetValue))
+				{
+					return FallbackValue ?? targetProperty.GetDefaultValue(bindObj);
+				}
+
+				if (ReferenceEquals(value, Binding.DoNothing))
+					return value;
+			}
+
+			return base.GetSourceValue(value, bindObj, targetProperty);
 		}
 
 		internal override object GetTargetValue(object value, Type sourcePropertyType)
@@ -208,26 +218,25 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (needsGetter)
 			{
-				var value = BindableProperty.UnsetValue;
+				var value = FallbackValue ?? property.GetDefaultValue(target);
 				if (isTSource)
 				{
 					try
 					{
 						(var retval, bool success) = _getter((TSource)sourceObject);
-						if (success) //if the getter failed, return the FallbackValue
-							value = GetSourceValue(retval, property.ReturnType);
+
+						if ( success ) //if the getter failed, return the FallbackValue
+						{
+							value = GetSourceValue(retval, target, property);
+
+							if (ReferenceEquals(value, Binding.DoNothing))
+								return;
+						}
 					}
 					catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
 					{
 					}
 				}
-                
-                if (ReferenceEquals(value, BindableProperty.UnsetValue))
-                {
-                    value = FallbackValue ?? property.GetDefaultValue(target);
-                }
-                else if (ReferenceEquals(value, Binding.DoNothing))
-                    return;
 
 				if (!BindingExpression.TryConvert(ref value, property, property.ReturnType, true))
 				{

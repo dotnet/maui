@@ -293,12 +293,22 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		internal override object GetSourceValue(object value, Type targetPropertyType)
+		internal override object GetSourceValue(object value, BindableObject bindObj, BindableProperty targetProperty)
 		{
-			if (Converter != null)
-				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+			if ( Converter != null )
+			{
+				value = Converter.Convert(value, targetProperty.ReturnType, ConverterParameter, CultureInfo.CurrentUICulture);
 
-			return base.GetSourceValue(value, targetPropertyType);
+				if (ReferenceEquals(value, BindableProperty.UnsetValue))
+				{
+					return FallbackValue ?? targetProperty.GetDefaultValue(bindObj);
+				}
+
+				if (ReferenceEquals(value, Binding.DoNothing))
+					return value;
+			}
+
+			return base.GetSourceValue(value, bindObj, targetProperty);
 		}
 
 		internal override object GetTargetValue(object value, Type sourcePropertyType)

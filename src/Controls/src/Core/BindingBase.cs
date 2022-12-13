@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 
 		internal abstract BindingBase Clone();
 
-		internal virtual object GetSourceValue(object value, Type targetPropertyType)
+		internal virtual object GetSourceValue(object value, BindableObject bindObj, BindableProperty targetProperty)
 		{
 			if (value == null && TargetNullValue != null)
 				return TargetNullValue;

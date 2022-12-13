@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls
 		BindableObject _proxyObject;
 		BindableProperty[] _bpProxies;
 		bool _applying;
+		private bool _updates;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='Converter']/Docs/*" />
 		public IMultiValueConverter Converter
@@ -88,23 +89,19 @@ namespace Microsoft.Maui.Controls
 
 			if (!fromTarget)
 			{
-				var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
+				var value = GetSourceValue(GetValueArray(), _targetObject, _targetProperty);
 
-                if (ReferenceEquals(value, BindableProperty.UnsetValue))
-                {
-                    value = FallbackValue ?? this._targetProperty.GetDefaultValue(this._targetObject);
-                }
-                else if (ReferenceEquals(value, Binding.DoNothing))
-                    return;
+				if (ReferenceEquals(value, Binding.DoNothing))
+					return;
 
-                _applying = true;
-                if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
-                {
-                    BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
-                    return;
-                }
-                _targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
-                _applying = false;
+				_applying = true;
+				if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+				{
+					BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+					return;
+				}
+				_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
+				_applying = false;
 			}
 			else
 			{
@@ -140,8 +137,10 @@ namespace Microsoft.Maui.Controls
 
 			base.Apply(context, targetObject, targetProperty, fromBindingContextChanged);
 
+			_applying = true;
 			if (!ReferenceEquals(_targetObject, targetObject))
 			{
+				_updates = true;
 				_targetObject = targetObject;
 				_proxyObject = new ProxyElement() { Parent = targetObject as Element };
 				_targetProperty = targetProperty;
@@ -149,7 +148,6 @@ namespace Microsoft.Maui.Controls
 				if (_bpProxies == null)
 				{
 					_bpProxies = new BindableProperty[Bindings.Count];
-					_applying = true;
 					var bindingMode = Mode == BindingMode.Default ? targetProperty.DefaultBindingMode : Mode;
 					for (var i = 0; i < Bindings.Count; i++)
 					{
@@ -158,31 +156,31 @@ namespace Microsoft.Maui.Controls
 						var bp = _bpProxies[i] = BindableProperty.Create($"mb-proxy{i}", typeof(object), typeof(MultiBinding), null, bindingMode, propertyChanged: OnBindingChanged);
 						_proxyObject.SetBinding(bp, binding);
 					}
-					_applying = false;
 				}
 			}
-			_proxyObject.BindingContext = context;
+			else
+			{
+				_updates = false;
+				_proxyObject.BindingContext = context;
+			}
+			_applying = false;
 
-			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
+			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource || !_updates )
 				return;
 
-			var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
+			var value = GetSourceValue(GetValueArray(), _targetObject, _targetProperty);
 
-            if (ReferenceEquals(value, BindableProperty.UnsetValue))
-            {
-                value = FallbackValue ?? this._targetProperty.GetDefaultValue(this._targetObject);
-            }
-            else if (ReferenceEquals(value, Binding.DoNothing))
-                return;
+			if (ReferenceEquals(value, Binding.DoNothing))
+				return;
 
-            _applying = true;
-            if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
-            {
-                BindingDiagnostics.SendBindingFailure(this, context, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
-                return;
-            }
-            _targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
-            _applying = false;
+			_applying = true;
+			if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+			{
+				BindingDiagnostics.SendBindingFailure(this, context, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+				return;
+			}
+			_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
+			_applying = false;
 		}
 
 		class ProxyElement : Element
@@ -197,16 +195,26 @@ namespace Microsoft.Maui.Controls
 			return valuearray;
 		}
 
-		internal override object GetSourceValue(object value, Type targetPropertyType)
+		internal override object GetSourceValue(object value, BindableObject bindObj, BindableProperty targetProperty)
 		{
 			var valuearray = value as object[];
-			if (valuearray != null && Converter != null)
-				value = Converter.Convert(valuearray, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+			if ( valuearray != null && Converter != null )
+			{
+				value = Converter.Convert(valuearray, targetProperty.ReturnType, ConverterParameter, CultureInfo.CurrentUICulture);
+
+				if (ReferenceEquals(value, BindableProperty.UnsetValue))
+				{
+					return FallbackValue ?? targetProperty.GetDefaultValue(bindObj);
+				}
+
+				if (ReferenceEquals(value, Binding.DoNothing))
+					return value;
+			}
 
 			if (valuearray != null && Converter == null && StringFormat != null && TryFormat(StringFormat, valuearray, out var formatted))
 				return formatted;
 
-			return base.GetSourceValue(value, targetPropertyType);
+			return base.GetSourceValue(value, bindObj, targetProperty);
 		}
 
 		internal override object GetTargetValue(object value, Type sourcePropertyType)
@@ -225,6 +233,8 @@ namespace Microsoft.Maui.Controls
 
 		void OnBindingChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			this._updates = true;
+
 			if (!_applying)
 				Apply(fromTarget: false);
 		}
