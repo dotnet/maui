@@ -73,13 +73,13 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.IsFocused)
 			{
 				TaskCompletionSource focusSource = new TaskCompletionSource();
-				view.FocusChange += OnFocused;
+				view.FocusChange += OnUnFocused;
 				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
 				// Even thuogh the event fires unfocus hasn't fully been achieved
 				await Task.Delay(10);
 
-				void OnFocused(object? sender, AView.FocusChangeEventArgs e)
+				void OnUnFocused(object? sender, AView.FocusChangeEventArgs e)
 				{
 					if (e.HasFocus)
 						return;
