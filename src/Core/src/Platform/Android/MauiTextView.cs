@@ -8,7 +8,11 @@ namespace Microsoft.Maui.Platform
 	{
 		public MauiTextView(Context context) : base(context)
 		{
+			this.ViewAttachedToWindow += MauiTextView_ViewAttachedToWindow;
+		}
 
+		private void MauiTextView_ViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
+		{
 		}
 
 		internal event EventHandler<LayoutChangedEventArgs>? LayoutChanged;

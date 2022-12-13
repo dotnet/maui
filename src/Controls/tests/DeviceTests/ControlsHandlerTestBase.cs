@@ -393,5 +393,8 @@ namespace Microsoft.Maui.DeviceTests
 						.SingleOrDefault(x => x.Toolbar != null)
 						?.Toolbar;
 		}
+
+		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action);
 	}
 }
