@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler<Page, PageHandler>();
 
 #if IOS || MACCATALYST
@@ -42,32 +44,26 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-#if ANDROID
-		[InlineData(true)]
-#endif
-		[InlineData(false)]
-		public async Task PoppingTabbedPageDoesntCrash(bool bottomTabs)
+		[ClassData(typeof(TabbedPagePivots))]
+		public async Task PoppingTabbedPageDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				await navPage.PushAsync(CreateBasicTabbedPage(bottomTabs));
+				await navPage.PushAsync(CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled));
 				await navPage.PopAsync();
 			});
 		}
 
 		[Theory("Remove CurrentPage And Then Re-Add Doesnt Crash")]
-#if ANDROID
-		[InlineData(true)] // Only android has this pivot
-#endif
-		[InlineData(false)]
-		public async Task RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs)
+		[ClassData(typeof(TabbedPagePivots))]
+		public async Task RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
 			SetupBuilder();
 
-			var tabbedPage = CreateBasicTabbedPage(bottomTabs);
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 
 			var firstPage = new NavigationPage(new ContentPage());
 			tabbedPage.Children.Insert(0, firstPage);
@@ -96,14 +92,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-#if ANDROID
-		[InlineData(true)]
-#endif
-		[InlineData(false)]
-		public async Task SettingCurrentPageToNotBePositionZeroWorks(bool bottomTabs)
+		[ClassData(typeof(TabbedPagePivots))]
+		public async Task SettingCurrentPageToNotBePositionZeroWorks(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
 			SetupBuilder();
-			var tabbedPage = CreateBasicTabbedPage(bottomTabs);
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 			var firstPage = new NavigationPage(new ContentPage());
 			tabbedPage.Children.Insert(0, firstPage);
 			var secondPage = tabbedPage.Children[1];
@@ -116,16 +109,80 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !WINDOWS
 		[Theory]
-#if ANDROID
-		[InlineData(true)]
-#endif
-		[InlineData(false)]
-		public async Task RemovingAllPagesDoesntCrash(bool bottomTabs)
+		[ClassData(typeof(TabbedPagePivots))]
+		public async Task MovingBetweenMultiplePagesWithNestedNavigationPages(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
 			SetupBuilder();
-			var tabbedPage = CreateBasicTabbedPage(bottomTabs);
+
+			var pages = new NavigationPage[5];
+
+			for (var i = 0; i < pages.Length; i++)
+			{
+				string title = $"Tab {i} Root Page";
+				var contentPage = new ContentPage()
+				{
+					Title = title,
+					Content = new Button()
+					{
+						Text = title
+					}
+				};
+
+				pages[i] = new NavigationPage(contentPage)
+				{
+					Title = title
+				};
+			};
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled, pages);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
+			{
+				// Navigate to each page and push a page on the stack
+				// Android does a lot of fragment creating and destroying on us
+				// So we're mainly validating that android all works alright here
+				for (var i = 0; i < pages.Length; i++)
+				{
+					NavigationPage navigationPage = pages[i];
+					tabbedPage.CurrentPage = navigationPage;
+					await OnNavigatedToAsync(navigationPage.CurrentPage);
+					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
+
+					var nextPage = new ContentPage()
+					{
+						Content = new Button()
+						{
+							Text = $"Tab {i} Next Page"
+						}
+					};
+					await navigationPage.PushAsync(nextPage);
+					await OnNavigatedToAsync(nextPage);
+					await OnLoadedAsync(nextPage.Content);
+				}
+
+				// Navigate back through and make sure nothing crashes
+				// and that we can pop back to our root pages
+				foreach (var navigationPage in pages)
+				{
+					tabbedPage.CurrentPage = navigationPage;
+					await OnNavigatedToAsync(navigationPage.CurrentPage);
+					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
+					await Task.Delay(100);
+					await navigationPage.PopAsync();
+					await OnNavigatedToAsync(navigationPage.CurrentPage);
+					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
+				}
+			});
+		}
+
+#if !WINDOWS
+		[Theory]
+		[ClassData(typeof(TabbedPagePivots))]
+		public async Task RemovingAllPagesDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 			var secondPage = new NavigationPage(new ContentPage()) { Title = "Second Page" };
 			tabbedPage.Children.Add(secondPage);
 			var firstPage = tabbedPage.Children[0];
@@ -180,12 +237,43 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		TabbedPage CreateBasicTabbedPage(bool bottomTabs = false)
+		public class TabbedPagePivots : IEnumerable<object[]>
 		{
+			public IEnumerator<object[]> GetEnumerator()
+			{
+				//bottomtabs, isSmoothScrollEnabled
+				yield return new object[] { false, true };
+#if ANDROID
+				yield return new object[] { false, false };
+				yield return new object[] { true, false };
+				yield return new object[] { true, true };
+#endif
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+		}
+
+
+		TabbedPage CreateBasicTabbedPage(bool bottomTabs = false, bool isSmoothScrollEnabled = true, IEnumerable<Page> pages = null)
+		{
+			pages = pages ?? new List<Page>()
+			{
+				new ContentPage() { Title = "Page 1" }
+			};
+
 			var tabs = new TabbedPage()
 			{
+				Title = "Tabbed Page",
 				Background = SolidColorBrush.Green
 			};
+
+			foreach (var page in pages)
+			{
+				tabs.Children.Add(page);
+			}
 
 			if (bottomTabs)
 			{
@@ -197,6 +285,7 @@ namespace Microsoft.Maui.DeviceTests
 					Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Top);
 			}
 
+			Controls.PlatformConfiguration.AndroidSpecific.TabbedPage.SetIsSmoothScrollEnabled(tabs, isSmoothScrollEnabled);
 			return tabs;
 		}
 	}
