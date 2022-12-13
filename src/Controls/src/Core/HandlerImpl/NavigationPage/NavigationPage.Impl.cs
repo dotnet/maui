@@ -208,10 +208,6 @@ namespace Microsoft.Maui.Controls
 				// This task completes once the handler calls INavigationView.Finished
 				await currentNavRequestTaskSource.Task;
 			}
-			catch
-			{
-				throw;
-			}
 			finally
 			{
 				if (Interlocked.Decrement(ref _waitingCount) == 0)
