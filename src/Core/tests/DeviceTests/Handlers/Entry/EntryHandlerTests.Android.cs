@@ -185,7 +185,7 @@ namespace Microsoft.Maui.DeviceTests
 			GetNativeEntry(entryHandler).TextAlignment;
 
 		Android.Views.GravityFlags GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Gravity;
+			GetNativeEntry(entryHandler).Gravity & Android.Views.GravityFlags.VerticalGravityMask;
 
 		Android.Views.GravityFlags GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
 			textAlignment.ToVerticalGravityFlags();
