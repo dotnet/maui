@@ -8,9 +8,9 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class BorderHandlerTests
 	{
 		[Theory(DisplayName = "Border render without Stroke")]
-		[InlineData(0xFF0000)]
-		[InlineData(0x00FF00)]
-		[InlineData(0x0000FF)]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
 		public async Task BorderRenderWithoutStroke(uint color)
 		{
 			var expected = Color.FromUint(color);
@@ -29,10 +29,11 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(border, expected);
 		}
 
-		[Theory(DisplayName = "Background Updates Correctly")]
-		[InlineData(0xFF0000)]
-		[InlineData(0x00FF00)]
-		[InlineData(0x0000FF)]
+		[Theory(DisplayName = "Background Updates Correctly",
+			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
 		public async Task BackgroundUpdatesCorrectly(uint color)
 		{
 			var expected = Color.FromUint(color);
@@ -53,15 +54,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		ContentViewGroup GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
-
-		Task ValidateHasColor(IBorderView border, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeBorder = GetNativeBorder(CreateHandler(border));
-				action?.Invoke();
-				nativeBorder.AssertContainsColor(color);
-			});
-		}
 	}
 }

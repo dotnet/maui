@@ -65,15 +65,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			return minimumButton.Enabled && maximumButton.Enabled;
 		}
-
-		Task ValidateHasColor(IStepper stepper, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformStepper = GetNativeStepper(CreateHandler(stepper));
-				action?.Invoke();
-				platformStepper.AssertContainsColor(color);
-			});
-		}
 	}
 }
