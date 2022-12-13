@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public string Foo { get; set; }
 
+		public object Blah { get; set; }
+
 		public int TargetInt { get; set; }
 
 		public static readonly BindableProperty BarProperty =

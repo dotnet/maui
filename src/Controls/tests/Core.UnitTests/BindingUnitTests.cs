@@ -1350,6 +1350,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 #endif
 
+		class TestConverterReturn : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				return value;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				return value;
+			}
+		}
+
+		[Fact]
+		public void ConverterReturnsUnsetValue()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), "default");
+			bindable.SetBinding(property, new Binding("Object", converter: converter));
+			Assert.Equal("default", bindable.GetValue(property));
+			bindable.BindingContext = vm;
+			Assert.Equal("Foo", bindable.GetValue(property));
+			vm.Object = BindableProperty.UnsetValue;
+			Assert.Equal("default", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void ConverterReturnsDoNothing()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), "default");
+			bindable.SetBinding(property, new Binding("Object", converter: converter));
+			Assert.Equal("default", bindable.GetValue(property));
+			bindable.BindingContext = vm;
+			Assert.Equal("Foo", bindable.GetValue(property));
+			vm.Object = Binding.DoNothing;
+			Assert.Equal("Foo", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void ConverterReturnsNull()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), "default");
+			bindable.SetBinding(property, new Binding("Object", converter: converter));
+			Assert.Equal("default", bindable.GetValue(property));
+			bindable.BindingContext = vm;
+			Assert.Equal("Foo", bindable.GetValue(property));
+			vm.Object = null;
+			Assert.Null(bindable.GetValue(property));
+		}
+
 		[Fact]
 		public void SelfBindingConverter()
 		{
@@ -2190,30 +2248,175 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		//https://github.com/xamarin/Xamarin.Forms/issues/3467
+		public void FallbackValueUsedWhenBindingCantBeResolved()
+		{
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.BindingContext = new MockViewModel { Text = "Foo" };
+			Assert.Equal("defaultCreator", bindable.GetValue(property));
+			bindable.SetBinding(property, new Binding("UndefinedProperty" ) { FallbackValue = "fallback" });
+			Assert.Equal("fallback", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void FallbackValueIgnoredWhenBindingIsResolved()
+		{
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.SetBinding(property, new Binding("Text") { FallbackValue = "fallback" });
+			Assert.Equal("fallback", bindable.GetValue(property));
+			bindable.BindingContext = new MockViewModel { Text = "Foo" };
+			Assert.Equal("Foo", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void FallbackValueWhenValueConverterReturnsUnsetValue()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.SetBinding(property, new Binding("Object", converter: converter) { FallbackValue = "fallback" });
+			Assert.Equal("fallback", bindable.GetValue(property));
+			bindable.BindingContext = vm;
+			Assert.Equal("Foo", bindable.GetValue(property));
+			vm.Object = BindableProperty.UnsetValue;
+			Assert.Equal("fallback", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void FallbackValueIgnoredWhenValueConverterReturnsDoNothing()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.SetBinding(property, new Binding("Object", converter: converter) { FallbackValue = "fallback" });
+			Assert.Equal("fallback", bindable.GetValue(property));
+			bindable.BindingContext = vm;
+			Assert.Equal("Foo", bindable.GetValue(property));
+			vm.Object = Binding.DoNothing;
+			Assert.Equal("Foo", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void FallbackValueIgnoredWhenValueConverterReturnsNull()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.SetBinding(property, new Binding("Object", converter: converter) { FallbackValue = "fallback" });
+			Assert.Equal("fallback", bindable.GetValue(property));
+			bindable.BindingContext = vm;
+			Assert.Equal("Foo", bindable.GetValue(property));
+			vm.Object = null;
+			Assert.Null(bindable.GetValue(property));
+		}
+
+		[Fact]
+		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3467
 		public void TargetNullValueIgnoredWhenBindingIsResolved()
 		{
 			var bindable = new MockBindable();
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), "default");
-			bindable.SetBinding(property, new Binding("Text") { TargetNullValue = "fallback" });
+			bindable.SetBinding(property, new Binding("Text") { TargetNullValue = "targetnull" });
 			Assert.Equal("default", bindable.GetValue(property));
 			bindable.BindingContext = new MockViewModel { Text = "Foo" };
 			Assert.Equal("Foo", bindable.GetValue(property));
 		}
 
 		[Fact]
-		public void TargetNullValueFallback()
+		public void TargetNullValueUsedWhenBindingResolvesToNull()
 		{
 			var bindable = new MockBindable();
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), "default");
-			bindable.SetBinding(property, new Binding("Text") { TargetNullValue = "fallback" });
+			bindable.SetBinding(property, new Binding("Text") { TargetNullValue = "targetnull" });
 			Assert.Equal("default", bindable.GetValue(property));
 			bindable.BindingContext = new MockViewModel();
+			Assert.Equal("targetnull", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void TargetNullValueIgnoredWhenBindingCantBeResolved()
+		{
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.SetBinding(property, new Binding("UndefinedProperty") { TargetNullValue = "targetnull" });
+			Assert.Equal("defaultCreator", bindable.GetValue(property));
+			bindable.BindingContext = new MockViewModel();
+			Assert.Equal("defaultCreator", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void TargetNullValueIgnoredWhenValueConverterReturnsUnsetValue()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.SetBinding(property, new Binding("Object", converter: converter) { TargetNullValue = "targetnull" });
+			Assert.Equal("defaultCreator", bindable.GetValue(property));
+			bindable.BindingContext = vm;
+			Assert.Equal("Foo", bindable.GetValue(property));
+			vm.Object = BindableProperty.UnsetValue;
+			Assert.Equal("defaultCreator", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void TargetNullValueIgnoredWhenValueConverterReturnsDoNothing()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.SetBinding(property, new Binding("Object", converter: converter) { TargetNullValue = "targetnull" });
+			Assert.Equal("defaultCreator", bindable.GetValue(property));
+			bindable.BindingContext = vm;
+			Assert.Equal("Foo", bindable.GetValue(property));
+			vm.Object = Binding.DoNothing;
+			Assert.Equal("Foo", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void TargetNullValueAppliedWhenValueConverterReturnsNull()
+		{
+			var converter = new TestConverterReturn();
+			var bindable = new MockBindable();
+			var vm = new MockViewModel() { Object = "Foo" };
+			var property = BindableProperty.Create("Blah", typeof(object), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.SetBinding(property, new Binding("Object", converter: converter) { TargetNullValue = "targetnull" });
+			Assert.Equal("defaultCreator", bindable.GetValue(property));
+			bindable.BindingContext = vm;
+			Assert.Equal("Foo", bindable.GetValue(property));
+			vm.Object = null;
+			Assert.Equal("targetnull", bindable.GetValue(property));
+		}
+
+		[Fact]
+		public void StringFormatIgnoredWhenFallbackValueUsed()
+		{
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.BindingContext = new MockViewModel { Text = "Foo" };
+			Assert.Equal("defaultCreator", bindable.GetValue(property));
+			bindable.SetBinding(property, new Binding("UndefinedProperty", stringFormat: "Formatted {0}") { FallbackValue = "fallback" });
 			Assert.Equal("fallback", bindable.GetValue(property));
 		}
 
 		[Fact]
-		//https://github.com/xamarin/Xamarin.Forms/issues/3994
+		public void StringFormatIgnoredWhenTargetNullValueUsed()
+		{
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), defaultValueCreator: b => "defaultCreator");
+			bindable.SetBinding(property, new Binding("Text", stringFormat:"Formatted {0}") { TargetNullValue = "targetnull" });
+			Assert.Equal("defaultCreator", bindable.GetValue(property));
+			bindable.BindingContext = new MockViewModel();
+			Assert.Equal("targetnull", bindable.GetValue(property));
+		}
+
+		[Fact]
+		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3994
 		public void INPCOnBindingWithSource()
 		{
 			var page = new ContentPage { Title = "Foo" };

@@ -7,9 +7,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public MockViewModel(string text = null)
+		public MockViewModel(string text = null, string @object = null)
 		{
 			_text = text;
+
+			_object = @object;
 		}
 
 		string _text;
@@ -23,6 +25,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				_text = value;
 				OnPropertyChanged("Text");
+			}
+		}
+
+		object _object;
+		public virtual object Object
+		{
+			get { return _object; }
+			set
+			{
+				if (_object == value)
+					return;
+
+				_object = value;
+				OnPropertyChanged("Object");
 			}
 		}
 

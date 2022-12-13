@@ -248,6 +248,163 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(oldName + " Extra", label2.Text);
 		}
 
+
+		class TestMultiConverterReturn : IMultiValueConverter
+		{
+			public int ExecutionCount = 0;
+
+			/// <inheritdoc />
+			public object Convert( object[ ] values, Type targetType, object parameter, CultureInfo culture )
+			{
+				this.ExecutionCount++;
+
+				foreach (var value in values)
+				{
+					if (value as string == nameof(Binding.DoNothing))
+						return Binding.DoNothing;
+					if (value as string == nameof(BindableProperty.UnsetValue))
+						return BindableProperty.UnsetValue;
+					if (value as string == "null")
+						return null;
+				}
+
+				return values.Length > 0 ? values[ 0 ] : "NoBindings?";
+			}
+
+			/// <inheritdoc />
+			public object[ ] ConvertBack( object value, Type[ ] targetTypes, object parameter, CultureInfo culture )
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		[Fact]
+		public void StringFormatIgnoredWhenDoNothingFallbackAndNullTargetValuesUsed()
+		{
+			var formatString = "String Formatted {0}";
+			var group = new GroupViewModel();
+			var stack = new StackLayout
+			{
+				BindingContext = group
+			};
+
+			var label = new Label() {BindingContext = group.Person1};
+			label.SetBinding(
+				Label.TextProperty,
+				new MultiBinding
+				{
+					Bindings = {
+						new Binding(nameof(PersonViewModel.FirstName)),
+					},
+					Converter = new TestMultiConverterReturn(),
+					StringFormat = formatString,
+					TargetNullValue = c_TargetNull,
+					FallbackValue = c_Fallback
+				});
+
+			label.BindingContext = group.Person5;
+			stack.Children.Add(label);
+
+			Assert.Equal(string.Format(formatString, group.Person5.FirstName), label.Text);
+
+			var savedName = label.Text;
+			group.Person5.FirstName = nameof(Binding.DoNothing);
+			Assert.Equal(nameof(Binding.DoNothing), group.Person5.FirstName );
+			Assert.Equal(savedName, label.Text);
+
+			group.Person5.FirstName = nameof(BindableProperty.UnsetValue);
+			Assert.Equal(nameof(BindableProperty.UnsetValue), group.Person5.FirstName);
+			Assert.Equal(c_Fallback, label.Text);
+
+			group.Person5.FirstName = null;
+			Assert.Null(group.Person5.FirstName);
+			Assert.Equal(c_TargetNull, label.Text);
+		}
+
+		[Fact]
+		public void DefaultValueUsedWhenFallbackNull()
+		{
+			var defaultValue = "Foo Bar";
+			var group = new GroupViewModel();
+			var stack = new StackLayout
+			{
+				BindingContext = group
+			};
+
+			var surrogateTextProperty = BindableProperty.Create(nameof(Label.Text), typeof(string), typeof(Label), defaultValue);
+
+			var label = new Label();
+			label.SetBinding(
+				surrogateTextProperty,
+				new MultiBinding
+				{
+					Bindings = {
+						new Binding(nameof(PersonViewModel.FirstName)),
+					},
+					Converter = new TestMultiConverterReturn(),
+				});
+
+
+			label.BindingContext = group.Person5;
+			stack.Children.Add(label);
+
+			Assert.Equal(group.Person5.FirstName, label.GetValue(surrogateTextProperty));
+
+			group.Person5.FirstName = nameof(BindableProperty.UnsetValue);
+			Assert.Equal(nameof(BindableProperty.UnsetValue), group.Person5.FirstName);
+			Assert.Equal(defaultValue, label.GetValue(surrogateTextProperty));
+		}
+
+		class TestConverterReturn : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				return value;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				return value;
+			}
+		}
+
+		[Fact]
+		public void NoMultiBindingActionWhenChildBindingDoNothing()
+		{
+			var defaultValue = "Foo Bar";
+			var multiConverter = new TestMultiConverterReturn();
+			var group = new GroupViewModel();
+			var stack = new StackLayout
+			{
+				BindingContext = group
+			};
+
+			var surrogateObjProperty = BindableProperty.Create("Nonsense", typeof(object), typeof(Label), defaultValue);
+
+			var label = new Label();
+			label.SetBinding(
+				surrogateObjProperty,
+				new MultiBinding
+				{
+					Bindings = {
+						new Binding(Binding.SelfPath, converter: new TestConverterReturn()),
+					},
+					Converter = multiConverter,
+				});
+
+
+			label.BindingContext = group.Person5.FirstName;
+			stack.Children.Add(label);
+
+			Assert.Equal(group.Person5.FirstName, label.GetValue(surrogateObjProperty));
+
+			int savedExecutionCount = multiConverter.ExecutionCount;
+
+			label.BindingContext = Binding.DoNothing;
+			Assert.Equal(savedExecutionCount, multiConverter.ExecutionCount);
+			Assert.Equal(group.Person5.FirstName, label.GetValue(surrogateObjProperty));
+		}
+
 		//[Fact]
 		//public void TestEfficiency()
 		//{
