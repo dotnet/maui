@@ -35,7 +35,7 @@
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>7.0.0</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>7.0.0</MicrosoftAspNetCoreComponentsPackageVersion>
     <MicrosoftAspNetCoreComponentsWebPackageVersion>7.0.0</MicrosoftAspNetCoreComponentsWebPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>7.0.0</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>7.0.1</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>7.0.0</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>7.0.0</MicrosoftJSInteropPackageVersion>
     <!-- Other packages -->
