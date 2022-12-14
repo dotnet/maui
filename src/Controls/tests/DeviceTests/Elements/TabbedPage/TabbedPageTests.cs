@@ -26,6 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler<Page, PageHandler>();
 
@@ -53,16 +54,68 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		TabbedPage CreateBasicTabbedPage()
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task NavigatingAwayFromTabbedPageResizesContentPage(bool bottomTabs)
 		{
-			return new TabbedPage()
+			SetupBuilder();
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs);
+			var navPage = new NavigationPage(tabbedPage);
+
+			var layout1 = new VerticalStackLayout()
 			{
-				Title = "Tabbed Page",
-				Children =
-				{
-					new ContentPage() { Title = "Page 1" }
-				}
+				Background = SolidColorBrush.Green
 			};
+
+			(tabbedPage.CurrentPage as ContentPage).Content = layout1;
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(layout1);
+				var pageHeight = tabbedPage.CurrentPage.Height;
+				var newPage = new ContentPage()
+				{
+					Background = SolidColorBrush.Purple,
+					Content = new VerticalStackLayout()
+				};
+
+				await navPage.PushAsync(newPage);
+				await OnFrameSetToNotEmpty(newPage);
+
+				Assert.True(newPage.Content.Height > pageHeight);
+			});
+		}
+
+		TabbedPage CreateBasicTabbedPage(bool bottomTabs = false, bool isSmoothScrollEnabled = true, IEnumerable<Page> pages = null)
+		{
+			pages = pages ?? new List<Page>()
+			{
+				new ContentPage() { Title = "Page 1" }
+			};
+
+			var tabs = new TabbedPage()
+			{
+				Title = "Tabbed Page"
+			};
+
+			foreach (var page in pages)
+			{
+				tabs.Children.Add(page);
+			}
+
+			if (bottomTabs)
+			{
+				Controls.PlatformConfiguration.AndroidSpecific.TabbedPage.SetToolbarPlacement(tabs, Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Bottom);
+			}
+			else
+			{
+				Controls.PlatformConfiguration.AndroidSpecific.TabbedPage.SetToolbarPlacement(tabs,
+					Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Top);
+			}
+
+			Controls.PlatformConfiguration.AndroidSpecific.TabbedPage.SetIsSmoothScrollEnabled(tabs, isSmoothScrollEnabled);
+			return tabs;
 		}
 	}
 }
