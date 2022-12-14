@@ -87,44 +87,7 @@ namespace Microsoft.Maui.Controls
 			if (!fromTarget && this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
 				return;
 
-			if (!fromTarget)
-			{
-				var value = GetSourceValue(GetValueArray(), _targetObject, _targetProperty);
-
-				if (ReferenceEquals(value, Binding.DoNothing))
-					return;
-
-				_applying = true;
-				if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
-				{
-					BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
-					return;
-				}
-				_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
-				_applying = false;
-			}
-			else
-			{
-				try
-				{
-					_applying = true;
-
-					//https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.imultivalueconverter.convertback?view=netframework-4.8#remarks
-					if (!(GetTargetValue(_targetObject.GetValue(_targetProperty), null) is object[] values)) //converter failed
-						return;
-					for (var i = 0; i < Math.Min(_bpProxies.Length, values.Length); i++)
-					{
-						if (ReferenceEquals(values[i], Binding.DoNothing) || ReferenceEquals(values[i], BindableProperty.UnsetValue))
-							continue;
-						_proxyObject.SetValueCore(_bpProxies[i], values[i], SetValueFlags.None);
-					}
-				}
-				finally
-				{
-					_applying = false;
-				}
-
-			}
+			this.ApplyCore( fromTarget );
 		}
 
 		internal override void Apply(object context, BindableObject targetObject, BindableProperty targetProperty, bool fromBindingContextChanged = false)
@@ -167,20 +130,8 @@ namespace Microsoft.Maui.Controls
 
 			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource || !_updates )
 				return;
-
-			var value = GetSourceValue(GetValueArray(), _targetObject, _targetProperty);
-
-			if (ReferenceEquals(value, Binding.DoNothing))
-				return;
-
-			_applying = true;
-			if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
-			{
-				BindingDiagnostics.SendBindingFailure(this, context, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
-				return;
-			}
-			_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
-			_applying = false;
+			
+			ApplyCore();
 		}
 
 		class ProxyElement : Element
@@ -229,6 +180,47 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return base.GetTargetValue(value, sourcePropertyType);
+		}
+
+		void ApplyCore(bool fromTarget = false )
+		{
+			if (!fromTarget)
+			{
+				var value = GetSourceValue(GetValueArray(), _targetObject, _targetProperty);
+
+				if (ReferenceEquals(value, Binding.DoNothing))
+					return;
+
+				_applying = true;
+				if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+				{
+					BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+					return;
+				}
+				_targetObject.SetValueCore(_targetProperty, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
+				_applying = false;
+			}
+			else
+			{
+				try
+				{
+					_applying = true;
+
+					//https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.imultivalueconverter.convertback?view=netframework-4.8#remarks
+					if (!(GetTargetValue(_targetObject.GetValue(_targetProperty), null) is object[] values)) //converter failed
+						return;
+					for (var i = 0; i < Math.Min(_bpProxies.Length, values.Length); i++)
+					{
+						if (ReferenceEquals(values[i], Binding.DoNothing) || ReferenceEquals(values[i], BindableProperty.UnsetValue))
+							continue;
+						_proxyObject.SetValueCore(_bpProxies[i], values[i], SetValueFlags.None);
+					}
+				}
+				finally
+				{
+					_applying = false;
+				}
+			}
 		}
 
 		void OnBindingChanged(BindableObject bindable, object oldValue, object newValue)
