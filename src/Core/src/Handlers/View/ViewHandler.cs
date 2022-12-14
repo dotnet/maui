@@ -287,6 +287,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (border != null)
 			{
+				handler.HasContainer = true;
 			}
 			else
 			{
