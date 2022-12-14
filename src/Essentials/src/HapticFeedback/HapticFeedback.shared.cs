@@ -3,7 +3,7 @@
 namespace Microsoft.Maui.Devices
 {
 	/// <summary>
-	/// The HapticFeedback API lets you control haptic feedback on device.
+	/// The HapticFeedback API lets you control haptic feedback on the device.
 	/// </summary>
 	public interface IHapticFeedback
 	{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Devices
 	}
 
 	/// <summary>
-	/// The HapticFeedback API lets you control haptic feedback on device.
+	/// The HapticFeedback API lets you control haptic feedback on the device.
 	/// </summary>
 	public static class HapticFeedback
 	{
