@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					Add(_titleView);
 					(_titleView.Layout as NLayoutGroup)?.ChangeLayoutSiblingOrder(0);
+					_titleView.RaiseToTop();
 				}
 			}
 		}
@@ -58,6 +59,8 @@ namespace Microsoft.Maui.Controls.Platform
 					_content.HeightSpecification = LayoutParamPolicies.MatchParent;
 					_content.WidthSpecification = LayoutParamPolicies.MatchParent;
 					Add(_content);
+					if (_titleView != null)
+						_content.LowerBelow(_titleView);
 				}
 			}
 		}

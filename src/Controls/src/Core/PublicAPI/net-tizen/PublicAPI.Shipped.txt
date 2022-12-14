@@ -5609,6 +5609,8 @@ Microsoft.Maui.Controls.Platform.GestureHandler.NativeDetector.get -> Tizen.NUI.
 Microsoft.Maui.Controls.Platform.GestureHandler.NativeView.get -> Tizen.NUI.BaseComponents.View?
 Microsoft.Maui.Controls.Platform.GestureHandler.Recognizer.get -> Microsoft.Maui.Controls.IGestureRecognizer!
 Microsoft.Maui.Controls.Platform.GestureHandler.View.get -> Microsoft.Maui.Controls.View?
+Microsoft.Maui.Controls.Platform.IconConverter
+Microsoft.Maui.Controls.Platform.IconConverter.IconConverter() -> void
 Microsoft.Maui.Controls.Platform.ImageExtensions
 Microsoft.Maui.Controls.Platform.INavigationContentView
 Microsoft.Maui.Controls.Platform.INavigationContentView.Content.get -> Tizen.NUI.BaseComponents.View?
@@ -5617,7 +5619,7 @@ Microsoft.Maui.Controls.Platform.INavigationContentView.TargetView.get -> Tizen.
 Microsoft.Maui.Controls.Platform.INavigationContentView.TitleView.get -> Tizen.NUI.BaseComponents.View?
 Microsoft.Maui.Controls.Platform.INavigationContentView.TitleView.set -> void
 Microsoft.Maui.Controls.Platform.INavigationView
-Microsoft.Maui.Controls.Platform.INavigationView.BackgroundColor.get -> Tizen.NUI.Color!
+Microsoft.Maui.Controls.Platform.INavigationView.BackgroundColor.get -> Tizen.NUI.Color?
 Microsoft.Maui.Controls.Platform.INavigationView.BackgroundColor.set -> void
 Microsoft.Maui.Controls.Platform.INavigationView.Content.get -> Tizen.NUI.BaseComponents.View?
 Microsoft.Maui.Controls.Platform.INavigationView.Content.set -> void
@@ -5652,29 +5654,38 @@ Microsoft.Maui.Controls.Platform.PlatformEffect
 Microsoft.Maui.Controls.Platform.PlatformEffect.PlatformEffect() -> void
 Microsoft.Maui.Controls.Platform.SearchBarExtensions
 Microsoft.Maui.Controls.Platform.SemanticExtensions
-Microsoft.Maui.Controls.Platform.ShellDataTemplateSelector
-Microsoft.Maui.Controls.Platform.ShellDataTemplateSelector.ShellDataTemplateSelector() -> void
 Microsoft.Maui.Controls.Platform.ShellItemView
-Microsoft.Maui.Controls.Platform.ShellItemView.DefaultBackgroundColor -> Tizen.NUI.Color!
 Microsoft.Maui.Controls.Platform.ShellItemView.MauiContext.get -> Microsoft.Maui.IMauiContext!
+Microsoft.Maui.Controls.Platform.ShellItemView.MaxBottomItems -> int
 Microsoft.Maui.Controls.Platform.ShellItemView.Shell.get -> Microsoft.Maui.Controls.Shell!
 Microsoft.Maui.Controls.Platform.ShellItemView.ShellItem.get -> Microsoft.Maui.Controls.ShellItem!
+Microsoft.Maui.Controls.Platform.ShellItemView.ShellItemController.get -> Microsoft.Maui.Controls.IShellItemController!
 Microsoft.Maui.Controls.Platform.ShellItemView.ShellItemView(Microsoft.Maui.Controls.ShellItem! item, Microsoft.Maui.IMauiContext! context) -> void
+Microsoft.Maui.Controls.Platform.ShellItemView.UpdateBottomTabBarColors(Microsoft.Maui.Graphics.Color? backgroundColor, Microsoft.Maui.Graphics.Color? titleColor, Microsoft.Maui.Graphics.Color? unselectedColor) -> void
 Microsoft.Maui.Controls.Platform.ShellItemView.UpdateCurrentItem(Microsoft.Maui.Controls.ShellSection! section) -> void
 Microsoft.Maui.Controls.Platform.ShellItemView.UpdateTabBar(bool isVisible) -> void
-Microsoft.Maui.Controls.Platform.ShellItemView.UpdateTabbarBackgroundColor(Microsoft.Maui.Graphics.Color? color) -> void
-Microsoft.Maui.Controls.Platform.ShellItemView.UpdateTabbarTitleColor(Microsoft.Maui.Graphics.Color? color) -> void
+Microsoft.Maui.Controls.Platform.ShellSearchview
+Microsoft.Maui.Controls.Platform.ShellSearchview.ItemSelected -> System.EventHandler<Microsoft.Maui.Controls.Platform.ShellSearchViewItemSelectedEventArgs!>?
+Microsoft.Maui.Controls.Platform.ShellSearchview.ItemsSource.get -> System.Collections.IEnumerable?
+Microsoft.Maui.Controls.Platform.ShellSearchview.ItemsSource.set -> void
+Microsoft.Maui.Controls.Platform.ShellSearchview.ItemTemplate.get -> Microsoft.Maui.Controls.DataTemplate?
+Microsoft.Maui.Controls.Platform.ShellSearchview.ItemTemplate.set -> void
+Microsoft.Maui.Controls.Platform.ShellSearchview.ShellSearchview(Microsoft.Maui.Controls.Element! element) -> void
+Microsoft.Maui.Controls.Platform.ShellSearchViewItemSelectedEventArgs
+Microsoft.Maui.Controls.Platform.ShellSearchViewItemSelectedEventArgs.SelectedItem.get -> object?
+Microsoft.Maui.Controls.Platform.ShellSearchViewItemSelectedEventArgs.ShellSearchViewItemSelectedEventArgs(object? obj) -> void
 Microsoft.Maui.Controls.Platform.ShellSectionStackManager
 Microsoft.Maui.Controls.Platform.ShellSectionStackManager.Connect(Microsoft.Maui.IElement! navigationView) -> void
 Microsoft.Maui.Controls.Platform.ShellSectionStackManager.ShellSection.get -> Microsoft.Maui.Controls.ShellSection?
 Microsoft.Maui.Controls.Platform.ShellSectionStackManager.ShellSectionStackManager() -> void
+Microsoft.Maui.Controls.Platform.ShellSectionStackManager.UpdateTopTabBarColors(Microsoft.Maui.Graphics.Color! forgroundColor, Microsoft.Maui.Graphics.Color! backgroundColor, Microsoft.Maui.Graphics.Color! titleColor, Microsoft.Maui.Graphics.Color! unselectedColor) -> void
 Microsoft.Maui.Controls.Platform.ShellSectionView
 Microsoft.Maui.Controls.Platform.ShellSectionView.CreateTabBar() -> void
-Microsoft.Maui.Controls.Platform.ShellSectionView.DefaultBackgroundColor -> Tizen.NUI.Color!
 Microsoft.Maui.Controls.Platform.ShellSectionView.MauiContext.get -> Microsoft.Maui.IMauiContext?
 Microsoft.Maui.Controls.Platform.ShellSectionView.MauiContext.set -> void
 Microsoft.Maui.Controls.Platform.ShellSectionView.ShellSection.get -> Microsoft.Maui.Controls.ShellSection!
 Microsoft.Maui.Controls.Platform.ShellSectionView.ShellSectionView(Microsoft.Maui.Controls.ShellSection! section, Microsoft.Maui.IMauiContext! context) -> void
+Microsoft.Maui.Controls.Platform.ShellSectionView.UpdateTopTabBarColors(Microsoft.Maui.Graphics.Color? foregroundColor, Microsoft.Maui.Graphics.Color? backgroundColor, Microsoft.Maui.Graphics.Color? titleColor, Microsoft.Maui.Graphics.Color? unselectedColor) -> void
 Microsoft.Maui.Controls.Platform.ShellView
 Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundCorlor -> Tizen.NUI.Color!
 Microsoft.Maui.Controls.Platform.ShellView.Element.get -> Microsoft.Maui.Controls.Shell?
@@ -5688,8 +5699,8 @@ Microsoft.Maui.Controls.Platform.ShellView.SetToolbar(Microsoft.Maui.Platform.Ma
 Microsoft.Maui.Controls.Platform.ShellView.ShellController.get -> Microsoft.Maui.Controls.IShellController!
 Microsoft.Maui.Controls.Platform.ShellView.ShellView() -> void
 Microsoft.Maui.Controls.Platform.ShellView.Toggled -> System.EventHandler?
-Microsoft.Maui.Controls.Platform.ShellView.UpdateBackgroundColor(Microsoft.Maui.Graphics.Color? color) -> void
-Microsoft.Maui.Controls.Platform.ShellView.UpdateCurrentItem(Microsoft.Maui.Controls.ShellItem! newItem, bool animate = true) -> void
+Microsoft.Maui.Controls.Platform.ShellView.UpdateBackgroundColor(Microsoft.Maui.Graphics.Color! color) -> void
+Microsoft.Maui.Controls.Platform.ShellView.UpdateCurrentItem(Microsoft.Maui.Controls.ShellItem! newItem) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateDrawerWidth(double drawerwidth) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyout(Microsoft.Maui.IView? flyout) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutBackDrop(Microsoft.Maui.Controls.Brush! backdrop) -> void
@@ -5697,6 +5708,7 @@ Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutBehavior(Microsoft.Maui.F
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutFooter(Microsoft.Maui.Controls.Shell! shell) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateFlyoutHeader(Microsoft.Maui.Controls.Shell! shell) -> void
 Microsoft.Maui.Controls.Platform.ShellView.UpdateItems() -> void
+Microsoft.Maui.Controls.Platform.ShellView.UpdateSearchHandler() -> void
 Microsoft.Maui.Controls.Platform.SwipeGestureHandler
 Microsoft.Maui.Controls.Platform.SwipeGestureHandler.SwipeGestureHandler(Microsoft.Maui.Controls.IGestureRecognizer! recognizer) -> void
 Microsoft.Maui.Controls.Platform.TapGestureHandler
@@ -7111,9 +7123,11 @@ override Microsoft.Maui.Controls.Handlers.ShellHandler.DisconnectHandler(Microso
 override Microsoft.Maui.Controls.Handlers.ShellItemHandler.ConnectHandler(Microsoft.Maui.Controls.Platform.ShellItemView! platformView) -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemHandler.CreatePlatformElement() -> Microsoft.Maui.Controls.Platform.ShellItemView!
 override Microsoft.Maui.Controls.Handlers.ShellItemHandler.DisconnectHandler(Microsoft.Maui.Controls.Platform.ShellItemView! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemHandler.SetVirtualView(Microsoft.Maui.IElement! view) -> void
 override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.ConnectHandler(Microsoft.Maui.Controls.Platform.ShellSectionStackManager! platformView) -> void
 override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.CreatePlatformElement() -> Microsoft.Maui.Controls.Platform.ShellSectionStackManager!
 override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.DisconnectHandler(Microsoft.Maui.Controls.Platform.ShellSectionStackManager! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionHandler.SetVirtualView(Microsoft.Maui.IElement! view) -> void
 override Microsoft.Maui.Controls.Image.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Image.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.ImageButton.ChangeVisualState() -> void
@@ -7139,7 +7153,6 @@ override Microsoft.Maui.Controls.Page.OnParentSet() -> void
 override Microsoft.Maui.Controls.Page.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.Platform.PanGestureHandler.CreateNativeDetector(Microsoft.Maui.Controls.IGestureRecognizer! recognizer) -> Tizen.NUI.GestureDetector!
 override Microsoft.Maui.Controls.Platform.PinchGestureHandler.CreateNativeDetector(Microsoft.Maui.Controls.IGestureRecognizer! recognizer) -> Tizen.NUI.GestureDetector!
-override Microsoft.Maui.Controls.Platform.ShellDataTemplateSelector.OnSelectTemplate(object! item, Microsoft.Maui.Controls.BindableObject! container) -> Microsoft.Maui.Controls.DataTemplate!
 override Microsoft.Maui.Controls.Platform.ShellSectionStackManager.Disconnect() -> void
 override Microsoft.Maui.Controls.Platform.ShellSectionStackManager.InitializeStack(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IView!>! newStack, bool animated) -> System.Threading.Tasks.Task!
 override Microsoft.Maui.Controls.Platform.SwipeGestureHandler.CreateNativeDetector(Microsoft.Maui.Controls.IGestureRecognizer! recognizer) -> Tizen.NUI.GestureDetector!
@@ -7193,6 +7206,11 @@ override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.O
 override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnAttachedTo(TView! bindable) -> void
 override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachingFrom(Microsoft.Maui.Controls.BindableObject! bindable) -> void
 override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachingFrom(TView! bindable) -> void
+readonly Microsoft.Maui.Controls.Platform.ShellItemView.DefaultBackdropColor -> Microsoft.Maui.Graphics.Color!
+readonly Microsoft.Maui.Controls.Platform.ShellItemView.DefaultTabBarBackgroundColor -> Microsoft.Maui.Graphics.Color!
+readonly Microsoft.Maui.Controls.Platform.ShellSectionView.DefaultTabBarBackgroundColor -> Microsoft.Maui.Graphics.Color!
+readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackdropColor -> Microsoft.Maui.Graphics.Color!
+readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundColor -> Microsoft.Maui.Graphics.Color!
 static Microsoft.Maui.Controls.AbsoluteLayout.AutoSize -> double
 static Microsoft.Maui.Controls.Application.AccentColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Controls.Application.AccentColor.set -> void
@@ -7409,7 +7427,7 @@ virtual Microsoft.Maui.Controls.Page.OnBackButtonPressed() -> bool
 virtual Microsoft.Maui.Controls.Page.OnDisappearing() -> void
 virtual Microsoft.Maui.Controls.Platform.GestureHandler.Dispose(bool disposing) -> void
 virtual Microsoft.Maui.Controls.Platform.GestureHandler.Element.get -> Microsoft.Maui.Controls.VisualElement?
-virtual Microsoft.Maui.Controls.Platform.ShellItemView.CreateItemAdaptor() -> Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor!
+virtual Microsoft.Maui.Controls.Platform.ShellItemView.CreateItemAdaptor(System.Collections.IEnumerable! items) -> Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor!
 virtual Microsoft.Maui.Controls.Platform.ShellSectionView.CreateItemAdaptor() -> Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor!
 virtual Microsoft.Maui.Controls.Platform.ShellView.CreateItemAdaptor() -> Microsoft.Maui.Controls.Handlers.Items.ItemTemplateAdaptor!
 virtual Microsoft.Maui.Controls.Platform.ShellView.CreateNavigationContentView() -> Microsoft.Maui.Controls.Platform.INavigationContentView!

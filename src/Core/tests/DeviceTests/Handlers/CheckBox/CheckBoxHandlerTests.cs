@@ -35,8 +35,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Foreground Updates Correctly")]
-		[InlineData(0xFF0000)]
-		[InlineData(0x0000FF)]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF0000FF)]
 		public async Task ForegroundUpdatesCorrectly(uint color)
 		{
 			var checkBoxStub = new CheckBoxStub
@@ -45,10 +45,14 @@ namespace Microsoft.Maui.DeviceTests
 				IsChecked = true
 			};
 
-			var expected = Color.FromUint(color);
-			checkBoxStub.Foreground = new SolidPaint(expected);
-
-			await ValidateColor(checkBoxStub, expected);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(checkBoxStub);
+				var expected = Color.FromUint(color);
+				checkBoxStub.Foreground = new SolidPaint(expected);
+				handler.UpdateValue(nameof(checkBoxStub.Foreground));
+				await ValidateColor(checkBoxStub, expected);
+			});
 		}
 	}
 }
