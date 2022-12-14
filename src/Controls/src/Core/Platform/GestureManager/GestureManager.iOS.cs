@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new ArgumentNullException(nameof(handler));
 
 			_handler = (IPlatformViewHandler)handler;
-			_platformView = _handler.PlatformView;
+			_platformView = _handler.ToPlatform();
 
 			if (_platformView == null)
 				throw new ArgumentNullException(nameof(handler.PlatformView));
@@ -160,6 +160,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var eventTracker = weakEventTracker.Target as GestureManager;
 			var virtualView = eventTracker?._handler?.VirtualView as View;
 			var platformRecognizer = weakPlatformRecognizer?.Target as UIGestureRecognizer;
+			var platformView = eventTracker?._platformView;
 
 			if (virtualView == null)
 				return null;
@@ -180,7 +181,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (element == null)
 					return new Point(windowX, windowY);
 
-				if (element?.Handler?.PlatformView is UIView uiView)
+				if (platformView is PlatformView uiView)
 				{
 					var location = uiView.GetLocationOnScreen();
 
@@ -196,7 +197,7 @@ namespace Microsoft.Maui.Controls.Platform
 			CGPoint? result = null;
 			if (element == null)
 				result = platformRecognizer.LocationInView(null);
-			else if (element.Handler?.PlatformView is UIView view)
+			else if (platformView is PlatformView view)
 				result = platformRecognizer.LocationInView(view);
 
 			if (result == null)
@@ -233,7 +234,7 @@ namespace Microsoft.Maui.Controls.Platform
 						eventTracker._handler?.VirtualView is View view &&
 						eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
 					{
-						var originPoint = r.LocationInView(eventTracker?._handler?.PlatformView);
+						var originPoint = r.LocationInView(eventTracker?._platformView);
 
 						switch (r.State)
 						{
@@ -427,7 +428,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Action<UITapGestureRecognizer> action = new Action<UITapGestureRecognizer>((sender) =>
 			{
 				var eventTracker = weakEventTracker.Target as GestureManager;
-				var originPoint = sender.LocationInView(eventTracker?._handler?.PlatformView);
+				var originPoint = sender.LocationInView(eventTracker?._platformView);
 				ProcessRecognizerHandlerTap(weakEventTracker, weakRecognizer, originPoint, (int)sender.NumberOfTapsRequired, sender);
 			});
 
@@ -591,11 +592,11 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					dragFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDragInteraction == null && _handler.PlatformView != null)
+					if (uIDragInteraction == null && _platformView != null)
 					{
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
 						interaction.Enabled = true;
-						_handler.PlatformView.AddInteraction(interaction);
+						_platformView.AddInteraction(interaction);
 					}
 				}
 
@@ -603,20 +604,20 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					dropFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDropInteraction == null && _handler.PlatformView != null)
+					if (uIDropInteraction == null && _platformView != null)
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);
-						_handler.PlatformView.AddInteraction(interaction);
+						_platformView.AddInteraction(interaction);
 					}
 				}
 			}
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				if (!dragFound && uIDragInteraction != null && _handler.PlatformView != null)
-					_handler.PlatformView.RemoveInteraction(uIDragInteraction);
+				if (!dragFound && uIDragInteraction != null && _platformView != null)
+					_platformView.RemoveInteraction(uIDragInteraction);
 
-				if (!dropFound && uIDropInteraction != null && _handler.PlatformView != null)
-					_handler.PlatformView.RemoveInteraction(uIDropInteraction);
+				if (!dropFound && uIDropInteraction != null && _platformView != null)
+					_platformView.RemoveInteraction(uIDropInteraction);
 			}
 
 			var toRemove = new List<IGestureRecognizer>();
@@ -666,7 +667,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
-			var platformView = _handler?.PlatformView;
+			var platformView = _platformView;
 			var virtualView = _handler?.VirtualView;
 
 			if (virtualView == null || platformView == null)
