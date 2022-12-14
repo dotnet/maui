@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
 using BasePlatformType = ObjCRuntime.INativeObject;
@@ -42,15 +43,13 @@ namespace Microsoft.Maui.Platform
 				return null;
 
 #if ANDROID
-			if(mauiContext.Context != null)
+			if (mauiContext.Context != null)
 			{
-				return (IElementHandler)Extensions.DependencyInjection.
-					ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
+				return (IElementHandler)ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
 			}
 #endif
 
-			return (IElementHandler)Extensions.DependencyInjection.
-				ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType);
+			return (IElementHandler)ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType);
 		}
 
 		public static IElementHandler ToHandler(this IElement view, IMauiContext context)
