@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				var view = _handler?.ToPlatform();
+				var view = (_handler?.ContainerView ?? _handler?.PlatformView) as AView;
 				if (view.IsAlive())
 					return view;
 
