@@ -225,4 +225,6 @@ namespace Microsoft.Maui
 				AddAdorner(e.VisualTreeElements.First());
 		}
 	}
+
+#pragma warning restore RS0016
 }

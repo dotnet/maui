@@ -37,8 +37,8 @@ namespace Maui.Controls.Sample
 	{
 		static bool UseMauiGraphicsSkia = false;
 
-		enum PageType { Main, Blazor, Shell, Template, FlyoutPage, TabbedPage }
-		readonly static PageType _pageType = PageType.Main;
+		enum PageType { Main, Blazor, Shell, Template, FlyoutPage, TabbedPage, AccessibilityCheck }
+		readonly static PageType _pageType = PageType.AccessibilityCheck;
 
 		public static MauiApp CreateMauiApp()
 		{
@@ -135,6 +135,7 @@ namespace Maui.Controls.Sample
 					PageType.Main => typeof(CustomNavigationPage),
 					PageType.FlyoutPage => typeof(CustomFlyoutPage),
 					PageType.TabbedPage => typeof(Pages.TabbedPageGallery),
+					PageType.AccessibilityCheck => typeof(Pages.AccessibilityCheck),
 					PageType.Blazor =>
 #if NET6_0_OR_GREATER
 						typeof(BlazorPage),

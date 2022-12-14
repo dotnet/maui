@@ -1,0 +1,57 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Pages.AccessibilityCheck"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Color x:Key="PageBackgroundColor">#512bdf</Color>
+            <Color x:Key="PrimaryTextColor">White</Color>
+
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            </Style>
+
+            <Style TargetType="Button">
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+                <Setter Property="BackgroundColor" Value="#2b0b98" />
+                <Setter Property="Padding" Value="14,10" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Spacing="25">
+
+        <Label Text="Hello, World!"
+                SemanticProperties.HeadingLevel="Level1"
+                FontSize="32"
+                HorizontalOptions="Center" />
+
+        <Label Text="The checkboxes and button below have some accessibility issues"/>
+
+        <CheckBox HorizontalOptions="Center" />
+
+        <CheckBox HeightRequest="50" WidthRequest="50" HorizontalOptions="Center" />
+
+        <Label Text="Current count: 0"
+                SemanticProperties.Hint="Counts the number of times you click"
+                FontSize="18"
+                FontAttributes="Bold"
+                x:Name="CounterLabel"
+                HorizontalOptions="Center" />
+
+        <Button Text="" WidthRequest="1" HeightRequest="1"
+                SemanticProperties.Hint="Counts the number of times you click"
+                HorizontalOptions="Center" />
+
+        <Image 
+                Source="dotnet_bot.png"
+                SemanticProperties.Description="Cute dotnet bot waving hi to you!"
+                WidthRequest="300"
+                HeightRequest="372"
+                HorizontalOptions="Center" />
+
+    </VerticalStackLayout>
+</ContentPage>

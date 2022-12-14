@@ -169,8 +169,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(vh.NeedsContainer);
 		}
 
-		//[Fact(DisplayName = "Control meets basic accessibility requirements")]
-		//[Category(TestCategory.Accessibility)]
 		protected async Task AssertPlatformViewIsAccessible(TStub view) 
 		{
 			var handler = await CreateHandlerAsync(view);

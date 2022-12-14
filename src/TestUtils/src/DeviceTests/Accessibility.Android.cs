@@ -1,8 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using AccessibilityCheck.Droid;
 using AccessibilityCheck.Droid.Checks;
 using AccessibilityCheck.Droid.UIElement;
+using Android.AccessibilityServices;
+using Android.Nfc.CardEmulators;
+using Android.Runtime;
+using Android.Views.Accessibility;
+using AndroidX.Core.View.Accessibility;
+using Java.Util;
 using Xunit.Sdk;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests
@@ -18,7 +25,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests
 						new DuplicateSpeakableTextCheck(),
 						new EditableContentDescCheck(),
 						new RedundantDescriptionCheck(),
-						new SpeakableTextPresentCheck(),
+						new SpeakableTextPresentCheck(), // TODO This fails if the speakable text is coming from an AccessibilityDelegate
+						// But maybe we can wrap it and have it look at the node info if it fails, or better yet fix the hierarchy builders
+						// to grab the node info in the first place
 						new TouchTargetSizeCheck(),
 					};
 

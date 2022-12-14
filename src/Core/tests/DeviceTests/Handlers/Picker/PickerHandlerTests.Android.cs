@@ -128,6 +128,12 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task PlatformViewIsAccessible()
 		{
 			var view = new PickerStub();
+			view.Title = "Pick one"; // Right now, because the checker doesn't look at the 
+			// Accesibility delegate stuff, this will only pass if we set a Title; the semantics stuff is ignored
+
+			//view.Semantics.Hint = "Pick One";
+			//view.Semantics.Description = "Pick One";
+
 			await AssertPlatformViewIsAccessible(view);
 		}
 	}
