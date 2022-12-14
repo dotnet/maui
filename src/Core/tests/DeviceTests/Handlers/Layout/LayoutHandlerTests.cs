@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -9,6 +9,45 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 	[Category(TestCategory.Layout)]
 	public partial class LayoutHandlerTests : CoreHandlerTestBase<LayoutHandler, LayoutStub>
 	{
+		[Theory(DisplayName = "Layout IsEnabled update the chidrens")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task LayoutIsEnabledPropagateToChildren(bool isEnabled)
+		{
+			var layout = new LayoutStub
+			{
+				IsEnabled = isEnabled
+			};
+
+			var childLayout = new LayoutStub();
+
+			var childLayoutHandler = await CreateHandlerAsync(childLayout);
+			childLayout.Handler = childLayoutHandler;
+
+			layout.Add(childLayout);
+			childLayout.Parent = layout;
+
+			var layoutHandler = await CreateHandlerAsync(layout);
+			layout.Handler = layoutHandler;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				layoutHandler.PlatformView.UpdateIsEnabled(layout);
+			});
+
+			var children = await InvokeOnMainThreadAsync(() =>
+			{
+				return GetNativeChildren(layoutHandler);
+			});
+
+			Assert.Equal(1, children.Count);
+			Assert.Same(childLayout.Handler.PlatformView, children[0]);
+
+			var actual = await GetNativeChildrenIsEnabled(layoutHandler);
+		
+			Assert.Equal(isEnabled, actual);
+		}
+
 		[Fact(DisplayName = "Shadow Initializes Correctly", 
 			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
 		public async Task ShadowInitializesCorrectly()

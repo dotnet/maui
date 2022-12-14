@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -63,5 +63,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			Assert.Equal(expected, actual);
 		}
+
+		Task<bool> GetNativeChildrenIsEnabled(LayoutHandler layoutHandler) =>
+ 			InvokeOnMainThreadAsync(() => layoutHandler?.PlatformView?.GetChildAt(0)?.Enabled ?? false);
 	}
 }

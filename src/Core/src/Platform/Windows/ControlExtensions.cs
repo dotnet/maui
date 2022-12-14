@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
@@ -20,6 +20,9 @@ namespace Microsoft.Maui.Platform
 			platformControl.FontWeight = font.ToFontWeight();
 			platformControl.IsTextScaleFactorEnabled = font.AutoScalingEnabled;
 		}
+
+		public static void UpdateIsEnabled(this Control platformControl, IView view) =>
+ 			platformControl.IsEnabled = view.GetIsEnabled();
 
 		public static void UpdateIsEnabled(this Control platformControl, bool isEnabled) =>
 			platformControl.IsEnabled = isEnabled;

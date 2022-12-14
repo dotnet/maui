@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Extensions;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Media;
 using ObjCRuntime;
@@ -19,10 +20,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this UIView platformView, IView view)
 		{
-			if (platformView is not UIControl uiControl)
-				return;
+			if (platformView is UIControl uiControl)
+				uiControl.Enabled = view.GetIsEnabled();
 
-			uiControl.Enabled = view.IsEnabled;
+			if (platformView is LayoutView layout)
+				layout.UserInteractionEnabled = view.GetIsEnabled();
+
+			(view as ILayout)?.InvalidateChildrenIsEnabled();
 		}
 
 		public static void Focus(this UIView platformView, FocusRequest request)
@@ -515,7 +519,6 @@ namespace Microsoft.Maui.Platform
 		{
 			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
 		}
-
 
 		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView)
 		{

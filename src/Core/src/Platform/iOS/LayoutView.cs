@@ -76,6 +76,11 @@ namespace Microsoft.Maui.Platform
 			return result;
 		}
 
+		internal bool InternalUserInteractionEnabled
+		{
+			get => _userInteractionEnabled;
+		}
+
 		public override bool UserInteractionEnabled
 		{
 			get => base.UserInteractionEnabled;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
@@ -150,6 +150,22 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(UIUserInterfaceLayoutDirection.LeftToRight, labelFlowDirection);
+		}
+
+		Task<bool> GetNativeChildrenIsEnabled(LayoutHandler layoutHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var child = layoutHandler.PlatformView.Subviews[0];
+
+				if (child is UIControl control)
+					return control.Enabled;
+
+				if (child is LayoutView layout)
+					return layout.InternalUserInteractionEnabled;
+
+				return child.UserInteractionEnabled;
+			});
 		}
 	}
 }

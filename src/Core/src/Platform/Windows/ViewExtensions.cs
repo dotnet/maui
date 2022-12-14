@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Linq;
 using System.Numerics;
@@ -27,8 +27,15 @@ namespace Microsoft.Maui.Platform
 				FocusManager.TryMoveFocus(direction, new FindNextElementOptions { SearchRoot = elem });
 		}
 
-		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view) =>
-			(platformView as Control)?.UpdateIsEnabled(view.IsEnabled);
+		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view)
+		{
+			if (platformView is Control control)
+				control.UpdateIsEnabled(view);
+			else
+				platformView.IsHitTestVisible = view.GetIsEnabled() && !view.InputTransparent;
+
+			(view as ILayout)?.InvalidateChildrenIsEnabled();
+		}
 
 		public static void Focus(this FrameworkElement platformView, FocusRequest request)
 		{

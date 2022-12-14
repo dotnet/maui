@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.LayoutIsEnabledPage"
+    Title="Layout IsEnabled">
+    <ContentPage.Content>
+        <StackLayout
+            Padding="12">
+            <StackLayout
+                x:Name="MainLayout">
+                <Label
+                    Text="All childrens are enabled"/>
+                <StackLayout 
+                    BackgroundColor="LightBlue"
+                    Padding="12">
+                    <Button 
+                        Text="Enabled" />
+                    <Button
+                        Text="Enabled" />
+                </StackLayout>
+                <Label
+                    Text="All childrens are disabled"/>
+                <StackLayout
+                    IsEnabled="False"
+                    BackgroundColor="LightPink"
+                    Padding="12">
+                    <Button 
+                        Text="Disabled" />
+                    <Button
+                        Text="Disabled" />
+                </StackLayout>
+                <Label 
+                    Text="First item is enabled and the second one is disabled"/>
+                <StackLayout 
+                    BackgroundColor="LightSeaGreen"
+                    Padding="12">
+                    <Button 
+                        Text="Enabled" />
+                    <Button 
+                        x:Name="DisabledButton"
+                        BackgroundColor="Red"
+                        Text="Disabled" 
+                        IsEnabled="False" />
+                </StackLayout>
+                <Label 
+                    Text="Nested Layouts"/>
+                <StackLayout
+                    BackgroundColor="LightSkyBlue"
+                    Padding="12">
+                    <StackLayout 
+                        BackgroundColor="LightGray"
+                        Padding="12">
+                        <Button 
+                        Text="Enabled" />
+                        <Button 
+                        Text="Enabled" />
+                    </StackLayout>
+                </StackLayout>
+            </StackLayout>
+            <StackLayout
+                Padding="12"
+                Margin="0, 12">
+                <Button
+                    x:Name="DisableLayoutBtn"
+                    Text="Disable Layout"
+                    Clicked="OnDisableLayoutBtnClicked"/>
+                <Button   
+                    x:Name="DisableButtonBtn"
+                    Text="Enable Button"
+                    Clicked="OnDisableButtonBtnClicked"/>
+            </StackLayout>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

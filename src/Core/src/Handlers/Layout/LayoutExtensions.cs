@@ -1,10 +1,12 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Microsoft.Maui.Handlers
 {
 	internal static class LayoutExtensions
 	{
+		public static IList<IView> GetChildren(this ILayout layout) => layout;
+
 		public static IOrderedEnumerable<IView> OrderByZIndex(this ILayout layout) => layout.OrderBy(v => v.ZIndex);
 
 		public static int GetLayoutHandlerIndex(this ILayout layout, IView view)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using Android.Content;
@@ -11,6 +11,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Window.Layout;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Extensions;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using AColor = Android.Graphics.Color;
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Platform
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
 				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
-				enabled: view.IsEnabled,
+				enabled: view.GetIsEnabled(),
 				alpha: (float)view.Opacity,
 				translationX: platformView.ToPixels(view.TranslationX),
 				translationY: platformView.ToPixels(view.TranslationY),
@@ -59,7 +60,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this AView platformView, IView view)
 		{
-			platformView.Enabled = view.IsEnabled;
+			platformView.Enabled = view.GetIsEnabled();
+
+			(view as ILayout)?.InvalidateChildrenIsEnabled();
 		}
 
 		public static void Focus(this AView platformView, FocusRequest request)
