@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Devices.Sensors
 {
 	/// <summary>
-	/// The Geocoding API provides functionality to geocode a placemark to a positional coordinates and reverse geocode coordinates to a placemark.
+	/// The Geocoding API provides functionality to geocode a placemark to positional coordinates and reverse-geocode coordinates to a placemark.
 	/// </summary>
 	public interface IGeocoding
 	{
 		/// <summary>
 		/// Retrieve potential placemarks for a given location specified by coordinates.
 		/// </summary>
-		/// <param name="latitude">The latitude coordinate to find placemarks around.</param>
-		/// <param name="longitude">The longitude coordinate to find placemarks around.</param>
+		/// <param name="latitude">The latitude coordinate to find placemarks near.</param>
+		/// <param name="longitude">The longitude coordinate to find placemarks near.</param>
 		/// <returns>List of <see cref="Placemark"/> that best match the coordinates or <see langword="null"/> if no placemarks are found.</returns>
 		Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude);
 
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 #if WINDOWS || TIZEN
 		/// <summary>
-		/// Gets or sets the map service API key for this platform needed in order to enable geocoding functionality.
+		/// Gets or sets the map service API key for this platform.
 		/// </summary>
 		/// <remarks>Only needed for Windows and Tizen.</remarks>
 		string? MapServiceToken { get; set; }
@@ -41,14 +41,14 @@ namespace Microsoft.Maui.Devices.Sensors
 	}
 
 	/// <summary>
-	/// The Geocoding API provides functionality to geocode a placemark to a positional coordinates and reverse geocode coordinates to a placemark.
+	/// The Geocoding API provides functionality to geocode a placemark to positional coordinates and reverse-geocode coordinates to a placemark.
 	/// </summary>
 	public static class Geocoding
 	{
 		/// <summary>
 		/// Retrieve potential placemarks for a given location specified by <see cref="Location"/>.
 		/// </summary>
-		/// <param name="location">A <see cref="Location"/> instance to find placemarks around.</param>
+		/// <param name="location">A <see cref="Location"/> instance to find placemarks near.</param>
 		/// <returns>List of <see cref="Placemark"/> that best match the coordinates or <see langword="null"/> if no placemarks are found.</returns>
 		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(Location location) =>
 			Current.GetPlacemarksAsync(location);
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Retrieve potential placemarks for a given location specified by <see cref="Location"/>.
 		/// </summary>
 		/// <param name="geocoding">The object this method is invoked on.</param>
-		/// <param name="location">A <see cref="Location"/> instance to find placemarks around</param>
+		/// <param name="location">A <see cref="Location"/> instance to find placemarks near.</param>
 		/// <returns>List of <see cref="Placemark"/> that best match the coordinates or <see langword="null"/> if no placemarks are found.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="location"/> is <see langword="null"/>.</exception>
 		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(this IGeocoding geocoding, Location location)
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 #if WINDOWS || TIZEN
 		/// <summary>
-		/// Gets the map service API key for this platform needed in order to enable geocoding functionality.
+		/// Gets the map service API key for this platform.
 		/// </summary>
 		/// <param name="geocoding">The object this method is invoked on.</param>
 		/// <remarks>Only needed for Windows and Tizen.</remarks>
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <summary>
-		/// Sets the map service API key for this platform needed in order to enable geocoding functionality.
+		/// Sets the map service API key for this platform.
 		/// </summary>
 		/// <param name="geocoding">The object this method is invoked on.</param>
 		/// <param name="mapServiceToken">The map service API key.</param>
