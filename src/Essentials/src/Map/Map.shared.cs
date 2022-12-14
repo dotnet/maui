@@ -13,8 +13,8 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>
 		/// Open the installed application to a specific location with launch options.
 		/// </summary>
-		/// <param name="latitude">Latitude to open to.</param>
-		/// <param name="longitude">Longitude to open to.</param>
+		/// <param name="latitude">Target latitude.</param>
+		/// <param name="longitude">Target longitude.</param>
 		/// <param name="options">Launch options to use.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		Task OpenAsync(double latitude, double longitude, MapLaunchOptions options);
@@ -29,17 +29,17 @@ namespace Microsoft.Maui.ApplicationModel
 
 		/// <summary>
 		/// First checks if the installed map application can be opened,
-		/// then open the installed application to a specific location with launch options.
+		/// then opens the installed application to a specific location with launch options.
 		/// </summary>
-		/// <param name="latitude">Latitude to open to.</param>
-		/// <param name="longitude">Longitude to open to.</param>
+		/// <param name="latitude">Target latitude.</param>
+		/// <param name="longitude">Target longitude.</param>
 		/// <param name="options">Launch options to use.</param>
 		/// <returns><see langword="true"/> if the map application is opened, otherwise <see langword="false"/>.</returns>
 		Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options);
 
 		/// <summary>
 		/// First checks if the installed map application can be opened,
-		/// then open the installed application to a specific placemark with launch options.
+		/// then opens the installed application to a specific placemark with launch options.
 		/// </summary>
 		/// <param name="placemark">Placemark to open in the map application.</param>
 		/// <param name="options">Launch options to use.</param>
@@ -72,8 +72,8 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>
 		/// Open the installed application to a specific location.
 		/// </summary>
-		/// <param name="latitude">Latitude to open to.</param>
-		/// <param name="longitude">Longitude to open to.</param>
+		/// <param name="latitude">Target latitude.</param>
+		/// <param name="longitude">Target longitude.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		public static Task OpenAsync(double latitude, double longitude) =>
 			Current.OpenAsync(latitude, longitude);
@@ -81,8 +81,8 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>
 		/// Open the installed application to a specific location with launch options.
 		/// </summary>
-		/// <param name="latitude">Latitude to open to.</param>
-		/// <param name="longitude">Longitude to open to.</param>
+		/// <param name="latitude">Target latitude.</param>
+		/// <param name="longitude">Target longitude.</param>
 		/// <param name="options">Launch options to use.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		public static Task OpenAsync(double latitude, double longitude, MapLaunchOptions options) =>
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		/// <summary>
 		/// First checks if the installed map application can be opened,
-		/// then open the installed application to a specific location with launch options.
+		/// then opens the installed application to a specific location with launch options.
 		/// </summary>
 		/// <param name="location">Location to open in the map application.</param>
 		/// <returns><see langword="true"/> if the map application is opened, otherwise <see langword="false"/>.</returns>
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		/// <summary>
 		/// First checks if the installed map application can be opened,
-		/// then open the installed application to a specific location with launch options.
+		/// then opens the installed application to a specific location with launch options.
 		/// </summary>
 		/// <param name="location">Location to open in the map application.</param>
 		/// <param name="options">Launch options to use.</param>
@@ -128,15 +128,15 @@ namespace Microsoft.Maui.ApplicationModel
 		/// First checks if the installed map application can be opened,
 		/// then open the installed application to a specific location with launch options.
 		/// </summary>
-		/// <param name="latitude">Latitude to open to.</param>
-		/// <param name="longitude">Longitude to open to.</param>
+		/// <param name="latitude">Target latitude.</param>
+		/// <param name="longitude">Target longitude.</param>
 		/// <returns><see langword="true"/> if the map application is opened, otherwise <see langword="false"/>.</returns>
 		public static Task<bool> TryOpenAsync(double latitude, double longitude) =>
 			Current.TryOpenAsync(latitude, longitude);
 
 		/// <summary>
 		/// First checks if the installed map application can be opened,
-		/// then open the installed application to a specific location with launch options.
+		/// then opens the installed application to a specific location with launch options.
 		/// </summary>
 		/// <param name="latitude">Latitude to open to.</param>
 		/// <param name="longitude">Longitude to open to.</param>
@@ -213,7 +213,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		/// <summary>
 		/// First checks if the installed map application can be opened,
-		/// then open the installed application to a specific location with launch options.
+		/// then opens the installed application to a specific location with launch options.
 		/// </summary>
 		/// <param name="map">The object this method is invoked on.</param>
 		/// <param name="location">Location to open in the map application.</param>
@@ -246,8 +246,8 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Open the installed application to a specific location.
 		/// </summary>
 		/// <param name="map">The object this method is invoked on.</param>
-		/// <param name="latitude">Latitude to open to.</param>
-		/// <param name="longitude">Longitude to open to.</param>
+		/// <param name="latitude">Target latitude.</param>
+		/// <param name="longitude">Target longitude.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		public static Task OpenAsync(this IMap map, double latitude, double longitude) =>
 			map.OpenAsync(latitude, longitude, new MapLaunchOptions());
@@ -263,18 +263,18 @@ namespace Microsoft.Maui.ApplicationModel
 
 		/// <summary>
 		/// First checks if the installed map application can be opened,
-		/// then open the installed application to a specific location with launch options.
+		/// then opens the installed application to a specific location with launch options.
 		/// </summary>
 		/// <param name="map">The object this method is invoked on.</param>
-		/// <param name="latitude">Latitude to open to.</param>
-		/// <param name="longitude">Longitude to open to.</param>
+		/// <param name="latitude">Target latitude.</param>
+		/// <param name="longitude">Target longitude.</param>
 		/// <returns><see langword="true"/> if the map application is opened, otherwise <see langword="false"/>.</returns>
 		public static Task<bool> TryOpenAsync(this IMap map, double latitude, double longitude) =>
 			map.TryOpenAsync(latitude, longitude, new MapLaunchOptions());
 
 		/// <summary>
 		/// First checks if the installed map application can be opened,
-		/// then open the installed application to a specific placemark with launch options.
+		/// then opens the installed application to a specific placemark with launch options.
 		/// </summary>
 		/// <param name="map">The object this method is invoked on.</param>
 		/// <param name="placemark">Placemark to open in the map application.</param>
