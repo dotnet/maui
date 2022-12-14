@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_items == null)
 				return;
-			
+
 			if (_itemsView == null)
 			{
 				_itemsView = CreateItemsView();
