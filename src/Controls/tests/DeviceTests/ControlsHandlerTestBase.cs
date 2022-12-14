@@ -342,6 +342,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			await OnLoadedAsync(page, timeOut);
 
+			// Navigation Events currently aren't wired up
+			// correctly on iOS
+			if (OperatingSystem.IsIOS() && page.Parent is NavigationPage)
+			{
+				await Task.Delay(100);
+				return;
+			}
+			
 			if (page.HasNavigatedTo)
 			{
 				// TabbedPage fires OnNavigated earlier than it should
