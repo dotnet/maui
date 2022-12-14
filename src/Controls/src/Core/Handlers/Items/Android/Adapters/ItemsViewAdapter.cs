@@ -6,7 +6,6 @@ using AndroidX.RecyclerView.Widget;
 using Object = Java.Lang.Object;
 using ViewGroup = Android.Views.ViewGroup;
 
-
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class ItemsViewAdapter<TItemsView, TItemsViewSource> : RecyclerView.Adapter
