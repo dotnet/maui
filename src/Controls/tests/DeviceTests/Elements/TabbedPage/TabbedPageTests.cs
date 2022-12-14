@@ -201,6 +201,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(tabbedPage.CurrentPage, secondPage);
 			});
 		}
+#endif
 			
 		[Theory]
 #if ANDROID
