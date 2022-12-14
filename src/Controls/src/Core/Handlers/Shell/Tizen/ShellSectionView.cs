@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_topTabBar != null)
 			{
-				backgroundColor = ((backgroundColor!= null) && backgroundColor.IsNotDefault()) ? backgroundColor : DefaultTabBarBackgroundColor;
+				backgroundColor = ((backgroundColor != null) && backgroundColor.IsNotDefault()) ? backgroundColor : DefaultTabBarBackgroundColor;
 				foregroundColor = ((foregroundColor != null) && foregroundColor.IsNotDefault()) ? foregroundColor : backgroundColor?.GetAccentColor();
 				titleColor = ((titleColor != null) && titleColor.IsNotDefault()) ? titleColor : backgroundColor?.GetAccentColor();
 				unselectedColor = ((unselectedColor != null) && unselectedColor.IsNotDefault()) ? unselectedColor : titleColor?.MultiplyAlpha(0.5f);
