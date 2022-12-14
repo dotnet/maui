@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IPlatformViewHandler _handler;
 
 		bool _disposed;
+		WeakReference<PlatformView> _platformView;
 		UIAccessibilityTrait _addedFlags;
 		bool? _defaultAccessibilityRespondsToUserInteraction;
 
@@ -41,6 +42,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_handler = (IPlatformViewHandler)handler;
 
+			if (_handler?.ToPlatform() is not PlatformView target)
+				throw new ArgumentNullException(nameof(handler.PlatformView));
+
+			_platformView = new WeakReference<PlatformView>(target);
+
 			_collectionChangedHandler = GestureRecognizersOnCollectionChanged;
 
 			// In XF this was called inside ViewDidLoad
@@ -50,7 +56,15 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new ArgumentNullException(nameof(handler.VirtualView));
 		}
 
-		protected virtual PlatformView? Control => _handler?.ToPlatform();
+		protected virtual PlatformView? Control
+		{
+			get
+			{
+				if (_platformView.TryGetTarget(out var target))
+					return target;
+				return null;
+			}
+		}
 
 		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers =>
 			(_handler.VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
