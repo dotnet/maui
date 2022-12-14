@@ -18,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorDesignTypeConverterTests.cs" />
+    <Compile Include="DesignTypeConverterTests.cs" />
     <Compile Include="GridLengthCollectionDesignTypeConverterTests.cs" />
     <Compile Include="GridLengthDesignTypeConverterTests.cs" />
   </ItemGroup>

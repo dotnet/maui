@@ -6,6 +6,8 @@ namespace Microsoft.Maui.Controls.Design
 		public EasingDesignTypeConverter()
 		{ }
 
+		protected override bool ExclusiveToKnownValues => true;
+
 		protected override string[] KnownValues
 			=> new string[]
 			{

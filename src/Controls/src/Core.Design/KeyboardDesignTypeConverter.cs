@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Design
 		{
 		}
 
+		protected override bool ExclusiveToKnownValues => true;
+
 		protected override string[] KnownValues
 			=> new[]
 			{
