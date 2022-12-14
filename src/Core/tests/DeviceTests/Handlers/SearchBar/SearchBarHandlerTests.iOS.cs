@@ -217,5 +217,75 @@ namespace Microsoft.Maui.DeviceTests
 
 			return !uiSearchBar.UserInteractionEnabled;
 		}
+
+		bool GetNativeIsNumericKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.DecimalPad;
+		}
+
+		bool GetNativeIsEmailKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.EmailAddress;
+		}
+
+		bool GetNativeIsTelephoneKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.PhonePad;
+		}
+
+		bool GetNativeIsUrlKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.Url;
+		}
+
+		bool GetNativeIsTextKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return false;
+
+			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				textField.SpellCheckingType == UITextSpellCheckingType.Yes;
+		}
+
+		bool GetNativeIsChatKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return false;
+
+			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				textField.SpellCheckingType == UITextSpellCheckingType.No;
+		}
 	}
 }
