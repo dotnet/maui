@@ -104,6 +104,12 @@ namespace Microsoft.Maui.Handlers
 
 		void OnContentLayoutUpdated()
 		{
+			var viewGroup = _contentHandler?.PlatformView as LayoutViewGroup;
+			if (viewGroup != null)
+			{
+				viewGroup.IsLayoutUpdating++;
+			}
+
 			var platformGeometry = PlatformView.GetBounds().ToDP();
 			var measuredSize = VirtualView.CrossPlatformMeasure(platformGeometry.Width, platformGeometry.Height);
 
@@ -115,6 +121,11 @@ namespace Microsoft.Maui.Handlers
 				UpdateContentSize();
 			}
 			_measureCache = measuredSize;
+
+			if (viewGroup != null)
+			{
+				viewGroup.IsLayoutUpdating--;
+			}
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)

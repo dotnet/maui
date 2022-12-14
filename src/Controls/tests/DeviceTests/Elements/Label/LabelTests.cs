@@ -266,7 +266,7 @@ namespace Microsoft.Maui.DeviceTests
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
 				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
 
-				await normalBitmap.AssertEqual(formattedBitmap);
+				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
 		}
 
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var updatedBitmap = await updatedHandler.PlatformView.ToBitmap();
 
-				await updatedBitmap.AssertEqual(initialBitmap);
+				await updatedBitmap.AssertEqualAsync(initialBitmap);
 			});
 
 			static FormattedString GetFormattedString() =>
@@ -363,7 +363,7 @@ namespace Microsoft.Maui.DeviceTests
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
 				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
 
-				await normalBitmap.AssertEqual(formattedBitmap);
+				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
 		}
 
