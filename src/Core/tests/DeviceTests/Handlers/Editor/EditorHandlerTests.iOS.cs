@@ -270,6 +270,12 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
+		TextAlignment GetNativeVerticalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).VerticalTextAlignment;
+
+		TextAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment;
+
 #if !MACCATALYST
 		[Fact(DisplayName = "Completed Event Fires")]
 		public async Task CompletedEventFiresFromTappingDone()

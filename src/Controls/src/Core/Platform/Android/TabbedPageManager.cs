@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Android.App.Roles;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -183,6 +184,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				if (fragmentManager.IsAlive() && !fragmentManager.IsDestroyed)
 				{
+					SetContentBottomMargin(0);
+
 					_ = _context
 							.GetNavigationRootManager()
 							.FragmentManager
@@ -232,12 +235,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					return;
 
 				_tabLayoutFragment = new ViewFragment(BottomNavigationView);
-
-				var layoutContent = rootManager.RootView.FindViewById(Resource.Id.navigationlayout_content);
-				if (layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
-				{
-					cl.BottomMargin = _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height);
-				}
+				SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
 			}
 			else
 			{
@@ -246,11 +244,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					return;
 
 				_tabLayoutFragment = new ViewFragment(TabLayout);
-				var layoutContent = rootManager.RootView.FindViewById(Resource.Id.navigationlayout_content);
-				if (layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
-				{
-					cl.BottomMargin = 0;
-				}
+				SetContentBottomMargin(0);
 			}
 
 			_tabplacementId = id;
@@ -260,6 +254,16 @@ namespace Microsoft.Maui.Controls.Handlers
 					.Replace(id, _tabLayoutFragment)
 					.SetReorderingAllowed(true)
 					.Commit();
+		}
+
+		void SetContentBottomMargin(int bottomMargin)
+		{
+			var rootManager = _context.GetNavigationRootManager();
+			var layoutContent = rootManager.RootView?.FindViewById(Resource.Id.navigationlayout_content);
+			if (layoutContent != null && layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+			{
+				cl.BottomMargin = bottomMargin;
+			}
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
