@@ -1,30 +1,18 @@
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:views="clr-namespace:Samples.View"
-             xmlns:viewmodels="clr-namespace:Samples.ViewModel"
-             x:Class="Samples.View.MagnetometerPage"
-             Title="Magnetometer">
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.MagnetometerPage"
+                Title="Magnetometer">
     <views:BasePage.BindingContext>
         <viewmodels:MagnetometerViewModel />
     </views:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Detect device's orientation relative to Earth's magnetic field." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
-            <Grid Padding="12,0,12,12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+        <ScrollView Grid.Row="1">
+            <Grid Padding="12,0,12,12" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,*">
 
                 <Label Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding X, StringFormat='X: {0:N}'}" />
                 <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Y, StringFormat='Y: {0:N}'}" />
@@ -42,6 +30,6 @@
                         IsEnabled="{Binding IsActive}" />
             </Grid>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </views:BasePage>

@@ -5,7 +5,6 @@ using System;
 
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/VisualTreeChangeEventArgs.xml" path="Type[@FullName='Microsoft.Maui.VisualTreeChangeEventArgs']/Docs/*" />
 	public class VisualTreeChangeEventArgs : EventArgs
 	{
 		public VisualTreeChangeEventArgs(object? parent, object child, int childIndex, VisualTreeChangeType changeType)

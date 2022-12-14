@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Maui.Graphics;
-using Xunit;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Controls;
+﻿using System;
+using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
-using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -13,16 +13,5 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		AppCompatCheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
 			checkBoxHandler.PlatformView;
-
-		Task ValidateHasColor(ICheckBox checkBox, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<CheckBoxHandler>(checkBox);
-				var nativeSwitch = GetNativeCheckBox(handler);
-				action?.Invoke();
-				nativeSwitch.AssertContainsColor(color);
-			});
-		}
 	}
 }

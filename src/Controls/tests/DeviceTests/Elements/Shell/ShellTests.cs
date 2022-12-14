@@ -19,8 +19,8 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
-	public partial class ShellTests : HandlerTestBase
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
@@ -28,23 +28,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Image, ImageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Toolbar, ToolbarHandler>();
-					handlers.AddHandler<MenuBar, MenuBarHandler>();
-					handlers.AddHandler<MenuBarItem, MenuBarItemHandler>();
-					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
-					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
-					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
-					handlers.AddHandler<ScrollView, ScrollViewHandler>();
-#if WINDOWS
-					handlers.AddHandler<ShellItem, ShellItemHandler>();
-					handlers.AddHandler<ShellSection, ShellSectionHandler>();
-					handlers.AddHandler<ShellContent, ShellContentHandler>();
-#endif
+					SetupShellHandlers(handlers);
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
 			});
 		}
@@ -239,6 +224,27 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Fact(DisplayName = "PopToRootAsync correctly navigates to root page")]
+		public async Task PopToRootAsyncCorrectlyNavigationsBackToRootPage()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = rootPage;
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PushAsync(new ContentPage());
+				await shell.Navigation.PopToRootAsync();
+				await OnLoadedAsync(rootPage);
+			});
+		}
 
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
@@ -587,6 +593,45 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 				await shell.GoToAsync("//page2");
 				await Task.Delay(100);
+			});
+		}
+
+		[Fact(DisplayName = "Navigate to Root with BackButtonBehavior no Crash")]
+		public async Task NavigateToRootWithBackButtonBehaviorNoCrash()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				var secondPage = new ContentPage();
+				await shell.Navigation.PushAsync(secondPage);
+				Assert.True(IsBackButtonVisible(shell.Handler));
+
+				bool canExecute = true;
+				Command command = new Command(() => { }, () => canExecute);
+				BackButtonBehavior behavior = new BackButtonBehavior()
+				{
+					IsVisible = false,
+					Command = command
+				};
+
+				Shell.SetBackButtonBehavior(secondPage, behavior);
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				behavior.IsVisible = true;
+				NavigationPage.SetHasBackButton(shell.CurrentPage, true);
+
+				await shell.Navigation.PopToRootAsync(false);
+				await Task.Delay(100);
+				canExecute = false;
+
+				command.ChangeCanExecute();
+				Assert.NotNull(shell.Handler);
 			});
 		}
 

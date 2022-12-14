@@ -29,7 +29,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var nativeUrl = new NSUrl(uri.AbsoluteUri);
 #pragma warning disable CA1416 // TODO: 'SFSafariViewController(NSUrl, bool)' is unsupported on: 'ios' 11.0 and later, there is an overload SFSafariViewController(NSUrl, SFSafariViewControllerConfiguration) supported from ios 11.0+
+#pragma warning disable CA1422 // Validate platform compatibility
 			var sfViewController = new SFSafariViewController(nativeUrl, false);
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // probably need to call the overloads depending on OS version
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true)!;
 

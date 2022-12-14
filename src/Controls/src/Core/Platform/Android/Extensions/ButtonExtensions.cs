@@ -53,11 +53,11 @@ namespace Microsoft.Maui.Controls.Platform
 						break;
 					case ButtonContentLayout.ImagePosition.Left:
 						materialButton.Icon = icon;
-						materialButton.IconGravity = MaterialButton.IconGravityStart;
+						materialButton.IconGravity = MaterialButton.IconGravityTextStart;
 						break;
 					case ButtonContentLayout.ImagePosition.Right:
 						materialButton.Icon = icon;
-						materialButton.IconGravity = MaterialButton.IconGravityEnd;
+						materialButton.IconGravity = MaterialButton.IconGravityTextEnd;
 						break;
 				}
 			}

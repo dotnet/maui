@@ -55,7 +55,6 @@ namespace Microsoft.Maui.Controls
 
 		ITemplatedItemsList<TVisual> ITemplatedItemsView<TVisual>.TemplatedItems => TemplatedItems;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='TemplatedItems']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TemplatedItemsList<ItemsView<TVisual>, TVisual> TemplatedItems { get; }
 

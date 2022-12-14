@@ -1,13 +1,25 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.Widget;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
+using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class StepperHandlerTests
 	{
+		[Fact(DisplayName = "IsEnabled Initializes Correctly")]
+		public async Task IsEnabledInitializesCorrectly()
+		{
+			var stepper = new StepperStub()
+			{
+				Minimum = 0,
+				Maximum = 50,
+				IsEnabled = false
+			};
+
+			await ValidatePropertyInitValue(stepper, () => stepper.IsEnabled, GetNativeIsEnabled, stepper.IsEnabled);
+		}
+
 		LinearLayout GetNativeStepper(StepperHandler stepperHandler) =>
 			stepperHandler.PlatformView;
 
@@ -44,14 +56,14 @@ namespace Microsoft.Maui.DeviceTests
 			return 0;
 		}
 
-		Task ValidateHasColor(IStepper stepper, Color color, Action action = null)
+		bool GetNativeIsEnabled(StepperHandler stepperHandler)
 		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformStepper = GetNativeStepper(CreateHandler(stepper));
-				action?.Invoke();
-				platformStepper.AssertContainsColor(color);
-			});
+			var platformView = GetNativeStepper(stepperHandler);
+
+			var minimumButton = platformView.GetChildAt(0);
+			var maximumButton = platformView.GetChildAt(1);
+
+			return minimumButton.Enabled && maximumButton.Enabled;
 		}
 	}
 }

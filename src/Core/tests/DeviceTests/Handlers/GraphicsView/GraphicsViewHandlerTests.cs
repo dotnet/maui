@@ -7,12 +7,12 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.GraphicsView)]
-	public partial class GraphicsViewHandlerTests : HandlerTestBase<GraphicsViewHandler, GraphicsViewStub>
+	public partial class GraphicsViewHandlerTests : CoreHandlerTestBase<GraphicsViewHandler, GraphicsViewStub>
 	{
 		[Theory(DisplayName = "GraphicsView Initializes Correctly")]
-		[InlineData(0xFF0000)]
-		[InlineData(0x00FF00)]
-		[InlineData(0x0000FF)]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
 		public async Task GraphicsViewInitializesCorrectly(uint color)
 		{
 			var expected = Color.FromUint(color);

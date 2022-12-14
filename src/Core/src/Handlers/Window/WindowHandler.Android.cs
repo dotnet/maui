@@ -1,8 +1,8 @@
 using System;
 using Android.App;
 using Android.Views;
-using Google.Android.Material.AppBar;
 using AndroidX.Window.Layout;
+using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui.Handlers
 {

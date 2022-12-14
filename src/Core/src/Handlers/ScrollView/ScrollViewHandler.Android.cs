@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				/*	With FillViewport active, the Android ScrollView will measure the content at least once; if it is 
 					smaller than the ScrollView's viewport, it measure a second time at the size of the viewport
-					so that the content can properly vill the whole viewport. But it will only do this if the measurespec
+					so that the content can properly fill the whole viewport. But it will only do this if the measurespec
 					is set to Exactly. So if we want our ScrollView to Fill the space in the scroll direction, we need to
 					adjust the MeasureSpec accordingly. If the ScrollView is not set to Fill, we can just leave the spec
 					alone and the ScrollView will size to its content as usual. */
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.PlatformView.SetVerticalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
+			handler.PlatformView.SetVerticalScrollBarVisibility(scrollView.VerticalScrollBarVisibility);
 		}
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)

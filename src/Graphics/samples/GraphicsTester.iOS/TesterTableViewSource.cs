@@ -1,7 +1,7 @@
 using System;
-using Microsoft.Maui.Graphics;
 using Foundation;
 using GraphicsTester.Scenarios;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace GraphicsTester.iOS
@@ -19,9 +19,9 @@ namespace GraphicsTester.iOS
 				cell = new UITableViewCell(UITableViewCellStyle.Default, "cell");
 			}
 
-#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1416, CA1422  // Validate platform compatibility
 			cell.TextLabel.Text = ScenarioList.Scenarios[indexPath.Row].ToString();
-#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416, CA1422  // Validate platform compatibility
 
 			return cell;
 		}

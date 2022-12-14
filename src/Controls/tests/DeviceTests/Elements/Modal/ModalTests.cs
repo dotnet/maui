@@ -24,9 +24,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Modal)]
 #if ANDROID || IOS || MACCATALYST
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
-	public partial class ModalTests : HandlerTestBase
+	public partial class ModalTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
@@ -80,11 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public IEnumerator<object[]> GetEnumerator()
 			{
-#if IOS || MACCATALYST // Shell currently fails to run in CI for tests
-				for (int i = 0; i < 1; i++)
-#else
 				for (int i = 0; i < 2; i++)
-#endif
 				{
 					Func<Page> rootPage;
 
@@ -92,6 +88,10 @@ namespace Microsoft.Maui.DeviceTests
 						rootPage = () => new NavigationPage(new ContentPage());
 					else
 						rootPage = () => new Shell() { CurrentItem = new ContentPage() };
+
+					yield return new object[] {
+						rootPage(), new NavigationPage(new ContentPage())
+					};
 
 					yield return new object[] {
 						rootPage(), new ContentPage()

@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Maui.Controls.Platform;
-using System.Collections.ObjectModel;
 using WApp = Microsoft.UI.Xaml.Application;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 			platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
 			platformView.SetApplicationResource("NavigationViewContentMargin", null);
+			platformView.SetApplicationResource("NavigationViewMinimalContentMargin", null);
 
 			_mauiNavigationView.Loaded += OnNavigationViewLoaded;
 			return platformView;

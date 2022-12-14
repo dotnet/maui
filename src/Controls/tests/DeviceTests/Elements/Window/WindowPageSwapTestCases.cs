@@ -14,13 +14,23 @@ namespace Microsoft.Maui.DeviceTests
 		private readonly List<object[]> _data = new()
 		{
 			new object[] { new WindowPageSwapTestCase(typeof(TabbedPage), typeof(Shell), typeof(FlyoutPage)) },
-			new object[] { new WindowPageSwapTestCase(typeof(Shell), typeof(NavigationPage), typeof(FlyoutPage)) },
+			new object[] { new WindowPageSwapTestCase(typeof(Shell), typeof(NavigationPage), typeof(FlyoutPage), typeof(Shell)) },
 			new object[] { new WindowPageSwapTestCase(typeof(NavigationPage), typeof(NavigationPage), typeof(Shell)) },
+			new object[] { new WindowPageSwapTestCase(typeof(Shell), typeof(FlyoutPageWithNavPage), typeof(TabbedPageWithNavPage), typeof(Shell)) },
 		};
 
 		public IEnumerator<object[]> GetEnumerator() => _data.GetEnumerator();
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+
+		public class FlyoutPageWithNavPage : FlyoutPage
+		{
+		}
+
+		public class TabbedPageWithNavPage : TabbedPage
+		{
+		}
 	}
 
 	public class WindowPageSwapTestCase
@@ -50,6 +60,25 @@ namespace Microsoft.Maui.DeviceTests
 			Page returnValue = null;
 			if (result == typeof(ContentPage))
 				returnValue = Page;
+			else if (result == typeof(WindowPageSwapTestCases.FlyoutPageWithNavPage))
+			{
+				Page.Title ??= "Details Page";
+				returnValue = new WindowPageSwapTestCases.FlyoutPageWithNavPage()
+				{
+					Detail = new NavigationPage(Page) { Title = Page.Title },
+					Flyout = new ContentPage() { Title = "Flyout" }
+				};
+			}
+			else if (result == typeof(WindowPageSwapTestCases.TabbedPageWithNavPage))
+			{
+				returnValue = new WindowPageSwapTestCases.TabbedPageWithNavPage()
+				{
+					Children =
+					{
+						new NavigationPage(Page)
+					}
+				};
+			}
 			else if (result == typeof(FlyoutPage))
 			{
 				Page.Title ??= "Details Page";
@@ -119,5 +148,6 @@ namespace Microsoft.Maui.DeviceTests
 			return debugName;
 		}
 	}
+
 
 }

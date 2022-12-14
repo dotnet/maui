@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -116,6 +117,14 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		double GetInputFieldHeight(SearchBarHandler searchBarHandler)
+		{
+			var control = GetNativeSearchBar(searchBarHandler);
+			var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
+			return MauiContext.Context.FromPixels((double)editText.MeasuredHeight);
+		}
+
+
 		static SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			searchBarHandler.PlatformView;
 
@@ -204,16 +213,6 @@ namespace Microsoft.Maui.DeviceTests
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 			return editText.TextAlignment;
-		}
-
-		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
-				action?.Invoke();
-				nativeSearchBar.AssertContainsColor(color);
-			});
 		}
 
 		bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)

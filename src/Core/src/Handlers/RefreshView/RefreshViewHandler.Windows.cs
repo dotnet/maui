@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 		static void UpdateContent(IRefreshViewHandler handler)
 		{
 			handler.PlatformView.Content =
-				handler.VirtualView.Content.ToPlatform(handler.MauiContext!);
+				handler.VirtualView.Content?.ToPlatform(handler.MauiContext!);
 		}
 
 		static void UpdateRefreshColor(IRefreshViewHandler handler)

@@ -6,7 +6,6 @@ namespace Microsoft.Maui.Controls.Internals
 {
 	static class EnumerableExtensions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/EnumerableExtensions.xml" path="//Member[@MemberName='HasChildGesturesFor']/Docs/*" />
 		public static bool HasChildGesturesFor<T>(this IEnumerable<GestureElement> elements, Func<T, bool> predicate = null) where T : GestureRecognizer
 		{
 			if (elements == null)
@@ -26,7 +25,6 @@ namespace Microsoft.Maui.Controls.Internals
 			return false;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/EnumerableExtensions.xml" path="//Member[@MemberName='GetChildGesturesFor']/Docs/*" />
 		public static IEnumerable<T> GetChildGesturesFor<T>(this IEnumerable<GestureElement> elements, Func<T, bool> predicate = null) where T : GestureRecognizer
 		{
 			if (elements == null)
@@ -44,7 +42,6 @@ namespace Microsoft.Maui.Controls.Internals
 				}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/EnumerableExtensions.xml" path="//Member[@MemberName='GetGesturesFor']/Docs/*" />
 		public static IEnumerable<T> GetGesturesFor<T>(this IEnumerable<IGestureRecognizer> gestures, Func<T, bool> predicate = null) where T : GestureRecognizer
 		{
 			if (gestures == null)

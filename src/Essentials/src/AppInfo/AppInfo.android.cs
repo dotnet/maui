@@ -13,7 +13,9 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		static readonly Lazy<string> _name = new Lazy<string>(() => Application.Context.ApplicationInfo.LoadLabel(Application.Context.PackageManager));
 		static readonly Lazy<string> _packageName = new Lazy<string>(() => Application.Context.PackageName);
+#pragma warning disable 618
 		static readonly Lazy<PackageInfo> _packageInfo = new Lazy<PackageInfo>(() => Application.Context.PackageManager.GetPackageInfo(_packageName.Value, PackageInfoFlags.MetaData));
+#pragma warning restore 618
 		static readonly Lazy<AppTheme> _requestedTheme = new Lazy<AppTheme>(GetRequestedTheme);
 		static readonly Lazy<LayoutDirection> _layoutDirection = new Lazy<LayoutDirection>(GetLayoutDirection);
 
@@ -37,8 +39,6 @@ namespace Microsoft.Maui.ApplicationModel
 			settingsIntent.SetData(global::Android.Net.Uri.Parse("package:" + PackageName));
 
 			var flags = ActivityFlags.NewTask | ActivityFlags.NoHistory | ActivityFlags.ExcludeFromRecents;
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				flags |= ActivityFlags.LaunchAdjacent;
 			settingsIntent.SetFlags(flags);
 
 			context.StartActivity(settingsIntent);

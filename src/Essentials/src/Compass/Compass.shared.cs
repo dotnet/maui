@@ -176,7 +176,6 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Compass.xml" path="//Member[@MemberName='Stop'][2]/Docs/*" />
 		public void Stop()
 		{
 			if (!PlatformIsSupported)

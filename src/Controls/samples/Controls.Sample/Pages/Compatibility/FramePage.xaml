@@ -17,6 +17,21 @@
                     Text="Only with BackgroundColor" />
             </Frame>
             <Label
+                Text="Background"
+                Style="{StaticResource Headline}"/>
+            <Frame>
+                <Frame.Background>
+                    <LinearGradientBrush EndPoint="1,0">
+                        <GradientStop Color="Yellow" 
+                                      Offset="0.1" />
+                        <GradientStop Color="Green"                                   
+                                      Offset="1.0" />
+                    </LinearGradientBrush>
+                </Frame.Background>
+                <Label 
+                    Text="Background" />
+            </Frame>
+            <Label
                 Text="BorderColor"
                 Style="{StaticResource Headline}"/>
             <Frame      
@@ -29,12 +44,39 @@
             <Label
                 Text="Shadow"
                 Style="{StaticResource Headline}"/>
-            <Frame      
+            <Frame
+                x:Name="HasShadowFrame"
                 BackgroundColor="LightGray"
                 BorderColor="Red"
                 HasShadow="True">
                 <Label 
                     Text="Has Shadow" />
+            </Frame>
+            <Label
+                Text="IsClippedToBounds (False)"
+                Style="{StaticResource Headline}"/>
+            <Frame
+                IsClippedToBounds="False"
+                Padding="0"
+                BackgroundColor="LightGray"
+                BorderColor="Red"
+                CornerRadius="24">
+                <Image 
+                    Aspect="AspectFill"
+                    Source="cover1.jpg" />
+            </Frame>
+            <Label
+                Text="IsClippedToBounds (True)"
+                Style="{StaticResource Headline}"/>
+            <Frame
+                IsClippedToBounds="True"
+                Padding="0"
+                BackgroundColor="LightGray"
+                BorderColor="Red"
+                CornerRadius="24">
+                <Image 
+                    Aspect="AspectFill"
+                    Source="cover1.jpg" />
             </Frame>
         </VerticalStackLayout>
     </views:BasePage.Content>

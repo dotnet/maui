@@ -1,14 +1,18 @@
 ﻿using System.Threading.Tasks;
+#if __IOS__
+using Foundation;
+#endif
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Label)]
-	public partial class LabelTests : HandlerTestBase
+	public partial class LabelTests : ControlsHandlerTestBase
 	{
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]
@@ -262,7 +266,7 @@ namespace Microsoft.Maui.DeviceTests
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
 				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
 
-				await normalBitmap.AssertEqual(formattedBitmap);
+				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
 		}
 
@@ -302,7 +306,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var updatedBitmap = await updatedHandler.PlatformView.ToBitmap();
 
-				await updatedBitmap.AssertEqual(initialBitmap);
+				await updatedBitmap.AssertEqualAsync(initialBitmap);
 			});
 
 			static FormattedString GetFormattedString() =>
@@ -359,8 +363,92 @@ namespace Microsoft.Maui.DeviceTests
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
 				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
 
-				await normalBitmap.AssertEqual(formattedBitmap);
+				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
+		}
+
+		[Fact]
+		public async Task TextColorAppliesEvenInHtmlMode()
+		{
+			// Note: this is specifically a Controls-level rule that's inherited from Forms
+			// There's no reason other SDKs need to force a TextColor property when dealing 
+			// with HTML text (since HTML text has its own color handling)
+
+			var label = new Label
+			{
+				TextType = TextType.Html,
+				TextColor = Colors.Red,
+				Text = "<p>Test</p>"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				Assert.Equal(Colors.Red, TextColor(handler));
+			});
+		}
+
+		[Fact]
+		public async Task FontStuffAppliesEvenInHtmlMode()
+		{
+			// Note: this is specifically a Controls-level rule that's inherited from Forms
+			// There's no reason other SDKs need to force font properties when dealing 
+			// with HTML text (since HTML can do that on its own)
+
+			var label = new Label
+			{
+				TextType = TextType.Html,
+				FontSize = 64,
+				FontFamily = "Baskerville",
+				Text = "<p>Test</p>"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
+
+		Color TextColor(LabelHandler handler)
+		{
+#if __IOS__
+			return GetPlatformLabel(handler).TextColor.ToColor();
+#elif __ANDROID__
+			return ((uint)GetPlatformLabel(handler).CurrentTextColor).ToColor();
+#elif WINDOWS
+			return (GetPlatformLabel(handler).Foreground as UI.Xaml.Media.SolidColorBrush).Color.ToColor();
+#endif
+		}
+
+		static void AssertEquivalentFont(LabelHandler handler, Font font)
+		{
+			var fontManager = (IFontManager)handler.MauiContext.Services.GetService(typeof(IFontManager));
+
+#if __IOS__
+			var targetTypeface = fontManager.GetFont(font);
+			var platformTypeface = handler.PlatformView.AttributedText.GetUIKitAttributes(0, out NSRange range).Font;
+			var targetFontSize = fontManager.GetFont(font).PointSize;
+
+			Assert.Equal(targetTypeface, platformTypeface);
+			Assert.Equal(targetFontSize, platformTypeface.PointSize);
+#elif __ANDROID__
+			var targetTypeface = fontManager.GetTypeface(font);
+			var targetFontSize = handler.MauiContext.Context.ToPixels(fontManager.GetFontSize(font).Value);		
+			var platformTypeface = handler.PlatformView.Typeface;
+			var platformFontSize = handler.PlatformView.TextSize;
+
+			Assert.Equal(targetTypeface, platformTypeface);
+			Assert.Equal(targetFontSize, platformFontSize);
+#elif WINDOWS
+			var targetFontStyle = font.ToFontStyle();
+			var targetFontWeight = font.ToFontWeight();
+			var platformFontStyle = handler.PlatformView.FontStyle;
+			var platformFontWeight = handler.PlatformView.FontWeight;
+
+			Assert.Equal(targetFontStyle, platformFontStyle);
+			Assert.Equal(targetFontWeight, platformFontWeight);
+#endif
 		}
 	}
 }

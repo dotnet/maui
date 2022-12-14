@@ -54,10 +54,12 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			layout.Children.Add(button);
 
 			button.Clicked += GenerateItems;
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<ExampleTemplateCarousel>(this, "remove", (obj) =>
 			{
 				(cv.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>).Remove(obj.BindingContext as CollectionViewGalleryTestItem);
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Content = layout;
 		}

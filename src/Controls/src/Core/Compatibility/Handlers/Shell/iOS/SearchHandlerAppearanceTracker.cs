@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			button.SetImage(newIcon, UIControlState.Normal);
 			button.SetImage(newIcon, UIControlState.Selected);
 			button.SetImage(newIcon, UIControlState.Highlighted);
-			button.TintColor = button.ImageView.TintColor = targetColor.ToPlatform() ?? defaultTintColor;
+			button.TintColor = button.ImageView.TintColor = targetColor != null ? targetColor.ToPlatform() : defaultTintColor;
 		}
 
 		protected virtual void Dispose(bool disposing)

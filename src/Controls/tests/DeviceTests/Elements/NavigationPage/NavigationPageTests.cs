@@ -1,10 +1,10 @@
-﻿#if !IOS && !MACCATALYST
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -13,8 +13,8 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
-	public partial class NavigationPageTests : HandlerTestBase
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
@@ -23,12 +23,33 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+#if IOS || MACCATALYST
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler<Frame, FrameRenderer>();
 				});
 			});
 		}
+
+		[Fact]
+		public async Task PoppingNavigationPageDoesntCrash()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.PushAsync(new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }));
+				await navPage.PopAsync();
+			});
+		}
+
+#if !IOS && !MACCATALYST
 
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()
@@ -191,6 +212,38 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(IsBackButtonVisible(navPage.Handler));
 			});
 		}
+
+		[Fact(DisplayName = "Pushing a Tabbed Page Doesn't Throw Exception")]
+		public async Task PushingATabbedPageDoesntThrowException()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				Title = "Page Title"
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var tabbedPage1 = CreateTabbedPage("1");
+				var tabbedPage2 = CreateTabbedPage("2");
+
+				await navPage.PushAsync(tabbedPage1);
+				tabbedPage1.SelectedItem = tabbedPage1.Children[1];
+				await OnLoadedAsync(tabbedPage1.Children[1]);
+				await navPage.PopAsync();
+				await navPage.PushAsync(tabbedPage2);
+
+				TabbedPage CreateTabbedPage(string title) => new TabbedPage()
+				{
+					Title = title,
+					Children =
+					{
+						new ContentPage(),
+						new ContentPage()
+					}
+				};
+			});
+		}
+#endif
 	}
 }
-#endif

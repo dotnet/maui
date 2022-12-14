@@ -11,6 +11,26 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		[Theory(DisplayName = "Gradient Background Initializes Correctly",
+			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948"
+		)]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
+		public async Task GradientBackgroundInitializesCorrectly(uint color)
+		{
+			var expected = Color.FromUint(color);
+
+			var brush = new LinearGradientPaintStub(Colors.Black, expected);
+
+			var searchBar = new SearchBarStub
+			{
+				Background = brush,
+			};
+
+			await ValidateHasColor(searchBar, expected);
+		}
+
 		[Fact]
 		public async Task ShouldShowCancelButtonToggles()
 		{
@@ -109,6 +129,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
+		double GetInputFieldHeight(SearchBarHandler searchBarHandler)
+		{
+			return GetNativeSearchBar(searchBarHandler).Bounds.Height;
+		}
+
 		static UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			(UISearchBar)searchBarHandler.PlatformView;
 
@@ -191,16 +216,6 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 
 			return !uiSearchBar.UserInteractionEnabled;
-		}
-
-		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
-				action?.Invoke();
-				nativeSearchBar.AssertContainsColor(color);
-			});
 		}
 	}
 }

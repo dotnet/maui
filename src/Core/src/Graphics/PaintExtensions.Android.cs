@@ -71,8 +71,8 @@ namespace Microsoft.Maui.Graphics
 			return drawable;
 		}
 
-		static bool IsValid(this GradientPaint? gradienPaint) =>
-			gradienPaint?.GradientStops?.Length > 0;
+		static bool IsValid(this GradientPaint? gradientPaint) =>
+			gradientPaint?.GradientStops?.Length > 0;
 
 		internal static GradientData GetGradientPaintData(GradientPaint gradientPaint, float alpha = 1.0f)
 		{

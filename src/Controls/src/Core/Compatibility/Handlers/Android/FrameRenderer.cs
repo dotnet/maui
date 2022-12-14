@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		GradientDrawable? _backgroundDrawable;
 		private IMauiContext? _mauiContext;
 		ViewHandlerDelegator<Frame> _viewHandlerWrapper;
+		Frame? _element;
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
@@ -58,11 +59,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected Frame? Element
 		{
-			get { return _viewHandlerWrapper.Element; }
+			get { return _viewHandlerWrapper.Element ?? _element; }
 			set
 			{
 				if (value != null)
 					(this as IPlatformViewHandler).SetVirtualView(value);
+
+				_element = value;
 			}
 		}
 
@@ -202,8 +205,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element == null)
 				return;
 
-			var shouldClip = Element.IsSet(Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty)
-					? Element.IsClippedToBounds : Element.CornerRadius > 0f;
+			var shouldClip = Element.IsClippedToBoundsSet(Element.CornerRadius > 0f);
 
 			this.SetClipToOutline(shouldClip);
 		}
@@ -337,8 +339,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext) =>
 			_mauiContext = mauiContext;
 
-		void IElementHandler.SetVirtualView(Maui.IElement view) =>
+		void IElementHandler.SetVirtualView(Maui.IElement view)
+		{
 			_viewHandlerWrapper.SetVirtualView(view, OnElementChanged, false);
+			_element = view as Frame;
+		}
 
 		void IElementHandler.UpdateValue(string property)
 		{

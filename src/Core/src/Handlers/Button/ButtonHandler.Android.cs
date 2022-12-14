@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
 	{
 		// The padding value has to be done here because in the Material Components,
-		// there is a minumum size of the buttons: 88dp x 48dp
+		// there is a minimum size of the buttons: 88dp x 48dp
 		// So, this is calculated:
 		//   - Vertical: 6dp*2 (inset) + 8.5dp*2 (padding) + 2.5dp*2 (text magic) + 14dp (text size) = 48dp
 		//   - Horizontal: 16dp (from the styles)
@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.SetOnTouchListener(TouchListener);
 
 			platformView.FocusChange += OnNativeViewFocusChange;
+			platformView.LayoutChange += OnPlatformViewLayoutChange;
 
 			base.ConnectHandler(platformView);
 		}
@@ -57,6 +58,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.SetOnTouchListener(null);
 
 			platformView.FocusChange -= OnNativeViewFocusChange;
+			platformView.LayoutChange -= OnPlatformViewLayoutChange;
 
 			ImageSourceLoader.Reset();
 
@@ -124,56 +126,10 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.Icon = obj;
 		}
 
-		bool NeedsExactMeasure()
-		{
-			if (VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill
-				&& VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill)
-			{
-				// Layout Alignments of Start, Center, and End will be laying out the TextView at its measured size,
-				// so we won't need another pass with MeasureSpecMode.Exactly
-				return false;
-			}
-
-			if (VirtualView.Width >= 0 && VirtualView.Height >= 0)
-			{
-				// If the Width and Height are both explicit, then we've already done MeasureSpecMode.Exactly in 
-				// both dimensions; no need to do it again
-				return false;
-			}
-
-			// We're going to need a second measurement pass so TextView can properly handle alignments
-			return true;
-		}
-
 		public override void PlatformArrange(Rect frame)
 		{
-			var platformView = this.ToPlatform();
-
-			if (platformView == null || Context == null)
-			{
-				return;
-			}
-
-			if (frame.Width < 0 || frame.Height < 0)
-			{
-				return;
-			}
-
-			// Depending on our layout situation, the TextView may need an additional measurement pass at the final size
-			// in order to properly handle any TextAlignment properties.
-			if (NeedsExactMeasure())
-			{
-				platformView.Measure(MakeMeasureSpecExact(frame.Width), MakeMeasureSpecExact(frame.Height));
-			}
-
+			this.PrepareForTextViewArrange(frame);
 			base.PlatformArrange(frame);
-		}
-
-		int MakeMeasureSpecExact(double size)
-		{
-			// Convert to a platform size to create the spec for measuring
-			var deviceSize = (int)Context!.ToPixels(size);
-			return MeasureSpecMode.Exactly.MakeMeasureSpec(deviceSize);
 		}
 
 		bool OnTouch(IButton? button, AView? v, MotionEvent? e)
@@ -201,6 +157,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsFocused = e.HasFocus;
+		}
+
+		void OnPlatformViewLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
+		{
+			if (sender is MaterialButton platformView && VirtualView != null)
+				platformView.UpdateBackground(VirtualView);
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener

@@ -197,6 +197,8 @@ namespace Microsoft.Maui.Platform
 				var contentMargin = new WThickness(0, _appTitleBarHeight, 0, 0);
 				this.SetApplicationResource("NavigationViewContentMargin", contentMargin);
 				this.SetApplicationResource("NavigationViewMinimalContentMargin", contentMargin);
+				this.SetApplicationResource("NavigationViewBorderThickness", new WThickness(0));
+
 				this.RefreshThemeResources();
 			}
 		}

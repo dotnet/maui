@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics.Text;
 using System.IO;
 using Markdig.Renderers;
+using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Text.Renderer
 {

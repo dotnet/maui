@@ -87,9 +87,9 @@ Task("dotnet-build")
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
         else
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", maxCpuCount: 1);
     });
 
 Task("dotnet-samples")
@@ -101,7 +101,7 @@ Task("dotnet-samples")
             ["UseWorkload"] = "true",
             // ["GenerateAppxPackageOnBuild"] = "true",
             ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        });
+        }, maxCpuCount: 1);
     });
 
 Task("dotnet-templates")
@@ -133,6 +133,8 @@ Task("dotnet-templates")
 
             // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
+            //Try not restore dependecies of 6.0.10
+            { "DisableTransitiveFrameworkReferenceDownloads",  "true" },
         };
 
         var templates = new Dictionary<string, Action<DirectoryPath>> {
@@ -321,13 +323,32 @@ Task("dotnet-pack-docs")
         EnsureDirectoryExists(destDir);
         CleanDirectories(destDir);
 
-        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.*.nupkg"))
+        // Get the docs for .NET MAUI
+        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.any.*.nupkg"))
         {
             var d = $"{tempDir}/{nupkg.GetFilename()}";
+
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
-            CopyDirectory($"{d}/ref", $"{destDir}");
+            DeleteFiles($"{d}/**/*.DesignTools.*");
+            CopyFiles($"{d}/ref/**/net?.?/**/*.dll", $"{destDir}");
+            CopyFiles($"{d}/ref/**/net?.?/**/*.xml", $"{destDir}");
+        }
+
+        // Get the docs for libraries separately distributed as NuGets
+        foreach (var pattern in NuGetOnlyPackages)
+        {
+            foreach (var nupkg in GetFiles($"./artifacts/{pattern}"))
+            {
+                var d = $"{tempDir}/{nupkg.GetFilename()}";
+                Unzip(nupkg, d);
+                DeleteFiles($"{d}/**/*.pri");
+                DeleteFiles($"{d}/**/*.aar");
+                DeleteFiles($"{d}/**/*.pdb");
+                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.dll", $"{destDir}");
+                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.xml", $"{destDir}");
+            }
         }
 
         CleanDirectories(tempDir);
@@ -581,7 +602,8 @@ void RunMSBuildWithDotNet(
     bool warningsAsError = false,
     bool restore = true,
     string targetFramework = null,
-    bool forceDotNetBuild = false)
+    bool forceDotNetBuild = false,
+    int maxCpuCount = 0)
 {
     var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
 
@@ -596,7 +618,7 @@ void RunMSBuildWithDotNet(
 
     var msbuildSettings = new DotNetCoreMSBuildSettings()
         .SetConfiguration(configuration)
-        .SetMaxCpuCount(0)
+        .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
         .EnableBinaryLogger(binlog);
 
