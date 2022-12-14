@@ -55,7 +55,9 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
+#if ANDROID
 		[InlineData(true)]
+#endif
 		[InlineData(false)]
 		public async Task NavigatingAwayFromTabbedPageResizesContentPage(bool bottomTabs)
 		{
