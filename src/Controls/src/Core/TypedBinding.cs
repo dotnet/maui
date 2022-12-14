@@ -206,44 +206,47 @@ namespace Microsoft.Maui.Controls.Internals
 		// ApplyCore  100000 (w/o INPC, w/o unnapply)	: 20ms.
 		internal void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget = false)
 		{
-			var isTSource = sourceObject is TSource;
 			var mode = this.GetRealizedMode(property);
 			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
 				return;
 
-			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
-
+			var isTSource = sourceObject is TSource;
 			if (isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay) && _handlers != null)
 				Subscribe((TSource)sourceObject);
 
+			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
 			if (needsGetter)
 			{
-				var value = FallbackValue ?? property.GetDefaultValue(target);
+				(object value, bool success) source = (null, false);
 				if (isTSource)
 				{
 					try
 					{
-						(var retval, bool success) = _getter((TSource)sourceObject);
-
-						if ( success ) //if the getter failed, return the FallbackValue
-						{
-							value = GetSourceValue(retval, target, property);
-
-							if (ReferenceEquals(value, Binding.DoNothing))
-								return;
-						}
+						source = _getter((TSource)sourceObject);
 					}
 					catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
 					{
 					}
 				}
 
-				if (!BindingExpression.TryConvert(ref value, property, property.ReturnType, true))
+				if (source.success) //if the getter failed, return the FallbackValue
 				{
-					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, property.ReturnType);
+					source.value = GetSourceValue(source.value, target, property);
+
+					if (ReferenceEquals(source.value, Binding.DoNothing))
+						return;
+				}
+				else
+				{
+					source.value = FallbackValue ?? property.GetDefaultValue(target);
+				}
+
+				if (!BindingExpression.TryConvert(ref source.value, property, property.ReturnType, true))
+				{
+					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, source.value, property.ReturnType);
 					return;
 				}
-				target.SetValueCore(property, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
+				target.SetValueCore(property, source.value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
 				return;
 			}
 
