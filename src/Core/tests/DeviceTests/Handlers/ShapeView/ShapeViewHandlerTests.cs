@@ -9,10 +9,32 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.ShapeView)]
 	public partial class ShapeViewHandlerTests : CoreHandlerTestBase<ShapeViewHandler, ShapeViewStub>
 	{
+		[Fact(DisplayName = "Shadow Initializes Correctly on Shapes",
+			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
+		public async Task ShadowInitializesCorrectly()
+		{
+			var xPlatShadow = new ShadowStub
+			{
+				Offset = new Point(10, 10),
+				Opacity = 1.0f,
+				Radius = 2.0f
+			};
+
+			var rectangle = new RectangleStub
+			{
+				Height = 50,
+				Width = 50
+			};
+
+			rectangle.Shadow = xPlatShadow;
+
+			await ValidateHasColor(rectangle, Colors.Red, () => xPlatShadow.Paint = new SolidPaint(Colors.Red));
+		}
+
 		[Theory(DisplayName = "Shape Background Initializes Correctly")]
-		[InlineData(0xFF0000)]
-		[InlineData(0x00FF00)]
-		[InlineData(0x0000FF)]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
 		public async Task BackgroundInitializesCorrectly(uint color)
 		{
 			var expected = Color.FromUint(color);
@@ -119,9 +141,9 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Polyline Background Initializes Correctly")]
-		[InlineData(0xFF0000)]
-		[InlineData(0x00FF00)]
-		[InlineData(0x0000FF)]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
 		public async Task PolylineBackgroundInitializesCorrectly(uint color)
 		{
 			var expected = Color.FromUint(color);
