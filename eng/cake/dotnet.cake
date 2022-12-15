@@ -652,7 +652,7 @@ void RunMSBuildWithDotNet(
             args.Append($"-f {targetFramework}");
 
         if (onlyPreprocess)
-            args.Append($"-pp=\"{pp}\"");
+            args.Append($"/pp:\"{pp}\"");
 
         return args;
     };
