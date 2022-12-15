@@ -620,12 +620,13 @@ void RunMSBuildWithDotNet(
         SetDotNetEnvironmentVariables();
 
     var msbuildSettings = new DotNetCoreMSBuildSettings()
+    {
+        ArgumentCustomization = args => onlyPreprocess ? args.Append($"-pp=\"{pp}\"") : args
+    }    
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
         .EnableBinaryLogger(binlog);
-    if(onlyPreprocess)
-        msbuildSettings.WithProperty("pp", pp);
 
     if (warningsAsError)
     {
