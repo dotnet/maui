@@ -619,7 +619,7 @@ void RunMSBuildWithDotNet(
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    var msbuildSettings = new DotNetCoreMSBuildSettings();
+    var msbuildSettings = new DotNetCoreMSBuildSettings()
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
