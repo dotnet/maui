@@ -191,7 +191,7 @@ Task("dotnet-templates")
                     "</TargetFrameworks>");
                 
                 // Build
-                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
+                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, onlyPreprocess: true);
 
                 // Pack
                 if (alsoPack.Contains(templateName)) {
@@ -603,7 +603,7 @@ void RunMSBuildWithDotNet(
     bool restore = true,
     string targetFramework = null,
     bool forceDotNetBuild = false,
-    int maxCpuCount = 0)
+    int maxCpuCount = 0, bool onlyPreprocess = false)
 {
     var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
 
@@ -623,8 +623,9 @@ void RunMSBuildWithDotNet(
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
-        .EnableBinaryLogger(binlog)
-        .WithProperty("pp", pp);
+        .EnableBinaryLogger(binlog);
+    if(onlyPreprocess)
+        msbuildSettings.WithProperty("pp", pp);
 
     if (warningsAsError)
     {
