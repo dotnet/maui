@@ -369,11 +369,8 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.Wait(
 				() =>
 				{
-					var boundingBox = frameworkElement.GetBoundingBox();
-					if (boundingBox.Height > 0 && boundingBox.Width > 0)
-						return true;
-
-					return false;
+					var size = frameworkElement.GetBoundingBox().Size;
+					return size.Height > 0 && size.Width > 0;
 				});
 
 			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
@@ -399,5 +396,8 @@ namespace Microsoft.Maui.DeviceTests
 						.SingleOrDefault(x => x.Toolbar != null)
 						?.Toolbar;
 		}
+
+		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action);
 	}
 }
