@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			HostPage != null &&
 			Services != null;
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="FrameworkElement.OnApplyTemplate" />
 		public override void OnApplyTemplate()
 		{
 			CheckDisposed();
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="FrameworkElement.OnInitialized(EventArgs)" />
 		protected override void OnInitialized(EventArgs e)
 		{
 			// Called when BeginInit/EndInit are used, such as when creating the control from XAML
