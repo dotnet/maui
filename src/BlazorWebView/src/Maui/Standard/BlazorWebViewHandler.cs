@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, object>
 	{
-		/// <inheritdoc cref="Microsoft.Maui.Handlers.ViewHandler.CreatePlatformView" />
+		/// <inheritdoc cref="Microsoft.Maui.Handlers.ViewHandler{TVirtualView, TPlatformView}.CreatePlatformView" />
 		protected override object CreatePlatformView() => throw new NotSupportedException();
 
 		/// <inheritdoc cref="IBlazorWebView.CreateFileProvider" />
