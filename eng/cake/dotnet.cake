@@ -190,13 +190,9 @@ Task("dotnet-templates")
                     "</TargetFrameworks> -->",
                     "</TargetFrameworks>");
                 
-                properties["pp"] = ((FilePath)projectName).GetFilenameWithoutExtension().ToString() + ".pp.txt";
-
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
 
-                properties["pp"] = "";
-                
                 // Pack
                 if (alsoPack.Contains(templateName)) {
                     var packProperties = new Dictionary<string, string>(properties);
@@ -616,6 +612,9 @@ void RunMSBuildWithDotNet(
     var binlog = string.IsNullOrEmpty(targetFramework) ?
         $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{type}.binlog\"" :
         $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
+    var pp = string.IsNullOrEmpty(targetFramework) ?
+        $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{type}.pp.txt\"" :
+        $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{targetFramework}-{type}.pp.txt\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
@@ -624,7 +623,8 @@ void RunMSBuildWithDotNet(
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
-        .EnableBinaryLogger(binlog);
+        .EnableBinaryLogger(binlog)
+        .WithProperty("pp", pp);
 
     if (warningsAsError)
     {
