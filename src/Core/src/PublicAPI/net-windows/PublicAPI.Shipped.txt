@@ -2705,7 +2705,7 @@ static Microsoft.Maui.Platform.ElementExtensions.ToPlatform(this Microsoft.Maui.
 static Microsoft.Maui.Platform.FontExtensions.ToFontStyle(this Microsoft.Maui.Font fontAttributes) -> Windows.UI.Text.FontStyle
 static Microsoft.Maui.Platform.FontExtensions.ToFontWeight(this Microsoft.Maui.Font font) -> Windows.UI.Text.FontWeight
 static Microsoft.Maui.Platform.GraphicsExtensions.AsPoint(this Microsoft.Maui.Graphics.PointF target, float ppu) -> Windows.Foundation.Point
-static Microsoft.Maui.Platform.GraphicsExtensions.AsPoint(this PointF target) -> Windows.Foundation.Point
+static Microsoft.Maui.Platform.GraphicsExtensions.AsPoint(this Microsoft.Maui.Graphics.PointF target) -> Windows.Foundation.Point
 static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Microsoft.Maui.Graphics.Win2D.PlatformGraphicsView! PlatformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Platform.ImageExtensions.GetImageSourceSize(this Microsoft.UI.Xaml.Media.ImageSource! source, Microsoft.UI.Xaml.FrameworkElement? element = null) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Platform.ImageExtensions.ToIconSource(this Microsoft.Maui.IImageSource! source, Microsoft.Maui.IMauiContext! mauiContext) -> Microsoft.UI.Xaml.Controls.IconSource?
