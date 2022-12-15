@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="Control.Dispose(bool)" />
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
