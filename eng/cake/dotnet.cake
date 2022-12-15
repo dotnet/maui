@@ -189,6 +189,8 @@ Task("dotnet-templates")
                 ReplaceTextInFiles($"{projectName}/*.csproj",
                     "</TargetFrameworks> -->",
                     "</TargetFrameworks>");
+                
+                properties["pp"] = ((FilePath)projectName).GetFilenameWithoutExtension().ToString() + ".pp.txt";
 
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
