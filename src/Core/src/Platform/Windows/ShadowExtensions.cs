@@ -13,7 +13,6 @@ using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 
-
 namespace Microsoft.Maui.Platform
 {
 	internal static class ShadowExtensions
@@ -75,7 +74,6 @@ namespace Microsoft.Maui.Platform
 			}
 			catch (Exception exc)
 			{
-				Debug.WriteLine($"Failed to get AlphaMask {exc}");
 				mask = null;
 			}
 

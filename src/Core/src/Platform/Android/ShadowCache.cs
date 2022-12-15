@@ -47,14 +47,11 @@ namespace Microsoft.Maui.Platform
 
 		public Bitmap Add(string id, Func<Bitmap> create)
 		{
-			Debug.WriteLine($"Add {id}");
-
 			lock (_lock)
 			{
 				if (_cache.TryGetValue(id, out var bitmapReference))
 				{
 					bitmapReference.Reference++;
-					Debug.WriteLine($"Reference {bitmapReference.Reference}, count is {_cache.Count}");
 					return bitmapReference.Bitmap;
 				}
 
@@ -65,7 +62,6 @@ namespace Microsoft.Maui.Platform
 					return null;
 				}
 
-				Debug.WriteLine($"Adding {id}, count is {_cache.Count}");
 				_cache.Add(id, new BitmapReference(bitmap, 1));
 
 				return bitmap;
@@ -74,18 +70,14 @@ namespace Microsoft.Maui.Platform
 
 		public bool Remove(string id)
 		{
-			Debug.WriteLine($"Remove {id}");
-
 			lock (_lock)
 			{
 				if (_cache.TryGetValue(id, out var bitmapReference))
 				{
 					bitmapReference.Reference--;
-					Debug.WriteLine($"Reference {bitmapReference.Reference}, count is {_cache.Count}");
 
 					if (bitmapReference.Reference <= 0)
 					{
-						Debug.WriteLine($"Removing {id}, count is {_cache.Count}");
 						_cache.Remove(id);
 
 						if (bitmapReference.Bitmap != null && !bitmapReference.Bitmap.IsDisposed())
