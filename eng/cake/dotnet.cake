@@ -191,7 +191,7 @@ Task("dotnet-templates")
                     "</TargetFrameworks>");
 
                 // Build
-                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, onlyPreprocess: true);
+                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
 
                 // Pack
                 if (alsoPack.Contains(templateName)) {
@@ -603,8 +603,7 @@ void RunMSBuildWithDotNet(
     bool restore = true,
     string targetFramework = null,
     bool forceDotNetBuild = false,
-    int maxCpuCount = 0,
-    bool onlyPreprocess = false)
+    int maxCpuCount = 0)
 {
     var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
 
@@ -613,9 +612,6 @@ void RunMSBuildWithDotNet(
     var binlog = string.IsNullOrEmpty(targetFramework) ?
         $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{type}.binlog\"" :
         $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
-    var pp = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{type}.pp.txt\"" :
-        $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{targetFramework}-{type}.pp.txt\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
@@ -651,9 +647,6 @@ void RunMSBuildWithDotNet(
 
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
-
-        if (onlyPreprocess)
-            args.Append($"/pp:\"{pp}\"");
 
         return args;
     };
