@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 		/// Indicates a "Go" button.
 		/// </summary>
 		Go,
-		
+
 		/// <summary>
 		/// Indicates a "Next" button. 
 		/// </summary>
@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 		/// Indicates a "Search" button.
 		/// </summary>
 		Search,
-		
+
 		/// <summary>
 		/// Indicates a "Send" button.
 		/// </summary>

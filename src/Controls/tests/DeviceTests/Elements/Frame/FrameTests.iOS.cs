@@ -36,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 					// so on iOS we just return the shadow that was hard coded into the renderer
 					var expectedShadow = new Shadow() { Radius = 5, Opacity = 0.8f, Offset = new Point(0, 0), Brush = Brush.Black };
 
-					if(platformView.Element is IView element)
+					if (platformView.Element is IView element)
 					{
 						var platformShadow = element.Shadow;
 						await AssertionExtensions.Wait(() => platformShadow != null);
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 						Assert.Equal(platformShadow.Opacity, expectedShadow.Opacity);
 						Assert.Equal(platformShadow.Offset, expectedShadow.Offset);
 					}
-				}));				
+				}));
 		}
 	}
 }

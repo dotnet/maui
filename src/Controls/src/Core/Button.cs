@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal static readonly BindablePropertyKey IsPressedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsPressed), typeof(bool), typeof(Button), default(bool));
-		
+
 		/// <summary>
 		/// The backing store for the <see cref="IsPressed"/> bindable property.
 		/// </summary>

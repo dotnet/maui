@@ -132,7 +132,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void LayoutSubviews()
 		{
 			if (_previousSize != Bounds.Size)
+			{
 				SetNeedsDisplay();
+				this.UpdateBackgroundLayer();
+			}
 
 			base.LayoutSubviews();
 		}

@@ -100,10 +100,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (ShapeView == null || ShapeView.Shape == null)
 				return;
-
-			if (!path.Closed)
-				return;
-
+				
 			canvas.SaveState();
 
 			canvas.FillColor = Colors.Transparent;

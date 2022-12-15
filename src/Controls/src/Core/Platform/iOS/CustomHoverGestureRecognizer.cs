@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform.iOS;
 internal class CustomHoverGestureRecognizer : UIHoverGestureRecognizer
 {
 	NSObject _target;
-	
+
 	public CustomHoverGestureRecognizer(NSObject target, Selector action) : base(target, action)
 	{
 		_target = target;
