@@ -195,6 +195,8 @@ Task("dotnet-templates")
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
 
+                properties["pp"] = "";
+                
                 // Pack
                 if (alsoPack.Contains(templateName)) {
                     var packProperties = new Dictionary<string, string>(properties);
