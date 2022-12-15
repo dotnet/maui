@@ -34,6 +34,7 @@
 		public const string TabbedPage = "TabbedPage";
 		public const string Toolbar = "Toolbar";
 		public const string TemplatedView = "TemplatedView";
+		public const string View = "View";
 		public const string VisualElement = "VisualElement";
 		public const string VisualElementTree = "VisualElementTree";
 		public const string Window = "Window";
