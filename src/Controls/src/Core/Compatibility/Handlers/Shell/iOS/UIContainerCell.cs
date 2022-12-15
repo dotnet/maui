@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_renderer == null)
 			{
-				_renderer = (IPlatformViewHandler)view.ToHandler(view.FindMauiContext());
+				_renderer = (IPlatformViewHandler)view.ToHandler(shell != null ? shell.FindMauiContext() : view.FindMauiContext());
 			}
 
 			ContentView.AddSubview(_renderer.PlatformView);
