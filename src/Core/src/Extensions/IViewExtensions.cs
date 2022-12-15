@@ -5,6 +5,11 @@
 	{
 		internal static bool GetIsEnabled(this IView view)
 		{
+			bool viewIsEnabled = view.IsEnabled;
+
+			if (!viewIsEnabled)
+				return false;
+
 			bool parentIsEnabled = true;
 
 			if (view.Parent is IView parentView)
@@ -12,7 +17,7 @@
 				parentIsEnabled = parentView.GetIsEnabled();
 			}
 
-			return parentIsEnabled && view.IsEnabled;
+			return parentIsEnabled && viewIsEnabled;
 		}
 	}
 }
