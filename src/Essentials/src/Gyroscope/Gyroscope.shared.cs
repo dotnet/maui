@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	}
 
 	/// <summary>
-	/// Contains the axis readings measured by the user's device gyroscope.
+	/// Contains the axis readings measured by the device's gyroscope.
 	/// </summary>
 	public readonly struct GyroscopeData : IEquatable<GyroscopeData>
 	{
