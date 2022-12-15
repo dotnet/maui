@@ -619,10 +619,7 @@ void RunMSBuildWithDotNet(
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    var msbuildSettings = new DotNetCoreMSBuildSettings()
-    {
-        ArgumentCustomization = args => onlyPreprocess ? args.Append($"-pp=\"{pp}\"") : args
-    }    
+    var msbuildSettings = new DotNetCoreMSBuildSettings();
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
@@ -653,6 +650,9 @@ void RunMSBuildWithDotNet(
 
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
+
+        if (onlyPreprocess)
+            args.Append($"-pp=\"{pp}\"");
 
         return args;
     };
