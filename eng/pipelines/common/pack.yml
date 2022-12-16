@@ -1,16 +1,14 @@
 parameters:
   platform: ''
   poolName: ''
-  provisionatorChannel: latest
   artifact: 'nuget'
-
+  
 steps:
   - template: provision.yml
     parameters:
       platform: ${{ parameters.platform }}
       poolName: ${{ parameters.poolName }}
-      provisioning: true
-      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3

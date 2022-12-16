@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using Microsoft.Build.Framework;
 using SkiaSharp;
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Resizetizer
 				if (bool.TryParse(image.GetMetadata("IsAppIcon"), out var iai))
 					info.IsAppIcon = iai;
 
-				if (float.TryParse(image.GetMetadata("ForegroundScale"), out var fsc))
+				if (float.TryParse(image.GetMetadata("ForegroundScale"), NumberStyles.Number, CultureInfo.InvariantCulture, out var fsc))
 					info.ForegroundScale = fsc;
 
 				var fgFile = image.GetMetadata("ForegroundFile");

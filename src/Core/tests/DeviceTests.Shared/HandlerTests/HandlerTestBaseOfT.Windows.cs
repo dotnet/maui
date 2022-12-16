@@ -165,9 +165,6 @@ namespace Microsoft.Maui.DeviceTests
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			AutomationProperties.GetAutomationId((FrameworkElement)viewHandler.PlatformView);
 
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((FrameworkElement)viewHandler.PlatformView).GetValue(AutomationProperties.AccessibilityViewProperty)) == AccessibilityView.Content;
-
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
 			AutomationProperties.GetName((FrameworkElement)viewHandler.PlatformView);
 

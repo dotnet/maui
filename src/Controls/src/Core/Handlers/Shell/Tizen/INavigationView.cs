@@ -15,6 +15,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		NView? Footer { get; set; }
 
-		NColor BackgroundColor { get; set; }
+		NColor? BackgroundColor { get; set; }
 	}
 }

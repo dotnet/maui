@@ -9,11 +9,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			return new ContentView
-			{
-				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
-				CrossPlatformArrange = VirtualView.CrossPlatformArrange
-			};
+			return new SemanticSwitchContentView(VirtualView);
 		}
 
 		public override void SetVirtualView(IView view)
@@ -45,8 +41,13 @@ namespace Microsoft.Maui.Handlers
 			UpdateContent(handler);
 		}
 
-		[MissingMapper]
-		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton)
+		{
+			if (radioButton.IsChecked)
+				handler.PlatformView.AccessibilityValue = "1";
+			else
+				handler.PlatformView.AccessibilityValue = "0";
+		}
 
 		[MissingMapper]
 		public static void MapTextColor(IRadioButtonHandler handler, ITextStyle textStyle) { }
