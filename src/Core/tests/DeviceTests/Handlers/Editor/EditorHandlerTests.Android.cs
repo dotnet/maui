@@ -154,6 +154,12 @@ namespace Microsoft.Maui.DeviceTests
 			return (textView.Gravity, textView.TextAlignment);
 		}
 
+		GravityFlags GetNativeVerticalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).Gravity & GravityFlags.VerticalGravityMask;
+
+		GravityFlags GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToVerticalGravityFlags();
+
 		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler)
 		{
 			var textView = GetNativeEditor(editorHandler);
