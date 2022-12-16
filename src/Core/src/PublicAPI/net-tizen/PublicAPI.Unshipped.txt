@@ -1,2 +1,1 @@
 #nullable enable
-static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size

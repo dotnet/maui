@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Layouts
 		/// <param name="contentView"></param>
 		/// <param name="bounds"></param>
 		/// <returns>The Size of the arranged content</returns>
-		public static Size ArrangeContentUnbounded(this IContentView contentView, Rect bounds)
+		internal static Size ArrangeContentUnbounded(this IContentView contentView, Rect bounds)
 		{
 			var presentedContent = contentView.PresentedContent;
 
