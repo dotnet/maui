@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		BindableObject _proxyObject;
 		BindableProperty[] _bpProxies;
 		bool _applying;
-		private bool _updates;
+		private bool _proxyBindingWasUpdated;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='Converter']/Docs/*" />
 		public IMultiValueConverter Converter
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls
 			_applying = true;
 			if (!ReferenceEquals(_targetObject, targetObject))
 			{
-				_updates = true;
+				_proxyBindingWasUpdated = true;
 				_targetObject = targetObject;
 				_proxyObject = new ProxyElement() { Parent = targetObject as Element };
 				_targetProperty = targetProperty;
@@ -123,12 +123,13 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				_updates = false;
+				// watch for updated bindings to avoid unnecessary target update.
+				_proxyBindingWasUpdated = false;
 				_proxyObject.BindingContext = context;
 			}
 			_applying = false;
 
-			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource || !_updates )
+			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource || !_proxyBindingWasUpdated )
 				return;
 			
 			ApplyCore();
@@ -225,7 +226,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnBindingChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			this._updates = true;
+			_proxyBindingWasUpdated = true;
 
 			if (!_applying)
 				Apply(fromTarget: false);
