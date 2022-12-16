@@ -4,11 +4,11 @@ using GColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class ShellFlyoutItemView : Frame
+	class ShellSectionItemTemplatedView : Frame
 	{
-		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemView), false, propertyChanged: (b, o, n) => ((ShellFlyoutItemView)b).UpdateSelectedState());
+		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellSectionItemTemplatedView), false, propertyChanged: (b, o, n) => ((ShellSectionItemTemplatedView)b).UpdateSelectedState());
 
-		Grid _grid;
+		BoxView _bar;
 
 		public bool IsSelected
 		{
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 #pragma warning disable CS8618
-		public ShellFlyoutItemView()
+		public ShellSectionItemTemplatedView()
 #pragma warning restore CS8618
 		{
 			InitializeComponent();
@@ -27,43 +27,52 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			Padding = new Thickness(0);
 			HasShadow = false;
-			BackgroundColor = GColors.White;
+			BorderColor = GColors.DarkGray;
+
+			var label = new Label
+			{
+				Margin = new Thickness(20, 0),
+				FontSize = 16,
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center,
+			};
+			label.SetBinding(Label.TextProperty, new Binding("Title"));
 
 			var icon = new Image
 			{
-				Margin = new Thickness(10, 0),
+				Margin = new Thickness(20, 0),
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 			};
 			icon.SetBinding(Image.SourceProperty, new Binding("Icon"));
 
-			var label = new Label
+			_bar = new BoxView
 			{
-				Margin = new Thickness(15, 15),
-				FontSize = 16,
-				VerticalTextAlignment = TextAlignment.Center,
+				Color = GColors.Transparent,
 			};
-			label.SetBinding(Label.TextProperty, new Binding("Title"));
 
-			_grid = new Grid
+			var grid = new Grid
 			{
-				ColumnDefinitions =
+				RowDefinitions =
 				{
-					new ColumnDefinition
+					new RowDefinition
 					{
-						Width = 50,
+						Height = GridLength.Star,
 					},
-					new ColumnDefinition
+					new RowDefinition
 					{
-						Width = GridLength.Star,
+						Height = 20,
 					},
-				},
-				HeightRequest = 50
+					new RowDefinition
+					{
+						Height = 5,
+					}
+				}
 			};
-			_grid.Add(icon, 0, 0);
-			_grid.Add(label, 1, 0);
-
-			Content = _grid;
+			grid.Add(icon, 0, 0);
+			grid.Add(label, 0, 1);
+			grid.Add(_bar, 0, 2);
+			Content = grid;
 
 			var groups = new VisualStateGroupList();
 
@@ -75,7 +84,7 @@ namespace Microsoft.Maui.Controls.Platform
 			VisualState selected = new VisualState()
 			{
 				Name = VisualStateManager.CommonStates.Selected,
-				TargetType = typeof(ShellFlyoutItemView),
+				TargetType = typeof(ShellSectionItemTemplatedView),
 				Setters =
 				{
 					new Setter
@@ -89,7 +98,7 @@ namespace Microsoft.Maui.Controls.Platform
 			VisualState normal = new VisualState()
 			{
 				Name = VisualStateManager.CommonStates.Normal,
-				TargetType = typeof(ShellFlyoutItemView),
+				TargetType = typeof(ShellSectionItemTemplatedView),
 				Setters =
 				{
 					new Setter
@@ -109,11 +118,11 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (IsSelected)
 			{
-				_grid.Background = GColors.DarkGray;
+				_bar.Color = GColors.DarkGray;
 			}
 			else
 			{
-				_grid.Background = GColors.Transparent;
+				_bar.Color = GColors.Transparent;
 			}
 		}
 	}

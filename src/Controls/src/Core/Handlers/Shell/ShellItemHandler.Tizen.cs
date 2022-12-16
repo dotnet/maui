@@ -23,11 +23,6 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 		}
 
-		public override void SetVirtualView(IElement view)
-		{
-			base.SetVirtualView(view);
-			(view.FindParentOfType<Shell>() as IShellController)?.AddAppearanceObserver(this, VirtualView);
-		}
 
 		protected override ShellItemView CreatePlatformElement() => new ShellItemView(VirtualView, MauiContext!);
 
@@ -79,9 +74,6 @@ namespace Microsoft.Maui.Controls.Handlers
 							thandler.Dispose();
 						}
 					}
-
-					(VirtualView.FindParentOfType<Shell>() as IShellController)?.RemoveAppearanceObserver(this);
-
 					(this as IElementHandler)?.DisconnectHandler();
 					platformView?.Dispose();
 				}
@@ -97,20 +89,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			if (appearance != null)
-			{
-				var shellView = VirtualView?.FindParentOfType<Shell>()?.Handler?.PlatformView as ShellView;
-				shellView?.UpdateToolbarColors(appearance.ForegroundColor, appearance.BackgroundColor, appearance.TitleColor);
-			}
+			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
+			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
 
-			if (appearance is IShellAppearanceElement shellAppearance)
-			{
-				var tabBarBackgroudColor = shellAppearance.EffectiveTabBarBackgroundColor;
-				var tabBarTitleColor = shellAppearance.EffectiveTabBarTitleColor;
-				var tabBarUnselectedColor = shellAppearance.EffectiveTabBarUnselectedColor;
-
-				PlatformView?.UpdateBottomTabBarColors(tabBarBackgroudColor, tabBarTitleColor, tabBarUnselectedColor);
-			}
+			PlatformView?.UpdateTabbarBackgroundColor(tabBarBackgroudColor);
+			PlatformView?.UpdateTabbarTitleColor(tabBarTitleColor);
 		}
 	}
 }

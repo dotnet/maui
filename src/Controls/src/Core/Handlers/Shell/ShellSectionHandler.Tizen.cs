@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellSectionHandler : ElementHandler<ShellSection, ShellSectionStackManager>, IAppearanceObserver, IDisposable
+	public partial class ShellSectionHandler : ElementHandler<ShellSection, ShellSectionStackManager> , IDisposable
 	{
 		bool _disposedValue;
 		Page? _dummyPage;
@@ -56,26 +56,24 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		public override void SetVirtualView(IElement view)
+		protected override void ConnectHandler(ShellSectionStackManager platformView)
 		{
-			base.SetVirtualView(view);
-
-			if (view is IShellSectionController shellSectionController)
+			if (VirtualView is IShellSectionController shellSectionController)
 			{
 				shellSectionController.NavigationRequested += OnNavigationRequested;
 			}
 
-			(view.FindParentOfType<Shell>() as IShellController)?.AddAppearanceObserver(this, VirtualView);
-		}
-
-		protected override void ConnectHandler(ShellSectionStackManager platformView)
-		{
 			platformView.Connect(VirtualView);
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(ShellSectionStackManager platformView)
 		{
+			if (VirtualView is IShellSectionController shellSectionController)
+			{
+				shellSectionController.NavigationRequested -= OnNavigationRequested;
+			}
+
 			platformView.Disconnect();
 			base.DisconnectHandler(platformView);
 		}
@@ -100,12 +98,6 @@ namespace Microsoft.Maui.Controls.Handlers
 							thandler.Dispose();
 						}
 					}
-
-					if (VirtualView is IShellSectionController shellSectionController)
-						shellSectionController.NavigationRequested -= OnNavigationRequested;
-
-					(VirtualView.FindParentOfType<Shell>() as IShellController)?.RemoveAppearanceObserver(this);
-
 					(this as IElementHandler)?.DisconnectHandler();
 					platformView?.Dispose();
 				}
@@ -136,16 +128,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			(VirtualView as IStackNavigation).RequestNavigation(new NavigationRequest(pageStack, animated));
-		}
-
-		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
-		{
-			var backgroundColor = appearance.BackgroundColor;
-			var titleColor = appearance.TitleColor;
-			var foregroundColor = appearance.ForegroundColor;
-			var unselectedColor = appearance.UnselectedColor;
-
-			PlatformView?.UpdateTopTabBarColors(foregroundColor, backgroundColor, titleColor, unselectedColor);
 		}
 	}
 

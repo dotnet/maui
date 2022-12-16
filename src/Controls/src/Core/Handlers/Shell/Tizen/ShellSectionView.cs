@@ -2,12 +2,11 @@
 
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Handlers.Items;
-using Microsoft.Maui.Platform;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
-using GColor = Microsoft.Maui.Graphics.Color;
 using NCollectionView = Tizen.UIExtensions.NUI.CollectionView;
+using NColor = Tizen.NUI.Color;
 using NItemSizingStrategy = Tizen.UIExtensions.NUI.ItemSizingStrategy;
 using NLayoutGroup = Tizen.NUI.LayoutGroup;
 using NView = Tizen.NUI.BaseComponents.View;
@@ -16,9 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellSectionView : NView
 	{
-		public readonly GColor DefaultTabBarBackgroundColor = GColor.FromArgb("#2196f3");
-
-		NCollectionView? _topTabBar;
+		NCollectionView? _tabs;
 		ItemTemplateAdaptor? _adaptor;
 
 		ShellContent? _currentContent;
@@ -27,13 +24,13 @@ namespace Microsoft.Maui.Controls.Platform
 		int _lastSelected = 0;
 		IList<ShellContent>? _cachedContents;
 
-		GColor? _backgroundColor;
-
 		Dictionary<IView, NView> _pageMap = new Dictionary<IView, NView>();
 		Dictionary<IView, IViewHandler?> _handlerMap = new Dictionary<IView, IViewHandler?>();
 
 		protected ShellSection ShellSection { get; private set; }
 		protected IMauiContext? MauiContext { get; set; }
+
+		protected NColor DefaultBackgroundColor = NColor.White;
 
 		public ShellSectionView(ShellSection section, IMauiContext context)
 		{
@@ -59,64 +56,48 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 		}
 
-		public void UpdateTopTabBarColors(GColor? foregroundColor, GColor? backgroundColor, GColor? titleColor, GColor? unselectedColor)
-		{
-			_backgroundColor = backgroundColor;
-
-			if (_topTabBar != null)
-			{
-				backgroundColor = ((backgroundColor != null) && backgroundColor.IsNotDefault()) ? backgroundColor : DefaultTabBarBackgroundColor;
-				foregroundColor = ((foregroundColor != null) && foregroundColor.IsNotDefault()) ? foregroundColor : backgroundColor?.GetAccentColor();
-				titleColor = ((titleColor != null) && titleColor.IsNotDefault()) ? titleColor : backgroundColor?.GetAccentColor();
-				unselectedColor = ((unselectedColor != null) && unselectedColor.IsNotDefault()) ? unselectedColor : titleColor?.MultiplyAlpha(0.5f);
-
-				_topTabBar.BackgroundColor = backgroundColor?.ToNUIColor();
-				(_topTabBar.Adaptor as ShellContentItemAdaptor)?.UpdateItemsColor(foregroundColor, titleColor, unselectedColor);
-			}
-		}
-
 		protected void CreateTabBar()
 		{
 			if (ShellSection.Items.Count <= 1 || !IsItemChanged())
 				return;
 
-			if (_topTabBar == null)
+			if (_tabs == null)
 			{
-				_topTabBar = new NCollectionView
+				_tabs = new NCollectionView
 				{
 					SizeHeight = 40d.ToScaledPixel(),
 					WidthSpecification = LayoutParamPolicies.MatchParent,
-					LayoutManager = new LinearLayoutManager(true, NItemSizingStrategy.MeasureAllItems, 0),
+					LayoutManager = new LinearLayoutManager(true, NItemSizingStrategy.MeasureAllItems),
 					SelectionMode = CollectionViewSelectionMode.SingleAlways,
+					BackgroundColor = DefaultBackgroundColor
 				};
-				_topTabBar.ScrollView.HideScrollbar = true;
-
+				_tabs.ScrollView.HideScrollbar = true;
 			}
 
 			if (_adaptor != null)
 				_adaptor.SelectionChanged -= OnTabItemSelected;
 
-			_topTabBar.Adaptor = _adaptor = CreateItemAdaptor();
+			_tabs.Adaptor = _adaptor = CreateItemAdaptor();
 			_adaptor.SelectionChanged += OnTabItemSelected;
 
 			_cachedContents = ShellSection.Items;
 
-			Add(_topTabBar);
-			(_topTabBar.Layout as NLayoutGroup)?.ChangeLayoutSiblingOrder(0);
+			Add(_tabs);
+			(_tabs.Layout as NLayoutGroup)?.ChangeLayoutSiblingOrder(0);
 		}
 
 		protected virtual ItemTemplateAdaptor CreateItemAdaptor()
 		{
-			return new ShellContentItemAdaptor(ShellSection, ShellSection.Items);
+			return new ShellItemTemplateAdaptor(ShellSection, ShellSection.Items);
 		}
 
 		void OnTabItemSelected(object? sender, CollectionViewSelectionChangedEventArgs e)
 		{
-			if (e.SelectedItems == null || e.SelectedItems.Count == 0 || _topTabBar == null)
+			if (e.SelectedItems == null || e.SelectedItems.Count == 0 || _tabs == null)
 				return;
 
 			var selected = e.SelectedItems[0];
-			var selectedIdx = _topTabBar.Adaptor?.GetItemIndex(selected) ?? 0;
+			var selectedIdx = _tabs.Adaptor?.GetItemIndex(selected) ?? 0;
 
 			if (selectedIdx == _lastSelected)
 				return;
@@ -128,7 +109,7 @@ namespace Microsoft.Maui.Controls.Platform
 		void UpdateCurrentItem()
 		{
 			CreateTabBar();
-			_topTabBar?.RequestItemSelect(_lastSelected);
+			_tabs?.RequestItemSelect(_lastSelected);
 			UpdateContent(ShellSection.CurrentItem);
 		}
 

@@ -14,9 +14,7 @@ namespace Microsoft.Maui.Platform
 	{
 		const double IconSize = 24;
 		const double IconMargin = 8;
-
-		public readonly double Radius = 8;
-		public readonly NColor DefaultBackgroundColor = new NColor(0.9f, 0.9f, 0.9f, 1);
+		const double Radius = 8;
 
 		Entry _entry;
 		SkiaGraphicsView _searchButton;
@@ -24,7 +22,7 @@ namespace Microsoft.Maui.Platform
 
 		public MauiSearchBar()
 		{
-			BackgroundColor = DefaultBackgroundColor;
+			BackgroundColor = new NColor(0.9f, 0.9f, 0.9f, 1);
 
 			_entry = new Entry
 			{
