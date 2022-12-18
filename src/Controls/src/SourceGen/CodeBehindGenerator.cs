@@ -7,6 +7,7 @@ using System.Threading;
 using System.Xml;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
@@ -66,9 +67,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 		static string EscapeIdentifier(string identifier)
 		{
 			var kind = SyntaxFacts.GetKeywordKind(identifier);
-            		return kind == SyntaxKind.None
-                		? identifier
-                		: $"@{identifier}";
+			return kind == SyntaxKind.None
+				? identifier
+				: $"@{identifier}";
 		}
 
 		static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
