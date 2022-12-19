@@ -18,7 +18,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// Sets the contents of the clipboard to be the specified text.
 		/// </summary>
 		/// <param name="text">The text to put on the clipboard.</param>
-		/// <returns>Text content that is on the clipboard, or <see langword="null"/> if there is none.</returns>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		/// <remarks>This method returns immediately and does not guarentee that the text is on the clipboard by the time this method returns.</remarks>
 		Task SetTextAsync(string? text);
 
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		/// Sets the contents of the clipboard to be the specified text.
 		/// </summary>
 		/// <param name="text">The text to put on the clipboard.</param>
-		/// <returns>Text content that is on the clipboard, or <see langword="null"/> if there is none.</returns>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		/// <remarks>This method returns immediately and does not guarentee that the text is on the clipboard by the time this method returns.</remarks>
 		public static Task SetTextAsync(string? text)
 			=> Default.SetTextAsync(text ?? string.Empty);
