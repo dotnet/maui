@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public string? HostPage { get; set; }
 
 		/// <summary>
-		/// Bindable property for StartPath
+		/// Bindable property for <see cref="StartPath"/>.
 		/// </summary>
 		public static readonly BindableProperty StartPathProperty = BindableProperty.Create(nameof(StartPath), typeof(string), typeof(BlazorWebView), "/");
 
