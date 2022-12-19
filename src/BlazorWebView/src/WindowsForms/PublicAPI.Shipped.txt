@@ -1,4 +1,11 @@
 #nullable enable
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.WinForms.WebView2
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.get -> string
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.set -> void
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.EnvironmentOptions.get -> Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.EnvironmentOptions.set -> void
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.UserDataFolder.get -> string
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.UserDataFolder.set -> void
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.BlazorWebViewInitializedEventArgs() -> void
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs
@@ -42,10 +49,3 @@ static Microsoft.AspNetCore.Components.WebView.WindowsForms.RootComponentCollect
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddBlazorWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddWindowsFormsBlazorWebView(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Components.WebView.WindowsForms.IWindowsFormsBlazorWebViewBuilder!
 virtual Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.CreateFileProvider(string! contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider!
-~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.WinForms.WebView2
-~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.get -> string
-~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.set -> void
-~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.EnvironmentOptions.get -> Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions
-~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.EnvironmentOptions.set -> void
-~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.UserDataFolder.get -> string
-~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.UserDataFolder.set -> void

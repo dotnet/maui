@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
 		private WindowsFormsDispatcher ComponentsDispatcher { get; }
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="Control.OnCreateControl" />
 		protected override void OnCreateControl()
 		{
 			base.OnCreateControl();
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="Control.Dispose(bool)" />
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			base.Dispose(disposing);
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="Control.CreateControlsInstance" />
 		protected override ControlCollection CreateControlsInstance()
 		{
 			return new BlazorWebViewControlCollection(this);

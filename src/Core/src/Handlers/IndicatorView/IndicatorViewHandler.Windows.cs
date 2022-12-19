@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiPageControl platformView)
 		{
 			base.ConnectHandler(platformView);
-			PlatformView?.SetIndicatorView(VirtualView);
+
+			platformView?.SetIndicatorView(VirtualView);
+
 			UpdateIndicator();
 		}
 
