@@ -1,8 +1,8 @@
-using Microsoft.Maui.Graphics.Android;
-using Microsoft.Maui.Graphics.Skia;
 using Android.App;
 using Android.Content;
 using Android.Util;
+using Microsoft.Maui.Graphics.Android;
+using Microsoft.Maui.Graphics.Skia;
 using SkiaSharp.Views.Android;
 
 namespace Microsoft.Maui.Graphics.Skia.Views

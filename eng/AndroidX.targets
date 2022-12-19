@@ -46,7 +46,7 @@
     />
     <PackageReference
         Update="Xamarin.Build.Download"
-        Version="0.11.3"
+        Version="0.11.4"
     />
     <PackageReference
         Update="Xamarin.Google.Android.Material"

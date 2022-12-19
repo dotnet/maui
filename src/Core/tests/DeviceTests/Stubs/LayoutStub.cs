@@ -77,7 +77,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public int Count => _children.Count;
 		public bool IsReadOnly => _children.IsReadOnly;
 
-		ILayoutManager LayoutManager => _layoutManager ??= new LayoutManagerStub();
+		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
+
+		protected virtual ILayoutManager CreateLayoutManager() => new LayoutManagerStub();
 
 		public bool IgnoreSafeArea => false;
 

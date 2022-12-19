@@ -324,13 +324,16 @@ Task("dotnet-pack-docs")
         CleanDirectories(destDir);
 
         // Get the docs for .NET MAUI
-        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.*.nupkg"))
+        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.any.*.nupkg"))
         {
             var d = $"{tempDir}/{nupkg.GetFilename()}";
+
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
-            CopyDirectory($"{d}/ref", $"{destDir}");
+            DeleteFiles($"{d}/**/*.DesignTools.*");
+            CopyFiles($"{d}/ref/**/net?.?/**/*.dll", $"{destDir}");
+            CopyFiles($"{d}/ref/**/net?.?/**/*.xml", $"{destDir}");
         }
 
         // Get the docs for libraries separately distributed as NuGets
@@ -343,7 +346,8 @@ Task("dotnet-pack-docs")
                 DeleteFiles($"{d}/**/*.pri");
                 DeleteFiles($"{d}/**/*.aar");
                 DeleteFiles($"{d}/**/*.pdb");
-                CopyDirectory($"{d}/lib", $"{destDir}");
+                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.dll", $"{destDir}");
+                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.xml", $"{destDir}");
             }
         }
 

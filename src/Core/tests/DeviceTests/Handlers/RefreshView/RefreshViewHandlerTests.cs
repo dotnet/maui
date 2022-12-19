@@ -18,7 +18,25 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				IsRefreshing = isRefreshing,
 			};
-			await ValidatePropertyInitValue(RefreshView, () => isRefreshing, GetNativeIsRefreshing, isRefreshing);
+
+#if !WINDOWS
+			await Assert();
+#else
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandler(RefreshView)
+					.PlatformView
+					.AttachAndRun(async () =>
+					{
+						await Wait(() => GetPlatformIsRefreshing((RefreshViewHandler)RefreshView.Handler) == isRefreshing);
+						await Assert();
+					});
+			});
+#endif
+			Task Assert()
+			{
+				return ValidatePropertyInitValue(RefreshView, () => isRefreshing, GetPlatformIsRefreshing, isRefreshing);
+			}
 		}
 	}
 }

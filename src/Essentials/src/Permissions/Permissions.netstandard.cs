@@ -24,7 +24,6 @@ namespace Microsoft.Maui.ApplicationModel
 				throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs/*" />
 		public partial class Battery : BasePlatformPermission
 		{
 		}

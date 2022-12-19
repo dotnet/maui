@@ -2,12 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
 using GColor = Microsoft.Maui.Graphics.Color;
+using GColors = Microsoft.Maui.Graphics.Colors;
 using NCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 using NColor = Tizen.NUI.Color;
 using NView = Tizen.NUI.BaseComponents.View;
@@ -15,8 +17,11 @@ using TDrawerBehavior = Tizen.UIExtensions.Common.DrawerBehavior;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellView : ViewGroup, IAppearanceObserver, IFlyoutBehaviorObserver, IToolbarContainer
+	public class ShellView : ViewGroup, IFlyoutBehaviorObserver, IToolbarContainer
 	{
+		public readonly GColor DefaultBackgroundColor = new GColor(1f, 1f, 1f, 1f);
+		public readonly GColor DefaultBackdropColor = new GColor(0.2f, 0.2f, 0.2f, 0.2f);
+
 		INavigationDrawer _navigationDrawer;
 
 		INavigationView _navigationView;
@@ -28,13 +33,21 @@ namespace Microsoft.Maui.Controls.Platform
 		IView? _flyoutView;
 
 		MauiToolbar? _toolbar;
+		ShellSearchview? _searchBar;
 
 		NCollectionView? _itemsView;
 		ItemTemplateAdaptor? _adaptor;
 
 		ShellItemHandler? _currentItemHandler;
+		SearchHandler? _currentSearchHandler;
+		Page? _currentPage;
+
+		WrapperView? _backdropView;
 
 		bool _isOpen;
+
+		List<List<Element>> _cachedGroups = new List<List<Element>>();
+		List<Element> _items = new List<Element>();
 
 		protected Shell? Element { get; set; }
 
@@ -43,8 +56,6 @@ namespace Microsoft.Maui.Controls.Platform
 		protected IMauiContext? MauiContext { get; private set; }
 
 		protected bool HeaderOnMenu => _headerBehavior == FlyoutHeaderBehavior.Scroll || _headerBehavior == FlyoutHeaderBehavior.CollapseOnScroll;
-
-		protected NColor DefaultBackgroundCorlor = NColor.White;
 
 		public event EventHandler? Toggled;
 
@@ -94,7 +105,15 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (e.PropertyName == "BackButtonVisible")
 				{
-					UpdetDrawerToggleVisible();
+					UpdateDrawerToggleVisible();
+				}
+			};
+
+			Element.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == Shell.CurrentStateProperty.PropertyName)
+				{
+					UpdateSearchHandler();
 				}
 			};
 		}
@@ -102,7 +121,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public void UpdateFlyoutBehavior(FlyoutBehavior flyoutBehavior)
 		{
 			_navigationDrawer.DrawerBehavior = flyoutBehavior.ToPlatform();
-			UpdetDrawerToggleVisible();
+			UpdateDrawerToggleVisible();
 
 			if (_navigationDrawer.DrawerBehavior == TDrawerBehavior.Drawer)
 				_ = _navigationDrawer.CloseAsync(false);
@@ -121,12 +140,12 @@ namespace Microsoft.Maui.Controls.Platform
 				_navigationView.Content = _flyoutView.ToPlatform(MauiContext!);
 		}
 
-		public void UpdateBackgroundColor(GColor? color)
+		public void UpdateBackgroundColor(GColor color)
 		{
-			_navigationView.BackgroundColor = color?.ToNUIColor() ?? DefaultBackgroundCorlor;
+			_navigationView.BackgroundColor = color.IsNotDefault() ? color.ToNUIColor() : DefaultBackgroundColor.ToNUIColor();
 		}
 
-		public void UpdateCurrentItem(ShellItem newItem, bool animate = true)
+		public void UpdateCurrentItem(ShellItem newItem)
 		{
 			if (_currentItemHandler != null)
 				_currentItemHandler.Dispose();
@@ -135,6 +154,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_currentItemHandler = (ShellItemHandler)newItem.ToHandler(MauiContext!);
 				_navigationContentView.Content = newItem.ToPlatform(MauiContext!);
+				UpdateSearchHandler();
 			}
 		}
 
@@ -181,7 +201,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_itemsView = new NCollectionView
 				{
-					SizeHeight = 60d.ToScaledPixel(),
 					WidthSpecification = LayoutParamPolicies.MatchParent,
 					LayoutManager = new LinearLayoutManager(false),
 					SelectionMode = CollectionViewSelectionMode.SingleAlways,
@@ -200,6 +219,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public void UpdateFlyoutBackDrop(Brush backdrop)
 		{
+			if (_backdropView == null)
+			{
+				_backdropView = new WrapperView()
+				{
+					WidthSpecification = LayoutParamPolicies.MatchParent,
+					HeightSpecification = LayoutParamPolicies.MatchParent,
+					BackgroundColor = DefaultBackdropColor.ToNUIColor()
+				};
+				_navigationDrawer.Backdrop = _backdropView;
+			}
+
+			if (!backdrop.IsEmpty)
+				_backdropView.UpdateBackground(backdrop);
 		}
 
 		public void SetToolbar(MauiToolbar toolbar)
@@ -214,9 +246,33 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_toolbar != null)
 			{
+				_toolbar.BoxShadow = null;
 				_toolbar.IconPressed += OnIconPressed;
 				_navigationContentView.TitleView = _toolbar;
 			}
+		}
+
+		public void UpdateSearchHandler()
+		{
+			var newPage = Element?.GetCurrentShellPage() as Page;
+
+			if (newPage != null && _currentPage != newPage)
+			{
+				if (_currentPage != null)
+					_currentPage.PropertyChanged -= OnPagePropertyChanged;
+
+				_currentPage = newPage;
+				_currentPage.PropertyChanged += OnPagePropertyChanged;
+
+				SetSearchHandler();
+			}
+		}
+
+		internal void UpdateToolbarColors(GColor foregroundColor, GColor backgroundColor, GColor titleColor)
+		{
+			_toolbar?.UpdateBarIconColor(foregroundColor);
+			_toolbar?.UpdateBarBackgroundColor(backgroundColor);
+			_toolbar?.UpdateBarTextColor(titleColor);
 		}
 
 		protected virtual INavigationDrawer CreateNavigationDrawer()
@@ -234,9 +290,152 @@ namespace Microsoft.Maui.Controls.Platform
 			return new NavigationContentView();
 		}
 
+		void OnPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == Shell.SearchHandlerProperty.PropertyName)
+				SetSearchHandler();
+		}
+
+		void SetSearchHandler()
+		{
+			var newSearchHandler = Element?.GetEffectiveValue<SearchHandler?>(Shell.SearchHandlerProperty, null);
+
+			if (newSearchHandler != _currentSearchHandler)
+			{
+				if (_currentSearchHandler is not null)
+					_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+
+				_currentSearchHandler = newSearchHandler;
+
+				if (_searchBar != null)
+				{
+					_searchBar.Entry.TextChanged -= OnSearchBarTextChanged;
+					_searchBar.SearchButtonPressed -= OnSearchButtonPressed;
+					_searchBar.ItemSelected -= OnSearchItemSelected;
+				}
+
+				if (_currentSearchHandler != null)
+				{
+					_searchBar = new ShellSearchview(Element!)
+					{
+						HeightSpecification = LayoutParamPolicies.MatchParent,
+						WidthSpecification = LayoutParamPolicies.MatchParent,
+					};
+
+					_searchBar.Entry.PlaceholderText = _currentSearchHandler.Placeholder;
+					_searchBar.IsEnabled = _currentSearchHandler.IsSearchEnabled;
+					_searchBar.Entry.Text = _currentSearchHandler.Query;
+
+					_searchBar.ItemsSource = _currentSearchHandler.ItemsSource;
+					_searchBar.ItemTemplate = _currentSearchHandler.ItemTemplate;
+
+					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
+
+					_searchBar.Entry.TextChanged += OnSearchBarTextChanged;
+					_searchBar.SearchButtonPressed += OnSearchButtonPressed;
+					_searchBar.ItemSelected += OnSearchItemSelected;
+				}
+				else
+				{
+					_searchBar = null;
+				}
+
+				if (_toolbar != null)
+					_toolbar.SearchBar = _searchBar;
+			}
+		}
+
+		void OnCurrentSearchHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (_currentSearchHandler is null || _searchBar is null)
+				return;
+
+			switch (e.PropertyName)
+			{
+				case nameof(SearchHandler.Placeholder):
+					_searchBar.Entry.PlaceholderText = _currentSearchHandler.Placeholder;
+					break;
+				case nameof(SearchHandler.IsSearchEnabled):
+					_searchBar.IsEnabled = _currentSearchHandler.IsSearchEnabled;
+					break;
+				case nameof(SearchHandler.ItemsSource):
+					_searchBar.ItemsSource = _currentSearchHandler.ItemsSource;
+					break;
+				case nameof(SearchHandler.Query):
+					_searchBar.Entry.Text = _currentSearchHandler.Query;
+					break;
+			}
+		}
+
+		void OnSearchBarTextChanged(object? sender, EventArgs args)
+		{
+			if (_currentSearchHandler == null)
+				return;
+
+			_currentSearchHandler.Query = _searchBar?.Entry.Text;
+		}
+
+		void OnSearchButtonPressed(object? sender, EventArgs args)
+		{
+			if (_currentSearchHandler == null)
+				return;
+
+			((ISearchHandlerController)_currentSearchHandler).QueryConfirmed();
+		}
+
+		void OnSearchItemSelected(object? sender, ShellSearchViewItemSelectedEventArgs args)
+		{
+			if (_currentSearchHandler == null)
+				return;
+
+			((ISearchHandlerController)_currentSearchHandler).ItemSelected(args.SelectedItem);
+		}
+
+		bool IsItemChanged(List<List<Element>> groups)
+		{
+			if (_cachedGroups == null)
+				return true;
+
+			if (_cachedGroups == groups)
+				return false;
+
+			if (_cachedGroups.Count != groups.Count)
+				return true;
+
+			for (int i = 0; i < groups.Count; i++)
+			{
+				if (_cachedGroups[i].Count != groups[i].Count)
+					return true;
+
+				for (int j = 0; j < groups[i].Count; j++)
+				{
+					if (_cachedGroups[i][j] != groups[i][j])
+						return true;
+				}
+			}
+
+			return false;
+		}
+
 		protected virtual ItemTemplateAdaptor CreateItemAdaptor()
 		{
-			return new ShellFlyoutItemTemplateAdaptor(Element!, Element!.Items, HeaderOnMenu);
+			var newGrouping = ShellController.GenerateFlyoutGrouping();
+
+			if (IsItemChanged(newGrouping))
+			{
+				_cachedGroups = newGrouping;
+
+				_items.Clear();
+				foreach (var group in newGrouping)
+				{
+					foreach (var item in group)
+					{
+						_items.Add(item);
+					}
+				}
+			}
+
+			return new ShellFlyoutItemAdaptor(Element!, _items, HeaderOnMenu);
 		}
 
 		void OnIconPressed(object? sender, EventArgs e)
@@ -245,7 +444,7 @@ namespace Microsoft.Maui.Controls.Platform
 				IsOpened = true;
 		}
 
-		void UpdetDrawerToggleVisible()
+		void UpdateDrawerToggleVisible()
 		{
 			Element!.Toolbar.DrawerToggleVisible = ((Element!.Toolbar.DrawerToggleVisible) && (Element.FlyoutBehavior == FlyoutBehavior.Flyout));
 			_toolbar?.UpdateBackButton(Element!.Toolbar);
@@ -253,17 +452,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnTabItemSelected(object? sender, CollectionViewSelectionChangedEventArgs e)
 		{
-			if (e.SelectedItems == null || e.SelectedItems.Count == 0 || e.SelectedItems[0] is not ShellItem selectedItem)
+			if (e.SelectedItems == null || e.SelectedItems.Count == 0)
 				return;
 
-			Element!.CurrentItem = selectedItem;
+			var selectedItem = e.SelectedItems[0] as Element;
+			if (selectedItem != null)
+				((IShellController)Element!).OnFlyoutItemSelected(selectedItem);
 
 			if (IsOpened)
 				IsOpened = false;
-		}
-
-		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
-		{
 		}
 
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)

@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 					return updatingHandler.PlatformView.ToBitmap();
 				});
 
-				await initialBitmap.AssertEqual(updatingBitmap);
+				await initialBitmap.AssertEqualAsync(updatingBitmap);
 			});
 
 			static void CreateLayout(Type layoutType, out Layout layout, out Label label)

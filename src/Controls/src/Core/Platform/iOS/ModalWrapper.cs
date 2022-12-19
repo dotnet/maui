@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
 
-					if (modalBkgndColor?.Alpha > 0)
+					if (modalBkgndColor?.Alpha > 0 || modalBkgndColor == Colors.Transparent)
 						result = UIKit.UIModalPresentationStyle.OverFullScreen;
 				}
 
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return base.PreferredInterfaceOrientationForPresentation();
 		}
 
-// TODO: [UnsupportedOSPlatform("ios6.0")]
+		// TODO: [UnsupportedOSPlatform("ios6.0")]
 #pragma warning disable CA1416, CA1422
 		public override bool ShouldAutorotate()
 		{

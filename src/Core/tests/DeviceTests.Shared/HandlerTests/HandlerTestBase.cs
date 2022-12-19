@@ -30,13 +30,14 @@ namespace Microsoft.Maui.DeviceTests
 			_isCreated = true;
 
 
-			var appBuilder = ConfigureBuilder(MauiApp.CreateBuilder());
+			var appBuilder = MauiApp.CreateBuilder();
 
+			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+			appBuilder.Services.AddSingleton<IApplication>((_) => new CoreApplicationStub());
+
+			appBuilder = ConfigureBuilder(appBuilder);
 			additionalCreationActions?.Invoke(appBuilder);
-
-			appBuilder.Services.TryAddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
-			appBuilder.Services.TryAddScoped<IDispatcher>(svc => TestDispatcher.Current);
-			appBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
 
 			_mauiApp = appBuilder.Build();
 			_servicesProvider = _mauiApp.Services;
@@ -106,11 +107,9 @@ namespace Microsoft.Maui.DeviceTests
 				var w = size.Width;
 				var h = size.Height;
 
-				if (double.IsPositiveInfinity(w))
-					w = view.Width;
-
-				if (double.IsPositiveInfinity(h))
-					h = view.Height;
+				// No measure method should be returning infinite values
+				Assert.False(double.IsPositiveInfinity(w));
+				Assert.False(double.IsPositiveInfinity(h));
 
 #else
 				// Windows cannot measure without the view being loaded
@@ -128,6 +127,9 @@ namespace Microsoft.Maui.DeviceTests
 			where THandler : IElementHandler, new()
 			where TCustomHandler : THandler, new()
 		{
+			if (element.Handler is TCustomHandler t)
+				return t;
+
 			mauiContext ??= MauiContext;
 			var handler = Activator.CreateInstance<TCustomHandler>();
 			InitializeViewHandler(element, handler, mauiContext);
@@ -137,11 +139,29 @@ namespace Microsoft.Maui.DeviceTests
 #if PLATFORM
 		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType)
 		{
+			if (view.Handler is IPlatformViewHandler t)
+				return t;
+
 			var handler = (IPlatformViewHandler)Activator.CreateInstance(handlerType);
 			InitializeViewHandler(view, handler, MauiContext);
 			return handler;
 
 		}
+
+		protected Task ValidateHasColor(IView view, Color color, Type handlerType, Action action = null)
+		{
+#if !TIZEN
+			return InvokeOnMainThreadAsync(async () =>
+			{
+				var plaformView = CreateHandler(view, handlerType).ToPlatform();
+				action?.Invoke();
+				await plaformView.AssertContainsColor(color);
+			});
+#else
+			throw new NotImplementedException();
+#endif
+		}
+
 #endif
 
 		public void Dispose()

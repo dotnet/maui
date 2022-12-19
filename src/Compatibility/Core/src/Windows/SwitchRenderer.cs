@@ -1,17 +1,17 @@
 using System.ComponentModel;
 using System.Linq;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WColor = Windows.UI.Color;
-using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WEllipse = Microsoft.UI.Xaml.Shapes.Ellipse;
+using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

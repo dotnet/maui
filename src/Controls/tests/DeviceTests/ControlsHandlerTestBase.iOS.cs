@@ -12,18 +12,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ControlsHandlerTestBase
 	{
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
-		{
-			var platformView = ((UIView)viewHandler.PlatformView);
-			return platformView.IsAccessibilityElement;
-		}
-
-		protected bool GetExcludedWithChildren(IViewHandler viewHandler)
-		{
-			var platformView = ((UIView)viewHandler.PlatformView);
-			return platformView.AccessibilityElementsHidden;
-		}
-
 		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{

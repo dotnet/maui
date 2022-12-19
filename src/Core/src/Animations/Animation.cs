@@ -240,10 +240,8 @@ namespace Microsoft.Maui.Animations
 				Step?.Invoke(Progress);
 				HasFinished = percent == 1;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				//TODO log exception
-				Console.WriteLine(ex);
 				HasFinished = true;
 			}
 		}
