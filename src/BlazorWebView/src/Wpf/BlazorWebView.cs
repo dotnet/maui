@@ -38,7 +38,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public static readonly DependencyProperty StartPathProperty = DependencyProperty.Register(
 			name: nameof(StartPath),
 			propertyType: typeof(string),
-			ownerType: typeof(BlazorWebView));
+			ownerType: typeof(BlazorWebView),
+			typeMetadata: new PropertyMetadata("/"));
 
 		/// <summary>
 		/// The backing store for the <see cref="RootComponent"/> property.
@@ -114,8 +115,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), WebViewTemplateChildName)
 			};
 
-			StartPath = "/";
-
 			ApplyTabNavigation(IsTabStop);
 		}
 
@@ -140,8 +139,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		}
 
 		/// <summary>
-		/// Path for initial Blazor navigation when the Blazor component is finished loading. For example, "/".
-		/// This property must be set to a valid value for the Razor components to start.
+		/// Path for initial Blazor navigation when the Blazor component is finished loading.
 		/// </summary>
 		public string StartPath
 		{
