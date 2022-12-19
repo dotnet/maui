@@ -223,7 +223,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var pointerGestureRecognizer = recognizer as PointerGestureRecognizer;
-			if (pointerGestureRecognizer != null)
+
+			if (pointerGestureRecognizer != null && OperatingSystem.IsIOSVersionAtLeast(13))
 			{
 				var uiRecognizer = CreatePointerRecognizer(r =>
 				{
@@ -405,6 +406,8 @@ namespace Microsoft.Maui.Controls.Platform
 			return result;
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.0")]
 		CustomHoverGestureRecognizer CreatePointerRecognizer(Action<UIHoverGestureRecognizer> action)
 		{
 			var result = new CustomHoverGestureRecognizer(action);

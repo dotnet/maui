@@ -1,30 +1,30 @@
 
 using System;
-using System.Linq;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using WGrid = Microsoft.UI.Xaml.Controls.Grid;
-using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
-using WHorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment;
-using WVisibility = Microsoft.UI.Xaml.Visibility;
-using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
-using WImage = Microsoft.UI.Xaml.Controls.Image;
-using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-using WTextBlock = Microsoft.UI.Xaml.Controls.TextBlock;
+using PageSpecifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Page;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage;
 using VisualElementSpecifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.VisualElement;
-using PageSpecifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Page;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WGrid = Microsoft.UI.Xaml.Controls.Grid;
+using WHorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment;
+using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
+using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
+using WTextBlock = Microsoft.UI.Xaml.Controls.TextBlock;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

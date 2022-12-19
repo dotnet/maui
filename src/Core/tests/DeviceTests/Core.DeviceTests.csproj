@@ -45,7 +45,6 @@
     <Compile Remove="Handlers\Fonts\*.cs" />
     <Compile Remove="Handlers\Image\*.cs" />
     <Compile Remove="Handlers\ImageButton\*.cs" />
-    <Compile Remove="Handlers\RefreshView\*.cs" />
     <Compile Remove="Handlers\ShapeView\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
