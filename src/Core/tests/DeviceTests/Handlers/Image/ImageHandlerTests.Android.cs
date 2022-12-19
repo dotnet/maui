@@ -86,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var result = await service.LoadDrawableAsync(imageSource, handler.PlatformView);
 
-					await handler.PlatformView.AssertColorAtCenter(expectedColor.ToPlatform());
+					await handler.PlatformView.AssertColorAtCenterAsync(expectedColor.ToPlatform());
 				});
 			});
 		}

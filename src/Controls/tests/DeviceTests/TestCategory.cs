@@ -2,9 +2,12 @@
 {
 	public static class TestCategory
 	{
+		public const string Accessibility = "Accessibility";
 		public const string Application = "Application";
 		public const string Behavior = "Behavior";
+		public const string BoxView = "BoxView";
 		public const string Button = "Button";
+		public const string CarouselView = "CarouselView";
 		public const string CheckBox = "CheckBox";
 		public const string Compatibility = "Compatibility";
 		public const string ContentView = "ContentView";

@@ -181,15 +181,9 @@ namespace Microsoft.Maui.DeviceTests
 			return FlowDirection.LeftToRight;
 		}
 
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
-
 		public View GetSemanticPlatformElement(IViewHandler viewHandler)
 		{
-			if (viewHandler.PlatformView is View sv)
-				return sv.GetSemanticPlatformElement();
-
-			return (View)viewHandler.PlatformView;
+			return ((View)viewHandler.PlatformView).GetSemanticPlatformElement();
 		}
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
