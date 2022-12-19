@@ -4,3 +4,5 @@ Microsoft.Maui.Controls.Platform.FormattedStringExtensions
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 *REMOVED*Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundCorlor -> Tizen.NUI.Color!
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackdropColor -> Tizen.NUI.Color!
+*REMOVED*readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundColor -> Tizen.NUI.Color!
