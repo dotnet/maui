@@ -53,6 +53,16 @@
                     Text="Has Shadow" />
             </Frame>
             <Label
+                Text="Opacity"
+                Style="{StaticResource Headline}"/>
+            <Frame
+                BackgroundColor="LightGray"
+                BorderColor="Red"
+                Opacity="0.5"
+                HasShadow="True">
+                    <Label Text="Opacity 0.5" />
+            </Frame>
+            <Label
                 Text="IsClippedToBounds (False)"
                 Style="{StaticResource Headline}"/>
             <Frame
@@ -78,6 +88,10 @@
                     Aspect="AspectFill"
                     Source="cover1.jpg" />
             </Frame>
+            <Button
+                Text="Update HasShadow"
+                Clicked="OnHasShadowButtonClicked"
+                Margin="0, 6"/>
             <Button
                 Text="Update HasShadow"
                 Clicked="OnHasShadowButtonClicked"
