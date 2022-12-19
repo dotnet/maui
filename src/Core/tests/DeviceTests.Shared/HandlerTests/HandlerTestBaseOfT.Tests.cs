@@ -87,13 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 			view.Semantics.Description = "Test";
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
 
-			// On iOS the UIStepper control is a UIControl but iOS sets IsAccessibilityElement
-			// to false because it's a composite control
-			// https://github.com/dotnet/maui/issues/11762
-			if (OperatingSystem.IsIOS() && view is IStepper)
-				Assert.False(important);
-			else
-				Assert.True(important);
+			Assert.True(important);
 		}
 
 		[Fact(DisplayName = "Setting Semantic Hint makes element accessible")]
@@ -103,13 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 			view.Semantics.Hint = "Test";
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
 
-			// On iOS the UIStepper control is a UIControl but iOS sets IsAccessibilityElement
-			// to false because it's a composite control
-			// https://github.com/dotnet/maui/issues/11762
-			if (OperatingSystem.IsIOS() && view is IStepper)
-				Assert.False(important);
-			else
-				Assert.True(important);
+			Assert.True(important);
 		}
 
 		[Fact(DisplayName = "Semantic Description is set correctly"
