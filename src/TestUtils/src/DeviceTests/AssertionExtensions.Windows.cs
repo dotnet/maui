@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
@@ -15,6 +16,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static Task<string> CreateColorAtPointErrorAsync(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
+			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+
 		public static Task WaitForKeyboardToShow(this FrameworkElement view, int timeout = 1000)
 		{
 			throw new NotImplementedException();
@@ -54,12 +58,12 @@ namespace Microsoft.Maui.DeviceTests
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
 		public static async Task<string> CreateColorError(this CanvasBitmap bitmap, string message) =>
-			$"{message} This is what it looked like:<img>{await bitmap.ToBase64String()}</img>";
+			$"{message} This is what it looked like:<img>{await bitmap.ToBase64StringAsync()}</img>";
 
 		public static async Task<string> CreateEqualError(this CanvasBitmap bitmap, CanvasBitmap other, string message) =>
-			$"{message} This is what it looked like: <img>{await bitmap.ToBase64String()}</img> and <img>{await other.ToBase64String()}</img>";
+			$"{message} This is what it looked like: <img>{await bitmap.ToBase64StringAsync()}</img> and <img>{await other.ToBase64StringAsync()}</img>";
 
-		public static async Task<string> ToBase64String(this CanvasBitmap bitmap)
+		public static async Task<string> ToBase64StringAsync(this CanvasBitmap bitmap)
 		{
 			using var ms = new InMemoryRandomAccessStream();
 			await bitmap.SaveAsync(ms, CanvasBitmapFileFormat.Png);
@@ -144,16 +148,15 @@ namespace Microsoft.Maui.DeviceTests
 				await tcs.Task;
 				view.Unloaded += OnViewUnloaded;
 
-				// continue with the run
 				T result;
 				try
 				{
 					result = await Run(action);
-					grid.Children.Clear();
 				}
 				finally
 				{
-					await unloadedTcs.Task;
+					grid.Children.Clear();
+					await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 					await Task.Delay(10);
 					window.Close();
 				}
@@ -253,13 +256,13 @@ namespace Microsoft.Maui.DeviceTests
 			return await AssertContainsColor(bitmap, expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtPoint(this FrameworkElement view, WColor expectedColor, int x, int y)
+		public static async Task<CanvasBitmap> AssertColorAtPointAsync(this FrameworkElement view, WColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtCenter(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtCenterAsync(this FrameworkElement view, WColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
@@ -289,7 +292,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static async Task AssertEqual(this CanvasBitmap bitmap, CanvasBitmap other)
+		public static async Task AssertEqualAsync(this CanvasBitmap bitmap, CanvasBitmap other)
 		{
 			Assert.NotNull(bitmap);
 			Assert.NotNull(other);
@@ -322,5 +325,15 @@ namespace Microsoft.Maui.DeviceTests
 				LineBreakMode.MiddleTruncation => TextTrimming.WordEllipsis,
 				_ => throw new ArgumentOutOfRangeException(nameof(mode))
 			};
+
+		public static bool IsAccessibilityElement(this FrameworkElement platformView)
+		{
+			return AutomationProperties.GetAccessibilityView(platformView) == UI.Xaml.Automation.Peers.AccessibilityView.Content;
+		}
+
+		public static bool IsExcludedWithChildren(this FrameworkElement platformView)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
