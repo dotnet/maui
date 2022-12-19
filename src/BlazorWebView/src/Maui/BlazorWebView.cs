@@ -45,6 +45,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		/// <inheritdoc />
+=======
+		/// <inheritdoc cref="IBlazorWebView.RootComponents" />
 		public RootComponentsCollection RootComponents { get; }
 
 		/// <summary>

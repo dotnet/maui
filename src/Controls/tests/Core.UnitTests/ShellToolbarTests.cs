@@ -102,6 +102,50 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task BackButtonBehaviorCommandFromPoppedPageIsCorrectlyUnsubscribedFrom()
+		{
+			var firstPage = new ContentPage();
+			var secondPage = new ContentPage();
+			bool canExecute = true;
+			var backButtonBehavior = new BackButtonBehavior();
+			TestShell testShell = new TestShell(firstPage);
+
+			await testShell.Navigation.PushAsync(secondPage);
+
+			Shell.SetBackButtonBehavior(secondPage, backButtonBehavior);
+
+			backButtonBehavior.Command = new Command(() => { }, () => canExecute);
+
+			await testShell.Navigation.PopAsync();
+
+			canExecute = false;
+			(backButtonBehavior.Command as Command).ChangeCanExecute();
+
+			Assert.True(testShell.Toolbar.BackButtonEnabled);
+		}
+
+		[Fact]
+		public async Task BackButtonUpdatesWhenSetToNewCommand()
+		{
+			var firstPage = new ContentPage();
+			var secondPage = new ContentPage();
+			bool canExecute = true;
+			var backButtonBehavior = new BackButtonBehavior();
+			TestShell testShell = new TestShell(firstPage);
+
+			await testShell.Navigation.PushAsync(secondPage);
+
+			Shell.SetBackButtonBehavior(secondPage, backButtonBehavior);
+
+			backButtonBehavior.Command = new Command(() => { }, () => true);
+			Assert.True(testShell.Toolbar.BackButtonEnabled);
+			backButtonBehavior.Command = new Command(() => { }, () => false);
+			Assert.False(testShell.Toolbar.BackButtonEnabled);
+			backButtonBehavior.Command = null;
+			Assert.True(testShell.Toolbar.BackButtonEnabled);
+		}
+
+		[Fact]
 		public async Task ShellToolbarUpdatesFromNewBackButtonBehavior()
 		{
 			var page = new ContentPage();

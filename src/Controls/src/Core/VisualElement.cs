@@ -1083,14 +1083,16 @@ namespace Microsoft.Maui.Controls
 		internal bool IsPointerOver
 		{
 			get { return _isPointerOver; }
-			private protected set
-			{
-				if (value == _isPointerOver)
-					return;
+		}
 
-				_isPointerOver = value;
+		private protected void SetPointerOver(bool value, bool callChangeVisualState = true)
+		{
+			if (_isPointerOver == value)
+				return;
+
+			_isPointerOver = value;
+			if (callChangeVisualState)
 				ChangeVisualState();
-			}
 		}
 
 		protected internal virtual void ChangeVisualState()
