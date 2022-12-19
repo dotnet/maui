@@ -44,8 +44,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			set { SetValue(StartPathProperty, value); }
 		}
 
-		/// <inheritdoc />
-=======
 		/// <inheritdoc cref="IBlazorWebView.RootComponents" />
 		public RootComponentsCollection RootComponents { get; }
 
