@@ -17,10 +17,8 @@ namespace Microsoft.Maui.Handlers
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
-		protected override void SetupContainer()
-		{
-			if (Context == null || PlatformView == null || ContainerView != null)
-				return;
+		protected override void SetupContainer() =>
+			WrapperView.SetupContainer(PlatformView, Context, ContainerView, (cv) => ContainerView = cv);
 
 			var oldParent = (ViewGroup?)PlatformView.Parent;
 

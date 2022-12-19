@@ -5,14 +5,17 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.Animations;
+using Android.Views.Inspectors;
 using AndroidX.CardView.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using static Android.Icu.Text.CaseMap;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -31,6 +34,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				[Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty.PropertyName] = (h, _) => h.UpdateClippedToBounds(),
 				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent(),
 				[nameof(IView.AutomationId)] = (h, v) => ViewHandler.MapAutomationId(h, v),
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+				[nameof(IView.Shadow)] = MapShadow,
+				[nameof(IView.InputTransparent)] = MapInputTransparent,
 			};
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
@@ -351,9 +357,64 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		#region IPlatformViewHandler
-		bool IViewHandler.HasContainer { get => false; set { } }
+		static void UpdateHasContainer(IViewHandler handler, bool definitelyNeedsContainer)
+		{
+			if (definitelyNeedsContainer)
+			{
+				handler.HasContainer = true;
+			}
+			else
+			{
+				if (handler is ViewHandler viewHandler)
+					handler.HasContainer = viewHandler.NeedsContainer;
+			}
+		}
 
-		object? IViewHandler.ContainerView => null;
+		bool NeedsContainer
+		{
+			get
+			{
+				var virtualView = Element as IView;
+				return virtualView?.Clip != null || virtualView?.Shadow != null
+					|| (virtualView as IBorder)?.Border != null || virtualView?.InputTransparent == true;
+			}
+		}
+
+		static void MapContainerView(IViewHandler handler, IView view)
+		{
+			if (handler is FrameRenderer frameRenderer)
+			{
+				handler.HasContainer = frameRenderer.NeedsContainer;
+			}
+		}
+
+		bool _hasContainer;
+		AView? _wrapperView;
+
+		bool IViewHandler.HasContainer
+		{
+			get => _hasContainer;
+			set
+			{
+				if (_hasContainer == value)
+					return;
+
+				_hasContainer = value;
+
+				if (value)
+					SetupContainer();
+				else
+					RemoveContainer();
+			}
+		}
+
+		void SetupContainer() =>
+			WrapperView.SetupContainer(this, Context, _wrapperView, (cv) => _wrapperView = cv);
+
+		void RemoveContainer() =>
+			WrapperView.RemoveContainer(this, Context, _wrapperView, () => _wrapperView = null);
+
+		object? IViewHandler.ContainerView => _wrapperView;
 
 		IView? IViewHandler.VirtualView => Element;
 
@@ -365,7 +426,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		AView IPlatformViewHandler.PlatformView => this;
 
-		AView? IPlatformViewHandler.ContainerView => this;
+		AView? IPlatformViewHandler.ContainerView => _wrapperView;
 
 		void IViewHandler.PlatformArrange(Graphics.Rect rect) =>
 			this.PlatformArrangeHandler(rect);
@@ -396,6 +457,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_viewHandlerWrapper.DisconnectHandler();
 		}
+
+		// TODO NET8 this code should be more generalized inside `ViewHandler` so it can apply just via the mappers
+		// The NeedsContainer code in ViewHandler doesn't need to be on ViewHandler.
+		// It should just be moved into the UpdateHasContainer code inside ViewHandler
+		static void MapShadow(IViewHandler handler, IView view)
+		{
+			var shadow = view.Shadow;
+			UpdateHasContainer(handler, shadow != null);
+			ViewHandler.MapShadow(handler, view);
+		}
+
+		static void MapInputTransparent(IViewHandler handler, IView view)
+		{
+			var inputTransparent = view.InputTransparent;
+			UpdateHasContainer(handler, inputTransparent);
+			ViewHandler.MapInputTransparent(handler, view);
+		}
+
 		#endregion
 	}
 }
