@@ -1,11 +1,11 @@
-﻿#if WINDOWS
+﻿#if WINDOWS || ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Frame)]
-	public class FrameHandlerTest : HandlerTestBase<FrameHandlerTest.FrameRendererWithEmptyCtor, FrameStub>
+	public partial class FrameHandlerTest : HandlerTestBase<FrameHandlerTest.FrameRendererWithEmptyCtor, FrameStub>
 	{
 		public FrameHandlerTest()
 		{
