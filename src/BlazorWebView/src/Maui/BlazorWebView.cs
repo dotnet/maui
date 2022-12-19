@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		public string? HostPage { get; set; }
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="IBlazorWebView.RootComponents" />
 		public RootComponentsCollection RootComponents { get; }
 
 		/// <summary>

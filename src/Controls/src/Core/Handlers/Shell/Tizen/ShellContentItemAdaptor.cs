@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		ItemAppearance _itemAppearance;
 
-		public ShellContentItemAdaptor(Element element, IEnumerable items) : base(element, items, GetTemplate()) 
+		public ShellContentItemAdaptor(Element element, IEnumerable items) : base(element, items, GetTemplate())
 		{
 			_itemAppearance = new ItemAppearance();
 		}
