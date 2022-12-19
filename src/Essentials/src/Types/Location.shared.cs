@@ -3,39 +3,54 @@ using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DistanceUnits']/Docs/*" />
+	/// <summary>Distance unit for use in conversion.</summary>
 	public enum DistanceUnits
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="//Member[@MemberName='Kilometers']/Docs/*" />
+		/// <summary>Kilometers.</summary>
 		Kilometers,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DistanceUnits.xml" path="//Member[@MemberName='Miles']/Docs/*" />
+
+		/// <summary>Miles.</summary>
 		Miles
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AltitudeReferenceSystem']/Docs/*" />
+	/// <summary>
+	/// Indicates the altitude reference system to be used in defining a location.
+	/// </summary>
 	public enum AltitudeReferenceSystem
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Unspecified']/Docs/*" />
+		/// <summary>The altitude reference system was not specified.</summary>
 		Unspecified = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Terrain']/Docs/*" />
+
+		/// <summary>The altitude reference system is based on distance above terrain or ground level</summary>
 		Terrain = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Ellipsoid']/Docs/*" />
+
+		/// <summary>The altitude reference system is based on an ellipsoid (usually WGS84), which is a mathematical approximation of the shape of the Earth.</summary>
 		Ellipsoid = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Geoid']/Docs/*" />
+
+		/// <summary>The altitude reference system is based on the distance above sea level (parametrized by a so-called Geoid).</summary>
 		Geoid = 3,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AltitudeReferenceSystem.xml" path="//Member[@MemberName='Surface']/Docs/*" />
+
+		/// <summary>The altitude reference system is based on the distance above the tallest surface structures, such as buildings, trees, roads, etc., above terrain or ground level.</summary>
 		Surface = 4
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Location']/Docs/*" />
+	/// <summary>
+	/// Represents a physical location with the latitude, longitude, altitude and time information reported by the device.
+	/// </summary>
 	public class Location
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Location"/> class.
+		/// </summary>
 		public Location()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude and longitude.
+		/// </summary>
+		/// <param name="latitude">Default latitude for location.</param>
+		/// <param name="longitude">Default longitude for location.</param>
 		public Location(double latitude, double longitude)
 		{
 			Latitude = Math.Min(Math.Max(latitude, -90.0), 90.0);
@@ -43,7 +58,12 @@ namespace Microsoft.Maui.Devices.Sensors
 			Timestamp = DateTimeOffset.UtcNow;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][4]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude, longitude, and timestamp.
+		/// </summary>
+		/// <param name="latitude">Default latitude for location.</param>
+		/// <param name="longitude">Default longitude for location.</param>
+		/// <param name="timestamp">UTC timestamp for the location.</param>
 		public Location(double latitude, double longitude, DateTimeOffset timestamp)
 		{
 			Latitude = latitude;
@@ -51,7 +71,12 @@ namespace Microsoft.Maui.Devices.Sensors
 			Timestamp = timestamp;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][5]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude, longitude, and altitude.
+		/// </summary>
+		/// <param name="latitude">Default latitude for location.</param>
+		/// <param name="longitude">Default longitude for location.</param>
+		/// <param name="altitude">Default altitude for location.</param>
 		public Location(double latitude, double longitude, double altitude)
 		{
 			Latitude = latitude;
@@ -60,7 +85,11 @@ namespace Microsoft.Maui.Devices.Sensors
 			Timestamp = DateTimeOffset.UtcNow;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Location"/> class from an existing instance.
+		/// </summary>
+		/// <param name="point">A <see cref="Location"/> instance that will be used to clone.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="point"/> is <see langword="null"/>.</exception>
 		public Location(Location point)
 		{
 			if (point == null)
@@ -78,52 +107,110 @@ namespace Microsoft.Maui.Devices.Sensors
 			IsFromMockProvider = point.IsFromMockProvider;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Timestamp']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the timestamp of the location in UTC.
+		/// </summary>
 		public DateTimeOffset Timestamp { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Latitude']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the latitude coordinate of this location.
+		/// </summary>
 		public double Latitude { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Longitude']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the longitude coordinate of this location.
+		/// </summary>
 		public double Longitude { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Altitude']/Docs/*" />
+		/// <summary>
+		/// Gets the altitude in meters (if available) in a reference system which is specified by <see cref="AltitudeReferenceSystem"/>.
+		/// </summary>
+		/// <remarks>Returns 0 or <see langword="null"/> if not available.</remarks>
 		public double? Altitude { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Accuracy']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the horizontal accuracy (in meters) of the location.
+		/// </summary>
 		public double? Accuracy { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='VerticalAccuracy']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the vertical accuracy (in meters) of the location.
+		/// </summary>
 		public double? VerticalAccuracy { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='ReducedAccuracy']/Docs/*" />
+		/// <summary>
+		/// Gets or sets whether this location has a reduced accuracy reading.
+		/// </summary>
+		/// <remarks>This functionality only applies to iOS. Other platforms will always report false.</remarks>
 		public bool ReducedAccuracy { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Speed']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the current speed in meters per second at the time when this location was determined.
+		/// </summary>
+		/// <remarks>
+		/// <para>Returns 0 or <see langword="null"/> if not available. Otherwise the value will range between 0-360.</para>
+		/// <para>Requires <see cref="Accuracy"/> to be <see cref="GeolocationAccuracy.High"/> or better
+		/// and may not be returned when calling <see cref="Geolocation.GetLastKnownLocationAsync"/>.</para>
+		/// </remarks>
 		public double? Speed { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='Course']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the current degrees relative to true north at the time when this location was determined.
+		/// </summary>
+		/// <remarks>Returns 0 or <see langword="null"/> if not available.</remarks>
 		public double? Course { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='IsFromMockProvider']/Docs/*" />
+		/// <summary>
+		/// Gets or sets whether this location originates from a mocked sensor and thus might not be the real location of the device.
+		/// </summary>
 		public bool IsFromMockProvider { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='AltitudeReferenceSystem']/Docs/*" />
+		/// <summary>
+		/// Specifies the reference system in which the <see cref="Altitude"/> value is expressed.
+		/// </summary>
 		public AltitudeReferenceSystem AltitudeReferenceSystem { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][2]/Docs/*" />
+		/// <summary>
+		/// Calculate distance between two locations.
+		/// </summary>
+		/// <param name="latitudeStart">Latitude coordinate of the starting location.</param>
+		/// <param name="longitudeStart">Longitude coordinate of the starting location.</param>
+		/// <param name="locationEnd">The end location.</param>
+		/// <param name="units">The unit in which the result distance is returned.</param>
+		/// <returns>Distance between two locations in the unit selected.</returns>
 		public static double CalculateDistance(double latitudeStart, double longitudeStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(latitudeStart, longitudeStart, locationEnd.Latitude, locationEnd.Longitude, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][3]/Docs/*" />
+		/// <summary>
+		/// Calculate distance between two locations.
+		/// </summary>
+		/// <param name="locationStart">The start location.</param>
+		/// <param name="latitudeEnd">Latitude coordinate of the end location.</param>
+		/// <param name="longitudeEnd">Longitude coordinate of the end location.</param>
+		/// <param name="units">The unit in which the result distance is returned.</param>
+		/// <returns>Distance between two locations in the unit selected.</returns>
 		public static double CalculateDistance(Location locationStart, double latitudeEnd, double longitudeEnd, DistanceUnits units) =>
 			CalculateDistance(locationStart.Latitude, locationStart.Longitude, latitudeEnd, longitudeEnd, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][1]/Docs/*" />
+		/// <summary>
+		/// Calculate distance between two locations.
+		/// </summary>
+		/// <param name="locationStart">The start location.</param>
+		/// <param name="locationEnd">The end location.</param>
+		/// <param name="units">The unit in which the result distance is returned.</param>
+		/// <returns>Distance between two locations in the unit selected.</returns>
 		public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(locationStart.Latitude, locationStart.Longitude, locationEnd.Latitude, locationEnd.Longitude, units);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='CalculateDistance'][4]/Docs/*" />
+		/// <summary>
+		/// Calculate distance between two <see cref="Location"/> instances.
+		/// </summary>
+		/// <param name="latitudeStart">Latitude coordinate of the starting location.</param>
+		/// <param name="longitudeStart">Longitude coordinate of the starting location.</param>
+		/// <param name="latitudeEnd">Latitude coordinate of the end location.</param>
+		/// <param name="longitudeEnd">Longitude coordinate of the end location.</param>
+		/// <param name="units">The unit in which the result distance is returned.</param>
+		/// <returns>Distance between two locations in the unit selected.</returns>
 		public static double CalculateDistance(
 			double latitudeStart,
 			double longitudeStart,
@@ -142,7 +229,10 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Location.xml" path="//Member[@MemberName='ToString']/Docs/*" />
+		/// <summary>
+		/// Returns a string representation of the current values of <see cref="Location"/>.
+		/// </summary>
+		/// <returns>A string representation of this instance in the format of <c>Latitude: {value}, Longitude: {value}, Altitude: {value}, Accuracy: {value}, VerticalAccuracy: {value}, Speed: {value}, Course: {value}, Timestamp: {value}</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(Latitude)}: {Latitude}, " +
 			$"{nameof(Longitude)}: {Longitude}, " +
@@ -173,11 +263,23 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
+		/// <summary>
+		///	Equality operator for equals.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
+		/// <returns><see langword="true"/> if objects are equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator ==(Location left, Location right)
 		{
 			return Equals(left, right);
 		}
 
+		/// <summary>
+		/// Inequality operator.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
+		/// <returns><see langword="true"/> if objects are not equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator !=(Location left, Location right)
 		{
 			return !Equals(left, right);
