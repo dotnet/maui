@@ -38,7 +38,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public static readonly DependencyProperty StartPathProperty = DependencyProperty.Register(
 			name: nameof(StartPath),
 			propertyType: typeof(string),
-			ownerType: typeof(BlazorWebView));
+			ownerType: typeof(BlazorWebView),
+			typeMetadata: new PropertyMetadata("/"));
 
 		/// <summary>
 		/// The backing store for the <see cref="RootComponent"/> property.
