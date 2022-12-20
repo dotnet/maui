@@ -248,36 +248,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(oldName + " Extra", label2.Text);
 		}
 
-
-		class TestMultiConverterReturn : IMultiValueConverter
-		{
-			public int ExecutionCount = 0;
-
-			/// <inheritdoc />
-			public object Convert( object[ ] values, Type targetType, object parameter, CultureInfo culture )
-			{
-				this.ExecutionCount++;
-
-				foreach (var value in values)
-				{
-					if (value as string == nameof(Binding.DoNothing))
-						return Binding.DoNothing;
-					if (value as string == nameof(BindableProperty.UnsetValue))
-						return BindableProperty.UnsetValue;
-					if (value as string == "null")
-						return null;
-				}
-
-				return values.Length > 0 ? values[ 0 ] : "NoBindings?";
-			}
-
-			/// <inheritdoc />
-			public object[ ] ConvertBack( object value, Type[ ] targetTypes, object parameter, CultureInfo culture )
-			{
-				throw new NotImplementedException();
-			}
-		}
-
 		[Fact]
 		public void StringFormatIgnoredWhenDoNothingFallbackAndNullTargetValuesUsed()
 		{
@@ -296,7 +266,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Bindings = {
 						new Binding(nameof(PersonViewModel.FirstName)),
 					},
-					Converter = new TestMultiConverterReturn(),
+					Converter = new StringConcatenationConverter(),
 					StringFormat = formatString,
 					TargetNullValue = c_TargetNull,
 					FallbackValue = c_Fallback
@@ -316,8 +286,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(nameof(BindableProperty.UnsetValue), group.Person5.FirstName);
 			Assert.Equal(c_Fallback, label.Text);
 
-			group.Person5.FirstName = null;
-			Assert.Null(group.Person5.FirstName);
+			group.Person5.FirstName = "null";
+			Assert.Equal("null", group.Person5.FirstName);
 			Assert.Equal(c_TargetNull, label.Text);
 		}
 
@@ -341,7 +311,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Bindings = {
 						new Binding(nameof(PersonViewModel.FirstName)),
 					},
-					Converter = new TestMultiConverterReturn(),
+					Converter = new StringConcatenationConverter(),
 				});
 
 
@@ -355,24 +325,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(defaultValue, label.GetValue(surrogateTextProperty));
 		}
 
-		class TestConverterReturn : IValueConverter
-		{
-			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-			{
-				return value;
-			}
-
-			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-			{
-				return value;
-			}
-		}
-
 		[Fact]
 		public void NoMultiBindingActionWhenChildBindingDoNothing()
 		{
 			var defaultValue = "Foo Bar";
-			var multiConverter = new TestMultiConverterReturn();
+			var multiConverter = new StringConcatenationConverter();
 			var group = new GroupViewModel();
 			var stack = new StackLayout
 			{
@@ -386,9 +343,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				surrogateObjProperty,
 				new MultiBinding
 				{
-					Bindings = {
-						new Binding(Binding.SelfPath, converter: new TestConverterReturn()),
-					},
+					Bindings = { new Binding(Binding.SelfPath) },
 					Converter = multiConverter,
 				});
 
@@ -398,10 +353,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(group.Person5.FirstName, label.GetValue(surrogateObjProperty));
 
-			int savedExecutionCount = multiConverter.ExecutionCount;
+			int savedConverts = multiConverter.Converts;
 
 			label.BindingContext = Binding.DoNothing;
-			Assert.Equal(savedExecutionCount, multiConverter.ExecutionCount);
+			Assert.Equal(savedConverts, multiConverter.Converts);
 			Assert.Equal(group.Person5.FirstName, label.GetValue(surrogateObjProperty));
 		}
 
