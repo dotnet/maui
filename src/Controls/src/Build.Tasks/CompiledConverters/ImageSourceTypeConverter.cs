@@ -19,16 +19,16 @@ class ImageSourceTypeConverter : ICompiledTypeConverter
 			{
 				yield return Instruction.Create(OpCodes.Ldstr, value);
 				yield return Instruction.Create(OpCodes.Ldc_I4_1); // (int)UriKind.Absolute is 1
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("System", "System", "Uri"), parameterTypes: new[] {
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("System", "System", "Uri"), parameterTypes: new[] {
 																							("mscorlib", "System", "String"),
 																							("System", "System", "UriKind")}));
-				yield return Instruction.Create(OpCodes.Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ImageSource"), "FromUri", parameterTypes: new[] {
+				yield return Instruction.Create(OpCodes.Call, module.ImportMethodReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ImageSource"), "FromUri", parameterTypes: new[] {
 																							("System", "System", "Uri")}, isStatic: true));
 			}
 			else
 			{
 				yield return Instruction.Create(OpCodes.Ldstr, value);
-				yield return Instruction.Create(OpCodes.Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ImageSource"), "FromFile", parameterTypes: new[] {
+				yield return Instruction.Create(OpCodes.Call, module.ImportMethodReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ImageSource"), "FromFile", parameterTypes: new[] {
 																							("mscorlib", "System", "String")}, isStatic: true));
 			}
 			yield break;

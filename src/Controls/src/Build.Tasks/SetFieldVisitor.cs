@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (field == null)
 				return;
 			Context.IL.Emit(OpCodes.Ldarg_0);
-			Context.IL.Append(Context.Variables[(IElementNode)parentNode].LoadAs(field.FieldType, Context.Module));
+			Context.IL.Append(Context.Variables[(IElementNode)parentNode].LoadAs(Context.Cache, field.FieldType, Context.Module));
 			Context.IL.Emit(OpCodes.Stfld, field);
 		}
 
