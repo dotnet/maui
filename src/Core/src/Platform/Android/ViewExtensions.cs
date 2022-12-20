@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Platform
 			UpdateBackground(platformView, view, true);
 
 		// TODO: NET8 make this public for NET8.0
-		internal static void UpdateBackground(this EditText platformView, IView view)
+		internal static void UpdateBackground(this EditText platformView, IView view, Drawable? defaultBackground = null)
 		{
 			var paint = view.Background;
 
@@ -190,9 +190,14 @@ namespace Microsoft.Maui.Platform
 				mauiDrawable.Dispose();
 			}
 
-			var previousDrawable = platformView.Background;
+			if(platformView.Background is LayerDrawable layerDrawable)
+			{
+				platformView.Background = null;
+				layerDrawable.Dispose();
+			}
+
 			var backgroundDrawable = paint!.ToDrawable(platformView.Context);
-			LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
+			LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, defaultBackground! });
 			platformView.Background = layer;
 		}
 
