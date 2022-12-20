@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui;
+﻿using System;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -6,6 +7,9 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class LabelPage
 	{
+		readonly Color[] _colors = new Color[] { Colors.Red, Colors.Blue, Colors.Green, Colors.Yellow, Colors.Brown, Colors.Purple, Colors.Orange, Colors.Gray };
+		readonly Random _rand = new Random();
+
 		public LabelPage()
 		{
 			InitializeComponent();
@@ -34,6 +38,34 @@ namespace Maui.Controls.Sample.Pages
 					}
 				}
 			};
+		}
+
+		void OnLink1Tapped(object sender, EventArgs e)
+		{
+			SetRandomBackgroundColor(Link1);
+		}
+
+		void OnLink2Tapped(object sender, EventArgs e)
+		{
+			SetRandomBackgroundColor(Link2);
+		}
+
+		void OnLink3Tapped(object sender, EventArgs e)
+		{
+			SetRandomBackgroundColor(Link3);
+		}
+
+		void SetRandomBackgroundColor(Span span)
+		{
+			var oldColor = span.BackgroundColor;
+
+			Color newColor;
+			do
+			{
+				newColor = _colors[_rand.Next(_colors.Length)];
+			} while (oldColor == newColor);
+
+			span.BackgroundColor = newColor;
 		}
 	}
 }

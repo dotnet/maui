@@ -111,6 +111,55 @@
                     </Label.FormattedText>
                 </Label>
                 <Label
+                    Text="FormattedText with multiple gestures by Spans"
+                    Style="{StaticResource Headline}"/>
+                <Label
+                     Margin="10"
+                     HorizontalOptions="Center"
+                     TextColor="Black"
+                     BackgroundColor="CadetBlue">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span 
+                                Text="Two clickable spans in one line:&#10;" />
+                            <Span
+                                x:Name="Link1"
+                                TextDecorations="Underline"
+                                Text="Link1"
+                                TextColor="Blue">
+                                <Span.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                        Tapped="OnLink1Tapped"/>
+                                </Span.GestureRecognizers>
+                            </Span>
+                            <Span 
+                                Text=" " />
+                            <Span
+                                x:Name="Link2"
+                                Text="Link2&#10;"
+                                TextDecorations="Underline"
+                                TextColor="Blue">
+                                <Span.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                        Tapped="OnLink2Tapped" />
+                                </Span.GestureRecognizers>
+                            </Span>
+                            <Span 
+                                Text="Multiline tappable span:&#10;" />
+                            <Span
+                                 x:Name="Link3"
+                                 TextDecorations="Underline"
+                                 Text="Link3_1&#10;Link3_2"
+                                 TextColor="Blue">
+                                <Span.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                        Tapped="OnLink3Tapped" />
+                                </Span.GestureRecognizers>
+                            </Span>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Label
                     Text="Html text"
                     Style="{StaticResource Headline}"/>
                 <Label
