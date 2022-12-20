@@ -115,6 +115,15 @@
                     </Entry.Background>
                 </Entry>
                 <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    x:Name="BackgroundEntry"/>
+                <Button
+                    x:Name="UpdateBackgroundButton"
+                    Text="Update Background"
+                    Clicked="OnUpdateBackgroundButtonClicked"/>
+                <Label
                     Text="Keyboard Numeric"
                     Style="{StaticResource Headline}" />
                 <Entry 
