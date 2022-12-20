@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -128,6 +129,14 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
+#if PLATFORM
+		public static bool IsAccessibilityElement(this IView view) =>
+			view.ToPlatform().IsAccessibilityElement();
+
+
+		public static bool IsExcludedWithChildren(this IView view) =>
+			view.ToPlatform().IsExcludedWithChildren();
+#endif
 
 #endif
 

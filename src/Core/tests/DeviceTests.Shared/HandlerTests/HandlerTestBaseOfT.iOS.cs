@@ -163,24 +163,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected UIView GetAccessiblePlatformView(IViewHandler viewHandler)
 		{
 			var platformView = ((UIView)viewHandler.PlatformView);
-
-			if (platformView is UISearchBar searchBar)
-				platformView = searchBar.GetSearchTextField();
-
-			return platformView;
-		}
-
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
-		{
-			var platformView = GetAccessiblePlatformView(viewHandler);
-
-			// UIControl elements when instantiated have IsAccessibilityElement set to false.
-			// Once they are added to the visual tree then iOS transitions IsAccessibilityElement
-			// to true. In code we only set non UIControl elements ourselves to true.
-			if (platformView is UIControl)
-				return true;
-
-			return platformView.IsAccessibilityElement;
+			return platformView.GetAccessiblePlatformView();
 		}
 
 		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>

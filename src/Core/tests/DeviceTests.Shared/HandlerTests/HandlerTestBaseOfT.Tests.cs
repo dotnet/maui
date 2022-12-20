@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Media;
 using Xunit;
 
@@ -84,7 +85,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var view = new TStub();
 			view.Semantics.Description = "Test";
-			var important = await GetValueAsync(view, handler => GetIsAccessibilityElement(handler));
+			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
+
 			Assert.True(important);
 		}
 
@@ -93,7 +95,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var view = new TStub();
 			view.Semantics.Hint = "Test";
-			var important = await GetValueAsync(view, handler => GetIsAccessibilityElement(handler));
+			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
+
 			Assert.True(important);
 		}
 
