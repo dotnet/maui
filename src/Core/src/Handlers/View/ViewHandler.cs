@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var clipShape = view.Clip;
 
-			UpdateHasContainer(handler, clipShape != null);
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			((PlatformView?)handler.ContainerView)?.UpdateClip(view);
 		}
@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var shadow = view.Shadow;
 
-			UpdateHasContainer(handler, shadow != null);
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
 		}
@@ -269,16 +269,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContainerView(IViewHandler handler, IView view)
 		{
-			UpdateHasContainer(handler, false);
+			if (handler is ViewHandler viewHandler)
+				handler.HasContainer = viewHandler.NeedsContainer;
 		}
 
 		public static void MapBorderView(IViewHandler handler, IView view)
 		{
 			var border = (view as IBorder)?.Border;
 
-			UpdateHasContainer(handler, border != null);
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
- 			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
+			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view);
@@ -314,7 +315,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID
 			var inputTransparent = view.InputTransparent;
 
-			UpdateHasContainer(handler, inputTransparent);
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			if (handler.ContainerView is WrapperView wrapper)
 			{
@@ -336,19 +337,6 @@ namespace Microsoft.Maui.Handlers
 			if (view is IToolTipElement tooltipContainer)
 				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
 #endif
-		}
-
-		static void UpdateHasContainer(IViewHandler handler, bool definitelyNeedsContainer)
-		{
-			if (definitelyNeedsContainer)
-			{
-				handler.HasContainer = true;
-			}
-			else
-			{
-				if (handler is ViewHandler viewHandler)
-					handler.HasContainer = viewHandler.NeedsContainer;
-			}
 		}
 	}
 }
