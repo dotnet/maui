@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnHandlerChanging(object? sender, HandlerChangingEventArgs e) =>
 			DisconnectGestures();
+
 		void DisconnectGestures()
 		{
 			GesturePlatformManager?.Dispose();
