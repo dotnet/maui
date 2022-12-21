@@ -56,12 +56,12 @@ namespace Microsoft.Maui.Controls
 
 		static void MapContainerView(IViewHandler arg1, IView arg2)
 		{
+			Element.ControlsElementMapper.UpdateProperty(arg1, arg2, nameof(IViewHandler.ContainerView));
+
 			if (arg2 is VisualElement ve)
 			{
 				ve._platformContainerViewChanged?.Invoke(arg2, EventArgs.Empty);
 			}
-
-			Element.ControlsElementMapper.UpdateProperty(arg1, arg2, nameof(IViewHandler.ContainerView));
 		}
 	}
 }
