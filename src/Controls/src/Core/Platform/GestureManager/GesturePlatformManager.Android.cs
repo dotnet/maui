@@ -12,7 +12,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GestureManager : IDisposable
+	class GesturePlatformManager : IDisposable
 	{
 		IViewHandler? _handler;
 		Lazy<ScaleGestureDetector> _scaleDetector;
@@ -25,10 +25,12 @@ namespace Microsoft.Maui.Controls.Platform
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
 		View? View => Element as View;
+		AView? _control;
 
-		public GestureManager(IViewHandler handler)
+		public GesturePlatformManager(IViewHandler handler)
 		{
 			_handler = handler;
+			_control = _handler.ToPlatform();
 			_tapAndPanAndSwipeDetector = new Lazy<TapAndPanGestureDetector>(InitializeTapAndPanAndSwipeDetector);
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
@@ -40,11 +42,14 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				var view = (_handler?.ContainerView ?? _handler?.PlatformView) as AView;
-				if (view.IsAlive())
-					return view;
+				if (_control.IsAlive())
+					return _control;
 
 				return null;
+			}
+			set
+			{
+				_control = value;
 			}
 		}
 
@@ -288,6 +293,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_scaleDetector.Value.Dispose();
 				}
 
+				_control = null;
 				_handler = null;
 			}
 		}

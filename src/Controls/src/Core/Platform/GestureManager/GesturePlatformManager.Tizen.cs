@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GestureManager : IDisposable
+	class GesturePlatformManager : IDisposable
 	{
 		IViewHandler? _handler;
 		Lazy<GestureDetector> _gestureDetector;
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
-		public GestureManager(IViewHandler handler)
+		public GesturePlatformManager(IViewHandler handler)
 		{
 			_handler = handler;
 			_gestureDetector = new Lazy<GestureDetector>(() => new GestureDetector(handler));
