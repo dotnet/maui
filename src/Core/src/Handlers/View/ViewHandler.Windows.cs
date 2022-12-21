@@ -133,15 +133,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public virtual bool NeedsContainer
+		static bool DoesViewNeedContainer(IView? view)
 		{
-			get
-			{
-				if (VirtualView is IBorderView border)
-					return border?.Shape != null || border?.Stroke != null;
+			if (view is IBorderView border)
+				return border?.Shape != null || border?.Stroke != null;
 
-				return false;
-			}
+			return false;
 		}
 
 		void OnPlatformViewGotFocus(object sender, RoutedEventArgs args)

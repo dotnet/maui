@@ -141,15 +141,12 @@ namespace Microsoft.Maui.Handlers
 				return;
 		}
 
-		public virtual bool NeedsContainer
+		static bool DoesViewNeedContainer(IView? view)
 		{
-			get
-			{
-				if (VirtualView is IBorderView border)
-					return border?.Shape != null || border?.Stroke != null;
+			if (view is IBorderView border)
+				return border?.Shape != null || border?.Stroke != null;
 
-				return false;
-			}
+			return false;
 		}
 
 		void OnPlatformViewDeleted(object? sender, EventArgs e)

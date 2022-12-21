@@ -93,6 +93,11 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public virtual bool NeedsContainer
+		{
+			get => DoesViewNeedContainer(VirtualView);
+		}
+
 		protected abstract void SetupContainer();
 
 		protected abstract void RemoveContainer();
@@ -271,6 +276,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
+			else
+				handler.HasContainer = DoesViewNeedContainer(view);
 		}
 
 		public static void MapBorderView(IViewHandler handler, IView view)

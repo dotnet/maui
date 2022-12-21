@@ -113,12 +113,9 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform().UpdateTransformation(view);
 		}
 
-		public virtual bool NeedsContainer
+		static bool DoesViewNeedContainer(IView? view)
 		{
-			get
-			{
-				return VirtualView?.Clip != null || VirtualView?.Shadow != null || (VirtualView as IBorder)?.Border != null;
-			}
+			return view?.Clip != null || view?.Shadow != null || (view as IBorder)?.Border != null;
 		}
 	}
 }

@@ -24,6 +24,9 @@
 
 		public static void MapContextFlyout(IViewHandler handler, IView view) { }
 
-		public virtual bool NeedsContainer => false;
+		static bool DoesViewNeedContainer(IView? view)
+		{
+			return false;
+		}
 	}
 }
