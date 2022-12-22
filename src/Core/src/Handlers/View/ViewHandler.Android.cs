@@ -184,12 +184,6 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		static bool DoesViewNeedContainer(IView? view)
-		{
-			return view?.Clip != null || view?.Shadow != null
-					|| (view as IBorder)?.Border != null || view?.InputTransparent == true;
-		}
-
 		void OnPlatformViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)
 		{
 			if (VirtualView != null)

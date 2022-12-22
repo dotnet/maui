@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Handlers
 
 		public virtual bool NeedsContainer
 		{
-			get => DoesViewNeedContainer(VirtualView);
+			get => VirtualView.NeedsContainer();
 		}
 
 		protected abstract void SetupContainer();
@@ -243,8 +243,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClip(IViewHandler handler, IView view)
 		{
-			var clipShape = view.Clip;
-
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			((PlatformView?)handler.ContainerView)?.UpdateClip(view);
@@ -252,8 +250,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapShadow(IViewHandler handler, IView view)
 		{
-			var shadow = view.Shadow;
-
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
@@ -277,13 +273,19 @@ namespace Microsoft.Maui.Handlers
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
 			else
-				handler.HasContainer = DoesViewNeedContainer(view);
+				handler.HasContainer = view.NeedsContainer();
+
+			UpdateInputTransparentOnContainerView(handler, view);
+		}
+
+		static void UpdateInputTransparentOnContainerView(IViewHandler handler, IView view)
+		{
+			if (handler.ContainerView is WrapperView wrapper)
+				wrapper.InputTransparent = view.InputTransparent;
 		}
 
 		public static void MapBorderView(IViewHandler handler, IView view)
 		{
-			var border = (view as IBorder)?.Border;
-
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
@@ -320,14 +322,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapInputTransparent(IViewHandler handler, IView view)
 		{
 #if ANDROID
-			var inputTransparent = view.InputTransparent;
-
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-
-			if (handler.ContainerView is WrapperView wrapper)
-			{
-				wrapper.InputTransparent = inputTransparent;
-			}
+			UpdateInputTransparentOnContainerView(handler, view);
 #else
 			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(handler, view);
 #endif
