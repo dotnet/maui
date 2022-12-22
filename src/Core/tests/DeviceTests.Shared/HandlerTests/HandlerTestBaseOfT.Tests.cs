@@ -184,7 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 			view.AssertHasContainer(true);
 		}
 
-		[Fact(DisplayName = "ContainerView Add And Removes")]
+		[Fact(DisplayName = "ContainerView Adds And Removes")]
 		public async Task ContainerViewAddsAndRemoves()
 		{
 			var view = new TStub
