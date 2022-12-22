@@ -163,6 +163,27 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(handler.ContainerView);
 		}
 
+		[Fact(DisplayName = "ContainerView Remains If Shadow Mapper Runs Again")]
+		public async Task ContainerViewRemainsIfShadowMapperRunsAgain()
+		{
+			var view = new TStub
+			{
+				Height = 100,
+				Width = 100,
+				Background = new SolidPaintStub(Colors.Red),
+				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
+			};
+
+			var handler = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(view);
+				handler.UpdateValue(nameof(IView.Shadow));
+				return handler;
+			});
+
+			Assert.NotNull(handler.ContainerView);
+		}
+
 		[Theory(DisplayName = "Native View Bounds are not empty"
 #if WINDOWS
 			, Skip = "https://github.com/dotnet/maui/issues/9054"

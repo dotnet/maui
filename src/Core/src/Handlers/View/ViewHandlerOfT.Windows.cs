@@ -36,7 +36,10 @@ namespace Microsoft.Maui.Handlers
 		protected override void RemoveContainer()
 		{
 			if (PlatformView == null || ContainerView == null || PlatformView.Parent != ContainerView)
+			{
+				ContainerView = null;
 				return;
+			}
 
 			var oldParent = (Panel?)ContainerView.Parent;
 
