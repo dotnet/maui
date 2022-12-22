@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 			var oldIndex = oldParent?.IndexOfChild(ContainerView);
 			oldParent?.RemoveView(ContainerView);
 
-			((ViewGroup)ContainerView).RemoveAllViews();
+			CleanupContainerView(ContainerView);
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)

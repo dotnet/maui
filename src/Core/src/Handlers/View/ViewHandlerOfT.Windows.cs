@@ -47,8 +47,7 @@ namespace Microsoft.Maui.Handlers
 			var oldIndex = oldParent?.Children.IndexOf(ContainerView);
 			oldParent?.Children.Remove(ContainerView);
 
-			((WrapperView)ContainerView).Child = null;
-			((WrapperView)ContainerView).Dispose();
+			CleanupContainerView(ContainerView);
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (containerView is WrapperView wrapperView)
 				{
-					//wrapperView.Child = null;
+					wrapperView.Child = null;
 					wrapperView.Dispose();
 				}
 			}
