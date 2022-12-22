@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (Context == null || PlatformView == null || ContainerView == null || PlatformView.Parent != ContainerView)
 			{
+				CleanupContainerView(ContainerView);
 				ContainerView = null;
 				return;
 			}
@@ -56,6 +57,12 @@ namespace Microsoft.Maui.Handlers
 				oldParent?.AddView(PlatformView, idx);
 			else
 				oldParent?.AddView(PlatformView);
+
+			void CleanupContainerView(View? containerView)
+			{
+				if (containerView is ViewGroup vg)
+					vg.RemoveAllViews();
+			}
 		}
 	}
 }

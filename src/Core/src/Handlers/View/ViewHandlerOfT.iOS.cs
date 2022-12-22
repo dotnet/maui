@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (PlatformView == null || ContainerView == null || PlatformView.Superview != ContainerView)
 			{
+				CleanupContainerView(ContainerView);
 				ContainerView = null;
 				return;
 			}
@@ -57,6 +58,15 @@ namespace Microsoft.Maui.Handlers
 				oldParent?.InsertSubview(PlatformView, idx);
 			else
 				oldParent?.AddSubview(PlatformView);
+
+			void CleanupContainerView(UIView? containerView)
+			{
+				if (containerView is WrapperView wrapperView)
+				{
+					wrapperView.RemoveFromSuperview();
+					wrapperView.Dispose();
+				}
+			}
 		}
 	}
 }

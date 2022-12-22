@@ -158,9 +158,8 @@ namespace Microsoft.Maui.DeviceTests
 				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
 			};
 
-			var handler = await CreateHandlerAsync(view);
-
-			Assert.NotNull(handler.ContainerView);
+			await CreateHandlerAsync(view);
+			await view.AssertHasContainer(true);
 		}
 
 		[Fact(DisplayName = "ContainerView Remains If Shadow Mapper Runs Again")]
@@ -181,7 +180,7 @@ namespace Microsoft.Maui.DeviceTests
 				return handler;
 			});
 
-			view.AssertHasContainer(true);
+			await view.AssertHasContainer(true);
 		}
 
 		[Fact(DisplayName = "ContainerView Adds And Removes")]
@@ -193,24 +192,31 @@ namespace Microsoft.Maui.DeviceTests
 				Width = 100
 			};
 
-			var handler = await InvokeOnMainThreadAsync(() =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler(view);
+
 
 				// This is a view that always has a container
 				// so there's nothing to test here
 				if (handler.HasContainer)
-					return handler;
+					return;
+				await AssertionExtensions.AttachAndRun((handler as IPlatformViewHandler).PlatformView,
+					async () =>
+					{
+						await view.AssertHasContainer(false);
+						view.Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50);
+						handler.UpdateValue(nameof(IView.Clip));
+						await Task.Delay(10);
+						await view.AssertHasContainer(true);
+						view.Clip = null;
+						handler.UpdateValue(nameof(IView.Clip));
+						await Task.Delay(10);
+						await view.AssertHasContainer(false);
 
-				view.AssertHasContainer(false);
-				view.Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50);
-				handler.UpdateValue(nameof(IView.Clip));
-				view.AssertHasContainer(true);
-				view.Clip = null;
-				handler.UpdateValue(nameof(IView.Clip));
-				view.AssertHasContainer(false);
+					});
 
-				return handler;
+				return;
 			});
 		}
 
