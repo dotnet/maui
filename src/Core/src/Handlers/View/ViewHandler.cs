@@ -280,8 +280,10 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateInputTransparentOnContainerView(IViewHandler handler, IView view)
 		{
+#if ANDROID
 			if (handler.ContainerView is WrapperView wrapper)
 				wrapper.InputTransparent = view.InputTransparent;
+#endif
 		}
 
 		public static void MapBorderView(IViewHandler handler, IView view)
