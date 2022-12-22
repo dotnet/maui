@@ -53,6 +53,12 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(diff <= epsilon, $"Expected: {expected}. Actual: {actual}. Diff: {diff} Epsilon: {epsilon}.{message}");
 		}
 
+		public static void AssertHasContainer(this IView view, bool expectation)
+		{
+			Assert.Equal(expectation, view.Handler?.HasContainer ?? false);
+			Assert.Equal(expectation, view.Handler?.ContainerView != null);
+		}
+
 #if !TIZEN && PLATFORM
 
 		public static Task WaitForKeyboardToShow(this IView view, int timeout = 1000)

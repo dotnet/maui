@@ -181,7 +181,37 @@ namespace Microsoft.Maui.DeviceTests
 				return handler;
 			});
 
-			Assert.NotNull(handler.ContainerView);
+			view.AssertHasContainer(true);
+		}
+
+		[Fact(DisplayName = "ContainerView Add And Removes")]
+		public async Task ContainerViewAddsAndRemoves()
+		{
+			var view = new TStub
+			{
+				Height = 100,
+				Width = 100
+			};
+
+			var handler = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(view);
+
+				// This is a view that always has a container
+				// so there's nothing to test here
+				if (handler.HasContainer)
+					return handler;
+
+				view.AssertHasContainer(false);
+				view.Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50);
+				handler.UpdateValue(nameof(IView.Clip));
+				view.AssertHasContainer(true);
+				view.Clip = null;
+				handler.UpdateValue(nameof(IView.Clip));
+				view.AssertHasContainer(false);
+
+				return handler;
+			});
 		}
 
 		[Theory(DisplayName = "Native View Bounds are not empty"
