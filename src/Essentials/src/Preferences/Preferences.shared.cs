@@ -11,9 +11,9 @@ namespace Microsoft.Maui.Storage
 	/// <remarks>
 	/// <para>Each platform uses the platform provided native APIs for storing application/user preferences:</para>
 	/// <list type="bullet">
-	/// <item><term>iOS</term><description>NSUserDefaults</description></item>
-	/// <item><term>Android</term><description>SharedPreferences</description></item>
-	/// <item><term>Windows</term><description>ApplicationDataContainer</description></item>
+	/// <item><description>iOS: NSUserDefaults</description></item>
+	/// <item><description>Android: SharedPreferences</description></item>
+	/// <item><description>Windows: ApplicationDataContainer</description></item>
 	/// </list>
 	/// </remarks>
 	public interface IPreferences
