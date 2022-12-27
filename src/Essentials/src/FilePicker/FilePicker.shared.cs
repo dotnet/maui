@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Storage
 		/// <remarks>
 		/// File types can be specified in order to limit files that can be selected, using a
         /// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
-		/// occured during file picking. When calling <see cref="PickAsync(PickOptions?)"/> again while showing a file
+		/// occurred during file picking. When calling <see cref="PickAsync(PickOptions?)"/> again while showing a file
 		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
 		/// also handle the <see cref="TaskCanceledException"/> in this case.
 		/// </remarks>
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Storage
 		/// <remarks>
 		/// File types can be specified in order to limit files that can be selected, using a
 		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
-		/// occured during file picking. When calling <see cref="PickMultipleAsync(PickOptions?)"/> again while showing a file
+		/// occurred during file picking. When calling <see cref="PickMultipleAsync(PickOptions?)"/> again while showing a file
 		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
 		/// also handle the <see cref="TaskCanceledException"/> in this case.
 		/// </remarks>
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Storage
 		/// <remarks>
 		/// File types can be specified in order to limit files that can be selected, using a
 		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
-		/// occured during file picking. When calling <see cref="PickAsync(PickOptions?)"/> again while showing a file
+		/// occurred during file picking. When calling <see cref="PickAsync(PickOptions?)"/> again while showing a file
 		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
 		/// also handle the <see cref="TaskCanceledException"/> in this case.
 		/// </remarks>
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Storage
 		/// <remarks>
 		/// File types can be specified in order to limit files that can be selected, using a
 		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
-		/// occured during file picking. When calling <see cref="PickMultipleAsync(PickOptions?)"/> again while showing a file
+		/// occurred during file picking. When calling <see cref="PickMultipleAsync(PickOptions?)"/> again while showing a file
 		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
 		/// also handle the <see cref="TaskCanceledException"/> in this case.
 		/// </remarks>
