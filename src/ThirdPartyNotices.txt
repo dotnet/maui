@@ -11,13 +11,6 @@ bring it to our attention. Post an issue or email us:
 
 The attached notices are provided for information only.
 
-1. License notice for Bootstrap
-2. License notice for Mono
-3. License notice for Open Sans fonts
-4. License notice for Glide
-5. License notice for Open Iconic fonts
-6. Gradle
-
 License notice for Bootstrap
 =========================================
 The MIT License (MIT)
