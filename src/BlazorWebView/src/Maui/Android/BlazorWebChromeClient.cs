@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Android.Content;
 using Android.Net;
 using Android.OS;
 using Android.Webkit;
+using File = Java.IO.File;
 using Microsoft.Maui;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
-using File = Java.IO.File;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -38,6 +39,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			CallFilePickerAsync(filePathCallback, fileChooserParams).FireAndForget();
 			return true;
+		}
+
+		public override void OnPermissionRequest(PermissionRequest? request)
+		{
+			base.OnPermissionRequest(request);
+
+			if (request is null)
+			{
+				return;
+			}
+
+			request.Grant(request.GetResources());
 		}
 
 		private static async Task CallFilePickerAsync(IValueCallback filePathCallback, FileChooserParams? fileChooserParams)
