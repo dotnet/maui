@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdateBrushParent(Brush brush)
 		{
-			if (brush != null)
+			if (brush != null && brush is not ImmutableBrush)
 				brush.Parent = this;
 		}
 
