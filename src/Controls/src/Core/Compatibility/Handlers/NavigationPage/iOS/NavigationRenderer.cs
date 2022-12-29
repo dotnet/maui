@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _navigating = false;
 		VisualElement _element;
 
-		[Preserve(Conditional = true)]
+		[Internals.Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
 		{
 			_viewHandlerWrapper = new ViewHandlerDelegator<NavigationPage>(Mapper, CommandMapper, this);
@@ -780,6 +781,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			TopViewController?.NavigationItem?.TitleView?.LayoutSubviews();
 		}
 
+		bool _uiRequestedPop;
 		internal async Task UpdateFormsInnerNavigation(Page pageBeingRemoved)
 		{
 			if (NavPage == null)
@@ -789,9 +791,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_ignorePopCall = true;
 			if (Element.Navigation.NavigationStack.Contains(pageBeingRemoved))
+			{
 				await (NavPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
-			_ignorePopCall = false;
+				if (_uiRequestedPop)
+				{
+					NavPage?.SendNavigatedFromHandler(pageBeingRemoved);
+				}
+			}
 
+			_ignorePopCall = false;
+			_uiRequestedPop = false;
+		}
+
+		[Export("navigationBar:shouldPopItem:")]
+		[Internals.Preserve(Conditional = true)]
+		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
+		{
+			_uiRequestedPop = true;
+			return true;
 		}
 
 		internal static void SetFlyoutLeftBarButton(UIViewController containerController, FlyoutPage FlyoutPage)
@@ -959,6 +976,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		class MauiNavigationDelegate : UINavigationControllerDelegate
 		{
+			bool _finishedWithInitialNavigation;
 			readonly WeakReference<NavigationRenderer> _navigation;
 			public MauiNavigationDelegate(NavigationRenderer navigationRenderer)
 			{
@@ -973,6 +991,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (r.VisibleViewController is ParentingViewController pvc)
 					{
 						pvc.UpdateFrames();
+					}
+
+					if (r.Element is NavigationPage np && !_finishedWithInitialNavigation)
+					{
+						_finishedWithInitialNavigation = true;
+						np.SendNavigatedFromHandler(null);
 					}
 				}
 			}

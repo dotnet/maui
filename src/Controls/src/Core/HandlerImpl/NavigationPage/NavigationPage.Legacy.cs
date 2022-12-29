@@ -16,8 +16,7 @@ namespace Microsoft.Maui.Controls
 	{
 		internal async Task<Page> PopAsyncInner(
 			bool animated,
-			bool fast,
-			bool requestedFromHandler)
+			bool fast)
 		{
 			if (NavigationPageController.StackDepth == 1)
 			{
@@ -27,7 +26,7 @@ namespace Microsoft.Maui.Controls
 			var page = (Page)InternalChildren.Last();
 			var previousPage = CurrentPage;
 			SendNavigating();
-			var removedPage = await RemoveAsyncInner(page, animated, fast, requestedFromHandler);
+			var removedPage = await RemoveAsyncInner(page, animated, fast);
 			SendNavigated(previousPage);
 			return removedPage;
 		}
@@ -35,8 +34,7 @@ namespace Microsoft.Maui.Controls
 		internal async Task<Page> RemoveAsyncInner(
 			Page page,
 			bool animated,
-			bool fast,
-			bool requestedFromHandler)
+			bool fast)
 		{
 			if (NavigationPageController.StackDepth == 1)
 			{
@@ -53,7 +51,7 @@ namespace Microsoft.Maui.Controls
 			var removed = true;
 
 			EventHandler<NavigationRequestedEventArgs> requestPop = _popRequested;
-			if (requestPop != null && !requestedFromHandler)
+			if (requestPop != null)
 			{
 				requestPop(this, args);
 
@@ -74,15 +72,14 @@ namespace Microsoft.Maui.Controls
 			return page;
 		}
 
-
 		Task<Page> INavigationPageController.PopAsyncInner(bool animated, bool fast)
 		{
-			return PopAsyncInner(animated, fast, false);
+			return PopAsyncInner(animated, fast);
 		}
 
 		Task<Page> INavigationPageController.RemoveAsyncInner(Page page, bool animated, bool fast)
 		{
-			return RemoveAsyncInner(page, animated, fast, false);
+			return RemoveAsyncInner(page, animated, fast);
 		}
 
 		EventHandler<NavigationRequestedEventArgs> _popRequested;
@@ -206,6 +203,16 @@ namespace Microsoft.Maui.Controls
 			SendNavigated(previousPage);
 			Pushed?.Invoke(this, args);
 		}
+
+#if IOS
+		internal void SendNavigatedFromHandler(Page previousPage)
+		{
+			if (CurrentPage.HasNavigatedTo)
+				return;
+
+			SendNavigated(previousPage);
+		}
+#endif
 
 		void PushPage(Page page)
 		{
