@@ -35,8 +35,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 #if IOS || MACCATALYST
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 #else
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 					handlers.AddHandler<Page, PageHandler>();
@@ -64,6 +66,42 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Handlers not recreated when changing details")]
+		public async Task HandlersNotRecreatedWhenChangingDetails()
+		{
+			SetupBuilder();
+
+			var contentPage1 = new ContentPage();
+			var detailPage1 = new TabbedPage()
+			{
+				Title = "detail Page 1",
+				Children =
+				{
+					new NavigationPage(contentPage1)
+				}
+			};
+
+			var flyoutPage1 = new ContentPage() { Title = "flyout Page 1" };
+			var detailPage2 = new ContentPage() { Title = "detail Page 2" };
+			var flyoutPage2 = new ContentPage() { Title = "flyout Page 2" };
+
+			var flyoutPage = new FlyoutPage()
+			{
+				Flyout = flyoutPage1,
+				Detail = detailPage1,
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(contentPage1);
+				var initialHandler = detailPage1.Handler;
+				flyoutPage.Detail = detailPage2;
+				await OnNavigatedToAsync(detailPage2);
+				flyoutPage.Detail = detailPage1;
+				await OnNavigatedToAsync(contentPage1);
+				Assert.Equal(initialHandler, detailPage1.Handler);
+			});
+		}
 
 #if !IOS && !MACCATALYST
 
