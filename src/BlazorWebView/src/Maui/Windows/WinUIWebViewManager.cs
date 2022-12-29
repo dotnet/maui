@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
@@ -77,6 +78,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
 
+			_logger?.LogDebug("Handling web request to URI '{URI}'.", requestUri);
+
 			// First, call into WebViewManager to see if it has a framework file for this request. It will
 			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
 			// return a file.
@@ -84,6 +87,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				&& statusCode != 404)
 			{
 				var headerString = GetHeaderString(headers);
+				_logger?.LogDebug("Response content being sent for web request to URI '{URI}'.", requestUri);
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 			}
 			else if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
@@ -130,11 +134,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (stream != null)
 				{
 					var headerString = GetHeaderString(headers);
+
+					_logger?.LogDebug("Response content being sent for web request to URI '{URI}' with HTTP status code {HTTP_STATUS_CODE}.", requestUri, statusCode);
+
 					eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
 						stream,
 						statusCode,
 						statusMessage,
 						headerString);
+				}
+				else
+				{
+					_logger?.LogDebug("Response content was not found for web request to URI '{URI}'.", requestUri);
 				}
 
 				async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
@@ -157,6 +168,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// In .NET MAUI we use autostart='false' for the Blazor script reference, so we start it up manually in this event
 			_webview.CoreWebView2.DOMContentLoaded += async (_, __) =>
 			{
+				_logger?.LogDebug("Calling Blazor.start() in the WebView2.");
+
 				await _webview.CoreWebView2!.ExecuteScriptAsync(@"
 					Blazor.start();
 					");

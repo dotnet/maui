@@ -12,7 +12,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
@@ -247,6 +249,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				return;
 			}
 
+			var logger = Services.GetService<ILogger<BlazorWebView>>();
+
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
 			string appRootDir;
@@ -264,6 +268,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
 			var contentRootDirRelativePath = Path.GetRelativePath(appRootDir, contentRootDirFullPath);
 
+			logger?.LogDebug("Creating file provider at content root '{CONTENT_ROOT}', using host page relative path '{HOST_PAGE_PATH}'.", contentRootDirFullPath, hostPageRelativePath);
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
 			_webviewManager = new WebView2WebViewManager(
@@ -282,9 +287,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			foreach (var rootComponent in RootComponents)
 			{
+				logger?.LogDebug("Adding root component '{ROOT_COMPONENT_TYPE}' with selector '{SELECTOR}'. Number of parameters: {PARAMETER_COUNT}", rootComponent.ComponentType.FullName, rootComponent.Selector, rootComponent.Parameters?.Count ?? 0);
+
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
+
+			logger?.LogDebug("Starting initial navigation to '{START_PATH}'.", StartPath);
 			_webviewManager.Navigate(StartPath);
 		}
 
