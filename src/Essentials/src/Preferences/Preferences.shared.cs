@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Storage
 	/// The Preferences API helps to store application preferences in a key/value store.
 	/// </summary>
 	/// <remarks>
-	/// <para>Each platform uses the platform provided native APIs for storing application/user preferences:</para>
+	/// <para>Each platform uses the platform-provided APIs for storing application/user preferences:</para>
 	/// <list type="bullet">
 	/// <item><description>iOS: NSUserDefaults</description></item>
 	/// <item><description>Android: SharedPreferences</description></item>
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Storage
 	public interface IPreferences
 	{
 		/// <summary>
-		/// Checks the existence of a given key.
+		/// Checks for the existence of a given key.
 		/// </summary>
 		/// <param name="key">The key to check.</param>
 		/// <param name="sharedName">Shared container name.</param>
