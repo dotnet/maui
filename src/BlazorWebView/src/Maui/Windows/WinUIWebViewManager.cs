@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
 
-			_logger?.LogDebug("Handling web request to URI '{URI}'.", requestUri);
+			_logger?.HandlingWebRequest(requestUri);
 
 			// First, call into WebViewManager to see if it has a framework file for this request. It will
 			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				&& statusCode != 404)
 			{
 				var headerString = GetHeaderString(headers);
-				_logger?.LogDebug("Response content being sent for web request to URI '{URI}'.", requestUri);
+				_logger?.ResponseContentBeingSent(requestUri, statusCode);
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 			}
 			else if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					var headerString = GetHeaderString(headers);
 
-					_logger?.LogDebug("Response content being sent for web request to URI '{URI}' with HTTP status code {HTTP_STATUS_CODE}.", requestUri, statusCode);
+					_logger?.ResponseContentBeingSent(requestUri, statusCode);
 
 					eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
 						stream,
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 				else
 				{
-					_logger?.LogDebug("Response content was not found for web request to URI '{URI}'.", requestUri);
+					_logger?.ReponseContentNotFound(requestUri);
 				}
 
 				async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// In .NET MAUI we use autostart='false' for the Blazor script reference, so we start it up manually in this event
 			_webview.CoreWebView2.DOMContentLoaded += async (_, __) =>
 			{
-				_logger?.LogDebug("Calling Blazor.start() in the WebView2.");
+				_logger?.CallingBlazorStart();
 
 				await _webview.CoreWebView2!.ExecuteScriptAsync(@"
 					Blazor.start();

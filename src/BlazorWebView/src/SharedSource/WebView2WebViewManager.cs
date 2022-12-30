@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 				if (isWebviewInitialized)
 				{
-					_logger?.LogDebug("Navigating to {URI}.", absoluteUri);
+					_logger?.NavigatingToUri(absoluteUri);
 					_webview.Source = absoluteUri;
 				}
 			});
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 			catch (FileNotFoundException)
 			{
-				_logger?.LogDebug("Failed to create WebView2 environment. This could mean that WebView2 is not installed.");
+				_logger?.FailedToCreateWebView2Environment();
 
 				// This method needs to be invoked even if the WebView2 Runtime is not installed,
 				// since it is reponsible for creating the warning label and WebView2 Runtime
@@ -227,9 +227,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				return false;
 			}
 
-			_logger?.LogDebug("Starting WebView2...");
+			_logger?.StartingWebView2();
 			await _webview.EnsureCoreWebView2Async();
-			_logger?.LogDebug("WebView2 is started.");
+			_logger?.StartedWebView2();
 
 			var developerTools = _blazorWebViewHandler.DeveloperTools;
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
@@ -241,9 +241,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				options: args.EnvironmentOptions)
 			.ConfigureAwait(true);
 
-			_logger?.LogDebug("Starting WebView2...");
+			_logger?.StartingWebView2();
 			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment);
-			_logger?.LogDebug("WebView2 is started.");
+			_logger?.StartedWebView2();
 
 			var developerTools = _developerTools;
 #endif
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
 
-			_logger?.LogDebug("Handling web request to URI '{URI}'.", requestUri);
+			_logger?.HandlingWebRequest(requestUri);
 
 			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 			{
@@ -322,13 +322,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 				var autoCloseStream = new AutoCloseOnReadCompleteStream(content);
 
-				_logger?.LogDebug("Response content being sent for web request to URI '{URI}' with HTTP status code {HTTP_STATUS_CODE}.", requestUri, statusCode);
+				_logger?.ResponseContentBeingSent(requestUri, statusCode);
 
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(autoCloseStream, statusCode, statusMessage, headerString);
 			}
 			else
 			{
-				_logger?.LogDebug("Response content was not found for web request to URI '{URI}'.", requestUri);
+				_logger?.ReponseContentNotFound(requestUri);
 			}
 #elif WEBVIEW2_MAUI
 			// No-op here because all the work is done in the derived WinUIWebViewManager
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #elif WEBVIEW2_MAUI
 				_blazorWebViewHandler.UrlLoading(callbackArgs);
 #endif
-				_logger?.LogDebug("Navigation event for URI '{URI}' with URL loading strategy '{URL_LOADING_STRATEGY}'.", uri, callbackArgs.UrlLoadingStrategy);
+				_logger?.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
 
 				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
 				{
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private void LaunchUriInExternalBrowser(Uri uri)
 		{
-			_logger?.LogDebug("Launching external browser for URI '{URI}'.", uri);
+			_logger?.LaunchExternalBrowser(uri);
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			using (var launchBrowser = new Process())
