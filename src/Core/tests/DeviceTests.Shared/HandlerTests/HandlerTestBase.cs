@@ -177,7 +177,7 @@ namespace Microsoft.Maui.DeviceTests
 
 #endif
 
-				public void Dispose()
+		public void Dispose()
 		{
 			((IDisposable)_mauiApp)?.Dispose();
 			_mauiApp = null;
