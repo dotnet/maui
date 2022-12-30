@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Media
 	public interface IScreenshot
 	{
 		/// <summary>
-		/// Gets a value indicating whether capturing screenshots supported on this device.
+		/// Gets a value indicating whether capturing screenshots is supported on this device.
 		/// </summary>
 		bool IsCaptureSupported { get; }
 
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Media
 	public static partial class Screenshot
 	{
 		/// <summary>
-		/// Gets a value indicating whether capturing screenshots supported on this device.
+		/// Gets a value indicating whether capturing screenshots is supported on this device.
 		/// </summary>
 		public static bool IsCaptureSupported
 			=> Default.IsCaptureSupported;
