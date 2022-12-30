@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		ViewHandlerDelegator<NavigationPage> _viewHandlerWrapper;
 		bool _navigating = false;
 		VisualElement _element;
+		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
 
 		[Internals.Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
@@ -781,8 +782,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			TopViewController?.NavigationItem?.TitleView?.LayoutSubviews();
 		}
 
-		bool _uiRequestedPop;
-		internal async Task UpdateFormsInnerNavigation(Page pageBeingRemoved)
+		async Task UpdateFormsInnerNavigation(Page pageBeingRemoved)
 		{
 			if (NavPage == null)
 				return;
@@ -978,6 +978,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			bool _finishedWithInitialNavigation;
 			readonly WeakReference<NavigationRenderer> _navigation;
+
 			public MauiNavigationDelegate(NavigationRenderer navigationRenderer)
 			{
 				_navigation = new WeakReference<NavigationRenderer>(navigationRenderer);

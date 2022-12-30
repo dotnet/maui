@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
 	public partial class NavigationPage : INavigationPageController
 	{
-		internal async Task<Page> PopAsyncInner(
+		async Task<Page> PopAsyncInner(
 			bool animated,
 			bool fast)
 		{
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 			return removedPage;
 		}
 
-		internal async Task<Page> RemoveAsyncInner(
+		async Task<Page> RemoveAsyncInner(
 			Page page,
 			bool animated,
 			bool fast)
@@ -205,6 +205,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 #if IOS
+		// Because iOS currently doesn't use our `IStackNavigationView` structures
+		// there are scenarios where the legacy handler needs to alert the xplat
+		// code of when a navigation has occurred.
+		// For example, initial load and when the user taps the back button
 		internal void SendNavigatedFromHandler(Page previousPage)
 		{
 			if (CurrentPage.HasNavigatedTo)

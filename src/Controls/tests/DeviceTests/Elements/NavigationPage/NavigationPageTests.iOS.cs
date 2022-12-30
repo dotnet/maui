@@ -32,24 +32,10 @@ namespace Microsoft.Maui.DeviceTests
 				var navController = navPage.Handler as UINavigationController;
 
 				Assert.False(page.HasNavigatedTo);
-				TapBackButton(navController.NavigationBar);
+				navController.NavigationBar.TapBackButton();
 				await OnNavigatedToAsync(page);
 				Assert.True(page.HasNavigatedTo);
 			});
 		}
-
-		void TapBackButton(UINavigationBar uINavigationBar)
-		{
-			var item = uINavigationBar.FindDescendantView<UIView>(result =>
-			{
-				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
-			});
-
-			_ = item ?? throw new Exception("Unable to locate back button view");
-
-			var recognizer = item.GestureRecognizers.OfType<UITapGestureRecognizer>().First();
-			recognizer.State = UIGestureRecognizerState.Ended;
-		}
-
 	}
 }
