@@ -18,12 +18,17 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public override PathF GetPath()
 		{
+			return GetPath(Width, Height);
+		}
+
+		internal override PathF GetPath(double width, double height)
+		{
 			var path = new PathF();
 
 			float x = (float)StrokeThickness / 2;
 			float y = (float)StrokeThickness / 2;
-			float w = (float)(Width - StrokeThickness);
-			float h = (float)(Height - StrokeThickness);
+			float w = (float)(width - StrokeThickness);
+			float h = (float)(height - StrokeThickness);
 			float cornerRadius = (float)Math.Max(RadiusX, RadiusY);
 
 			// TODO: Create specific Path taking into account RadiusX and RadiusY
