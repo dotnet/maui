@@ -4,7 +4,6 @@ using System.Linq;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
@@ -17,6 +16,8 @@ namespace Microsoft.Maui.Controls.Shapes
 		}
 
 		public abstract PathF GetPath();
+
+		internal abstract PathF GetPath(double width, double height);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='FillProperty']/Docs/*" />
 		public static readonly BindableProperty FillProperty =
@@ -174,7 +175,17 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
-			var path = GetPath();
+			// If this View has been laid out, then it may have an actual Width
+			// or actual Height we can use when determining the Path. If Width/Height
+			// are -1 (the default value), then we fall back to viewBounds.
+
+			var width = Width;
+			width = width == -1 ? viewBounds.Width : width;
+
+			var height = Height;
+			height = height == -1 ? viewBounds.Height : height;
+
+			var path = GetPath(width, height);
 
 #if !(NETSTANDARD || !PLATFORM)
 
