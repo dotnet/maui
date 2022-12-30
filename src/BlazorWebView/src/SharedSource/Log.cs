@@ -34,4 +34,13 @@ internal static partial class Log
 
 	[LoggerMessage(EventId = 9, Level = LogLevel.Debug, Message = "Calling Blazor.start() in the WebView2.")]
 	public static partial void CallingBlazorStart(this ILogger logger);
+
+	[LoggerMessage(EventId = 10, Level = LogLevel.Debug, Message = "Creating file provider at content root '{contentRootDir}', using host page relative path '{hostPageRelativePath}'.")]
+	public static partial void CreatingFileProvider(this ILogger logger, string contentRootDir, string hostPageRelativePath);
+
+	[LoggerMessage(EventId = 11, Level = LogLevel.Debug, Message = "Adding root component '{componentTypeName}' with selector '{componentSelector}'. Number of parameters: {parameterCount}")]
+	public static partial void AddingRootComponent(this ILogger logger, string componentTypeName, string componentSelector, int parameterCount);
+
+	[LoggerMessage(EventId = 12, Level = LogLevel.Debug, Message = "Starting initial navigation to '{startPath}'.")]
+	public static partial void StartingInitialNavigation(this ILogger logger, string startPath);
 }

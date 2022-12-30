@@ -57,14 +57,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without native web view instance.");
 			}
 
-			var logger = Services!.GetService<ILogger<BlazorWebView>>();
+			var logger = Services!.GetService<ILogger<BlazorWebViewHandler>>();
 
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
-			logger?.LogDebug("Creating file provider at content root '{CONTENT_ROOT}', using host page relative path '{HOST_PAGE_PATH}'.", contentRootDir, hostPageRelativePath);
+			logger?.CreatingFileProvider(contentRootDir, hostPageRelativePath);
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
 			_webviewManager = new WinUIWebViewManager(
@@ -83,14 +83,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				foreach (var rootComponent in RootComponents)
 				{
-					logger?.LogDebug("Adding root component '{ROOT_COMPONENT_TYPE}' with selector '{SELECTOR}'. Number of parameters: {PARAMETER_COUNT}", rootComponent.ComponentType?.FullName, rootComponent.Selector, rootComponent.Parameters?.Count ?? 0);
+					if (rootComponent is null)
+					{
+						continue;
+					}
+
+					logger?.AddingRootComponent(rootComponent.ComponentType?.FullName ?? string.Empty, rootComponent.Selector ?? string.Empty, rootComponent.Parameters?.Count ?? 0);
 
 					// Since the page isn't loaded yet, this will always complete synchronously
 					_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 				}
 			}
 
-			logger?.LogDebug("Starting initial navigation to '{START_PATH}'.", VirtualView.StartPath);
+			logger?.StartingInitialNavigation(VirtualView.StartPath);
 			_webviewManager.Navigate(VirtualView.StartPath);
 		}
 
