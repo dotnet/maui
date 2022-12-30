@@ -305,6 +305,7 @@ namespace Microsoft.Maui.Controls
 		{
 			[nameof(CascadeInputTransparent)] = MapInputTransparent,
 			[nameof(IView.InputTransparent)] = MapInputTransparent,
+			[nameof(IView.IsEnabled)] = MapIsEnabled,
 		};
 
 		void UpdateDescendantInputTransparent()
@@ -321,6 +322,25 @@ namespace Microsoft.Maui.Controls
 				if (this[n] is VisualElement visualElement)
 				{
 					visualElement.InputTransparent = true;
+				}
+			}
+		}
+
+		internal static void MapIsEnabled(ILayoutHandler handler, Layout layout)
+		{
+			layout.UpdateDescendantIsEnabled();
+		}
+
+		void UpdateDescendantIsEnabled() 
+		{
+			var isEnabled = IsEnabled;
+
+			// Set all the child IsEnabled values to match this one
+			for (int n = 0; n < Count; n++)
+			{
+				if (this[n] is VisualElement visualElement)
+				{
+					visualElement.IsEnabled = isEnabled;
 				}
 			}
 		}
