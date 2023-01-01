@@ -36,7 +36,7 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>daca2015ce74956591df9c9dc7ee732af7863b42</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.3.221230100-experimental.nightly">
+    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.3.221231100-experimental.nightly">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
       <Sha>0f9a1a8ce77012d2eb47b9d6292a3ed30d63409a</Sha>
     </Dependency>
