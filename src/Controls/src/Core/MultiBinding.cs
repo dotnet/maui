@@ -98,6 +98,8 @@ namespace Microsoft.Maui.Controls
 			if (Converter == null && StringFormat == null)
 				throw new InvalidOperationException("Cannot apply MultiBinding because both Converter and StringFormat are null.");
 
+			context = Context ?? context;
+
 			base.Apply(context, targetObject, targetProperty, fromBindingContextChanged);
 
 			_applying = true;

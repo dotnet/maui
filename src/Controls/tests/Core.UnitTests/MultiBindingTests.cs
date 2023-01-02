@@ -326,6 +326,71 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TwoWayAppliedToBindingContextMustBeEvaluated()
+		{
+			var firstName = "Homer";
+			var middleName = "Jay";
+			var lastName = "Simpson";
+			var group = new GroupViewModel();
+			var label = new Label
+			            {
+				            BindingContext = group.Person5
+			            };
+
+			label.SetBinding(
+				Label.BindingContextProperty,
+				new MultiBinding
+				{
+					Bindings = {
+								   new Binding(nameof(PersonViewModel.FirstName)),
+								   new Binding(nameof(PersonViewModel.MiddleName)),
+								   new Binding(nameof(PersonViewModel.LastName)),
+							   },
+					Converter = new StringConcatenationConverter(),
+					Mode = BindingMode.TwoWay
+				});
+
+			Assert.Equal(group.Person5.FullName, label.BindingContext);
+
+			label.BindingContext = $"{firstName} {middleName} {lastName}";
+
+			Assert.Equal(firstName, group.Person5.FirstName);
+			Assert.Equal(middleName, group.Person5.MiddleName);
+			Assert.Equal(lastName, group.Person5.LastName);
+		}
+
+		[Fact]
+		public void OneWayAppliedToBindingContextMustBeEvaluatedWhenInherited()
+		{
+			var firstName = "Homer";
+			var middleName = "Jay";
+			var lastName = "Simpson";
+			var group = new GroupViewModel();
+			var stack = new StackLayout();
+
+			var label = new Label();
+			label.SetBinding(
+				Label.BindingContextProperty,
+				new MultiBinding
+				{
+					Bindings = {
+						           new Binding(nameof(PersonViewModel.FirstName)),
+						           new Binding(nameof(PersonViewModel.MiddleName)),
+						           new Binding(nameof(PersonViewModel.LastName)),
+					           },
+					Converter = new StringConcatenationConverter(),
+					FallbackValue = c_Fallback, // ensures the context is properly chosen
+					Mode = BindingMode.OneWay
+				});
+
+			stack.Children.Add(label);
+			Assert.Equal( c_Fallback, label.BindingContext);
+
+			stack.BindingContext = group.Person5;
+			Assert.Equal(group.Person5.FullName, label.BindingContext);
+		}
+
+		[Fact]
 		public void NoMultiBindingActionWhenChildBindingDoNothing()
 		{
 			var defaultValue = "Foo Bar";
