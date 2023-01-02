@@ -33,6 +33,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			typeMetadata: new PropertyMetadata(OnHostPagePropertyChanged));
 
 		/// <summary>
+		/// The backing store for the <see cref="StartPath"/> property.
+		/// </summary>
+		public static readonly DependencyProperty StartPathProperty = DependencyProperty.Register(
+			name: nameof(StartPath),
+			propertyType: typeof(string),
+			ownerType: typeof(BlazorWebView),
+			typeMetadata: new PropertyMetadata("/"));
+
+		/// <summary>
 		/// The backing store for the <see cref="RootComponent"/> property.
 		/// </summary>
 		public static readonly DependencyProperty RootComponentsProperty = DependencyProperty.Register(
@@ -130,6 +139,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		}
 
 		/// <summary>
+		/// Path for initial Blazor navigation when the Blazor component is finished loading.
+		/// </summary>
+		public string StartPath
+		{
+			get => (string)GetValue(StartPathProperty);
+			set => SetValue(StartPathProperty, value);
+		}
+
+		/// <summary>
 		/// A collection of <see cref="RootComponent"/> instances that specify the Blazor <see cref="IComponent"/> types
 		/// to be used directly in the specified <see cref="HostPage"/>.
 		/// </summary>
@@ -197,7 +215,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			HostPage != null &&
 			Services != null;
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="FrameworkElement.OnApplyTemplate" />
 		public override void OnApplyTemplate()
 		{
 			CheckDisposed();
@@ -212,7 +230,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="FrameworkElement.OnInitialized(EventArgs)" />
 		protected override void OnInitialized(EventArgs e)
 		{
 			// Called when BeginInit/EndInit are used, such as when creating the control from XAML
@@ -267,7 +285,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
-			_webviewManager.Navigate("/");
+			_webviewManager.Navigate(StartPath);
 		}
 
 		private WpfDispatcher ComponentsDispatcher { get; }
