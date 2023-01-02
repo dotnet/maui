@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected TItemsView ItemsView => VirtualView;
 
-		protected ItemsViewController<TItemsView> Controller { get; private set; }
+		protected internal ItemsViewController<TItemsView> Controller { get; private set; }
 
 		protected abstract ItemsViewLayout SelectLayout();
 
