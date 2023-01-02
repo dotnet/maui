@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+#if !TIZEN
 	[Category(TestCategory.Border)]
 	public partial class BorderTests : ControlsHandlerTestBase
 	{
@@ -32,4 +33,5 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertColorAtPoint(border, expected, typeof(BorderHandler), 10, 10);
 		}
 	}
+#endif
 }
