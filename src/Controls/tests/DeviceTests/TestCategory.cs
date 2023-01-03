@@ -2,6 +2,7 @@
 {
 	public static class TestCategory
 	{
+		public const string Accessibility = "Accessibility";
 		public const string Application = "Application";
 		public const string Behavior = "Behavior";
 		public const string Button = "Button";
