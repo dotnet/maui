@@ -1609,6 +1609,170 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, vm.count);
 		}
 
+		public class RecursiveViewModel
+		{
+			private const char _firstChar = 'A';
+			private static char _next = _firstChar;
+			private RecursiveViewModel _data;
+			private readonly string _id;
+
+			// Not thread safe.
+			public static RecursiveViewModel GetInitialViewModel()
+			{
+				_next = _firstChar;
+				return new RecursiveViewModel();
+			}
+
+			private RecursiveViewModel(char id = _firstChar)
+			{
+				_id = $"{nameof(RecursiveViewModel)}_{id}";
+			}
+
+			public RecursiveViewModel Property
+			{
+				get
+				{
+					return _data ??= new RecursiveViewModel(++_next);
+				}
+			}
+
+			public override string ToString()
+			{
+				return _id;
+			}
+		}
+
+		public class CountingConverter : IValueConverter
+		{
+			public List<string> Values = new();
+
+			/// <inheritdoc />
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				var valueName = value is null ? "null" : value.ToString();
+
+				Values.Add( parameter is null ?
+					            valueName : $"{valueName} {parameter}");
+
+				return value;
+			}
+
+			/// <inheritdoc />
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				throw new NotSupportedException($"{nameof(CountingConverter)}.{nameof(this.ConvertBack)}");
+			}
+		}
+
+		[Fact]
+		public void PropertyBindingsUpdateWhenAddedAsChild()
+		{
+			var countingOneTime = new CountingConverter();
+			var countingOneWay = new CountingConverter();
+			var stackLayout = new VerticalStackLayout();
+			var view = new VisualElement();
+			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var bp1w = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var vm = new MockViewModel("foobar");
+
+			view.SetBinding(bp1t, "Text", mode: BindingMode.OneTime, countingOneTime);
+			view.SetBinding(bp1w, "Text", mode: BindingMode.OneWay, countingOneWay);
+			
+			stackLayout.BindingContext = vm;
+
+			Assert.Empty(countingOneTime.Values);
+			Assert.Empty(countingOneWay.Values);
+
+			stackLayout.Add(view);
+
+			Assert.Collection(countingOneTime.Values, item => Assert.Equal("foobar", item));
+			Assert.Collection(countingOneWay.Values, item => Assert.Equal("foobar", item));
+
+			Assert.Equal("foobar", view.GetValue(bp1w));
+			Assert.Equal("foobar", view.GetValue(bp1t));
+		}
+
+		[Fact]
+		public void PropertyBindingsDontUpdateWhenAddedAsChildAfterManualSet()
+		{
+			var countingOneTime = new CountingConverter();
+			var countingOneWay = new CountingConverter();
+			var stackLayout = new VerticalStackLayout();
+			var view = new VisualElement();
+			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var bp1w = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var vm = new MockViewModel("foobar");
+			var parentVm = new MockViewModel("baz");
+
+			view.SetBinding(bp1t, "Text", mode: BindingMode.OneTime, countingOneTime);
+			view.SetBinding(bp1w, "Text", mode: BindingMode.OneWay, countingOneWay);
+
+			view.BindingContext = vm;
+
+			Assert.Collection(countingOneTime.Values, item => Assert.Equal("foobar", item));
+			Assert.Collection(countingOneWay.Values, item => Assert.Equal("foobar", item));
+			
+			stackLayout.BindingContext = parentVm;
+			stackLayout.Add(view);
+
+			Assert.Collection(countingOneTime.Values, item => Assert.Equal("foobar", item));
+			Assert.Collection(countingOneWay.Values, item => Assert.Equal("foobar", item));
+		}
+
+		[Fact]
+		public void PropertyBindingsDontDoubleApplyOnChildAdded()
+		{
+			var countingOneTime = new CountingConverter();
+			var countingOneWay = new CountingConverter();
+			var stackLayout = new VerticalStackLayout();
+			var view = new VisualElement();
+			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var bp1w = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var vm = new MockViewModel("foobar");
+
+			stackLayout.BindingContext = vm;
+			view.SetBinding(bp1t, "Text", mode: BindingMode.OneTime, countingOneTime);
+			view.SetBinding(bp1w, "Text", mode: BindingMode.OneWay, countingOneWay);
+
+			stackLayout.Add( view );
+
+			Assert.Collection(countingOneTime.Values, item => Assert.Equal("foobar", item));
+			Assert.Collection(countingOneWay.Values, item => Assert.Equal("foobar", item));
+
+			Assert.Equal("foobar", view.GetValue(bp1w));
+			Assert.Equal("foobar", view.GetValue(bp1t));
+		}
+
+		[Fact]
+		public void BindingContextBindingsDontDoubleApplyOnChildAdded()
+		{
+			var rvm = RecursiveViewModel.GetInitialViewModel();
+			var countingTop = new CountingConverter();
+			var countingBottom = new CountingConverter();
+			var contentPage = new ContentPage();
+
+			var stackLayout = new VerticalStackLayout();
+			stackLayout.SetBinding(
+				ContentView.BindingContextProperty,
+				new Binding(nameof(RecursiveViewModel.Property), BindingMode.OneTime, countingTop));
+
+			var contentView = new ContentView();
+			contentView.SetBinding(
+				ContentView.BindingContextProperty,
+				new Binding(nameof(RecursiveViewModel.Property), BindingMode.OneTime, countingBottom));
+
+			contentPage.Content = stackLayout;
+			contentPage.BindingContext = rvm;
+
+			stackLayout.Add(contentView);
+
+			Assert.Collection(countingTop.Values, item => Assert.Equal($"{nameof(RecursiveViewModel)}_B", item));
+			Assert.Collection(countingBottom.Values, item => Assert.Equal($"{nameof(RecursiveViewModel)}_C", item));
+
+			Assert.Equal(rvm.Property, stackLayout.BindingContext);
+			Assert.Equal(rvm.Property.Property, contentView.BindingContext);
+		}
+
 		[Fact("When there are multiple bindings, an update in one should not cause the other to udpate.")]
 		public void BindingsShouldNotTriggerOtherBindings()
 		{
