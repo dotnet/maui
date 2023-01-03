@@ -43,4 +43,22 @@ internal static partial class Log
 
 	[LoggerMessage(EventId = 12, Level = LogLevel.Debug, Message = "Starting initial navigation to '{startPath}'.")]
 	public static partial void StartingInitialNavigation(this ILogger logger, string startPath);
+
+	[LoggerMessage(EventId = 13, Level = LogLevel.Debug, Message = "Creating Android.Webkit.WebView...")]
+	public static partial void CreatingAndroidWebkitWebView(this ILogger logger);
+
+	[LoggerMessage(EventId = 14, Level = LogLevel.Debug, Message = "Created Android.Webkit.WebView.")]
+	public static partial void CreatedAndroidWebkitWebView(this ILogger logger);
+
+	[LoggerMessage(EventId = 15, Level = LogLevel.Debug, Message = "Running Blazor startup scripts.")]
+	public static partial void RunningBlazorStartupScripts(this ILogger logger);
+
+	[LoggerMessage(EventId = 16, Level = LogLevel.Debug, Message = "Blazor startup scripts finished.")]
+	public static partial void BlazorStartupScriptsFinished(this ILogger logger);
+
+	[LoggerMessage(EventId = 17, Level = LogLevel.Debug, Message = "Creating WebKit WKWebView...")]
+	public static partial void CreatingWebKitWKWebView(this ILogger logger);
+
+	[LoggerMessage(EventId = 18, Level = LogLevel.Debug, Message = "Created WebKit WKWebView.")]
+	public static partial void CreatedWebKitWKWebView(this ILogger logger);
 }

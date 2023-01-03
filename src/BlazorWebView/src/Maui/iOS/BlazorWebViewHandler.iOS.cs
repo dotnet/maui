@@ -5,6 +5,7 @@ using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using UIKit;
@@ -47,10 +48,28 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			})();
 		";
 
+		private bool _loggerCreated;
+		private ILogger? _logger;
+
+		internal ILogger? Logger
+		{
+			get
+			{
+				if (!_loggerCreated)
+				{
+					_logger = Services!.GetService<ILogger<BlazorWebViewHandler>>();
+					_loggerCreated = true;
+				}
+				return _logger;
+			}
+		}
+
 		/// <inheritdoc />
 		[SupportedOSPlatform("ios11.0")]
 		protected override WKWebView CreatePlatformView()
 		{
+			Logger?.CreatingWebKitWKWebView();
+
 			var config = new WKWebViewConfiguration();
 
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
@@ -77,6 +96,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				WebView = webview
 			});
+
+			Logger?.CreatedWebKitWKWebView();
 
 			return webview;
 		}
@@ -127,6 +148,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
+			Logger?.CreatingFileProvider(contentRootDir, hostPageRelativePath);
+
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
 			_webviewManager = new IOSWebViewManager(
@@ -145,11 +168,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				foreach (var rootComponent in RootComponents)
 				{
+					Logger?.AddingRootComponent(rootComponent.ComponentType?.FullName ?? string.Empty, rootComponent.Selector ?? string.Empty, rootComponent.Parameters?.Count ?? 0);
+
 					// Since the page isn't loaded yet, this will always complete synchronously
 					_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 				}
 			}
 
+			Logger?.StartingInitialNavigation(VirtualView.StartPath);
 			_webviewManager.Navigate(VirtualView.StartPath);
 		}
 

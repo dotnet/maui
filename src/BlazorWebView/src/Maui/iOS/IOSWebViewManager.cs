@@ -7,6 +7,7 @@ using Foundation;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using UIKit;
 using WebKit;
 
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	internal class IOSWebViewManager : WebViewManager
 	{
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
+		private readonly ILogger? _logger;
 		private readonly WKWebView _webview;
 		private readonly string _contentRootRelativeToAppRoot;
 
@@ -47,6 +49,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
 			}
 
+			_logger = blazorMauiWebViewHandler!.Services?.GetService<ILogger<IOSWebViewManager>>();
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler;
 			_webview = webview;
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
@@ -57,6 +60,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void NavigateCore(Uri absoluteUri)
 		{
+			_logger?.NavigatingToUri(absoluteUri);
 			using var nsUrl = new NSUrl(absoluteUri.ToString());
 			using var request = new NSUrlRequest(nsUrl);
 			_webview.LoadRequest(request);
