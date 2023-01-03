@@ -400,8 +400,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tab.NavigationsFired.Clear();
 
 			await testShell.GoToAsync("../..");
-			Assert.Equal(testShell.CurrentState.Location.ToString(),
-				$"//rootpage");
+			Assert.Equal($"//rootpage", testShell.CurrentState.Location.ToString());
 
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[0]);
 			Assert.Equal("OnPopModal", tab.NavigationsFired[1]);
