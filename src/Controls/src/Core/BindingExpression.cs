@@ -772,7 +772,7 @@ namespace Microsoft.Maui.Controls
 								return false;
 							}
 							else
-								throw ex.InnerException;
+								throw ex?.InnerException!;
 						}
 						return true;
 					}

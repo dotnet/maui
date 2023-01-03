@@ -1,3 +1,9 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Controls.Element.ChildAdded -> System.EventHandler<Microsoft.Maui.Controls.ElementEventArgs!>?
+Microsoft.Maui.Controls.Element.ParentChanged -> System.EventHandler?
+Microsoft.Maui.Controls.Element.ParentChanging -> System.EventHandler<Microsoft.Maui.Controls.ParentChangingEventArgs!>?
+Microsoft.Maui.Controls.ParentChangingEventArgs.NewParent.get -> Microsoft.Maui.Controls.Element?
+Microsoft.Maui.Controls.ParentChangingEventArgs.OldParent.get -> Microsoft.Maui.Controls.Element?
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
+virtual Microsoft.Maui.Controls.Element.OnChildRemoved(Microsoft.Maui.Controls.Element? child, int oldLogicalIndex) -> void

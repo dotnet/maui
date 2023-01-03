@@ -418,8 +418,8 @@ namespace Microsoft.Maui.Controls
 		{
 			PopAsync(true).ContinueWith(t =>
 			{
-				if (t.IsFaulted)
-					throw t.Exception;
+				if (t != null && t.IsFaulted)
+					throw t.Exception!;
 			});
 		}
 

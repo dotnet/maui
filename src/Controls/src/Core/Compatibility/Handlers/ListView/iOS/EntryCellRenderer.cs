@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				TextField.VerticalAlignment = UIControlContentVerticalAlignment.Center;
 			}
 
-			public event EventHandler TextFieldTextChanged;
+			public event EventHandler? TextFieldTextChanged;
 
 			static bool OnShouldReturn(UITextField view)
 			{
@@ -194,10 +194,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					handler(realCell, EventArgs.Empty);
 			}
 
-			static T GetRealCell<T>(UIView view) where T : UIView
+			static T? GetRealCell<T>(UIView? view) where T : UIView
 			{
-				T realCell = null;
-				while (view.Superview != null && realCell == null)
+				T? realCell = null;
+				while (view?.Superview != null && realCell == null)
 				{
 					view = view.Superview;
 					realCell = view as T;

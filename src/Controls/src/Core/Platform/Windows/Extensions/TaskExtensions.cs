@@ -25,9 +25,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			self.ContinueWith(t =>
 			{
-				Exception exception = t.Exception.InnerExceptions.Count > 1 ? t.Exception : t.Exception.InnerException;
+				Exception? exception = t.Exception.InnerExceptions.Count > 1 ? t.Exception : t.Exception.InnerException;
 
-				context.Post(e => { throw (Exception)e; }, exception);
+				context.Post(e =>
+				{
+					if (e is Exception ex)
+						throw ex;
+				}, exception);
 			}, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
 		}
 	}

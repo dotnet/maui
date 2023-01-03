@@ -20,21 +20,21 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='ClassIdProperty']/Docs/*" />
 		public static readonly BindableProperty ClassIdProperty = BindableProperty.Create(nameof(ClassId), typeof(string), typeof(Element), null);
 
-		IList<BindableObject> _bindableResources;
+		IList<BindableObject>? _bindableResources;
 
-		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
+		List<Action<object, ResourcesChangedEventArgs>>? _changeHandlers;
 
-		Dictionary<BindableProperty, string> _dynamicResources;
+		Dictionary<BindableProperty, string>? _dynamicResources;
 
-		IEffectControlProvider _effectControlProvider;
+		IEffectControlProvider? _effectControlProvider;
 
-		TrackableCollection<Effect> _effects;
+		TrackableCollection<Effect>? _effects;
 
 		Guid? _id;
 
-		Element _parentOverride;
+		Element? _parentOverride;
 
-		string _styleId;
+		string? _styleId;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationId']/Docs/*" />
 		public string AutomationId
@@ -127,9 +127,9 @@ namespace Microsoft.Maui.Controls
 
 		internal bool Owned { get; set; }
 
-		internal Element ParentOverride
+		internal Element? ParentOverride
 		{
-			get { return _parentOverride; }
+			get => _parentOverride;
 			set
 			{
 				if (_parentOverride == value)
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls
 		// you're not my real dad
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='RealParent']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Element RealParent { get; private set; }
+		public Element? RealParent { get; private set; }
 
 		Dictionary<BindableProperty, string> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, string>());
 
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Parent']/Docs/*" />
-		public Element Parent
+		public Element? Parent
 		{
 			get { return _parentOverride ?? RealParent; }
 			set
@@ -301,13 +301,13 @@ namespace Microsoft.Maui.Controls
 			namescope.UnregisterName(name);
 		}
 
-		public event EventHandler<ElementEventArgs> ChildAdded;
+		public event EventHandler<ElementEventArgs>? ChildAdded;
 
-		public event EventHandler<ElementEventArgs> ChildRemoved;
+		public event EventHandler<ElementEventArgs>? ChildRemoved;
 
-		public event EventHandler<ElementEventArgs> DescendantAdded;
+		public event EventHandler<ElementEventArgs>? DescendantAdded;
 
-		public event EventHandler<ElementEventArgs> DescendantRemoved;
+		public event EventHandler<ElementEventArgs>? DescendantRemoved;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='RemoveDynamicResource']/Docs/*" />
 		public new void RemoveDynamicResource(BindableProperty property)
@@ -341,8 +341,11 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 		}
 
-		protected virtual void OnChildAdded(Element child)
+		protected virtual void OnChildAdded(Element? child)
 		{
+			if (child == null)
+				return;
+
 			child.Parent = this;
 
 			child.ApplyBindings(skipBindingContext: false, fromBindingContextChanged: true);
@@ -356,8 +359,11 @@ namespace Microsoft.Maui.Controls
 				OnDescendantAdded(element);
 		}
 
-		protected virtual void OnChildRemoved(Element child, int oldLogicalIndex)
+		protected virtual void OnChildRemoved(Element? child, int oldLogicalIndex)
 		{
+			if (child == null)
+				return;
+
 			child.Parent = null;
 
 			ChildRemoved?.Invoke(this, new ElementEventArgs(child));
@@ -472,7 +478,7 @@ namespace Microsoft.Maui.Controls
 				_bindableResources = new List<BindableObject>();
 			foreach (KeyValuePair<string, object> value in values)
 			{
-				List<BindableProperty> changedResources = null;
+				List<BindableProperty>? changedResources = null;
 				foreach (KeyValuePair<BindableProperty, string> dynR in DynamicResources)
 				{
 					// when the DynamicResource bound to a BindableProperty is
@@ -507,7 +513,7 @@ namespace Microsoft.Maui.Controls
 				OnResourceChanged(property, value);
 		}
 
-		internal event EventHandler ParentSet;
+		internal event EventHandler? ParentSet;
 
 		internal virtual void SetChildInheritedBindingContext(Element child, object context)
 		{
@@ -551,6 +557,9 @@ namespace Microsoft.Maui.Controls
 
 		void EffectsOnClearing(object sender, EventArgs eventArgs)
 		{
+			if(_effects == null)
+				return;
+
 			foreach (Effect effect in _effects)
 			{
 				effect?.ClearEffect();
@@ -606,7 +615,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal INameScope GetNameScope()
+		internal INameScope? GetNameScope()
 		{
 			var element = this;
 			do
@@ -633,8 +642,8 @@ namespace Microsoft.Maui.Controls
 		void OnResourceChanged(BindableProperty property, object value)
 			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings);
 
-		public event EventHandler<ParentChangingEventArgs> ParentChanging;
-		public event EventHandler ParentChanged;
+		public event EventHandler<ParentChangingEventArgs>? ParentChanging;
+		public event EventHandler? ParentChanged;
 
 		protected virtual void OnParentChanging(ParentChangingEventArgs args) { }
 
@@ -646,7 +655,7 @@ namespace Microsoft.Maui.Controls
 			OnParentChanged();
 		}
 
-		private protected virtual void OnParentChangingCore(Element oldParent, Element newParent)
+		private protected virtual void OnParentChangingCore(Element? oldParent, Element? newParent)
 		{
 			if (oldParent == newParent)
 				return;

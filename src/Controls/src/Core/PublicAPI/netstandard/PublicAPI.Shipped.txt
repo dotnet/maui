@@ -381,27 +381,27 @@
 ~Microsoft.Maui.Controls.Editor.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.Editor>
 ~Microsoft.Maui.Controls.Effect.Element.get -> Microsoft.Maui.Controls.Element
 ~Microsoft.Maui.Controls.Effect.ResolveId.get -> string
-~Microsoft.Maui.Controls.Element.AutomationId.get -> string
-~Microsoft.Maui.Controls.Element.AutomationId.set -> void
-~Microsoft.Maui.Controls.Element.ClassId.get -> string
-~Microsoft.Maui.Controls.Element.ClassId.set -> void
+Microsoft.Maui.Controls.Element.AutomationId.get -> string!
+Microsoft.Maui.Controls.Element.AutomationId.set -> void
+Microsoft.Maui.Controls.Element.ClassId.get -> string!
+Microsoft.Maui.Controls.Element.ClassId.set -> void
 ~Microsoft.Maui.Controls.Element.EffectControlProvider.get -> Microsoft.Maui.Controls.IEffectControlProvider
 ~Microsoft.Maui.Controls.Element.EffectControlProvider.set -> void
 ~Microsoft.Maui.Controls.Element.EffectIsAttached(string name) -> bool
-~Microsoft.Maui.Controls.Element.Effects.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Effect>
+Microsoft.Maui.Controls.Element.Effects.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.Effect!>!
 ~Microsoft.Maui.Controls.Element.FindByName(string name) -> object
 ~Microsoft.Maui.Controls.Element.Handler.get -> Microsoft.Maui.IElementHandler
 ~Microsoft.Maui.Controls.Element.Handler.set -> void
-~Microsoft.Maui.Controls.Element.LogicalChildren.get -> System.Collections.ObjectModel.ReadOnlyCollection<Microsoft.Maui.Controls.Element>
+Microsoft.Maui.Controls.Element.LogicalChildren.get -> System.Collections.ObjectModel.ReadOnlyCollection<Microsoft.Maui.Controls.Element!>!
 ~Microsoft.Maui.Controls.Element.Parent.get -> Microsoft.Maui.Controls.Element
 ~Microsoft.Maui.Controls.Element.Parent.set -> void
 ~Microsoft.Maui.Controls.Element.RealParent.get -> Microsoft.Maui.Controls.Element
-~Microsoft.Maui.Controls.Element.RemoveDynamicResource(Microsoft.Maui.Controls.BindableProperty property) -> void
-~Microsoft.Maui.Controls.Element.SetDynamicResource(Microsoft.Maui.Controls.BindableProperty property, string key) -> void
+Microsoft.Maui.Controls.Element.RemoveDynamicResource(Microsoft.Maui.Controls.BindableProperty! property) -> void
+Microsoft.Maui.Controls.Element.SetDynamicResource(Microsoft.Maui.Controls.BindableProperty! property, string! key) -> void
 ~Microsoft.Maui.Controls.Element.SetValueFromRenderer(Microsoft.Maui.Controls.BindableProperty property, object value) -> void
 ~Microsoft.Maui.Controls.Element.SetValueFromRenderer(Microsoft.Maui.Controls.BindablePropertyKey property, object value) -> void
-~Microsoft.Maui.Controls.Element.StyleId.get -> string
-~Microsoft.Maui.Controls.Element.StyleId.set -> void
+Microsoft.Maui.Controls.Element.StyleId.get -> string!
+Microsoft.Maui.Controls.Element.StyleId.set -> void
 ~Microsoft.Maui.Controls.ElementEventArgs.Element.get -> Microsoft.Maui.Controls.Element
 ~Microsoft.Maui.Controls.ElementEventArgs.ElementEventArgs(Microsoft.Maui.Controls.Element element) -> void
 ~Microsoft.Maui.Controls.ElementTemplate.CreateContent() -> object
@@ -942,7 +942,7 @@
 ~Microsoft.Maui.Controls.Label.Text.set -> void
 ~Microsoft.Maui.Controls.Label.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.Label.TextColor.set -> void
-~Microsoft.Maui.Controls.Layout._layoutManager -> Microsoft.Maui.Layouts.ILayoutManager
+Microsoft.Maui.Controls.Layout._layoutManager -> Microsoft.Maui.Layouts.ILayoutManager?
 ~Microsoft.Maui.Controls.Layout.Add(Microsoft.Maui.IView child) -> void
 ~Microsoft.Maui.Controls.Layout.Children.get -> System.Collections.Generic.IList<Microsoft.Maui.IView>
 ~Microsoft.Maui.Controls.Layout.Contains(Microsoft.Maui.IView item) -> bool
@@ -1132,9 +1132,9 @@
 ~Microsoft.Maui.Controls.Page.Title.get -> string
 ~Microsoft.Maui.Controls.Page.Title.set -> void
 ~Microsoft.Maui.Controls.Page.ToolbarItems.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.ToolbarItem>
-~Microsoft.Maui.Controls.ParentChangingEventArgs.NewParent.get -> Microsoft.Maui.Controls.Element
-~Microsoft.Maui.Controls.ParentChangingEventArgs.OldParent.get -> Microsoft.Maui.Controls.Element
-~Microsoft.Maui.Controls.ParentChangingEventArgs.ParentChangingEventArgs(Microsoft.Maui.Controls.Element oldParent, Microsoft.Maui.Controls.Element newParent) -> void
+Microsoft.Maui.Controls.ParentChangingEventArgs.NewParent.get -> Microsoft.Maui.Controls.Element!
+Microsoft.Maui.Controls.ParentChangingEventArgs.OldParent.get -> Microsoft.Maui.Controls.Element!
+Microsoft.Maui.Controls.ParentChangingEventArgs.ParentChangingEventArgs(Microsoft.Maui.Controls.Element? oldParent, Microsoft.Maui.Controls.Element? newParent) -> void
 ~Microsoft.Maui.Controls.Picker.FontFamily.get -> string
 ~Microsoft.Maui.Controls.Picker.FontFamily.set -> void
 ~Microsoft.Maui.Controls.Picker.ItemDisplayBinding.get -> Microsoft.Maui.Controls.BindingBase
@@ -1764,7 +1764,7 @@
 ~override Microsoft.Maui.Controls.DoubleCollectionConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
 ~override Microsoft.Maui.Controls.DoubleCollectionConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
 ~override Microsoft.Maui.Controls.Editor.OnTextChanged(string oldValue, string newValue) -> void
-~override Microsoft.Maui.Controls.Element.OnPropertyChanged(string propertyName = null) -> void
+override Microsoft.Maui.Controls.Element.OnPropertyChanged(string! propertyName = null) -> void
 ~override Microsoft.Maui.Controls.FileImageSource.Cancel() -> System.Threading.Tasks.Task<bool>
 ~override Microsoft.Maui.Controls.FileImageSource.ToString() -> string
 ~override Microsoft.Maui.Controls.FileImageSourceConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType) -> bool
@@ -3858,10 +3858,10 @@
 ~virtual Microsoft.Maui.Controls.Compatibility.Layout<T>.OnAdded(T view) -> void
 ~virtual Microsoft.Maui.Controls.Compatibility.Layout<T>.OnRemoved(T view) -> void
 ~virtual Microsoft.Maui.Controls.DatePicker.UpdateFormsText(string source, Microsoft.Maui.TextTransform textTransform) -> string
-~virtual Microsoft.Maui.Controls.Element.OnChildAdded(Microsoft.Maui.Controls.Element child) -> void
-~virtual Microsoft.Maui.Controls.Element.OnChildRemoved(Microsoft.Maui.Controls.Element child, int oldLogicalIndex) -> void
+virtual Microsoft.Maui.Controls.Element.OnChildAdded(Microsoft.Maui.Controls.Element? child) -> void
+virtual Microsoft.Maui.Controls.Element.OnChildRemoved(Microsoft.Maui.Controls.Element! child, int oldLogicalIndex) -> void
 ~virtual Microsoft.Maui.Controls.Element.OnHandlerChanging(Microsoft.Maui.Controls.HandlerChangingEventArgs args) -> void
-~virtual Microsoft.Maui.Controls.Element.OnParentChanging(Microsoft.Maui.Controls.ParentChangingEventArgs args) -> void
+virtual Microsoft.Maui.Controls.Element.OnParentChanging(Microsoft.Maui.Controls.ParentChangingEventArgs! args) -> void
 ~virtual Microsoft.Maui.Controls.ImageSource.Cancel() -> System.Threading.Tasks.Task<bool>
 ~virtual Microsoft.Maui.Controls.Internals.NavigationProxy.GetModalStack() -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Page>
 ~virtual Microsoft.Maui.Controls.Internals.NavigationProxy.GetNavigationStack() -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Page>
@@ -4430,16 +4430,16 @@ Microsoft.Maui.Controls.EffectiveFlowDirection.Explicit = 2 -> Microsoft.Maui.Co
 Microsoft.Maui.Controls.EffectiveFlowDirection.RightToLeft = 1 -> Microsoft.Maui.Controls.EffectiveFlowDirection
 Microsoft.Maui.Controls.EffectiveVisualExtensions
 Microsoft.Maui.Controls.Element
-Microsoft.Maui.Controls.Element.ChildAdded -> System.EventHandler<Microsoft.Maui.Controls.ElementEventArgs>
-Microsoft.Maui.Controls.Element.ChildRemoved -> System.EventHandler<Microsoft.Maui.Controls.ElementEventArgs>
-Microsoft.Maui.Controls.Element.DescendantAdded -> System.EventHandler<Microsoft.Maui.Controls.ElementEventArgs>
-Microsoft.Maui.Controls.Element.DescendantRemoved -> System.EventHandler<Microsoft.Maui.Controls.ElementEventArgs>
+Microsoft.Maui.Controls.Element.ChildAdded -> System.EventHandler<Microsoft.Maui.Controls.ElementEventArgs!>!
+Microsoft.Maui.Controls.Element.ChildRemoved -> System.EventHandler<Microsoft.Maui.Controls.ElementEventArgs!>?
+Microsoft.Maui.Controls.Element.DescendantAdded -> System.EventHandler<Microsoft.Maui.Controls.ElementEventArgs!>?
+Microsoft.Maui.Controls.Element.DescendantRemoved -> System.EventHandler<Microsoft.Maui.Controls.ElementEventArgs!>?
 Microsoft.Maui.Controls.Element.Element() -> void
 Microsoft.Maui.Controls.Element.HandlerChanged -> System.EventHandler
 Microsoft.Maui.Controls.Element.HandlerChanging -> System.EventHandler<Microsoft.Maui.Controls.HandlerChangingEventArgs>
 Microsoft.Maui.Controls.Element.Id.get -> System.Guid
-Microsoft.Maui.Controls.Element.ParentChanged -> System.EventHandler
-Microsoft.Maui.Controls.Element.ParentChanging -> System.EventHandler<Microsoft.Maui.Controls.ParentChangingEventArgs>
+Microsoft.Maui.Controls.Element.ParentChanged -> System.EventHandler!
+Microsoft.Maui.Controls.Element.ParentChanging -> System.EventHandler<Microsoft.Maui.Controls.ParentChangingEventArgs!>!
 Microsoft.Maui.Controls.ElementEventArgs
 Microsoft.Maui.Controls.ElementTemplate
 Microsoft.Maui.Controls.Entry

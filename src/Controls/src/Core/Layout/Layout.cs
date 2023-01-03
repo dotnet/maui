@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Children))]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
 	{
-		ReadOnlyCastingList<Element, IView> _logicalChildren;
+		ReadOnlyCastingList<Element, IView>? _logicalChildren;
 
-		protected ILayoutManager _layoutManager;
+		protected ILayoutManager? _layoutManager;
 
 		ILayoutManager LayoutManager
 		{
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static ILayoutManager GetLayoutManagerFromFactory(Layout layout)
+		static ILayoutManager? GetLayoutManagerFromFactory(Layout layout)
 		{
 			var factory = layout.FindMauiContext()?.Services?.GetService<ILayoutManagerFactory>();
 			return factory?.CreateLayoutManager(layout);
