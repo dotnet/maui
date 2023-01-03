@@ -152,7 +152,7 @@
   </PropertyGroup>
   
   <!-- For each dependency item, execute darc get-asset to list out the version info with feeds -->
-  <Target Name="_DarcGetAssetNugetFeeds" AfterTargets="Build" Outputs="%(_DarcDependency.Identity)" Condition="$([MSBuild]::IsOSPlatform('windows'))">
+  <Target Name="_DarcGetAssetNugetFeeds" AfterTargets="Build" Outputs="%(_DarcDependency.Identity)">
 
     <Exec Command="pwsh ..\..\..\eng\common\darc-get-asset.ps1 %(_DarcDependency.Identity) %(_DarcDependency.Version)" ConsoleToMSBuild="True">
       <Output TaskParameter="ConsoleOutput" ItemName="_DarcGetAssetOutput" />
