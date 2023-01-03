@@ -19,11 +19,13 @@ namespace Microsoft.Maui.LifecycleEvents
 					.OnPlatformWindowCreated((window) =>
 					{
 						window.GetWindow()?.Created();
+						KeyboardAutoManagerScroll.Init();
 					})
 					.WillTerminate(app =>
 					{
 						// By this point if we were a multi window app, the GetWindow would be null anyway
 						app.GetWindow()?.Destroying();
+						KeyboardAutoManagerScroll.Destroy();
 					})
 					.WillEnterForeground(app =>
 					{
@@ -45,6 +47,7 @@ namespace Microsoft.Maui.LifecycleEvents
 						if (!app.Delegate.HasSceneManifest())
 							app.GetWindow()?.Stopped();
 					});
+
 
 
 			// Pre iOS 13 doesn't support scenes
