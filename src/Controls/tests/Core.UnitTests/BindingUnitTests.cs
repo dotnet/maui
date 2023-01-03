@@ -1773,6 +1773,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(rvm.Property.Property, contentView.BindingContext);
 		}
 
+		[Fact]
+		public void BindingContextBindingsDontDoubleApplyOnParentUpdates()
+		{
+			var rvm = RecursiveViewModel.GetInitialViewModel();
+			var countingTop = new CountingConverter();
+			var countingBottom = new CountingConverter();
+			var contentPage = new ContentPage();
+
+			var stackLayout = new VerticalStackLayout();
+			stackLayout.SetBinding(
+				ContentView.BindingContextProperty,
+				new Binding(nameof(RecursiveViewModel.Property), BindingMode.OneTime, countingTop));
+			
+			var contentView = new ContentView();
+			contentView.SetBinding(
+				ContentView.BindingContextProperty,
+				new Binding(nameof(RecursiveViewModel.Property), BindingMode.OneTime, countingBottom));
+
+			contentPage.Content = stackLayout;
+			stackLayout.Add( contentView );
+
+			contentPage.BindingContext = rvm;
+
+			Assert.Collection(countingTop.Values, item => Assert.Equal($"{nameof(RecursiveViewModel)}_B", item));
+			Assert.Collection(countingBottom.Values, item => Assert.Equal($"{nameof(RecursiveViewModel)}_C", item));
+
+			Assert.Equal(rvm.Property, stackLayout.BindingContext);
+			Assert.Equal(rvm.Property.Property, contentView.BindingContext);
+		}
+
 		[Fact("When there are multiple bindings, an update in one should not cause the other to udpate.")]
 		public void BindingsShouldNotTriggerOtherBindings()
 		{

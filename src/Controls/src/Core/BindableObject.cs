@@ -249,14 +249,15 @@ namespace Microsoft.Maui.Controls
 			{
 				bpContext.Binding.Context = value;
 				bindable._inheritedContext = null;
+				bpContext.Binding.Unapply(fromBindingContextChanged: true);
+				bpContext.Binding.Apply(bpContext.Binding.Context, bindable, bpContext.Property, fromBindingContextChanged: true);
 			}
 			else
 			{
 				bindable._inheritedContext = value;
+				bindable.ApplyBindings(skipBindingContext: true, fromBindingContextChanged: true);
+				bindable.OnBindingContextChanged();
 			}
-
-			bindable.ApplyBindings(skipBindingContext: false, fromBindingContextChanged: true);
-			bindable.OnBindingContextChanged();
 		}
 
 		protected void ApplyBindings() => ApplyBindings(skipBindingContext: false, fromBindingContextChanged: false);
