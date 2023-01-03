@@ -2461,6 +2461,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void OneTimeBindingOnBindingContextIsUnappliedOnManualSet()
+		{
+			var view = new VisualElement();
+			var vm = new MockViewModel("foobar");
+
+			var binding = new Binding("Text", mode: BindingMode.OneTime);
+			view.SetBinding(VisualElement.BindingContextProperty, binding);
+
+			Assert.True(binding.IsApplied);
+
+			view.BindingContext = vm;
+
+			Assert.False(binding.IsApplied);
+			Assert.Equal(vm, view.GetValue(VisualElement.BindingContextProperty));
+		}
+
+		[Fact]
+		public void OneWayBindingOnBindingContextIsUnappliedOnManualSet()
+		{
+			var view = new VisualElement();
+			var vm = new MockViewModel("foobar");
+
+			var binding = new Binding("Text", mode: BindingMode.OneWay);
+			view.SetBinding(VisualElement.BindingContextProperty, binding);
+
+			Assert.True(binding.IsApplied);
+
+			view.BindingContext = vm;
+
+			Assert.False(binding.IsApplied);
+			Assert.Equal(vm, view.GetValue(VisualElement.BindingContextProperty));
+		}
+
+		[Fact]
 		public void OneTimeBindingDoesntUpdateOnPropertyChanged()
 		{
 			var view = new VisualElement();

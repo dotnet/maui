@@ -515,7 +515,9 @@ namespace Microsoft.Maui.Controls
 			BindingBase binding = context.Binding;
 			if (binding != null)
 			{
-				if (clearOneWayBindings && binding.GetRealizedMode(property) == BindingMode.OneWay || clearTwoWayBindings && binding.GetRealizedMode(property) == BindingMode.TwoWay)
+				BindingMode realizedMode = binding.GetRealizedMode(property);
+				if (clearOneWayBindings && (realizedMode == BindingMode.OneTime || realizedMode == BindingMode.OneWay) ||
+					clearTwoWayBindings && realizedMode == BindingMode.TwoWay)
 				{
 					RemoveBinding(property, context);
 					binding = null;
