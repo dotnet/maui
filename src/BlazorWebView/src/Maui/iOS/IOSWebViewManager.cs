@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
 			}
 
-			_logger = blazorMauiWebViewHandler!.Services?.GetService<ILogger<IOSWebViewManager>>();
+			_logger = provider.GetService<ILogger<IOSWebViewManager>>();
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler;
 			_webview = webview;
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
@@ -221,6 +221,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
 				var requestUrl = navigationAction.Request.Url;
+				var uri = new Uri(requestUrl.ToString());
+
 				UrlLoadingStrategy strategy;
 
 				// TargetFrame is null for navigation to a new window (`_blank`)
@@ -232,7 +234,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				else
 				{
 					// Invoke the UrlLoading event to allow overriding the default link handling behavior
-					var uri = new Uri(requestUrl.ToString());
 					var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri);
 					_webView.UrlLoading(callbackArgs);
 					_webView.Logger?.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
@@ -242,7 +243,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				if (strategy == UrlLoadingStrategy.OpenExternally)
 				{
-					_webView.Logger?.LaunchExternalBrowser(requestUrl);
+					_webView.Logger?.LaunchExternalBrowser(uri);
 
 #pragma warning disable CA1416, CA1422 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
 					UIApplication.SharedApplication.OpenUrl(requestUrl);
