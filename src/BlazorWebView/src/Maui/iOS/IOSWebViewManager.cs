@@ -235,11 +235,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var uri = new Uri(requestUrl.ToString());
 					var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri);
 					_webView.UrlLoading(callbackArgs);
+					_webView.Logger?.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
+
 					strategy = callbackArgs.UrlLoadingStrategy;
 				}
 
 				if (strategy == UrlLoadingStrategy.OpenExternally)
 				{
+					_webView.Logger?.LaunchExternalBrowser(requestUrl);
+
 #pragma warning disable CA1416, CA1422 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
 					UIApplication.SharedApplication.OpenUrl(requestUrl);
 #pragma warning restore CA1416, CA1422

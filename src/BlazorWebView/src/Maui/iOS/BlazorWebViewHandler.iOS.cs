@@ -241,6 +241,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(url);
 				url = QueryStringHelper.RemovePossibleQueryString(url);
+
+				_webViewHandler.Logger?.HandlingWebRequest(url);
+
 				if (_webViewHandler._webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
 				{
 					statusCode = 200;
@@ -250,11 +253,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					content.Dispose();
 
 					contentType = headers["Content-Type"];
+			
+					_webViewHandler?.Logger?.ResponseContentBeingSent(url, statusCode);
 
 					return ms.ToArray();
 				}
 				else
 				{
+					_webViewHandler?.Logger?.ReponseContentNotFound(url);
+
 					statusCode = 404;
 					contentType = string.Empty;
 					return Array.Empty<byte>();
