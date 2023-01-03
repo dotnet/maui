@@ -66,11 +66,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var newStack = CurrentNavigationRequest.NavigationStack.ToList();
 			CurrentNavigationRequest = null;
 
+			var source = _navigationSource;
+			_navigationSource = null;
+
 			if ((this as IElementHandler).VirtualView is IStackNavigation sn)
 				sn.NavigationFinished(newStack);
 
-			var source = _navigationSource;
-			_navigationSource = null;
 
 			await Task.Delay(1);
 			source.SetResult();
