@@ -1,6 +1,10 @@
 name: Add changelog for Maestro bump
 on: pull_request
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   add-changelog:
     name: Add changelog
@@ -15,21 +19,20 @@ jobs:
         cd dotnet-tools/changelog
         dotnet run https://github.com/$GITHUB_REPOSITORY/pull/${GITHUB_REF_NAME/\/*/} > changelog.txt 2>&1
 
-        # need to replace newlines with actual "\n"
-        rm -f changelog2.txt
-        echo "CHANGELOG_MESSAGE<<EOF" >> changelog2.txt
-        cat changelog.txt | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g' >> changelog2.txt
-        echo EOF >> changelog2.txt
-        cat changelog2.txt
+        CHANGELOG_FILE=changelog2.txt
+        rm -f "$CHANGELOG_FILE"
+        cat changelog.txt | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g' >> "$CHANGELOG_FILE"
+        cat "$CHANGELOG_FILE"
 
-        # export the changelog message
-        cat changelog2.txt >> $GITHUB_ENV
+        cp "$CHANGELOG_FILE" /tmp/changelog.txt
 
     - name: 'Add changelog'
       uses: actions/github-script@v6.3.3
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
+          const fs = require('fs');
+          const changelog_message = fs.readFileSync('/tmp/changelog.txt', 'utf8');
           // check if we've already added a changelog to this PR, and if so, update that comment, otherwise add a new comment
           var commentId = ""
           await github.paginate (github.rest.issues.listComments,
@@ -48,13 +51,13 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '${{ env.CHANGELOG_MESSAGE }}'
+              body: changelog_message
             })
           } else {
             github.rest.issues.updateComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: commentId,
-              body: '${{ env.CHANGELOG_MESSAGE }}'
+              body: changelog_message
             })
           }

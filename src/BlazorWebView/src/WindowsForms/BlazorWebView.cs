@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
 		private WindowsFormsDispatcher ComponentsDispatcher { get; }
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="Control.OnCreateControl" />
 		protected override void OnCreateControl()
 		{
 			base.OnCreateControl();
@@ -78,6 +78,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				OnHostPagePropertyChanged();
 			}
 		}
+
+		/// <summary>
+		/// Path for initial Blazor navigation when the Blazor component is finished loading.
+		/// </summary>
+		[Category("Behavior")]
+		[Description(@"Path for initial Blazor navigation when the Blazor component is finished loading.")]
+		public string StartPath { get; set; } = "/";
 
 		// Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
 		private void ResetHostPage() => HostPage = null;
@@ -193,7 +200,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
-			_webviewManager.Navigate("/");
+			_webviewManager.Navigate(StartPath);
 		}
 
 		private void HandleRootComponentsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs eventArgs)
@@ -243,7 +250,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="Control.Dispose(bool)" />
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -261,7 +268,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			base.Dispose(disposing);
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="Control.CreateControlsInstance" />
 		protected override ControlCollection CreateControlsInstance()
 		{
 			return new BlazorWebViewControlCollection(this);

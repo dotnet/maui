@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
@@ -173,11 +174,6 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
-			if (HeightRequest < 0 && WidthRequest < 0)
-			{
-				Frame = viewBounds;
-			}
-
 			var path = GetPath();
 
 #if !(NETSTANDARD || !PLATFORM)

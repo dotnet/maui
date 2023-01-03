@@ -1,6 +1,6 @@
 <Project>
 
-  <ItemGroup Condition=" '$(DisableImplicitFrameworkReferences)' != 'true' ">
+  <ItemGroup Condition=" '$(UseMauiNuGets)' != 'true' and '$(DisableImplicitFrameworkReferences)' != 'true' ">
     <FrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
@@ -24,9 +24,11 @@
     />
   </ItemGroup>
 
-  <Import Project="BundledVersions.targets" />
-  <Import Project="Microsoft.Maui.Sdk.targets" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true' " />
-  <Import Project="Microsoft.Maui.Core.Sdk.targets" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
-  <Import Project="Microsoft.Maui.Controls.Sdk.targets" Condition=" '$(UseMaui)' == 'true' " />
+  <Import Project="BundledVersions.targets" Condition=" '$(UseMauiNuGets)' != 'true' " />
+  <Import Project="Microsoft.Maui.Sdk.targets" Condition=" ('$(UseMauiNuGets)' != 'true') and ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') " />
+  <Import Project="Microsoft.Maui.Core.Sdk.targets" Condition=" ('$(UseMauiNuGets)' != 'true') and ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') " />
+  <Import Project="Microsoft.Maui.Controls.Sdk.targets" Condition=" ('$(UseMauiNuGets)' != 'true') and ('$(UseMaui)' == 'true') " />
+
+  <Import Project="Microsoft.Maui.NuGets.Sdk.targets" Condition=" '$(UseMauiNuGets)' == 'true' " />
 
 </Project>

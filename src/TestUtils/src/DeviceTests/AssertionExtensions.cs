@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -52,25 +53,15 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(diff <= epsilon, $"Expected: {expected}. Actual: {actual}. Diff: {diff} Epsilon: {epsilon}.{message}");
 		}
 
-#if !TIZEN
+#if !TIZEN && PLATFORM
 
 		public static Task WaitForKeyboardToShow(this IView view, int timeout = 1000)
 		{
-#if !PLATFORM
-			return Task.CompletedTask;
-#else
 			return view.ToPlatform().WaitForKeyboardToShow(timeout);
-#endif
 		}
 
-		public static Task WaitForKeyboardToHide(this IView view, int timeout = 1000)
-		{
-#if !PLATFORM
-			return Task.CompletedTask;
-#else
-			return view.ToPlatform().WaitForKeyboardToHide(timeout);
-#endif
-		}
+		public static Task WaitForKeyboardToHide(this IView view, int timeout = 1000) =>
+			view.ToPlatform().WaitForKeyboardToHide(timeout);
 
 		/// <summary>
 		/// Shane: I haven't fully tested this API. I was trying to use this to send "ReturnType"
@@ -81,54 +72,28 @@ namespace Microsoft.Maui.DeviceTests
 		/// <param name="value"></param>
 		/// <param name="timeout"></param>
 		/// <returns></returns>
-		public static Task SendValueToKeyboard(this IView view, char value, int timeout = 1000)
-		{
-#if !PLATFORM
-			return Task.CompletedTask;
-#else
-			return view.ToPlatform().SendValueToKeyboard(value, timeout);
-#endif
-		}
+		public static Task SendValueToKeyboard(this IView view, char value, int timeout = 1000) =>
+			view.ToPlatform().SendValueToKeyboard(value, timeout);
 
 
-		public static Task SendKeyboardReturnType(this IView view, ReturnType returnType, int timeout = 1000)
-		{
-#if !PLATFORM
-			return Task.CompletedTask;
-#else
-			return view.ToPlatform().SendKeyboardReturnType(returnType, timeout);
-#endif
-		}
+		public static Task SendKeyboardReturnType(this IView view, ReturnType returnType, int timeout = 1000) =>
+			view.ToPlatform().SendKeyboardReturnType(returnType, timeout);
 
-		public static Task ShowKeyboardForView(this IView view, int timeout = 1000)
-		{
-#if !PLATFORM
-			return Task.CompletedTask;
-#else
-			return view.ToPlatform().ShowKeyboardForView(timeout);
-#endif
-		}
+		public static Task ShowKeyboardForView(this IView view, int timeout = 1000) =>
+			view.ToPlatform().ShowKeyboardForView(timeout);
 
-		public static Task WaitForFocused(this IView view, int timeout = 1000)
-		{
-#if !PLATFORM
-			return Task.CompletedTask;
-#else
-			return view.ToPlatform().WaitForFocused(timeout);
-#endif
-		}
+		public static Task WaitForFocused(this IView view, int timeout = 1000) =>
+			view.ToPlatform().WaitForFocused(timeout);
 
-		public static Task FocusView(this IView view, int timeout = 1000)
-		{
+		public static Task FocusView(this IView view, int timeout = 1000) =>
+			view.ToPlatform().FocusView(timeout);
 
-#if !PLATFORM
-			return Task.CompletedTask;
-#else
-			return view.ToPlatform().FocusView(timeout);
-#endif
-		}
+		public static bool IsAccessibilityElement(this IView view) =>
+			view.ToPlatform().IsAccessibilityElement();
 
 
+		public static bool IsExcludedWithChildren(this IView view) =>
+			view.ToPlatform().IsExcludedWithChildren();
 #endif
 
 	}

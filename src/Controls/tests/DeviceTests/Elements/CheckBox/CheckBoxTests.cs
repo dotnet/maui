@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			checkBox.BackgroundColor = color;
 
-			await ValidateHasColor(checkBox, color);
+			await ValidateHasColor<CheckBoxHandler>(checkBox, color);
 		}
 	}
 }

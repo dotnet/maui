@@ -664,6 +664,22 @@ namespace Microsoft.Maui.Controls
 
 			return actual;
 		}
+
+		internal static bool HasVisualState(this VisualElement element, string name)
+		{
+			IList<VisualStateGroup> list = VisualStateManager.GetVisualStateGroups(element);
+			for (var i = 0; i < list.Count; i++)
+			{
+				VisualStateGroup group = list[i];
+				for (var j = 0; j < group.States.Count; j++)
+				{
+					if (group.States[j].Name == name)
+						return true;
+				}
+			}
+
+			return false;
+		}
 	}
 
 	internal class WatchAddList<T> : IList<T>
