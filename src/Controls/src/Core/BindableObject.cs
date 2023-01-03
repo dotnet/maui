@@ -539,15 +539,18 @@ namespace Microsoft.Maui.Controls
 
 		internal void ApplyBindings(bool skipBindingContext, bool fromBindingContextChanged)
 		{
-			var prop = _properties.Values.ToArray();
-			for (int i = 0, propLength = prop.Length; i < propLength; i++)
+			bool containsBindingContext = false;
+			var prop = _properties
+					   .Values
+					   .OrderByDescending(bpc => ReferenceEquals(bpc.Property, BindingContextProperty) && (containsBindingContext = true))
+					   .ToArray();
+
+			int i = skipBindingContext && containsBindingContext ? 1 : 0;
+			for (; i < prop.Length; i++)
 			{
 				BindablePropertyContext context = prop[i];
 				BindingBase binding = context.Binding;
 				if (binding == null)
-					continue;
-
-				if (skipBindingContext && ReferenceEquals(context.Property, BindingContextProperty))
 					continue;
 
 				binding.Unapply(fromBindingContextChanged: fromBindingContextChanged);

@@ -1663,6 +1663,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				throw new NotSupportedException($"{nameof(CountingConverter)}.{nameof(this.ConvertBack)}");
 			}
 		}
+		
+		[Fact]
+		public void PropertyBindingsOccurAfterBindingContextBinding()
+		{
+			var counting = new CountingConverter();
+			var vm = new MockViewModel("foobar");
+			var stackLayout = new VerticalStackLayout();
+			var label = new Label();
+
+			// SetBinding order is important to testing. See BindableObject.ApplyBindings(bool, bool)
+			label.SetBinding(
+				Label.TextProperty,
+				new Binding(Binding.SelfPath, BindingMode.OneWay, counting, nameof(Label.TextProperty)));
+			label.SetBinding(
+				Label.AutomationIdProperty,
+				new Binding(Binding.SelfPath, BindingMode.OneWay, counting, nameof(Label.AutomationIdProperty)));
+			label.SetBinding(
+				Label.BindingContextProperty,
+				new Binding("Text", BindingMode.OneWay, counting, nameof(Label.BindingContextProperty)));
+			
+			stackLayout.Add( label );
+
+			Assert.Collection(counting.Values,
+			                  item => Assert.Equal($"null {nameof(Label.TextProperty)}", item),
+			                  item => Assert.Equal($"null {nameof(Label.AutomationIdProperty)}", item));
+
+			counting.Values.Clear();
+			stackLayout.BindingContext = vm;
+			Assert.Collection(counting.Values, 
+							  item => Assert.Equal($"foobar {nameof(Label.BindingContextProperty)}", item),
+							  item => Assert.Equal($"foobar {nameof(Label.TextProperty)}", item),
+							  item => Assert.Equal($"foobar {nameof(Label.AutomationIdProperty)}", item));
+		}
 
 		[Fact]
 		public void PropertyBindingsUpdateWhenAddedAsChild()
