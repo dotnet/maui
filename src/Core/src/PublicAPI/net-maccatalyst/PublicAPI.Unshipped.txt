@@ -1,2 +1,3 @@
 #nullable enable
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
+static Microsoft.Maui.Keyboard.None.get -> Microsoft.Maui.Keyboard!

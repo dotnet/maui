@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Maui.Keyboard.None.get -> Microsoft.Maui.Keyboard!
