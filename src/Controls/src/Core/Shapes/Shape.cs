@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public abstract PathF GetPath();
 
-		internal abstract PathF GetPath(double width, double height);
+		const double FallbackWidth = 50;
+		const double FallbackHeight = 50;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='FillProperty']/Docs/*" />
 		public static readonly BindableProperty FillProperty =
@@ -175,17 +176,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
-			// If this View has been laid out, then it may have an actual Width
-			// or actual Height we can use when determining the Path. If Width/Height
-			// are -1 (the default value), then we fall back to viewBounds.
-
-			var width = Width;
-			width = width == -1 ? viewBounds.Width : width;
-
-			var height = Height;
-			height = height == -1 ? viewBounds.Height : height;
-
-			var path = GetPath(width, height);
+			var path = GetPath();
 
 #if !(NETSTANDARD || !PLATFORM)
 
@@ -341,6 +332,30 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			DesiredSize = result;
 			return result;
+		}
+
+		internal double WidthForPathComputation
+		{
+			get
+			{
+				var width = Width;
+
+				// If the shape has never been laid out, then Width won't actually have a value;
+				// use the fallback value instead.
+				return width == -1 ? Shape.FallbackWidth : width;
+			}
+		}
+
+		internal double HeightForPathComputation
+		{
+			get
+			{
+				var height = Height;
+				
+				// If the shape has never been laid out, then Height won't actually have a value;
+				// use the fallback value instead.
+				return height == -1 ? Shape.FallbackHeight : height;
+			}
 		}
 	}
 }
