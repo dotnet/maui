@@ -711,5 +711,102 @@ namespace Microsoft.Maui.Platform
 			}
 			return null;
 		}
+
+		internal static UIView? FindNextView(this UIView view, UIView superView, Type[] requestedTypes)
+		{
+			if (requestedTypes is null)
+				return null;
+
+			// calculate the original CGRect parameters once here instead of multiple times later
+			var originalRect = view.ConvertRectToView(view.Bounds, null);
+
+			var nextField = superView.SearchBestNextView(originalRect, null, requestedTypes);
+			return nextField;
+		}
+
+		static UIView? SearchBestNextView(this UIView view, CGRect originalRect, UIView? currentBest, Type[] requestedTypes)
+		{
+			foreach (var child in view.Subviews)
+			{
+				var inheritsType = false;
+
+				foreach (var t in requestedTypes)
+				{
+					if (child.GetType().IsSubclassOf(t) || child.GetType() == t)
+					{
+						inheritsType = true;
+						break;
+					}
+				}
+
+				if (inheritsType && child.CanBecomeFirstResponder())
+				{
+					if (TryFindNewBestView(originalRect, currentBest, child, out var newBest))
+						currentBest = newBest;
+				}
+
+				else if (child.Subviews.Length > 0 && !child.Hidden && child.Alpha > 0f)
+				{
+					var newBestChild = child.SearchBestNextView(originalRect, currentBest, requestedTypes);
+					if (newBestChild is not null && TryFindNewBestView(originalRect, currentBest, newBestChild, out var newBest))
+						currentBest = newBest;
+				}
+			}
+
+			return currentBest;
+		}
+
+		static bool TryFindNewBestView(CGRect originalRect, UIView? currentBest, UIView newView, out UIView newBest)
+		{
+			var currentBestRect = currentBest?.ConvertRectToView(currentBest.Bounds, null);
+			var newViewRect = newView.ConvertRectToView(newView.Bounds, null);
+
+			var cbrValue = currentBestRect.GetValueOrDefault();
+			newBest = newView;
+
+			if (originalRect.Top < newViewRect.Top &&
+				(currentBestRect is null || newViewRect.Top < cbrValue.Top))
+			{
+				return true;
+			}
+
+			else if (originalRect.Top == newViewRect.Top &&
+					 originalRect.Left < newViewRect.Left &&
+					 (currentBestRect is null || newViewRect.Left < cbrValue.Left))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		internal static void ChangeFocusedView(this UIView view, UIView? newView)
+		{
+			if (newView is null)
+				view.ResignFirstResponder();
+
+			else
+				newView.BecomeFirstResponder();
+		}
+
+		static bool CanBecomeFirstResponder(this UIView view)
+		{
+			var isFirstResponder = false;
+
+			switch (view)
+			{
+				case UITextView tview:
+					isFirstResponder = tview.Editable;
+					break;
+				case UITextField field:
+					isFirstResponder = field.Enabled;
+					break;
+				// add in other control enabled properties here as necessary
+				default:
+					break;
+			}
+
+			return isFirstResponder && !view.Hidden && view.Alpha != 0f;
+		}
 	}
 }
