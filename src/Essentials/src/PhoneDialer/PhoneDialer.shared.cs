@@ -21,7 +21,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// Will throw <see cref="FeatureNotSupportedException"/> if making phone calls is not supported on the device.
 		/// </remarks>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="number"/> is not valid.</exception>
-		/// <exception cref="FeatureNotSupportedException">Thrown if if making phone calls is not supported on the device.</exception>
+		/// <exception cref="FeatureNotSupportedException">Thrown if making phone calls is not supported on the device.</exception>
 		/// <param name="number">Phone number to initialize the dialer with.</param>
 		void Open(string number);
 	}
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// Will throw <see cref="FeatureNotSupportedException"/> if making phone calls is not supported on the device.
 		/// </remarks>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="number"/> is not valid.</exception>
-		/// <exception cref="FeatureNotSupportedException">Thrown if if making phone calls is not supported on the device.</exception>
+		/// <exception cref="FeatureNotSupportedException">Thrown if making phone calls is not supported on the device.</exception>
 		/// <param name="number">Phone number to initialize the dialer with.</param>
 		public static void Open(string number)
 			=> Current.Open(number);
