@@ -40,32 +40,6 @@ namespace Microsoft.Maui.DeviceTests
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
-		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
-		public async Task VerticalTextAlignmentInitializesCorrectily()
-		{
-			var xplatVerticalTextAlignment = TextAlignment.End;
-
-			var entry = new EntryStub
-			{
-				Text = "Test",
-				VerticalTextAlignment = xplatVerticalTextAlignment
-			};
-
-			UIControlContentVerticalAlignment expectedValue = UIControlContentVerticalAlignment.Bottom;
-
-			var values = await GetValueAsync(entry, (handler) =>
-			{
-				return new
-				{
-					ViewValue = entry.VerticalTextAlignment,
-					PlatformViewValue = GetNativeVerticalTextAlignment(handler)
-				};
-			});
-
-			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
-			values.PlatformViewValue.AssertHasFlag(expectedValue);
-		}
-
 		[Fact(DisplayName = "ReturnType Initializes Correctly")]
 		public async Task ReturnTypeInitializesCorrectly()
 		{
@@ -351,6 +325,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIControlContentVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).VerticalAlignment;
+
+		UIControlContentVerticalAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToPlatformVertical();
 
 		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ReturnKeyType;

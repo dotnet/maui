@@ -35,5 +35,11 @@ namespace Microsoft.Maui.Platform
 			}
 			return string.Format("#{0:X2}{1:X2}{2:X2}{3:X2}", c.R, c.G, c.B, c.A);
 		}
+
+		public static Color GetAccentColor(this Color color)
+		{
+			var grayscale = (color.Red + color.Green + color.Blue) / 3.0f;
+			return (grayscale > 0.6) || (color.Alpha < 0.5) ? Colors.Black : Colors.White;
+		}
 	}
 }
