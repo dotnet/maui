@@ -1,5 +1,4 @@
-﻿using Android.Widget;
-using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -8,10 +7,11 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this SearchView searchView, InputView inputView)
 		{
-			if (inputView.TextTransform == TextTransform.Default || inputView.TextTransform == TextTransform.None)
-				return;
+			var oldQuery = searchView.Query ?? string.Empty;
+			var newQuery = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
 
-			searchView.SetQuery((TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform)), false);
+			if (oldQuery != newQuery)
+				searchView.SetQuery(newQuery, false);
 		}
 	}
 }
