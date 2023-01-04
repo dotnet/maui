@@ -698,5 +698,18 @@ namespace Microsoft.Maui.Platform
 			if (stroke.CornerRadius >= 0)
 				layer.CornerRadius = stroke.CornerRadius;
 		}
+
+		internal static UIViewController? GetViewController<T>(this UIView view) where T : UIViewController
+		{
+			var nextResponder = view as UIResponder;
+			while (nextResponder is not null)
+			{
+				nextResponder = nextResponder.NextResponder;
+
+				if (nextResponder is T viewController)
+					return viewController;
+			}
+			return null;
+		}
 	}
 }

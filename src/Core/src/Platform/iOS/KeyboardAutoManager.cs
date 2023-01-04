@@ -6,6 +6,7 @@
  */
 
 using System.Collections.Generic;
+using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform;
@@ -13,29 +14,29 @@ namespace Microsoft.Maui.Platform;
 internal static class KeyboardAutoManager
 {
 	// you can provide a topView argument or it will try to find the ContainerViewController
-	internal static void GoToNextResponderOrResign(UIView view, UIView? topView = null)
+	internal static void GoToNextResponderOrResign(UIView view, UIView? topView = null, bool isEligibleOverride = false)
 	{
-		if (!view.CheckIfEligible())
+		if (!view.CheckIfEligible(isEligibleOverride))
 		{
 			view.ResignFirstResponder();
 			return;
 		}
 
-		var targetSuperview = topView ?? view.GetViewController()?.GetContainerViewController();
+		var targetSuperview = topView ?? view.GetViewController<ContainerViewController>()?.View;
 		if (targetSuperview is null)
 		{
 			view.ResignFirstResponder();
 			return;
 		}
 
-		var textFields = GetDeepResponderViews(targetSuperview);
-
-		view.MoveToNextField(textFields);
+		var nextField = view.FindNextField(targetSuperview);
+		view.MoveToNextField(nextField);
 	}
 
-	static bool CheckIfEligible(this UIView view)
+	static bool CheckIfEligible(this UIView view, bool isEligibleOverride)
 	{
-		if (view is UITextField field && field.ReturnKeyType == UIReturnKeyType.Next)
+		// have is isEligibleOverride flag since EntryCells have a default ReturnKeyType by default
+		if (view is UITextField field && (field.ReturnKeyType == UIReturnKeyType.Next || isEligibleOverride))
 			return true;
 		else if (view is UITextView)
 			return true;
@@ -43,61 +44,66 @@ internal static class KeyboardAutoManager
 		return false;
 	}
 
-	static UIView? GetContainerViewController(this UIViewController controller)
+	internal static UIView? FindNextField(this UIView view, UIView superView)
 	{
-		var curView = controller.View;
+		var originalRect = view.ConvertRectToView(view.Bounds, null);
+		var nextField = superView.SearchBestField(originalRect, null);
 
-		while (curView?.Superview is not null)
-		{
-			var curController = curView.GetViewController();
-			if (curController is ContainerViewController container)
-				return container.View;
-
-			curView = curView.Superview;
-		}
-
-		return null;
+		return nextField;
 	}
 
-	static void MoveToNextField (this UIView view, List<UIView> textFields)
+	static UIView? SearchBestField(this UIView view, CGRect originalRect, UIView? currentBest)
 	{
-		// get the index of the current textField and go to the next one
-		var currentIndex = textFields.FindIndex(v => v == view);
-		var nextIndex = currentIndex < textFields.Count - 1 ? currentIndex + 1 : -1;
-
-		if (nextIndex != -1)
-			textFields[nextIndex].BecomeFirstResponder();
-		else
-			view.ResignFirstResponder();
-	}
-
-	// Find all of the eligible UITextFields and UITextViews inside this view
-	internal static List<UIView> GetDeepResponderViews(UIView view)
-	{
-		var textItems = view.GetResponderViews();
-
-		textItems.Sort(new ResponderSorter());
-
-		return textItems;
-	}
-
-	static List<UIView> GetResponderViews(this UIView view)
-	{
-		var textItems = new List<UIView>();
-
 		foreach (var child in view.Subviews)
 		{
-			if (child is UITextField textField && child.CanBecomeFirstResponder())
-				textItems.Add(textField);
-
-			else if (child is UITextView textView && child.CanBecomeFirstResponder())
-				textItems.Add(textView);
+			if ((child is UITextField || child is UITextView) && child.CanBecomeFirstResponder())
+			{
+				if (TryFindNewBestField(originalRect, currentBest, child, out var newBest))
+					currentBest = newBest;
+			}
 
 			else if (child.Subviews.Length > 0 && !child.Hidden && child.Alpha > 0f)
-				textItems.AddRange(child.GetResponderViews());
+			{
+				var newBestChild = child.SearchBestField(originalRect, currentBest);
+				if (newBestChild is not null && TryFindNewBestField(originalRect, currentBest, newBestChild, out var newBest))
+					currentBest = newBest;
+			}
 		}
 
-		return textItems;
+		return currentBest;
+	}
+
+	static bool TryFindNewBestField(CGRect originalRect, UIView? currentBest, UIView newView, out UIView newBest)
+	{
+		var currentBestRect = currentBest?.ConvertRectToView(currentBest.Bounds, null);
+		var newViewRect = newView.ConvertRectToView(newView.Bounds, null);
+
+		var cbrValue = currentBestRect.GetValueOrDefault();
+		newBest = newView;
+
+		if (originalRect.Top < newViewRect.Top &&
+			(currentBestRect is null || newViewRect.Top < cbrValue.Top))
+		{
+			return true;
+		}
+
+		else if (originalRect.Top == newViewRect.Top &&
+				 originalRect.Left < newViewRect.Left &&
+				 (currentBestRect is null || newViewRect.Left < cbrValue.Left))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	static void MoveToNextField(this UIView view, UIView? newView)
+	{
+		if (newView is null)
+			view.ResignFirstResponder();
+
+		else
+			newView.BecomeFirstResponder();
 	}
 
 	static bool CanBecomeFirstResponder(this UIView view)
@@ -111,52 +117,8 @@ internal static class KeyboardAutoManager
 
 		return !isFirstResponder ? false :
 			!view.Hidden
-			&& view.Alpha != 0f
-			&& !view.IsAlertViewTextField();
-	}
-
-	static bool IsAlertViewTextField(this UIView view)
-	{
-		var alertViewController = view.GetViewController();
-
-		while (alertViewController is not null)
-		{
-			if (alertViewController is UIAlertController)
-				return true;
-
-			alertViewController = alertViewController.NextResponder as UIViewController;
-		}
-
-		return false;
-	}
-
-	static UIViewController? GetViewController(this UIView view)
-	{
-		var nextResponder = view as UIResponder;
-		while (nextResponder is not null)
-		{
-			nextResponder = nextResponder.NextResponder;
-
-			if (nextResponder is UIViewController viewController)
-				return viewController;
-		}
-		return null;
-	}
-
-	class ResponderSorter : Comparer<UIView>
-	{
-		public override int Compare(UIView? view1, UIView? view2)
-		{
-			if (view1 is null || view2 is null)
-				return 1;
-
-			var bound1 = view1.ConvertRectToView(view1.Bounds, null);
-			var bound2 = view2.ConvertRectToView(view2.Bounds, null);
-
-			if (bound1.Top != bound2.Top)
-				return bound1.Top < bound2.Top ? -1 : 1;
-			else
-				return bound1.Left < bound2.Left ? -1 : 1;
-		}
+			&& view.Alpha != 0f;
+			// && !view.IsAlertViewTextField();
+			// the above is in the original code but is not useful here
 	}
 }
