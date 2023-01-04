@@ -218,8 +218,7 @@ namespace Microsoft.Maui.Controls
 			else
 				context.Attributes &= ~BindableContextAttributes.IsSetFromStyle;
 
-			if (context.Binding != null)
-				context.Binding.Unapply();
+			context.Binding?.Unapply();
 
 			BindingBase oldBinding = context.Binding;
 			context.Binding = binding ?? throw new ArgumentNullException(nameof(binding));
@@ -237,13 +236,8 @@ namespace Microsoft.Maui.Controls
 			if (bpContext != null && ((bpContext.Attributes & BindableContextAttributes.IsManuallySet) != 0))
 				return;
 
-			object oldContext = bindable._inheritedContext;
-
-			if (ReferenceEquals(oldContext, value))
+			if (ReferenceEquals(bindable._inheritedContext, value))
 				return;
-
-			if (bpContext != null && oldContext == null)
-				oldContext = bpContext.Value;
 
 			if (bpContext != null && bpContext.Binding != null)
 			{
@@ -288,10 +282,7 @@ namespace Microsoft.Maui.Controls
 		{
 			foreach (var context in _properties.Values)
 			{
-				if (context.Binding == null)
-					continue;
-
-				context.Binding.Unapply();
+				context.Binding?.Unapply();
 			}
 		}
 
@@ -544,6 +535,7 @@ namespace Microsoft.Maui.Controls
 			bool containsBindingContext = false;
 			var prop = _properties
 					   .Values
+					   .Where(bpc => bpc.Binding != null)
 					   .OrderByDescending(bpc => ReferenceEquals(bpc.Property, BindingContextProperty) && (containsBindingContext = true))
 					   .ToArray();
 
@@ -551,24 +543,19 @@ namespace Microsoft.Maui.Controls
 			for (; i < prop.Length; i++)
 			{
 				BindablePropertyContext context = prop[i];
-				BindingBase binding = context.Binding;
-				if (binding == null)
-					continue;
 
-				binding.Unapply(fromBindingContextChanged: fromBindingContextChanged);
-				binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged: fromBindingContextChanged);
+				context.Binding.Unapply(fromBindingContextChanged: fromBindingContextChanged);
+				context.Binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged: fromBindingContextChanged);
 			}
 		}
 
 		static void BindingContextPropertyBindingChanging(BindableObject bindable, BindingBase oldBindingBase, BindingBase newBindingBase)
 		{
 			object context = bindable._inheritedContext;
-			var oldBinding = oldBindingBase as Binding;
-			var newBinding = newBindingBase as Binding;
 
-			if (context == null && oldBinding != null)
+			if (context == null && oldBindingBase is Binding oldBinding)
 				context = oldBinding.Context;
-			if (context != null && newBinding != null)
+			if (context != null && newBindingBase is Binding newBinding)
 				newBinding.Context = context;
 		}
 
