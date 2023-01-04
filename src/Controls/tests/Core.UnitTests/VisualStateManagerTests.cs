@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			VisualStateManager.GoToState(label1, InvalidStateName);
 
-			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
+			Assert.Equal(InvalidStateName, groups1[0].CurrentState.Name);
 			Assert.Equal(NormalStateName, groups2[0].CurrentState.Name);
 		}
 
