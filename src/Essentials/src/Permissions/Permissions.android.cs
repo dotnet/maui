@@ -195,6 +195,37 @@ namespace Microsoft.Maui.ApplicationModel
 				Task.FromResult(IsDeclaredInManifest(Manifest.Permission.BatteryStats) ? PermissionStatus.Granted : PermissionStatus.Denied);
 		}
 
+		public partial class Bluetooth : BasePlatformPermission
+		{
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+			{
+				get
+				{
+					var permissions = new List<(string, bool)>();
+
+					// When targeting Android 11 or lower, AccessFineLocation is required for Bluetooth.
+					// For Android 12 and above, it is optional.
+					if (Application.Context.ApplicationInfo.TargetSdkVersion <= BuildVersionCodes.R || IsDeclaredInManifest(Manifest.Permission.AccessFineLocation))
+						permissions.Add((Manifest.Permission.AccessFineLocation, true));
+
+#if __ANDROID_31__
+					if (OperatingSystem.IsAndroidVersionAtLeast(31) && Application.Context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.S)
+					{
+						// new runtime permissions on Android 12
+						if (IsDeclaredInManifest(Manifest.Permission.BluetoothScan))
+							permissions.Add((Manifest.Permission.BluetoothScan, true));
+						if (IsDeclaredInManifest(Manifest.Permission.BluetoothConnect))
+							permissions.Add((Manifest.Permission.BluetoothConnect, true));
+						if (IsDeclaredInManifest(Manifest.Permission.BluetoothAdvertise))
+							permissions.Add((Manifest.Permission.BluetoothAdvertise, true));
+					}
+#endif
+
+					return permissions.ToArray();
+				}
+			}
+		}
+
 		public partial class CalendarRead : BasePlatformPermission
 		{
 			public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
