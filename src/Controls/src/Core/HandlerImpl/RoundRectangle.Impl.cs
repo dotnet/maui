@@ -15,11 +15,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public override PathF GetPath()
 		{
-			return GetPath(Width, Height);
-		}
+			var width = WidthForPathComputation;
+			var height = HeightForPathComputation;
 
-		internal override PathF GetPath(double width, double height)
-		{
 			var path = new PathF();
 
 			float x = (float)StrokeThickness / 2;

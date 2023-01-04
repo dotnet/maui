@@ -29,10 +29,5 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			return path;
 		}
-
-		internal override PathF GetPath(double width, double height)
-		{
-			return GetPath();
-		}
 	}
 }
