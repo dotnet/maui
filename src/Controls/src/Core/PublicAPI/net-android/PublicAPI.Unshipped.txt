@@ -3,3 +3,18 @@
 Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper) -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper! commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
+~override Microsoft.Maui.Controls.FileImageSource.OnPropertyChanged(string propertyName = null) -> void
+~override Microsoft.Maui.Controls.Shapes.Ellipse.OnPropertyChanged(string propertyName = null) -> void
+~override Microsoft.Maui.Controls.Shapes.Line.OnPropertyChanged(string propertyName = null) -> void
+~override Microsoft.Maui.Controls.Shapes.Path.OnPropertyChanged(string propertyName = null) -> void
+~override Microsoft.Maui.Controls.Shapes.Polygon.OnPropertyChanged(string propertyName = null) -> void
+~override Microsoft.Maui.Controls.Shapes.Polyline.OnPropertyChanged(string propertyName = null) -> void
+~override Microsoft.Maui.Controls.Shapes.Rectangle.OnPropertyChanged(string propertyName = null) -> void
+~override Microsoft.Maui.Controls.Shapes.RoundRectangle.OnPropertyChanged(string propertyName = null) -> void
+override Microsoft.Maui.Controls.AdaptiveTrigger.OnAttached() -> void
+override Microsoft.Maui.Controls.AdaptiveTrigger.OnDetached() -> void
+override Microsoft.Maui.Controls.CompareStateTrigger.OnAttached() -> void
+override Microsoft.Maui.Controls.DeviceStateTrigger.OnAttached() -> void
+override Microsoft.Maui.Controls.OrientationStateTrigger.OnAttached() -> void
+override Microsoft.Maui.Controls.OrientationStateTrigger.OnDetached() -> void
+override Microsoft.Maui.Controls.StateTrigger.OnAttached() -> void
