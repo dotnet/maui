@@ -246,13 +246,13 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, (int)bitmap.Size.Width - 1, (int)bitmap.Size.Height - 1);
 		}
 
-		public static async Task<UIImage> AssertColorAtPoint(this UIView view, UIColor expectedColor, int x, int y)
+		public static async Task<UIImage> AssertColorAtPointAsync(this UIView view, UIColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<UIImage> AssertColorAtCenter(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtCenterAsync(this UIView view, UIColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
@@ -308,7 +308,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task AssertEqual(this UIImage bitmap, UIImage other)
+		public static Task AssertEqualAsync(this UIImage bitmap, UIImage other)
 		{
 			Assert.NotNull(bitmap);
 			Assert.NotNull(other);
