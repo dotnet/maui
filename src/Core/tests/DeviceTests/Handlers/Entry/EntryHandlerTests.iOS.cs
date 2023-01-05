@@ -107,7 +107,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await NextMovesHelper(() =>
 			{
-				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), entry1.ToPlatform().Superview);
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: entry1.ToPlatform().Superview);
 				Assert.True(entry2.IsFocused);
 			}, entry1, entry2);
 		}
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await NextMovesHelper(() =>
 			{
-				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), entry1.ToPlatform().Superview);
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: entry1.ToPlatform().Superview);
 				Assert.True(entry3.IsFocused);
 			}, entry1, entry2, entry3);
 		}
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await NextMovesHelper(() =>
 			{
-				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform(), entry.ToPlatform().Superview);
+				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform(), customSuperView: entry.ToPlatform().Superview);
 				Assert.True(editor.IsFocused);
 			}, entry, editor);
 		}
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await NextMovesHelper(() =>
 			{
-				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform(), entry.ToPlatform().Superview);
+				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform(), customSuperView: entry.ToPlatform().Superview);
 				Assert.True(editor2.IsFocused);
 			}, entry, editor1, editor2);
 		}
@@ -205,7 +205,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await NextMovesHelper(() =>
 			{
-				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform(), entry.ToPlatform().Superview);
+				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform(), customSuperView: entry.ToPlatform().Superview);
 				var uISearchBar = searchBar.Handler.PlatformView as UISearchBar;
 				Assert.True(uISearchBar.GetSearchTextField().IsFirstResponder);
 			}, entry, searchBar);

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform;
 
 internal static class KeyboardAutoManager
 {
-	internal static void GoToNextResponderOrResign(UIView view, bool isUnchangeableReturnKey = false)
+	internal static void GoToNextResponderOrResign(UIView view, bool isUnchangeableReturnKey = false, UIView? customSuperView = null)
 	{
 		if (!view.CheckIfEligible(isUnchangeableReturnKey))
 		{
@@ -20,7 +20,7 @@ internal static class KeyboardAutoManager
 			return;
 		}
 
-		var superview = view.GetViewController<ContainerViewController>()?.View;
+		var superview = customSuperView ?? view.GetViewController<ContainerViewController>()?.View;
 		if (superview is null)
 		{
 			view.ResignFirstResponder();
