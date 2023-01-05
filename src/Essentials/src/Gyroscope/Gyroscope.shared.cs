@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		/// <param name="x">X axis data.</param>
 		/// <param name="y">Y axis data.</param>
-		/// <param name="z">Z asix data.</param>
+		/// <param name="z">Z axis data.</param>
 		public GyroscopeData(double x, double y, double z)
 			: this((float)x, (float)y, (float)z)
 		{
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		/// <param name="x">X axis data.</param>
 		/// <param name="y">Y axis data.</param>
-		/// <param name="z">Z asix data.</param>
+		/// <param name="z">Z axis data.</param>
 		public GyroscopeData(float x, float y, float z) =>
 			AngularVelocity = new Vector3(x, y, z);
 
@@ -172,6 +172,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static bool operator !=(GyroscopeData left, GyroscopeData right) =>
 		   !left.Equals(right);
 
+		/// <inheritdoc cref="ValueType.GetHashCode"/>
 		public override int GetHashCode() =>
 			AngularVelocity.GetHashCode();
 

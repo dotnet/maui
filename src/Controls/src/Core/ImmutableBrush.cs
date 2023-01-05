@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -18,6 +19,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Color)GetValue(ColorProperty);
 			set { }
+		}
+
+		private protected override void OnParentChangingCore(Element oldParent, Element newParent)
+		{
+			throw new InvalidOperationException("Parent cannot be set on this Brush.");
 		}
 	}
 }

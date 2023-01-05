@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
@@ -167,17 +168,12 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdateBrushParent(Brush brush)
 		{
-			if (brush != null)
+			if (brush != null && brush is not ImmutableBrush)
 				brush.Parent = this;
 		}
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
-			if (HeightRequest < 0 && WidthRequest < 0)
-			{
-				Frame = viewBounds;
-			}
-
 			var path = GetPath();
 
 #if !(NETSTANDARD || !PLATFORM)

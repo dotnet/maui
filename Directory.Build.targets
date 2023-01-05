@@ -78,4 +78,13 @@
   -->
   <Import Project="src\Core\src\nuget\buildTransitive\WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
 
+    <!-- Packaging -->
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(LicenseFile)"
+          PackagePath="$([System.IO.Path]::GetFileName('$(LicenseFile)'))"
+          Pack="true" />
+    <None Include="$(PackageThirdPartyNoticesFile)"
+          PackagePath="$([System.IO.Path]::GetFileName('$(PackageThirdPartyNoticesFile)'))"
+          Pack="true" />
+  </ItemGroup>
 </Project>
