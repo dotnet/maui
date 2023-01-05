@@ -3,7 +3,7 @@ using System;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinition.xml" path="Type[@FullName='Microsoft.Maui.Controls.ColumnDefinition']/Docs/*" />
-	public sealed class ColumnDefinition : BindableObject, IDefinition, IGridColumnDefinition
+	public class ColumnDefinition : BindableObject, IDefinition, IGridColumnDefinition
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinition.xml" path="//Member[@MemberName='WidthProperty']/Docs/*" />
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(nameof(Width), typeof(GridLength), typeof(ColumnDefinition), GridLength.Star,

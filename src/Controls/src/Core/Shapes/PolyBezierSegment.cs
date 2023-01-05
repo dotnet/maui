@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyBezierSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PolyBezierSegment']/Docs/*" />
-	public sealed class PolyBezierSegment : PathSegment
+	public class PolyBezierSegment : PathSegment
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyBezierSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public PolyBezierSegment()

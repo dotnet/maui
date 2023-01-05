@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathFigure']/Docs/*" />
 	[ContentProperty("Segments")]
-	public sealed class PathFigure : BindableObject, IAnimatable
+	public class PathFigure : BindableObject, IAnimatable
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public PathFigure()

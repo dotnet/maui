@@ -4,7 +4,7 @@ using System.Globalization;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.CompareStateTrigger']/Docs/*" />
-	public sealed class CompareStateTrigger : StateTriggerBase
+	public class CompareStateTrigger : StateTriggerBase
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public CompareStateTrigger()

@@ -5,7 +5,7 @@ using System.Windows.Input;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.ClickGestureRecognizer']/Docs/*" />
-	public sealed class ClickGestureRecognizer : GestureRecognizer
+	public class ClickGestureRecognizer : GestureRecognizer
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(ClickGestureRecognizer), null);

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
 	/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.UriImageSource']/Docs/*" />
-	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
+	public partial class UriImageSource : ImageSource, IStreamImageSource
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='UriProperty']/Docs/*" />
 		public static readonly BindableProperty UriProperty = BindableProperty.Create(

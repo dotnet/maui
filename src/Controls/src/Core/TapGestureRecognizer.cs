@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.TapGestureRecognizer']/Docs/*" />
-	public sealed class TapGestureRecognizer : GestureRecognizer
+	public class TapGestureRecognizer : GestureRecognizer
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create("Command", typeof(ICommand), typeof(TapGestureRecognizer), null);

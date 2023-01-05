@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualStateGroup']/Docs/*" />
 	[RuntimeNameProperty(nameof(Name))]
 	[ContentProperty(nameof(States))]
-	public sealed class VisualStateGroup
+	public class VisualStateGroup
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public VisualStateGroup()
@@ -564,7 +564,7 @@ namespace Microsoft.Maui.Controls
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualState']/Docs/*" />
 	[RuntimeNameProperty(nameof(Name))]
-	public sealed class VisualState
+	public class VisualState
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public VisualState()

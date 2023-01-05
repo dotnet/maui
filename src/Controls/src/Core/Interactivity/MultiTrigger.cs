@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/MultiTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.MultiTrigger']/Docs/*" />
 	[ContentProperty("Setters")]
-	public sealed class MultiTrigger : TriggerBase
+	public class MultiTrigger : TriggerBase
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/MultiTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public MultiTrigger([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new MultiCondition(), targetType)

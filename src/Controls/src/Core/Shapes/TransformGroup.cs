@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TransformGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.TransformGroup']/Docs/*" />
 	[ContentProperty("Children")]
-	public sealed class TransformGroup : Transform
+	public class TransformGroup : Transform
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TransformGroup.xml" path="//Member[@MemberName='ChildrenProperty']/Docs/*" />
 		public static readonly BindableProperty ChildrenProperty =

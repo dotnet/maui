@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.EventTrigger']/Docs/*" />
 	[ContentProperty("Actions")]
-	public sealed class EventTrigger : TriggerBase
+	public class EventTrigger : TriggerBase
 	{
 		static readonly MethodInfo s_handlerinfo = typeof(EventTrigger).GetRuntimeMethods().Single(mi => mi.Name == "OnEventTriggered" && mi.IsPublic == false);
 		readonly List<BindableObject> _associatedObjects = new List<BindableObject>();

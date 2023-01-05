@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Provides pointer gesture recognition and events.
 	/// </summary>
-	public sealed class PointerGestureRecognizer : GestureRecognizer
+	public class PointerGestureRecognizer : GestureRecognizer
 	{
 		/// <summary>
 		/// The command to invoke when the pointer has entered the view. This is a bindable property.

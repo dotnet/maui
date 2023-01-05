@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polyline']/Docs/*" />
-	public sealed partial class Polyline : Shape
+	public partial class Polyline : Shape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Polyline() : base()

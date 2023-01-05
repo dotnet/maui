@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("Setters")]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.PassthroughValueProvider")]
 	[AcceptEmptyServiceProvider]
-	public sealed class Trigger : TriggerBase, IValueProvider
+	public class Trigger : TriggerBase, IValueProvider
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Trigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Trigger([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new PropertyCondition(), targetType)

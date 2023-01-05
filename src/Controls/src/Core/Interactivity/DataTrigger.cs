@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("Setters")]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.PassthroughValueProvider")]
 	[AcceptEmptyServiceProvider]
-	public sealed class DataTrigger : TriggerBase, IValueProvider
+	public class DataTrigger : TriggerBase, IValueProvider
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public DataTrigger([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new BindingCondition(), targetType)

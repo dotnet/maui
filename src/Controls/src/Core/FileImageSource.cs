@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.FileImageSource']/Docs/*" />
 	[System.ComponentModel.TypeConverter(typeof(FileImageSourceConverter))]
-	public sealed partial class FileImageSource : ImageSource
+	public partial class FileImageSource : ImageSource
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSource.xml" path="//Member[@MemberName='FileProperty']/Docs/*" />
 		public static readonly BindableProperty FileProperty = BindableProperty.Create("File", typeof(string), typeof(FileImageSource), default(string));

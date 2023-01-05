@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Line']/Docs/*" />
-	public sealed partial class Line : Shape
+	public partial class Line : Shape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Line() : base()

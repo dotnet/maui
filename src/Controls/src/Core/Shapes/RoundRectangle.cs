@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed partial class RoundRectangle : Shape
+	public partial class RoundRectangle : Shape
 	{
 		public RoundRectangle() : base()
 		{

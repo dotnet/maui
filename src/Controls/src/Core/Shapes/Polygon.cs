@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polygon']/Docs/*" />
-	public sealed partial class Polygon : Shape
+	public partial class Polygon : Shape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Polygon() : base()

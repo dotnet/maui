@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.AdaptiveTrigger']/Docs/*" />
-	public sealed class AdaptiveTrigger : StateTriggerBase
+	public class AdaptiveTrigger : StateTriggerBase
 	{
 		VisualElement? _visualElement;
 		Window? _window;

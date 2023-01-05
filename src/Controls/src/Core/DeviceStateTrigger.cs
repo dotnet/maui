@@ -3,7 +3,7 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.DeviceStateTrigger']/Docs/*" />
-	public sealed class DeviceStateTrigger : StateTriggerBase
+	public class DeviceStateTrigger : StateTriggerBase
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public DeviceStateTrigger()

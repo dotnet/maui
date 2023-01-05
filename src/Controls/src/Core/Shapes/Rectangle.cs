@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Rectangle']/Docs/*" />
-	public sealed partial class Rectangle : Shape
+	public partial class Rectangle : Shape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Rectangle() : base()

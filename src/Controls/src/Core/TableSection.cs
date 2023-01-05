@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableSection']/Docs/*" />
-	public sealed class TableSection : TableSectionBase<Cell>
+	public class TableSection : TableSectionBase<Cell>
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public TableSection()

@@ -4,7 +4,7 @@ using System.Windows.Input;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeGestureRecognizer']/Docs/*" />
-	public sealed class SwipeGestureRecognizer : GestureRecognizer, ISwipeGestureController
+	public class SwipeGestureRecognizer : GestureRecognizer, ISwipeGestureController
 	{
 		// Default threshold in pixels before a swipe is detected.
 		const uint DefaultSwipeThreshold = 100;

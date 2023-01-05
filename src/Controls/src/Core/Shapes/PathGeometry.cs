@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathGeometry']/Docs/*" />
 	[ContentProperty("Figures")]
-	public sealed class PathGeometry : Geometry
+	public class PathGeometry : Geometry
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public PathGeometry()

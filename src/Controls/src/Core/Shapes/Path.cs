@@ -4,7 +4,7 @@ using System.ComponentModel;
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Path']/Docs/*" />
-	public sealed partial class Path : Shape
+	public partial class Path : Shape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Path() : base()

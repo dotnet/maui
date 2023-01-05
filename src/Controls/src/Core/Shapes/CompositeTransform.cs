@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.CompositeTransform']/Docs/*" />
-	public sealed class CompositeTransform : Transform
+	public class CompositeTransform : Transform
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='CenterXProperty']/Docs/*" />
 		public static readonly BindableProperty CenterXProperty =

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="Type[@FullName='Microsoft.Maui.Controls.Style']/Docs/*" />
 	[ContentProperty(nameof(Setters))]
-	public sealed class Style : IStyle
+	public class Style : IStyle
 	{
 		internal const string StyleClassPrefix = "Microsoft.Maui.Controls.StyleClass.";
 

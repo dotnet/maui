@@ -4,7 +4,7 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.OrientationStateTrigger']/Docs/*" />
-	public sealed class OrientationStateTrigger : StateTriggerBase
+	public class OrientationStateTrigger : StateTriggerBase
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public OrientationStateTrigger()
