@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="Type[@FullName='Microsoft.Maui.Controls.PropertyCondition']/Docs/*" />
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.PassthroughValueProvider")]
 	[AcceptEmptyServiceProvider]
-	public sealed class PropertyCondition : Condition, IValueProvider
+	public class PropertyCondition : Condition, IValueProvider
 	{
 		readonly BindableProperty _stateProperty;
 
