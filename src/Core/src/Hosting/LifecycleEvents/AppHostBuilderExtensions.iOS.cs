@@ -49,7 +49,6 @@ namespace Microsoft.Maui.LifecycleEvents
 					});
 
 
-
 			// Pre iOS 13 doesn't support scenes
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				return;

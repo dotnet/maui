@@ -2084,9 +2084,6 @@ override Microsoft.Maui.Handlers.RadioButtonHandler.SetVirtualView(Microsoft.Mau
 override Microsoft.Maui.Handlers.RefreshViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiRefreshView! platformView) -> void
 override Microsoft.Maui.Handlers.RefreshViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiRefreshView!
 override Microsoft.Maui.Handlers.RefreshViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiRefreshView! platformView) -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.ConnectHandler(UIKit.UIScrollView! platformView) -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.CreatePlatformView() -> UIKit.UIScrollView!
-override Microsoft.Maui.Handlers.ScrollViewHandler.DisconnectHandler(UIKit.UIScrollView! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.SearchBarHandler.ConnectHandler(Microsoft.Maui.Platform.MauiSearchBar! platformView) -> void

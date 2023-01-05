@@ -4,6 +4,11 @@ Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
+Microsoft.Maui.Platform.MauiScrollView
+Microsoft.Maui.Platform.MauiScrollView.MauiScrollView() -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiScrollView! platformView) -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiScrollView!
+override Microsoft.Maui.Handlers.ScrollViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiScrollView! platformView) -> void
 override Microsoft.Maui.Handlers.SwipeItemButton.Frame.get -> CoreGraphics.CGRect
 override Microsoft.Maui.Handlers.SwipeItemButton.Frame.set -> void
 override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.ConnectHandler(UIKit.UIButton! platformView) -> void
@@ -11,6 +16,7 @@ override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.DisconnectHandler(UIKi
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.MauiScrollView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void
 override Microsoft.Maui.Platform.MauiTextView.Font.get -> UIKit.UIFont?
 override Microsoft.Maui.Platform.MauiTextView.Font.set -> void
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool

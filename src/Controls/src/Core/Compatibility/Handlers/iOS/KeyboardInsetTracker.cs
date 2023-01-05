@@ -35,8 +35,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_targetView = targetView;
 			_fetchWindow = fetchWindow;
 			_setInsetAction = setInsetAction;
-			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillShow += OnKeyboardShown;
-			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillHide += OnKeyboardHidden;
 			if (renderer != null)
 				_shellScrollViewTracker = new ShellScrollViewTracker(renderer);
 		}
@@ -47,9 +45,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			_disposed = true;
-
-			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillShow -= OnKeyboardShown;
-			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillHide -= OnKeyboardHidden;
 
 			_shellScrollViewTracker?.Dispose();
 			_shellScrollViewTracker = null;
@@ -99,19 +94,5 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		public void OnLayoutSubviews() => _shellScrollViewTracker?.OnLayoutSubviews();
-
-		void OnKeyboardHidden(object sender, UIKeyboardEventArgs args)
-		{
-			if (_shellScrollViewTracker == null || !_shellScrollViewTracker.Reset())
-				_setInsetAction(new UIEdgeInsets(0, 0, 0, 0));
-
-			_lastKeyboardRect = RectangleF.Empty;
-		}
-
-		void OnKeyboardShown(object sender, UIKeyboardEventArgs args)
-		{
-			_lastKeyboardRect = args.FrameEnd;
-			UpdateInsets();
-		}
 	}
 }
