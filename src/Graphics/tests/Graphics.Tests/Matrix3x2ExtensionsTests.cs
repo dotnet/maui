@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Graphics.Tests
 			var t = reference.GetTranslation();
 
 			AssertEqual(refScale, s, 5);
-			Assert.Equal(refRot, r, 5);
+			Assert.Equal(refRot, r, 5f);
 			AssertEqual(refTrans, t, 5);
 
 			var m = Matrix3x2Extensions.CreateMatrix3x2(s, r, t);
@@ -126,11 +126,11 @@ namespace Microsoft.Maui.Graphics.Tests
 			var m = Matrix3x2.CreateRotation(2);
 
 			m = m.WithScale(new Vector2(3, 4));
-			Assert.Equal(2, m.GetRotation(), 4);
+			Assert.Equal(2f, m.GetRotation(), 4f);
 			AssertEqual(new Vector2(3, 4), m.GetScale(), 5);
 
 			m = m.WithScale(new Vector2(2, 2));
-			Assert.Equal(2, m.GetRotation(), 4);
+			Assert.Equal(2f, m.GetRotation(), 4f);
 			AssertEqual(new Vector2(2, 2), m.GetScale(), 5);
 		}
 
@@ -141,23 +141,23 @@ namespace Microsoft.Maui.Graphics.Tests
 			{
 				var rm = Matrix3x2.CreateRotation(r);
 
-				Assert.Equal(1, (Matrix3x2.CreateScale(1, 1) * rm).GetLengthScale(), 6);
-				Assert.Equal(1, (Matrix3x2.CreateScale(-1, -1) * rm).GetLengthScale(), 6);
-				Assert.Equal(2, (Matrix3x2.CreateScale(2, 2) * rm).GetLengthScale(), 6);
-				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(1, 2) * rm).GetLengthScale(), 5);
-				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(2, 1) * rm).GetLengthScale(), 5);
-				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(-2, 1) * rm).GetLengthScale(), 5);
+				Assert.Equal(1f, (Matrix3x2.CreateScale(1, 1) * rm).GetLengthScale(), 6f);
+				Assert.Equal(1f, (Matrix3x2.CreateScale(-1, -1) * rm).GetLengthScale(), 6f);
+				Assert.Equal(2f, (Matrix3x2.CreateScale(2, 2) * rm).GetLengthScale(), 6f);
+				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(1, 2) * rm).GetLengthScale(), 5f);
+				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(2, 1) * rm).GetLengthScale(), 5f);
+				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(-2, 1) * rm).GetLengthScale(), 5f);
 			}
 		}
 
 
-		private static void AssertEqual(Vector2 a, Vector2 b, int precision)
+		private static void AssertEqual(Vector2 a, Vector2 b, float precision)
 		{
 			Assert.Equal(a.X, b.X, precision);
 			Assert.Equal(a.Y, b.Y, precision);
 		}
 
-		private static void AssertEqual(Matrix3x2 a, Matrix3x2 b, int precision)
+		private static void AssertEqual(Matrix3x2 a, Matrix3x2 b, float precision)
 		{
 			Assert.Equal(a.M11, b.M11, precision);
 			Assert.Equal(a.M21, b.M21, precision);
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Graphics.Tests
 			Assert.Equal(a.M32, b.M32, precision);
 		}
 
-		private static void AssertOrthogonal(Matrix3x2 transform, int precission)
+		private static void AssertOrthogonal(Matrix3x2 transform, float precission)
 		{
 			var x = Vector2.Normalize(new Vector2(transform.M11, transform.M12));
 			var y = Vector2.Normalize(new Vector2(transform.M21, transform.M22));
