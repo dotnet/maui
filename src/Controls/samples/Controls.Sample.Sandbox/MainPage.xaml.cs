@@ -14,5 +14,10 @@ namespace Maui.Controls.Sample
 		{
 			InitializeComponent();
 		}
+
+		private void LoginButton_Clicked(object sender, EventArgs e)
+		{
+			StatusLabel.Text = "Logging in " + DateTime.Now.ToString("HH:mm:ss");
+		}
 	}
 }

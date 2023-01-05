@@ -257,6 +257,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests.Shared", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.DeviceTests", "src\Graphics\tests\DeviceTests\Graphics.DeviceTests.csproj", "{34969E49-FA6E-41BB-9813-5689BB14021E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maui.Controls.Sample.Sandbox.AppiumTests", "src\Controls\tests\Maui.Controls.Sample.Sandbox.AppiumTests\Maui.Controls.Sample.Sandbox.AppiumTests.csproj", "{A23B108A-AB56-4692-B9DA-0E23602E3955}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -645,6 +647,10 @@ Global
 		{34969E49-FA6E-41BB-9813-5689BB14021E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34969E49-FA6E-41BB-9813-5689BB14021E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{34969E49-FA6E-41BB-9813-5689BB14021E}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{A23B108A-AB56-4692-B9DA-0E23602E3955}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A23B108A-AB56-4692-B9DA-0E23602E3955}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A23B108A-AB56-4692-B9DA-0E23602E3955}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A23B108A-AB56-4692-B9DA-0E23602E3955}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -764,6 +770,7 @@ Global
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{66CC98E3-6A1A-4C44-A23C-B575E82106EC} = {C564DDD6-DE79-45CD-88EA-3F690481572A}
 		{34969E49-FA6E-41BB-9813-5689BB14021E} = {936C47A9-A7EA-4FBD-8733-CED1D4100E69}
+		{A23B108A-AB56-4692-B9DA-0E23602E3955} = {E1082E26-D700-4127-9329-66D673FD2D55}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
