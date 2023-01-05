@@ -1,5 +1,6 @@
 using System;
 using Xunit;
+using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -70,7 +71,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IButtonController)view).SendReleased();
 
-			Assert.True(released == isEnabled ? true : false);
+			// Released should always fire, even if the button is disabled
+			// Otherwise, a press which disables a button will leave it in the
+			// Pressed state forever
+			Assert.True(released);
 		}
 
 		protected override Button CreateSource()
@@ -229,6 +233,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(layout1.Position, bcl.Position);
 			Assert.Equal(layout1.Spacing, bcl.Spacing);
+		}
+
+		[Fact]
+		public void PressedVisualState()
+		{
+			var vsgList = CreateTestStateGroups();
+			var stateGroup = vsgList[0];
+			var element = new Button();
+			VisualStateManager.SetVisualStateGroups(element, vsgList);
+
+			element.SendPressed();
+			Assert.Equal(stateGroup.CurrentState.Name, PressedStateName);
+			
+			element.SendReleased();
+			Assert.NotEqual(stateGroup.CurrentState.Name, PressedStateName);
 		}
 	}
 }
