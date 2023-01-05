@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 
@@ -180,7 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		Task RunWindowTest(Window window, Func<IWindowHandler, Task> action)
+		async Task RunWindowTest(Window window, Func<IWindowHandler, Task> action)
 		{
 			var created = new TaskCompletionSource();
 			var activated = new TaskCompletionSource();
@@ -192,35 +191,48 @@ namespace Microsoft.Maui.DeviceTests
 
 			var app = Application.Current;
 
-			return InvokeOnMainThreadAsync(async () =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
+				// open the window
 				app.OpenWindow(window);
 
+				// wait for the window to be created
 				await created.Task;
 				await Task.WhenAny(activated.Task, Task.Delay(3000));
 
+#if MACCATALYST
+				// wait a bit longer for the window to be visible
+				var retry = 5;
 				var windowHandler = window.Handler as IWindowHandler;
 				var platformWindow = windowHandler.PlatformView;
-
-#if MACCATALYST
-				var retry = 5;
 				while (!platformWindow.HasNSWindow() && retry-- > 0)
 				{
 					await Task.Delay(100);
 				}
 #endif
+			});
 
-				try
+
+			try
+			{
+				// run the actual code
+				await InvokeOnMainThreadAsync(async () =>
 				{
+					var windowHandler = window.Handler as IWindowHandler;
 					await action(windowHandler);
-				}
-				finally
+				});
+			}
+			finally
+			{
+				await InvokeOnMainThreadAsync(async () =>
 				{
+					// close the window
 					app.CloseWindow(window);
 
+					// wait for the window to be destroyed
 					await destroying.Task;
-				}
-			});
+				});
+			}
 
 			void OnWindowCreated(object sender, EventArgs e) =>
 				created.TrySetResult();
