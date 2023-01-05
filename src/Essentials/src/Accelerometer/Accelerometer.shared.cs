@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		///	Equality operator for equals.
 		/// </summary>
 		/// <param name="left">Left to compare.</param>
-		/// <param name="right">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
 		/// <returns><see langword="true"/> if objects are equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator ==(AccelerometerData left, AccelerometerData right) =>
 			left.Equals(right);
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Inequality operator.
 		/// </summary>
 		/// <param name="left">Left to compare.</param>
-		/// <param name="right">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
 		/// <returns><see langword="true"/> if objects are not equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator !=(AccelerometerData left, AccelerometerData right) =>
 			!left.Equals(right);
