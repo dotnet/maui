@@ -386,12 +386,14 @@
         </PropertyGroup>
         <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
+            <_MauiSplashStoryboard Include="$(_MauiIntermediateStoryboard)" />
+            <_MauiSplashImages Include="@(_MauiSplashAssets)" Exclude="@(_MauiSplashStoryboard)" />
             <!-- Add the launch storyboard file -->
-            <InterfaceDefinition Include="$(_MauiIntermediateStoryboard)" Link="$([System.IO.Path]::GetFileName($(_MauiIntermediateStoryboard)))" />
+            <InterfaceDefinition Include="@(_MauiSplashStoryboard)" Link="%(Filename)%(Extension)" />
             <!-- Add the splash screen images to BundleResource -->
-            <BundleResource Include="@(_MauiSplashAssets->'%(FullPath)')" Exclude="$(_MauiIntermediateStoryboard)">
-                <LogicalName>%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</LogicalName>
-                <TargetPath>%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</TargetPath>
+            <BundleResource Include="@(_MauiSplashImages->'%(FullPath)')">
+                <LogicalName>%(_MauiSplashImages.Filename)%(_MauiSplashImages.Extension)</LogicalName>
+                <TargetPath>%(_MauiSplashImages.Filename)%(_MauiSplashImages.Extension)</TargetPath>
             </BundleResource>
         </ItemGroup>
         <!-- If on Windows, using build host, copy the files over to build server host too -->
