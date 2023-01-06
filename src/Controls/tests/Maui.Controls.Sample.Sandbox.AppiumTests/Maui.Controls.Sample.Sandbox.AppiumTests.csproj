@@ -8,6 +8,12 @@
     <SingleProject>true</SingleProject>
   </PropertyGroup>
 
+   <PropertyGroup>
+    <ApplicationTitle>Controls Appium Tests</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.controls.sandbox.appiumtests</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
@@ -24,10 +30,6 @@
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.3.0" />
     <PackageReference Include="Xamarin.UITest" Version="4.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="NewFolder\" />
   </ItemGroup>
 
 </Project>

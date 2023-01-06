@@ -1,14 +1,12 @@
 ﻿using NUnit.Framework;
 using OpenQA.Selenium.Appium;
-using OpenQA.Selenium;
-using Maui.Controls.Sample.Sandbox.Tests;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
-	[TestFixture]
-	public class MainPageTests : BaseTest
+	public class MainPageTests : AppiumPlatformsTestBase
 	{
-		public MainPageTests() : base(nameof(MainPageTests))
+
+		public MainPageTests(TestDevice testDevice) : base(testDevice)
 		{
 
 		}

@@ -16,15 +16,34 @@ using Xamarin.UITest;
 using Maui.Controls.Sample.Sandbox.AppiumTests.Tests;
 using Microsoft.AspNetCore.Components;
 
-namespace Maui.Controls.Sample.Sandbox.Tests
+namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
+	[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.iOS)]
+	[TestFixture(TestDevice.Mac)]
+	[TestFixture(TestDevice.Windows)]
+	public class AppiumPlatformsTestBase : AppiumTestBase
+	{
+		public AppiumPlatformsTestBase(TestDevice device)
+		{
+			_testDevice = device;
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			//this crashes on Android
+			Driver?.ResetApp();
+		}
+	}
+
 	[SetUpFixture]
-	public class BaseTest
+	public class AppiumTestBase
 	{
 		protected AppiumDriver? Driver;
 		readonly AppiumOptions appiumOptions;
 		readonly Uri _driverUri;
-		readonly TestDevice _testDevice = TestDevice.Mac;
+		internal TestDevice _testDevice;
 		string? _appId;
 		IApp? _app;
 
@@ -32,15 +51,14 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 
 		public bool IsAndroid => Driver == null ? false : Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
 
-
-		public BaseTest(string testName)
+		public AppiumTestBase()
 		{
 			_driverUri = new Uri("http://localhost:4723/wd/hub");
 
 			appiumOptions = new AppiumOptions();
 			appiumOptions.AddAdditionalAppiumOption("reportDirectory", "reports");
 			appiumOptions.AddAdditionalAppiumOption("reportFormat", "xml");
-			appiumOptions.AddAdditionalAppiumOption("testName", testName);
+		//	appiumOptions.AddAdditionalAppiumOption("testName", testName);
 			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "false");
 		}
 
@@ -59,7 +77,7 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 		}
 
 		[OneTimeTearDown()]
-		public void TearDown()
+		public void OneTimeTearDown()
 		{
 			Driver?.Quit();
 		}

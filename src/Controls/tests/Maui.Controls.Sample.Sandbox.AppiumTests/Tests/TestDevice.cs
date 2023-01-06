@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
+namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
 	public enum TestDevice
 	{
