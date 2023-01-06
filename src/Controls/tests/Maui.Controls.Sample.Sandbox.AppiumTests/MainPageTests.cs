@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 	{
 		public MainPageTests() : base(nameof(MainPageTests))
 		{
-			
+
 		}
 
 		[Test()]
@@ -18,27 +18,32 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		{
 			if (Driver == null)
 				throw new InvalidOperationException("no appium driver");
-			//App?.WaitForElement("btnLogin");
-			//App?.EnterText("entryUsername", "user@email.com");
-			if (IsAndroid)
-			{
-				Driver.FindElement(By.Id("com.microsoft.maui.sandbox:id/entryUsername")).SendKeys("user@email.com");
-				Driver.FindElement(By.Id("com.microsoft.maui.sandbox:id/entryPassword")).SendKeys("password");
-				Driver.FindElement(By.Id("com.microsoft.maui.sandbox:id/btnLogin")).Click();
-			}
-			else
-			{
-				Driver.FindElement(By.Id("entryUsername")).SendKeys("user@email.com");
-				Driver.FindElement(By.Id("entryPassword")).SendKeys("password");
-				Driver.FindElement(By.Id("btnLogin")).Click();
-				
-			}
-			//appiumDriver.FindElement(By.Id("com.microsoft.maui.sandbox:id/btnLogin")).Click();
-			var text = Driver.FindElement(By.Id("lblStatus")).Text;
+
+			Driver.FindElement(By.Id(GetElementId("entryUsername"))).SendKeys("user@email.com");
+			Driver.FindElement(By.Id(GetElementId("entryPassword"))).SendKeys("password");
+			Driver.FindElement(By.Id(GetElementId("btnLogin"))).Click();
+			var text = Driver.FindElement(By.Id(GetElementId("lblStatus"))).Text;
 
 			Assert.IsNotNull(text);
 			Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
 		}
+
+		[Test()]
+		public void TestLoginUITest()
+		{
+			if (Driver == null)
+				throw new InvalidOperationException("no appium driver");
+			App?.WaitForElement("btnLogin");
+			App?.EnterText("entryUsername", "user@email.com");
+			App?.EnterText("entryPassword", "password");
+			App?.Tap("btnLogin");
+			var lblStatus = App?.WaitForElement("lblStatus").FirstOrDefault();
+			var text = lblStatus?.Text;
+
+			Assert.IsNotNull(text);
+			Assert.IsTrue(text?.StartsWith("Logging in", StringComparison.CurrentCulture));
+		}
+
 
 		//[Test()]
 		//public void TestAddItem()
