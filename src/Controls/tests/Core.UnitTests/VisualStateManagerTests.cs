@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
 
-			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -50,13 +50,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotSame(groups1, groups2);
 
-			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
-			Assert.Equal(groups2[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
+			Assert.Equal(NormalStateName, groups2[0].CurrentState.Name);
 
 			VisualStateManager.GoToState(label1, InvalidStateName);
 
-			Assert.Equal(groups1[0].CurrentState.Name, InvalidStateName);
-			Assert.Equal(groups2[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(InvalidStateName, groups1[0].CurrentState.Name);
+			Assert.Equal(NormalStateName, groups2[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -80,13 +80,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotSame(groups1, groups2);
 
-			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
-			Assert.Equal(groups2[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
+			Assert.Equal(NormalStateName, groups2[0].CurrentState.Name);
 
 			VisualStateManager.GoToState(label1, InvalidStateName);
 
-			Assert.Equal(groups1[0].CurrentState.Name, InvalidStateName);
-			Assert.Equal(groups2[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(InvalidStateName, groups1[0].CurrentState.Name);
+			Assert.Equal(NormalStateName, groups2[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -176,26 +176,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			VisualStateManager.SetVisualStateGroups(label1, CreateTestStateGroups());
 
 			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
 
 			label1.IsEnabled = false;
 
 			groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.Equal(groups1[0].CurrentState.Name, DisabledStateName);
+			Assert.Equal(DisabledStateName, groups1[0].CurrentState.Name);
 
 
 			label1.SetValue(VisualElement.IsFocusedPropertyKey, true);
 			groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.Equal(groups1[0].CurrentState.Name, DisabledStateName);
+			Assert.Equal(DisabledStateName, groups1[0].CurrentState.Name);
 
 			label1.IsEnabled = true;
 			groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.Equal(groups1[0].CurrentState.Name, FocusedStateName);
+			Assert.Equal(FocusedStateName, groups1[0].CurrentState.Name);
 
 
 			label1.SetValue(VisualElement.IsFocusedPropertyKey, false);
 			groups1 = VisualStateManager.GetVisualStateGroups(label1);
-			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
