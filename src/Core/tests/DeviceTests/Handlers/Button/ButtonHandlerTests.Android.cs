@@ -157,15 +157,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		TextUtils.TruncateAt GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Ellipsize;
-
-		Task ValidateHasColor(IButton button, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformButton = GetNativeButton(CreateHandler(button));
-				action?.Invoke();
-				platformButton.AssertContainsColor(color);
-			});
-		}
 	}
 }
