@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -428,9 +429,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-		[Fact(DisplayName = "TitleView Causes a Crash When Switching Tabs")]
-		public async Task TitleViewCausesACrashWhenSwitchingTabs()
+		[Fact(DisplayName = "TitleView Updates to Currently Visible Page")]
+		public async Task TitleViewUpdateToCurrentlyVisiblePage()
 		{
 			SetupBuilder();
 
@@ -474,27 +474,74 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				await OnLoadedAsync(page1);
-				// GotoAsync which switching tabs/flyout items currently
-				// doesn't resolve after navigated has finished which is why we have the
-				// delays
-				// https://github.com/dotnet/maui/issues/6193
 				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
 				await shell.GoToAsync("//Item2");
-				await Task.Delay(200);
-				await OnLoadedAsync(page2);
-				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
+
+				Assert.True(await AssertionExtensions.Wait(() => titleView2.Handler != null && titleView2.ToPlatform() == GetTitleView(handler)));
 				await shell.GoToAsync("//Item1");
-				await Task.Delay(200);
-				await OnLoadedAsync(page1);
-				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
+
+				Assert.True(await AssertionExtensions.Wait(() => titleView1.Handler != null && titleView1.ToPlatform() == GetTitleView(handler)));
 				await shell.GoToAsync("//Item2");
-				await Task.Delay(200);
-				await OnLoadedAsync(page2);
-				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
+
+				Assert.True(await AssertionExtensions.Wait(() => titleView2.Handler != null && titleView2.ToPlatform() == GetTitleView(handler)));
 				await shell.GoToAsync("//Item3");
-				await Task.Delay(200);
-				await OnLoadedAsync(page3);
-				Assert.Equal(shellTitleView.ToPlatform(), GetTitleView(handler));
+
+				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.Handler != null && shellTitleView.ToPlatform() == GetTitleView(handler)));
+			});
+		}
+
+
+		[Fact(DisplayName = "TitleView Set On Shell Works After Navigation")]
+		public async Task TitleViewSetOnShellWorksAfterNavigation()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+			var page3 = new ContentPage();
+
+			var shellTitleView = new Editor();
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				Shell.SetTitleView(shell, shellTitleView);
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page1);
+				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+
+				await shell.GoToAsync("//Item2");
+				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+
+				await shell.GoToAsync("//Item1");
+				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+
+				await shell.GoToAsync("//Item2");
+				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+
+				await shell.Navigation.PushAsync(page3);
+				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+
+				await shell.Navigation.PopAsync();
+				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
 			});
 		}
 
@@ -632,6 +679,87 @@ namespace Microsoft.Maui.DeviceTests
 
 				command.ChangeCanExecute();
 				Assert.NotNull(shell.Handler);
+			});
+		}
+
+		[Fact(DisplayName = "Toolbar Title")]
+		public async Task ToolbarTitle()
+		{
+			SetupBuilder();
+			var navPage = new Shell()
+			{
+				CurrentItem = new ContentPage()
+				{
+					Title = "Page Title"
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				string title = GetToolbarTitle(handler);
+				Assert.Equal("Page Title", title);
+			});
+		}
+
+		[Fact(DisplayName = "Toolbar Title View Updates")]
+		public async Task ToolbarTitleViewUpdates()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage()
+			{
+				Title = "Page 1"
+			};
+
+			var page2 = new ContentPage()
+			{
+				Title = "Page 2"
+			};
+
+			var navPage = new Shell()
+			{
+				CurrentItem = page1
+			};
+
+			var titleView1 = new VerticalStackLayout();
+			var titleView2 = new Label();
+
+			Shell.SetTitleView(page2, titleView1);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.Navigation.PushAsync(page2);
+				Assert.True(await AssertionExtensions.Wait(() => titleView1.Handler != null && titleView1.ToPlatform() == GetTitleView(handler)));
+				Shell.SetTitleView(page2, titleView2);
+				Assert.True(await AssertionExtensions.Wait(() => titleView2.Handler != null && titleView2.ToPlatform() == GetTitleView(handler)));
+			});
+		}
+
+		[Fact(DisplayName = "Toolbar Title Updates")]
+		public async Task ToolbarTitleUpdates()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage()
+			{
+				Title = "Page 1"
+			};
+
+			var page2 = new ContentPage()
+			{
+				Title = "Page 2"
+			};
+
+			var navPage = new Shell()
+			{
+				CurrentItem = page1
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.Navigation.PushAsync(page2);
+				Assert.True(await AssertionExtensions.Wait(() => "Page 2" == GetToolbarTitle(handler)));
+				page2.Title = "New Title";
+				page1.Title = "Previous Page Title"; // Ensuring this doesn't influence title
+				Assert.True(await AssertionExtensions.Wait(() => "New Title" == GetToolbarTitle(handler)));
 			});
 		}
 
