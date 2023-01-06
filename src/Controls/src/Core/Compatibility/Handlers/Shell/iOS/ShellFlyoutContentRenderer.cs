@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIImageView _bgImage;
 		readonly IShellContext _shellContext;
 		UIContainerView _headerView;
-		UIView _footerView;
+		UIContainerView _footerView;
 		View _footer;
 		ShellTableViewController _tableViewController;
 		ShellFlyoutLayoutManager _shellFlyoutContentManager;
@@ -121,11 +121,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var oldRenderer = (IPlatformViewHandler)_footer.Handler;
 				var oldFooterView = _footerView;
 				_tableViewController.FooterView = null;
+				_footerView?.Disconnect();
 				_footerView = null;
 				_uIViews[FooterIndex] = null;
 				oldFooterView?.RemoveFromSuperview();
-				if (_footer != null)
-					_footer.MeasureInvalidated -= OnFooterMeasureInvalidated;
 
 				_footer.Handler = null;
 				oldRenderer?.DisconnectHandler();
@@ -135,8 +134,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_footer != null)
 			{
-				var renderer = (IPlatformViewHandler)_footer.ToHandler(_shellContext.Shell.FindMauiContext());
-				_footerView = renderer.PlatformView;
+				_footerView = new UIContainerView(_footer);
 				_uIViews[FooterIndex] = _footerView;
 				AddViewInCorrectOrder(_footerView, previousIndex);
 
@@ -194,8 +192,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void ReMeasureFooter()
 		{
-			_footer?.LayoutToMeasuredSize(View.Frame.Width, double.PositiveInfinity);
-			UpdateFooterPosition(_footerView.Frame.Height);
+			var size = _footerView?.SizeThatFits(new CGSize(View.Frame.Width, double.PositiveInfinity));
+			if (size != null)
+				UpdateFooterPosition(size.Value.Height);
 		}
 
 		void UpdateFooterPosition()
@@ -203,15 +202,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_footerView == null)
 				return;
 
-			if (_footerView.Frame.Height == 0)
+			if (double.IsNaN(_footerView.MeasuredHeight))
 				ReMeasureFooter();
 			else
-				UpdateFooterPosition(_footerView.Frame.Height);
+				UpdateFooterPosition((nfloat)_footerView.MeasuredHeight);
 		}
 
 		void UpdateFooterPosition(nfloat footerHeight)
 		{
-			if (_footerView == null)
+			if (_footerView == null && !nfloat.IsNaN(footerHeight))
 				return;
 
 			var footerWidth = View.Frame.Width;
@@ -357,7 +356,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_uIViews[ContentIndex] = _shellFlyoutContentManager.ContentView;
 			AddViewInCorrectOrder(_uIViews[ContentIndex], previousIndex);
-			_shellFlyoutContentManager.LayoutParallax();
+			_shellFlyoutContentManager.UpdateHeaderSize();
 		}
 
 		public override void ViewWillAppear(bool animated)

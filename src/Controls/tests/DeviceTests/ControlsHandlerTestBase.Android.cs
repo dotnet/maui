@@ -128,6 +128,9 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		protected string GetToolbarTitle(IElementHandler handler) =>
+			GetPlatformToolbar(handler).Title;
+
 		protected MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
 			var navManager = mauiContext.GetNavigationRootManager();

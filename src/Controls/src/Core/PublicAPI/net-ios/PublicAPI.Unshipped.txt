@@ -1,5 +1,10 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.LayoutSubviews() -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
+*REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.WillMoveToSuperview(UIKit.UIView newSuper) -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.AddSubview(UIKit.UIView view) -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.WillRemoveSubview(UIKit.UIView uiview) -> void

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Primitives;
 using ObjCRuntime;
 using UIKit;
 
@@ -15,7 +17,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	class ShellFlyoutLayoutManager
 	{
-		double _headerMin = 56;
 		double _headerOffset = 0;
 		UIView _contentView;
 		UIScrollView ScrollView { get; set; }
@@ -136,9 +137,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 				}
 
-				LayoutParallax();
-				SetHeaderContentInset();
-			}
+                UpdateHeaderSize();
+            }
 		}
 
 		public virtual UIContainerView HeaderView
@@ -150,15 +150,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 
 				if (_headerView != null)
-					_headerView.HeaderSizeChanged -= OnHeaderFooterSizeChanged;
-
+					_headerView.HeaderSizeChanged -= OnHeaderViewMeasureChanged;
+				
 				_headerView = value;
 
 				if (_headerView != null)
-					_headerView.HeaderSizeChanged += OnHeaderFooterSizeChanged;
+					_headerView.HeaderSizeChanged += OnHeaderViewMeasureChanged;
 
-				SetHeaderContentInset();
-				LayoutParallax();
+				UpdateHeaderSize();
 			}
 		}
 
@@ -171,17 +170,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 
 				_footerView = value;
-				SetHeaderContentInset();
-				LayoutParallax();
-			}
+                UpdateHeaderSize();
+            }
 		}
 
-		void OnHeaderFooterSizeChanged(object sender, EventArgs e)
+		void OnHeaderViewMeasureChanged(object sender, EventArgs e)
 		{
-			HeaderSize = HeaderMax;
+			if (HeaderView == null || ContentView?.Superview == null)
+				return;
+
+			HeaderView.SizeThatFits(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
+			UpdateHeaderSize();
+		}
+
+		internal void UpdateHeaderSize()
+		{
+			if (HeaderView == null || ContentView?.Superview == null)
+				return;
+
+			// If the HeaderView hasn't been measured we need to measure it
+			if (double.IsNaN(MeasuredHeaderViewHeightWithNoMargin))
+			{
+				HeaderView.SizeThatFits(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
+			}
+
 			SetHeaderContentInset();
+			UpdateHeaderMaximumSize(ScrollView?.ContentOffset.Y);
 			LayoutParallax();
 		}
+
 
 		internal void SetHeaderContentInset()
 		{
@@ -191,14 +208,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var offset = ScrollView.ContentInset.Top;
 
 			if (HeaderView != null)
-				ScrollView.ContentInset = new UIEdgeInsets((nfloat)HeaderMax, 0, 0, 0);
+			{
+				if (double.IsNaN(MeasuredHeaderViewHeightWithNoMargin))
+				{
+					return;
+				}
+
+				ScrollView.ContentInset = new UIEdgeInsets((nfloat)(MeasuredHeaderViewHeightWithNoMargin), 0, 0, 0);
+			}
 			else
+			{
 				ScrollView.ContentInset = new UIEdgeInsets(UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top, 0, 0, 0);
+			}
 
 			offset -= ScrollView.ContentInset.Top;
 
+			var yContentOffset = ScrollView.ContentOffset.Y;
 			ScrollView.ContentOffset =
-				new CGPoint(ScrollView.ContentOffset.X, ScrollView.ContentOffset.Y + offset);
+				new CGPoint(ScrollView.ContentOffset.X, yContentOffset + offset);
 
 			UpdateVerticalScrollMode();
 		}
@@ -254,13 +281,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				float topMargin = 0;
-				if (Content.IsSet(View.MarginProperty))
+				if (!Content.IsSet(View.MarginProperty))
 				{
-					topMargin = (float)Content.Margin.Top;
-				}
-				else if (HeaderView == null)
-				{
-					topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
+					if (HeaderView == null)
+						topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
 				else
 					contentViewYOffset -= (nfloat)HeaderTopMargin;
@@ -269,16 +293,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				(Content as IView)?.Arrange(contentFrame);
 			}
 
-			if (HeaderView != null && !double.IsNaN(HeaderSize))
+			if (HeaderView != null && !double.IsNaN(ArrangedHeaderViewHeightWithNoMargin))
 			{
-				var margin = HeaderView.Margin;
-				var leftMargin = margin.Left - margin.Right;
-
-				HeaderView.Frame = new CGRect(leftMargin, _headerOffset, parent.Frame.Width, HeaderSize + HeaderTopMargin);
+				HeaderView.Frame = new CGRect(0, _headerOffset + HeaderTopMargin, parent.Frame.Width, ArrangedHeaderViewHeightWithNoMargin + HeaderTopMargin);
 
 				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderTopMargin > 0 && _headerOffset < 0)
 				{
-					var headerHeight = Math.Max(_headerMin, HeaderSize + _headerOffset + HeaderTopMargin);
+					var headerHeight = Math.Max(HeaderMinimumHeight, ArrangedHeaderViewHeightWithNoMargin + _headerOffset + HeaderTopMargin);
 					CAShapeLayer shapeLayer = new CAShapeLayer();
 					CGRect rect = new CGRect(0, _headerOffset * -1, parent.Frame.Width, headerHeight);
 					var path = CGPath.FromRect(rect);
@@ -306,8 +327,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public void ViewDidLoad()
 		{
-			HeaderView?.MeasureIfNeeded();
-			SetHeaderContentInset();
+			UpdateHeaderSize();
 		}
 
 		public void OnScrolled(nfloat contentOffsetY)
@@ -318,17 +338,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				case FlyoutHeaderBehavior.Default:
 				case FlyoutHeaderBehavior.Fixed:
-					HeaderSize = HeaderMax;
+					ArrangedHeaderViewHeightWithNoMargin = MeasuredHeaderViewHeightWithNoMargin;
 					_headerOffset = 0;
 					break;
 
 				case FlyoutHeaderBehavior.Scroll:
-					HeaderSize = HeaderMax;
-					_headerOffset = Math.Min(0, -(HeaderMax + contentOffsetY));
+					ArrangedHeaderViewHeightWithNoMargin = MeasuredHeaderViewHeightWithNoMargin;
+					_headerOffset = Math.Min(0, -(MeasuredHeaderViewHeightWithNoMargin + contentOffsetY));
 					break;
 
 				case FlyoutHeaderBehavior.CollapseOnScroll:
-					HeaderSize = Math.Max(_headerMin, -contentOffsetY);
+					UpdateHeaderMaximumSize(contentOffsetY);
 					_headerOffset = 0;
 					break;
 			}
@@ -336,13 +356,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			LayoutParallax();
 		}
 
+		void UpdateHeaderMaximumSize(nfloat? contentOffsetY)
+		{
+			if (HeaderView != null)
+			{
+				if (ScrollView != null && contentOffsetY != null && _context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
+					ArrangedHeaderViewHeightWithNoMargin = Math.Max(HeaderMinimumHeight, -contentOffsetY.Value);
+				else
+					ArrangedHeaderViewHeightWithNoMargin = MeasuredHeaderViewHeightWithNoMargin;
+			}
+		}
 
-		double HeaderSize
+		double ArrangedHeaderViewHeightWithNoMargin
 		{
 			get => _headerSize;
 			set
 			{
-				if (HeaderView != null)
+				if (HeaderView != null &&
+					HeaderView.Height != (value))
 				{
 					HeaderView.Height = value;
 				}
@@ -351,7 +382,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		double HeaderMax => HeaderView?.MeasuredHeight ?? 0;
+		double MeasuredHeaderViewHeightWithNoMargin
+		{
+			get
+			{
+				if (HeaderView != null)
+					return HeaderView.MeasuredHeight;
+
+				return HeaderView?.MeasuredHeight ?? 0;
+			}
+		}
+
+		double HeaderMinimumHeight
+		{
+			get
+			{
+				if (HeaderView == null ||
+					HeaderView.View.MinimumHeightRequest == -1 ||
+					HeaderView.View.MinimumHeightRequest == Dimension.Unset)
+				{
+					if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
+						return 56;
+					else
+						return 0;
+				}
+
+				return HeaderView.View.MinimumHeightRequest;
+			}
+		}
+
 		double HeaderTopMargin => (HeaderView != null) ?
 			HeaderView.Margin.Top - HeaderView.Margin.Bottom : 0;
 

@@ -10,27 +10,57 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		readonly View _view;
 		IPlatformViewHandler _renderer;
+		UIView _platformView;
 		bool _disposed;
+		private double _measuredHeight;
+
 		internal event EventHandler HeaderSizeChanged;
 
 		public UIContainerView(View view)
 		{
 			_view = view;
 
-			_renderer = (IPlatformViewHandler)view.ToHandler(view.FindMauiContext());
+			UpdatePlatformView();
 
 			AddSubview(view.ToPlatform());
 			ClipsToBounds = true;
-			view.MeasureInvalidated += OnMeasureInvalidated;
 			MeasuredHeight = double.NaN;
 			Margin = new Thickness(0);
+		}
+
+		internal void UpdatePlatformView()
+		{
+			_renderer = _view.ToHandler(_view.FindMauiContext());
+			_platformView = _view.ToPlatform();
+
+			if (_platformView.Superview != this)
+				AddSubview(_platformView);
+		}
+
+		bool IsPlatformViewValid()
+		{
+			if (View == null || _platformView == null || _renderer == null)
+				return false;
+
+			return _platformView.Superview == this;
 		}
 
 		internal View View => _view;
 
 		internal bool MatchHeight { get; set; }
 
-		internal double MeasuredHeight { get; private set; }
+		internal double MeasuredHeight
+		{
+			get
+			{
+				if (MatchHeight && Height != null)
+					return Height.Value;
+
+				return _measuredHeight;
+			}
+
+			private set => _measuredHeight = value;
+		}
 
 		internal double? Height
 		{
@@ -38,62 +68,69 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set;
 		}
 
-		internal double? Width
-		{
-			get;
-			set;
-		}
-
-		internal bool MeasureIfNeeded()
-		{
-			if (View == null)
-				return false;
-
-			if (double.IsNaN(MeasuredHeight) || Frame.Width != View.Width)
-			{
-				ReMeasure();
-				return true;
-			}
-
-			return false;
-		}
-
 		public virtual Thickness Margin
 		{
 			get;
 		}
 
-		void ReMeasure()
+		private protected void OnHeaderSizeChanged()
 		{
+			HeaderSizeChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		void OnMeasureInvalidated(object sender, System.EventArgs e)
+		{
+			if (!IsPlatformViewValid())
+				return;
+		}
+
+		public override void WillRemoveSubview(UIView uiview)
+		{
+			Disconnect();
+			base.WillRemoveSubview(uiview);
+		}
+
+		public override void AddSubview(UIView view)
+		{
+			if (view == _platformView)
+				_view.MeasureInvalidated += OnMeasureInvalidated;
+
+			base.AddSubview(view);
+		}
+
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			var measuredSize = (_view as IView).Measure(size.Width, size.Height);
+
 			if (Height != null && MatchHeight)
 			{
 				MeasuredHeight = Height.Value;
 			}
 			else
 			{
-				var request = (_view as IView).Measure(Frame.Width, double.PositiveInfinity);
-				MeasuredHeight = request.Height;
+				MeasuredHeight = measuredSize.Height;
 			}
 
-			HeaderSizeChanged?.Invoke(this, EventArgs.Empty);
-		}
-
-		void OnMeasureInvalidated(object sender, System.EventArgs e)
-		{
-			ReMeasure();
-			LayoutSubviews();
-		}
-
-		public override void WillMoveToSuperview(UIView newSuper)
-		{
-			base.WillMoveToSuperview(newSuper);
-			ReMeasure();
+			return new CGSize(size.Width, MeasuredHeight);
 		}
 
 		public override void LayoutSubviews()
 		{
-			var platformFrame = new Rect(0, 0, Width ?? Frame.Width, Height ?? MeasuredHeight);
+			if (!IsPlatformViewValid())
+				return;
+
+			var height = Height ?? MeasuredHeight;
+			if (double.IsNaN(height))
+				return;
+
+			var platformFrame = new Rect(0, 0, Frame.Width, height);
 			(_view as IView).Arrange(platformFrame);
+		}
+
+		internal void Disconnect()
+		{
+			if (_view != null)
+				_view.MeasureInvalidated -= OnMeasureInvalidated;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -103,12 +140,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				if (_view != null)
-					_view.MeasureInvalidated -= OnMeasureInvalidated;
+				Disconnect();
 
-				_renderer?.DisconnectHandler();
+				if (_platformView.Superview == this)
+					_platformView.RemoveFromSuperview();
+
 				_renderer = null;
-
 				_disposed = true;
 			}
 
