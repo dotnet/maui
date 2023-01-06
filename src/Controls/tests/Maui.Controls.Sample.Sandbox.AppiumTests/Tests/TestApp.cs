@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -14,6 +15,7 @@ using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
+using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Remote;
 using Xamarin.UITest;
@@ -22,10 +24,10 @@ using Xamarin.UITest.Shared.Execution;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 {
-	public class TestApp<T, W> : IApp
-			where T : AppiumDriver
-			where W : IWebElement
+	public class TestApp : IApp
 	{
+		public bool IsAndroid => _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
+
 		public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
 		readonly Dictionary<string, string> _controlNameToTag = new Dictionary<string, string>
@@ -38,14 +40,18 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			{ "getAlpha", "Opacity" },
 			{ "isEnabled", "IsEnabled" }
 		};
+		readonly string _appId;
+		readonly AppiumDriver _driver;
 
-		string _appId;
-		T _engine;
+		AppiumElement? _window;
 
-		public TestApp(string appId, T driver)
+		public TestApp(string appId, AppiumDriver? driver)
 		{
+			if (driver == null)
+				throw new ArgumentNullException(nameof(driver));
+
 			_appId = appId;
-			_engine = driver;
+			_driver = driver;
 		}
 
 		public AppPrintHelper Print => throw new NotImplementedException();
@@ -121,12 +127,14 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 		public void EnterText(Func<AppQuery, AppQuery> query, string text)
 		{
-			throw new NotImplementedException();
+			var result = QueryWindows(query, true).First();
+			result.SendKeys(text);
 		}
 
 		public void EnterText(string marked, string text)
 		{
-			throw new NotImplementedException();
+			var result = QueryWindows(marked, true).First();
+			result.SendKeys(text);
 		}
 
 		public void EnterText(Func<AppQuery, AppWebQuery> query, string text)
@@ -361,12 +369,14 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 		public void Tap(Func<AppQuery, AppQuery> query)
 		{
-			throw new NotImplementedException();
+			AppiumQuery winQuery = AppiumQuery.FromQuery(query,IsAndroid);
+			Tap(winQuery);
 		}
 
 		public void Tap(string marked)
 		{
-			throw new NotImplementedException();
+			AppiumQuery winQuery = AppiumQuery.FromMarked(_appId, marked, IsAndroid);
+			Tap(winQuery);
 		}
 
 		public void Tap(Func<AppQuery, AppWebQuery> query)
@@ -401,85 +411,17 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 		public AppResult[] WaitForElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			throw new NotImplementedException();
+			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryWindows(query);
+			return WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(AppiumExtensions.ToAppResult).ToArray();
 		}
 
 		public AppResult[] WaitForElement(string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
+			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryWindows(marked);
+			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(AppiumExtensions.ToAppResult	).ToArray();
 
-			Func<ReadOnlyCollection<W>> result = () => QueryWindows(marked);
-			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(ToAppResult).ToArray();
-
-			var e = _engine.FindElement(By.Id($"{_appId}:id/{marked}"));
-
-			return new AppResult[] { new AppResult
-			{
-				Id = marked
-			}
-			};
+			return results;
 		}
-
-		static AppRect? ToAppRect(W windowsElement)
-		{
-			try
-			{
-				if (windowsElement == null)
-				{
-					return null;
-				}
-
-				var result = new AppRect
-				{
-					X = windowsElement.Location.X,
-					Y = windowsElement.Location.Y,
-					Height = windowsElement.Size.Height,
-					Width = windowsElement.Size.Width
-				};
-
-				result.CenterX = result.X + result.Width / 2;
-				result.CenterY = result.Y + result.Height / 2;
-
-				return result;
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(
-					$"Warning: error determining AppRect for {windowsElement}; "
-					+ $"if this is a Label with a modified Text value, it might be confusing Windows automation. " +
-					$"{ex}");
-			}
-
-			return null;
-		}
-
-
-		static AppResult ToAppResult(W windowsElement)
-		{
-			//if (windowsElement is WindowsElement win)
-			//	return new AppResult
-			//	{
-			//		Rect = ToAppRect(windowsElement),
-			//		Label = win.Id, // Not entirely sure about this one
-			//		Description = SwapInUsefulElement(win)?.Text, // or this one
-			//		Enabled = win.Enabled,
-			//		Id = win.Id
-			//	};
-			//else
-				return new AppResult
-				{
-					Rect = ToAppRect(windowsElement),
-					Id = windowsElement.GetAttribute("id")
-				};
-		}
-
-		//static RemoteWebElement? SwapInUsefulElement(WindowsElement element)
-		//{
-		//	// AutoSuggestBox on UWP has some interaction issues with WebDriver
-		//	// The AutomationID is set on the control group not the actual TextBox
-		//	// This retrieves the actual TextBox which makes the behavior more consistent
-		//	var isAutoSuggest = element?.FindElementsByXPath("//*[contains(@AutomationId,'_AutoSuggestBox')]")?.FirstOrDefault();
-		//	return isAutoSuggest ?? element;
-		//}
 
 		public AppWebResult[] WaitForElement(Func<AppQuery, AppWebQuery> query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
@@ -501,69 +443,37 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			throw new NotImplementedException();
 		}
 
-		ReadOnlyCollection<W> QueryWindows(AndroidQuery query, bool findFirst = false)
+		ReadOnlyCollection<AppiumElement> QueryWindows(AppiumQuery query, bool findFirst = false)
 		{
 			try
 			{
-			
-
-				//if (_engine is AppiumDriver<AndroidElement> androidDriver)
-				//{
-				//	var resultByAccessibilityId = _engine.FindElementsByAccessibilityId(query.Marked);
-				//	ReadOnlyCollection<AndroidElement> resultByName;
-
-				//	if (!findFirst || (resultByAccessibilityId != null))
-				//		resultByName = androidDriver.FindElementsById(query.Marked);
-
-				//	IEnumerable<W> result = resultByAccessibilityId!;
-
-				//	if(result != null)
-				//	{
-				//	//	result = result.Concat(resultByName?.Cast<W>())
-				//	}
-				
-
-				//	//// TODO hartez 2017/10/30 09:47:44 Should this be == "*" || == "TextBox"?	
-				//	//// what about other controls where we might be looking by content? TextBlock?
-				//	//if (query.ControlType == "*")
-				//	//{
-				//	//	IEnumerable<WindowsElement> textBoxesByContent =
-				//	//		_engine.FindElementByClassName("TextBox").Where(e => e.Text == query.Marked);
-				//	//	result = result.Concat(textBoxesByContent);
-				//	//}
-
-				//	return FilterControlType(result!, query.ControlType);
-				//}
+				return _driver.FindElements(By.Id(query.Marked));
 			}
 			catch (Exception)
 			{
-
 				throw;
 			}
-
-
-			return null!;
 		}
 
-		ReadOnlyCollection<W> QueryWindows(string marked, bool findFirst = false)
+		ReadOnlyCollection<AppiumElement> QueryWindows(string marked, bool findFirst = false)
 		{
-			AndroidQuery winQuery = AndroidQuery.FromMarked(_appId, marked);
+			AppiumQuery winQuery = AppiumQuery.FromMarked(_appId, marked, IsAndroid);
 			return QueryWindows(winQuery, findFirst);
 		}
 
-		ReadOnlyCollection<W> QueryWindows(Func<AppQuery, AppQuery> query, bool findFirst = false)
+		ReadOnlyCollection<AppiumElement> QueryWindows(Func<AppQuery, AppQuery> query, bool findFirst = false)
 		{
-			AndroidQuery winQuery = AndroidQuery.FromQuery(query);
+			AppiumQuery winQuery = AppiumQuery.FromQuery(query,IsAndroid);
 			return QueryWindows(winQuery, findFirst);
 		}
 
-		ReadOnlyCollection<W> FilterControlType(IEnumerable<W> elements, string controlType)
+		ReadOnlyCollection<AppiumElement> FilterControlType(IEnumerable<AppiumElement> elements, string controlType)
 		{
 			string tag = controlType;
 
 			if (tag == "*")
 			{
-				return new ReadOnlyCollection<W>(elements.ToList());
+				return new ReadOnlyCollection<AppiumElement>(elements.ToList());
 			}
 
 			if (_controlNameToTag.ContainsKey(controlType))
@@ -571,11 +481,11 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 				tag = _controlNameToTag[controlType];
 			}
 
-			return new ReadOnlyCollection<W>(elements.Where(element => element.TagName == tag).ToList());
+			return new ReadOnlyCollection<AppiumElement>(elements.Where(element => element.TagName == tag).ToList());
 		}
 
 
-		static ReadOnlyCollection<W> Wait(Func<ReadOnlyCollection<W>> query,
+		static ReadOnlyCollection<AppiumElement> Wait(Func<ReadOnlyCollection<AppiumElement>> query,
 			Func<int, bool> satisfactory,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
@@ -586,7 +496,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 			DateTime start = DateTime.Now;
 
-			ReadOnlyCollection<W> result = query();
+			ReadOnlyCollection<AppiumElement> result = query();
 
 			while (!satisfactory(result.Count))
 			{
@@ -606,23 +516,127 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 		}
 
 
-		static ReadOnlyCollection<W> WaitForAtLeastOne(Func<ReadOnlyCollection<W>> query,
+		static ReadOnlyCollection<AppiumElement> WaitForAtLeastOne(Func<ReadOnlyCollection<AppiumElement>> query,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null,
 			TimeSpan? retryFrequency = null)
 		{
 			var results = Wait(query, i => i > 0, timeoutMessage, timeout, retryFrequency);
 
-
 			return results;
 		}
 
-		void WaitForNone(Func<ReadOnlyCollection<W>> query,
+		void WaitForNone(Func<ReadOnlyCollection<AppiumElement>> query,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
 		{
 			Wait(query, i => i == 0, timeoutMessage, timeout, retryFrequency);
 		}
+
+		void Tap(AppiumQuery query)
+		{
+			var element = FindFirstElement(query);
+
+			if (element == null)
+			{
+				return;
+			}
+
+			ClickOrTapElement(element);
+		}
+
+		AppiumElement? FindFirstElement(AppiumQuery query)
+		{
+			Func<ReadOnlyCollection<AppiumElement>> fquery =
+				() => QueryWindows(query, true);
+
+			string timeoutMessage = $"Timed out waiting for element: {query.Raw}";
+
+			ReadOnlyCollection<AppiumElement> results =
+				WaitForAtLeastOne(fquery, timeoutMessage);
+
+			AppiumElement? element = results?.FirstOrDefault();
+
+			return element;
+		}
+
+		void ClickOrTapElement(AppiumElement element)
+		{
+			try
+			{
+				// For most stuff, a simple click will work
+				element.Click();
+			}
+			catch (InvalidOperationException)
+			{
+				ProcessException();
+			}
+			catch (WebDriverException)
+			{
+				ProcessException();
+			}
+
+			void ProcessException()
+			{
+				// Some elements aren't "clickable" from an automation perspective (e.g., Frame renders as a Border
+				// with content in it; if the content is just a TextBlock, we'll end up here)
+
+				// All is not lost; we can figure out the location of the element in in the application window
+				// and Tap in that spot
+				PointF p = ElementToClickablePoint(element);
+				TapCoordinates(p.X, p.Y);
+
+			}
+		}
+
+		PointF ElementToClickablePoint(AppiumElement element)
+		{
+			PointF clickablePoint = GetClickablePoint(element);
+
+			AppiumElement window = GetWindow();
+			PointF origin = GetOriginOfBoundingRectangle(window);
+
+			// Use the coordinates in the app window's viewport relative to the window's origin
+			return new PointF(clickablePoint.X - origin.X, clickablePoint.Y - origin.Y);
+		}
+
+		static PointF GetOriginOfBoundingRectangle(AppiumElement element)
+		{
+			string vpcpString = element.GetAttribute("BoundingRectangle");
+
+			// returned string format looks like:
+			// Left:-1868 Top:382 Width:1013 Height:680
+
+			string[] vpparts = vpcpString.Split(new[] { ':', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			float vpx = float.Parse(vpparts[1]);
+			float vpy = float.Parse(vpparts[3]);
+
+			return new PointF(vpx, vpy);
+		}
+
+
+		AppiumElement GetWindow()
+		{
+			if (_window != null)
+			{
+				return _window;
+			}
+
+			_window = QueryWindows(_appId)[0];
+			return _window;
+		}
+
+
+		static PointF GetClickablePoint(AppiumElement element)
+		{
+			string cpString = element.GetAttribute("ClickablePoint");
+			string[] parts = cpString.Split(',');
+			float x = float.Parse(parts[0]);
+			float y = float.Parse(parts[1]);
+
+			return new PointF(x, y);
+		}
+
 
 		internal enum ClickType
 		{

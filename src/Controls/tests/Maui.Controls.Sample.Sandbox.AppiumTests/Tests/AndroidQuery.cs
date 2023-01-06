@@ -9,24 +9,26 @@ using Xamarin.UITest.Queries;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 {
-	internal class AndroidQuery
+	internal class AppiumQuery
 	{
-		public static AndroidQuery FromMarked(string appId, string marked)
+		public static AppiumQuery FromMarked(string appId, string marked, bool isAndroid)
 		{
-			var realId = $"{appId}/{marked}";
-			return new AndroidQuery("*", realId, $"* '{realId}'");
+			var realId = marked;
+			if (isAndroid)
+				realId = $"{appId}:id/{marked}";
+			return new AppiumQuery("*", realId, $"* '{realId}'", isAndroid ? QueryPlatform.Android : QueryPlatform.iOS);
 		}
 
-		public static AndroidQuery FromQuery(Func<AppQuery, AppQuery> query)
+		public static AppiumQuery FromQuery(Func<AppQuery, AppQuery> query, bool isAndroid)
 		{
 			var raw = GetRawQuery(query);
-			return FromRaw(raw);
+			return FromRaw(raw, isAndroid);
 		}
 
 
-		public static AndroidQuery FromRaw(string raw)
+		public static AppiumQuery FromRaw(string raw, bool isAndroid)
 		{
-			Debug.WriteLine($">>>>> Converting raw query '{raw}' to {nameof(AndroidQuery)}");
+			Debug.WriteLine($">>>>> Converting raw query '{raw}' to {nameof(AppiumQuery)}");
 
 			var match = Regex.Match(raw, @"(.*)\s(marked|text):'((.|\n)*)'");
 
@@ -34,7 +36,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			var marked = match.Groups[3].Captures[0].Value;
 
 			// Just ignoring everything else for now (parent, index statements, etc)
-			var result = new AndroidQuery(controlType, marked, raw);
+			var result = new AppiumQuery(controlType, marked, raw, isAndroid ? QueryPlatform.Android : QueryPlatform.iOS);
 
 			Debug.WriteLine($">>>>> AndroidQuery is: {result}");
 
@@ -52,11 +54,12 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			return query(new AppQuery(QueryPlatform.iOS)).ToString().Replace("\\'", "'", StringComparison.InvariantCultureIgnoreCase);
 		}
 
-		AndroidQuery(string controlType, string marked, string raw)
+		AppiumQuery(string controlType, string marked, string raw, QueryPlatform platform)
 		{
 			ControlType = controlType;
 			Marked = marked;
 			Raw = raw;
+			Platform = platform;
 		}
 
 		public string ControlType { get; }
@@ -64,6 +67,8 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 		public string Marked { get; }
 
 		public string Raw { get; }
+
+		public QueryPlatform Platform { get; }
 
 		public override string ToString()
 		{

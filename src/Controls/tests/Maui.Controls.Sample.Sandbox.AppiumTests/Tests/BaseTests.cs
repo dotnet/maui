@@ -19,21 +19,16 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 	[SetUpFixture]
 	public class BaseTest
 	{
-		protected AppiumDriver? appiumAndroidDriver;
-		protected AppiumDriver? appiumiOSDriver;
-
-
 		protected AppiumDriver? Driver;
-
 		protected readonly AppiumOptions appiumOptions;
 		protected readonly Uri _driverUri;
 
 		bool _isAndroid = true;
 		bool _isIos = false;
+		string? _appId;
+		IApp? _app;
 
-		//Xamarin.UITest.IApp? _app;
-
-		//public IApp? App => _app;
+		public IApp? App => _app;
 
 		public BaseTest(string testName)
 		{
@@ -52,14 +47,9 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 			InitAppiumOptions(appiumOptions);
 
 			string appId = "com.microsoft.maui.sandbox";
-			if (_isAndroid)
-			{
-				Driver = GetDriverAndroid(appId);
-			}
-			if (_isIos)
-			{
-				Driver = GetDriverIos(appId);
-			}
+			Driver = GetDriver(appId);
+			_app = new TestApp(appId, Driver);
+			Driver?.ActivateApp(appId);
 		}
 
 		[OneTimeTearDown()]
@@ -68,18 +58,30 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 			Driver?.Quit();
 		}
 
+		protected virtual AppiumDriver? GetDriver(string appId)
+		{
+			_appId = appId;
+
+			if (_isAndroid)
+			{
+				return GetDriverAndroid(appId);
+			}
+			if (_isIos)
+			{
+				return GetDriverIos(appId);
+			}
+
+			return  null;
+		}
+
 		protected virtual AppiumDriver GetDriverAndroid(string appId)
 		{
-			var driver = new AndroidDriver(_driverUri, appiumOptions);
-			driver.ActivateApp(appId);
-			return driver;
+			return new AndroidDriver(_driverUri, appiumOptions);
 		}
 
 		protected virtual AppiumDriver GetDriverIos(string appId)
 		{
-			var driver = new IOSDriver(_driverUri, appiumOptions);
-			driver.ActivateApp(appId);
-			return driver;
+			return new IOSDriver(_driverUri, appiumOptions);
 		}
 
 		protected virtual void InitAppiumOptions(AppiumOptions appiumOptions)
@@ -99,20 +101,18 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 				appiumOptions.PlatformName = "iOS";
 				appiumOptions.AutomationName = "XCUITest";
 				appiumOptions.DeviceName = "iPad (10th generation)";
-				appiumOptions.PlatformVersion = "16.2";		
+				appiumOptions.PlatformVersion = "16.2";
 				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.Udid, "E198E6C0-0337-4990-8494-7B078BAD3070");
 				appiumOptions.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, "com.microsoft.maui.sandbox");
 			}
 		}
 
-		public string GetElementText(string elementId)
+		public string GetElementId(string elementId)
 		{
-			if (appiumAndroidDriver == null)
-				throw new InvalidOperationException("no appium driver");
-
-			var element = appiumAndroidDriver.FindElement(By.Id(elementId));
-			var attributName = IsAndroid ? "text" : "value";
-			return element.GetAttribute(attributName);
+			if (IsAndroid)
+				return $"{_appId}:id/{elementId}";
+		
+			return elementId;
 		}
 
 		public bool IsAndroid => Driver == null ? false : Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
