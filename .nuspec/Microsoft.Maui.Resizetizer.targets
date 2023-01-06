@@ -434,6 +434,7 @@
         </ItemGroup>
 
         <!-- Stamp file for Outputs -->
+        <MakeDir Directories="$(IntermediateOutputPath)"/>
         <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
 
         <ItemGroup>
