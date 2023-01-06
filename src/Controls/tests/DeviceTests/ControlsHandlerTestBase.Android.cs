@@ -11,6 +11,7 @@ using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -151,6 +152,13 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return toolBar;
+		}
+
+		protected Size GetTitleViewExpectedSize(IElementHandler handler)
+		{
+			var context = handler.MauiContext.Context;
+			var toolbar = GetPlatformToolbar(handler.MauiContext).GetFirstChildOfType<Microsoft.Maui.Controls.Toolbar.Container>();
+			return new Size(context.FromPixels(toolbar.MeasuredWidth), context.FromPixels(toolbar.MeasuredHeight));
 		}
 
 		public bool IsNavigationBarVisible(IElementHandler handler) =>
