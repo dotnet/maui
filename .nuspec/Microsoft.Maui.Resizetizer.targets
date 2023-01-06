@@ -349,6 +349,11 @@
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
         Outputs="$(_MauiSplashStampFile)">
 
+        <DetectInvalidResourceOutputFilenamesTask
+            Items="@(MauiSplashScreen->Distinct())"
+            ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
+        </DetectInvalidResourceOutputFilenamesTask>
+
         <Warning
             Condition="'@(MauiSplashScreen->Count())' &gt; '1'"
             Text="More than one 'MauiSplashScreen' is defined; only the first will be used."
@@ -359,9 +364,9 @@
             Condition="'$(_ResizetizerIsAndroidApp)' == 'True'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             MauiSplashScreen="@(MauiSplashScreen)"
+            InputsFile="$(_MauiSplashInputsFile)"
         />
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
-            <MauiImage Include="@(MauiSplashScreen)" />
             <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
                 <StampFile>$(_ResizetizerStampFile)</StampFile>
             </LibraryResourceDirectories>
