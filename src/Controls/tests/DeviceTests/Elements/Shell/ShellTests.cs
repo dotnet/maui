@@ -763,7 +763,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !WINDOWS
 		[Fact(DisplayName = "Title View Measures")]
 		public async Task TitleViewMeasures()
 		{
@@ -798,7 +797,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			});
 		}
-#endif
 
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
