@@ -763,6 +763,43 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Title View Measures")]
+		public async Task TitleViewMeasures()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage()
+			{
+				Title = "Page 1"
+			};
+
+			var navPage = new Shell()
+			{
+				CurrentItem = page1
+			};
+
+			var titleView1 = new VerticalStackLayout()
+			{
+				new Label()
+				{
+					Text = "Title View"
+				}
+			};
+
+			Shell.SetTitleView(page1, titleView1);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(titleView1);
+#if IOS || MACCATALYST
+				var containerSize = GetTitleViewExpectedSize(handler);
+				var titleView1PlatformSize = titleView1.GetBoundingBox();
+				Assert.Equal(containerSize.Width, titleView1PlatformSize.Width);
+				Assert.Equal(containerSize.Height, titleView1PlatformSize.Height);
+#endif
+
+			});
+		}
+
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{
