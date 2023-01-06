@@ -8,6 +8,7 @@ using OpenQA.Selenium;
 using NUnit.Framework;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Android;
+using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Interfaces;
 using Xamarin.UITest;
 using Maui.Controls.Sample.Sandbox.AppiumTests.Tests;
@@ -15,31 +16,34 @@ using Microsoft.AspNetCore.Components;
 
 namespace Maui.Controls.Sample.Sandbox.Tests
 {
-
 	[SetUpFixture]
 	public class BaseTest
 	{
+		protected AppiumDriver? appiumAndroidDriver;
+		protected AppiumDriver? appiumiOSDriver;
 
-		private readonly string reportDirectory = "reports";
-		private readonly string reportFormat = "xml";
 
-		protected AppiumDriver<AndroidElement>? appiumDriver;
+		protected AppiumDriver? Driver;
+
 		protected readonly AppiumOptions appiumOptions;
-		protected readonly Uri driverUri;
+		protected readonly Uri _driverUri;
 
-		Xamarin.UITest.IApp? _app;
+		bool _isAndroid = true;
+		bool _isIos = false;
 
-		public IApp? App => _app;
+		//Xamarin.UITest.IApp? _app;
+
+		//public IApp? App => _app;
 
 		public BaseTest(string testName)
 		{
-			driverUri = new Uri("http://localhost:4723/wd/hub");
+			_driverUri = new Uri("http://localhost:4723/wd/hub");
 
 			appiumOptions = new AppiumOptions();
-			appiumOptions.AddAdditionalCapability("reportDirectory", reportDirectory);
-			appiumOptions.AddAdditionalCapability("reportFormat", reportFormat);
-			appiumOptions.AddAdditionalCapability("testName", testName);
-			appiumOptions.AddAdditionalCapability(MobileCapabilityType.FullReset, "false");
+			appiumOptions.AddAdditionalAppiumOption("reportDirectory", "reports");
+			appiumOptions.AddAdditionalAppiumOption("reportFormat", "xml");
+			appiumOptions.AddAdditionalAppiumOption("testName", testName);
+			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "false");
 		}
 
 		[OneTimeSetUp]
@@ -48,47 +52,69 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 			InitAppiumOptions(appiumOptions);
 
 			string appId = "com.microsoft.maui.sandbox";
-			appiumDriver = GetDriver(appId);
-			if (appiumDriver == null)
-				throw new InvalidOperationException("no appiumDriver");
-			_app = new TestApp<AppiumDriver<AndroidElement>, AndroidElement>(appId, appiumDriver);
+			if (_isAndroid)
+			{
+				Driver = GetDriverAndroid(appId);
+			}
+			if (_isIos)
+			{
+				Driver = GetDriverIos(appId);
+			}
 		}
 
 		[OneTimeTearDown()]
 		public void TearDown()
 		{
-			// Perform a driver quit so that the report is printed
-			appiumDriver?.Quit();
+			Driver?.Quit();
 		}
 
-		protected virtual AppiumDriver<AndroidElement>? GetDriver(string appId)
+		protected virtual AppiumDriver GetDriverAndroid(string appId)
 		{
-			var driver = new AndroidDriver<AndroidElement>(driverUri, appiumOptions);
+			var driver = new AndroidDriver(_driverUri, appiumOptions);
+			driver.ActivateApp(appId);
+			return driver;
+		}
+
+		protected virtual AppiumDriver GetDriverIos(string appId)
+		{
+			var driver = new IOSDriver(_driverUri, appiumOptions);
 			driver.ActivateApp(appId);
 			return driver;
 		}
 
 		protected virtual void InitAppiumOptions(AppiumOptions appiumOptions)
 		{
-			appiumOptions.AddAdditionalCapability(MobileCapabilityType.PlatformName, "Android");
-			//appiumOptions.AddAdditionalCapability(MobileCapabilityType.DeviceName, "pixel_5_-_api_30");
-			//appiumOptions.AddAdditionalCapability(MobileCapabilityType.Udid, "emulator-5554");
-			//appiumOptions.AddAdditionalCapability(MobileCapabilityType.PlatformName, "Android");
-			//appiumOptions.AddAdditionalCapability(AndroidMobileCapabilityType.AppPackage, "com.microsoft.maui.sandbox");
-			//appiumOptions.AddAdditionalCapability(AndroidMobileCapabilityType.AppActivity, "crc64fa090d87c1ce7f0b.MainActivity");
-			appiumOptions.AddAdditionalCapability(MobileCapabilityType.AutomationName, "UiAutomator2");
+			if (_isAndroid)
+			{
+				appiumOptions.PlatformName = "Android";
+				appiumOptions.AutomationName = "UiAutomator2";
+				//appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.DeviceName, "pixel_5_-_api_30");
+				//appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.Udid, "emulator-5554");
+				//appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, "Android");
+				//appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, "com.microsoft.maui.sandbox");
+				//appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, "crc64fa090d87c1ce7f0b.MainActivity");
+			}
+			if (_isIos)
+			{
+				appiumOptions.PlatformName = "iOS";
+				appiumOptions.AutomationName = "XCUITest";
+				appiumOptions.DeviceName = "iPad (10th generation)";
+				appiumOptions.PlatformVersion = "16.2";		
+				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.Udid, "E198E6C0-0337-4990-8494-7B078BAD3070");
+				appiumOptions.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, "com.microsoft.maui.sandbox");
+			}
 		}
 
 		public string GetElementText(string elementId)
 		{
-			if (appiumDriver == null)
+			if (appiumAndroidDriver == null)
 				throw new InvalidOperationException("no appium driver");
 
-			var element = appiumDriver.FindElement(By.Id(elementId));
+			var element = appiumAndroidDriver.FindElement(By.Id(elementId));
 			var attributName = IsAndroid ? "text" : "value";
 			return element.GetAttribute(attributName);
 		}
 
-		public bool IsAndroid => appiumDriver == null ? false : appiumDriver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
+		public bool IsAndroid => Driver == null ? false : Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
 	}
 }

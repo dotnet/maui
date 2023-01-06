@@ -16,20 +16,28 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		[Test()]
 		public void TestLogin()
 		{
-			if (appiumDriver == null || App == null)
+			if (Driver == null)
 				throw new InvalidOperationException("no appium driver");
-
-			App?.WaitForElement("btnLogin");
-			App?.EnterText("entryUsername", "user@email.com");
+			//App?.WaitForElement("btnLogin");
+			//App?.EnterText("entryUsername", "user@email.com");
+			if (IsAndroid)
+			{
+				Driver.FindElement(By.Id("com.microsoft.maui.sandbox:id/entryUsername")).SendKeys("user@email.com");
+				Driver.FindElement(By.Id("com.microsoft.maui.sandbox:id/entryPassword")).SendKeys("password");
+				Driver.FindElement(By.Id("com.microsoft.maui.sandbox:id/btnLogin")).Click();
+			}
+			else
+			{
+				Driver.FindElement(By.Id("entryUsername")).SendKeys("user@email.com");
+				Driver.FindElement(By.Id("entryPassword")).SendKeys("password");
+				Driver.FindElement(By.Id("btnLogin")).Click();
+				
+			}
 			//appiumDriver.FindElement(By.Id("com.microsoft.maui.sandbox:id/btnLogin")).Click();
-			//appiumDriver.FindElement(By.Id("com.microsoft.maui.sandbox:id/entryUsername")).SendKeys("user@email.com");
-			//appiumDriver.FindElement(By.Id("com.microsoft.maui.sandbox:id/entryPassword")).SendKeys("password");
+			var text = Driver.FindElement(By.Id("lblStatus")).Text;
 
-			//appiumDriver.FindElement(By.Id("com.microsoft.maui.sandbox:id/btnLogin")).Click();
-			//var text = GetElementText("com.microsoft.maui.sandbox:id/lblStatus"); // Android is "text"
-
-			//Assert.IsNotNull(text);
-			//Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
+			Assert.IsNotNull(text);
+			Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
 		}
 
 		//[Test()]

@@ -23,7 +23,7 @@ using Xamarin.UITest.Shared.Execution;
 namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 {
 	public class TestApp<T, W> : IApp
-			where T : AppiumDriver<W>
+			where T : AppiumDriver
 			where W : IWebElement
 	{
 		public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
@@ -455,16 +455,16 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 		static AppResult ToAppResult(W windowsElement)
 		{
-			if (windowsElement is WindowsElement win)
-				return new AppResult
-				{
-					Rect = ToAppRect(windowsElement),
-					Label = win.Id, // Not entirely sure about this one
-					Description = SwapInUsefulElement(win)?.Text, // or this one
-					Enabled = win.Enabled,
-					Id = win.Id
-				};
-			else
+			//if (windowsElement is WindowsElement win)
+			//	return new AppResult
+			//	{
+			//		Rect = ToAppRect(windowsElement),
+			//		Label = win.Id, // Not entirely sure about this one
+			//		Description = SwapInUsefulElement(win)?.Text, // or this one
+			//		Enabled = win.Enabled,
+			//		Id = win.Id
+			//	};
+			//else
 				return new AppResult
 				{
 					Rect = ToAppRect(windowsElement),
@@ -472,14 +472,14 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 				};
 		}
 
-		static RemoteWebElement? SwapInUsefulElement(WindowsElement element)
-		{
-			// AutoSuggestBox on UWP has some interaction issues with WebDriver
-			// The AutomationID is set on the control group not the actual TextBox
-			// This retrieves the actual TextBox which makes the behavior more consistent
-			var isAutoSuggest = element?.FindElementsByXPath("//*[contains(@AutomationId,'_AutoSuggestBox')]")?.FirstOrDefault();
-			return isAutoSuggest ?? element;
-		}
+		//static RemoteWebElement? SwapInUsefulElement(WindowsElement element)
+		//{
+		//	// AutoSuggestBox on UWP has some interaction issues with WebDriver
+		//	// The AutomationID is set on the control group not the actual TextBox
+		//	// This retrieves the actual TextBox which makes the behavior more consistent
+		//	var isAutoSuggest = element?.FindElementsByXPath("//*[contains(@AutomationId,'_AutoSuggestBox')]")?.FirstOrDefault();
+		//	return isAutoSuggest ?? element;
+		//}
 
 		public AppWebResult[] WaitForElement(Func<AppQuery, AppWebQuery> query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
@@ -507,33 +507,33 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			{
 			
 
-				if (_engine is AppiumDriver<AndroidElement> androidDriver)
-				{
-					var resultByAccessibilityId = _engine.FindElementsByAccessibilityId(query.Marked);
-					ReadOnlyCollection<AndroidElement> resultByName;
+				//if (_engine is AppiumDriver<AndroidElement> androidDriver)
+				//{
+				//	var resultByAccessibilityId = _engine.FindElementsByAccessibilityId(query.Marked);
+				//	ReadOnlyCollection<AndroidElement> resultByName;
 
-					if (!findFirst || (resultByAccessibilityId != null))
-						resultByName = androidDriver.FindElementsById(query.Marked);
+				//	if (!findFirst || (resultByAccessibilityId != null))
+				//		resultByName = androidDriver.FindElementsById(query.Marked);
 
-					IEnumerable<W> result = resultByAccessibilityId!;
+				//	IEnumerable<W> result = resultByAccessibilityId!;
 
-					if(result != null)
-					{
-					//	result = result.Concat(resultByName?.Cast<W>())
-					}
+				//	if(result != null)
+				//	{
+				//	//	result = result.Concat(resultByName?.Cast<W>())
+				//	}
 				
 
-					//// TODO hartez 2017/10/30 09:47:44 Should this be == "*" || == "TextBox"?	
-					//// what about other controls where we might be looking by content? TextBlock?
-					//if (query.ControlType == "*")
-					//{
-					//	IEnumerable<WindowsElement> textBoxesByContent =
-					//		_engine.FindElementByClassName("TextBox").Where(e => e.Text == query.Marked);
-					//	result = result.Concat(textBoxesByContent);
-					//}
+				//	//// TODO hartez 2017/10/30 09:47:44 Should this be == "*" || == "TextBox"?	
+				//	//// what about other controls where we might be looking by content? TextBlock?
+				//	//if (query.ControlType == "*")
+				//	//{
+				//	//	IEnumerable<WindowsElement> textBoxesByContent =
+				//	//		_engine.FindElementByClassName("TextBox").Where(e => e.Text == query.Marked);
+				//	//	result = result.Concat(textBoxesByContent);
+				//	//}
 
-					return FilterControlType(result!, query.ControlType);
-				}
+				//	return FilterControlType(result!, query.ControlType);
+				//}
 			}
 			catch (Exception)
 			{
