@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Resizetizer
 				WriteColors(resizer);
 				WriteDrawable(resizer);
 				WriteDrawable_v31(resizer);
+
 				return !Log.HasLoggedErrors;
 			}
 			catch (Exception ex)
