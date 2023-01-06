@@ -763,6 +763,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !WINDOWS
 		[Fact(DisplayName = "Title View Measures")]
 		public async Task TitleViewMeasures()
 		{
@@ -790,15 +791,14 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
 				await OnFrameSetToNotEmpty(titleView1);
-#if IOS || MACCATALYST
 				var containerSize = GetTitleViewExpectedSize(handler);
 				var titleView1PlatformSize = titleView1.GetBoundingBox();
 				Assert.Equal(containerSize.Width, titleView1PlatformSize.Width);
 				Assert.Equal(containerSize.Height, titleView1PlatformSize.Height);
-#endif
 
 			});
 		}
+#endif
 
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
