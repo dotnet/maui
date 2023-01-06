@@ -141,7 +141,7 @@ Some platforms do not count netstandard as part of net7 - such as Windows - so i
 
 #### Targets in Core
 
-The targets and props for Core all live in the root of the buildTransitive so that all platforms can have access to them without having to have duplicates or files importing them per TFM. Windows is the expection to this because it has to set some platform-specific properties. There are some Windows-specific targets and tasks in the root, but they are conditioned to the Windows TFM. This makes maintainance easier if everything is in a single file.
+The targets and props for Core all live in the root of the buildTransitive so that all platforms can have access to them without having to have duplicates or files importing them per TFM. Windows is the exception to this because it has to set some platform-specific properties. There are some Windows-specific targets and tasks in the root, but they are conditioned to the Windows TFM. This makes maintainence easier if everything is in a single file.
 
 Since we have added a Windows TFM folder, NuGet stops looking at the root of the buildTransitive folder for targets and props. As a result, the Windows targets and props just import the root files after setting any platform-specific properties.
 
@@ -151,7 +151,7 @@ The targets and tasks in this NuGet are pretty minimal and really just set some 
 
 The targets and props in Resizetizer are pretty standard and really all fit into 1 file. However, to be consistent we have the 4 base files.
 
-The properties, targets and tasks are all imported on all platforms and are condiitoned per TFM.
+The properties, targets and tasks are all imported on all platforms and are conditioned per TFM.
 
 #### Targets in Blazor WebView
 
