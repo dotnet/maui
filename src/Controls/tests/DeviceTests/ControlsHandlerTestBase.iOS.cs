@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -127,6 +128,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			var navController = visibleController.NavigationController;
 			return navController?.NavigationBar;
+		}
+
+		protected Size GetTitleViewExpectedSize(IElementHandler handler)
+		{
+			var titleContainer = GetPlatformToolbar(handler).FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			return new Size(titleContainer.Frame.Width, titleContainer.Frame.Height);
 		}
 
 		protected string GetToolbarTitle(IElementHandler handler)

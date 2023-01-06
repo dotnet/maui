@@ -133,6 +133,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var platformFrame = new Rect(0, 0, Width ?? Frame.Width, Height ?? MeasuredHeight);
+
+			var width = Width ?? Frame.Width;
+			var height = Height ?? MeasuredHeight;
+
+			if (MatchHeight)
+			{
+				(_view as IView).Measure(width, height);
+			}
+
 			(_view as IView).Arrange(platformFrame);
 		}
 

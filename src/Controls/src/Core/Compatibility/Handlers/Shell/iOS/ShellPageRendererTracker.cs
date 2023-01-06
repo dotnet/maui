@@ -533,7 +533,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
+			public override void LayoutSubviews()
+			{
+				if (Height == null || Height == 0)
+				{
+					UpdateFrame(Superview);
+				}
+
+				base.LayoutSubviews();
+			}
+
 			public override void WillMoveToSuperview(UIView newSuper)
+			{
+				UpdateFrame(newSuper);
+				base.WillMoveToSuperview(newSuper);
+			}
+
+			void UpdateFrame(UIView newSuper)
 			{
 				if (newSuper != null)
 				{
@@ -542,8 +558,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					Height = newSuper.Bounds.Height;
 				}
-
-				base.WillMoveToSuperview(newSuper);
 			}
 
 			public override CGSize IntrinsicContentSize => UILayoutFittingExpandedSize;
