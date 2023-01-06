@@ -443,11 +443,11 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			throw new NotImplementedException();
 		}
 
-		ReadOnlyCollection<AppiumElement> QueryWindows(AppiumQuery query, bool findFirst = false)
+		ReadOnlyCollection<AppiumElement> QueryAppium(AppiumQuery query, bool findFirst = false)
 		{
 			try
 			{
-				return _driver.FindElements(By.Id(query.Marked));
+				return _driver.FindElements(MobileBy.Id(query.Marked));
 			}
 			catch (Exception)
 			{
@@ -458,13 +458,13 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 		ReadOnlyCollection<AppiumElement> QueryWindows(string marked, bool findFirst = false)
 		{
 			AppiumQuery winQuery = AppiumQuery.FromMarked(_appId, marked, IsAndroid);
-			return QueryWindows(winQuery, findFirst);
+			return QueryAppium(winQuery, findFirst);
 		}
 
 		ReadOnlyCollection<AppiumElement> QueryWindows(Func<AppQuery, AppQuery> query, bool findFirst = false)
 		{
 			AppiumQuery winQuery = AppiumQuery.FromQuery(query,IsAndroid);
-			return QueryWindows(winQuery, findFirst);
+			return QueryAppium(winQuery, findFirst);
 		}
 
 		ReadOnlyCollection<AppiumElement> FilterControlType(IEnumerable<AppiumElement> elements, string controlType)
@@ -548,7 +548,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 		AppiumElement? FindFirstElement(AppiumQuery query)
 		{
 			Func<ReadOnlyCollection<AppiumElement>> fquery =
-				() => QueryWindows(query, true);
+				() => QueryAppium(query, true);
 
 			string timeoutMessage = $"Timed out waiting for element: {query.Raw}";
 

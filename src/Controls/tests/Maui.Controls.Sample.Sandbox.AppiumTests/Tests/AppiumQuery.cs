@@ -74,6 +74,5 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 		{
 			return $"{nameof(ControlType)}: {ControlType}, {nameof(Marked)}: {Marked}";
 		}
-
 	}
 }

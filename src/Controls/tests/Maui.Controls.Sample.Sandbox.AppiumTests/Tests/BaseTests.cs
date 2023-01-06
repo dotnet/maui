@@ -9,6 +9,8 @@ using NUnit.Framework;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Mac;
+using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Appium.Interfaces;
 using Xamarin.UITest;
 using Maui.Controls.Sample.Sandbox.AppiumTests.Tests;
@@ -20,15 +22,16 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 	public class BaseTest
 	{
 		protected AppiumDriver? Driver;
-		protected readonly AppiumOptions appiumOptions;
-		protected readonly Uri _driverUri;
-
-		bool _isAndroid = true;
-		bool _isIos = false;
+		readonly AppiumOptions appiumOptions;
+		readonly Uri _driverUri;
+		readonly TestDevice _testDevice = TestDevice.Mac;
 		string? _appId;
 		IApp? _app;
 
 		public IApp? App => _app;
+
+		public bool IsAndroid => Driver == null ? false : Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
+
 
 		public BaseTest(string testName)
 		{
@@ -49,7 +52,10 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 			string appId = "com.microsoft.maui.sandbox";
 			Driver = GetDriver(appId);
 			_app = new TestApp(appId, Driver);
-			Driver?.ActivateApp(appId);
+
+			//Mac is throwing if we call ActivateApp
+			if (_testDevice != TestDevice.Mac)
+				Driver?.ActivateApp(appId);
 		}
 
 		[OneTimeTearDown()]
@@ -62,59 +68,53 @@ namespace Maui.Controls.Sample.Sandbox.Tests
 		{
 			_appId = appId;
 
-			if (_isAndroid)
+			switch (_testDevice)
 			{
-				return GetDriverAndroid(appId);
+				case TestDevice.Android:
+					return new AndroidDriver(_driverUri, appiumOptions);
+				case TestDevice.iOS:
+					return new IOSDriver(_driverUri, appiumOptions);
+				case TestDevice.Mac:
+					return new MacDriver(_driverUri, appiumOptions);
+				case TestDevice.Windows:
+					return new WindowsDriver(_driverUri, appiumOptions);
+				default:
+					return null;
 			}
-			if (_isIos)
-			{
-				return GetDriverIos(appId);
-			}
-
-			return  null;
-		}
-
-		protected virtual AppiumDriver GetDriverAndroid(string appId)
-		{
-			return new AndroidDriver(_driverUri, appiumOptions);
-		}
-
-		protected virtual AppiumDriver GetDriverIos(string appId)
-		{
-			return new IOSDriver(_driverUri, appiumOptions);
 		}
 
 		protected virtual void InitAppiumOptions(AppiumOptions appiumOptions)
 		{
-			if (_isAndroid)
+			switch (_testDevice)
 			{
-				appiumOptions.PlatformName = "Android";
-				appiumOptions.AutomationName = "UiAutomator2";
-				//appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.DeviceName, "pixel_5_-_api_30");
-				//appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.Udid, "emulator-5554");
-				//appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, "Android");
-				//appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, "com.microsoft.maui.sandbox");
-				//appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, "crc64fa090d87c1ce7f0b.MainActivity");
-			}
-			if (_isIos)
-			{
-				appiumOptions.PlatformName = "iOS";
-				appiumOptions.AutomationName = "XCUITest";
-				appiumOptions.DeviceName = "iPad (10th generation)";
-				appiumOptions.PlatformVersion = "16.2";
-				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.Udid, "E198E6C0-0337-4990-8494-7B078BAD3070");
-				appiumOptions.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, "com.microsoft.maui.sandbox");
+				case TestDevice.Android:
+					appiumOptions.PlatformName = "Android";
+					appiumOptions.AutomationName = "UiAutomator2";
+					break;
+				case TestDevice.iOS:
+					appiumOptions.PlatformName = "iOS";
+					appiumOptions.AutomationName = "XCUITest";
+					appiumOptions.DeviceName = "iPad (10th generation)";
+					appiumOptions.PlatformVersion = "16.2";
+					appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.Udid, "E198E6C0-0337-4990-8494-7B078BAD3070");
+					appiumOptions.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, "com.microsoft.maui.sandbox");
+					break;
+				case TestDevice.Mac:
+					appiumOptions.PlatformName = "mac";
+					appiumOptions.AutomationName = "mac2";
+					appiumOptions.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, "com.microsoft.maui.sandbox");
+					break;
+				case TestDevice.Windows:
+					break;
 			}
 		}
 
-		public string GetElementId(string elementId)
+		internal string GetElementId(string elementId)
 		{
 			if (IsAndroid)
 				return $"{_appId}:id/{elementId}";
-		
+
 			return elementId;
 		}
-
-		public bool IsAndroid => Driver == null ? false : Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
 	}
 }

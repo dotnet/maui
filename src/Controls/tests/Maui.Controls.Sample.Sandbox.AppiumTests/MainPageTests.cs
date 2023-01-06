@@ -19,10 +19,10 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 			if (Driver == null)
 				throw new InvalidOperationException("no appium driver");
 
-			Driver.FindElement(By.Id(GetElementId("entryUsername"))).SendKeys("user@email.com");
-			Driver.FindElement(By.Id(GetElementId("entryPassword"))).SendKeys("password");
-			Driver.FindElement(By.Id(GetElementId("btnLogin"))).Click();
-			var text = Driver.FindElement(By.Id(GetElementId("lblStatus"))).Text;
+			Driver.FindElement(MobileBy.Id(GetElementId("entryUsername"))).SendKeys("user@email.com");
+			Driver.FindElement(MobileBy.Id(GetElementId("entryPassword"))).SendKeys("password");
+			Driver.FindElement(MobileBy.Id(GetElementId("btnLogin"))).Click();
+			var text = Driver.FindElement(MobileBy.Id(GetElementId("lblStatus"))).Text;
 
 			Assert.IsNotNull(text);
 			Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
