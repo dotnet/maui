@@ -145,8 +145,8 @@ namespace Microsoft.Maui.DeviceTests
 					view.Loaded += OnViewLoaded;
 
 					// attach to the UI
-				  Grid grid;
-				  var window = new Window
+					Grid grid;
+					var window = new Window
 					{
 						Content = new Grid
 						{
