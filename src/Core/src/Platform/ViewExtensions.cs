@@ -117,5 +117,20 @@ namespace Microsoft.Maui.Platform
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 #endif
+
+		static bool AreAncestorsEnabled(IView view)
+		{
+			if (view.Parent is IView parentView)
+			{
+				if (!parentView.IsEnabled)
+				{
+					return false;
+				}
+
+				return AreAncestorsEnabled(parentView);
+			}
+
+			return true;
+		}
 	}
 }

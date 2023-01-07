@@ -59,7 +59,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this AView platformView, IView view)
 		{
-			platformView.Enabled = view.IsEnabled;
+			var ancestorsEnabled = AreAncestorsEnabled(view);
+			platformView.Enabled = view.IsEnabled && ancestorsEnabled;
 		}
 
 		public static void Focus(this AView platformView, FocusRequest request)

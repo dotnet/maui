@@ -27,8 +27,11 @@ namespace Microsoft.Maui.Platform
 				FocusManager.TryMoveFocus(direction, new FindNextElementOptions { SearchRoot = elem });
 		}
 
-		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view) =>
-			(platformView as Control)?.UpdateIsEnabled(view.IsEnabled);
+		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view)
+		{
+			var ancestorsEnabled = AreAncestorsEnabled(view);
+			(platformView as Control)?.UpdateIsEnabled(view.IsEnabled && ancestorsEnabled);
+		}
 
 		public static void Focus(this FrameworkElement platformView, FocusRequest request)
 		{

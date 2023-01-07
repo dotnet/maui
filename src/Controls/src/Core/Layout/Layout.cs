@@ -328,19 +328,19 @@ namespace Microsoft.Maui.Controls
 
 		internal static void MapIsEnabled(ILayoutHandler handler, Layout layout)
 		{
-			layout.UpdateDescendantIsEnabled();
+			layout.UpdateDescendantsEnabled();
 		}
 
-		void UpdateDescendantIsEnabled() 
+		void UpdateDescendantsEnabled() 
 		{
 			var isEnabled = IsEnabled;
 
-			// Set all the child IsEnabled values to match this one
+			// Let all the child views know they should update their IsEnabled mappings
 			for (int n = 0; n < Count; n++)
 			{
 				if (this[n] is VisualElement visualElement)
 				{
-					visualElement.IsEnabled = isEnabled;
+					visualElement.Handler?.UpdateValue(nameof(IsEnabled));
 				}
 			}
 		}

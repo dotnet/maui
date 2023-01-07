@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Platform
 			if (platformView is not UIControl uiControl)
 				return;
 
-			uiControl.Enabled = view.IsEnabled;
+			var ancestorsEnabled = AreAncestorsEnabled(view);
+			uiControl.Enabled = view.IsEnabled && ancestorsEnabled;
 		}
 
 		public static void Focus(this UIView platformView, FocusRequest request)
