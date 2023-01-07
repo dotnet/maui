@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			var width = WidthForPathComputation;
 			var height = HeightForPathComputation;
-		
+
 			var path = new PathF();
 
 			float x = (float)StrokeThickness / 2;
