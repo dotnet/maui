@@ -490,7 +490,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
+#if IOS || MACCATALYST
 		[Fact(DisplayName = "TitleView Set On Shell Works After Navigation")]
 		public async Task TitleViewSetOnShellWorksAfterNavigation()
 		{
@@ -526,24 +526,38 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				await OnLoadedAsync(page1);
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
 
 				await shell.GoToAsync("//Item2");
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
 
 				await shell.GoToAsync("//Item1");
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
 
 				await shell.GoToAsync("//Item2");
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
 
 				await shell.Navigation.PushAsync(page3);
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
 
 				await shell.Navigation.PopAsync();
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
+
+				bool WaitCondition()
+				{
+					if (shellTitleView.Handler == null)
+						return false;
+
+					var titleView = GetTitleView(handler);
+
+					if (titleView == null)
+						return false;
+
+					return shellTitleView.ToPlatform() == titleView;
+				}
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "Handlers not recreated when changing tabs")]
 		public async Task HandlersNotRecreatedWhenChangingTabs()

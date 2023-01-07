@@ -118,10 +118,15 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var shell = handler.VirtualView as Shell;
 				var currentPage = shell.CurrentPage;
-				var pagePlatformView = currentPage.Handler.PlatformView as AView;
-				var parentContainer = pagePlatformView.GetParentOfType<CoordinatorLayout>();
-				var toolbar = parentContainer.GetFirstChildOfType<MaterialToolbar>();
-				return toolbar;
+
+				if (currentPage?.Handler?.PlatformView is AView pagePlatformView)
+				{
+					var parentContainer = pagePlatformView.GetParentOfType<CoordinatorLayout>();
+					var toolbar = parentContainer?.GetFirstChildOfType<MaterialToolbar>();
+					return toolbar;
+				}
+
+				return null;
 			}
 			else
 			{
