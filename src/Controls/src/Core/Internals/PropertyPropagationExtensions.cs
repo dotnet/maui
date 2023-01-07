@@ -127,11 +127,13 @@ namespace Microsoft.Maui.Controls.Internals
 			var ctx = visualElement.GetContext(VisualElement.IsEnabledProperty);
 			if (ctx?.Binding is not null)
 			{
+				// support bound properties
 				if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
 					ctx.Binding.Apply(false);
 			}
 			else
 			{
+				// support normal/code properties
 				visualElement.IsEnabled = (bool)visualElement.GetValue(VisualElement.UnCoercedIsEnabledProperty);
 			}
 		}
