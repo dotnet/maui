@@ -148,7 +148,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Clip Initializes ContainerView Correctly")]
-		public async Task ContainerViewInitializesCorrectly()
+		public async virtual Task ContainerViewInitializesCorrectly()
 		{
 			var view = new TStub
 			{

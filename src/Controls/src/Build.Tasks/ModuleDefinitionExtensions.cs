@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static MethodReference ImportCtorReference(this ModuleDefinition module, XamlCache cache, (string assemblyName, string clrNamespace, string typeName) type, int paramCount)
 		{
 			var ctorKey = $"{type}.ctor({(string.Join(",", Enumerable.Repeat("_", paramCount)))})";
-			return cache.GetOrAddMethodReference (module, ctorKey, x => x.module.ImportCtorReference(cache, x.module.GetTypeDefinition(cache, type), null, md => md.Parameters.Count == paramCount));
+			return cache.GetOrAddMethodReference(module, ctorKey, x => x.module.ImportCtorReference(cache, x.module.GetTypeDefinition(cache, type), null, md => md.Parameters.Count == paramCount));
 		}
 
 		public static MethodReference ImportCtorReference(this ModuleDefinition module, XamlCache cache, TypeReference type, int paramCount)
