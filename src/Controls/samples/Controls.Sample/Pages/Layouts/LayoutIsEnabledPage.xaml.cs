@@ -7,11 +7,13 @@ namespace Maui.Controls.Sample.Pages
 	{
 		bool isLayoutEnabled;
 		bool isButtonEnabled;
+		bool isCommandEnabled;
 
 		public LayoutIsEnabledPage()
 		{
 			InitializeComponent();
 
+			TheCommand = new Command(OnThe, OnTheCanExecute);
 			BindingContext = this;
 		}
 
@@ -35,6 +37,19 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
+		public bool IsCommandEnabled
+		{
+			get => isCommandEnabled;
+			set
+			{
+				isCommandEnabled = value;
+				OnPropertyChanged();
+				TheCommand.ChangeCanExecute();
+			}
+		}
+
+		public Command TheCommand { get; }
+
 		void OnDisableLayoutBtnClicked(object sender, EventArgs e)
 		{
 			MainLayout.IsEnabled = !MainLayout.IsEnabled;
@@ -45,10 +60,19 @@ namespace Maui.Controls.Sample.Pages
 		void OnDisableButtonBtnClicked(object sender, EventArgs e)
 		{
 			DisabledButton.IsEnabled = !DisabledButton.IsEnabled;
+			DisabledCommandButton.IsEnabled = !DisabledCommandButton.IsEnabled;
 
 			DisabledButton.Text = DisabledButton.IsEnabled ? "Enabled" : "Disabled";
+			DisabledCommandButton.Text = DisabledCommandButton.IsEnabled ? "Enabled" : "Disabled";
 
 			((Button)sender).Text = DisabledButton.IsEnabled ? "Disable Button" : "Enable Button";
 		}
+
+		void OnThe()
+		{
+			System.Diagnostics.Debug.WriteLine("On THE clicked!");
+		}
+
+		bool OnTheCanExecute() => isCommandEnabled;
 	}
 }

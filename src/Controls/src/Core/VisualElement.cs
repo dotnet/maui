@@ -482,6 +482,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
+		internal virtual bool IsEnabledCore => true;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsFocused']/Docs/*" />
 		public bool IsFocused => (bool)GetValue(IsFocusedProperty);
 
@@ -1178,7 +1180,7 @@ namespace Microsoft.Maui.Controls
 
 			var parent = element.Parent as VisualElement;
 			if (parent is null || parent.IsEnabled)
-				return true;
+				return element.IsEnabledCore;
 
 			return false;
 		}

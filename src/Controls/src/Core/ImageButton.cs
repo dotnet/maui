@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageButton']/Docs/*" />
-	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, IImageElement
+	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, ICommandElement, IImageElement
 	{
 		const int DefaultCornerRadius = -1;
 
@@ -125,11 +125,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SourceProperty, value); }
 		}
 
-		bool IButtonElement.IsEnabledCore
-		{
-			set { SetValueCore(IsEnabledProperty, value); }
-		}
-
 		protected override void OnBindingContextChanged()
 		{
 			ImageElement.OnBindingContextChanged(this, this);
@@ -227,9 +222,6 @@ namespace Microsoft.Maui.Controls
 		void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
 			ImageElement.ImageSourceSourceChanged(this, e);
 
-		void IButtonElement.OnCommandCanExecuteChanged(object sender, EventArgs e) =>
-			ButtonElement.CommandCanExecuteChanged(this, EventArgs.Empty);
-
 		bool IImageElement.IsAnimationPlaying
 		{
 			get => false;
@@ -242,5 +234,17 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBorderWidthSet() => IsSet(BorderWidthProperty);
 
 		bool IImageController.GetLoadAsAnimation() => false;
+
+		void ICommandElement.OnCanExecuteChanged(object sender, EventArgs e) =>
+			CommandElement.CanExecuteChanged(this, EventArgs.Empty);
+
+		void ICommandElement.SetCanExecute(bool canExecute)
+		{
+			CommandElement.SetCanExecute(this, canExecute);
+			(this as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
+		}
+
+		internal override bool IsEnabledCore =>
+			base.IsEnabledCore && CommandElement.GetCanExecute(this);
 	}
 }
