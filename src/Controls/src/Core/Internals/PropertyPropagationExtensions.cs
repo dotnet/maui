@@ -16,6 +16,9 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
 				SetWindowFromParent(element);
 
+			if (propertyName == null || propertyName == VisualElement.IsEnabledProperty.PropertyName)
+				SetIsEnabledFromParent(element);
+
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
@@ -43,6 +46,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
 				PropagateWindow(target, source);
+
+			if (propertyName == null || propertyName == VisualElement.IsEnabledProperty.PropertyName)
+				PropagateIsEnabled(target, source);
 
 			if (target is IPropertyPropagationController view)
 				view.PropagatePropertyChanged(propertyName);
@@ -111,6 +117,28 @@ namespace Microsoft.Maui.Controls.Internals
 		internal static void SetWindowFromParent(Element child)
 		{
 			PropagateWindow(child, child.Parent);
+		}
+
+		internal static void PropagateIsEnabled(Element target, Element source)
+		{
+			if (target is not VisualElement visualElement)
+				return;
+
+			var ctx = visualElement.GetContext(VisualElement.IsEnabledProperty);
+			if (ctx?.Binding is not null)
+			{
+				if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
+					ctx.Binding.Apply(false);
+			}
+			else
+			{
+				visualElement.IsEnabled = (bool)visualElement.GetValue(VisualElement.UnCoercedIsEnabledProperty);
+			}
+		}
+
+		internal static void SetIsEnabledFromParent(Element child)
+		{
+			PropagateIsEnabled(child, child.Parent);
 		}
 	}
 }

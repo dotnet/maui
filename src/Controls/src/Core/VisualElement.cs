@@ -23,9 +23,11 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InputTransparentProperty']/Docs/*" />
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
 
+		internal static readonly BindableProperty UnCoercedIsEnabledProperty = BindableProperty.Create("UnCoercedIsEnabled", typeof(bool), typeof(VisualElement), true);
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool),
-			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged);
+			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly("X", typeof(double), typeof(VisualElement), default(double));
 
@@ -1159,6 +1161,27 @@ namespace Microsoft.Maui.Controls
 			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.FlowDirectionProperty.PropertyName);
 		}
 
+		static object CoerceIsEnabledProperty(BindableObject bindable, object value)
+		{
+			var element = (VisualElement)bindable;
+
+			// Always store the desired value for later when something changes
+			element.SetValue(UnCoercedIsEnabledProperty, value);
+			
+			// We must be false if our parent is false, but we can be
+			// either true or false if our parent is true.
+			// Another way of saying this is that we can only be true
+			// if our parent is true, but we can always be false.
+
+			if (value is not bool isEnabled || !isEnabled)
+				return false;
+
+			var parent = element.Parent as VisualElement;
+			if (parent is null || parent.IsEnabled)
+				return true;
+
+			return false;
+		}
 
 		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -1168,6 +1191,8 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			element.ChangeVisualState();
+
+			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
 		}
 
 		static void OnIsFocusedPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
