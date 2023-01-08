@@ -163,7 +163,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "ContainerView Remains If Shadow Mapper Runs Again")]
-		public async Task ContainerViewRemainsIfShadowMapperRunsAgain()
+		public virtual async Task ContainerViewRemainsIfShadowMapperRunsAgain()
 		{
 			var view = new TStub
 			{
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "ContainerView Adds And Removes")]
-		public async Task ContainerViewAddsAndRemoves()
+		public virtual async Task ContainerViewAddsAndRemoves()
 		{
 			var view = new TStub
 			{
