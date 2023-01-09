@@ -47,21 +47,22 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		[Test]
 		public void ResolveGenericReturnType()
 		{
+			var cache = new XamlCache();
 			var type = module.ImportReference(typeof(GenericClass<bool, string, int>));
 
-			var getter = type.GetMethods(md => md.Name == "NonGeneric", module).Single();
+			var getter = type.GetMethods(cache, md => md.Name == "NonGeneric", module).Single();
 			var returnType = getter.Item1.ResolveGenericReturnType(getter.Item2, module);
 			Assert.AreEqual("System.Object", returnType.FullName);
 
-			getter = type.GetMethods(md => md.Name == "GenericT", module).Single();
+			getter = type.GetMethods(cache, md => md.Name == "GenericT", module).Single();
 			returnType = getter.Item1.ResolveGenericReturnType(getter.Item2, module);
 			Assert.AreEqual("System.Boolean", returnType.FullName);
 
-			getter = type.GetMethods(md => md.Name == "GenericU", module).Single();
+			getter = type.GetMethods(cache, md => md.Name == "GenericU", module).Single();
 			returnType = getter.Item1.ResolveGenericReturnType(getter.Item2, module);
 			Assert.AreEqual("System.String", returnType.FullName);
 
-			getter = type.GetMethods(md => md.Name == "GenericV", module).Single();
+			getter = type.GetMethods(cache, md => md.Name == "GenericV", module).Single();
 			returnType = getter.Item1.ResolveGenericReturnType(getter.Item2, module);
 			Assert.AreEqual("System.Int32", returnType.FullName);
 		}
