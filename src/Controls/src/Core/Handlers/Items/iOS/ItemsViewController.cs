@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// original layout. So it's unlikely that you would ever want to use .Layout; use .ItemsViewLayout instead.
 		// See https://developer.apple.com/documentation/uikit/uicollectionviewcontroller/1623980-collectionviewlayout
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
-				
+
 		bool _initialized;
 		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
