@@ -14,13 +14,10 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		[Test()]
 		public void TestLogin()
 		{
-			if (Driver == null)
-				throw new InvalidOperationException("no appium driver");
-
-			Driver.FindElement(MobileBy.Id(GetElementId("entryUsername"))).SendKeys("user@email.com");
-			Driver.FindElement(MobileBy.Id(GetElementId("entryPassword"))).SendKeys("password");
-			Driver.FindElement(MobileBy.Id(GetElementId("btnLogin"))).Click();
-			var text = Driver.FindElement(MobileBy.Id(GetElementId("lblStatus"))).Text;
+			Driver?.FindElement(MobileBy.Id(GetElementId("entryUsername"))).SendKeys("user@email.com");
+			Driver?.FindElement(MobileBy.Id(GetElementId("entryPassword"))).SendKeys("password");
+			Driver?.FindElement(MobileBy.Id(GetElementId("btnLogin"))).Click();
+			var text = Driver?.FindElement(MobileBy.Id(GetElementId("lblStatus"))).Text ?? "";
 
 			Assert.IsNotNull(text);
 			Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
@@ -29,8 +26,6 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		[Test()]
 		public void TestLoginUITest()
 		{
-			if (Driver == null)
-				throw new InvalidOperationException("no appium driver");
 			App?.WaitForElement("btnLogin");
 			App?.EnterText("entryUsername", "user@email.com");
 			App?.EnterText("entryPassword", "password");

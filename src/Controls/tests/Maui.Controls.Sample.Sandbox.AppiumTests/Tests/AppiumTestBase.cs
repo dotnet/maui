@@ -35,17 +35,39 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 			//this crashes on Android
 			Driver?.ResetApp();
 		}
+
+
+		[OneTimeSetUp]
+		public void OneTimeSetup()
+		{
+			InitAppiumOptions(appiumOptions);
+
+			string appId = "com.microsoft.maui.sandbox";
+			Driver = GetDriver(appId);
+			_app = new TestApp(appId, Driver);
+
+			//Mac is throwing if we call ActivateApp
+			if (_testDevice != TestDevice.Mac || _testDevice != TestDevice.Windows)
+				Driver?.ActivateApp(appId);
+		}
+
+		[OneTimeTearDown()]
+		public void OneTimeTearDown()
+		{
+			Driver?.Quit();
+		}
+
 	}
 
 	[SetUpFixture]
 	public class AppiumTestBase
 	{
 		protected AppiumDriver? Driver;
-		readonly AppiumOptions appiumOptions;
+		internal  AppiumOptions appiumOptions;
 		readonly Uri _driverUri;
 		internal TestDevice _testDevice;
 		string? _appId;
-		IApp? _app;
+		internal IApp? _app;
 
 		public IApp? App => _app;
 
@@ -60,26 +82,6 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 			appiumOptions.AddAdditionalAppiumOption("reportFormat", "xml");
 		//	appiumOptions.AddAdditionalAppiumOption("testName", testName);
 			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "false");
-		}
-
-		[OneTimeSetUp]
-		public void OneTimeSetup()
-		{
-			InitAppiumOptions(appiumOptions);
-
-			string appId = "com.microsoft.maui.sandbox";
-			Driver = GetDriver(appId);
-			_app = new TestApp(appId, Driver);
-
-			//Mac is throwing if we call ActivateApp
-			if (_testDevice != TestDevice.Mac)
-				Driver?.ActivateApp(appId);
-		}
-
-		[OneTimeTearDown()]
-		public void OneTimeTearDown()
-		{
-			Driver?.Quit();
 		}
 
 		protected virtual AppiumDriver? GetDriver(string appId)
@@ -108,6 +110,9 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 				case TestDevice.Android:
 					appiumOptions.PlatformName = "Android";
 					appiumOptions.AutomationName = "UiAutomator2";
+					appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, "com.microsoft.maui.sandbox");
+					// activity { com.microsoft.maui.sandbox / crc64fa090d87c1ce7f0b.MainActivity}
+					//appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, "MainActivity");
 					break;
 				case TestDevice.iOS:
 					appiumOptions.PlatformName = "iOS";
@@ -123,6 +128,10 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 					appiumOptions.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, "com.microsoft.maui.sandbox");
 					break;
 				case TestDevice.Windows:
+					appiumOptions.PlatformName = "windows";
+					appiumOptions.DeviceName = "WindowsPC";
+					appiumOptions.AutomationName = "Windows";
+					appiumOptions.App = "D:\\repos\\dotnet\\maui\\src\\Controls\\samples\\Controls.Sample.Sandbox\\bin\\Debug\\net7.0-windows10.0.19041\\win10-x64\\Maui.Controls.Sample.Sandbox.exe";
 					break;
 			}
 		}
