@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 //using Microsoft.Maui.Controls.Shapes;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InputTransparentProperty']/Docs/*" />
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
 
-		internal static readonly BindableProperty UnCoercedIsEnabledProperty = BindableProperty.Create("UnCoercedIsEnabled", typeof(bool), typeof(VisualElement), true);
+		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool),
@@ -482,7 +483,24 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
-		internal virtual bool IsEnabledCore => true;
+		internal virtual bool IsEnabledCore 
+		{
+			get 
+			{
+				if (_isEnabledExplicit == false)
+				{
+					// If the explicitly set value is false, then nothing else matters
+					// And we can save the effort of a Parent check
+					return false;
+				}
+
+				var parent = Parent as VisualElement;
+				if (parent is not null && !parent.IsEnabled)
+					return false;
+
+				return _isEnabledExplicit;
+			}
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsFocused']/Docs/*" />
 		public bool IsFocused => (bool)GetValue(IsFocusedProperty);
@@ -1167,20 +1185,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var element = (VisualElement)bindable;
 
-			// Always store the desired value for later when something changes
-			element.SetValue(UnCoercedIsEnabledProperty, value);
-			
-			// We must be false if our parent is false, but we can be
-			// either true or false if our parent is true.
-			// Another way of saying this is that we can only be true
-			// if our parent is true, but we can always be false.
-
-			if (value is not bool isEnabled || !isEnabled)
-				return false;
-
-			var parent = element.Parent as VisualElement;
-			if (parent is null || parent.IsEnabled)
-				return element.IsEnabledCore;
+			if (bindable is VisualElement visualElement)
+			{
+				visualElement._isEnabledExplicit = (bool)value;
+				return visualElement.IsEnabledCore;
+			}
 
 			return false;
 		}
@@ -1253,6 +1262,22 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
+			if (propertyName == null || propertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
+				var ctx = GetContext(VisualElement.IsEnabledProperty);
+				if (ctx?.Binding is not null)
+				{
+					// support bound properties
+					if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
+						ctx.Binding.Apply(false);
+				}
+				else
+				{
+					// support normal/code properties
+					IsEnabled = _isEnabledExplicit;
+				}
+			}
+			
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 

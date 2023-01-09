@@ -44,8 +44,11 @@ namespace Microsoft.Maui.Controls
 				commandElement.SetCanExecute(command.CanExecute(commandElement.CommandParameter));
 		}
 
-		public static void SetCanExecute(BindableObject bo, bool canExecute) =>
+		public static void SetCanExecute(BindableObject bo, bool canExecute) 
+		{
 			bo.SetValue(CanExecuteProperty, canExecute);
+			(bo as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
+		}
 
 		public static bool GetCanExecute(BindableObject bo) =>
 			(bool)bo.GetValue(CanExecuteProperty);
