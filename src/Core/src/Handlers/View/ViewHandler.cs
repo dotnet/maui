@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Handlers
 
 			UpdateHasContainer(handler, border != null);
 
- 			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
+			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view);

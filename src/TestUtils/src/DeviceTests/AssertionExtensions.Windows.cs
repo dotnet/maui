@@ -83,34 +83,45 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task AttachAndRun(this FrameworkElement view, Action action) =>
-			view.AttachAndRun(() =>
+			view.AttachAndRun(window => action());
+
+		public static Task AttachAndRun(this FrameworkElement view, Action<Window> action) =>
+			view.AttachAndRun((window) =>
 			{
-				action();
+				action(window);
 				return Task.FromResult(true);
 			});
 
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action) =>
-			view.AttachAndRun(() =>
+			view.AttachAndRun(window => action());
+
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action) =>
+			view.AttachAndRun((window) =>
 			{
-				var result = action();
+				var result = action(window);
 				return Task.FromResult(result);
 			});
 
 		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
-			view.AttachAndRun(async () =>
+			view.AttachAndRun(window => action());
+
+		public static Task AttachAndRun(this FrameworkElement view, Func<Window, Task> action) =>
+			view.AttachAndRun(async (window) =>
 			{
-				await action();
+				await action(window);
 				return true;
 			});
 
-		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action)
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action) =>
+			view.AttachAndRun(window => action());
+
+		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action)
 		{
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
 			TaskCompletionSource? tcs = null;
 			TaskCompletionSource? unloadedTcs = null;
-			Window? window = null;
 
 			if (view.Parent == null)
 			{
@@ -122,7 +133,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// attach to the UI
 				Grid grid;
-				window = new Window
+				var window = new Window
 				{
 					Content = new Grid
 					{
@@ -151,7 +162,7 @@ namespace Microsoft.Maui.DeviceTests
 				T result;
 				try
 				{
-					result = await Run(action);
+					result = await Run(() => action(window));
 				}
 				finally
 				{
@@ -165,7 +176,8 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			else
 			{
-				return await Run(action);
+				var window = view.GetParentOfType<Window>() ?? throw new InvalidOperationException("View was attached to a window but there was no window.");
+				return await Run(() => action(window));
 			}
 
 			static async Task<T> Run(Func<Task<T>> action)
@@ -187,18 +199,25 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task<CanvasBitmap> ToBitmap(this FrameworkElement view) =>
-			view.AttachAndRun(async () =>
+			view.AttachAndRun(async (window) =>
 			{
 				if (view.Parent is Border wrapper)
 					view = wrapper;
+
+				var device = CanvasDevice.GetSharedDevice();
+
+				// HELP?
+				// The simple act of doing a window capture results in the next render method
+				// working on DirectX controls (such as Win2D).
+				// We could use this window bitmap directly, but that is extra effort to crop
+				// to the view bounds... so until this breaks...
+				using var windowBitmap = await CaptureHelper.RenderAsync(window, device);
 
 				var bmp = new RenderTargetBitmap();
 				await bmp.RenderAsync(view);
 				var pixels = await bmp.GetPixelsAsync();
 				var width = bmp.PixelWidth;
 				var height = bmp.PixelHeight;
-
-				var device = CanvasDevice.GetSharedDevice();
 
 				return CanvasBitmap.CreateFromBytes(device, pixels, width, height, DirectXPixelFormat.B8G8R8A8UIntNormalized);
 			});
