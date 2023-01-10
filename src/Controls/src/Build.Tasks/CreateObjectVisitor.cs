@@ -48,8 +48,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			var typeref = Module.ImportReference(node.XmlType.GetTypeReference(Module, node));
-			TypeDefinition typedef = typeref.ResolveCached();
+			var typeref = Module.ImportReference(node.XmlType.GetTypeReference(Context.Cache, Module, node));
+			TypeDefinition typedef = typeref.ResolveCached(Context.Cache);
 
 			if (IsXaml2009LanguagePrimitive(node))
 			{
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			//if this is a MarkupExtension that can be compiled directly, compile and returns the value
 			var compiledMarkupExtensionName = typeref
-				.GetCustomAttribute(Module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))
+				.GetCustomAttribute(Context.Cache, Module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))
 				?.ConstructorArguments?[0].Value as string;
 			Type compiledMarkupExtensionType;
 			ICompiledMarkupExtension markupProvider;
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod))
 			{
-				factoryCtorInfo = typedef.AllMethods().FirstOrDefault(md => md.methodDef.IsConstructor &&
+				factoryCtorInfo = typedef.AllMethods(Context.Cache).FirstOrDefault(md => md.methodDef.IsConstructor &&
 																			!md.methodDef.IsStatic &&
 																			md.methodDef.HasParameters &&
 																			md.methodDef.MatchXArguments(node, typeref, Module, Context)).methodDef;
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			else if (node.Properties.ContainsKey(XmlName.xFactoryMethod))
 			{
 				var factoryMethod = (string)(node.Properties[XmlName.xFactoryMethod] as ValueNode).Value;
-				factoryMethodInfo = typedef.AllMethods().FirstOrDefault(md => !md.methodDef.IsConstructor &&
+				factoryMethodInfo = typedef.AllMethods(Context.Cache).FirstOrDefault(md => !md.methodDef.IsConstructor &&
 																			  md.methodDef.Name == factoryMethod &&
 																			  md.methodDef.IsStatic &&
 																			  md.methodDef.MatchXArguments(node, typeref, Module, Context)).methodDef;
@@ -302,13 +302,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				ValueNode vnode = null;
 
 				if (node is IElementNode && (vardef = Context.Variables[node as IElementNode]) != null)
-					foreach (var instruction in vardef.LoadAs(parameter.ParameterType.ResolveGenericParameters(ctorinfo), Module))
+					foreach (var instruction in vardef.LoadAs(Context.Cache, parameter.ParameterType.ResolveGenericParameters(ctorinfo), Module))
 						yield return instruction;
 				else if ((vnode = node as ValueNode) != null)
 				{
 					foreach (var instruction in vnode.PushConvertedValue(Context,
 						parameter.ParameterType,
-						new ICustomAttributeProvider[] { parameter, parameter.ParameterType.ResolveCached() },
+						new ICustomAttributeProvider[] { parameter, parameter.ParameterType.ResolveCached(Context.Cache) },
 						enode.PushServiceProvider(Context), false, true))
 						yield return instruction;
 				}
@@ -339,13 +339,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				ValueNode vnode = null;
 
 				if (arg is IElementNode && (vardef = Context.Variables[arg as IElementNode]) != null)
-					foreach (var instruction in vardef.LoadAs(parameter.ParameterType.ResolveGenericParameters(factoryCtorInfo), Module))
+					foreach (var instruction in vardef.LoadAs(Context.Cache, parameter.ParameterType.ResolveGenericParameters(factoryCtorInfo), Module))
 						yield return instruction;
 				else if ((vnode = arg as ValueNode) != null)
 				{
 					foreach (var instruction in vnode.PushConvertedValue(Context,
 						parameter.ParameterType,
-						new ICustomAttributeProvider[] { parameter, parameter.ParameterType.ResolveCached() },
+						new ICustomAttributeProvider[] { parameter, parameter.ParameterType.ResolveCached(Context.Cache) },
 						enode.PushServiceProvider(Context), false, true))
 						yield return instruction;
 				}
@@ -449,7 +449,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					break;
 				case "System.Object":
 					var ctorinfo =
-						module.TypeSystem.Object.ResolveCached()
+						module.TypeSystem.Object.ResolveCached(Context.Cache)
 							.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters);
 					var ctor = module.ImportReference(ctorinfo);
 					yield return Create(Newobj, ctor);
@@ -464,7 +464,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					decimal outdecimal;
 					if (hasValue && decimal.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outdecimal))
 					{
-						var vardef = new VariableDefinition(module.ImportReference(("mscorlib", "System", "Decimal")));
+						var vardef = new VariableDefinition(module.ImportReference(Context.Cache, ("mscorlib", "System", "Decimal")));
 						Context.Body.Variables.Add(vardef);
 						//Use an extra temp var so we can push the value to the stack, just like other cases
 						//					IL_0003:  ldstr "adecimal"
@@ -475,11 +475,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						//					IL_0016:  pop
 						yield return Create(Ldstr, valueString);
 						yield return Create(Ldc_I4, 0x6f); //NumberStyles.Number
-						yield return Create(Call, module.ImportPropertyGetterReference(("mscorlib", "System.Globalization", "CultureInfo"),
+						yield return Create(Call, module.ImportPropertyGetterReference(Context.Cache, ("mscorlib", "System.Globalization", "CultureInfo"),
 																				propertyName: "InvariantCulture",
 																				isStatic: true));
 						yield return Create(Ldloca, vardef);
-						yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Decimal"),
+						yield return Create(Call, module.ImportMethodReference(Context.Cache, ("mscorlib", "System", "Decimal"),
 																			   methodName: "TryParse",
 																			   parameterTypes: new[] {
 																			   ("mscorlib", "System", "String"),
@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					else
 					{
 						yield return Create(Ldc_I4_0);
-						yield return Create(Newobj, module.ImportCtorReference(("mscorlib", "System", "Decimal"), parameterTypes: new[] { ("mscorlib", "System", "Int32") }));
+						yield return Create(Newobj, module.ImportCtorReference(Context.Cache, ("mscorlib", "System", "Decimal"), parameterTypes: new[] { ("mscorlib", "System", "Int32") }));
 					}
 					break;
 				case "System.Single":
@@ -512,14 +512,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				case "System.TimeSpan":
 					if (hasValue && TimeSpan.TryParse(valueString, CultureInfo.InvariantCulture, out TimeSpan outspan))
 					{
-						var vardef = new VariableDefinition(module.ImportReference(("mscorlib", "System", "TimeSpan")));
+						var vardef = new VariableDefinition(module.ImportReference(Context.Cache, ("mscorlib", "System", "TimeSpan")));
 						Context.Body.Variables.Add(vardef);
 						//Use an extra temp var so we can push the value to the stack, just like other cases
 						yield return Create(Ldstr, valueString);
-						yield return Create(Call, module.ImportPropertyGetterReference(("mscorlib", "System.Globalization", "CultureInfo"),
+						yield return Create(Call, module.ImportPropertyGetterReference(Context.Cache, ("mscorlib", "System.Globalization", "CultureInfo"),
 																					   propertyName: "InvariantCulture", isStatic: true));
 						yield return Create(Ldloca, vardef);
-						yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "TimeSpan"),
+						yield return Create(Call, module.ImportMethodReference(Context.Cache, ("mscorlib", "System", "TimeSpan"),
 																			   methodName: "TryParse",
 																			   parameterTypes: new[] {
 																			   ("mscorlib", "System", "String"),
@@ -533,19 +533,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					else
 					{
 						yield return Create(Ldc_I8, 0L);
-						yield return Create(Newobj, module.ImportCtorReference(("mscorlib", "System", "TimeSpan"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
+						yield return Create(Newobj, module.ImportCtorReference(Context.Cache, ("mscorlib", "System", "TimeSpan"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
 					}
 					break;
 				case "System.Uri":
 					if (hasValue && Uri.TryCreate(valueString, UriKind.RelativeOrAbsolute, out _))
 					{
-						var vardef = new VariableDefinition(module.ImportReference(("System", "System", "Uri")));
+						var vardef = new VariableDefinition(module.ImportReference(Context.Cache, ("System", "System", "Uri")));
 						Context.Body.Variables.Add(vardef);
 						//Use an extra temp var so we can push the value to the stack, just like other cases
 						yield return Create(Ldstr, valueString);
 						yield return Create(Ldc_I4, (int)UriKind.RelativeOrAbsolute);
 						yield return Create(Ldloca, vardef);
-						yield return Create(Call, module.ImportMethodReference(("System", "System", "Uri"),
+						yield return Create(Call, module.ImportMethodReference(Context.Cache, ("System", "System", "Uri"),
 																			   methodName: "TryCreate",
 																			   parameterTypes: new[] {
 																			   ("mscorlib", "System", "String"),
@@ -560,7 +560,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						yield return Create(Ldnull);
 					break;
 				default:
-					var defaultCtor = module.ImportCtorReference(typedef, parameterTypes: null);
+					var defaultCtor = module.ImportCtorReference(Context.Cache, typedef, parameterTypes: null);
 					if (defaultCtor != null)
 						yield return Create(Newobj, defaultCtor);
 					else

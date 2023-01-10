@@ -240,15 +240,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var clipShape = view.Clip;
 
-			if (clipShape != null)
-			{
-				handler.HasContainer = true;
-			}
-			else
-			{
-				if (handler is ViewHandler viewHandler)
-					handler.HasContainer = viewHandler.NeedsContainer;
-			}
+			UpdateHasContainer(handler, clipShape != null);
 
 			((PlatformView?)handler.ContainerView)?.UpdateClip(view);
 		}
@@ -277,25 +269,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContainerView(IViewHandler handler, IView view)
 		{
-			if (handler is ViewHandler viewHandler)
-				handler.HasContainer = viewHandler.NeedsContainer;
+			UpdateHasContainer(handler, false);
 		}
 
 		public static void MapBorderView(IViewHandler handler, IView view)
 		{
 			var border = (view as IBorder)?.Border;
 
-			if (border != null)
-			{
-				handler.HasContainer = true;
-			}
-			else
-			{
-				if (handler is ViewHandler viewHandler)
-					handler.HasContainer = viewHandler.NeedsContainer;
-			}
+			UpdateHasContainer(handler, border != null);
 
- 			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
+			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view);

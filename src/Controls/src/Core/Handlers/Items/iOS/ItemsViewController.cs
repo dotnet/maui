@@ -16,7 +16,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public IItemsViewSource ItemsSource { get; protected set; }
 		public TItemsView ItemsView { get; }
+
+		// ItemsViewLayout provides an accessor to the typed UICollectionViewLayout. It's also important to note that the
+		// initial UICollectionViewLayout which is passed in to the ItemsViewController (and accessed via the Layout property)
+		// _does not_ get updated when the layout is updated for the CollectionView. That property only refers to the
+		// original layout. So it's unlikely that you would ever want to use .Layout; use .ItemsViewLayout instead.
+		// See https://developer.apple.com/documentation/uikit/uicollectionviewcontroller/1623980-collectionviewlayout
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
+
 		bool _initialized;
 		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
@@ -303,7 +310,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (cell == visibleCells[n])
 				{
-					Layout?.InvalidateLayout();
+					ItemsViewLayout?.InvalidateLayout();
 					return;
 				}
 			}
