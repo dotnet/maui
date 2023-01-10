@@ -9,6 +9,7 @@ using AndroidX.Activity;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -212,7 +213,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_windowMauiContext = windowMauiContext;
 				Modal = modal;
-
+				GetWindowRootView().LayoutChange += ModalContainer_LayoutChange;
+				parentView.LayoutChange += ModalContainer_LayoutChange;
+				(GetWindowRootView().Parent as AView)!.LayoutChange += ModalContainer_LayoutChange;
 				_backgroundView = new AView(_windowMauiContext.Context);
 				UpdateBackgroundColor();
 				AddView(_backgroundView);
@@ -232,16 +235,39 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateMargin();
 			}
 
+			int _lastHeight = 0;
+			void ModalContainer_LayoutChange(object? sender, LayoutChangeEventArgs e)
+			{
+				if (Modal == null || sender is not AView view)
+					return;
+
+				if (_lastHeight != view.MeasuredHeight)
+				{
+					_lastHeight = view.MeasuredHeight;
+				}
+
+				System.Diagnostics.Debug.WriteLine($"Invalidate Measure: {_lastHeight} {this.IsInLayout}");
+				this.InvalidateMeasure(Modal);
+
+				if (Modal.Handler != null)
+					Modal.ToPlatform()?.InvalidateMeasure(Modal);
+			}
+
+			void OnPageSizeChanged(object? sender, EventArgs e)
+			{
+			}
+
 			void UpdateMargin()
 			{
 				// This sets up the modal container to be offset from the top of window the same
 				// amount as the view it's covering. This will make it so the
-				// ModalContainer takes into account the statusbar or lack thereof
+				// ModalContainer takes into account the StatusBar or lack thereof
 				var rootView = GetWindowRootView();
 				int y = (int)rootView.GetLocationOnScreenPx().Y;
 
 				if (this.LayoutParameters is ViewGroup.MarginLayoutParams mlp &&
-					mlp.TopMargin != y)
+					mlp.TopMargin != y &&
+					y > 0)
 				{
 					mlp.TopMargin = y;
 				}
@@ -270,6 +296,7 @@ namespace Microsoft.Maui.Controls.Platform
 					.RootView
 					.Measure(widthMeasureSpec, heightMeasureSpec);
 
+				System.Diagnostics.Debug.WriteLine($"OnMeasure {rootView.MeasuredWidth}x{rootView.MeasuredHeight}");
 				SetMeasuredDimension(rootView.MeasuredWidth, rootView.MeasuredHeight);
 			}
 
@@ -278,6 +305,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (Context == null || NavigationRootManager?.RootView == null)
 					return;
 
+				System.Diagnostics.Debug.WriteLine($"OnLayout {t}x{b}");
 				NavigationRootManager
 					.RootView
 					.Layout(0, 0, r - l, b - t);
