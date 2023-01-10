@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
+		Drawable? _defaultBackground;
 		AlertDialog? _dialog;
 
 		protected override MauiPicker CreatePlatformView() =>
@@ -18,6 +19,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
+			_defaultBackground = platformView.Background;
+
 			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 
@@ -29,13 +32,16 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
 
+			_defaultBackground = null;
+
 			base.DisconnectHandler(platformView);
 		}
 
 		// This is a Android-specific mapping
 		public static void MapBackground(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateBackground(picker);
+			if (handler is PickerHandler pickerHandler)
+				handler.PlatformView?.UpdateBackground(picker, pickerHandler._defaultBackground);
 		}
 
 		// TODO Uncomment me on NET8 [Obsolete]

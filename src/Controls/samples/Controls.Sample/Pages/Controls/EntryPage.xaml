@@ -123,6 +123,10 @@
                     x:Name="UpdateBackgroundButton"
                     Text="Update Background"
                     Clicked="OnUpdateBackgroundButtonClicked"/>
+                <Button
+                    x:Name="ClearBackgroundButton"
+                    Text="Clear Background"
+                    Clicked="OnClearBackgroundButtonClicked"/>
                 <Label
                     Text="Keyboard Numeric"
                     Style="{StaticResource Headline}" />

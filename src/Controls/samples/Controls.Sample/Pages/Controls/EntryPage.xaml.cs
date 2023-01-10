@@ -75,6 +75,11 @@ namespace Maui.Controls.Sample.Pages
 			UpdateEntryBackground();
 		}
 
+		void OnClearBackgroundButtonClicked(object sender, System.EventArgs e)
+		{
+			BackgroundEntry.Background = null;
+		}
+
 		void UpdateEntryBackground()
 		{
 			Random rnd = new Random();

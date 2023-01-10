@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.App;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Microsoft.Maui.Devices;
 
@@ -7,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
+		Drawable? _defaultBackground;
 		DatePickerDialog? _dialog;
 
 		protected override MauiDatePicker CreatePlatformView()
@@ -30,6 +32,9 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
+
+			_defaultBackground = platformView.Background;
+
 			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
@@ -59,7 +64,10 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
+
 			OnViewDetachedFromWindow();
+
+			_defaultBackground = null;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -80,7 +88,8 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateBackground(datePicker);
+			if (handler is DatePickerHandler datePickerHandler)
+				handler.PlatformView?.UpdateBackground(datePicker, datePickerHandler._defaultBackground);
 		}
 
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)

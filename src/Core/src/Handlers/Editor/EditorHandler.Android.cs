@@ -1,4 +1,5 @@
 ﻿using System;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
@@ -11,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 	// This type adds support to the SelectionChanged event
 	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
 	{
+		Drawable? _defaultBackground;
 		bool _set;
 
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
@@ -43,6 +45,8 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
+			_defaultBackground = platformView.Background;
+
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
 		}
@@ -57,11 +61,15 @@ namespace Microsoft.Maui.Handlers
 			if (_set && platformView is MauiAppCompatEditText editText)
 				editText.SelectionChanged -= OnSelectionChanged;
 
+			_defaultBackground = null;
 			_set = false;
 		}
 
-		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
-			handler.PlatformView?.UpdateBackground(editor);
+		public static void MapBackground(IEditorHandler handler, IEditor editor)
+		{
+			if (handler is EditorHandler editorHandler)
+				handler.PlatformView?.UpdateBackground(editor, editorHandler._defaultBackground);
+		}
 
 		public static void MapText(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateText(editor);
