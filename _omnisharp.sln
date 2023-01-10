@@ -108,6 +108,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests.Shared", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maui.Controls.Sample.Sandbox.AppiumTests", "src\Controls\tests\Maui.Controls.Sample.Sandbox.AppiumTests\Maui.Controls.Sample.Sandbox.AppiumTests.csproj", "{95EEF60A-05B7-4F33-B2E0-69D2C362F21F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUtils.Appium.UITests", "src\TestUtils\src\TestUtils.Appium.UITests\TestUtils.Appium.UITests.csproj", "{21C73874-6DCF-44CD-8205-59B77327371A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUtils.Appium", "src\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj", "{D0B66ECF-275B-48D3-9467-974EAD6C2055}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -241,6 +245,14 @@ Global
 		{95EEF60A-05B7-4F33-B2E0-69D2C362F21F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95EEF60A-05B7-4F33-B2E0-69D2C362F21F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95EEF60A-05B7-4F33-B2E0-69D2C362F21F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21C73874-6DCF-44CD-8205-59B77327371A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21C73874-6DCF-44CD-8205-59B77327371A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21C73874-6DCF-44CD-8205-59B77327371A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21C73874-6DCF-44CD-8205-59B77327371A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0B66ECF-275B-48D3-9467-974EAD6C2055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0B66ECF-275B-48D3-9467-974EAD6C2055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0B66ECF-275B-48D3-9467-974EAD6C2055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0B66ECF-275B-48D3-9467-974EAD6C2055}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -290,6 +302,8 @@ Global
 		{56BBFDBD-254F-42B6-9984-46E19C53FB00} = {936C47A9-A7EA-4FBD-8733-CED1D4100E69}
 		{B000E53D-AB58-42E3-8964-2B3F30ECC886} = {C564DDD6-DE79-45CD-88EA-3F690481572A}
 		{95EEF60A-05B7-4F33-B2E0-69D2C362F21F} = {E1082E26-D700-4127-9329-66D673FD2D55}
+		{21C73874-6DCF-44CD-8205-59B77327371A} = {FBA6A516-2B6A-48A9-B64F-B012114B9501}
+		{D0B66ECF-275B-48D3-9467-974EAD6C2055} = {FBA6A516-2B6A-48A9-B64F-B012114B9501}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
