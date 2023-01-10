@@ -47,6 +47,11 @@ namespace Microsoft.Maui.Devices
 
 	public static class VibrationExtensions
 	{
+		/// <summary>
+		/// Vibrates the device for the specified time in the range [0, 5000]ms.
+		/// </summary>
+		/// <param name="vibration">The object this method is invoked on.</param>
+		/// <param name="duration">The time to vibrate for. This value will be ignored on iOS as it only supports a vibration of 500ms.</param>
 		public static void Vibrate(this IVibration vibration, double duration) =>
 			vibration.Vibrate(TimeSpan.FromMilliseconds(duration));
 	}

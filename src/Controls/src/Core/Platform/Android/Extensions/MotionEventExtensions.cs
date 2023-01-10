@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using Android.Views;
+﻿using Android.Views;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
