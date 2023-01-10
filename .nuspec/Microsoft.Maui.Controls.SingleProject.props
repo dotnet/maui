@@ -5,8 +5,7 @@
     <WindowsPackageType Condition=" '$(WindowsPackageType)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' == 'WinExe' ">MSIX</WindowsPackageType>
     <WindowsAppSDKSelfContained Condition=" '$(WindowsAppSDKSelfContained)' == '' and '$(WindowsPackageType)' == 'None' and '$(OutputType)' == 'WinExe' ">true</WindowsAppSDKSelfContained>
     <WindowsAppSdkBootstrapInitialize Condition=" '$(WindowsAppSdkBootstrapInitialize)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'WinExe' ">false</WindowsAppSdkBootstrapInitialize>
-    <WindowsAppSdkDeploymentManagerInitialize Condition=" '$(WindowsAppSdkDeploymentManagerInitialize)' == '' and '$(EnableMsixTooling)' == 'true' ">false</WindowsAppSdkDeploymentManagerInitialize>
-    <WindowsAppSdkUndockedRegFreeWinRTInitialize Condition=" '$(WindowsAppSdkUndockedRegFreeWinRTInitialize)' == '' and '$(EnableMsixTooling)' == 'true' ">false</WindowsAppSdkUndockedRegFreeWinRTInitialize>
+    <WindowsAppSdkDeploymentManagerInitialize Condition=" '$(WindowsAppSdkDeploymentManagerInitialize)' == '' and '$(EnableMsixTooling)' == 'true' and '$(Configuration)' == 'Debug' ">false</WindowsAppSdkDeploymentManagerInitialize>
     <PublishAppXPackage Condition=" '$(PublishAppXPackage)' == '' and '$(EnableMsixTooling)' == 'true' and '$(WindowsPackageType)' == 'MSIX' ">true</PublishAppXPackage>
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' and '$(Configuration)' == 'Release' and '$(OutputType)' != '' and '$(OutputType)' != 'Library' ">true</PublishReadyToRun>
     <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
