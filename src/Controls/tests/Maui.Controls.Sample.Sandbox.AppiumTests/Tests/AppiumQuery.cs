@@ -11,22 +11,25 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 {
 	internal class AppiumQuery
 	{
-		public static AppiumQuery FromMarked(string appId, string marked, bool isAndroid)
+		public static AppiumQuery FromMarked(string marked, string appId, string platform)
 		{
 			var realId = marked;
-			if (isAndroid)
+			QueryPlatform queryPlatform = GetQueryPlatform(platform);
+			if (queryPlatform == QueryPlatform.Android)
 				realId = $"{appId}:id/{marked}";
-			return new AppiumQuery("*", realId, $"* '{realId}'", isAndroid ? QueryPlatform.Android : QueryPlatform.iOS);
+		
+
+			return new AppiumQuery("*", realId, $"* '{realId}'", appId, queryPlatform);
 		}
 
-		public static AppiumQuery FromQuery(Func<AppQuery, AppQuery> query, bool isAndroid)
+		public static AppiumQuery FromQuery(Func<AppQuery, AppQuery> query, string appId, string platform)
 		{
 			var raw = GetRawQuery(query);
-			return FromRaw(raw, isAndroid);
+			QueryPlatform queryPlatform = GetQueryPlatform(platform);
+			return FromRaw(raw, appId, queryPlatform);
 		}
 
-
-		public static AppiumQuery FromRaw(string raw, bool isAndroid)
+		public static AppiumQuery FromRaw(string raw, string appId, QueryPlatform platform)
 		{
 			Debug.WriteLine($">>>>> Converting raw query '{raw}' to {nameof(AppiumQuery)}");
 
@@ -36,7 +39,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			var marked = match.Groups[3].Captures[0].Value;
 
 			// Just ignoring everything else for now (parent, index statements, etc)
-			var result = new AppiumQuery(controlType, marked, raw, isAndroid ? QueryPlatform.Android : QueryPlatform.iOS);
+			var result = new AppiumQuery(controlType, marked, raw,  appId, platform);
 
 			Debug.WriteLine($">>>>> AndroidQuery is: {result}");
 
@@ -54,11 +57,25 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			return query(new AppQuery(QueryPlatform.iOS)).ToString().Replace("\\'", "'", StringComparison.InvariantCultureIgnoreCase);
 		}
 
-		AppiumQuery(string controlType, string marked, string raw, QueryPlatform platform)
+		static QueryPlatform GetQueryPlatform(string platform)
+		{
+			var plat = platform.ToLowerInvariant();
+			QueryPlatform queryPlatform = QueryPlatform.iOS;
+			if (plat.Contains("android",StringComparison.InvariantCultureIgnoreCase))
+				queryPlatform = QueryPlatform.Android;
+			if (plat.Contains("windows", StringComparison.InvariantCultureIgnoreCase))
+				queryPlatform = (QueryPlatform)2;
+			if (plat.Contains("mac", StringComparison.InvariantCultureIgnoreCase))
+				queryPlatform = (QueryPlatform)2;
+			return queryPlatform;
+		}
+
+		AppiumQuery(string controlType, string marked, string raw, string appId, QueryPlatform platform)
 		{
 			ControlType = controlType;
 			Marked = marked;
 			Raw = raw;
+			AppId = appId;
 			Platform = platform;
 		}
 
@@ -67,6 +84,8 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 		public string Marked { get; }
 
 		public string Raw { get; }
+
+		public string AppId { get; }
 
 		public QueryPlatform Platform { get; }
 

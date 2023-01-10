@@ -27,6 +27,10 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 	public class TestApp : IApp
 	{
 		public bool IsAndroid => _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
+		public bool IsWindows => _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Windows");
+		public bool IsiOS => _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("iOS");
+		public bool IsMac => _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("mac");
+		public string Platform => _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).ToString() ?? "";
 
 		public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
@@ -369,13 +373,13 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 		public void Tap(Func<AppQuery, AppQuery> query)
 		{
-			AppiumQuery winQuery = AppiumQuery.FromQuery(query,IsAndroid);
+			AppiumQuery winQuery = AppiumQuery.FromQuery(query, _appId, Platform);
 			Tap(winQuery);
 		}
 
 		public void Tap(string marked)
 		{
-			AppiumQuery winQuery = AppiumQuery.FromMarked(_appId, marked, IsAndroid);
+			AppiumQuery winQuery = AppiumQuery.FromMarked(marked, _appId, Platform);
 			Tap(winQuery);
 		}
 
@@ -418,7 +422,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 		public AppResult[] WaitForElement(string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryWindows(marked);
-			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(AppiumExtensions.ToAppResult	).ToArray();
+			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(AppiumExtensions.ToAppResult).ToArray();
 
 			return results;
 		}
@@ -447,7 +451,8 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 		{
 			try
 			{
-				return _driver.FindElements(MobileBy.Id(query.Marked));
+				By queryBy = IsWindows ? MobileBy.AccessibilityId(query.Marked) : MobileBy.Id(query.Marked);
+				return _driver.FindElements(queryBy);
 			}
 			catch (Exception)
 			{
@@ -457,13 +462,13 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 		ReadOnlyCollection<AppiumElement> QueryWindows(string marked, bool findFirst = false)
 		{
-			AppiumQuery winQuery = AppiumQuery.FromMarked(_appId, marked, IsAndroid);
-			return QueryAppium(winQuery, findFirst);
+			AppiumQuery appiumQUery = AppiumQuery.FromMarked(marked, _appId, Platform);
+			return QueryAppium(appiumQUery, findFirst);
 		}
 
 		ReadOnlyCollection<AppiumElement> QueryWindows(Func<AppQuery, AppQuery> query, bool findFirst = false)
 		{
-			AppiumQuery winQuery = AppiumQuery.FromQuery(query,IsAndroid);
+			AppiumQuery winQuery = AppiumQuery.FromQuery(query, _appId, Platform);
 			return QueryAppium(winQuery, findFirst);
 		}
 

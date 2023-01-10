@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using OpenQA.Selenium.Appium;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
@@ -14,10 +13,10 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		[Test()]
 		public void TestLogin()
 		{
-			Driver?.FindElement(MobileBy.Id(GetElementId("entryUsername"))).SendKeys("user@email.com");
-			Driver?.FindElement(MobileBy.Id(GetElementId("entryPassword"))).SendKeys("password");
-			Driver?.FindElement(MobileBy.Id(GetElementId("btnLogin"))).Click();
-			var text = Driver?.FindElement(MobileBy.Id(GetElementId("lblStatus"))).Text ?? "";
+			Driver?.FindElement(ByAutomationId("entryUsername")).SendKeys("user@email.com");
+			Driver?.FindElement(ByAutomationId("entryPassword")).SendKeys("password");
+			Driver?.FindElement(ByAutomationId("btnLogin")).Click();
+			var text = Driver?.FindElement(ByAutomationId("lblStatus")).Text ?? "";
 
 			Assert.IsNotNull(text);
 			Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
