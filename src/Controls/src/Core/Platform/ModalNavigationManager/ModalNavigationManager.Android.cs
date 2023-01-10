@@ -231,117 +231,43 @@ namespace Microsoft.Maui.Controls.Platform
 				_modalFragment = new ModalFragment(_windowMauiContext, modal);
 				_fragmentManager = _windowMauiContext.GetFragmentManager();
 
-				parentView.AddView(this);
+				//var windowRootView = GetWindowRootView();
+				//var parentWindowRootView = windowRootView.Parent;
+				//var parentParentWindowRootView = (windowRootView.Parent?.Parent as ViewGroup)!;
+				//var parentParentParentWindowRootView = windowRootView.Parent?.Parent?.Parent;
 
-				_fragmentManager
-					.BeginTransaction()
-					.Add(this.Id, _modalFragment)
-					.Commit();
-			}
+				//for (int i = 0; i < (parentView.GetChildAt(0) as ViewGroup)!.ChildCount; i++)
+				//{
+				//	var child = (parentView.GetChildAt(0) as ViewGroup)!.GetChildAt(i);
+				//}
 
-			protected override void OnAttachedToWindow()
-			{
-				base.OnAttachedToWindow();
-				UpdateMargin();
-				UpdateRootView(GetWindowRootView());
-			}
+				//var addTo = (parentView.GetChildAt(0) as ViewGroup)!.GetChildAt(0) as ViewGroup;
+				//var childrenCount = parentView.ChildCount;
+				//parentParentWindowRootView!.AddView(this);
 
-			protected override void OnDetachedFromWindow()
-			{
-				base.OnDetachedFromWindow();
-				UpdateRootView(null);
-			}
+				//parentView.AddView(this);
+				//_fragmentManager
+				//	.BeginTransaction()
+				//	.Add(this.Id, _modalFragment)
+				//	.Commit();
 
-			void UpdateRootView(AView? rootView)
-			{
-				if (_rootView.IsAlive())
-				{
-					_rootView.LayoutChange -= OnRootViewLayoutChanged;
-					_rootView = null;
-				}
-
-				if (rootView.IsAlive())
-				{
-					rootView.LayoutChange += OnRootViewLayoutChanged;
-					_rootView = rootView;
-					_currentRootViewHeight = _rootView.MeasuredHeight;
-					_currentRootViewWidth = _rootView.MeasuredWidth;
-				}
-			}
-
-			// If the RootView changes sizes that means we also need to change sizes
-			// This will typically happen when the user is opening the soft keyboard 
-			// which sometimes causes the available window size to change
-			void OnRootViewLayoutChanged(object? sender, LayoutChangeEventArgs e)
-			{
-				if (Modal is null || sender is not AView view)
-					return;
-
-				var modalStack = Modal?.Navigation?.ModalStack;
-				if (modalStack is null ||
-					modalStack.Count == 0 ||
-					modalStack[modalStack.Count - 1] != Modal)
-				{
-					return;
-				}
-
-				if ((_currentRootViewHeight != view.MeasuredHeight || _currentRootViewWidth != view.MeasuredWidth)
-					&& this.ViewTreeObserver is not null)
-				{
-					// When the keyboard closes Android calls layout but doesn't call remeasure.
-					// MY guess is that this is due to the modal not being part of the FitSystemWindowView
-					// The modal is added to the decor view so its dimensions don't get updated.
-					// So, here we are waiting for the layout pass to finish and then we remeasure the modal					
-					//
-					// For .NET 8 we'll convert this all over to using a DialogFragment
-					// which means we can delete most of the awkward code here
-					_currentRootViewHeight = view.MeasuredHeight;
-					_currentRootViewWidth = view.MeasuredWidth;
-					if (!this.IsInLayout)
-					{
-						this.InvalidateMeasure(Modal);
-						return;
-					}
-
-					_rootViewLayoutListener ??= new GenericGlobalLayoutListener((listener, view) =>
-					{
-						if (view is not null && !this.IsInLayout)
-						{
-							listener.Invalidate();
-							_rootViewLayoutListener = null;
-							this.InvalidateMeasure(Modal);
-						}
-					}, this);
-				}
+				_modalFragment.Show(_fragmentManager, null);
+				//UpdateMargin();
 			}
 
 			void UpdateMargin()
 			{
-				// This sets up the modal container to be offset from the top of window the same
-				// amount as the view it's covering. This will make it so the
-				// ModalContainer takes into account the StatusBar or lack thereof
-				var decorView = Context?.GetActivity()?.Window?.DecorView;
+				//// This sets up the modal container to be offset from the top of window the same
+				//// amount as the view it's covering. This will make it so the
+				//// ModalContainer takes into account the statusbar or lack thereof
+				//var rootView = GetWindowRootView();
+				//int y = (int)rootView.GetLocationOnScreenPx().Y;
 
-				if (decorView is not null && this.LayoutParameters is ViewGroup.MarginLayoutParams mlp)
-				{
-					var windowInsets = ViewCompat.GetRootWindowInsets(decorView);
-					if (windowInsets is not null)
-					{
-						var barInsets = windowInsets.GetInsetsIgnoringVisibility(WindowInsetsCompat.Type.SystemBars());
-
-						if (mlp.TopMargin != barInsets.Top)
-							mlp.TopMargin = barInsets.Top;
-
-						if (mlp.LeftMargin != barInsets.Left)
-							mlp.LeftMargin = barInsets.Left;
-
-						if (mlp.RightMargin != barInsets.Right)
-							mlp.RightMargin = barInsets.Right;
-
-						if (mlp.BottomMargin != barInsets.Bottom)
-							mlp.BottomMargin = barInsets.Bottom;
-					}
-				}
+				//if (this.LayoutParameters is ViewGroup.MarginLayoutParams mlp &&
+				//	mlp.TopMargin != y)
+				//{
+				//	mlp.TopMargin = 60;
+				//}
 			}
 
 			public override bool OnTouchEvent(MotionEvent? e)
@@ -410,22 +336,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 				Modal.Handler = null;
 
-				UpdateRootView(null);
-				_rootViewLayoutListener?.Invalidate();
-				_rootViewLayoutListener = null;
-
-				_fragmentManager
-					.BeginTransaction()
-					.Remove(_modalFragment)
-					.Commit();
+				//_fragmentManager
+				//	.BeginTransaction()
+				//	.Remove(_modalFragment)
+				//	.Commit();
 
 				Modal = null;
 				_windowMauiContext = null;
 				_fragmentManager = null;
-				this.RemoveFromParent();
+				//this.RemoveFromParent();
+
+				_modalFragment.Dismiss();
 			}
 
-			class ModalFragment : Fragment
+			class ModalFragment : DialogFragment
 			{
 				readonly Page _modal;
 				readonly IMauiContext _mauiWindowContext;
@@ -453,6 +377,30 @@ namespace Microsoft.Maui.Controls.Platform
 
 					return _navigationRootManager?.RootView ??
 						throw new InvalidOperationException("Root view not initialized");
+				}
+
+				public override void OnCreate(Bundle? savedInstanceState)
+				{
+					base.OnCreate(savedInstanceState);
+					SetStyle(DialogFragment.StyleNormal, Resource.Style.Maui_MainTheme_NoActionBar);
+				}
+
+				public override void OnViewCreated(AView view, Bundle? savedInstanceState)
+				{
+					base.OnViewCreated(view, savedInstanceState);
+				}
+
+				public override void OnStart()
+				{
+					base.OnStart();
+
+					var dialog = this.Dialog;
+					if (dialog?.Window != null)
+					{
+						int width = ViewGroup.LayoutParams.MatchParent;
+						int height = ViewGroup.LayoutParams.MatchParent;
+						dialog.Window.SetLayout(width, height);
+					}
 				}
 			}
 		}
