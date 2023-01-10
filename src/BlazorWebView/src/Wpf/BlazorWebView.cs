@@ -33,6 +33,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			typeMetadata: new PropertyMetadata(OnHostPagePropertyChanged));
 
 		/// <summary>
+		/// The backing store for the <see cref="StartPath"/> property.
+		/// </summary>
+		public static readonly DependencyProperty StartPathProperty = DependencyProperty.Register(
+			name: nameof(StartPath),
+			propertyType: typeof(string),
+			ownerType: typeof(BlazorWebView),
+			typeMetadata: new PropertyMetadata("/"));
+
+		/// <summary>
 		/// The backing store for the <see cref="RootComponent"/> property.
 		/// </summary>
 		public static readonly DependencyProperty RootComponentsProperty = DependencyProperty.Register(
@@ -127,6 +136,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		{
 			get => (string)GetValue(HostPageProperty);
 			set => SetValue(HostPageProperty, value);
+		}
+
+		/// <summary>
+		/// Path for initial Blazor navigation when the Blazor component is finished loading.
+		/// </summary>
+		public string StartPath
+		{
+			get => (string)GetValue(StartPathProperty);
+			set => SetValue(StartPathProperty, value);
 		}
 
 		/// <summary>
@@ -267,7 +285,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
-			_webviewManager.Navigate("/");
+			_webviewManager.Navigate(StartPath);
 		}
 
 		private WpfDispatcher ComponentsDispatcher { get; }
