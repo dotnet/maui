@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Xamarin.UITest.Queries;
 
-namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
+namespace TestUtils.Appium.UITests
 {
 	internal class AppiumQuery
 	{
@@ -17,7 +12,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			QueryPlatform queryPlatform = GetQueryPlatform(platform);
 			if (queryPlatform == QueryPlatform.Android)
 				realId = $"{appId}:id/{marked}";
-		
+
 
 			return new AppiumQuery("*", realId, $"* '{realId}'", appId, queryPlatform);
 		}
@@ -39,7 +34,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			var marked = match.Groups[3].Captures[0].Value;
 
 			// Just ignoring everything else for now (parent, index statements, etc)
-			var result = new AppiumQuery(controlType, marked, raw,  appId, platform);
+			var result = new AppiumQuery(controlType, marked, raw, appId, platform);
 
 			Debug.WriteLine($">>>>> AndroidQuery is: {result}");
 
@@ -61,7 +56,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 		{
 			var plat = platform.ToLowerInvariant();
 			QueryPlatform queryPlatform = QueryPlatform.iOS;
-			if (plat.Contains("android",StringComparison.InvariantCultureIgnoreCase))
+			if (plat.Contains("android", StringComparison.InvariantCultureIgnoreCase))
 				queryPlatform = QueryPlatform.Android;
 			if (plat.Contains("windows", StringComparison.InvariantCultureIgnoreCase))
 				queryPlatform = (QueryPlatform)2;

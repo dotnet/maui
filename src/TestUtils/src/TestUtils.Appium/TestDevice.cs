@@ -1,5 +1,4 @@
-﻿using System;
-namespace Maui.Controls.Sample.Sandbox.AppiumTests
+﻿namespace Microsoft.Maui.Appium
 {
 	public enum TestDevice
 	{
@@ -9,4 +8,3 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		Windows,
 	}
 }
-

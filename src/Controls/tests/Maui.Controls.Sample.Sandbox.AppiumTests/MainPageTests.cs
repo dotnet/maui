@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.Maui.Appium;
+using NUnit.Framework;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {

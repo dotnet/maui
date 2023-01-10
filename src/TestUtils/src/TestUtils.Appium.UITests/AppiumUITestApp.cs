@@ -1,30 +1,20 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Enums;
-using OpenQA.Selenium.Appium.Windows;
-using OpenQA.Selenium.Remote;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
-using Xamarin.UITest.Shared.Execution;
 
-namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
+namespace TestUtils.Appium.UITests
 {
-	public class TestApp : IApp
+	public class AppiumUITestApp : IApp
 	{
 		public bool IsAndroid => _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
 		public bool IsWindows => _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Windows");
@@ -49,7 +39,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 		AppiumElement? _window;
 
-		public TestApp(string appId, AppiumDriver? driver)
+		public AppiumUITestApp(string appId, AppiumDriver? driver)
 		{
 			if (driver == null)
 				throw new ArgumentNullException(nameof(driver));
@@ -495,9 +485,9 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
 		{
-			timeout = timeout ?? DefaultTimeout;
-			retryFrequency = retryFrequency ?? TimeSpan.FromMilliseconds(500);
-			timeoutMessage = timeoutMessage ?? "Timed out on query.";
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+			timeoutMessage ??= "Timed out on query.";
 
 			DateTime start = DateTime.Now;
 
@@ -519,7 +509,6 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 			return result;
 		}
-
 
 		static ReadOnlyCollection<AppiumElement> WaitForAtLeastOne(Func<ReadOnlyCollection<AppiumElement>> query,
 			string? timeoutMessage = null,
@@ -590,7 +579,6 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 				// and Tap in that spot
 				PointF p = ElementToClickablePoint(element);
 				TapCoordinates(p.X, p.Y);
-
 			}
 		}
 
@@ -649,5 +637,6 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 			DoubleClick,
 			ContextClick
 		}
+
 	}
 }

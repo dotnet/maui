@@ -1,27 +1,23 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using OpenQA.Selenium.Appium;
 using Xamarin.UITest.Queries;
 
-namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
+namespace TestUtils.Appium.UITests
 {
 	public static class AppiumExtensions
 	{
-		public static  AppResult ToAppResult(this AppiumElement element)
+		public static AppResult ToAppResult(this AppiumElement element) => new AppResult
 		{
-			return new AppResult
-			{
-				Rect = ToAppRect(element),
-				Label = element.Id,
-				Id = element.Id,
-				Text = element.Text
-			};
-		}
+			Rect = ToAppRect(element),
+			Label = element.Id,
+			Id = element.Id,
+			Text = element.Text
+		};
 
 		static AppRect? ToAppRect(this AppiumElement element)
 		{
 			try
-			{	
+			{
 				var result = new AppRect
 				{
 					X = element.Location.X,
@@ -45,7 +41,5 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests.Tests
 
 			return null;
 		}
-
 	}
 }
-
