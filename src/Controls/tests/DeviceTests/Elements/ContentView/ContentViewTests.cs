@@ -71,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				contentView.Content = child;
-				Assert.True(GetChildCount(contentViewHandler) == 1);
+				Assert.Equal(1, GetChildCount(contentViewHandler));
 				Assert.True(GetContentChildCount(contentViewHandler) == 0);
 				Assert.True(child.BindingContext == bindingContext);
 			});
