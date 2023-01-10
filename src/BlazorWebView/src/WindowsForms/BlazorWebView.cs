@@ -79,6 +79,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 		}
 
+		/// <summary>
+		/// Path for initial Blazor navigation when the Blazor component is finished loading.
+		/// </summary>
+		[Category("Behavior")]
+		[Description(@"Path for initial Blazor navigation when the Blazor component is finished loading.")]
+		public string StartPath { get; set; } = "/";
+
 		// Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
 		private void ResetHostPage() => HostPage = null;
 		private bool ShouldSerializeHostPage() => !string.IsNullOrEmpty(HostPage);
@@ -193,7 +200,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
-			_webviewManager.Navigate("/");
+			_webviewManager.Navigate(StartPath);
 		}
 
 		private void HandleRootComponentsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs eventArgs)
