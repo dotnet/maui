@@ -26,6 +26,10 @@
     <FromSource Condition="'$(XamarinFormsVersion)' != '' AND '$(FromSource)' == ''">false</FromSource>
     <FromSource Condition="'$(FromSource)' == ''">true</FromSource>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
 
   <!-- This is used by the libraries -->
   <PropertyGroup Condition="'$(AndroidTargetFrameworks)' == ''">
