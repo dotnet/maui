@@ -1,12 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             x:Class="Maui.Controls.Sample.Pages.MapsGalleries.MapTypeGallery"
-             Title="Map Type">
-
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+    mc:Ignorable="d"
+    x:Class="Maui.Controls.Sample.Pages.MapsGalleries.MapTypeGallery"
+    Title="Map Type">
     <Grid 
         RowDefinitions="Auto, Auto, *">
         <HorizontalStackLayout Grid.Row="0">
@@ -30,7 +31,7 @@
             Minimum="1"
             Value="12"
             ValueChanged="OnSliderValueChanged" />
-        <Map 
+        <maps:Map 
             x:Name="mapTypeMap" 
             Grid.Row="2" />
     </Grid>
