@@ -13,6 +13,18 @@ steps:
       skipXcode: ${{ eq(parameters.platform, 'android') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "18.13.0"
+
+  - script: |
+    node -v
+    npm install -g appium@next
+    appium -v
+    appium driver install uiautomator2
+    appium driver install --package=appium-windows-driver windows
+  displayName: "Install Appium"
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
@@ -26,7 +38,9 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
     displayName: 'Build the MSBuild Tasks'
 
-  # 
+  - script: |
+    appium server --base-path=/wd/hub
+  displayName: "Start Appium server"
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates
