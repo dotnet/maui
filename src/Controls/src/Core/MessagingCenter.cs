@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls
 {
-	public interface IMessagingCenter
+	internal interface IMessagingCenter
 	{
 		void Send<TSender, TArgs>(TSender sender, string message, TArgs args) where TSender : class;
 
@@ -22,14 +22,14 @@ namespace Microsoft.Maui.Controls
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="Type[@FullName='Microsoft.Maui.Controls.MessagingCenter']/Docs/*" />
 	[Obsolete("We recommend migrating to `CommunityToolkit.MVVM.WeakReferenceMessenger`: https://www.nuget.org/packages/CommunityToolkit.Mvvm")]
-	public class MessagingCenter : IMessagingCenter
+	internal class MessagingCenter : IMessagingCenter
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="//Member[@MemberName='Instance']/Docs/*" />
-		public static IMessagingCenter Instance { get; } = new MessagingCenter();
+		internal static IMessagingCenter Instance { get; } = new MessagingCenter();
 
 		class Sender : Tuple<string, Type, Type>
 		{
-			public Sender(string message, Type senderType, Type argType) : base(message, senderType, argType)
+			internal Sender(string message, Type senderType, Type argType) : base(message, senderType, argType)
 			{
 			}
 		}
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 
 			readonly bool _isStrongReference;
 
-			public MaybeWeakReference(object subscriber, object delegateSource)
+			internal MaybeWeakReference(object subscriber, object delegateSource)
 			{
 				if (subscriber.Equals(delegateSource))
 				{
@@ -58,23 +58,23 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			public object Target => _isStrongReference ? DelegateStrongReference : DelegateWeakReference.Target;
-			public bool IsAlive => _isStrongReference || DelegateWeakReference.IsAlive;
+			internal object Target => _isStrongReference ? DelegateStrongReference : DelegateWeakReference.Target;
+			internal bool IsAlive => _isStrongReference || DelegateWeakReference.IsAlive;
 		}
 
 		class Subscription : Tuple<WeakReference, MaybeWeakReference, MethodInfo, Filter>
 		{
-			public Subscription(object subscriber, object delegateSource, MethodInfo methodInfo, Filter filter)
+			internal Subscription(object subscriber, object delegateSource, MethodInfo methodInfo, Filter filter)
 				: base(new WeakReference(subscriber), new MaybeWeakReference(subscriber, delegateSource), methodInfo, filter)
 			{
 			}
 
-			public WeakReference Subscriber => Item1;
+			internal WeakReference Subscriber => Item1;
 			MaybeWeakReference DelegateSource => Item2;
 			MethodInfo MethodInfo => Item3;
 			Filter Filter => Item4;
 
-			public void InvokeCallback(object sender, object args)
+			internal void InvokeCallback(object sender, object args)
 			{
 				if (!Filter(sender))
 				{
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls
 				MethodInfo.Invoke(target, MethodInfo.GetParameters().Length == 1 ? new[] { sender } : new[] { sender, args });
 			}
 
-			public bool CanBeRemoved()
+			internal bool CanBeRemoved()
 			{
 				return !Subscriber.IsAlive || !DelegateSource.IsAlive;
 			}
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 		readonly Dictionary<Sender, List<Subscription>> _subscriptions =
 			new Dictionary<Sender, List<Subscription>>();
 
-		public static void Send<TSender, TArgs>(TSender sender, string message, TArgs args) where TSender : class
+		internal static void Send<TSender, TArgs>(TSender sender, string message, TArgs args) where TSender : class
 		{
 			Instance.Send(sender, message, args);
 		}
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls
 			InnerSend(message, typeof(TSender), typeof(TArgs), sender, args);
 		}
 
-		public static void Send<TSender>(TSender sender, string message) where TSender : class
+		internal static void Send<TSender>(TSender sender, string message) where TSender : class
 		{
 			Instance.Send(sender, message);
 		}
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls
 			InnerSend(message, typeof(TSender), null, sender, null);
 		}
 
-		public static void Subscribe<TSender, TArgs>(object subscriber, string message, Action<TSender, TArgs> callback, TSender source = null) where TSender : class
+		internal static void Subscribe<TSender, TArgs>(object subscriber, string message, Action<TSender, TArgs> callback, TSender source = null) where TSender : class
 		{
 			Instance.Subscribe(subscriber, message, callback, source);
 		}
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls
 			InnerSubscribe(subscriber, message, typeof(TSender), typeof(TArgs), target, callback.GetMethodInfo(), filter);
 		}
 
-		public static void Subscribe<TSender>(object subscriber, string message, Action<TSender> callback, TSender source = null) where TSender : class
+		internal static void Subscribe<TSender>(object subscriber, string message, Action<TSender> callback, TSender source = null) where TSender : class
 		{
 			Instance.Subscribe(subscriber, message, callback, source);
 		}
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls
 			InnerSubscribe(subscriber, message, typeof(TSender), null, target, callback.GetMethodInfo(), filter);
 		}
 
-		public static void Unsubscribe<TSender, TArgs>(object subscriber, string message) where TSender : class
+		internal static void Unsubscribe<TSender, TArgs>(object subscriber, string message) where TSender : class
 		{
 			Instance.Unsubscribe<TSender, TArgs>(subscriber, message);
 		}
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls
 			InnerUnsubscribe(message, typeof(TSender), typeof(TArgs), subscriber);
 		}
 
-		public static void Unsubscribe<TSender>(object subscriber, string message) where TSender : class
+		internal static void Unsubscribe<TSender>(object subscriber, string message) where TSender : class
 		{
 			Instance.Unsubscribe<TSender>(subscriber, message);
 		}
