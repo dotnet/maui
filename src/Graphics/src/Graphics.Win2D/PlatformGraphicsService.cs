@@ -1,9 +1,9 @@
 using System.Threading;
 using Microsoft.Graphics.Canvas;
 
-namespace Microsoft.Maui.Graphics.Win2D
+namespace Microsoft.Maui.Graphics.Platform
 {
-	internal class W2DGraphicsService
+	internal class PlatformGraphicsService
 	{
 		private static ICanvasResourceCreator _globalCreator;
 		private static readonly ThreadLocal<ICanvasResourceCreator> _threadLocalCreator = new ThreadLocal<ICanvasResourceCreator>();

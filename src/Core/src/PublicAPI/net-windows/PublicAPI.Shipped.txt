@@ -559,7 +559,7 @@ Microsoft.Maui.Handlers.ISearchBarHandler.PlatformView.get -> Microsoft.UI.Xaml.
 Microsoft.Maui.Handlers.ISearchBarHandler.QueryEditor.get -> Microsoft.UI.Xaml.Controls.AutoSuggestBox?
 Microsoft.Maui.Handlers.ISearchBarHandler.VirtualView.get -> Microsoft.Maui.ISearchBar!
 Microsoft.Maui.Handlers.IShapeViewHandler
-Microsoft.Maui.Handlers.IShapeViewHandler.PlatformView.get -> Microsoft.Maui.Graphics.Win2D.W2DGraphicsView!
+Microsoft.Maui.Handlers.IShapeViewHandler.PlatformView.get -> Microsoft.Maui.Graphics.Platform.PlatformGraphicsView!
 Microsoft.Maui.Handlers.IShapeViewHandler.VirtualView.get -> Microsoft.Maui.IShapeView!
 Microsoft.Maui.Handlers.ISliderHandler
 Microsoft.Maui.Handlers.ISliderHandler.PlatformView.get -> Microsoft.UI.Xaml.Controls.Slider!
@@ -2051,7 +2051,6 @@ override Microsoft.Maui.Handlers.ScrollViewHandler.DisconnectHandler(Microsoft.U
 override Microsoft.Maui.Handlers.SearchBarHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformView) -> void
 override Microsoft.Maui.Handlers.SearchBarHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.AutoSuggestBox!
 override Microsoft.Maui.Handlers.SearchBarHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformView) -> void
-override Microsoft.Maui.Handlers.ShapeViewHandler.CreatePlatformView() -> Microsoft.Maui.Graphics.Win2D.W2DGraphicsView!
 override Microsoft.Maui.Handlers.ShapeViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.SliderHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.Slider! platformView) -> void
 override Microsoft.Maui.Handlers.SliderHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.Slider!
@@ -2706,7 +2705,7 @@ static Microsoft.Maui.Platform.FontExtensions.ToFontStyle(this Microsoft.Maui.Fo
 static Microsoft.Maui.Platform.FontExtensions.ToFontWeight(this Microsoft.Maui.Font font) -> Windows.UI.Text.FontWeight
 static Microsoft.Maui.Platform.GraphicsExtensions.AsPoint(this Microsoft.Maui.Graphics.PointF target, float ppu) -> Windows.Foundation.Point
 static Microsoft.Maui.Platform.GraphicsExtensions.AsPoint(this Microsoft.Maui.Graphics.PointF target) -> Windows.Foundation.Point
-static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Microsoft.Maui.Graphics.Win2D.W2DGraphicsView! PlatformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
+static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Microsoft.Maui.Graphics.Platform.PlatformGraphicsView! PlatformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Platform.ImageExtensions.GetImageSourceSize(this Microsoft.UI.Xaml.Media.ImageSource! source, Microsoft.UI.Xaml.FrameworkElement? element = null) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Platform.ImageExtensions.ToIconSource(this Microsoft.Maui.IImageSource! source, Microsoft.Maui.IMauiContext! mauiContext) -> Microsoft.UI.Xaml.Controls.IconSource?
 static Microsoft.Maui.Platform.ImageViewExtensions.Clear(this Microsoft.UI.Xaml.Controls.Image! imageView) -> void
@@ -2766,8 +2765,8 @@ static Microsoft.Maui.Platform.SearchBarExtensions.UpdatePlaceholderColor(this M
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateText(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateTextColor(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateVerticalTextAlignment(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Platform.ShapesExtensions.InvalidateShape(this Microsoft.Maui.Graphics.Win2D.W2DGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
-static Microsoft.Maui.Platform.ShapesExtensions.UpdateShape(this Microsoft.Maui.Graphics.Win2D.W2DGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
+static Microsoft.Maui.Platform.ShapesExtensions.InvalidateShape(this Microsoft.Maui.Graphics.Platform.PlatformGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
+static Microsoft.Maui.Platform.ShapesExtensions.UpdateShape(this Microsoft.Maui.Graphics.Platform.PlatformGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
 static Microsoft.Maui.Platform.SizeExtensions.ToPlatform(this Microsoft.Maui.Graphics.Size size) -> Windows.Foundation.Size
 static Microsoft.Maui.Platform.SliderExtensions.UpdateMaximum(this Microsoft.UI.Xaml.Controls.Slider! nativeSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateMaximumTrackColor(this Microsoft.UI.Xaml.Controls.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void

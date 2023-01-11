@@ -1900,10 +1900,10 @@
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewHandler<TItemsView>.DisconnectHandler(Microsoft.UI.Xaml.Controls.ListViewBase platformView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.Layout.get -> Microsoft.Maui.Controls.IItemsLayout
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.SelectListViewBase() -> Microsoft.UI.Xaml.Controls.ListViewBase
-~override Microsoft.Maui.Controls.Handlers.PolygonHandler.ConnectHandler(Microsoft.Maui.Graphics.Win2D.W2DGraphicsView nativeView) -> void
-~override Microsoft.Maui.Controls.Handlers.PolygonHandler.DisconnectHandler(Microsoft.Maui.Graphics.Win2D.W2DGraphicsView nativeView) -> void
-~override Microsoft.Maui.Controls.Handlers.PolylineHandler.ConnectHandler(Microsoft.Maui.Graphics.Win2D.W2DGraphicsView nativeView) -> void
-~override Microsoft.Maui.Controls.Handlers.PolylineHandler.DisconnectHandler(Microsoft.Maui.Graphics.Win2D.W2DGraphicsView nativeView) -> void
+~override Microsoft.Maui.Controls.Handlers.PolygonHandler.ConnectHandler(Microsoft.Maui.Graphics.Platform.PlatformGraphicsView nativeView) -> void
+~override Microsoft.Maui.Controls.Handlers.PolygonHandler.DisconnectHandler(Microsoft.Maui.Graphics.Platform.PlatformGraphicsView nativeView) -> void
+~override Microsoft.Maui.Controls.Handlers.PolylineHandler.ConnectHandler(Microsoft.Maui.Graphics.Platform.PlatformGraphicsView nativeView) -> void
+~override Microsoft.Maui.Controls.Handlers.PolylineHandler.DisconnectHandler(Microsoft.Maui.Graphics.Platform.PlatformGraphicsView nativeView) -> void
 ~override Microsoft.Maui.Controls.Handlers.ShellContentHandler.CreatePlatformElement() -> Microsoft.UI.Xaml.FrameworkElement
 ~override Microsoft.Maui.Controls.Handlers.ShellHandler.ConnectHandler(Microsoft.Maui.Controls.Platform.ShellView platformView) -> void
 ~override Microsoft.Maui.Controls.Handlers.ShellHandler.CreatePlatformView() -> Microsoft.Maui.Controls.Platform.ShellView

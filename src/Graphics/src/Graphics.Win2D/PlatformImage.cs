@@ -3,22 +3,23 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Maui.Graphics.Win2D;
 using Windows.Storage.Streams;
 
-namespace Microsoft.Maui.Graphics.Win2D
+namespace Microsoft.Maui.Graphics.Platform
 {
-	internal class W2DImage : IImage
+	internal class PlatformImage : IImage
 	{
 		private readonly ICanvasResourceCreator _creator;
 		private CanvasBitmap _bitmap;
 
-		public W2DImage(ICanvasResourceCreator creator, CanvasBitmap bitmap)
+		public PlatformImage(ICanvasResourceCreator creator, CanvasBitmap bitmap)
 		{
 			_creator = creator;
 			_bitmap = bitmap;
 		}
 
-		public CanvasBitmap PlatformImage => _bitmap;
+		public CanvasBitmap PlatformRepresentation => _bitmap;
 
 		public void Dispose()
 		{
@@ -113,12 +114,12 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
 		{
-			var creator = W2DGraphicsService.Creator;
+			var creator = PlatformGraphicsService.Creator;
 			if (creator == null)
 				throw new Exception("No resource creator has been registered globally or for this thread.");
 
 			var bitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream()));
-			return new W2DImage(creator, bitmap);
+			return new PlatformImage(creator, bitmap);
 		}
 	}
 }

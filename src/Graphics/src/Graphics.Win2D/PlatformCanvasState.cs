@@ -4,20 +4,21 @@ using Microsoft.Graphics.Canvas.Geometry;
 using System;
 using System.Numerics;
 using WRect = Windows.Foundation.Rect;
+using Microsoft.Maui.Graphics.Win2D;
 #if NETFX_CORE
 using WColors = global::Windows.UI.Colors;
 #else
 using WColors = global::Microsoft.UI.Colors;
 #endif
 
-namespace Microsoft.Maui.Graphics.Win2D
+namespace Microsoft.Maui.Graphics.Platform
 {
-	public class W2DCanvasState : CanvasState
+	public class PlatformCanvasState : CanvasState
 	{
 		private static readonly float[] _emptyFloatArray = new float[] { };
 
-		private readonly W2DCanvas _owner;
-		private readonly W2DCanvasState _parentState;
+		private readonly PlatformCanvas _owner;
+		private readonly PlatformCanvasState _parentState;
 
 		private float _alpha = 1;
 		private float[] _dashes;
@@ -68,14 +69,14 @@ namespace Microsoft.Maui.Graphics.Win2D
 		public float ShadowBlur { get; set; }
 		public Matrix3x2 Matrix { get; private set; }
 
-		public W2DCanvasState(W2DCanvas owner)
+		public PlatformCanvasState(PlatformCanvas owner)
 		{
 			_owner = owner;
 			_parentState = null;
 			SetToDefaults();
 		}
 
-		public W2DCanvasState(W2DCanvasState prototype) : base(prototype)
+		public PlatformCanvasState(PlatformCanvasState prototype) : base(prototype)
 		{
 			_dpi = prototype.Dpi;
 			_owner = prototype._owner;

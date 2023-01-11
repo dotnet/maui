@@ -1,12 +1,14 @@
 ﻿using Microsoft.Graphics.Canvas.Text;
 using Windows.UI.Text;
+using Microsoft.Maui.Graphics;
+
 #if NETFX_CORE
 using Windows.UI.Xaml.Media;
 #else
 using Microsoft.UI.Xaml.Media;
 #endif
 
-namespace Microsoft.Maui.Graphics.Win2D
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class FontExtensions
 	{

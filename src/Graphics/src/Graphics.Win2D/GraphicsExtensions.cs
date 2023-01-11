@@ -3,9 +3,9 @@ using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 
-namespace Microsoft.Maui.Graphics.Win2D
+namespace Microsoft.Maui.Graphics.Platform
 {
-	public static class W2DExtensions
+	public static class GraphicsExtensions
 	{
 		public static global::Windows.UI.Color AsColor(this Color color, Color defaultColor, float alpha = 1)
 		{

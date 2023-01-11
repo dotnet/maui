@@ -1,10 +1,11 @@
 ﻿using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
+using Microsoft.Maui.Controls.Platform;
 using Windows.UI.Text;
 
-namespace Microsoft.Maui.Graphics.Win2D
+namespace Microsoft.Maui.Graphics.Platform
 {
-	public class W2DStringSizeService : IStringSizeService
+	public class PlatformStringSizeService : IStringSizeService
 	{
 		public SizeF GetStringSize(string value, IFont font, float textSize)
 			=> GetStringSize(value, font, textSize, HorizontalAlignment.Left, VerticalAlignment.Top);

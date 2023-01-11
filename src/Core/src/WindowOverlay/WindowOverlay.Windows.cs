@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 {
 	public partial class WindowOverlay
 	{
-		W2DGraphicsView? _graphicsView;
+		PlatformGraphicsView? _graphicsView;
 		Frame? _frame;
 		WindowRootViewContainer? _panel;
 		FrameworkElement? _platformElement;
@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 				_frame.Navigating += FrameNavigating;
 			}
 
-			_graphicsView = new W2DGraphicsView() { Drawable = this };
+			_graphicsView = new PlatformGraphicsView() { Drawable = this };
 			if (_graphicsView == null)
 				return false;
 

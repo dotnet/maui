@@ -1,12 +1,12 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class PolygonHandler
 	{
-		protected override void ConnectHandler(W2DGraphicsView nativeView)
+		protected override void ConnectHandler(PlatformGraphicsView nativeView)
 		{
 			if (VirtualView is Polygon polygon)
 				polygon.Points.CollectionChanged += OnPointsCollectionChanged;
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(W2DGraphicsView nativeView)
+		protected override void DisconnectHandler(PlatformGraphicsView nativeView)
 		{
 			if (VirtualView is Polygon polygon)
 				polygon.Points.CollectionChanged -= OnPointsCollectionChanged;

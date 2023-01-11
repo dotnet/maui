@@ -1,4 +1,5 @@
 ﻿using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Maui.Graphics.Platform;
 #if NETFX_CORE
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -7,20 +8,20 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 #endif
 
-namespace Microsoft.Maui.Graphics.Win2D
+namespace Microsoft.Maui.Graphics.Platform
 {
-	public sealed class W2DGraphicsView : UserControl
+	public sealed class PlatformGraphicsView : UserControl
 	{
 		private CanvasControl _canvasControl;
-		private readonly W2DCanvas _canvas;
+		private readonly PlatformCanvas _canvas;
 
 		private IDrawable _drawable;
 		private RectF _dirty;
 		//private bool _resizeDrawable = true;
 
-		public W2DGraphicsView()
+		public PlatformGraphicsView()
 		{
-			_canvas = new W2DCanvas();
+			_canvas = new PlatformCanvas();
 
 			Loaded += UserControl_Loaded;
 			Unloaded += UserControl_Unloaded;
@@ -68,11 +69,11 @@ namespace Microsoft.Maui.Graphics.Win2D
 			_dirty.Width = (float)sender.ActualWidth;
 			_dirty.Height = (float)sender.ActualHeight;
 
-			W2DGraphicsService.ThreadLocalCreator = sender;
+			PlatformGraphicsService.ThreadLocalCreator = sender;
 			_canvas.Session = args.DrawingSession;
 			_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
 			_drawable.Draw(_canvas, _dirty);
-			W2DGraphicsService.ThreadLocalCreator = null;
+			PlatformGraphicsService.ThreadLocalCreator = null;
 		}
 	}
 }
