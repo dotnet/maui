@@ -36,9 +36,9 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>daca2015ce74956591df9c9dc7ee732af7863b42</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.3.230109100-experimental.nightly">
+    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.3.230110100-experimental.nightly">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
-      <Sha>1a96bef750ec2393c435e5f5e14ef46c423ee8a4</Sha>
+      <Sha>d166760ef7246a3c5c9448b00924e5e99a184bd0</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="7.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
