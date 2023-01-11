@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj" />
+    <ProjectReference Include="..\TestUtils.Appium\TestUtils.Appium.csproj" />
   </ItemGroup>
 
 </Project>
