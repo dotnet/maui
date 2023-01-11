@@ -148,7 +148,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Clip Initializes ContainerView Correctly")]
-		public async Task ContainerViewInitializesCorrectly()
+		public async virtual Task ContainerViewInitializesCorrectly()
 		{
 			var view = new TStub
 			{
@@ -158,9 +158,66 @@ namespace Microsoft.Maui.DeviceTests
 				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
 			};
 
-			var handler = await CreateHandlerAsync(view);
+			await CreateHandlerAsync(view);
+			await view.AssertHasContainer(true);
+		}
 
-			Assert.NotNull(handler.ContainerView);
+		[Fact(DisplayName = "ContainerView Remains If Shadow Mapper Runs Again")]
+		public virtual async Task ContainerViewRemainsIfShadowMapperRunsAgain()
+		{
+			var view = new TStub
+			{
+				Height = 100,
+				Width = 100,
+				Background = new SolidPaintStub(Colors.Red),
+				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
+			};
+
+			var handler = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(view);
+				handler.UpdateValue(nameof(IView.Shadow));
+				return handler;
+			});
+
+			await view.AssertHasContainer(true);
+		}
+
+		[Fact(DisplayName = "ContainerView Adds And Removes")]
+		public virtual async Task ContainerViewAddsAndRemoves()
+		{
+			var view = new TStub
+			{
+				Height = 100,
+				Width = 100
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(view);
+
+
+				// This is a view that always has a container
+				// so there's nothing to test here
+				if (handler.HasContainer)
+					return;
+				await AssertionExtensions.AttachAndRun((handler as IPlatformViewHandler).PlatformView,
+					async () =>
+					{
+						await view.AssertHasContainer(false);
+						view.Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50);
+						handler.UpdateValue(nameof(IView.Clip));
+						await Task.Delay(10);
+						await view.AssertHasContainer(true);
+						view.Clip = null;
+						handler.UpdateValue(nameof(IView.Clip));
+						await Task.Delay(10);
+						await view.AssertHasContainer(false);
+
+					});
+
+				return;
+			});
 		}
 
 		[Theory(DisplayName = "Native View Bounds are not empty"

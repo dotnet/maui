@@ -162,6 +162,23 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
+		protected Task AssertColorAtPoint(IView view, Color color, Type handlerType, int x, int y) 
+		{
+#if !TIZEN
+			return InvokeOnMainThreadAsync(async () =>
+			{
+				var plaformView = CreateHandler(view, handlerType).ToPlatform();
+#if WINDOWS
+				await plaformView.AssertColorAtPointAsync(color.ToWindowsColor(), x, y);
+#else
+				await plaformView.AssertColorAtPointAsync(color.ToPlatform(), x, y);
+#endif
+			});
+#else
+			throw new NotImplementedException();
+#endif
+		}
+
 #endif
 
 		public void Dispose()
