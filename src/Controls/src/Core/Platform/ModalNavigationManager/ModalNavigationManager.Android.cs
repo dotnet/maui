@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
+using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
@@ -230,44 +231,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_modalFragment = new ModalFragment(_windowMauiContext, modal);
 				_fragmentManager = _windowMauiContext.GetFragmentManager();
-
-				//var windowRootView = GetWindowRootView();
-				//var parentWindowRootView = windowRootView.Parent;
-				//var parentParentWindowRootView = (windowRootView.Parent?.Parent as ViewGroup)!;
-				//var parentParentParentWindowRootView = windowRootView.Parent?.Parent?.Parent;
-
-				//for (int i = 0; i < (parentView.GetChildAt(0) as ViewGroup)!.ChildCount; i++)
-				//{
-				//	var child = (parentView.GetChildAt(0) as ViewGroup)!.GetChildAt(i);
-				//}
-
-				//var addTo = (parentView.GetChildAt(0) as ViewGroup)!.GetChildAt(0) as ViewGroup;
-				//var childrenCount = parentView.ChildCount;
-				//parentParentWindowRootView!.AddView(this);
-
-				//parentView.AddView(this);
-				//_fragmentManager
-				//	.BeginTransaction()
-				//	.Add(this.Id, _modalFragment)
-				//	.Commit();
-
+				_modalFragment.Cancelable = false;
 				_modalFragment.Show(_fragmentManager, null);
-				//UpdateMargin();
-			}
-
-			void UpdateMargin()
-			{
-				//// This sets up the modal container to be offset from the top of window the same
-				//// amount as the view it's covering. This will make it so the
-				//// ModalContainer takes into account the statusbar or lack thereof
-				//var rootView = GetWindowRootView();
-				//int y = (int)rootView.GetLocationOnScreenPx().Y;
-
-				//if (this.LayoutParameters is ViewGroup.MarginLayoutParams mlp &&
-				//	mlp.TopMargin != y)
-				//{
-				//	mlp.TopMargin = 60;
-				//}
 			}
 
 			public override bool OnTouchEvent(MotionEvent? e)
@@ -284,7 +249,6 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				UpdateMargin();
 				var rootView = GetWindowRootView();
 
 				widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(rootView.MeasuredWidth);
@@ -365,6 +329,49 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_modal = modal;
 					_mauiWindowContext = mauiContext;
+				}
+
+				class BillyDialog : global::Android.App.Dialog
+				{
+					public BillyDialog(Context context) : base(context)
+					{
+					}
+
+					public BillyDialog(Context context, int themeResId) : base(context, themeResId)
+					{
+					}
+
+					protected BillyDialog(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+					{
+					}
+
+					protected BillyDialog(Context context, bool cancelable, IDialogInterfaceOnCancelListener? cancelListener) : base(context, cancelable, cancelListener)
+					{
+					}
+
+					protected BillyDialog(Context context, bool cancelable, EventHandler cancelHandler) : base(context, cancelable, cancelHandler)
+					{
+					}
+
+					public override void OnBackPressed()
+					{
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
+						base.OnBackPressed();
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
+					}
+				}
+
+				public override global::Android.App.Dialog OnCreateDialog(Bundle? savedInstanceState)
+				{
+					var dialog = base.OnCreateDialog(savedInstanceState);
+					dialog.CancelEvent += Dialog_CancelEvent;
+					return dialog;
+				}
+
+				private void Dialog_CancelEvent(object? sender, EventArgs e)
+				{
 				}
 
 				public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
