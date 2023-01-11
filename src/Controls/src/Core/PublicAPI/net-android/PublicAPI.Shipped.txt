@@ -1227,9 +1227,6 @@
 ~Microsoft.Maui.Controls.On.Value.get -> object
 ~Microsoft.Maui.Controls.On.Value.set -> void
 ~Microsoft.Maui.Controls.OnPlatform<T>.Platforms.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.On>
-~Microsoft.Maui.Controls.OpenGLView.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.OpenGLView>
-~Microsoft.Maui.Controls.OpenGLView.OnDisplay.get -> System.Action<Microsoft.Maui.Graphics.Rect>
-~Microsoft.Maui.Controls.OpenGLView.OnDisplay.set -> void
 ~Microsoft.Maui.Controls.Page.BackgroundImageSource.get -> Microsoft.Maui.Controls.ImageSource
 ~Microsoft.Maui.Controls.Page.BackgroundImageSource.set -> void
 ~Microsoft.Maui.Controls.Page.DisplayActionSheet(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>
@@ -3716,7 +3713,6 @@
 ~static readonly Microsoft.Maui.Controls.NavigationPage.RootPageProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.NavigationPage.TitleIconImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.NavigationPage.TitleViewProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.OpenGLView.HasRenderLoopProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.OrientationStateTrigger.OrientationProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Page.BackgroundImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Page.IconImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -5567,8 +5563,6 @@ Microsoft.Maui.Controls.Internals.TypedBinding<TSource, TProperty>
 Microsoft.Maui.Controls.Internals.TypedBindingBase
 Microsoft.Maui.Controls.InvalidNavigationException
 Microsoft.Maui.Controls.InvalidNavigationException.InvalidNavigationException() -> void
-Microsoft.Maui.Controls.IOpenGlViewController
-Microsoft.Maui.Controls.IOpenGlViewController.DisplayRequested -> System.EventHandler
 Microsoft.Maui.Controls.IPaddingElement
 Microsoft.Maui.Controls.IPaddingElement.OnPaddingPropertyChanged(Microsoft.Maui.Thickness oldValue, Microsoft.Maui.Thickness newValue) -> void
 Microsoft.Maui.Controls.IPaddingElement.Padding.get -> Microsoft.Maui.Thickness
@@ -5947,12 +5941,6 @@ Microsoft.Maui.Controls.OnPlatform<T>
 Microsoft.Maui.Controls.OnPlatform<T>.Default.get -> T
 Microsoft.Maui.Controls.OnPlatform<T>.Default.set -> void
 Microsoft.Maui.Controls.OnPlatform<T>.OnPlatform() -> void
-Microsoft.Maui.Controls.OpenGLView
-Microsoft.Maui.Controls.OpenGLView.Display() -> void
-Microsoft.Maui.Controls.OpenGLView.DisplayRequested -> System.EventHandler
-Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.get -> bool
-Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.set -> void
-Microsoft.Maui.Controls.OpenGLView.OpenGLView() -> void
 Microsoft.Maui.Controls.OpenRequestedEventArgs
 Microsoft.Maui.Controls.OpenRequestedEventArgs.Animated.get -> bool
 Microsoft.Maui.Controls.OpenRequestedEventArgs.Animated.set -> void

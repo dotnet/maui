@@ -131,8 +131,6 @@
     <Compile Include="Renderers\FrameRenderer.cs" />
     <Compile Include="Controls\FormsImageView.cs" />
     <Compile Include="Renderers\ImageRenderer.cs" />
-    <Compile Include="Renderers\OpenGLViewRenderer.cs" />
-    <Compile Include="Controls\MacOSOpenGLView.cs" />
     <Compile Include="Renderers\PickerRenderer.cs" />
     <Compile Include="Renderers\ProgressBarRenderer.cs" />
     <Compile Include="Renderers\SearchBarRenderer.cs" />
