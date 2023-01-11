@@ -1,0 +1,34 @@
+parameters:
+  platform: '' # [ android, ios ]
+  path: '' # path to csproj
+  device: '' # the xharness device to use
+  cakeArgs: '' # additional cake args
+  provisionatorChannel: 'latest'
+  agentPoolAccessToken: ''
+
+steps:
+  - template: provision.yml
+    parameters:
+      platform: macos
+      skipXcode: ${{ eq(parameters.platform, 'android') }}
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+    displayName: 'Install .NET'
+    retryCountOnTaskFailure: 3
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: 'Add .NET to PATH'
+
+  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
+    displayName: 'Build the MSBuild Tasks'
+
+  # 
+
+  # This must always be placed as the last step in the job
+  - template: agent-rebooter/mac.v1.yml@yaml-templates
+    parameters:
+      AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
