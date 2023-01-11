@@ -76,14 +76,14 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Determines if this is the first launch of the app for a specified version number.
 		/// </summary>
 		/// <param name="version">The version number.</param>
-		/// <returns>True if this is the first launch of the app for the specified version number; otherwise false.</returns>
+		/// <returns><see langword="true"/> if this is the first launch of the app for the specified version number; otherwise <see langword="false"/>.</returns>
 		bool IsFirstLaunchForVersion(string version);
 
 		/// <summary>
 		/// Determines if this is the first launch of the app for a specified build number.
 		/// </summary>
 		/// <param name="build">The build number.</param>
-		/// <returns>True if this is the first launch of the app for the specified build number; otherwise false.</returns>
+		/// <returns><see langword="true"/> if this is the first launch of the app for the specified build number; otherwise <see langword="false"/>.</returns>
 		bool IsFirstLaunchForBuild(string build);
 	}
 
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Determines if this is the first launch of the app for a specified version number.
 		/// </summary>
 		/// <param name="version">The version number.</param>
-		/// <returns>True if this is the first launch of the app for the specified version number; otherwise false.</returns>
+		/// <returns><see langword="true"/> if this is the first launch of the app for the specified version number; otherwise <see langword="false"/>.</returns>
 		public static bool IsFirstLaunchForVersion(string version)
 			=> Default.IsFirstLaunchForVersion(version);
 
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Determines if this is the first launch of the app for a specified build number.
 		/// </summary>
 		/// <param name="build">The build number.</param>
-		/// <returns>True if this is the first launch of the app for the specified build number; otherwise false.</returns>
+		/// <returns><see langword="true"/> if this is the first launch of the app for the specified build number; otherwise <see langword="false"/>.</returns>
 		public static bool IsFirstLaunchForBuild(string build)
 			=> Default.IsFirstLaunchForBuild(build);
 
