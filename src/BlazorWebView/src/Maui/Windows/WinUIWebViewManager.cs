@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootRelativeToAppRoot;
 		private static readonly bool _isPackagedApp;
+		private readonly ILogger _logger;
 
 		static WinUIWebViewManager()
 		{
@@ -47,6 +48,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPagePathWithinFileProvider">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="webViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
+		/// <param name="logger">Logger to send log messages to.</param>
 		public WinUIWebViewManager(
 			WebView2Control webview,
 			IServiceProvider services,
@@ -55,9 +57,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			JSComponentConfigurationStore jsComponents,
 			string contentRootRelativeToAppRoot,
 			string hostPagePathWithinFileProvider,
-			BlazorWebViewHandler webViewHandler)
-			: base(webview, services, dispatcher, fileProvider, jsComponents, contentRootRelativeToAppRoot, hostPagePathWithinFileProvider, webViewHandler)
+			BlazorWebViewHandler webViewHandler,
+			ILogger logger)
+			: base(webview, services, dispatcher, fileProvider, jsComponents, contentRootRelativeToAppRoot, hostPagePathWithinFileProvider, webViewHandler, logger)
 		{
+			_logger = logger;
 			_webview = webview;
 			_hostPageRelativePath = hostPagePathWithinFileProvider;
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
@@ -78,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
 
-			_logger?.HandlingWebRequest(requestUri);
+			_logger.HandlingWebRequest(requestUri);
 
 			// First, call into WebViewManager to see if it has a framework file for this request. It will
 			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
@@ -87,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				&& statusCode != 404)
 			{
 				var headerString = GetHeaderString(headers);
-				_logger?.ResponseContentBeingSent(requestUri, statusCode);
+				_logger.ResponseContentBeingSent(requestUri, statusCode);
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 			}
 			else if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
@@ -135,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					var headerString = GetHeaderString(headers);
 
-					_logger?.ResponseContentBeingSent(requestUri, statusCode);
+					_logger.ResponseContentBeingSent(requestUri, statusCode);
 
 					eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
 						stream,
@@ -145,7 +149,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 				else
 				{
-					_logger?.ReponseContentNotFound(requestUri);
+					_logger.ReponseContentNotFound(requestUri);
 				}
 
 				async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
@@ -168,7 +172,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// In .NET MAUI we use autostart='false' for the Blazor script reference, so we start it up manually in this event
 			_webview.CoreWebView2.DOMContentLoaded += async (_, __) =>
 			{
-				_logger?.CallingBlazorStart();
+				_logger.CallingBlazorStart();
 
 				await _webview.CoreWebView2!.ExecuteScriptAsync(@"
 					Blazor.start();

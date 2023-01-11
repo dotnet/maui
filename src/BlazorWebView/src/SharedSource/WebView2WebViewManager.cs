@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
-		protected readonly ILogger<WebView2WebViewManager>? _logger;
+		private readonly ILogger _logger;
 		private readonly WebView2Control _webview;
 		private readonly Task<bool> _webviewReadyTask;
 		private readonly string _contentRootRelativeToAppRoot;
@@ -87,6 +87,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="urlLoading">Callback invoked when a url is about to load.</param>
 		/// <param name="blazorWebViewInitializing">Callback invoked before the webview is initialized.</param>
 		/// <param name="blazorWebViewInitialized">Callback invoked after the webview is initialized.</param>
+		/// <param name="logger">Logger to send log messages to.</param>
 		internal WebView2WebViewManager(
 			WebView2Control webview,
 			IServiceProvider services,
@@ -97,7 +98,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			string hostPagePathWithinFileProvider,
 			Action<UrlLoadingEventArgs> urlLoading,
 			Action<BlazorWebViewInitializingEventArgs> blazorWebViewInitializing,
-			Action<BlazorWebViewInitializedEventArgs> blazorWebViewInitialized)
+			Action<BlazorWebViewInitializedEventArgs> blazorWebViewInitialized,
+			ILogger logger)
 			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPagePathWithinFileProvider)
 
 		{
@@ -119,8 +121,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 #endif
 
-			_logger = services.GetService<ILogger<WebView2WebViewManager>>();
-
+			_logger = logger;
 			_webview = webview;
 			_urlLoading = urlLoading;
 			_blazorWebViewInitializing = blazorWebViewInitializing;
@@ -148,6 +149,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="contentRootRelativeToAppRoot">Path to the app's content root relative to the application root directory.</param>
 		/// <param name="hostPagePathWithinFileProvider">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="blazorWebViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
+		/// <param name="logger">Logger to send log messages to.</param>
 		internal WebView2WebViewManager(
 			WebView2Control webview,
 			IServiceProvider services,
@@ -156,7 +158,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			JSComponentConfigurationStore jsComponents,
 			string contentRootRelativeToAppRoot,
 			string hostPagePathWithinFileProvider,
-			BlazorWebViewHandler blazorWebViewHandler
+			BlazorWebViewHandler blazorWebViewHandler,
+			ILogger logger
 		)
 			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPagePathWithinFileProvider)
 		{
@@ -169,8 +172,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
 			}
 
-			_logger = services.GetService<ILogger<WebView2WebViewManager>>();
-
+			_logger = logger;
 			_webview = webview;
 			_blazorWebViewHandler = blazorWebViewHandler;
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
@@ -191,7 +193,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 				if (isWebviewInitialized)
 				{
-					_logger?.NavigatingToUri(absoluteUri);
+					_logger.NavigatingToUri(absoluteUri);
 					_webview.Source = absoluteUri;
 				}
 			});
@@ -218,7 +220,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 			catch (FileNotFoundException)
 			{
-				_logger?.FailedToCreateWebView2Environment();
+				_logger.FailedToCreateWebView2Environment();
 
 				// This method needs to be invoked even if the WebView2 Runtime is not installed,
 				// since it is reponsible for creating the warning label and WebView2 Runtime
@@ -227,9 +229,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				return false;
 			}
 
-			_logger?.StartingWebView2();
+			_logger.StartingWebView2();
 			await _webview.EnsureCoreWebView2Async();
-			_logger?.StartedWebView2();
+			_logger.StartedWebView2();
 
 			var developerTools = _blazorWebViewHandler.DeveloperTools;
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
@@ -241,9 +243,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				options: args.EnvironmentOptions)
 			.ConfigureAwait(true);
 
-			_logger?.StartingWebView2();
+			_logger.StartingWebView2();
 			await _webview.EnsureCoreWebView2Async(_coreWebView2Environment);
-			_logger?.StartedWebView2();
+			_logger.StartedWebView2();
 
 			var developerTools = _developerTools;
 #endif
@@ -312,7 +314,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 			var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
 
-			_logger?.HandlingWebRequest(requestUri);
+			_logger.HandlingWebRequest(requestUri);
 
 			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 			{
@@ -322,13 +324,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 				var autoCloseStream = new AutoCloseOnReadCompleteStream(content);
 
-				_logger?.ResponseContentBeingSent(requestUri, statusCode);
+				_logger.ResponseContentBeingSent(requestUri, statusCode);
 
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(autoCloseStream, statusCode, statusMessage, headerString);
 			}
 			else
 			{
-				_logger?.ReponseContentNotFound(requestUri);
+				_logger.ReponseContentNotFound(requestUri);
 			}
 #elif WEBVIEW2_MAUI
 			// No-op here because all the work is done in the derived WinUIWebViewManager
@@ -354,7 +356,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 #elif WEBVIEW2_MAUI
 				_blazorWebViewHandler.UrlLoading(callbackArgs);
 #endif
-				_logger?.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
+				_logger.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
 
 				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
 				{
@@ -378,7 +380,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		private void LaunchUriInExternalBrowser(Uri uri)
 		{
-			_logger?.LaunchExternalBrowser(uri);
+			_logger.LaunchExternalBrowser(uri);
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 			using (var launchBrowser = new Process())

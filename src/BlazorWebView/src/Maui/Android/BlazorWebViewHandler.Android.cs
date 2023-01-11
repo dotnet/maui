@@ -3,6 +3,7 @@ using Android.Webkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
@@ -19,25 +20,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private AndroidWebKitWebViewManager? _webviewManager;
 		internal AndroidWebKitWebViewManager? WebviewManager => _webviewManager;
 
-		private bool _loggerCreated;
 		private ILogger? _logger;
-
-		internal ILogger? Logger
-		{
-			get
-			{
-				if (!_loggerCreated)
-				{
-					_logger = Services!.GetService<ILogger<BlazorWebViewHandler>>();
-					_loggerCreated = true;
-				}
-				return _logger;
-			}
-		}
+		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
 
 		protected override AWebView CreatePlatformView()
 		{
-			Logger?.CreatingAndroidWebkitWebView();
+			Logger.CreatingAndroidWebkitWebView();
 
 #pragma warning disable CA1416, CA1412, CA1422 // Validate platform compatibility
 			var blazorAndroidWebView = new BlazorAndroidWebView(Context!)
@@ -65,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webChromeClient = new BlazorWebChromeClient();
 			blazorAndroidWebView.SetWebChromeClient(_webChromeClient);
 
-			Logger?.CreatedAndroidWebkitWebView();
+			Logger.CreatedAndroidWebkitWebView();
 
 			return blazorAndroidWebView;
 		}
@@ -113,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
-			Logger?.CreatingFileProvider(contentRootDir, hostPageRelativePath);
+			Logger.CreatingFileProvider(contentRootDir, hostPageRelativePath);
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
@@ -124,7 +112,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				fileProvider,
 				VirtualView.JSComponents,
 				contentRootDir,
-				hostPageRelativePath);
+				hostPageRelativePath,
+				Logger);
 
 			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
@@ -138,14 +127,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				foreach (var rootComponent in RootComponents)
 				{
-					Logger?.AddingRootComponent(rootComponent.ComponentType?.FullName ?? string.Empty, rootComponent.Selector ?? string.Empty, rootComponent.Parameters?.Count ?? 0);
+					Logger.AddingRootComponent(rootComponent.ComponentType?.FullName ?? string.Empty, rootComponent.Selector ?? string.Empty, rootComponent.Parameters?.Count ?? 0);
 
 					// Since the page isn't loaded yet, this will always complete synchronously
 					_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 				}
 			}
 
-			Logger?.StartingInitialNavigation(VirtualView.StartPath);
+			Logger.StartingInitialNavigation(VirtualView.StartPath);
 			_webviewManager.Navigate(VirtualView.StartPath);
 		}
 
