@@ -256,4 +256,79 @@ Task("Test")
 	}
 });
 
+Task("uitest")
+	.IsDependentOn("Build")
+	.Does(() =>
+{
+	if (string.IsNullOrEmpty(TEST_APP)) {
+		if (string.IsNullOrEmpty(PROJECT.FullPath))
+			throw new Exception("If no app was specified, an app must be provided.");
+		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).FullPath;
+		var apps = GetFiles(binDir + "/*-Signed.apk");
+		if (apps.Any()) {
+			TEST_APP = apps.FirstOrDefault().FullPath;
+		} else {
+			apps = GetFiles(binDir + "/*.apk");
+			TEST_APP = apps.First().FullPath;
+		}
+	}
+	if (string.IsNullOrEmpty(TEST_APP_PACKAGE_NAME)) {
+		var appFile = (FilePath)TEST_APP;
+		appFile = appFile.GetFilenameWithoutExtension();
+		TEST_APP_PACKAGE_NAME = appFile.FullPath.Replace("-Signed", "");
+	}
+	if (string.IsNullOrEmpty(TEST_APP_INSTRUMENTATION)) {
+		TEST_APP_INSTRUMENTATION = TEST_APP_PACKAGE_NAME + ".TestInstrumentation";
+	}
+	if (string.IsNullOrEmpty(TEST_RESULTS)) {
+		TEST_RESULTS = TEST_APP + "-results";
+	}
+
+	Information("Test App: {0}", TEST_APP);
+	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
+	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
+	Information("Test Results Directory: {0}", TEST_RESULTS);
+
+	CleanDirectories(TEST_RESULTS);
+
+	if (DEVICE_BOOT_WAIT) {
+		Information("Waiting for the emulator to finish booting...");
+
+		// wait for it to finish booting (10 mins)
+		var waited = 0;
+		var total = 60 * 10;
+		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
+			System.Threading.Thread.Sleep(1000);
+			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
+			if (waited++ > total)
+				break;
+		}
+		Information("Waited {0} seconds for the emulator to boot up.", waited);
+	}
+
+	Information("Setting the ADB properties...");
+	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
+	Information("{0}", string.Join("\n", lines));
+	lines = AdbShell("getprop debug.mono.log", adbSettings);
+	Information("{0}", string.Join("\n", lines));
+
+	// var settings = new DotNetCoreToolSettings {
+	// 	DiagnosticOutput = true,
+	// 	ArgumentCustomization = args=>args.Append("run xharness android test " +
+	// 		$"--app=\"{TEST_APP}\" " +
+	// 		$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
+	// 		$"--instrumentation=\"{TEST_APP_INSTRUMENTATION}\" " +
+	// 		$"--device-arch=\"{DEVICE_ARCH}\" " +
+	// 		$"--output-directory=\"{TEST_RESULTS}\" " +
+	// 		$"--verbosity=\"Debug\" ")
+	// };
+
+	// DotNetCoreTool("tool", settings);
+
+	// var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
+	// if (!string.IsNullOrEmpty(failed)) {
+	// 	throw new Exception($"At least {failed} test(s) failed.");
+	// }
+});
+
 RunTarget(TARGET);

@@ -3,6 +3,7 @@ parameters:
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
+  app: '' #path to app to test
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
 
@@ -25,7 +26,6 @@ steps:
         npm install -g appium@next
         appium -v
         appium driver install uiautomator2
-        appium driver install --package=appium-windows-driver windows
       displayName: "Install Appium"
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -43,6 +43,10 @@ steps:
 
   - script: appium server --base-path=/wd/hub
     displayName: "Start Appium server"
+
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --app="${{ parameters.app }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+    displayName: $(Agent.JobName)
+    retryCountOnTaskFailure: 2
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates

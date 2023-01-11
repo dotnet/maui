@@ -10,6 +10,7 @@ parameters:
       desc: Human Description
       android: /optional/path/to/android.csproj
       ios: /optional/path/to/ios.csproj
+      app: /optional/path/to/app.csproj
 
 stages:
 
@@ -37,6 +38,7 @@ stages:
                     parameters:
                       platform: android
                       path: ${{ project.android }}
+                      app: ${{ project.app }}
                       device: android-emulator-32_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
