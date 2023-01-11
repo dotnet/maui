@@ -48,8 +48,7 @@ namespace Microsoft.Maui.Controls
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
 		}
 
-		// TODO: NET8 make this public
-		internal static void MapTextColor(ILabelHandler handler, Label label)
+		public static void MapTextColor(ILabelHandler handler, Label label)
 		{
 			handler.PlatformView?.UpdateTextColor(label);
 

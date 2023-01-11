@@ -1,4 +1,19 @@
 #nullable enable
+Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText
+Microsoft.Maui.Platform.MauiAppCompatEditText.MauiAppCompatEditText(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText.SelectionChanged -> System.EventHandler?
+override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
+override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
+override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Platform.MauiAppCompatEditText.OnSelectionChanged(int selStart, int selEnd) -> void
+static Microsoft.Maui.Handlers.ImageButtonHandler.MapBackground(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.IImageButton! imageButton) -> void
 static Microsoft.Maui.Handlers.StepperHandler.MapIsEnabled(Microsoft.Maui.Handlers.IStepperHandler! handler, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android.Widget.EditText! editText, int cursorOffset = 0) -> int
+static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void

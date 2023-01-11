@@ -18,7 +18,7 @@ namespace Microsoft.Maui.ApplicationModel
 		readonly ActiveWindowTracker _activeWindowTracker;
 
 		/// <summary>
-		/// Intializes a new <see cref="AppInfoImplementation"/> object with default values.
+		/// Initializes a new <see cref="AppInfoImplementation"/> object with default values.
 		/// </summary>
 		public AppInfoImplementation()
 		{
