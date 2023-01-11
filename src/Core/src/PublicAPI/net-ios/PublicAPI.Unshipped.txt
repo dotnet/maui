@@ -6,3 +6,4 @@ override Microsoft.Maui.Platform.MauiTextField.WillMoveToWindow(UIKit.UIWindow? 
 override Microsoft.Maui.Platform.MauiTextView.WillMoveToWindow(UIKit.UIWindow? window) -> void
 *REMOVED*override Microsoft.Maui.Handlers.PageHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
 *REMOVED*override Microsoft.Maui.Handlers.PageHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
+static Microsoft.Maui.Platform.SearchBarExtensions.UpdateBackground(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void

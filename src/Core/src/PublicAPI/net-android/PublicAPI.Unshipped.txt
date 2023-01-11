@@ -17,3 +17,4 @@ static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Micr
 static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android.Widget.EditText! editText, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
+static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this Android.Widget.EditText! platformView, Microsoft.Maui.IView! view) -> void
