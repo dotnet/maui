@@ -21,28 +21,38 @@ namespace Microsoft.Maui.Controls
 			if (n is ICommand newCommand)
 			{
 				newCommand.CanExecuteChanged += commandElement.CanExecuteChanged;
-				CanExecuteChanged(commandElement, EventArgs.Empty);
+				commandElement.CanExecuteChanged(bo, EventArgs.Empty);
 			}
 		}
 
 		public static void OnCommandParameterChanged(BindableObject bo, object o, object n)
 		{
-			CanExecuteChanged(bo, EventArgs.Empty);
+			var commandElement = (ICommandElement)bo;
+			commandElement.CanExecuteChanged(bo, EventArgs.Empty);
 		}
 
-		public static void CanExecuteChanged(object? sender, EventArgs e)
-		{
-			(sender as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
-		}
-
-		public static bool GetCanExecute(ICommandElement commandElement) 
+		public static bool GetCanExecute(ICommandElement commandElement)
 		{
 			if (commandElement.Command == null)
-			{
 				return true;
-			}
 
 			return commandElement.Command.CanExecute(commandElement.CommandParameter);
+		}
+
+		public static void RefreshPropertyValue(BindableObject bo, BindableProperty property, object value)
+		{
+			var ctx = bo.GetContext(property);
+			if (ctx?.Binding is not null)
+			{
+				// support bound properties
+				if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
+					ctx.Binding.Apply(false);
+			}
+			else
+			{
+				// support normal/code properties
+				bo.SetValue(property, value);
+			}
 		}
 	}
 }

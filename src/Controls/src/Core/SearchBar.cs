@@ -179,7 +179,8 @@ namespace Microsoft.Maui.Controls
 		internal override bool IsEnabledCore =>
 			base.IsEnabledCore && CommandElement.GetCanExecute(this);
 
-		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) => CommandElement.CanExecuteChanged(this, e);
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
+			RefreshIsEnabledProperty();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='OnSearchButtonPressed']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]

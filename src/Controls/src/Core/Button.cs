@@ -457,7 +457,8 @@ namespace Microsoft.Maui.Controls
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
-		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) => CommandElement.CanExecuteChanged(this, e);
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
+			RefreshIsEnabledProperty();
 
 		internal override bool IsEnabledCore =>
 			base.IsEnabledCore && CommandElement.GetCanExecute(this);

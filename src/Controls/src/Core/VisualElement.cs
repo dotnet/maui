@@ -483,9 +483,14 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
-		internal virtual bool IsEnabledCore 
+		/// <summary>
+		/// This value represents the cumulative IsEnabled value.
+		/// All types that override this property need to also invoke
+		/// the RefreshIsEnabledProperty() method if the value will change.
+		/// </summary>
+		internal virtual bool IsEnabledCore
 		{
-			get 
+			get
 			{
 				if (_isEnabledExplicit == false)
 				{
@@ -1183,8 +1188,6 @@ namespace Microsoft.Maui.Controls
 
 		static object CoerceIsEnabledProperty(BindableObject bindable, object value)
 		{
-			var element = (VisualElement)bindable;
-
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._isEnabledExplicit = (bool)value;
@@ -1262,24 +1265,18 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			if (propertyName == null || propertyName == VisualElement.IsEnabledProperty.PropertyName)
-			{
-				var ctx = GetContext(VisualElement.IsEnabledProperty);
-				if (ctx?.Binding is not null)
-				{
-					// support bound properties
-					if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
-						ctx.Binding.Apply(false);
-				}
-				else
-				{
-					// support normal/code properties
-					IsEnabled = _isEnabledExplicit;
-				}
-			}
-			
+			if (propertyName == null || propertyName == IsEnabledProperty.PropertyName)
+				CommandElement.RefreshPropertyValue(this, IsEnabledProperty, _isEnabledExplicit);
+
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
+
+		/// <summary>
+		/// This method must always be called if some event occurs and the value of
+		/// the IsEnabledCore property will change.
+		/// </summary>
+		internal void RefreshIsEnabledProperty() =>
+			(this as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
 
 		void UpdateBoundsComponents(Rect bounds)
 		{
