@@ -91,12 +91,19 @@ namespace Microsoft.Maui.DeviceTests
 			// Give the UI time to refresh
 			await Task.Delay(100);
 
-			var result = await action();
+			T result;
 
-			view.RemoveFromSuperview();
+			try
+			{
+				result = await action();
+			}
+			finally
+			{
+				view.RemoveFromSuperview();
 
-			// Give the UI time to refresh
-			await Task.Delay(100);
+				// Give the UI time to refresh
+				await Task.Delay(100);
+			}
 
 			return result;
 		}
@@ -246,13 +253,13 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, (int)bitmap.Size.Width - 1, (int)bitmap.Size.Height - 1);
 		}
 
-		public static async Task<UIImage> AssertColorAtPoint(this UIView view, UIColor expectedColor, int x, int y)
+		public static async Task<UIImage> AssertColorAtPointAsync(this UIView view, UIColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<UIImage> AssertColorAtCenter(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtCenterAsync(this UIView view, UIColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
@@ -308,7 +315,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task AssertEqual(this UIImage bitmap, UIImage other)
+		public static Task AssertEqualAsync(this UIImage bitmap, UIImage other)
 		{
 			Assert.NotNull(bitmap);
 			Assert.NotNull(other);
@@ -445,6 +452,81 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return null;
+		}
+
+		/// <summary>
+		/// If VoiceOver is off iOS just leaves IsAccessibilityElement set to false
+		/// This applies the default value to each control type so we can have some level
+		/// of testing inside simulators and when the VO is turned off.
+		/// These default values were all validated inside Xcode
+		/// </summary>
+		/// <param name="platformView"></param>
+		public static void SetupAccessibilityExpectationIfVoiceOverIsOff(this UIView platformView)
+		{
+			if (!UIAccessibility.IsVoiceOverRunning)
+			{
+				platformView = platformView.GetAccessiblePlatformView();
+				// even though UIStepper/UIPageControl inherits from UIControl
+				// iOS sets it to not be important for accessibility
+				// most likely because the children elements need to be reachable
+				if (platformView is UIStepper || platformView is UIPageControl)
+					return;
+
+				// UILabel will only be an accessibility element if it has text
+				if (platformView is UILabel label && !String.IsNullOrWhiteSpace(label.Text))
+				{
+					platformView.IsAccessibilityElement = true;
+					return;
+				}
+
+				// AFAICT on iOS when you read IsAccessibilityElement it's always false
+				// unless you have VoiceOver turned on.
+				// So, though not ideal, the main think we test on iOS is that elements
+				// that should stay false remain false. 
+				// According to the Apple docs anything that inherits from UIControl
+				// has isAccessibilityElement set to true by default so we're just
+				// validating that everything that doesn't inherit from UIControl isn't
+				// getting set to true
+				if (platformView is UIControl)
+				{
+					platformView.IsAccessibilityElement = true;
+					return;
+				}
+
+				// These are UIViews that don't inherit from UIControl but
+				// iOS will mark them as Accessibility Elements
+				// I tested each of these controls inside Xcode away from any MAUI tampering
+				if (platformView is UITextView || platformView is UIProgressView)
+				{
+					platformView.IsAccessibilityElement = true;
+					return;
+				}
+			}
+		}
+
+		public static bool IsAccessibilityElement(this UIView platformView)
+		{
+			platformView = platformView.GetAccessiblePlatformView();
+			return platformView.IsAccessibilityElement;
+		}
+
+		public static bool IsExcludedWithChildren(this UIView platformView)
+		{
+			return platformView.AccessibilityElementsHidden;
+		}
+
+		public static UIView GetAccessiblePlatformView(this UIView platformView)
+		{
+			if (platformView is UISearchBar searchBar)
+				platformView = searchBar.GetSearchTextField()!;
+
+			if (platformView is WrapperView wrapperView)
+			{
+				Assert.False(wrapperView.IsAccessibilityElement);
+				return wrapperView.Subviews[0];
+			}
+
+			return platformView;
 		}
 	}
 }

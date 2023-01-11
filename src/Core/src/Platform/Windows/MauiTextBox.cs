@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Platform
 	public static class MauiTextBox
 	{
 		const string ContentElementName = "ContentElement";
+		const string PlaceholderTextContentPresenterName = "PlaceholderTextContentPresenter";
 		const string DeleteButtonElementName = "DeleteButton";
 		const string ButtonStatesName = "ButtonStates";
 		const string ButtonVisibleStateName = "ButtonVisible";
@@ -34,10 +35,15 @@ namespace Microsoft.Maui.Platform
 			// TODO: cache the scrollViewer value on the textBox
 
 			var element = d as FrameworkElement;
-			var scrollViewer = element?.GetDescendantByName<ScrollViewer>(ContentElementName);
+			var verticalAlignment = GetVerticalTextAlignment(d);
 
+			var scrollViewer = element?.GetDescendantByName<ScrollViewer>(ContentElementName);
 			if (scrollViewer is not null)
-				scrollViewer.VerticalAlignment = GetVerticalTextAlignment(d);
+				scrollViewer.VerticalAlignment = verticalAlignment;
+
+			var placeholder = element?.GetDescendantByName<TextBlock>(PlaceholderTextContentPresenterName);
+			if (placeholder is not null)
+				placeholder.VerticalAlignment = verticalAlignment;
 		}
 
 		// IsDeleteButtonEnabled
