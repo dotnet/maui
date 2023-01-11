@@ -42,7 +42,7 @@ steps:
     displayName: 'Build the MSBuild Tasks'
 
   - script: appium server --base-path=/wd/hub
-  displayName: "Start Appium server"
+    displayName: "Start Appium server"
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates
