@@ -15,5 +15,17 @@ namespace Microsoft.Maui.Controls
 			Platform.AutomationPropertiesProvider.SetImportantForAccessibility(
 				handler.PlatformView as Android.Views.View, element);
 		}
+
+		static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, IElement element)
+		{
+			if (element is Element e)
+				MapAutomationPropertiesIsInAccessibleTree(handler, e);
+		}
+
+		static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, IElement element)
+		{
+			if (element is Element e)
+				MapAutomationPropertiesExcludedWithChildren(handler, e);
+		}
 	}
 }

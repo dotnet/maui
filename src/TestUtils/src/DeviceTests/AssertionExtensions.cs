@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
@@ -54,6 +55,40 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if !TIZEN && PLATFORM
+		public static Task AssertHasContainer(this IView view, bool expectation)
+		{
+			// On Windows the `Parent` of an element only initializes when the view is added
+			// to the Visual Tree
+			var platformViewHandler = (IPlatformViewHandler)view.Handler!;
+			var platformView = platformViewHandler.PlatformView!;
+
+#if WINDOWS
+			var dispatcher = platformViewHandler.MauiContext!.GetDispatcher();
+			return dispatcher.DispatchAsync(async () =>
+			{
+				if (platformView.XamlRoot == null)
+				{
+					if (!expectation)
+						await AttachAndRun(platformView, RunAssertions);
+					else
+						await AttachAndRun(platformViewHandler.ContainerView!, RunAssertions);
+				}
+				else
+					RunAssertions();
+			});
+
+#else
+			RunAssertions();
+			return Task.CompletedTask;
+#endif
+			void RunAssertions()
+			{
+				Assert.Equal(expectation, view.Handler?.HasContainer ?? false);
+				Assert.Equal(expectation, view.Handler?.ContainerView != null);
+				var parentView = platformView?.GetParent();
+				Assert.Equal(expectation, parentView is WrapperView);
+			}
+		}
 
 		public static Task WaitForKeyboardToShow(this IView view, int timeout = 1000)
 		{
