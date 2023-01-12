@@ -13,35 +13,44 @@
     <_MauiRuntimePackAlwaysCopyLocal Condition=" '$(_MauiPlatformName)' == 'any' ">true</_MauiRuntimePackAlwaysCopyLocal>
   </PropertyGroup>
 
-  <!-- These implicit <PackageReference/> pull dependencies from NuGet transitively -->
+  <!--
+    These implicit <PackageReference/> pull dependencies from NuGet transitively.
+    They are first added to the <_MauiImplicitPackageReference/> item group to list the the desired
+    packages. Then the packages that were specified by the user are removed from the list. Finally,
+    the remaining implicit packages are added into the project.
+  -->
   <ItemGroup Condition=" '$(UseMauiAssets)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" IsImplicitlyDefined="true" PrivateAssets="all" />
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" IsImplicitlyDefined="true" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMauiEssentials)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
-    </PackageReference>
+    </_MauiImplicitPackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMauiCore)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Core" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Core" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
-    </PackageReference>
+    </_MauiImplicitPackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+    </_MauiImplicitPackageReference>
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
-    </PackageReference>
+    </_MauiImplicitPackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" IsImplicitlyDefined="true">
+    <_MauiImplicitPackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
-    </PackageReference>
+    </_MauiImplicitPackageReference>
   </ItemGroup>
   <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') ">
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="@MicrosoftWindowsSDKBuildToolsPackageVersion@" IsImplicitlyDefined="true" PrivateAssets="all" />
+    <_MauiImplicitPackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="@MicrosoftWindowsSDKBuildToolsPackageVersion@" IsImplicitlyDefined="true" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <_MauiImplicitPackageReference Remove="@(PackageReference)" />
+    <PackageReference Include="@(_MauiImplicitPackageReference)" />
   </ItemGroup>
 
 </Project>
