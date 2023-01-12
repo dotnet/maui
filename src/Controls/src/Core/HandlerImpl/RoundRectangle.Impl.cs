@@ -44,11 +44,11 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var path = new PathF();
 
-			float x = (float)StrokeThickness / 2;
-			float y = (float)StrokeThickness / 2;
+			float x = (float)strokeThickness / 2;
+			float y = (float)strokeThickness / 2;
 
-			float w = (float)(width - StrokeThickness);
-			float h = (float)(height - StrokeThickness);
+			float w = (float)(width - strokeThickness);
+			float h = (float)(height - strokeThickness);
 
 			float topLeftCornerRadius = (float)CornerRadius.TopLeft;
 			float topRightCornerRadius = (float)CornerRadius.TopRight;
@@ -58,10 +58,10 @@ namespace Microsoft.Maui.Controls.Shapes
 			// The equation to determine the inner corner radius:
 			// Inner Corner Radius = Corner Radius - StrokeTickness
 
-			float innerTopLeftCornerRadius = Math.Max(topLeftCornerRadius - strokeThickness/2, 0);
-			float innerTopRightCornerRadius = Math.Max(topRightCornerRadius - strokeThickness/2, 0);
-			float innerBottomLeftCornerRadius = Math.Max(bottomLeftCornerRadius - strokeThickness/2, 0);
-			float innerBottomRightCornerRadius = Math.Max(bottomRightCornerRadius - strokeThickness/2, 0);
+			float innerTopLeftCornerRadius = Math.Max(topLeftCornerRadius - strokeThickness, 0);
+			float innerTopRightCornerRadius = Math.Max(topRightCornerRadius - strokeThickness, 0);
+			float innerBottomLeftCornerRadius = Math.Max(bottomLeftCornerRadius - strokeThickness, 0);
+			float innerBottomRightCornerRadius = Math.Max(bottomRightCornerRadius - strokeThickness, 0);
 
 			path.AppendRoundedRectangle(x, y, w, h, innerTopLeftCornerRadius, innerTopRightCornerRadius, innerBottomLeftCornerRadius, innerBottomRightCornerRadius);
 

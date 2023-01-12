@@ -119,15 +119,7 @@ namespace Microsoft.Maui.Platform
 			float h = (canvas.Height / density) - strokeThickness;
 
 			var bounds = new Graphics.RectF(offset, offset, w, h);
-			var shape = Clip.Shape;
-
-			PathF? clipPath;
-
-			if (shape is IRoundRectangle roundRectangle)
-				clipPath = roundRectangle.ClipPathForBounds(bounds, Clip.StrokeThickness);
-			else
-				clipPath = shape?.PathForBounds(bounds);
-
+			PathF? clipPath = Clip.Shape?.PathForBounds(bounds);
 			var currentPath = clipPath?.AsAndroidPath(scaleX: density, scaleY: density);
 
 			if (currentPath != null)
