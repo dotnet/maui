@@ -2,7 +2,11 @@
 using Microsoft.Graphics.Canvas.Text;
 using Windows.UI.Text;
 
+#if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
+#else
+namespace Microsoft.Maui.Graphics.Platform
+#endif
 {
 	public class W2DStringSizeService : IStringSizeService
 	{

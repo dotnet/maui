@@ -7,7 +7,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 #endif
 
+#if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
+#else
+namespace Microsoft.Maui.Graphics.Platform
+#endif
 {
 	public sealed class W2DGraphicsView : UserControl
 	{

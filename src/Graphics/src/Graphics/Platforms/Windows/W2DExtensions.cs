@@ -3,7 +3,11 @@ using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 
+#if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
+#else
+namespace Microsoft.Maui.Graphics.Platform
+#endif
 {
 	public static class W2DExtensions
 	{

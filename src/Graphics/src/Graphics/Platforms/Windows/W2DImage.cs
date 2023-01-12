@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Windows.Storage.Streams;
 
+#if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
+#else
+namespace Microsoft.Maui.Graphics.Platform
+#endif
 {
 	internal class W2DImage : IImage
 	{

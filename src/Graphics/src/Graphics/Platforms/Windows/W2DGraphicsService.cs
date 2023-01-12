@@ -1,7 +1,11 @@
 using System.Threading;
 using Microsoft.Graphics.Canvas;
 
+#if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
+#else
+namespace Microsoft.Maui.Graphics.Platform
+#endif
 {
 	internal class W2DGraphicsService
 	{
