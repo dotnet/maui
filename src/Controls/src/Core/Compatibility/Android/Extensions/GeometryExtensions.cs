@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 using Android.Content;
 using Android.Graphics;

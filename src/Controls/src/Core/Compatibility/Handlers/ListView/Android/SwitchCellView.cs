@@ -1,3 +1,4 @@
+#nullable disable
 using Android.Content;
 using Android.Widget;
 
