@@ -15,5 +15,17 @@ namespace Microsoft.Maui.Controls
 		{
 			//TODO : Need to impl
 		}
+
+		static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, IElement element)
+		{
+			if (element is Element e)
+				MapAutomationPropertiesIsInAccessibleTree(handler, e);
+		}
+
+		static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, IElement element)
+		{
+			if (element is Element e)
+				MapAutomationPropertiesExcludedWithChildren(handler, e);
+		}
 	}
 }
