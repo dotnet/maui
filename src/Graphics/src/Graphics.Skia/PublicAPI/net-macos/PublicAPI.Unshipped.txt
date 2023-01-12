@@ -49,7 +49,6 @@ Microsoft.Maui.Graphics.Skia.SKPaintExtensions
 Microsoft.Maui.Graphics.Skia.TextLine
 Microsoft.Maui.Graphics.Skia.TextLine.Width.get -> float
 Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView
-Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.Invalidate() -> void
 override Microsoft.Maui.Graphics.Skia.SkiaBitmapExportContext.Dispose() -> void
 override Microsoft.Maui.Graphics.Skia.SkiaCanvas.Alpha.set -> void
 override Microsoft.Maui.Graphics.Skia.SkiaCanvas.Antialias.set -> void
@@ -152,7 +151,7 @@ static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.ToSKPoint(this Microsof
 ~override Microsoft.Maui.Graphics.Skia.SkiaCanvas.SetShadow(Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color color) -> void
 ~override Microsoft.Maui.Graphics.Skia.SkiaCanvas.StateRestored(Microsoft.Maui.Graphics.Skia.SkiaCanvasState state) -> void
 ~override Microsoft.Maui.Graphics.Skia.SkiaCanvas.StrokeColor.set -> void
-~override Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.OnPaintSurface(SkiaSharp.Views.iOS.SKPaintSurfaceEventArgs e) -> void
+~override Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.OnPaintSurface(SkiaSharp.Views.Mac.SKPaintSurfaceEventArgs e) -> void
 ~static Microsoft.Maui.Graphics.Skia.FontExtensions.ToSKTypeface(this Microsoft.Maui.Graphics.IFont font) -> SkiaSharp.SKTypeface
 ~static Microsoft.Maui.Graphics.Skia.SKColorExtensions.ToColor(this Microsoft.Maui.Graphics.Color target, float alpha = 1) -> SkiaSharp.SKColor
 ~static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.AsColor(this SkiaSharp.SKColor target) -> Microsoft.Maui.Graphics.Color
