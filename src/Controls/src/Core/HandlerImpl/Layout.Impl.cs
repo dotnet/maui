@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#nullable disable
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;

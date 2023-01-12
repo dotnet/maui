@@ -1,4 +1,5 @@
-﻿#if WINDOWS || TIZEN
+﻿#nullable disable
+#if WINDOWS || TIZEN
 using System;
 using System.Collections.Generic;
 using System.Text;

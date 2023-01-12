@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Internals;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Controls.Platform

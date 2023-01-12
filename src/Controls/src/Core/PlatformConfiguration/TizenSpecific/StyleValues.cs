@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ButtonStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ButtonStyle']/Docs/*" />
