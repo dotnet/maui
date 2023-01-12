@@ -17,6 +17,7 @@ steps:
   - task: NodeTool@0
     inputs:
       versionSpec: "18.13.0"
+    displauName: "Install node"
 
   - task: PowerShell@2
     inputs:
@@ -26,7 +27,7 @@ steps:
         npm install -g appium@next
         appium -v
         appium driver install uiautomator2
-      displayName: "Install Appium"
+    displayName: "Install Appium"
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
