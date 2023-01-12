@@ -118,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 		// So, for now we're limiting this to 10 parallel windows which seems 
 		// to work fine.
 		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(10);
-    
+
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action) =>
 			view.AttachAndRun(window => action());
 
