@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void FillContent()
 		{
-			foreach (var child in Control.ContentContainer.Children.ToList())
+			foreach (var child in Control.ContentContainer.Children.ToArray())
 			{
 				Control.ContentContainer.Remove(child);
 			}

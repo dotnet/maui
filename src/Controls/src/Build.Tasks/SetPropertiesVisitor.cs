@@ -1641,7 +1641,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return false;
 
 			var attributes = variableDefinition.VariableType.ResolveCached(Context.Cache)
-				.CustomAttributes.Where(attribute => attribute.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.RuntimeNamePropertyAttribute").ToList();
+				.CustomAttributes.Where(attribute => attribute.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.RuntimeNamePropertyAttribute").ToArray();
 
 			if (!attributes.Any())
 				return false;

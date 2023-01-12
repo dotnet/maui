@@ -146,7 +146,7 @@ internal static class MaterialColors
 		public static readonly int[][] EntryHintTextStates =
 		{
 			new []{ global::Android.Resource.Attribute.StateEnabled, global::Android.Resource.Attribute.StatePressed  },
-			new int[0] { }
+			Array.Empty<int>()
 		};
 
 		public static readonly int[][] EntryUnderlineStates =
@@ -155,7 +155,7 @@ internal static class MaterialColors
 			new []{ -global::Android.Resource.Attribute.StateFocused  },
 			new int[] { global::Android.Resource.Attribute.StateEnabled },
 			new int[] { -global::Android.Resource.Attribute.StateEnabled },
-			new int[0] { }
+			Array.Empty<int>()
 		};
 
 		// State list from material-components-android
@@ -179,7 +179,7 @@ internal static class MaterialColors
 			int[][] States =
 			{
 				new []{ -global::Android.Resource.Attribute.StateEnabled },
-				new int[0] { }
+				Array.Empty<int>()
 			};
 
 			var colors = new int[] { inlineColor, floatingColor };

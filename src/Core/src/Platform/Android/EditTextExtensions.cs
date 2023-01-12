@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 			if (maxLength == -1)
 				maxLength = int.MaxValue;
 
-			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
+			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? Array.Empty<IInputFilter>());
 			var changed = false;
 
 			for (var i = 0; i < currentFilters.Count; i++)

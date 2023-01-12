@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Controls
 			// the callback. This would invalidate the enumerator. To work around this we make a copy. However if you unsubscribe 
 			// from a message you can fairly reasonably expect that you will therefor not receive a call. To fix this we then
 			// check that the item we are about to send the message to actually exists in the live list.
-			List<Subscription> subscriptionsCopy = subcriptions.ToList();
+			Subscription[] subscriptionsCopy = subcriptions.ToArray();
 			foreach (Subscription subscription in subscriptionsCopy)
 			{
 				if (subscription.Subscriber.Target != null && subcriptions.Contains(subscription))

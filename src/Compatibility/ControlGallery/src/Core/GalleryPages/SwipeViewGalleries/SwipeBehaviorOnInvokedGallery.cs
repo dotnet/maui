@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			swipeLayout.Children.Add(swipeBehaviorOnInvokedLabel);
 
-			var swipeBehaviorOnInvokedItems = Enum.GetNames(typeof(SwipeBehaviorOnInvoked)).Select(s => s).ToList();
+			var swipeBehaviorOnInvokedItems = Enum.GetNames(typeof(SwipeBehaviorOnInvoked)).ToList();
 
 			var swipeBehaviorOnInvokedPicker = new Picker
 			{

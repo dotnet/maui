@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (brush is LinearGradientBrush linearGradientBrush)
 			{
-				var orderedStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+				var orderedStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToArray();
 				var gradientStopCollection = new WGradientStopCollection();
 
 				foreach (var item in orderedStops)
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Platform
 					RadiusY = radialGradientBrush.Radius
 				};
 
-				var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+				var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToArray();
 
 				foreach (var gradientStop in orderedStops)
 					wRadialGradientBrush.GradientStops.Add(

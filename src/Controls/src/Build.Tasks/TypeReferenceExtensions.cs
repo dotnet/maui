@@ -315,7 +315,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 																	&& md.IsStatic
 																	&& md.IsSpecialName
 																	&& md.Name == "op_Implicit", module);
-			var implicitOperators = implicitOperatorsOnFromType.Concat(implicitOperatorsOnToType).ToList();
+			var implicitOperators = implicitOperatorsOnFromType.Concat(implicitOperatorsOnToType).ToArray();
 
 			if (implicitOperators.Any())
 			{

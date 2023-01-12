@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Text = i.ToString(),
 				Detail = i.ToString()
-			}).ToList();
+			});
 
 			var tableSection = new TableSection("First Section");
 			foreach (TextCell cell in items)

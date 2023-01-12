@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 			if (snap == null)
 			{
 				lock (_list)
-					_snapshot = snap = new ReadOnlyCollection<T>(_list.ToList());
+					_snapshot = snap = new ReadOnlyCollection<T>(_list.ToArray());
 			}
 
 			return snap.GetEnumerator();

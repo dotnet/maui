@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 		static void toggleToolBarItem(Page page)
 		{
-			var items = page.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Primary).ToList();
+			var items = page.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Primary).ToArray();
 
 			if (items.Any())
 				foreach (var item in items)
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 		void toggleSecondaryToolBarItem_Clicked(object sender, EventArgs e)
 		{
 			var page = Navigation.NavigationStack.Last();
-			var items = page.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Secondary).ToList();
+			var items = page.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Secondary).ToArray();
 
 			if (items.Any())
 				foreach (var item in items)

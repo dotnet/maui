@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Internals
 			if (source != null)
 				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
 			else
-				ListProxy = new ListProxy(new object[0], dispatcher: _itemsView.Dispatcher);
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
 		}
 
 		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Internals
 				ListProxy.CollectionChanged += OnProxyCollectionChanged;
 			}
 			else
-				ListProxy = new ListProxy(new object[0], dispatcher: _itemsView.Dispatcher);
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
 		}
 
 		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
@@ -940,7 +940,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 			IEnumerable itemSource = GetItemsViewSource();
 			if (itemSource == null)
-				ListProxy = new ListProxy(new object[0], dispatcher: _itemsView.Dispatcher);
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
 			else
 				ListProxy = new ListProxy(itemSource, dispatcher: _itemsView.Dispatcher);
 

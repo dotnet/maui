@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				List<View> unsolvedChildren = Children.Cast<View>().ToList();
 				while (unsolvedChildren.Any())
 				{
-					List<View> copy = unsolvedChildren.ToList();
+					View[] copy = unsolvedChildren.ToArray();
 					var solvedChild = false;
 					foreach (View child in copy)
 					{

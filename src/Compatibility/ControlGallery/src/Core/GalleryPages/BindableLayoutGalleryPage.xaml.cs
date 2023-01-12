@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 			public PageViewModel()
 			{
-				ItemsSource = new ObservableCollection<object>(Enumerable.Range(0, 10).Cast<object>().ToList());
+				ItemsSource = new ObservableCollection<object>(Enumerable.Range(0, 10).Cast<object>());
 
 				int i = ItemsSource.Count;
 				AddItemCommand = new Command(() => ItemsSource.Add(i++));

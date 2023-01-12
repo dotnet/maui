@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Context context = mauiContext?.Context;
 			Activity activity = context.GetActivity();
 
-			var toRemove = Subscriptions.Where(s => s.Activity == activity).ToList();
+			var toRemove = Subscriptions.Where(s => s.Activity == activity).ToArray();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{

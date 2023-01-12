@@ -51,8 +51,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var groups = VisualStateManager.GetVisualStateGroups(entry1);
 				Assert.AreEqual(3, groups.Count);
 				Assert.That(groups[0].Name, Is.EqualTo("CommonStates"));
-				Assert.Contains("Normal", groups[0].States.Select(state => state.Name).ToList());
-				Assert.Contains("Disabled", groups[0].States.Select(state => state.Name).ToList());
+				Assert.Contains("Normal", groups[0].States.Select(state => state.Name));
+				Assert.Contains("Disabled", groups[0].States.Select(state => state.Name)));
 
 				Assert.AreEqual(null, entry1.TextColor);
 				Assert.AreEqual(null, entry1.PlaceholderColor);

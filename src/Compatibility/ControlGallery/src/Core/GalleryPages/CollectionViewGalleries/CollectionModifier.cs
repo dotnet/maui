@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 		{
 			if (!int.TryParse(Entry.Text, out int index))
 			{
-				indexes = new int[0];
+				indexes = Array.Empty<int>();
 				return false;
 			}
 

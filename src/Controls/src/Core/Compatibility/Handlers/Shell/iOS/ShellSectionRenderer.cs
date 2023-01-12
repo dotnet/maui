@@ -380,12 +380,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		async void ProcessPopToRoot()
 		{
 			var task = new TaskCompletionSource<bool>();
-			var pages = _shellSection.Stack.ToList();
+			var pages = _shellSection.Stack.ToArray();
 			_completionTasks[_renderer.ViewController] = task;
 			((IShellSectionController)ShellSection).SendPoppingToRoot(task.Task);
 			await task.Task;
 
-			for (int i = pages.Count - 1; i >= 1; i--)
+			for (int i = pages.Length - 1; i >= 1; i--)
 			{
 				var page = pages[i];
 				DisposePage(page);
@@ -396,7 +396,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var animated = e.Animated;
 			var task = new TaskCompletionSource<bool>();
-			var pages = _shellSection.Stack.ToList();
+			var pages = _shellSection.Stack.ToArray();
 
 			try
 			{
@@ -412,7 +412,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			await e.Task;
 
-			for (int i = pages.Count - 1; i >= 1; i--)
+			for (int i = pages.Length - 1; i >= 1; i--)
 			{
 				var page = pages[i];
 				DisposePage(page);
@@ -621,9 +621,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var shellItem = _context.Shell.CurrentItem;
 			var shellSection = shellItem?.CurrentItem;
 			var shellContent = shellSection?.CurrentItem;
-			var stack = shellSection?.Stack.ToList();
+			var stack = shellSection?.Stack.ToArray();
 
-			stack?.RemoveAt(stack.Count - 1);
+			stack?.RemoveAt(stack.Length - 1);
 
 			return ((IShellController)_context.Shell).ProposeNavigation(ShellNavigationSource.Pop, shellItem, shellSection, shellContent, stack, true);
 		}

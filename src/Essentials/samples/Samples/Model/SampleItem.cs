@@ -10,7 +10,7 @@ namespace Samples.Model
 			Name = name;
 			Description = description;
 			PageType = pageType;
-			Tags = tags ?? new string[0];
+			Tags = tags ?? Array.Empty<string>();
 		}
 
 		public string Icon { get; }

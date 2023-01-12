@@ -288,7 +288,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Android
 				if (borderColor.IsDefault)
 					StrokeColor = _defaultBorderColor;
 				else
-					StrokeColor = new ColorStateList(new[] { new int[0] }, new int[] { borderColor.ToAndroid() });
+					StrokeColor = new ColorStateList(new[] { Array.Empty<int>() }, new int[] { borderColor.ToAndroid() });
 			}
 
 			double borderWidth = Element.BorderWidth;

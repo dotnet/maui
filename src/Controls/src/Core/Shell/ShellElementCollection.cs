@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 			_pauseCollectionChanged = false;
 
 			// process the added items first and then remove
-			var pendingEvents = _notifyCollectionChangedEventArgs.OrderBy(x => x.NewItems != null ? 0 : 1).ToList();
+			var pendingEvents = _notifyCollectionChangedEventArgs.OrderBy(x => x.NewItems != null ? 0 : 1).ToArray();
 			_notifyCollectionChangedEventArgs.Clear();
 
 			foreach (var args in pendingEvents)

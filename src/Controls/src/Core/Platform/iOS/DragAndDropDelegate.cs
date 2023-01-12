@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Platform
 			},
 			element);
 
-			return returnValue ?? new UIDragItem[0];
+			return returnValue ?? Array.Empty<UIDragItem>();
 		}
 
 		void HandleDropCompleted(View element)

@@ -35,9 +35,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Enumerable
 				.Range(0, 10)
 				.Select(_ => new Label() { HeightRequest = 200, Text = "Pull me down to refresh me" })
-				.ToList()
+				.ToArray()
 				.ForEach(x => scrollViewContent.Children.Add(x));
-
 
 			bool canExecute = true;
 			_refreshCommand = new Command(async (parameter) =>

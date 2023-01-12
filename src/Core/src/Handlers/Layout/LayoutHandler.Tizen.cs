@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView == null)
 				return;
 
-			var children = PlatformView.Children.ToList();
+			var children = PlatformView.Children.ToArray();
 			PlatformView.Children.Clear();
 			foreach (var child in children)
 			{

@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 
 		public void FilterItems(string filter)
 		{
-			var filteredItems = _source.Where(item => _filter(filter, item)).ToList();
+			var filteredItems = _source.Where(item => _filter(filter, item)).ToArray();
 
 			foreach (CollectionViewGalleryTestItem collectionViewGalleryTestItem in _source)
 			{

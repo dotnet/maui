@@ -454,15 +454,15 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			var existingGlobalRoutes = routeRequestBuilder.GlobalRouteMatches.ToList();
+			var existingGlobalRoutes = routeRequestBuilder.GlobalRouteMatches.ToArray();
 			ExpandOutGlobalRoutes(new List<RouteRequestBuilder> { routeRequestBuilder }, routeKeys);
 			if (routeRequestBuilder.IsFullMatch)
 			{
 				RouteRequestBuilder requestBuilderWithNewSegments = new RouteRequestBuilder(newSegments);
 
 				var additionalRouteMatches = routeRequestBuilder.GlobalRouteMatches;
-				for (int i = existingGlobalRoutes.Count; i < additionalRouteMatches.Count; i++)
-					requestBuilderWithNewSegments.AddGlobalRoute(additionalRouteMatches[i], segments[i - existingGlobalRoutes.Count]);
+				for (int i = existingGlobalRoutes.Length; i < additionalRouteMatches.Count; i++)
+					requestBuilderWithNewSegments.AddGlobalRoute(additionalRouteMatches[i], segments[i - existingGlobalRoutes.Length]);
 
 				pureGlobalRoutesMatch.Add(requestBuilderWithNewSegments);
 			}
@@ -1002,9 +1002,9 @@ namespace Microsoft.Maui.Controls
 			{
 				get
 				{
-					var segments = RetrievePaths(_path).ToList().Skip(1).ToList();
+					var segments = RetrievePaths(_path).Skip(1).ToArray();
 
-					if (segments.Count == 0)
+					if (segments.Length == 0)
 						return Array.Empty<object>();
 
 					var route = Routing.FormatRoute(segments);
@@ -1030,9 +1030,9 @@ namespace Microsoft.Maui.Controls
 			{
 				get
 				{
-					var segments = RetrievePaths(_path).ToList().Skip(1).ToList();
+					var segments = RetrievePaths(_path).Skip(1).ToArray();
 
-					if (segments.Count == 0)
+					if (segments.Length == 0)
 						return true;
 
 					return false;

@@ -550,9 +550,9 @@ namespace Microsoft.Maui.Controls
 
 			cell.OnTapped();
 
-			var itemSource = ItemsSource?.Cast<object>().ToList();
+			var itemSource = ItemsSource?.Cast<object>().ToArray();
 			object tappedGroup = null;
-			if (itemSource?.Count > groupIndex)
+			if (itemSource?.Length > groupIndex)
 			{
 				tappedGroup = itemSource.ElementAt(groupIndex);
 			}

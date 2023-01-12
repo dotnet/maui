@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_sectionRenderers != null)
 			{
-				foreach (var kvp in _sectionRenderers.ToList())
+				foreach (var kvp in _sectionRenderers.ToArray())
 				{
 					var renderer = kvp.Value as IDisconnectable;
 					renderer?.Disconnect();
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				(this as IDisconnectable).Disconnect();
 
-				foreach (var kvp in _sectionRenderers.ToList())
+				foreach (var kvp in _sectionRenderers.ToArray())
 				{
 					var renderer = kvp.Value;
 					RemoveRenderer(renderer);
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var shellSection = (ShellSection)sender;
 				var renderer = RendererForShellContent(shellSection);
-				var index = ViewControllers.ToList().IndexOf(renderer.ViewController);
+				var index = ViewControllers.ToArray().IndexOf(renderer.ViewController);
 				TabBar.Items[index].Enabled = shellSection.IsEnabled;
 			}
 		}
@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (MoreNavigationController.TopViewController.View is UITableView uITableView)
 					return uITableView.VisibleCells;
 
-				return new UITableViewCell[0];
+				return Array.Empty<UITableViewCell>();
 			}
 		}
 

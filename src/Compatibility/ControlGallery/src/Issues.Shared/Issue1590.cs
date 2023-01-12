@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					new FooViewModel {Title = "Baz", Description = "description for baz"},
 					new FooViewModel {Title = "Fiz", Description = "description for fiz"},
 					new FooViewModel {Title = "Buz", Description = "description for buz"},
-				}).ToList();
+				}).ToArray();
 			}
 		}
 	}

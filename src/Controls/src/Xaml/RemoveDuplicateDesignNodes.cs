@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			if (node.Properties == null || node.Properties.Count == 0)
 				return;
-			var props = node.Properties.ToList();
+			var props = node.Properties.ToArray();
 			for (var i = 0; i < props.Count; i++)
 			{
 				var key = props[i].Key;

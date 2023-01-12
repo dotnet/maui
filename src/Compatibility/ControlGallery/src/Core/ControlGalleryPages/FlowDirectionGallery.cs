@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			//var ogv = AddView<OpenGLView>(grid, ref col, ref row, hOptions, vOptions, margin);
 
 			var pkr = AddView<Picker>(grid, ref col, ref row);
-			pkr.ItemsSource = Enumerable.Range(0, 10).ToList();
+			pkr.ItemsSource = Enumerable.Range(0, 10).ToArray();
 
 			var sld = AddView<Slider>(grid, ref col, ref row);
 			sld.WidthRequest = 100;

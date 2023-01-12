@@ -168,15 +168,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			var buttons = layout.Children.OfType<ImageButton>();
-			layout.Children.Insert(0, ActionGrid(buttons.ToList()));
+			layout.Children.Insert(0, ActionGrid(buttons.FirstOrDefault()));
 			PaddingAnimation(buttons);
 
 			Content = new ScrollView() { Content = layout };
 		}
 
-		Grid ActionGrid(List<ImageButton> buttons)
+		Grid ActionGrid(ImageButton firstButton)
 		{
-			ImageButton firstButton = buttons.FirstOrDefault();
 			Grid actionGrid = new Grid();
 			actionGrid.AddChild(new Button()
 			{

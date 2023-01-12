@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var nativeWindow = window?.MauiContext.GetPlatformWindow();
 
-			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
+			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToArray();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{

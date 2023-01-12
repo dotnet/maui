@@ -143,8 +143,8 @@ namespace Microsoft.Maui.Controls.Platform
 				var more = CreateMoreButton(platformToolbar, toolbar);
 				more.Clicked += async (s, e) =>
 				{
-					var actions = secondaryActions.ToList();
-					var actionTexts = actions.Select(i => i.Text).ToList();
+					var actions = secondaryActions.ToArray();
+					var actionTexts = actions.Select(i => i.Text).ToArray();
 					var modalStack = toolbar?.Handler.MauiContext?.GetModalStack();
 					if (modalStack != null)
 					{
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Platform
 							try
 							{
 								using var popup = new ActionSheetPopup("", "Cancel", null, buttons: actionTexts);
-								var select = actionTexts.IndexOf(await popup.Open());
+								var select = Array.IndexOf(actionTexts, await popup.Open());
 								actions[select].Command.Execute(actions[select].CommandParameter);
 							}
 							catch

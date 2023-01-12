@@ -67,7 +67,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 			else
 			{
-				foreach (var ti in this.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Secondary).ToList())
+				foreach (var ti in this.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Secondary).ToArray())
 				{
 					this.ToolbarItems.Remove(ti);
 				}

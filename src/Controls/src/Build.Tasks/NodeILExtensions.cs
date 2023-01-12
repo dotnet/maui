@@ -576,7 +576,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "XamlServiceProvider"), parameterTypes: null));
 
 			//Add a SimpleValueTargetProvider and register it as IProvideValueTarget and IReferenceProvider
-			var pushParentIl = node.PushParentObjectsArray(context).ToList();
+			var pushParentIl = node.PushParentObjectsArray(context).ToArray();
 			if (pushParentIl[pushParentIl.Count - 1].OpCode != Ldnull)
 			{
 				yield return Create(Dup); //Keep the serviceProvider on the stack

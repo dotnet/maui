@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							Text    = "Create ListView",
 							Command = new Command(() =>
 							{
-								attachedStateEffectList.ToList().ForEach(x=> attachedStateEffectList.Remove(x));
+								attachedStateEffectList.ForEach(x=> attachedStateEffectList.Remove(x));
 								label.Text = "FAILURE";
 								Navigation.PushAsync(CreateListViewPage());
 							})

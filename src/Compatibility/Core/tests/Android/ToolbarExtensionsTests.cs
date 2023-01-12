@@ -87,8 +87,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				Assert.IsTrue(menuItemsCreated[1].IsEnabled, "Menu Item 2 is incorrectly disabled");
 				Assert.IsFalse(menuItemsCreated[2].IsEnabled, "Menu Item 3 is incorrectly disabled");
 
-				var textViews = settings.TextViews.ToList();
-				Assert.AreEqual(3, textViews.Count, $"{textViews.Count} textviews retrieved which it should have been 3");
+				var textViews = settings.TextViews.ToArray();
+				Assert.AreEqual(3, textViews.Length, $"{textViews.Length} textviews retrieved which it should have been 3");
 
 				settings.Layout();
 				for (int i = 0; i < 3; i++)

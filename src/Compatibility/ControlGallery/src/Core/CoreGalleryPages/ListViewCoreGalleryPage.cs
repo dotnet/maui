@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					new Employee ("Andrew 3", TimeSpan.FromDays (1000), 60),
 				};
 
-				Enumerable.Range(0, 9000).Select(e => new Employee(e.ToString(), TimeSpan.FromDays(1), 60)).ToList().ForEach(e => Employees.Add(e));
+				Enumerable.Range(0, 9000).Select(e => new Employee(e.ToString(), TimeSpan.FromDays(1), 60)).ForEach(e => Employees.Add(e));
 			}
 		}
 

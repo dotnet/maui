@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				var serviceProvider = new XamlServiceProvider(node, Context);
 
 				var visitor = new ApplyPropertiesVisitor(Context);
-				foreach (var cnode in node.Properties.Values.ToList())
+				foreach (var cnode in node.Properties.Values.ToArray())
 					cnode.Accept(visitor, node);
 				foreach (var cnode in node.CollectionItems)
 					cnode.Accept(visitor, node);
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			var factoryMethod = ((string)((ValueNode)node.Properties[XmlName.xFactoryMethod]).Value);
-			Type[] types = arguments == null ? new Type[0] : arguments.Select(a => a.GetType()).ToArray();
+			Type[] types = arguments == null ? Array.Empty<Type>() : arguments.Select(a => a.GetType()).ToArray();
 
 			bool isMatch(MethodInfo m)
 			{

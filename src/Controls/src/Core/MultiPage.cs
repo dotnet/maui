@@ -323,7 +323,7 @@ namespace Microsoft.Maui.Controls
 
 		void Reset()
 		{
-			List<Element> snapshot = InternalChildren.ToList();
+			var snapshot = InternalChildren.ToArray();
 
 			InternalChildren.Clear();
 

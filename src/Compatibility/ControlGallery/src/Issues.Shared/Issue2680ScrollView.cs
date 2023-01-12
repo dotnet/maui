@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				AutomationId = FirstItemMark
 			});
 			Enumerable.Range(2, 50).Select(i => new Label { Text = $"Test label {i}" })
-				.ToList().ForEach(label => longStackLayout.Children.Add(label));
+				.ForEach(label => longStackLayout.Children.Add(label));
 
 			scrollView = new ScrollView
 			{

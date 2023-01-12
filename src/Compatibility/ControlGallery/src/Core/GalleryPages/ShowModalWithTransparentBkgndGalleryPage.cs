@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 			_modalPresentationStylesPicker = new Picker();
 
-			var modalPresentationStyles = Enum.GetNames(typeof(UIModalPresentationStyle)).Select(m => m).ToList();
+			var modalPresentationStyles = Enum.GetNames(typeof(UIModalPresentationStyle)).ToList();
 
 			_modalPresentationStylesPicker.Title = "Select ModalPresentation Style";
 			_modalPresentationStylesPicker.ItemsSource = modalPresentationStyles;

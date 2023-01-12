@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			var source = new ObservableCollection<ItemViewModel>(Enumerable.Range(0, 100).Select(i => new ItemViewModel(i.ToString(), false)).ToList());
+			var source = new ObservableCollection<ItemViewModel>(Enumerable.Range(0, 100).Select(i => new ItemViewModel(i.ToString(), false)));
 			var button = new Button { Text = "Click me" };
 
 			var listView = new ListView

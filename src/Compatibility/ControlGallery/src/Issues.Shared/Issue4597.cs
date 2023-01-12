@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Command = new Command(() =>
 						{
 							var activeImage = layout.Children.Last();
-							int nextIndex = imageControls.ToList().IndexOf(activeImage) + 1;
+							int nextIndex = imageControls.IndexOf(activeImage) + 1;
 
 							if(nextIndex >= imageControls.Length)
 								nextIndex = 0;

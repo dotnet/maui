@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		protected virtual (bool VisibleItems, NSIndexPath First, NSIndexPath Center, NSIndexPath Last) GetVisibleItemsIndexPath()
 		{
-			var indexPathsForVisibleItems = ViewController.CollectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToList();
+			var indexPathsForVisibleItems = ViewController.CollectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToArray();
 
 			var visibleItems = indexPathsForVisibleItems.Count > 0;
 			NSIndexPath firstVisibleItemIndex = null, centerItemIndex = null, lastVisibleItemIndex = null;
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			NSIndexPath centerItemIndex = null;
 
-			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToList();
+			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToArray();
 
 			if (indexPathsForVisibleItems.Count == 0)
 				return centerItemIndex;

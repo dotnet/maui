@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var startPoint = new SKPoint(pathBounds.Left + (float)linearGradientBrush.StartPoint.X * pathBounds.Width, pathBounds.Top + (float)linearGradientBrush.StartPoint.Y * pathBounds.Height);
 			var endPoint = new SKPoint(pathBounds.Left + (float)linearGradientBrush.EndPoint.X * pathBounds.Width, pathBounds.Top + (float)linearGradientBrush.EndPoint.Y * pathBounds.Height);
-			var orderedGradientStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+			var orderedGradientStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToArray();
 			var gradientColors = orderedGradientStops.Select(x => x.Color.ToNativeEFL().ToSKColor()).ToArray();
 			var gradientColorPos = orderedGradientStops.Select(x => x.Offset).ToArray();
 			return SKShader.CreateLinearGradient(startPoint, endPoint, gradientColors, gradientColorPos, SKShaderTileMode.Clamp);
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var center = new SKPoint((float)radialGradientBrush.Center.X * pathBounds.Width + pathBounds.Left, (float)radialGradientBrush.Center.Y * pathBounds.Height + pathBounds.Top);
 			var radius = (float)radialGradientBrush.Radius * Math.Max(pathBounds.Height, pathBounds.Width);
-			var orderedGradientStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+			var orderedGradientStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToArray();
 			var gradientColors = orderedGradientStops.Select(x => x.Color.ToNativeEFL().ToSKColor()).ToArray();
 			var gradientColorPos = orderedGradientStops.Select(x => x.Offset).ToArray();
 			return SKShader.CreateRadialGradient(center, radius, gradientColors, gradientColorPos, SKShaderTileMode.Clamp);

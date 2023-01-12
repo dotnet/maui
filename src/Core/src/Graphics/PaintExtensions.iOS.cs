@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Graphics
 
 			if (linearGradientPaint.GradientStops != null && linearGradientPaint.GradientStops.Length > 0)
 			{
-				var orderedStops = linearGradientPaint.GradientStops.OrderBy(x => x.Offset).ToList();
+				var orderedStops = linearGradientPaint.GradientStops.OrderBy(x => x.Offset).ToArray();
 				linearGradientLayer.Colors = orderedStops.Select(x => x.Color.ToCGColor()).ToArray();
 				linearGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
 			}
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Graphics
 
 			if (radialGradientPaint.GradientStops != null && radialGradientPaint.GradientStops.Length > 0)
 			{
-				var orderedStops = radialGradientPaint.GradientStops.OrderBy(x => x.Offset).ToList();
+				var orderedStops = radialGradientPaint.GradientStops.OrderBy(x => x.Offset).ToArray();
 				radialGradientLayer.Colors = orderedStops.Select(x => x.Color.ToCGColor()).ToArray();
 				radialGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
 			}
@@ -134,10 +134,10 @@ namespace Microsoft.Maui.Graphics
 			return new CGPoint(x, y);
 		}
 
-		static NSNumber[] GetCAGradientLayerLocations(List<PaintGradientStop> gradientStops)
+		static NSNumber[] GetCAGradientLayerLocations(PaintGradientStop[] gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
-				return new NSNumber[0];
+				return Array.Empty<NSNumber>();
 
 			if (gradientStops.Count > 1 && gradientStops.Any(gt => gt.Offset != 0))
 				return gradientStops.Select(x => new NSNumber(x.Offset)).ToArray();

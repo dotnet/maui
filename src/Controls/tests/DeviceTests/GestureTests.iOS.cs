@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var interactions =
 					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
-						.ToList();
+						.ToArray();
 
 				Assert.Single(interactions);
 
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				interactions =
 					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
-						.ToList();
+						.ToArray();
 
 				Assert.Empty(interactions);
 			});
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var interactions =
 					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
-						.ToList();
+						.ToArray();
 
 				Assert.Single(interactions);
 
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				interactions =
 					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
-						.ToList();
+						.ToArray();
 
 				Assert.Empty(interactions);
 			});

@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_rootGrid = GetTemplateChild("RootGrid") as Microsoft.UI.Xaml.Controls.Grid;
 			if (_rootGrid != null)
 			{
-				var stateGroups = WVisualStateManager.GetVisualStateGroups(_rootGrid).ToList();
+				var stateGroups = WVisualStateManager.GetVisualStateGroups(_rootGrid).ToArray();
 				_DeleteButtonVisibleStateGroups = stateGroups.SingleOrDefault(sg => sg.Name == "ButtonStates");
 				if (_DeleteButtonVisibleStateGroups != null)
 					_DeleteButtonVisibleState = _DeleteButtonVisibleStateGroups.States.SingleOrDefault(s => s.Name == "ButtonVisible");

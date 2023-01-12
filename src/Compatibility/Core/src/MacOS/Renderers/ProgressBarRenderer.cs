@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				if (s_currentColorFilter != null && Element.BackgroundColor.IsDefault && Element.ProgressColor.IsDefault)
 				{
-					Control.ContentFilters = new CIFilter[0];
+					Control.ContentFilters = Array.Empty<CIFilter>();
 					s_currentColor = null;
 				}
 

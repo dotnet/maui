@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			View.RowHeight = 30;
 
 			var n = 500;
-			var items = Enumerable.Range(0, n).Select(i => new A { Text = i.ToString() }).ToList();
+			var items = Enumerable.Range(0, n).Select(i => new A { Text = i.ToString() }).ToArray();
 			View.ItemsSource = items;
 
 			View.ItemTemplate = new DataTemplate(typeof(ViewCellTest));

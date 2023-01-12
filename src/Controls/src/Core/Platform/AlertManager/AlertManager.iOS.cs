@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var platformWindow = window?.MauiContext.GetPlatformWindow();
 
-			var toRemove = Subscriptions.Where(s => s.PlatformView == platformWindow).ToList();
+			var toRemove = Subscriptions.Where(s => s.PlatformView == platformWindow).ToArray();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{

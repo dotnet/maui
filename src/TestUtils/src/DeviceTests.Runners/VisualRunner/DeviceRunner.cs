@@ -49,8 +49,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				.Select(g => new AssemblyRunInfo(
 					g.Key,
 					GetConfiguration(Path.GetFileNameWithoutExtension(g.Key)),
-					g.ToList()))
-				.ToList();
+					g.ToArray()))
+				.ToArray();
 
 			return RunAsync(groups, message);
 		}
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				try
 				{
 					var runInfos = DiscoverTestsInAssemblies();
-					var list = runInfos.Select(ri => new TestAssemblyViewModel(ri, _navigation, this)).ToList();
+					var list = runInfos.Select(ri => new TestAssemblyViewModel(ri, _navigation, this)).ToArray();
 
 					tcs.SetResult(list);
 				}
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 							result.Add(new AssemblyRunInfo(
 								assemblyFileName,
 								configuration,
-								sink.TestCases.Select(tc => new TestCaseViewModel(assemblyFileName, tc)).ToList()));
+								sink.TestCases.Select(tc => new TestCaseViewModel(assemblyFileName, tc)).ToArray()));
 						}
 					}
 					catch (Exception e)
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 					{
 						assemblies
 							.Select(runInfo => RunTestsInAssemblyAsync(toDispose, runInfo))
-							.ToList()
+							.ToArray()
 							.ForEach(@event => @event.WaitOne());
 					}
 					else

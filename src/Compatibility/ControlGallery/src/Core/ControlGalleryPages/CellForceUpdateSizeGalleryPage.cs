@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			private List<VariableHeightItem> _DataSource;
 			public MyPage(ListViewCachingStrategy strategy)
 			{
-				_DataSource = Enumerable.Range(0, 10).Select(n => new VariableHeightItem()).ToList();
+				_DataSource = Enumerable.Range(0, 10).Select(n => new VariableHeightItem()).ToArray();
 				var listView = new ListView(strategy) { HasUnevenRows = true, ItemsSource = _DataSource, ItemTemplate = new DataTemplate(typeof(T)) };
 				var button = new Button { Text = "Click me" };
 				button.Clicked += async (sender, e) =>

@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_pendingActions.Count > 0)
 			{
-				var actionsToProcess = _pendingActions.ToList();
+				var actionsToProcess = _pendingActions.ToArray();
 				_pendingActions.Clear();
 				foreach (var pendingAction in actionsToProcess)
 					pendingAction();
@@ -301,7 +301,7 @@ namespace Microsoft.Maui.Controls
 				area.Height = Math.Max(0, area.Height);
 			}
 
-			List<Element> elements = ((IElementController)this).LogicalChildren.ToList();
+			var elements = ((IElementController)this).LogicalChildren.ToArray();
 			foreach (Element element in elements)
 			{
 				var child = element as VisualElement;

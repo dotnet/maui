@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Controls.XamlC
 				yield return Create(Ldnull);
 				yield break;
 			}
-			var parts = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+			var parts = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
 
-			yield return Create(Ldc_I4, parts.Count);
+			yield return Create(Ldc_I4, parts.Length);
 			yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("System.Collections", "System.Collections.Generic", "List`1"),
 																   parameterTypes: new[] { ("mscorlib", "System", "Int32") },
 																   classArguments: new[] { ("mscorlib", "System", "String") }));

@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			//Cleanup the old view when reused
-			var oldChildren = handler.PlatformView.Subviews.ToList();
+			var oldChildren = handler.PlatformView.Subviews.ToArray();
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
 			if (handler.VirtualView.PresentedContent is IView view)

@@ -293,7 +293,7 @@ namespace Microsoft.Maui.Controls.Foldable
 			Hinge = DualScreenService.GetHinge();
 			IsLandscape = DualScreenService.IsLandscape;
 
-			var properties = _pendingPropertyChanges.ToList();
+			var properties = _pendingPropertyChanges.ToArray();
 			_pendingPropertyChanges.Clear();
 
 			foreach (var property in properties)

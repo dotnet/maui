@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (Element.SelectedItem == null)
 			{
-				foreach (var item in Control.SelectedItems.ToList())
+				foreach (var item in Control.SelectedItems.ToArray())
 				{
 					Control.RequestItemUnselect(Control.Adaptor.GetItemIndex(item));
 				}

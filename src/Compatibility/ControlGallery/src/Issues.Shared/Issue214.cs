@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Text = "Text" + i.ToString(),
 				Detail = "Detail" + i.ToString()
-			}).ToList();
+			});
 
 			var tableSection = new TableSection("First Section");
 			foreach (TextCell cell in items)

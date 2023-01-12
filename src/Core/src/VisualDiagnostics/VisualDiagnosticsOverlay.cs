@@ -131,7 +131,7 @@ namespace Microsoft.Maui
 
 			// make a copy because we will edit
 			var removed = false;
-			foreach (var element in WindowElements.ToList())
+			foreach (var element in WindowElements.ToArray())
 			{
 				if (element is IAdorner adorner && adorner.VisualView == view)
 					removed = base.RemoveWindowElement(element) || removed;
@@ -196,7 +196,7 @@ namespace Microsoft.Maui
 
 			return content.GetVisualTreeDescendants()
 				.OfType<IScrollView>()
-				.ToList();
+				.ToArray();
 		}
 
 		IScrollView? GetParentScrollView(IVisualTreeElement element)

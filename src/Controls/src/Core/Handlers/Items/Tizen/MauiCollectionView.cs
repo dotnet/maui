@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView.SelectionMode == Controls.SelectionMode.Single)
 			{
 				var selected = Adaptor.GetItemIndex(ItemsView.SelectedItem);
-				foreach (var index in SelectedItems.ToList())
+				foreach (var index in SelectedItems.ToArray())
 				{
 					if (selected != index)
 						RequestItemUnselect(index);
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (ItemsView.SelectionMode == Controls.SelectionMode.Multiple)
 			{
 				var selectedItemIndexes = ItemsView.SelectedItems.Select(d => Adaptor.GetItemIndex(d)).ToHashSet();
-				foreach (var index in SelectedItems.ToList())
+				foreach (var index in SelectedItems.ToArray())
 				{
 					if (index < 0 || Adaptor.Count <= index)
 						continue;

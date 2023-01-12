@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			};
 
 			var snapPointsLabel = new Label { FontSize = 10, Text = "SnapPointsType:" };
-			var snapPointsTypes = Enum.GetNames(typeof(SnapPointsType)).Select(b => b).ToList();
+			var snapPointsTypes = Enum.GetNames(typeof(SnapPointsType)).ToList();
 
 			var snapPointsTypePicker = new Microsoft.Maui.Controls.Picker
 			{
@@ -56,7 +56,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			};
 
 			var snapPointsAlignmentsLabel = new Label { FontSize = 10, Text = "SnapPointsAlignment:" };
-			var snapPointsAlignments = Enum.GetNames(typeof(SnapPointsAlignment)).Select(b => b).ToList();
+			var snapPointsAlignments = Enum.GetNames(typeof(SnapPointsAlignment)).ToList();
 
 			var snapPointsAlignmentPicker = new Picker
 			{

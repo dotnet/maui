@@ -406,7 +406,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var t = ChildFragmentManager.BeginTransactionEx();
 
-			foreach (var kvp in _fragmentMap.ToList())
+			foreach (var kvp in _fragmentMap.ToArray())
 			{
 				if (kvp.Key.Parent != shellSection)
 					continue;

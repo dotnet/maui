@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		internal static void Unsubscribe(Activity context)
 		{
-			var toRemove = s_subscriptions.Where(s => s.Activity == context).ToList();
+			var toRemove = s_subscriptions.Where(s => s.Activity == context).ToArray();
 			foreach (PopupRequestHelper popupRequestHelper in toRemove)
 			{
 				popupRequestHelper.Dispose();

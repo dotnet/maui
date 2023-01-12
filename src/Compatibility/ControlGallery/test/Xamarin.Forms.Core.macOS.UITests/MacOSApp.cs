@@ -242,7 +242,7 @@ namespace Xamarin.Forms.Core.macOS.UITests
 
 		public string[] Query(Func<Xamarin.UITest.Queries.AppQuery, Xamarin.UITest.Queries.InvokeJSAppQuery> query)
 		{
-			return new List<string>().ToArray();
+			return Array.Empty<string>();
 		}
 
 		public UITest.Queries.AppResult[] Query(string marked)
@@ -297,7 +297,6 @@ namespace Xamarin.Forms.Core.macOS.UITests
 				{
 					results.Add(item.ToUITestResult());
 				}
-
 			}
 
 			return results.ToArray();
@@ -585,7 +584,6 @@ namespace Xamarin.Forms.Core.macOS.UITests
 
 		public void WaitForNoElement(Func<AppQuery, AppWebQuery> query, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = default(TimeSpan?), TimeSpan? retryFrequency = default(TimeSpan?), TimeSpan? postTimeout = default(TimeSpan?))
 		{
-
 
 		}
 

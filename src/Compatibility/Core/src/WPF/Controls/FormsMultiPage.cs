@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF.Controls
 		{
 			if (ItemsSource == null)
 				return;
-			SelectedIndex = ItemsSource.Cast<object>().ToList().IndexOf(newValue);
+			SelectedIndex = ItemsSource.Cast<object>().ToArray().IndexOf(newValue);
 			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(oldValue, newValue));
 		}
 

@@ -1208,6 +1208,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => AllChildren.ToList();
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => AllChildren.ToArray();
 	}
 }

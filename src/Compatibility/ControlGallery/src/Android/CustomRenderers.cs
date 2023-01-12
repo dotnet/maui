@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 		void Clicked(object sender, AdapterView.ItemClickEventArgs e)
 		{
-			Element.NotifyItemSelected(Element.Items.ToList()[e.Position]);
+			Element.NotifyItemSelected(Element.Items.ToArray()[e.Position]);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -319,14 +319,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 			set
 			{
-				_tableItems = value.ToList();
+				_tableItems = value.ToArray();
 			}
 		}
 
 		public NativeListViewAdapter(Activity context, NativeListView view)
 		{
 			_context = context;
-			_tableItems = view.Items.ToList();
+			_tableItems = view.Items.ToArray();
 		}
 
 		public override string this[int position]
@@ -476,7 +476,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 		void Clicked(object sender, AdapterView.ItemClickEventArgs e)
 		{
-			Element.NotifyItemSelected(Element.Items.ToList()[e.Position]);
+			Element.NotifyItemSelected(Element.Items.ToArray()[e.Position]);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -504,14 +504,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 			set
 			{
-				_tableItems = value.ToList();
+				_tableItems = value.ToArray();
 			}
 		}
 
 		public NativeAndroidListViewAdapter(Activity context, NativeListView2 view)
 		{
 			_context = context;
-			_tableItems = view.Items.ToList();
+			_tableItems = view.Items.ToArray();
 		}
 
 		public override DataSource this[int position]

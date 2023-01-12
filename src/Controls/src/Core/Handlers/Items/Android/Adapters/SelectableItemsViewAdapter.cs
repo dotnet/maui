@@ -81,13 +81,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			switch (ItemsView.SelectionMode)
 			{
 				case SelectionMode.None:
-					return new int[0];
+					return Array.Empty<int>();
 
 				case SelectionMode.Single:
 					var selectedItem = ItemsView.SelectedItem;
 					if (selectedItem == null)
 					{
-						return new int[0];
+						return Array.Empty<int>();
 					}
 
 					return new int[1] { GetPositionForItem(selectedItem) };

@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Page != null)
 			{
-				foreach (var child in _viewStack.Children.ToList())
+				foreach (var child in _viewStack.Children.ToArray())
 				{
 					child.Dispose();
 				}

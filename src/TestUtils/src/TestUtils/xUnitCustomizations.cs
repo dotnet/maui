@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 	{
 		public IEnumerable<KeyValuePair<string, string>> GetTraits(IAttributeInfo traitAttribute)
 		{
-			var args = traitAttribute.GetConstructorArguments().ToList();
+			var args = traitAttribute.GetConstructorArguments().ToArray();
 
 			if (args[0] is string[] categories)
 			{

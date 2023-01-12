@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Storage
 				{
 					if (reply.ExtraData.Count() > 0)
 					{
-						var selectedFiles = reply.ExtraData.Get<IEnumerable<string>>(AppControlData.Selected).ToList();
+						var selectedFiles = reply.ExtraData.Get<IEnumerable<string>>(AppControlData.Selected).ToArray();
 						fileResults.AddRange(selectedFiles.Select(f => new FileResult(f)));
 					}
 				}

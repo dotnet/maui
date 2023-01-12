@@ -12,10 +12,9 @@ namespace Microsoft.Maui.Handlers.Memory
 		public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases)
 				where TTestCase : ITestCase
 		{
-			var result = testCases.ToList();
+			var result = testCases.ToArray();
 
-
-			if (result.Count > 2)
+			if (result.Length > 2)
 				throw new InvalidOperationException("Add new test to sort if you want it to run");
 
 			var method1 = result.FirstOrDefault(x => x.TestMethod.Method.Name == nameof(MemoryTests.Allocate));

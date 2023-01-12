@@ -472,7 +472,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				bool invoked = false;
 				var me = new object();
 				Console.WriteLine($"Handler count is {handlers.Count}");
-				foreach (var handler in handlers.ToList())
+				foreach (var handler in handlers.ToArray())
 				{
 					if (handler.IsActive)
 					{

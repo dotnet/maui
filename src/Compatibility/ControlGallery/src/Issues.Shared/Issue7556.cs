@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			void OnChangeMasterBehavior()
 			{
 				var behavior = MDP.FlyoutLayoutBehavior;
-				var results = Enum.GetValues(typeof(FlyoutLayoutBehavior)).Cast<FlyoutLayoutBehavior>().ToList();
+				var results = Enum.GetValues(typeof(FlyoutLayoutBehavior)).Cast<FlyoutLayoutBehavior>().ToArray();
 
 				int nextIndex = results.IndexOf(behavior) + 1;
 				if (nextIndex >= results.Count)

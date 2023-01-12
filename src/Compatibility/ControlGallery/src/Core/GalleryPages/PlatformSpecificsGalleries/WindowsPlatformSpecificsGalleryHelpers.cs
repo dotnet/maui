@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 				picker.Items.Add(option);
 			}
 
-			picker.SelectedIndex = options.ToList().IndexOf(defaultOption);
+			picker.SelectedIndex = options.ToArray().IndexOf(defaultOption);
 
 			picker.SelectedIndexChanged += (sender, args) =>
 			{

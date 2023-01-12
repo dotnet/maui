@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var windowsSwipeItems = GetWindowsSwipeItems(swipeItems);
 
 			if (windowsSwipeItems != null)
-				foreach (var windowSwipeItem in windowsSwipeItems.ToList())
+				foreach (var windowSwipeItem in windowsSwipeItems.ToArray())
 					windowSwipeItem.BehaviorOnInvoked = GetSwipeBehaviorOnInvoked(swipeItems.SwipeBehaviorOnInvoked);
 		}
 

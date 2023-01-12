@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var oc = new ObservableCollection<string>(new[] { $"Click {reload}", "and this text should go away" });
 
-			Enumerable.Range(0, 100).ToList().ForEach(x => oc.Add(x.ToString()));
+			Enumerable.Range(0, 100).ForEach(x => oc.Add(x.ToString()));
 
 			PushAsync(new MainPageCode
 			{

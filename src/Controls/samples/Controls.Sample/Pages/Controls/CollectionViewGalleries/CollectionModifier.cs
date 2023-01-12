@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		{
 			if (!int.TryParse(Entry.Text, out int index))
 			{
-				indexes = new int[0];
+				indexes = Array.Empty<int>();
 				return false;
 			}
 

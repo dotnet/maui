@@ -132,8 +132,7 @@ namespace Microsoft.Maui.HotReload
 
 				var views = HandlerService!.Where(x => x.ImplementationType == t).Select(x => new KeyValuePair<Type, Type>(x.ServiceType, x.ImplementationType!)).ToList();
 
-
-				replacedHandlers[oldViewType] = views.ToList();
+				replacedHandlers[oldViewType] = views;
 				foreach (var h in views)
 				{
 					RegisterHandler(h, newViewType);
@@ -155,12 +154,12 @@ namespace Microsoft.Maui.HotReload
 
 		public static void TriggerReload()
 		{
-			List<IHotReloadableView?>? roots = null;
+			IHotReloadableView[]? roots = null;
 			while (roots == null)
 			{
 				try
 				{
-					roots = ActiveViews.Where(x => x != null && x.Parent == null).ToList();
+					roots = ActiveViews.Where(x => x != null && x.Parent == null).ToArray();
 				}
 				catch
 				{

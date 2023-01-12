@@ -1,3 +1,4 @@
+using System;
 using Foundation;
 using UIKit;
 
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var touchSet = touchEvent.TouchesForView(target);
 			if (touchSet.Count == 0)
 			{
-				return new PointF[0];
+				return Array.Empty<PointF>();
 			}
 
 			var touches = touchSet.ToArray<UITouch>();

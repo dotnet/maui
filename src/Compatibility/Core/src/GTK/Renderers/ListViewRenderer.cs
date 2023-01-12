@@ -471,7 +471,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK.Renderers
 						else
 							_cells.Add(CreateEmptyHeader());
 
-						foreach (var item in group.ToList())
+						foreach (var item in group.ToArray())
 						{
 							_cells.Add(GetCell(item as Cell));
 						}

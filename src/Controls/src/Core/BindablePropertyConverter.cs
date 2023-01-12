@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls
 
 		Type FindTypeForVisualState(IProvideParentValues parentValueProvider, IXmlLineInfo lineInfo)
 		{
-			var parents = parentValueProvider.ParentObjects.ToList();
+			var parents = parentValueProvider.ParentObjects.ToArray();
 
 			// Skip 0; we would not be making this check if TargetObject were not a Setter
 			// Skip 1; we would not be making this check if the immediate parent were not a VisualState

@@ -307,7 +307,7 @@ namespace Microsoft.Maui.Controls
 		void RemoveSpanGestureRecognizers(IEnumerable gestureRecognizers)
 		{
 			foreach (GestureRecognizer gestureRecognizer in gestureRecognizers)
-				foreach (var spanRecognizer in GestureController.CompositeGestureRecognizers.ToList())
+				foreach (var spanRecognizer in GestureController.CompositeGestureRecognizers.ToArray())
 					if (spanRecognizer is ChildGestureRecognizer childGestureRecognizer && childGestureRecognizer.GestureRecognizer == gestureRecognizer)
 						GestureController.CompositeGestureRecognizers.Remove(spanRecognizer);
 		}

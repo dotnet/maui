@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 			var viewCells = renderer
 				.Control
 				.GetChildrenOfType<ViewCellRenderer.ViewCellContainer>()
-				.ToList();
+				.ToArray();
 
 			// This validates that all the cells created/added their correct
 			// number of viewz

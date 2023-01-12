@@ -57,12 +57,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-
-
-
-
-
-
 		[Fact]
 		public void SimpleLayout()
 		{

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var swipeItemSwipeTransitionModePicker = new Picker();
 
-			var swipeTransitionModes = Enum.GetNames(typeof(SwipeTransitionMode)).Select(t => t).ToList();
+			var swipeTransitionModes = Enum.GetNames(typeof(SwipeTransitionMode)).ToList();
 
 			swipeItemSwipeTransitionModePicker.ItemsSource = swipeTransitionModes;
 			swipeItemSwipeTransitionModePicker.SelectedIndex = 0;   // Reveal

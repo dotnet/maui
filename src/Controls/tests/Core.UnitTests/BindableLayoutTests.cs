@@ -327,7 +327,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
-			foreach (int item in itemsSource.ToList())
+			foreach (int item in itemsSource)
 			{
 				itemsSource.Add(item);
 			}
@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 			// ItemsSourceProperty
-			IEnumerable itemsSource = new object[0];
+			IEnumerable itemsSource = Array.Empty<object>();
 			BindableLayout.SetItemsSource(layout, itemsSource);
 
 			Assert.Equal(itemsSource, BindableLayout.GetItemsSource(layout));

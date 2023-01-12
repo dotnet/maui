@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				(parentNode.IgnorablePrefixes ?? (parentNode.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
 			}
 
-			foreach (var propertyKvp in node.Properties.ToList())
+			foreach (var propertyKvp in node.Properties.ToArray())
 			{
 				// skip d:foo="bar"
 				var prefix = node.NamespaceResolver.LookupPrefix(propertyKvp.Key.NamespaceURI);
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					node.Properties.Remove(propertyKvp.Key);
 			}
 
-			foreach (var prop in node.CollectionItems.ToList())
+			foreach (var prop in node.CollectionItems.ToArray())
 			{
 				var propNs = (prop as IElementNode)?.NamespaceURI ?? "";
 				var propPrefix = node.NamespaceResolver.LookupPrefix(propNs);
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(ListNode node, INode parentNode)
 		{
-			foreach (var prop in node.CollectionItems.ToList())
+			foreach (var prop in node.CollectionItems.ToArray())
 			{
 				var propNs = (prop as IElementNode)?.NamespaceURI ?? "";
 				var propPrefix = node.NamespaceResolver.LookupPrefix(propNs);

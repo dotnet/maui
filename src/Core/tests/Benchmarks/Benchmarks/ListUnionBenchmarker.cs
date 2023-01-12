@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		[Benchmark(Baseline = true)]
 		public IReadOnlyCollection<string> WithLinqUnion() =>
-			FirstList.Union(SecondList).ToList();
+			FirstList.Union(SecondList).ToArray();
 
 		[Benchmark]
 		public IReadOnlyCollection<string> WithHashSet()

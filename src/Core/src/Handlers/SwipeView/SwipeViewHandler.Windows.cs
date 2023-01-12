@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Handlers
 			var windowsSwipeItems = GetWindowsSwipeItems(swipeItems, swipeView, swipeControl);
 
 			if (windowsSwipeItems != null)
-				foreach (var windowSwipeItem in windowsSwipeItems.ToList())
+				foreach (var windowSwipeItem in windowsSwipeItems.ToArray())
 					windowSwipeItem.BehaviorOnInvoked = swipeItems.SwipeBehaviorOnInvoked.ToPlatform();
 		}
 

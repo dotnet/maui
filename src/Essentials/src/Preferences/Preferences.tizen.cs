@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Storage
 				}
 				else
 				{
-					var keys = Preference.Keys.Where(key => key.StartsWith($"{sharedName}{separator}")).ToList();
+					var keys = Preference.Keys.Where(key => key.StartsWith($"{sharedName}{separator}")).ToArray();
 					foreach (var key in keys)
 						Preference.Remove(key);
 				}

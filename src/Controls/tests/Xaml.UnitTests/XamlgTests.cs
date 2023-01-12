@@ -157,7 +157,7 @@
 //			var generator = new XamlGenerator(null, null, null, null, null, null, references);
 //			generator.ParseXaml(reader);
 //
-//			Assert.Contains("included", generator.NamedFields.Select(cmf => cmf.Name).ToList());
+//			Assert.Contains("included", generator.NamedFields.Select(cmf => cmf.Name));
 //			Assert.False(generator.NamedFields.Select(cmf => cmf.Name).Contains("notincluded"));
 //			Assert.AreEqual(1, generator.NamedFields.Count());
 //		}

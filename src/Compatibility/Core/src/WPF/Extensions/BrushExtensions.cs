@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF.Extensions
 
 			if (brush is LinearGradientBrush linearGradientBrush)
 			{
-				var orderedStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+				var orderedStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset);
 				var gradientStopCollection = new WGradientStopCollection();
 
 				foreach (var item in orderedStops)
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF.Extensions
 
 			if (brush is RadialGradientBrush radialGradientBrush)
 			{
-				var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+				var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset);
 				var gradientStopCollection = new WGradientStopCollection();
 
 				foreach (var item in orderedStops)

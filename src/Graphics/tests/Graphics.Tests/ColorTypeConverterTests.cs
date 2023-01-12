@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		{
 			var colorTypeConverter = new Converters.ColorTypeConverter();
 
-			var standardValues = colorTypeConverter.GetStandardValues().Cast<string>().ToList();
+			var standardValues = colorTypeConverter.GetStandardValues().Cast<string>().ToArray();
 
 			var namedColors = typeof(Colors)
 				.GetFields()

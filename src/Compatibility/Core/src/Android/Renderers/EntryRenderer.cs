@@ -379,7 +379,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		void UpdateMaxLength()
 		{
-			var currentFilters = new List<IInputFilter>(EditText?.GetFilters() ?? new IInputFilter[0]);
+			var currentFilters = new List<IInputFilter>(EditText?.GetFilters() ?? Array.Empty<IInputFilter>());
 
 			for (var i = 0; i < currentFilters.Count; i++)
 			{

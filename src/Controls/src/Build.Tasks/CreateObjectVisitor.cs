@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (typeref.FullName == "Microsoft.Maui.Controls.Xaml.ArrayExtension")
 				{
 					var visitor = new SetPropertiesVisitor(Context);
-					foreach (var cnode in node.Properties.Values.ToList())
+					foreach (var cnode in node.Properties.Values.ToArray())
 						cnode.Accept(visitor, node);
 					foreach (var cnode in node.CollectionItems)
 						cnode.Accept(visitor, node);

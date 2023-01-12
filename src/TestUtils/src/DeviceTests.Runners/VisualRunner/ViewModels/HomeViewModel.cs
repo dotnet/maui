@@ -92,7 +92,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				if (!string.IsNullOrWhiteSpace(DiagnosticMessages))
 					DiagnosticMessages += $"----------{Environment.NewLine}";
 
-				await _runner.RunAsync(TestAssemblies.Select(t => t.RunInfo).ToList(), "Run Everything");
+				await _runner.RunAsync(TestAssemblies.Select(t => t.RunInfo).ToArray(), "Run Everything");
 			}
 			finally
 			{

@@ -558,7 +558,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				var flyoutItems = shell.FlyoutItems.Cast<IReadOnlyList<Element>>().ToList();
+				var flyoutItems = shell.FlyoutItems.Cast<IReadOnlyList<Element>>().ToArray();
 				var rootView = handler.PlatformView as MauiNavigationView;
 				var tabbedView = (flyoutItem.Handler.PlatformView as MauiNavigationView);
 

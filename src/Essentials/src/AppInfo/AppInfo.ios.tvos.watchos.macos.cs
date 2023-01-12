@@ -117,11 +117,11 @@ namespace Microsoft.Maui.ApplicationModel
 		internal static bool VerifyHasUrlScheme(string scheme)
 		{
 			var cleansed = scheme.Replace("://", string.Empty, StringComparison.Ordinal);
-			var schemes = GetCFBundleURLSchemes().ToList();
+			var schemes = GetCFBundleURLSchemes();
 			return schemes.Any(x => x != null && x.Equals(cleansed, StringComparison.OrdinalIgnoreCase));
 		}
 
-		internal static IEnumerable<string> GetCFBundleURLSchemes()
+		internal static List<string> GetCFBundleURLSchemes()
 		{
 			var schemes = new List<string>();
 
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.ApplicationModel
 					continue;
 
 				var a = nsobj as NSArray;
-				var urls = ConvertToIEnumerable<NSString>(a).Select(x => x.ToString()).ToArray();
+				var urls = ConvertToIEnumerable<NSString>(a).Select(x => x.ToString());
 				foreach (var url in urls)
 					schemes.Add(url);
 			}

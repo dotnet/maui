@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 		IGraphicsView? _graphicsView;
 		RectF _bounds;
 		bool _dragStarted;
-		PointF[] _lastMovedViewPoints = new PointF[0];
+		PointF[] _lastMovedViewPoints = Array.Empty<PointF>();
 		bool _pressedContained = false;
 
 		public PlatformTouchGraphicsView(IDrawable? drawable = null) : base(drawable)

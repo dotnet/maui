@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 					public override ParameterInfo[] GetIndexParameters()
 					{
-						return new ParameterInfo[0];
+						return Array.Empty<ParameterInfo>();
 					}
 
 					public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 					public override ParameterInfo[] GetParameters()
 					{
-						return new ParameterInfo[0];
+						return Array.Empty<ParameterInfo>();
 					}
 
 					public override RuntimeMethodHandle MethodHandle
@@ -262,12 +262,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 					public override object[] GetCustomAttributes(Type attributeType, bool inherit)
 					{
-						return new object[0];
+						return Array.Empty<object>();
 					}
 
 					public override object[] GetCustomAttributes(bool inherit)
 					{
-						return new object[0];
+						return Array.Empty<object>();
 					}
 
 					public override bool IsDefined(Type attributeType, bool inherit)

@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 				if (linearGradientBrush.GradientStops != null && linearGradientBrush.GradientStops.Count > 0)
 				{
-					var orderedStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+					var orderedStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToArray();
 					linearGradientLayer.Colors = orderedStops.Select(x => x.Color.ToCGColor()).ToArray();
 					linearGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
 				}
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 				if (radialGradientBrush.GradientStops != null && radialGradientBrush.GradientStops.Count > 0)
 				{
-					var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+					var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToArray();
 					radialGradientLayer.Colors = orderedStops.Select(x => x.Color.ToCGColor()).ToArray();
 					radialGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
 				}
