@@ -1277,7 +1277,7 @@ namespace Microsoft.Maui.Controls
 		/// the IsEnabledCore property will change.
 		/// </summary>
 		internal void RefreshIsEnabledProperty() =>
-			(this as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
+			CommandElement.RefreshPropertyValue(this, IsEnabledProperty, _isEnabledExplicit);
 
 		void UpdateBoundsComponents(Rect bounds)
 		{
