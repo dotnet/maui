@@ -17,12 +17,9 @@ namespace Microsoft.Maui.Controls
 		public static void OnCommandChanged(BindableObject bo, object o, object n)
 		{
 			var commandElement = (ICommandElement)bo;
-
 			if (n is ICommand newCommand)
-			{
 				newCommand.CanExecuteChanged += commandElement.CanExecuteChanged;
-				commandElement.CanExecuteChanged(bo, EventArgs.Empty);
-			}
+			commandElement.CanExecuteChanged(bo, EventArgs.Empty);
 		}
 
 		public static void OnCommandParameterChanged(BindableObject bo, object o, object n)
