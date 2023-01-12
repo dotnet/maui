@@ -50,9 +50,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
-		public FrameRenderer(Context context) : base(context)
+		public FrameRenderer(Context context) : this(context, Mapper)
 		{
-			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(Mapper, CommandMapper, this);
+		}
+
+		internal FrameRenderer(Context context, IPropertyMapper mapper)
+			: this(context, mapper, CommandMapper)
+		{
+		}
+
+		internal FrameRenderer(Context context, IPropertyMapper mapper, CommandMapper commandMapper) : base(context)
+		{
+			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(mapper, commandMapper, this);
 		}
 
 		protected CardView Control => this;
