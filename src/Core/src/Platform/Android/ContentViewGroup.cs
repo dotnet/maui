@@ -4,6 +4,7 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
@@ -118,8 +119,16 @@ namespace Microsoft.Maui.Platform
 			float h = (canvas.Height / density) - strokeThickness;
 
 			var bounds = new Graphics.RectF(offset, offset, w, h);
-			var path = Clip.Shape?.PathForBounds(bounds);
-			var currentPath = path?.AsAndroidPath(scaleX: density, scaleY: density);
+			var shape = Clip.Shape;
+
+			PathF? clipPath;
+
+			if (shape is IRoundRectangle roundRectangle)
+				clipPath = roundRectangle.ClipPathForBounds(bounds, Clip.StrokeThickness);
+			else
+				clipPath = shape?.PathForBounds(bounds);
+
+			var currentPath = clipPath?.AsAndroidPath(scaleX: density, scaleY: density);
 
 			if (currentPath != null)
 				canvas.ClipPath(currentPath);
