@@ -4,12 +4,7 @@
 	{
 		public static void UpdateStrokeShape(this ContentPanel platformView, IBorderStroke border)
 		{
-			var shape = border.Shape;
-
-			if (shape == null)
-				return;
-
-			platformView.UpdateBorderShape(shape);
+			platformView.UpdateBorderShape(border);
 		}
 
 		public static void UpdateStroke(this ContentPanel platformView, IBorderStroke border)

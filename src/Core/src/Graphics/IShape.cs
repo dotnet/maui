@@ -8,4 +8,10 @@
 	{
 		PathF PathForBounds(Rect bounds);
 	}
+
+	// TODO: Make public for .NET 8
+	internal interface IRoundRectangle : IShape
+	{
+		internal PathF ClipPathForBounds(Rect bounds, double strokeThickness);
+	}
 }

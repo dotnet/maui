@@ -12,6 +12,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
+			BorderContentPicker.SelectedIndex = 0;
 			BorderShapePicker.SelectedIndex = 1;
 			BorderLineJoinPicker.SelectedIndex = 0;
 			BorderLineCapPicker.SelectedIndex = 0;
@@ -19,7 +20,14 @@ namespace Maui.Controls.Sample.Pages
 			UpdateBackground();
 			UpdateContentBackground();
 			UpdateBorder();
+			UpdateBorderContent();
 			UpdateCornerRadius();
+		}
+
+		void OnBorderContentSelectedIndexChanged(object sender, EventArgs e)
+		{
+			UpdateBorderContent();
+			UpdateBorder();
 		}
 
 		void OnBorderShapeSelectedIndexChanged(object sender, EventArgs e)
@@ -101,7 +109,25 @@ namespace Maui.Controls.Sample.Pages
 
 		void UpdateContentBackground()
 		{
-			BorderContent.BackgroundColor = ContentBackgroundCheckBox.IsChecked ? Color.FromArgb("#99FF0000") : Colors.Transparent;
+			if (BorderView.Content is View content)
+				content.BackgroundColor = ContentBackgroundCheckBox.IsChecked ? Color.FromArgb("#99FF0000") : Colors.Transparent;
+		}
+
+		void UpdateBorderContent()
+		{
+			View content = null;
+
+			switch (BorderContentPicker.SelectedIndex)
+			{
+				case 0:
+					content = new Label { Text = "Just a Label", FontSize = 20 };
+					break;
+				case 1:
+					content = new Image { Aspect = Aspect.AspectFill, Source = "oasis.jpg" };
+					break;
+			}
+	
+			BorderView.Content = content;
 		}
 
 		void UpdateBorder()

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		}
 
 		public abstract PathF GetPath();
-
+		
 		double _fallbackWidth;
 		double _fallbackHeight;
 
@@ -181,6 +181,13 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var path = GetPath();
 
+			UpdateAspect(path, viewBounds);
+
+			return path;
+		}
+
+		internal void UpdateAspect(PathF path, Graphics.Rect viewBounds)
+		{
 #if !(NETSTANDARD || !PLATFORM)
 
 			// TODO: not using this.GetPath().Bounds.Size;
@@ -260,8 +267,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (!transform.IsIdentity)
 				path.Transform(transform);
 #endif
-
-			return path;
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)

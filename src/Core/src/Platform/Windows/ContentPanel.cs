@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly Path? _borderPath;
 		IShape? _borderShape;
+		double _strokeThickness;
 		FrameworkElement? _content;
 
 		internal Path? BorderPath => _borderPath;
@@ -108,6 +109,19 @@ namespace Microsoft.Maui.Platform
 			UpdateClip(_borderShape);
 		}
 
+		internal void UpdateBorderShape(IBorderStroke borderStroke)
+		{
+			_borderShape = borderStroke.Shape;
+			_strokeThickness = borderStroke.StrokeThickness;
+
+			if (_borderPath == null)
+				return;
+
+			_borderPath.UpdateBorderShape(_borderShape, ActualWidth, ActualHeight);
+			UpdateContent();
+			UpdateClip(_borderShape);
+		}
+
 		void AddContent(FrameworkElement? content)
 		{
 			if (content == null)
@@ -147,7 +161,14 @@ namespace Microsoft.Maui.Platform
 			var compositor = visual.Compositor;
 
 			var pathSize = new Graphics.Rect(0, 0, width, height);
-			var clipPath = clipGeometry.PathForBounds(pathSize);
+
+			PathF clipPath;
+
+			if (clipGeometry is IRoundRectangle roundRectangle)
+				clipPath = roundRectangle.ClipPathForBounds(pathSize, _strokeThickness);
+			else
+				clipPath = clipGeometry!.PathForBounds(pathSize);
+
 			var device = CanvasDevice.GetSharedDevice();
 			var geometry = clipPath.AsPath(device);
 
