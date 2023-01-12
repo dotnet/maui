@@ -1,3 +1,4 @@
+#nullable disable
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
