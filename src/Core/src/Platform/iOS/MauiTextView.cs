@@ -24,6 +24,12 @@ namespace Microsoft.Maui.Platform
 			Changed += OnChanged;
 		}
 
+		public override void WillMoveToWindow(UIWindow? window)
+		{
+			base.WillMoveToWindow(window);
+			ResignFirstResponderTouchGestureRecognizer.Update(this, window);
+		}
+
 		// Native Changed doesn't fire when the Text Property is set in code
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.

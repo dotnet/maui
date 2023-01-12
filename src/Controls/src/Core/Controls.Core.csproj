@@ -5,7 +5,7 @@
     <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
     <PackageId>Microsoft.Maui.Controls.Core</PackageId>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <IsTrimmable>false</IsTrimmable>
     <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>

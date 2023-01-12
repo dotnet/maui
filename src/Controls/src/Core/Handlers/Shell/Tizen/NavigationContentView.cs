@@ -1,5 +1,3 @@
-#nullable enable
-
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 using NLayoutGroup = Tizen.NUI.LayoutGroup;

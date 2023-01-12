@@ -1,3 +1,4 @@
+#nullable disable
 using Android.Content;
 using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
