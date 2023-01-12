@@ -1,3 +1,4 @@
+#nullable disable
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls

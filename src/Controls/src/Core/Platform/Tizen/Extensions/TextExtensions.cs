@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Internals;
 using Tizen.UIExtensions.NUI;
 using TEntry = Tizen.UIExtensions.NUI.Entry;
 using TEditor = Tizen.UIExtensions.NUI.Editor;
