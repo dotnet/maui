@@ -80,7 +80,6 @@ override Microsoft.Maui.Graphics.Skia.SkiaCanvas.StrokeLineCap.set -> void
 override Microsoft.Maui.Graphics.Skia.SkiaCanvas.StrokeLineJoin.set -> void
 override Microsoft.Maui.Graphics.Skia.SkiaCanvas.SubtractFromClip(float x, float y, float width, float height) -> void
 override Microsoft.Maui.Graphics.Skia.SkiaCanvasState.Dispose() -> void
-override Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
 static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.AsMatrix(this in System.Numerics.Matrix3x2 transform) -> SkiaSharp.SKMatrix
 static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.AsPointF(this SkiaSharp.SKPoint target) -> Microsoft.Maui.Graphics.PointF
 static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.AsRectangleF(this SkiaSharp.SKRect target) -> Microsoft.Maui.Graphics.RectF
@@ -133,7 +132,7 @@ static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.ToSKPoint(this Microsof
 ~Microsoft.Maui.Graphics.Skia.TextLine.Value.get -> string
 ~Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.Drawable.get -> Microsoft.Maui.Graphics.IDrawable
 ~Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.Drawable.set -> void
-~Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.SkiaGraphicsView(Android.Content.Context context, Microsoft.Maui.Graphics.IDrawable drawable = null) -> void
+~Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.SkiaGraphicsView(Microsoft.Maui.Graphics.IDrawable drawable = null) -> void
 ~override Microsoft.Maui.Graphics.Skia.SkiaBitmapExportContext.Canvas.get -> Microsoft.Maui.Graphics.ICanvas
 ~override Microsoft.Maui.Graphics.Skia.SkiaBitmapExportContext.Image.get -> Microsoft.Maui.Graphics.IImage
 ~override Microsoft.Maui.Graphics.Skia.SkiaBitmapExportContext.WriteToStream(System.IO.Stream stream) -> void
@@ -152,7 +151,6 @@ static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.ToSKPoint(this Microsof
 ~override Microsoft.Maui.Graphics.Skia.SkiaCanvas.SetShadow(Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color color) -> void
 ~override Microsoft.Maui.Graphics.Skia.SkiaCanvas.StateRestored(Microsoft.Maui.Graphics.Skia.SkiaCanvasState state) -> void
 ~override Microsoft.Maui.Graphics.Skia.SkiaCanvas.StrokeColor.set -> void
-~override Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.OnPaintSurface(SkiaSharp.Views.Android.SKPaintSurfaceEventArgs e) -> void
 ~static Microsoft.Maui.Graphics.Skia.FontExtensions.ToSKTypeface(this Microsoft.Maui.Graphics.IFont font) -> SkiaSharp.SKTypeface
 ~static Microsoft.Maui.Graphics.Skia.SKColorExtensions.ToColor(this Microsoft.Maui.Graphics.Color target, float alpha = 1) -> SkiaSharp.SKColor
 ~static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.AsColor(this SkiaSharp.SKColor target) -> Microsoft.Maui.Graphics.Color
@@ -170,3 +168,4 @@ static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.ToSKPoint(this Microsof
 ~static Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions.ToArgb(this Microsoft.Maui.Graphics.Color target, float alpha) -> int
 ~static Microsoft.Maui.Graphics.Skia.SkiaImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat formatHint = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
 ~static Microsoft.Maui.Graphics.Skia.SKPaintExtensions.CreateCopy(this SkiaSharp.SKPaint paint) -> SkiaSharp.SKPaint
+~virtual Microsoft.Maui.Graphics.Skia.Views.SkiaGraphicsView.OnPaintSurface(object sender, SkiaSharp.Views.Tizen.SKPaintSurfaceEventArgs e) -> void

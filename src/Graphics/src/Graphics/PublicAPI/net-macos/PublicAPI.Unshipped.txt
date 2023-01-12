@@ -465,9 +465,11 @@ Microsoft.Maui.Graphics.PictureExtensions
 Microsoft.Maui.Graphics.PicturePattern
 Microsoft.Maui.Graphics.PictureReaderExtensions
 Microsoft.Maui.Graphics.PictureWriterExtensions
+Microsoft.Maui.Graphics.Platform.AppKitConstants
 Microsoft.Maui.Graphics.Platform.AttributedTextExtensions
 Microsoft.Maui.Graphics.Platform.CGColorExtensions
 Microsoft.Maui.Graphics.Platform.CgContextExtensions
+Microsoft.Maui.Graphics.Platform.CoreGraphicsExtensions
 Microsoft.Maui.Graphics.Platform.DirectRenderer
 Microsoft.Maui.Graphics.Platform.DirectRenderer.Detached() -> void
 Microsoft.Maui.Graphics.Platform.DirectRenderer.DirectRenderer() -> void
@@ -484,8 +486,10 @@ Microsoft.Maui.Graphics.Platform.IGraphicsRenderer.Invalidate(float x, float y, 
 Microsoft.Maui.Graphics.Platform.IGraphicsRenderer.SizeChanged(float width, float height) -> void
 Microsoft.Maui.Graphics.Platform.ImageExtensions
 Microsoft.Maui.Graphics.Platform.NSAttributedStringExtension
+Microsoft.Maui.Graphics.Platform.NSColorExtensions
+Microsoft.Maui.Graphics.Platform.NSImageExtensions
 Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext
-Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext.PlatformBitmapExportContext(int width, int height, float displayScale, int dpi = 72, int border = 0) -> void
+Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext.PlatformBitmapExportContext(int width, int height, float displayScale = 1, int dpi = 72, int border = 0) -> void
 Microsoft.Maui.Graphics.Platform.PlatformBitmapExportService
 Microsoft.Maui.Graphics.Platform.PlatformBitmapExportService.PlatformBitmapExportService() -> void
 Microsoft.Maui.Graphics.Platform.PlatformCanvas
@@ -498,7 +502,7 @@ Microsoft.Maui.Graphics.Platform.PlatformCanvasStateService.PlatformCanvasStateS
 Microsoft.Maui.Graphics.Platform.PlatformGraphicsView
 Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.InvalidateDrawable() -> void
 Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.InvalidateDrawable(float x, float y, float w, float h) -> void
-Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PlatformGraphicsView(nint aPtr) -> void
+Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PlatformGraphicsView(nint handle) -> void
 Microsoft.Maui.Graphics.Platform.PlatformImage
 Microsoft.Maui.Graphics.Platform.PlatformImage.Dispose() -> void
 Microsoft.Maui.Graphics.Platform.PlatformImage.Height.get -> float
@@ -507,10 +511,6 @@ Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService
 Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService.PlatformImageLoadingService() -> void
 Microsoft.Maui.Graphics.Platform.PlatformStringSizeService
 Microsoft.Maui.Graphics.Platform.PlatformStringSizeService.PlatformStringSizeService() -> void
-Microsoft.Maui.Graphics.Platform.UIColorExtensions
-Microsoft.Maui.Graphics.Platform.UIImageExtensions
-Microsoft.Maui.Graphics.Platform.UIKitExtensions
-Microsoft.Maui.Graphics.Platform.UIViewExtensions
 Microsoft.Maui.Graphics.Point
 Microsoft.Maui.Graphics.Point.Deconstruct(out double x, out double y) -> void
 Microsoft.Maui.Graphics.Point.Distance(Microsoft.Maui.Graphics.Point other) -> double
@@ -802,9 +802,9 @@ override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SaveState() -> void
 override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StrokeLineCap.set -> void
 override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StrokeLineJoin.set -> void
 override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SubtractFromClip(float x, float y, float width, float height) -> void
-override Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Bounds.get -> CoreGraphics.CGRect
-override Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Bounds.set -> void
-override Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Draw(CoreGraphics.CGRect dirtyRect) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.DrawRect(CoreGraphics.CGRect dirtyRect) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.IsFlipped.get -> bool
+override Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.ViewWillDraw() -> void
 override Microsoft.Maui.Graphics.Point.GetHashCode() -> int
 override Microsoft.Maui.Graphics.PointF.GetHashCode() -> int
 override Microsoft.Maui.Graphics.Rect.GetHashCode() -> int
@@ -1103,13 +1103,14 @@ virtual Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PatternPhase.get -
 ~Microsoft.Maui.Graphics.Platform.DirectRenderer.Drawable.set -> void
 ~Microsoft.Maui.Graphics.Platform.DirectRenderer.GraphicsView.set -> void
 ~Microsoft.Maui.Graphics.Platform.IGraphicsRenderer.Canvas.get -> Microsoft.Maui.Graphics.ICanvas
-~Microsoft.Maui.Graphics.Platform.IGraphicsRenderer.Draw(CoreGraphics.CGContext coreGraphics, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
+~Microsoft.Maui.Graphics.Platform.IGraphicsRenderer.Draw(CoreGraphics.CGContext nativeCanvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
 ~Microsoft.Maui.Graphics.Platform.IGraphicsRenderer.Drawable.get -> Microsoft.Maui.Graphics.IDrawable
 ~Microsoft.Maui.Graphics.Platform.IGraphicsRenderer.Drawable.set -> void
 ~Microsoft.Maui.Graphics.Platform.IGraphicsRenderer.GraphicsView.set -> void
+~Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext.BitmapContext.get -> CoreGraphics.CGBitmapContext
 ~Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext.CGImage.get -> CoreGraphics.CGImage
+~Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext.NSImage.get -> AppKit.NSImage
 ~Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext.PlatformImage.get -> Microsoft.Maui.Graphics.Platform.PlatformImage
-~Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext.UIImage.get -> UIKit.UIImage
 ~Microsoft.Maui.Graphics.Platform.PlatformBitmapExportService.CreateContext(int width, int height, float displayScale = 1) -> Microsoft.Maui.Graphics.BitmapExportContext
 ~Microsoft.Maui.Graphics.Platform.PlatformCanvas.Context.get -> CoreGraphics.CGContext
 ~Microsoft.Maui.Graphics.Platform.PlatformCanvas.Context.set -> void
@@ -1118,17 +1119,19 @@ virtual Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PatternPhase.get -
 ~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.PlatformCanvasState(Microsoft.Maui.Graphics.Platform.PlatformCanvasState prototype) -> void
 ~Microsoft.Maui.Graphics.Platform.PlatformCanvasStateService.CreateCopy(Microsoft.Maui.Graphics.Platform.PlatformCanvasState prototype) -> Microsoft.Maui.Graphics.Platform.PlatformCanvasState
 ~Microsoft.Maui.Graphics.Platform.PlatformCanvasStateService.CreateNew(object context) -> Microsoft.Maui.Graphics.Platform.PlatformCanvasState
+~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.BackgroundColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.BackgroundColor.set -> void
 ~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Drawable.get -> Microsoft.Maui.Graphics.IDrawable
 ~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Drawable.set -> void
-~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PlatformGraphicsView(CoreGraphics.CGRect frame, Microsoft.Maui.Graphics.IDrawable drawable = null, Microsoft.Maui.Graphics.Platform.IGraphicsRenderer renderer = null) -> void
 ~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PlatformGraphicsView(Microsoft.Maui.Graphics.IDrawable drawable = null, Microsoft.Maui.Graphics.Platform.IGraphicsRenderer renderer = null) -> void
 ~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Renderer.get -> Microsoft.Maui.Graphics.Platform.IGraphicsRenderer
 ~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Renderer.set -> void
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.Downsize(float maxWidthOrHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.Draw(Microsoft.Maui.Graphics.ICanvas canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
-~Microsoft.Maui.Graphics.Platform.PlatformImage.PlatformImage(UIKit.UIImage image) -> void
-~Microsoft.Maui.Graphics.Platform.PlatformImage.PlatformRepresentation.get -> UIKit.UIImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.NativeRepresentation.get -> AppKit.NSImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.PlatformImage(AppKit.NSImage image) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.PlatformRepresentation.get -> AppKit.NSImage
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.Resize(float width, float height, Microsoft.Maui.Graphics.ResizeMode resizeMode = Microsoft.Maui.Graphics.ResizeMode.Fit, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> void
 ~Microsoft.Maui.Graphics.Platform.PlatformImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> System.Threading.Tasks.Task
@@ -1251,7 +1254,7 @@ virtual Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PatternPhase.get -
 ~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SetFillPaint(Microsoft.Maui.Graphics.Paint paint, Microsoft.Maui.Graphics.RectF rectangle) -> void
 ~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SetShadow(Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color color) -> void
 ~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StrokeColor.set -> void
-~override Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.WillMoveToSuperview(UIKit.UIView newSuperview) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.ViewWillMoveToSuperview(AppKit.NSView newSuperview) -> void
 ~override Microsoft.Maui.Graphics.Point.Equals(object o) -> bool
 ~override Microsoft.Maui.Graphics.Point.ToString() -> string
 ~override Microsoft.Maui.Graphics.PointF.Equals(object o) -> bool
@@ -1377,15 +1380,23 @@ virtual Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PatternPhase.get -
 ~static Microsoft.Maui.Graphics.PictureWriterExtensions.SaveAsBytes(this Microsoft.Maui.Graphics.IPictureWriter target, Microsoft.Maui.Graphics.IPicture picture) -> byte[]
 ~static Microsoft.Maui.Graphics.PictureWriterExtensions.SaveAsBytesAsync(this Microsoft.Maui.Graphics.IPictureWriter target, Microsoft.Maui.Graphics.IPicture picture) -> System.Threading.Tasks.Task<byte[]>
 ~static Microsoft.Maui.Graphics.PictureWriterExtensions.SaveAsStream(this Microsoft.Maui.Graphics.IPictureWriter target, Microsoft.Maui.Graphics.IPicture picture) -> System.IO.Stream
+~static Microsoft.Maui.Graphics.Platform.AppKitConstants.NSImageCompressionFactor.get -> Foundation.NSString
+~static Microsoft.Maui.Graphics.Platform.AppKitConstants.NSImageNameAdvanced.get -> Foundation.NSString
+~static Microsoft.Maui.Graphics.Platform.AppKitConstants.NSImageNamePreferencesGeneral.get -> Foundation.NSString
+~static Microsoft.Maui.Graphics.Platform.AppKitConstants.NSImageNameUserAccounts.get -> Foundation.NSString
+~static Microsoft.Maui.Graphics.Platform.AppKitConstants.NSPrintPanelAccessorySummaryItemDescriptionKey.get -> Foundation.NSString
+~static Microsoft.Maui.Graphics.Platform.AppKitConstants.NSPrintPanelAccessorySummaryItemNameKey.get -> Foundation.NSString
 ~static Microsoft.Maui.Graphics.Platform.AttributedTextExtensions.AsNSAttributedString(this Microsoft.Maui.Graphics.Text.IAttributedText target, Microsoft.Maui.Graphics.IFont contextFont = null, float contextFontSize = 12, string contextFontColor = null, bool coreTextCompatible = false) -> Foundation.NSAttributedString
 ~static Microsoft.Maui.Graphics.Platform.CGColorExtensions.ToCGColor(this float[] color) -> CoreGraphics.CGColor
 ~static Microsoft.Maui.Graphics.Platform.CgContextExtensions.AddPath(this CoreGraphics.CGContext target, Microsoft.Maui.Graphics.PathF path, float ox, float oy, float fx, float fy) -> CoreGraphics.CGPath
 ~static Microsoft.Maui.Graphics.Platform.CgContextExtensions.AddRoundedRectangle(this CoreGraphics.CGContext target, CoreGraphics.CGRect rect, float cornerRadius) -> void
 ~static Microsoft.Maui.Graphics.Platform.CgContextExtensions.AddRoundedRectangle(this CoreGraphics.CGContext target, System.Runtime.InteropServices.NFloat x, System.Runtime.InteropServices.NFloat y, System.Runtime.InteropServices.NFloat width, System.Runtime.InteropServices.NFloat height, System.Runtime.InteropServices.NFloat cornerRadius) -> void
+~static Microsoft.Maui.Graphics.Platform.CoreGraphicsExtensions.AsNSColor(this Microsoft.Maui.Graphics.Color color) -> AppKit.NSColor
+~static Microsoft.Maui.Graphics.Platform.CoreGraphicsExtensions.AsPaint(this AppKit.NSImage target) -> Microsoft.Maui.Graphics.ImagePaint
 ~static Microsoft.Maui.Graphics.Platform.FontExtensions.GetDefaultCTFont(System.Runtime.InteropServices.NFloat? size = null) -> CoreText.CTFont
 ~static Microsoft.Maui.Graphics.Platform.FontExtensions.ToCGFont(this Microsoft.Maui.Graphics.IFont font) -> CoreGraphics.CGFont
 ~static Microsoft.Maui.Graphics.Platform.FontExtensions.ToCTFont(this Microsoft.Maui.Graphics.IFont font, System.Runtime.InteropServices.NFloat? size = null) -> CoreText.CTFont
-~static Microsoft.Maui.Graphics.Platform.FontExtensions.ToPlatformFont(this Microsoft.Maui.Graphics.IFont font, System.Runtime.InteropServices.NFloat? size = null) -> UIKit.UIFont
+~static Microsoft.Maui.Graphics.Platform.FontExtensions.ToPlatformFont(this Microsoft.Maui.Graphics.IFont font, System.Runtime.InteropServices.NFloat? size = null) -> AppKit.NSFont
 ~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AddRoundedRectangle(this CoreGraphics.CGContext context, float x, float y, float width, float height, float cornerRadius) -> void
 ~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsCGColor(this Microsoft.Maui.Graphics.Color color) -> CoreGraphics.CGColor
 ~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsCGPath(this Microsoft.Maui.Graphics.PathF target) -> CoreGraphics.CGPath
@@ -1396,20 +1407,17 @@ virtual Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PatternPhase.get -
 ~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsRotatedCGPath(this Microsoft.Maui.Graphics.PathF target, Microsoft.Maui.Graphics.PointF center, float ppu, float zoom, float angle) -> CoreGraphics.CGPath
 ~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.SetFillColor(this CoreGraphics.CGContext context, Microsoft.Maui.Graphics.Color color) -> void
 ~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.SetStrokeColor(this CoreGraphics.CGContext context, Microsoft.Maui.Graphics.Color color) -> void
-~static Microsoft.Maui.Graphics.Platform.ImageExtensions.AsUIImage(this Microsoft.Maui.Graphics.IImage image) -> UIKit.UIImage
+~static Microsoft.Maui.Graphics.Platform.ImageExtensions.AsNSImage(this Microsoft.Maui.Graphics.IImage image) -> AppKit.NSImage
 ~static Microsoft.Maui.Graphics.Platform.NSAttributedStringExtension.AsAttributedText(this Foundation.NSAttributedString target) -> Microsoft.Maui.Graphics.Text.IAttributedText
+~static Microsoft.Maui.Graphics.Platform.NSColorExtensions.AsColor(this AppKit.NSColor color) -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Graphics.Platform.NSColorExtensions.ToHex(this AppKit.NSColor color) -> string
+~static Microsoft.Maui.Graphics.Platform.NSImageExtensions.AsBmp(this AppKit.NSImage target) -> Foundation.NSData
+~static Microsoft.Maui.Graphics.Platform.NSImageExtensions.AsPng(this AppKit.NSImage target) -> Foundation.NSData
+~static Microsoft.Maui.Graphics.Platform.NSImageExtensions.ScaleImage(this AppKit.NSImage target, CoreGraphics.CGSize size, bool disposeOriginal = false) -> AppKit.NSImage
+~static Microsoft.Maui.Graphics.Platform.NSImageExtensions.ScaleImage(this AppKit.NSImage target, float maxWidth, float maxHeight, bool disposeOriginal = false) -> AppKit.NSImage
 ~static Microsoft.Maui.Graphics.Platform.PlatformCanvas.DrawAttributedText(CoreGraphics.CGContext context, Microsoft.Maui.Graphics.Text.IAttributedText text, CoreGraphics.CGPath path, Microsoft.Maui.Graphics.IFont font, float fontSize, Microsoft.Maui.Graphics.Color fontColor, Microsoft.Maui.Graphics.TextFlow textFlow = Microsoft.Maui.Graphics.TextFlow.ClipBounds, float ix = 0, float iy = 0) -> void
 ~static Microsoft.Maui.Graphics.Platform.PlatformCanvas.DrawAttributedText(CoreGraphics.CGContext context, Microsoft.Maui.Graphics.Text.IAttributedText text, CoreGraphics.CGRect rect, Microsoft.Maui.Graphics.IFont font, float fontSize, Microsoft.Maui.Graphics.Color fontColor, Microsoft.Maui.Graphics.TextFlow textFlow = Microsoft.Maui.Graphics.TextFlow.ClipBounds, float ix = 0, float iy = 0) -> void
-~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
-~static Microsoft.Maui.Graphics.Platform.UIColorExtensions.ToHex(this UIKit.UIColor color) -> string
-~static Microsoft.Maui.Graphics.Platform.UIImageExtensions.NormalizeOrientation(this UIKit.UIImage target, bool disposeOriginal = false) -> UIKit.UIImage
-~static Microsoft.Maui.Graphics.Platform.UIImageExtensions.ScaleImage(this UIKit.UIImage target, CoreGraphics.CGSize size, bool disposeOriginal = false) -> UIKit.UIImage
-~static Microsoft.Maui.Graphics.Platform.UIImageExtensions.ScaleImage(this UIKit.UIImage target, float maxWidth, float maxHeight, bool disposeOriginal = false) -> UIKit.UIImage
-~static Microsoft.Maui.Graphics.Platform.UIKitExtensions.AsColor(this UIKit.UIColor color) -> Microsoft.Maui.Graphics.Color
-~static Microsoft.Maui.Graphics.Platform.UIKitExtensions.AsUIBezierPath(this Microsoft.Maui.Graphics.PathF target) -> UIKit.UIBezierPath
-~static Microsoft.Maui.Graphics.Platform.UIKitExtensions.AsUIColor(this Microsoft.Maui.Graphics.Color color) -> UIKit.UIColor
-~static Microsoft.Maui.Graphics.Platform.UIViewExtensions.GetPointsInView(this UIKit.UIView target, Foundation.NSSet touchSet) -> Microsoft.Maui.Graphics.PointF[]
-~static Microsoft.Maui.Graphics.Platform.UIViewExtensions.GetPointsInView(this UIKit.UIView target, UIKit.UIEvent touchEvent) -> Microsoft.Maui.Graphics.PointF[]
+~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat formatHint = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
 ~static Microsoft.Maui.Graphics.Point.TryParse(string value, out Microsoft.Maui.Graphics.Point point) -> bool
 ~static Microsoft.Maui.Graphics.PointF.TryParse(string value, out Microsoft.Maui.Graphics.PointF pointF) -> bool
 ~static Microsoft.Maui.Graphics.Rect.TryParse(string value, out Microsoft.Maui.Graphics.Rect rectangle) -> bool
