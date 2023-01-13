@@ -8,8 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.DependencyInjection;
