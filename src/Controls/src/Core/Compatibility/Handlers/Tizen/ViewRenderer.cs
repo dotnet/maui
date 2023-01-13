@@ -1,5 +1,4 @@
-﻿#nullable enable
-using Tizen.UIExtensions.NUI;
+﻿using Tizen.UIExtensions.NUI;
 using PlatformView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility

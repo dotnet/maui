@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using NGestureDetector = Tizen.NUI.GestureDetector;
 using NView = Tizen.NUI.BaseComponents.View;

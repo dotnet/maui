@@ -45,6 +45,11 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
+		public static Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static Task FocusView(this FrameworkElement view, int timeout = 1000)
 		{
 			throw new NotImplementedException();

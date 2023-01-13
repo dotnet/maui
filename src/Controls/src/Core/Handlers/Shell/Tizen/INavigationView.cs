@@ -1,5 +1,3 @@
-#nullable enable
-
 using NColor = Tizen.NUI.Color;
 using NView = Tizen.NUI.BaseComponents.View;
 

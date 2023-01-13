@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Collections;
 using System.Collections.Generic;
 using Tizen.UIExtensions.NUI;
