@@ -14,7 +14,7 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IEnablingElement
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='NavigationProperty']/Docs/*" />
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
@@ -25,11 +25,14 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InputTransparentProperty']/Docs/*" />
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
 
-		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
+		bool IEnablingElement.IsEnabledExplicit
+		{
+			get;
+			set;
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
-		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool),
-			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
+		public static readonly BindableProperty IsEnabledProperty = EnablingElement.IsEnabledProperty;
 
 		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly("X", typeof(double), typeof(VisualElement), default(double));
 
@@ -482,30 +485,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
 			set { SetValue(IsEnabledProperty, value); }
-		}
-
-		/// <summary>
-		/// This value represents the cumulative IsEnabled value.
-		/// All types that override this property need to also invoke
-		/// the RefreshIsEnabledProperty() method if the value will change.
-		/// </summary>
-		internal virtual bool IsEnabledCore
-		{
-			get
-			{
-				if (_isEnabledExplicit == false)
-				{
-					// If the explicitly set value is false, then nothing else matters
-					// And we can save the effort of a Parent check
-					return false;
-				}
-
-				var parent = Parent as VisualElement;
-				if (parent is not null && !parent.IsEnabled)
-					return false;
-
-				return _isEnabledExplicit;
-			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsFocused']/Docs/*" />
@@ -1187,29 +1166,6 @@ namespace Microsoft.Maui.Controls
 			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.FlowDirectionProperty.PropertyName);
 		}
 
-		static object CoerceIsEnabledProperty(BindableObject bindable, object value)
-		{
-			if (bindable is VisualElement visualElement)
-			{
-				visualElement._isEnabledExplicit = (bool)value;
-				return visualElement.IsEnabledCore;
-			}
-
-			return false;
-		}
-
-		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var element = (VisualElement)bindable;
-
-			if (element == null)
-				return;
-
-			element.ChangeVisualState();
-
-			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
-		}
-
 		static void OnIsFocusedPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			var element = (VisualElement)bindable;
@@ -1266,18 +1222,8 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			if (propertyName == null || propertyName == IsEnabledProperty.PropertyName)
-				CommandElement.RefreshPropertyValue(this, IsEnabledProperty, _isEnabledExplicit);
-
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
-
-		/// <summary>
-		/// This method must always be called if some event occurs and the value of
-		/// the IsEnabledCore property will change.
-		/// </summary>
-		internal void RefreshIsEnabledProperty() =>
-			CommandElement.RefreshPropertyValue(this, IsEnabledProperty, _isEnabledExplicit);
 
 		void UpdateBoundsComponents(Rect bounds)
 		{

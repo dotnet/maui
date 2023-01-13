@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.MenuItem']/Docs/*" />
-	public partial class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable, ICommandElement
+	public partial class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable, ICommandElement, IEnablingElement
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='AcceleratorProperty']/Docs/*" />
 		public static readonly BindableProperty AcceleratorProperty = BindableProperty.CreateAttached(nameof(Accelerator), typeof(Accelerator), typeof(MenuItem), null);
@@ -32,9 +32,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(MenuItem), default(ImageSource));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
-		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(
-			nameof(IsEnabled), typeof(bool), typeof(MenuItem), true,
-			coerceValue: CoerceIsEnabledProperty);
+		public static readonly BindableProperty IsEnabledProperty = EnablingElement.IsEnabledProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuItem), null);
@@ -130,18 +128,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
-			CommandElement.RefreshPropertyValue(this, IsEnabledProperty, _isEnabledExplicit);
+			EnablingElement.RefreshPropertyValue(this);
 
-		static object CoerceIsEnabledProperty(BindableObject bindable, object value)
+		bool IEnablingElement.IsEnabledExplicit
 		{
-			if (bindable is MenuItem menuitem)
-			{
-				menuitem._isEnabledExplicit = (bool)value;
-
-				return menuitem._isEnabledExplicit && CommandElement.GetCanExecute(menuitem);
-			}
-
-			return false;
+			get;
+			set;
 		}
 	}
 }

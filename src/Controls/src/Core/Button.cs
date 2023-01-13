@@ -459,10 +459,7 @@ namespace Microsoft.Maui.Controls
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
-			RefreshIsEnabledProperty();
-
-		internal override bool IsEnabledCore =>
-			base.IsEnabledCore && CommandElement.GetCanExecute(this);
+			EnablingElement.RefreshPropertyValue(this);
 
 		/// <summary>
 		/// Represents the layout of the button content whenever an image is shown.

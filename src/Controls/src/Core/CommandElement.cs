@@ -35,21 +35,5 @@ namespace Microsoft.Maui.Controls
 
 			return commandElement.Command.CanExecute(commandElement.CommandParameter);
 		}
-
-		public static void RefreshPropertyValue(BindableObject bo, BindableProperty property, object value)
-		{
-			var ctx = bo.GetContext(property);
-			if (ctx?.Binding is not null)
-			{
-				// support bound properties
-				if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
-					ctx.Binding.Apply(false);
-			}
-			else
-			{
-				// support normal/code properties
-				bo.SetValue(property, value);
-			}
-		}
 	}
 }

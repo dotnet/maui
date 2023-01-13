@@ -8,6 +8,9 @@ namespace Microsoft.Maui.Controls.Internals
 	{
 		internal static void PropagatePropertyChanged(string propertyName, Element element, IEnumerable children)
 		{
+			if (propertyName == null || propertyName == EnablingElement.IsEnabledProperty.PropertyName)
+				EnablingElement.RefreshPropertyValue(element);
+
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				SetFlowDirectionFromParent(element);
 
