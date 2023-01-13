@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using Microsoft.Maui.Graphics;

@@ -1,4 +1,4 @@
-﻿using Android.Widget;
+﻿#nullable disable
 using Microsoft.Maui.Controls.Internals;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -8,7 +8,11 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this SearchView searchView, InputView inputView)
 		{
-			searchView.SetQuery(TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform), false);
+			var oldQuery = searchView.Query ?? string.Empty;
+			var newQuery = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
+
+			if (oldQuery != newQuery)
+				searchView.SetQuery(newQuery, false);
 		}
 	}
 }

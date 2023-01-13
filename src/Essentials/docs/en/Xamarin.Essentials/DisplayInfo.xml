@@ -320,7 +320,7 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets the width of the scrreen for the current orientation.</summary>
+        <summary>Gets the width of the screen for the current orientation.</summary>
         <value>The width in pixels.</value>
         <remarks></remarks>
       </Docs>

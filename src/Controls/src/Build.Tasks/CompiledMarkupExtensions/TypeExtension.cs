@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 	{
 		public IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, ILContext context, out TypeReference memberRef)
 		{
-			memberRef = module.ImportReference(("mscorlib", "System", "Type"));
+			memberRef = module.ImportReference(context.Cache, ("mscorlib", "System", "Type"));
 			var name = new XmlName("", "TypeName");
 
 			if (!node.Properties.TryGetValue(name, out INode typeNameNode) && node.CollectionItems.Any())
@@ -28,13 +28,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				node.CollectionItems.Clear();
 			}
 
-			var typeref = module.ImportReference(XmlTypeExtensions.GetTypeReference(valueNode.Value as string, module, node as BaseNode));
+			var typeref = module.ImportReference(XmlTypeExtensions.GetTypeReference(context.Cache, valueNode.Value as string, module, node as BaseNode));
 
 			context.TypeExtensions[node] = typeref ?? throw new BuildException(BuildExceptionCode.TypeResolution, node as IXmlLineInfo, null, valueNode.Value);
 
 			return new List<Instruction> {
 				Create(Ldtoken, module.ImportReference(typeref)),
-				Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"),
+				Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"),
 														  methodName: "GetTypeFromHandle",
 														  parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") },
 														  isStatic: true)),

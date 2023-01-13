@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Platform;

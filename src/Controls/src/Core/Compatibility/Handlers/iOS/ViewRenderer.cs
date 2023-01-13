@@ -1,5 +1,4 @@
-﻿#nullable enable
-using CoreGraphics;
+﻿using CoreGraphics;
 using UIKit;
 using PlatformView = UIKit.UIView;
 

@@ -9,7 +9,14 @@ namespace Microsoft.Maui.Platform
 	{
 		static void UpdateIncrement(this Slider nativeSlider, ISlider slider)
 		{
-			double stepping = Math.Min((slider.Maximum - slider.Minimum) / 1000, 1);
+			var difference = slider.Maximum - slider.Minimum;
+
+			double stepping = 1;
+
+			// Setting the Slider SmallChange property to 0 would throw an System.ArgumentException.
+			if (difference != 0)
+				stepping = Math.Min((difference) / 1000, 1);
+
 			nativeSlider.StepFrequency = stepping;
 			nativeSlider.SmallChange = stepping;
 		}

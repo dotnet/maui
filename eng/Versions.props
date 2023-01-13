@@ -13,10 +13,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>33.0.4</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>16.1.1492</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>13.0.2047</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>16.1.1492</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>16.1.1492</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>16.2.1004</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>13.1.1004</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>16.2.1004</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>16.1.1501</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>7.0.100</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
@@ -37,7 +37,7 @@
     <MicrosoftAspNetCoreComponentsWebPackageVersion>7.0.1</MicrosoftAspNetCoreComponentsWebPackageVersion>
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>7.0.1</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>7.0.1</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftJSInteropPackageVersion>7.0.1</MicrosoftJSInteropPackageVersion>
+    <MicrosoftJSInteropPackageVersion>7.0.2</MicrosoftJSInteropPackageVersion>
     <!-- Other packages -->
     <MicrosoftCodeAnalysisNetAnalyzersVersion>7.0.0</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>

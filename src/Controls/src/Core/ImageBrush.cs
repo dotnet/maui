@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace Microsoft.Maui.Controls
+﻿namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(ImageSource))]
 	class ImageBrush : Brush
