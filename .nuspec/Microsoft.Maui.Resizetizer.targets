@@ -382,14 +382,23 @@
         />
         <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
             <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
-            <_MauiStoryboardForPList>$(_MauiIntermediateSplashScreen)</_MauiStoryboardForPList>
+            <_MauiIntermediatePList>$(_MauiIntermediateSplashScreen)MauiInfo.plist</_MauiIntermediatePList>
         </PropertyGroup>
+        <CreatePartialInfoPlistTask
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            PlistName="MauiInfo.plist"
+            Storyboard="$(_MauiIntermediateStoryboard)"
+        />
         <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <_MauiSplashStoryboard Include="$(_MauiIntermediateStoryboard)" />
-            <_MauiSplashImages Include="@(_MauiSplashAssets)" Exclude="@(_MauiSplashStoryboard)" />
+            <_MauiSplashPList Include="$(_MauiIntermediatePList)" />
+            <_MauiSplashImages Include="@(_MauiSplashAssets)" Exclude="@(_MauiSplashStoryboard);@(_MauiSplashPList)" />
             <!-- Add the launch storyboard file -->
             <InterfaceDefinition Include="@(_MauiSplashStoryboard)" Link="%(Filename)%(Extension)" />
+            <!-- Add the splash screen plist to the partial plist files -->
+            <PartialAppManifest Include="@(_MauiSplashPList)" />
             <!-- Add the splash screen images to BundleResource -->
             <BundleResource Include="@(_MauiSplashImages->'%(FullPath)')">
                 <LogicalName>%(_MauiSplashImages.Filename)%(_MauiSplashImages.Extension)</LogicalName>
@@ -398,14 +407,15 @@
         </ItemGroup>
         <!-- If on Windows, using build host, copy the files over to build server host too -->
         <ItemGroup Condition="'$(BuildSessionId)' != '' and '$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(IsMacEnabled)'=='true'">
-            <_MauiImagesToCopyToBuildServer Include="@(_MauiSplashAssets)">
+            <_MauiSplashToCopyToBuildServer Include="@(_MauiSplashAssets)">
                 <TargetPath>%(Identity)</TargetPath>
-            </_MauiImagesToCopyToBuildServer>
+            </_MauiSplashToCopyToBuildServer>
         </ItemGroup>
         <CopyFilesToBuildServer
             Condition="'$(BuildSessionId)' != '' and '$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(IsMacEnabled)'=='true'"
             SessionId="$(BuildSessionId)"
-            Files="@(_MauiImagesToCopyToBuildServer)" />
+            Files="@(_MauiSplashToCopyToBuildServer)"
+        />
 
         <!-- UWP / WinUI -->
         <GenerateSplashAssets
@@ -461,6 +471,7 @@
             <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
         </ItemGroup>
 
+        <!-- iOS -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''">
 
             <!-- iOS Expects fonts to be in this group -->
@@ -475,10 +486,9 @@
 
         <!-- Create a partial info.plist for iOS -->
         <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And ('@(_MauiFontCopied)' != '' Or '$(_MauiStoryboardForPList)' != '')"
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''"
             IntermediateOutputPath="$(_MauiIntermediateFonts)"
             PlistName="MauiInfo.plist"
-            Storyboard="$(_MauiStoryboardForPList)"
             CustomFonts="@(_MauiFontCopied)" />
 
         <!-- iOS - Partial Info.plist for font registration  -->
@@ -595,14 +605,14 @@
         <!-- iOS Only -->
         <!-- If on Windows, using build host, copy the files over to build server host too -->
         <ItemGroup Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'">
-            <_MauiSplashToCopyToBuildServer Include="@(_ResizetizerCollectedBundleResourceImages)">
+            <_MauiImagesToCopyToBuildServer Include="@(_ResizetizerCollectedBundleResourceImages)">
                 <TargetPath>%(Identity)</TargetPath>
-            </_MauiSplashToCopyToBuildServer>
+            </_MauiImagesToCopyToBuildServer>
         </ItemGroup>
         <CopyFilesToBuildServer
             Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
             SessionId="$(BuildSessionId)"
-            Files="@(_MauiSplashToCopyToBuildServer)" />
+            Files="@(_MauiImagesToCopyToBuildServer)" />
 
         <!-- Android -->
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
