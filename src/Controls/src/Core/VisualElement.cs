@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get;
 			set;
-		}
+		} = (bool)EnablingElement.IsEnabledProperty.DefaultValue;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty IsEnabledProperty = EnablingElement.IsEnabledProperty;

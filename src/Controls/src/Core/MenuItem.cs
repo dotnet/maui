@@ -134,6 +134,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get;
 			set;
-		}
+		} = (bool)EnablingElement.IsEnabledProperty.DefaultValue;
 	}
 }
