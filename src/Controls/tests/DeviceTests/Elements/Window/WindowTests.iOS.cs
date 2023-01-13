@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 				(view as IView).IsFocused = true;
 				view.Unfocus();
 				await AssertionExtensions.WaitForUnFocused(view);
-				
+
 				Assert.DoesNotContain(typeof(ResignFirstResponderTouchGestureRecognizer),
 					handler.PlatformView.Window.GestureRecognizers.Select(x => x.GetType()));
 			});
