@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;

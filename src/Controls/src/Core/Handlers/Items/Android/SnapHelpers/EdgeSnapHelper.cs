@@ -1,4 +1,5 @@
-﻿using AndroidX.RecyclerView.Widget;
+﻿#nullable disable
+using AndroidX.RecyclerView.Widget;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using AView = Android.Views.View;
 
