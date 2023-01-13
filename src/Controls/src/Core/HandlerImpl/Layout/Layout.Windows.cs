@@ -1,5 +1,5 @@
 ﻿#nullable disable
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
