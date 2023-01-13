@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using Microsoft.Extensions.DependencyInjection;

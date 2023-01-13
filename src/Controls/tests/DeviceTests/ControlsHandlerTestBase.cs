@@ -400,7 +400,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
 			ValidateHasColor(view, color, typeof(THandler), action);
-			
+
 		protected static void MockAccessibilityExpectations(View view)
 		{
 #if IOS || MACCATALYST

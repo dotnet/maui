@@ -117,6 +117,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task ShowKeyboardForView(this IView view, int timeout = 1000) =>
 			view.ToPlatform().ShowKeyboardForView(timeout);
 
+		public static Task WaitForUnFocused(this IView view, int timeout = 1000) =>
+			view.ToPlatform().WaitForUnFocused(timeout);
+
 		public static Task WaitForFocused(this IView view, int timeout = 1000) =>
 			view.ToPlatform().WaitForFocused(timeout);
 
@@ -125,7 +128,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static bool IsAccessibilityElement(this IView view) =>
 			view.ToPlatform().IsAccessibilityElement();
-
 
 		public static bool IsExcludedWithChildren(this IView view) =>
 			view.ToPlatform().IsExcludedWithChildren();

@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls
+﻿#nullable disable
+namespace Microsoft.Maui.Controls
 {
 	public partial class Layout
 	{
@@ -13,7 +14,7 @@
 
 		static void UpdateInputTransparent(IViewHandler handler, IView view)
 		{
-			if (handler.PlatformView is not Microsoft.Maui.Platform.LayoutViewGroup platformView || 
+			if (handler.PlatformView is not Microsoft.Maui.Platform.LayoutViewGroup platformView ||
 				view is not Layout layout)
 			{
 				return;
