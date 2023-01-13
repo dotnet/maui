@@ -595,14 +595,14 @@
         <!-- iOS Only -->
         <!-- If on Windows, using build host, copy the files over to build server host too -->
         <ItemGroup Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'">
-            <_MauiImagesToCopyToBuildServer Include="@(_ResizetizerCollectedBundleResourceImages)">
+            <_MauiSplashToCopyToBuildServer Include="@(_ResizetizerCollectedBundleResourceImages)">
                 <TargetPath>%(Identity)</TargetPath>
-            </_MauiImagesToCopyToBuildServer>
+            </_MauiSplashToCopyToBuildServer>
         </ItemGroup>
         <CopyFilesToBuildServer
             Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
             SessionId="$(BuildSessionId)"
-            Files="@(_MauiImagesToCopyToBuildServer)" />
+            Files="@(_MauiSplashToCopyToBuildServer)" />
 
         <!-- Android -->
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
