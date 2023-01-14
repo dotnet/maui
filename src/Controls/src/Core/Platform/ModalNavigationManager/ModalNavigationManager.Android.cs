@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
 using AndroidX.AppCompat.App;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		ViewGroup GetModalParentView()
 		{
-			var currentRootView = GetCurrentRootView() as ViewGroup;
+			var currentRootView = (GetCurrentRootView()?.Parent) as ViewGroup;
 
 			if (_window?.PlatformActivity?.GetWindow() == _window)
 			{
@@ -31,7 +32,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool _navAnimationInProgress;
 		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
-		Page CurrentPage => _navModel.CurrentPage;
 
 		// AFAICT this is specific to ListView and Context Items
 		internal bool NavAnimationInProgress
@@ -198,6 +198,9 @@ namespace Microsoft.Maui.Controls.Platform
 			ModalFragment _modalFragment;
 			FragmentManager? _fragmentManager;
 			NavigationRootManager? NavigationRootManager => _modalFragment.NavigationRootManager;
+			int _currentRootViewHeight = 0;
+			GenericGlobalLayoutListener? _rootViewLayoutListener;
+			AView? _rootView;
 
 			AView GetWindowRootView() =>
 				 _windowMauiContext
@@ -213,9 +216,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_windowMauiContext = windowMauiContext;
 				Modal = modal;
-				GetWindowRootView().LayoutChange += ModalContainer_LayoutChange;
-				parentView.LayoutChange += ModalContainer_LayoutChange;
-				(GetWindowRootView().Parent as AView)!.LayoutChange += ModalContainer_LayoutChange;
 				_backgroundView = new AView(_windowMauiContext.Context);
 				UpdateBackgroundColor();
 				AddView(_backgroundView);
@@ -235,26 +235,69 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateMargin();
 			}
 
-			int _lastHeight = 0;
-			void ModalContainer_LayoutChange(object? sender, LayoutChangeEventArgs e)
+			protected override void OnAttachedToWindow()
+			{
+				base.OnAttachedToWindow();
+				UpdateRootView(GetWindowRootView());
+			}
+
+			protected override void OnDetachedFromWindow()
+			{
+				base.OnDetachedFromWindow();
+				UpdateRootView(null);
+			}
+
+			void UpdateRootView(AView? rootView)
+			{
+				if (_rootView.IsAlive() && _rootView != null)
+				{
+					_rootView.LayoutChange -= OnRootViewLayoutChanged;
+					_rootView = null;
+				}
+
+				if (rootView.IsAlive() && rootView != null)
+				{
+					rootView.LayoutChange += OnRootViewLayoutChanged;
+					_rootView = rootView;
+				}
+			}
+
+			// If the RootView changes sizes that means we also need to change sizes
+			// This will typically happen when the user is opening the soft keyboard 
+			// which sometimes causes the available window size to change
+			void OnRootViewLayoutChanged(object? sender, LayoutChangeEventArgs e)
 			{
 				if (Modal == null || sender is not AView view)
 					return;
 
-				if (_lastHeight != view.MeasuredHeight)
+				var modalStack = Modal?.Navigation?.ModalStack;
+				if (modalStack == null ||
+					modalStack.Count == 0 ||
+					modalStack[modalStack.Count - 1] != Modal)
 				{
-					_lastHeight = view.MeasuredHeight;
+					return;
 				}
 
-				System.Diagnostics.Debug.WriteLine($"Invalidate Measure: {_lastHeight} {this.IsInLayout}");
-				this.InvalidateMeasure(Modal);
-
-				if (Modal.Handler != null)
-					Modal.ToPlatform()?.InvalidateMeasure(Modal);
-			}
-
-			void OnPageSizeChanged(object? sender, EventArgs e)
-			{
+				if (_currentRootViewHeight != view.MeasuredHeight && this.ViewTreeObserver != null)
+				{
+					// When the keyboard closes Android calls layout but doesn't call remeasure.
+					// MY guess is that this is due to the modal not being part of the FitSystemWindowView
+					// The modal is added to the decor view so its dimensions don't get updated.
+					// So, here we are waiting for the layout pass to finish and then we remeasure the modal					
+					//
+					// For .NET 8 we'll convert this all over to using a DialogFragment
+					// which means we can delete most of the awkward code here
+					_currentRootViewHeight = view.MeasuredHeight;
+					_rootViewLayoutListener ??= new GenericGlobalLayoutListener((listener, view) =>
+					{
+						if (view != null && !view.IsInLayout)
+						{
+							listener.Invalidate();
+							_rootViewLayoutListener = null;
+							view.InvalidateMeasure(Modal);
+						}
+					}, this);
+				}
 			}
 
 			void UpdateMargin()
@@ -296,7 +339,6 @@ namespace Microsoft.Maui.Controls.Platform
 					.RootView
 					.Measure(widthMeasureSpec, heightMeasureSpec);
 
-				System.Diagnostics.Debug.WriteLine($"OnMeasure {rootView.MeasuredWidth}x{rootView.MeasuredHeight}");
 				SetMeasuredDimension(rootView.MeasuredWidth, rootView.MeasuredHeight);
 			}
 
@@ -305,7 +347,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (Context == null || NavigationRootManager?.RootView == null)
 					return;
 
-				System.Diagnostics.Debug.WriteLine($"OnLayout {t}x{b}");
 				NavigationRootManager
 					.RootView
 					.Layout(0, 0, r - l, b - t);
@@ -340,6 +381,10 @@ namespace Microsoft.Maui.Controls.Platform
 					Modal.Toolbar.Handler = null;
 
 				Modal.Handler = null;
+
+				UpdateRootView(null);
+				_rootViewLayoutListener?.Invalidate();
+				_rootViewLayoutListener = null;
 
 				_fragmentManager
 					.BeginTransaction()
