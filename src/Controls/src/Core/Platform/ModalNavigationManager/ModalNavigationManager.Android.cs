@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				if ((_currentRootViewHeight != view.MeasuredHeight || _currentRootViewWidth != view.MeasuredHeight)
+				if ((_currentRootViewHeight != view.MeasuredHeight || _currentRootViewWidth != view.MeasuredWidth)
 					&& this.ViewTreeObserver != null)
 				{
 					// When the keyboard closes Android calls layout but doesn't call remeasure.
