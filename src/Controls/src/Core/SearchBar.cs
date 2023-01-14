@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls
 
 		object ICommandElement.CommandParameter => SearchCommandParameter;
 
-		internal override bool IsEnabledCore =>
+		protected override bool IsEnabledCore =>
 			base.IsEnabledCore && CommandElement.GetCanExecute(this);
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>

@@ -489,7 +489,7 @@ namespace Microsoft.Maui.Controls
 		/// All types that override this property need to also invoke
 		/// the RefreshIsEnabledProperty() method if the value will change.
 		/// </summary>
-		internal virtual bool IsEnabledCore
+		protected virtual bool IsEnabledCore
 		{
 			get
 			{
@@ -1267,7 +1267,7 @@ namespace Microsoft.Maui.Controls
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
 			if (propertyName == null || propertyName == IsEnabledProperty.PropertyName)
-				CommandElement.RefreshPropertyValue(this, IsEnabledProperty, _isEnabledExplicit);
+				this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
 
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
@@ -1276,8 +1276,8 @@ namespace Microsoft.Maui.Controls
 		/// This method must always be called if some event occurs and the value of
 		/// the IsEnabledCore property will change.
 		/// </summary>
-		internal void RefreshIsEnabledProperty() =>
-			CommandElement.RefreshPropertyValue(this, IsEnabledProperty, _isEnabledExplicit);
+		protected void RefreshIsEnabledProperty() =>
+			this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
 
 		void UpdateBoundsComponents(Rect bounds)
 		{

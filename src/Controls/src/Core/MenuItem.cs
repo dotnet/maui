@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
-			CommandElement.RefreshPropertyValue(this, IsEnabledProperty, _isEnabledExplicit);
+			this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
 
 		static object CoerceIsEnabledProperty(BindableObject bindable, object value)
 		{

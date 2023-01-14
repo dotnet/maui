@@ -461,7 +461,7 @@ namespace Microsoft.Maui.Controls
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
 			RefreshIsEnabledProperty();
 
-		internal override bool IsEnabledCore =>
+		protected override bool IsEnabledCore =>
 			base.IsEnabledCore && CommandElement.GetCanExecute(this);
 
 		/// <summary>
