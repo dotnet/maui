@@ -8,6 +8,7 @@ using Android.Views.Animations;
 using AndroidX.Activity;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -190,7 +191,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return handled;
 		}
 
-		sealed class ModalContainer : ViewGroup
+		sealed class ModalContainer : FitWindowsFrameLayout
 		{
 			AView _backgroundView;
 			IMauiContext? _windowMauiContext;
@@ -199,6 +200,7 @@ namespace Microsoft.Maui.Controls.Platform
 			FragmentManager? _fragmentManager;
 			NavigationRootManager? NavigationRootManager => _modalFragment.NavigationRootManager;
 			int _currentRootViewHeight = 0;
+			int _currentRootViewWidth = 0;
 			GenericGlobalLayoutListener? _rootViewLayoutListener;
 			AView? _rootView;
 
@@ -231,13 +233,12 @@ namespace Microsoft.Maui.Controls.Platform
 					.BeginTransaction()
 					.Add(this.Id, _modalFragment)
 					.Commit();
-
-				UpdateMargin();
 			}
 
 			protected override void OnAttachedToWindow()
 			{
 				base.OnAttachedToWindow();
+				UpdateMargin();
 				UpdateRootView(GetWindowRootView());
 			}
 
@@ -259,6 +260,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					rootView.LayoutChange += OnRootViewLayoutChanged;
 					_rootView = rootView;
+					_currentRootViewHeight = _rootView.MeasuredHeight;
+					_currentRootViewWidth = _rootView.MeasuredWidth;
 				}
 			}
 
@@ -278,7 +281,8 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				if (_currentRootViewHeight != view.MeasuredHeight && this.ViewTreeObserver != null)
+				if ((_currentRootViewHeight != view.MeasuredHeight || _currentRootViewWidth != view.MeasuredHeight)
+					&& this.ViewTreeObserver != null)
 				{
 					// When the keyboard closes Android calls layout but doesn't call remeasure.
 					// MY guess is that this is due to the modal not being part of the FitSystemWindowView
@@ -288,13 +292,20 @@ namespace Microsoft.Maui.Controls.Platform
 					// For .NET 8 we'll convert this all over to using a DialogFragment
 					// which means we can delete most of the awkward code here
 					_currentRootViewHeight = view.MeasuredHeight;
+					_currentRootViewWidth = view.MeasuredWidth;
+					if (!this.IsInLayout)
+					{
+						this.InvalidateMeasure(Modal);
+						return;
+					}
+
 					_rootViewLayoutListener ??= new GenericGlobalLayoutListener((listener, view) =>
 					{
-						if (view != null && !view.IsInLayout)
+						if (view != null && !this.IsInLayout)
 						{
 							listener.Invalidate();
 							_rootViewLayoutListener = null;
-							view.InvalidateMeasure(Modal);
+							this.InvalidateMeasure(Modal);
 						}
 					}, this);
 				}
@@ -305,14 +316,27 @@ namespace Microsoft.Maui.Controls.Platform
 				// This sets up the modal container to be offset from the top of window the same
 				// amount as the view it's covering. This will make it so the
 				// ModalContainer takes into account the StatusBar or lack thereof
-				var rootView = GetWindowRootView();
-				int y = (int)rootView.GetLocationOnScreenPx().Y;
+				var decorView = Context?.GetActivity()?.Window?.DecorView;
 
-				if (this.LayoutParameters is ViewGroup.MarginLayoutParams mlp &&
-					mlp.TopMargin != y &&
-					y > 0)
+				if (decorView != null && this.LayoutParameters is ViewGroup.MarginLayoutParams mlp)
 				{
-					mlp.TopMargin = y;
+					var windowInsets = ViewCompat.GetRootWindowInsets(decorView);
+					if (windowInsets != null)
+					{
+						var barInsets = windowInsets.GetInsetsIgnoringVisibility(WindowInsetsCompat.Type.SystemBars());
+
+						if (mlp.TopMargin != barInsets.Top)
+							mlp.TopMargin = barInsets.Top;
+
+						if (mlp.LeftMargin != barInsets.Left)
+							mlp.LeftMargin = barInsets.Left;
+
+						if (mlp.RightMargin != barInsets.Right)
+							mlp.RightMargin = barInsets.Right;
+
+						if (mlp.BottomMargin != barInsets.Bottom)
+							mlp.BottomMargin = barInsets.Bottom;
+					}
 				}
 			}
 
@@ -330,8 +354,8 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				var rootView = GetWindowRootView();
 				UpdateMargin();
+				var rootView = GetWindowRootView();
 
 				widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(rootView.MeasuredWidth);
 				heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(rootView.MeasuredHeight);

@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				targetView.ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
 			}
+
+			_targetView = null;
 		}
 	}
 }
