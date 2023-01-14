@@ -18,16 +18,16 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
+		ViewGroup? _modalParentView;
+		internal void SetModalParentView(ViewGroup viewGroup)
+		{
+			_modalParentView = viewGroup;
+		}
+
 		ViewGroup GetModalParentView()
 		{
-			var currentRootView = (GetCurrentRootView()?.Parent) as ViewGroup;
-
-			if (_window?.PlatformActivity?.GetWindow() == _window)
-			{
-				currentRootView = _window?.PlatformActivity?.Window?.DecorView as ViewGroup;
-			}
-
-			return currentRootView ??
+			return _modalParentView ??
+				_window?.PlatformActivity?.Window?.DecorView as ViewGroup ??
 				throw new InvalidOperationException("Root View Needs to be set");
 		}
 
@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return handled;
 		}
 
-		sealed class ModalContainer : FitWindowsFrameLayout
+		sealed class ModalContainer : ViewGroup
 		{
 			AView _backgroundView;
 			IMauiContext? _windowMauiContext;
