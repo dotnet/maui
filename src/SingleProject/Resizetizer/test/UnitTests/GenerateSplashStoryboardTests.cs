@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using SkiaSharp;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
@@ -34,7 +35,19 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var actual = XElement.Load(actualStream);
 
 			using var expectedBuilder = new StringWriter();
-			GenerateSplashStoryboard.SubstituteStoryboard(expectedBuilder, image, r, g, b, a);
+			GenerateSplashStoryboard.SubstituteStoryboard(expectedBuilder, "MauiSplash.storyboard", image, r, g, b, a);
+			var expected = XElement.Parse(expectedBuilder.ToString());
+
+			Assert.True(XNode.DeepEquals(actual, expected), $"{actualPath} did not match:\n{actual}");
+		}
+
+		void AssertFile(string actualPath)
+		{
+			using var actualStream = File.OpenRead(actualPath);
+			var actual = XElement.Load(actualStream);
+
+			using var expectedBuilder = new StringWriter();
+			GenerateSplashStoryboard.SubstituteStoryboard(expectedBuilder, "MauiNoSplash.storyboard", null, SKColors.White);
 			var expected = XElement.Parse(expectedBuilder.ToString());
 
 			Assert.True(XNode.DeepEquals(actual, expected), $"{actualPath} did not match:\n{actual}");
@@ -55,6 +68,16 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
 			AssertFile(_storyboard, "appiconfg.png", r, g, b, a);
+		}
+
+		[Fact]
+		public void XmlIsValidForNoSplash()
+		{
+			var task = GetNewTask();
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFile(_storyboard);
 		}
 
 		[Theory]
