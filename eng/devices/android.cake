@@ -340,7 +340,7 @@ Task("uitest")
 	};
 	DotNetCoreTool("tool", settings);
 
-
+	Information("Run UITEsts {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath);
 
 	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
@@ -362,10 +362,10 @@ void RunTestWithLocalDotNet(string csproj)
         new DotNetCoreTestSettings
         {
             Configuration = CONFIGURATION,
-            ToolPath = DOTNET_PATH,
+           // ToolPath = DOTNET_PATH,
             NoBuild = false,
             Logger = $"trx;LogFileName={results}",
-            ResultsDirectory = GetTestResultsDirectory(),
+       //     ResultsDirectory = GetTestResultsDirectory(),
             ArgumentCustomization = args => args.Append($"-bl:{binlog}")
         });
 }

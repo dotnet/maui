@@ -51,6 +51,10 @@ steps:
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --app="${{ parameters.app }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
     retryCountOnTaskFailure: 2
+  
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    displayName: publish artifacts
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates
