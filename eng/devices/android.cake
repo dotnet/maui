@@ -11,7 +11,7 @@ string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
-var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
+var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net7.0-android" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
@@ -313,6 +313,19 @@ Task("uitest")
 	lines = AdbShell("getprop debug.mono.log", adbSettings);
 	Information("{0}", string.Join("\n", lines));
 
+	if (USE_DOTNET)
+	{
+		SetDotNetEnvironmentVariables(DOTNET_PATH);
+	}
+
+	//build samples
+	RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
+          //  ["UseWorkload"] = "true",
+            // ["GenerateAppxPackageOnBuild"] = "true",
+           // ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
+        }, maxCpuCount: 1);
+
+	//install apk on the emulator
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args=>args.Append("run xharness android install " +
@@ -321,27 +334,15 @@ Task("uitest")
 			$"--output-directory=\"{TEST_RESULTS}\" " +
 			$"--verbosity=\"Debug\" ")
 	};
-
 	DotNetCoreTool("tool", settings);
 
+
 	RunTestWithLocalDotNet(PROJECT.FullPath);
-	// var settings = new DotNetCoreToolSettings {
-	// 	DiagnosticOutput = true,
-	// 	ArgumentCustomization = args=>args.Append("run xharness android test " +
-	// 		$"--app=\"{TEST_APP}\" " +
-	// 		$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
-	// 		$"--instrumentation=\"{TEST_APP_INSTRUMENTATION}\" " +
-	// 		$"--device-arch=\"{DEVICE_ARCH}\" " +
-	// 		$"--output-directory=\"{TEST_RESULTS}\" " +
-	// 		$"--verbosity=\"Debug\" ")
-	// };
 
-	// DotNetCoreTool("tool", settings);
-
-	// var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
-	// if (!string.IsNullOrEmpty(failed)) {
-	// 	throw new Exception($"At least {failed} test(s) failed.");
-	// }
+	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
+	if (!string.IsNullOrEmpty(failed)) {
+		throw new Exception($"At least {failed} test(s) failed.");
+	}
 });
 
 void RunTestWithLocalDotNet(string csproj)
@@ -358,11 +359,74 @@ void RunTestWithLocalDotNet(string csproj)
         {
             Configuration = CONFIGURATION,
             ToolPath = DOTNET_PATH,
-            NoBuild = true,
+            NoBuild = false,
             Logger = $"trx;LogFileName={results}",
             ResultsDirectory = GetTestResultsDirectory(),
             ArgumentCustomization = args => args.Append($"-bl:{binlog}")
         });
+}
+
+
+void RunMSBuildWithDotNet(
+    string sln,
+    Dictionary<string, string> properties = null,
+    string target = "Build",
+    bool warningsAsError = false,
+    bool restore = true,
+    string targetFramework = null,
+    bool forceDotNetBuild = false,
+    int maxCpuCount = 0)
+{
+    var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
+
+    var name = System.IO.Path.GetFileNameWithoutExtension(sln);
+    var type = useDotNetBuild ? "dotnet" : "msbuild";
+    var binlog = string.IsNullOrEmpty(targetFramework) ?
+        $"\"{GetLogDirectory()}/{name}-{CONFIGURATION}-{target}-{type}.binlog\"" :
+        $"\"{GetLogDirectory()}/{name}-{CONFIGURATION}-{target}-{targetFramework}-{type}.binlog\"";
+    
+    if(USE_DOTNET)
+        SetDotNetEnvironmentVariables(DOTNET_PATH);
+
+    var msbuildSettings = new DotNetCoreMSBuildSettings()
+        .SetConfiguration(CONFIGURATION)
+        .SetMaxCpuCount(maxCpuCount)
+        .WithTarget(target)
+        .EnableBinaryLogger(binlog);
+
+    if (warningsAsError)
+    {
+        msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
+    }
+
+    if (properties != null)
+    {
+        foreach (var property in properties)
+        {
+            msbuildSettings.WithProperty(property.Key, property.Value);
+        }
+    }
+
+    var dotnetBuildSettings = new DotNetCoreBuildSettings
+    {
+        MSBuildSettings = msbuildSettings,
+    };
+
+    dotnetBuildSettings.ArgumentCustomization = args =>
+    {
+        if (!restore)
+            args.Append("--no-restore");
+
+        if (!string.IsNullOrEmpty(targetFramework))
+            args.Append($"-f {targetFramework}");
+
+        return args;
+    };
+
+    if (USE_DOTNET)
+        dotnetBuildSettings.ToolPath = DOTNET_PATH;
+
+    DotNetCoreBuild(sln, dotnetBuildSettings);
 }
 
 RunTarget(TARGET);
