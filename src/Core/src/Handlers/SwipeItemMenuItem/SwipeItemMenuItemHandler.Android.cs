@@ -110,10 +110,11 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateSize()
 		{
-			var textSize = 0;
+			var lineHeight = 0;
 			var contentHeight = 0;
 
 			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
+
 			if (mauiSwipeView == null)
 				return;
 
@@ -121,7 +122,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (PlatformView is TextView textView)
 			{
-				textSize = !string.IsNullOrEmpty(textView.Text) ? (int)textView.TextSize : 0;
+				lineHeight = !string.IsNullOrEmpty(textView.Text) ? (int)textView.LineHeight : 0;
 				var icons = textView.GetCompoundDrawables();
 
 				if (icons.Length > 1 && icons[1] != null)
@@ -131,9 +132,9 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var iconSize = GetIconSize();
-			var density = PlatformView.Context.GetDisplayDensity();
+			var textPadding = 2;
+			var buttonPadding = (int)((contentHeight - (iconSize + lineHeight + textPadding)) / 2);
 
-			var buttonPadding = (int)((contentHeight - (iconSize + textSize)) / density);
 			PlatformView.SetPadding(0, buttonPadding, 0, buttonPadding);
 		}
 
