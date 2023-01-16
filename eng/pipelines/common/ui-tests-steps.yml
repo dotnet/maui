@@ -55,8 +55,8 @@ steps:
     displayName: Publish the $(System.PhaseName) test results
     condition: always()
     inputs:
-      testResultsFormat: NUnit
-      testResultsFiles: '$(TestResultsDirectory)/**/*'
+      testResultsFormat: VSTest
+      testResultsFiles: '$(TestResultsDirectory)/**/*.trx'
       testRunTitle: '$(System.PhaseName)'
 
   - task: PublishBuildArtifacts@1
