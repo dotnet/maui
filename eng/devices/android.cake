@@ -257,7 +257,7 @@ Task("Test")
 });
 
 Task("uitest")
-	.IsDependentOn("Build")
+	//.IsDependentOn("Build")
 	.Does(() =>
 {
 	if (string.IsNullOrEmpty(TEST_APP)) {
@@ -288,6 +288,7 @@ Task("uitest")
 	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
 	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
+	Information("Test project: {0}", PROJECT);
 
 	CleanDirectories(TEST_RESULTS);
 
@@ -312,6 +313,18 @@ Task("uitest")
 	lines = AdbShell("getprop debug.mono.log", adbSettings);
 	Information("{0}", string.Join("\n", lines));
 
+	var settings = new DotNetCoreToolSettings {
+		DiagnosticOutput = true,
+		ArgumentCustomization = args=>args.Append("run xharness android install " +
+			$"--app=\"{TEST_APP}\" " +
+			$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
+			$"--output-directory=\"{TEST_RESULTS}\" " +
+			$"--verbosity=\"Debug\" ")
+	};
+
+	DotNetCoreTool("tool", settings);
+
+	RunTestWithLocalDotNet(PROJECT.FullPath);
 	// var settings = new DotNetCoreToolSettings {
 	// 	DiagnosticOutput = true,
 	// 	ArgumentCustomization = args=>args.Append("run xharness android test " +
@@ -330,5 +343,26 @@ Task("uitest")
 	// 	throw new Exception($"At least {failed} test(s) failed.");
 	// }
 });
+
+void RunTestWithLocalDotNet(string csproj)
+{
+    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
+    var binlog = $"{GetLogDirectory()}/{name}-{CONFIGURATION}.binlog";
+    var results = $"{name}-{CONFIGURATION}.trx";
+
+    if(USE_DOTNET)
+        SetDotNetEnvironmentVariables(DOTNET_PATH);
+
+    DotNetCoreTest(csproj,
+        new DotNetCoreTestSettings
+        {
+            Configuration = CONFIGURATION,
+            ToolPath = DOTNET_PATH,
+            NoBuild = true,
+            Logger = $"trx;LogFileName={results}",
+            ResultsDirectory = GetTestResultsDirectory(),
+            ArgumentCustomization = args => args.Append($"-bl:{binlog}")
+        });
+}
 
 RunTarget(TARGET);
