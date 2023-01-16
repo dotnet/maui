@@ -435,7 +435,7 @@ void RunMSBuildWithDotNet(
 
 void SetDotNetEnvironmentVariables()
 {
-    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = MakeAbsolute(Directory("../../bin/dotnet/")).ToString();
 
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
