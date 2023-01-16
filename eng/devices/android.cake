@@ -365,7 +365,7 @@ void RunTestWithLocalDotNet(string csproj)
            // ToolPath = DOTNET_PATH,
             NoBuild = false,
             Logger = $"trx;LogFileName={results}",
-       //     ResultsDirectory = GetTestResultsDirectory(),
+           	ResultsDirectory = GetTestResultsDirectory(),
             ArgumentCustomization = args => args.Append($"-bl:{binlog}")
         });
 }

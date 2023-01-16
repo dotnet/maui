@@ -52,6 +52,14 @@ steps:
     displayName: $(Agent.JobName)
     retryCountOnTaskFailure: 2
   
+  - task: PublishTestResults@2
+    displayName: Publish the $(System.PhaseName) test results
+    condition: always()
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: '$(TestResultsDirectory)/**/TestResults.xml'
+      testRunTitle: '$(System.PhaseName)'
+      
   - task: PublishBuildArtifacts@1
     condition: always()
     displayName: publish artifacts
