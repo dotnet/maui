@@ -5,6 +5,8 @@
     <WindowsPackageType Condition=" '$(WindowsPackageType)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' == 'WinExe' ">MSIX</WindowsPackageType>
     <WindowsAppSDKSelfContained Condition=" '$(WindowsAppSDKSelfContained)' == '' and '$(WindowsPackageType)' == 'None' and '$(OutputType)' == 'WinExe' ">true</WindowsAppSDKSelfContained>
     <WindowsAppSdkBootstrapInitialize Condition=" '$(WindowsAppSdkBootstrapInitialize)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'WinExe' ">false</WindowsAppSdkBootstrapInitialize>
+    <!-- Workaround to avoid https://github.com/microsoft/WindowsAppSDK/issues/3316 -->
+    <WindowsAppSdkDeploymentManagerInitialize Condition=" '$(WindowsAppSdkDeploymentManagerInitialize)' == '' and '$(EnableMsixTooling)' == 'true' ">false</WindowsAppSdkDeploymentManagerInitialize>
     <PublishAppXPackage Condition=" '$(PublishAppXPackage)' == '' and '$(EnableMsixTooling)' == 'true' and '$(WindowsPackageType)' == 'MSIX' ">true</PublishAppXPackage>
     <PublishReadyToRun Condition=" '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == '' ">true</PublishReadyToRun>
     <_SingleProjectRIDRequired Condition="'$(OutputType)' == 'WinExe'">true</_SingleProjectRIDRequired>
