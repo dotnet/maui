@@ -321,12 +321,12 @@ Task("uitest")
 	}
 
 	//build samples
-	Information("Build Samples with localDotnet: {0}",localDotnet);
-	RunMSBuildWithDotNet("../../Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
-          //  ["UseWorkload"] = "true",
-            // ["GenerateAppxPackageOnBuild"] = "true",
-           // ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        }, maxCpuCount: 1);
+	// Information("Build Samples with localDotnet: {0}",localDotnet);
+	// RunMSBuildWithDotNet("../../Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
+    //       //  ["UseWorkload"] = "true",
+    //         // ["GenerateAppxPackageOnBuild"] = "true",
+    //        // ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
+    //     }, maxCpuCount: 1);
 
 	//install apk on the emulator
 	Information("Install with xharness: {0}",TEST_APP);

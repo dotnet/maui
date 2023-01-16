@@ -42,6 +42,9 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
     displayName: 'Build the MSBuild Tasks'
 
+  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="Release" --verbosity=diagnostic
+    displayName: 'Build the samples'
+
   - script: appium server --base-path=/wd/hub &
     displayName: "Start Appium server"
 
