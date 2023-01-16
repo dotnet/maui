@@ -115,8 +115,8 @@ stages:
         - name: controls
           desc: Controls
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-          android: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj
-          app: $(System.DefaultWorkingDirectory)/src/Controls/tests/Maui.Controls.Sample.Sandbox.AppiumTests/Maui.Controls.Sample.Sandbox.AppiumTests.csproj
+          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/Maui.Controls.Sample.Sandbox.AppiumTests/Maui.Controls.Sample.Sandbox.AppiumTests.csproj
+          app: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.Sandbox/bin/Release/net7.0-android/com.microsoft.maui.sandbox-Signed.apk
           iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
           ios: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj
         # - name: blazorwebview
