@@ -50,16 +50,16 @@ steps:
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --app="${{ parameters.app }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
-    retryCountOnTaskFailure: 2
+  #  retryCountOnTaskFailure: 2
   
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results
     condition: always()
     inputs:
-      testResultsFormat: xUnit
+      testResultsFormat: NUnit
       testResultsFiles: '$(TestResultsDirectory)/**/TestResults.xml'
       testRunTitle: '$(System.PhaseName)'
-      
+
   - task: PublishBuildArtifacts@1
     condition: always()
     displayName: publish artifacts
