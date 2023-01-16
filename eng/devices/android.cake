@@ -314,12 +314,14 @@ Task("uitest")
 	lines = AdbShell("getprop debug.mono.log", adbSettings);
 	Information("{0}", string.Join("\n", lines));
 
-	if (USE_DOTNET)
+
+	if (localDotnet)
 	{
-		SetDotNetEnvironmentVariables(DOTNET_PATH);
+		SetDotNetEnvironmentVariables();
 	}
 
 	//build samples
+	Information("Build Samples with localDotnet: {0}",localDotnet));
 	RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
           //  ["UseWorkload"] = "true",
             // ["GenerateAppxPackageOnBuild"] = "true",
@@ -327,6 +329,7 @@ Task("uitest")
         }, maxCpuCount: 1);
 
 	//install apk on the emulator
+	Information("Install with xharness: {0}",TEST_APP));
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args=>args.Append("run xharness android install " +
