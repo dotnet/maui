@@ -10,26 +10,17 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		public static ICanvasResourceCreator GlobalCreator
 		{
-			get => _globalCreator;
+			get => _globalCreator ?? CanvasDevice.GetSharedDevice();
 			set => _globalCreator = value;
 		}
 
 		public static ICanvasResourceCreator ThreadLocalCreator
 		{
+			get => _threadLocalCreator.Value;
 			set => _threadLocalCreator.Value = value;
 		}
 
-		public static ICanvasResourceCreator Creator
-		{
-			get
-			{
-				var value = _threadLocalCreator.Value;
-				if (value == null)
-					return _globalCreator;
-
-				return value;
-			}
-
-		}
+		public static ICanvasResourceCreator Creator =>
+			ThreadLocalCreator ?? GlobalCreator;
 	}
 }
