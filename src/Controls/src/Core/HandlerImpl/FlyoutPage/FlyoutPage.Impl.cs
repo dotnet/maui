@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using Microsoft.Maui.Devices;
+﻿using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {

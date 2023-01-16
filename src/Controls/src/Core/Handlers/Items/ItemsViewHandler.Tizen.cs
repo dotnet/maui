@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿#nullable disable
+using Microsoft.Maui.Graphics;
 using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
