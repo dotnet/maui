@@ -43,7 +43,6 @@
                         Mode="Reveal">
                         <SwipeItem
                             Text="View"
-                            IconImageSource="books.png"
                             BackgroundColor="Green"/>
                         <SwipeItem
                             Text="Test (Ajg)"
@@ -77,7 +76,6 @@
                         Mode="Reveal">
                         <SwipeItem
                             Text="View"
-                            IconImageSource="books.png"
                             BackgroundColor="Green"/>
                         <SwipeItem
                             Text="Test (Ajg)"
