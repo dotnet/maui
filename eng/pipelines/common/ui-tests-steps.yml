@@ -26,8 +26,8 @@ steps:
         npm install -g appium@next
         appium -v
         appium driver install uiautomator2
-      displayName: "Install Appium"
-      continueOnError: true
+    displayName: "Install Appium"
+    continueOnError: true
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
