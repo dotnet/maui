@@ -10,6 +10,7 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
+var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net7.0-android" : ""));
@@ -351,8 +352,8 @@ void RunTestWithLocalDotNet(string csproj)
     var binlog = $"{GetLogDirectory()}/{name}-{CONFIGURATION}.binlog";
     var results = $"{name}-{CONFIGURATION}.trx";
 
-    if(USE_DOTNET)
-        SetDotNetEnvironmentVariables(DOTNET_PATH);
+    if(localDotnet)
+        SetDotNetEnvironmentVariables();
 
     DotNetCoreTest(csproj,
         new DotNetCoreTestSettings
@@ -385,8 +386,8 @@ void RunMSBuildWithDotNet(
         $"\"{GetLogDirectory()}/{name}-{CONFIGURATION}-{target}-{type}.binlog\"" :
         $"\"{GetLogDirectory()}/{name}-{CONFIGURATION}-{target}-{targetFramework}-{type}.binlog\"";
     
-    if(USE_DOTNET)
-        SetDotNetEnvironmentVariables(DOTNET_PATH);
+    if(localDotnet)
+        SetDotNetEnvironmentVariables();
 
     var msbuildSettings = new DotNetCoreMSBuildSettings()
         .SetConfiguration(CONFIGURATION)
@@ -427,6 +428,22 @@ void RunMSBuildWithDotNet(
         dotnetBuildSettings.ToolPath = DOTNET_PATH;
 
     DotNetCoreBuild(sln, dotnetBuildSettings);
+}
+
+void SetDotNetEnvironmentVariables()
+{
+    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+
+    SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
+    SetEnvironmentVariable("DOTNET_ROOT", dotnet);
+    SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
+    SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
+    SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
+    SetEnvironmentVariable("PATH", dotnet, prepend: true);
+
+    // Get "full" .binlog in Project System Tools
+    if (HasArgument("dbg"))
+        SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 
 RunTarget(TARGET);
