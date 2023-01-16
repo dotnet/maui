@@ -329,7 +329,7 @@ Task("uitest")
         }, maxCpuCount: 1);
 
 	//install apk on the emulator
-	Information("Install with xharness: {0}",TEST_APP));
+	Information("Install with xharness: {0}",TEST_APP);
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args=>args.Append("run xharness android install " +
