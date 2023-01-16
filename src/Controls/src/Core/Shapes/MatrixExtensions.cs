@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿#nullable disable
+using System.Numerics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {

@@ -255,6 +255,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.Design.UnitTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests.Shared", "src\Core\tests\DeviceTests.Shared\Core.DeviceTests.Shared.csproj", "{66CC98E3-6A1A-4C44-A23C-B575E82106EC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.DeviceTests", "src\Graphics\tests\DeviceTests\Graphics.DeviceTests.csproj", "{34969E49-FA6E-41BB-9813-5689BB14021E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -637,6 +639,12 @@ Global
 		{66CC98E3-6A1A-4C44-A23C-B575E82106EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66CC98E3-6A1A-4C44-A23C-B575E82106EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66CC98E3-6A1A-4C44-A23C-B575E82106EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34969E49-FA6E-41BB-9813-5689BB14021E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34969E49-FA6E-41BB-9813-5689BB14021E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34969E49-FA6E-41BB-9813-5689BB14021E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{34969E49-FA6E-41BB-9813-5689BB14021E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34969E49-FA6E-41BB-9813-5689BB14021E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34969E49-FA6E-41BB-9813-5689BB14021E}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -755,6 +763,7 @@ Global
 		{F351A992-18E4-473C-8ADD-2BA0BAA7B5A2} = {1BA0121E-0B83-4C8F-81BE-C293E7E35DCE}
 		{F68932B0-81A2-4CC3-A4F7-28091EE91B23} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{66CC98E3-6A1A-4C44-A23C-B575E82106EC} = {C564DDD6-DE79-45CD-88EA-3F690481572A}
+		{34969E49-FA6E-41BB-9813-5689BB14021E} = {936C47A9-A7EA-4FBD-8733-CED1D4100E69}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

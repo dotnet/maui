@@ -1,3 +1,4 @@
+#nullable disable
 using Tizen.UIExtensions.NUI;
 using TCollectionViewSelectionMode = Tizen.UIExtensions.NUI.CollectionViewSelectionMode;
 using TItemSizingStrategy = Tizen.UIExtensions.NUI.ItemSizingStrategy;

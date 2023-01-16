@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;

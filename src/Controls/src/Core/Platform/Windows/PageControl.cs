@@ -1,3 +1,4 @@
+#nullable disable
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.UI.Xaml;
