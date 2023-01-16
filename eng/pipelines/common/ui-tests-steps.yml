@@ -11,7 +11,7 @@ steps:
   - template: provision.yml
     parameters:
       platform: macos
-      skipXcode: ${{ eq(parameters.platform, 'android') }}
+      skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - task: NodeTool@0
