@@ -34,7 +34,6 @@ Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
-Information("DOTNET_PATH: {0}", DOTNET_PATH);
 
 Setup(context =>
 {
@@ -135,7 +134,7 @@ Task("Test")
 	.Does(() =>
 {
 	if (string.IsNullOrEmpty(TEST_APP)) {
-		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
 		var binDir = USE_DOTNET
 			? PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
