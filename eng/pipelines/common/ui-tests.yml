@@ -37,6 +37,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: android
+                      version: ${{ api }}
                       path: ${{ project.android }}
                       app: ${{ project.app }}
                       device: android-emulator-32_${{ api }}
@@ -62,7 +63,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: ios
-                      version: version
+                      version: ${{ version }}
                       path: ${{ project.ios }}
                       app: ${{ project.app }}
                       ${{ if eq(version, 'latest') }}:

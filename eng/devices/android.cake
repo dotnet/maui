@@ -3,10 +3,11 @@
 #load "../cake/helpers.cake"
 
 string TARGET = Argument("target", "Test");
+const string defaultVersion = "30";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");
-string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? "android-emulator-32_30");
+string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-32_{defaultVersion}");
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
@@ -21,6 +22,8 @@ FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("ANDROID_
 var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TEST_APP_PACKAGE_NAME") ?? "");
 var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
+
+string androidVersion = Argument("version", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? defaultVersion);
 
 // other
 string CONFIGURATION = "Debug"; // needs to be debug so unit tests get discovered

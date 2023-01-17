@@ -22,7 +22,7 @@ var TEST_RESULTS = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS") ?
 
 //these are for appium iOS UITests
 string udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
-string iosVersion = Argument("iosversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? defaultVersion);
+string iosVersion = Argument("version", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? defaultVersion);
 
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
