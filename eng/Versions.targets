@@ -6,6 +6,7 @@
  <PropertyGroup>
     <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
     <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' == '' and '$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
+    <GitBaseVersionRegex>v?(?&lt;MAJOR&gt;\d+)\.(?&lt;MINOR&gt;\d+)(?:\-(?&lt;LABEL&gt;[\dA-Za-z\-\.]+))?$|^v?(?&lt;MAJOR&gt;\d+)\.(?&lt;MINOR&gt;\d+)\.(?&lt;PATCH&gt;\d+)\.(?&lt;BUILD&gt;\d+)$|^v?(?&lt;MAJOR&gt;\d+)\.(?&lt;MINOR&gt;\d+)\.(?&lt;PATCH&gt;\d+)(?:\-(?&lt;LABEL&gt;[\dA-Za-z\-\.]+))?$|^(?&lt;LABEL&gt;[\dA-Za-z\-\.]+)\-v?(?&lt;MAJOR&gt;\d+)\.(?&lt;MINOR&gt;\d+)\.(?&lt;PATCH&gt;\d+)$</GitBaseVersionRegex>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -72,18 +73,21 @@
       <VersionMetadataLabel>@(VersionMetadata -> '%(Identity)', '-')</VersionMetadataLabel>
       <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
       <Version>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</Version>
-      <PackageReferenceVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageReferenceVersion>
+      <PackageReferenceVersion Condition="!$(CI)">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageReferenceVersion>
       <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)$(GitSemVerDashLabel).$(BUILDVERSION)</PackageReferenceVersion>
-      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</PackageReferenceVersion>
-      <VSComponentVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)</VSComponentVersion>
+      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == '' and '$(GitSemVerBuild)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch).$(GitSemVerBuild)</PackageReferenceVersion>
+      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == '' and '$(GitSemVerBuild)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</PackageReferenceVersion>
+      <VSComponentVersion Condition="!$(CI)">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)</VSComponentVersion>
       <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION)</VSComponentVersion>
-      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch).0</VSComponentVersion>
+      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == '' and '$(GitSemVerBuild)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch).$(GitSemVerBuild)</VSComponentVersion>
+      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == '' and '$(GitSemVerBuild)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch).0</VSComponentVersion>
       <PackageVersion>$(PackageReferenceVersion)$(VersionMetadataPlusLabel)</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup>
       <InformationalVersion>$(PackageVersion)</InformationalVersion>
-      <FileVersion>$(Version).$(GitCommits)</FileVersion>
+      <FileVersion Condition="'$(GitSemVerBuild)' != ''">$(Version).$(GitSemVerBuild)</FileVersion>
+      <FileVersion Condition="'$(GitSemVerBuild)' == ''">$(Version).$(GitCommits)</FileVersion>
       <AssemblyVersion>1.0.0.0</AssemblyVersion> <!-- THIS SHALL REMAIN 1.0.0.0 -->
     </PropertyGroup>
 
@@ -100,6 +104,17 @@
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
     <Message Condition="$(CI)" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
+  </Target>
+
+  <Target Name="_After_GitPopulateVersionInfo" AfterTargets="_GitPopulateVersionInfo">
+    <PropertyGroup>
+      <GitBaseVersionBuild>$([System.Text.RegularExpressions.Regex]::Match($(GitBaseVersion), $(GitBaseVersionRegex)).Groups['BUILD'].Value)</GitBaseVersionBuild>
+      <GitSemVerBuild Condition="'$(GitBaseVersionBuild)' != ''">$([MSBuild]::Add('$(GitBaseVersionBuild)', '$(GitCommits)'))</GitSemVerBuild>
+      <GitSemVerPatch Condition="'$(GitBaseVersionBuild)' != ''">$(GitBaseVersionPatch)</GitSemVerPatch>
+    </PropertyGroup>
+    <ItemGroup>
+      <GitInfo Update="@(GitInfo)" GitSemVerPatch="$(GitSemVerPatch)" GitBaseVersionBuild="$(GitBaseVersionBuild)" GitSemVerBuild="$(GitSemVerBuild)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="VersionInfoReport" DependsOnTargets="SetVersions">
