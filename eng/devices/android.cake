@@ -124,7 +124,7 @@ Teardown(context =>
 	if (emulatorProcess == null || !DEVICE_BOOT || TARGET.ToLower() == "boot")
 		return;
 
-	// stop and cleanup the emulator
+	//stop and cleanup the emulator
 	AdbEmuKill(adbSettings);
 
 	System.Threading.Thread.Sleep(5000);
@@ -267,7 +267,7 @@ Task("uitest")
 		
 		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
 		Information("Test app bin folder {0}", binFolder);
-		var binDir = binFolder.Combine(CONFIGURATION + "/net7.0-android").FullPath;
+		var binDir = binFolder.Combine("Release/net7.0-android").FullPath;
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;
