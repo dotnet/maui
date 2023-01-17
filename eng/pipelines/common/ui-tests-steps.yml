@@ -11,13 +11,13 @@ steps:
   - template: provision.yml
     parameters:
       platform: macos
-      skipXcode: ${{ eq(parameters.platform, 'android') }}
+      skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - task: NodeTool@0
     inputs:
       versionSpec: "18.13.0"
-    displauName: "Install node"
+    displayName: "Install node"
 
   - task: PowerShell@2
     inputs:
@@ -28,6 +28,7 @@ steps:
         appium -v
         appium driver install uiautomator2
     displayName: "Install Appium"
+    continueOnError: true
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
@@ -42,12 +43,26 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
     displayName: 'Build the MSBuild Tasks'
 
-  - script: start appium server --base-path=/wd/hub
+  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="Release" --verbosity=diagnostic
+    displayName: 'Build the samples'
+
+  - script: appium server --base-path=/wd/hub &
     displayName: "Start Appium server"
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --app="${{ parameters.app }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
-    retryCountOnTaskFailure: 2
+  
+  - task: PublishTestResults@2
+    displayName: Publish the $(System.PhaseName) test results
+    condition: always()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '$(TestResultsDirectory)/*.trx'
+      testRunTitle: '$(System.PhaseName)'
+
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    displayName: publish artifacts
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates

@@ -7,6 +7,7 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string TestTFM = Argument("testtfm", "");
+var useNuget = Argument("usenuget", false);
 if (TestTFM == "default")
     TestTFM = "";
 
@@ -98,11 +99,17 @@ Task("dotnet-samples")
     {
         var tempDir = PrepareSeparateBuildContext("samplesTest", false);
 
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
-            ["UseWorkload"] = "true",
-            // ["GenerateAppxPackageOnBuild"] = "true",
-            ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        }, maxCpuCount: 1);
+        var properties = new Dictionary<string, string>();
+
+        if(useNuget)
+        {
+            properties = new Dictionary<string, string> {
+                ["UseWorkload"] = "true",
+                // ["GenerateAppxPackageOnBuild"] = "true",
+                ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
+            };
+        }
+        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, maxCpuCount: 1);
     });
 
 Task("dotnet-templates")

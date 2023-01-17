@@ -10,8 +10,9 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
+var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var USE_DOTNET = Argument("dotnet", true);
-var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
+var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net7.0-android" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
@@ -257,7 +258,7 @@ Task("Test")
 });
 
 Task("uitest")
-	.IsDependentOn("Build")
+	//.IsDependentOn("Build")
 	.Does(() =>
 {
 	if (string.IsNullOrEmpty(TEST_APP)) {
@@ -288,6 +289,7 @@ Task("uitest")
 	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
 	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
+	Information("Test project: {0}", PROJECT);
 
 	CleanDirectories(TEST_RESULTS);
 
@@ -312,23 +314,139 @@ Task("uitest")
 	lines = AdbShell("getprop debug.mono.log", adbSettings);
 	Information("{0}", string.Join("\n", lines));
 
-	// var settings = new DotNetCoreToolSettings {
-	// 	DiagnosticOutput = true,
-	// 	ArgumentCustomization = args=>args.Append("run xharness android test " +
-	// 		$"--app=\"{TEST_APP}\" " +
-	// 		$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
-	// 		$"--instrumentation=\"{TEST_APP_INSTRUMENTATION}\" " +
-	// 		$"--device-arch=\"{DEVICE_ARCH}\" " +
-	// 		$"--output-directory=\"{TEST_RESULTS}\" " +
-	// 		$"--verbosity=\"Debug\" ")
-	// };
 
-	// DotNetCoreTool("tool", settings);
+	if (localDotnet)
+	{
+		SetDotNetEnvironmentVariables();
+	}
 
-	// var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
-	// if (!string.IsNullOrEmpty(failed)) {
-	// 	throw new Exception($"At least {failed} test(s) failed.");
-	// }
+	//build samples
+	// Information("Build Samples with localDotnet: {0}",localDotnet);
+	// RunMSBuildWithDotNet("../../Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
+    //       //  ["UseWorkload"] = "true",
+    //         // ["GenerateAppxPackageOnBuild"] = "true",
+    //        // ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
+    //     }, maxCpuCount: 1);
+
+	//install apk on the emulator
+	Information("Install with xharness: {0}",TEST_APP);
+	var settings = new DotNetCoreToolSettings {
+		DiagnosticOutput = true,
+		ArgumentCustomization = args=>args.Append("run xharness android install " +
+			$"--app=\"{TEST_APP}\" " +
+			$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
+			$"--output-directory=\"{TEST_RESULTS}\" " +
+			$"--verbosity=\"Debug\" ")
+	};
+	DotNetCoreTool("tool", settings);
+
+	Information("Run UITEsts {0}",PROJECT.FullPath);
+	RunTestWithLocalDotNet(PROJECT.FullPath);
+
+	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
+	if (!string.IsNullOrEmpty(failed)) {
+		throw new Exception($"At least {failed} test(s) failed.");
+	}
 });
+
+void RunTestWithLocalDotNet(string csproj)
+{
+    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
+    var binlog = $"{GetLogDirectory()}/{name}-{CONFIGURATION}.binlog";
+    var results = $"{name}-{CONFIGURATION}.trx";
+
+    if(localDotnet)
+        SetDotNetEnvironmentVariables();
+
+    DotNetCoreTest(csproj,
+        new DotNetCoreTestSettings
+        {
+            Configuration = CONFIGURATION,
+           // ToolPath = DOTNET_PATH,
+            NoBuild = false,
+            Logger = $"trx;LogFileName={results}",
+           	ResultsDirectory = GetTestResultsDirectory(),
+            ArgumentCustomization = args => args.Append($"-bl:{binlog}")
+        });
+}
+
+
+void RunMSBuildWithDotNet(
+    string sln,
+    Dictionary<string, string> properties = null,
+    string target = "Build",
+    bool warningsAsError = false,
+    bool restore = true,
+    string targetFramework = null,
+    bool forceDotNetBuild = false,
+    int maxCpuCount = 0)
+{
+    var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
+
+    var name = System.IO.Path.GetFileNameWithoutExtension(sln);
+    var type = useDotNetBuild ? "dotnet" : "msbuild";
+    var binlog = string.IsNullOrEmpty(targetFramework) ?
+        $"\"{GetLogDirectory()}/{name}-{CONFIGURATION}-{target}-{type}.binlog\"" :
+        $"\"{GetLogDirectory()}/{name}-{CONFIGURATION}-{target}-{targetFramework}-{type}.binlog\"";
+    
+    if(localDotnet)
+        SetDotNetEnvironmentVariables();
+
+    var msbuildSettings = new DotNetCoreMSBuildSettings()
+        .SetConfiguration(CONFIGURATION)
+        .SetMaxCpuCount(maxCpuCount)
+        .WithTarget(target)
+        .EnableBinaryLogger(binlog);
+
+    if (warningsAsError)
+    {
+        msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
+    }
+
+    if (properties != null)
+    {
+        foreach (var property in properties)
+        {
+            msbuildSettings.WithProperty(property.Key, property.Value);
+        }
+    }
+
+    var dotnetBuildSettings = new DotNetCoreBuildSettings
+    {
+        MSBuildSettings = msbuildSettings,
+    };
+
+    dotnetBuildSettings.ArgumentCustomization = args =>
+    {
+        if (!restore)
+            args.Append("--no-restore");
+
+        if (!string.IsNullOrEmpty(targetFramework))
+            args.Append($"-f {targetFramework}");
+
+        return args;
+    };
+
+    if (USE_DOTNET)
+        dotnetBuildSettings.ToolPath = DOTNET_PATH;
+
+    DotNetCoreBuild(sln, dotnetBuildSettings);
+}
+
+void SetDotNetEnvironmentVariables()
+{
+    var dotnet = MakeAbsolute(Directory("../../bin/dotnet/")).ToString();
+
+    SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
+    SetEnvironmentVariable("DOTNET_ROOT", dotnet);
+    SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
+    SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
+    SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
+    SetEnvironmentVariable("PATH", dotnet, prepend: true);
+
+    // Get "full" .binlog in Project System Tools
+    if (HasArgument("dbg"))
+        SetEnvironmentVariable("MSBuildDebugEngine", "1");
+}
 
 RunTarget(TARGET);
