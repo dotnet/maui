@@ -17,6 +17,7 @@ steps:
   - task: NodeTool@0
     inputs:
       versionSpec: "18.13.0"
+    displayName: "Install node"
 
   - task: PowerShell@2
     inputs:
