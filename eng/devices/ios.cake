@@ -225,7 +225,12 @@ Task("uitest")
 	}
 
 	Information("Run UITests {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, EnvironmentVariable("DOTNET_ROOT"));
+
+	var properties = new Dictionary<string,string>
+	{
+		{ "ExtraDefineConstants" , "IOSUITEST" } 
+	};
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra : properties);
 });
 
 RunTarget(TARGET);
