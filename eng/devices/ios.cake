@@ -228,7 +228,7 @@ Task("uitest")
 
 	var properties = new Dictionary<string,string>
 	{
-		{ "ExtraDefineConstants" , "IOSUITEST" } 
+		["ExtraDefineConstants"] = "IOSUITEST"
 	};
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra : properties);
 });

@@ -6,16 +6,13 @@ using OpenQA.Selenium.Appium;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
-#if ANDROIDUITEST
+#if ANDROID
 	[TestFixture(TestDevice.Android)]
-#endif
-#if IOSUITEST
+#elif IOSUITEST
 	[TestFixture(TestDevice.iOS)]
-#endif
-#if MACUITEST
+#elif MACUITEST
 	[TestFixture(TestDevice.Mac)]
 #endif
-	// [TestFixture(TestDevice.Windows)]
 	public class AppiumPlatformsTestBase : AppiumUITestBase
 	{
 		TestDevice _testDevice;
