@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="Type[@FullName='Microsoft.Maui.Controls.IndicatorView']/Docs/*" />
 	[ContentProperty(nameof(IndicatorLayout))]
-	public partial class IndicatorView : TemplatedView
+	public partial class IndicatorView : TemplatedView, IEnumerable
 	{
 		const int DefaultPadding = 4;
 
@@ -65,6 +65,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (IBindableLayout)GetValue(IndicatorLayoutProperty);
 			set => SetValue(IndicatorLayoutProperty, value);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return IndicatorLayout;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='Position']/Docs/*" />

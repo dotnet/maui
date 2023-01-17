@@ -1,4 +1,5 @@
 #nullable disable
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Devices;
@@ -6,7 +7,7 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty("Platforms")]
-	public class OnPlatform<T>
+	public class OnPlatform<T> : IEnumerable
 	{
 		public OnPlatform()
 		{
@@ -14,6 +15,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public IList<On> Platforms { get; private set; }
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Platforms.GetEnumerator();
 
 		bool hasDefault;
 		T @default;
@@ -58,12 +62,17 @@ namespace Microsoft.Maui.Controls
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="Type[@FullName='Microsoft.Maui.Controls.On']/Docs/*" />
 	[ContentProperty("Value")]
-	public class On
+	public class On : IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="//Member[@MemberName='Platform']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> Platform { get; set; }
 		/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="//Member[@MemberName='Value']/Docs/*" />
 		public object Value { get; set; }
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Value;
+		}
 	}
 }

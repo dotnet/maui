@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Setter']/Docs/*" />
 	[ContentProperty(nameof(Value))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.SetterValueProvider")]
-	public sealed class Setter : IValueProvider
+	public sealed class Setter : IValueProvider, IEnumerable
 	{
 		readonly ConditionalWeakTable<BindableObject, object> _originalValues = new ConditionalWeakTable<BindableObject, object>();
 
@@ -23,6 +24,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='Value']/Docs/*" />
 		public object Value { get; set; }
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Value;
+		}
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
 		{

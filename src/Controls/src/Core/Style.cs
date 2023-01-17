@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="Type[@FullName='Microsoft.Maui.Controls.Style']/Docs/*" />
 	[ContentProperty(nameof(Setters))]
-	public sealed class Style : IStyle
+	public sealed class Style : IStyle, IEnumerable
 	{
 		internal const string StyleClassPrefix = "Microsoft.Maui.Controls.StyleClass.";
 
@@ -90,6 +91,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Setters']/Docs/*" />
 		public IList<Setter> Setters { get; }
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Setters.GetEnumerator();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Triggers']/Docs/*" />
 		public IList<TriggerBase> Triggers => _triggers ??= new AttachedCollection<TriggerBase>();

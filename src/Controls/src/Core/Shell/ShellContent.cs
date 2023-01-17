@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellContent']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
+	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement, IEnumerable
 	{
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(ShellContent), null,
@@ -39,6 +40,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => GetValue(ContentProperty);
 			set => SetValue(ContentProperty, value);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Content;
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='ContentTemplate']/Docs/*" />

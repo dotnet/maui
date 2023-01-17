@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellItem']/Docs/*" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement
+	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement, IEnumerable
 	{
 		#region PropertyKeys
 
@@ -181,6 +182,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='Items']/Docs/*" />
 		public IList<ShellSection> Items => (IList<ShellSection>)GetValue(ItemsProperty);
 		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Items.GetEnumerator();
 
 		internal bool IsVisibleItem => Parent is Shell shell && shell?.CurrentItem == this;
 

@@ -1,7 +1,9 @@
-﻿namespace Microsoft.Maui.Controls
+﻿using System.Collections;
+
+namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(ImageSource))]
-	class ImageBrush : Brush
+	class ImageBrush : Brush, IEnumerable
 	{
 		public ImageBrush()
 		{
@@ -22,6 +24,11 @@
 		{
 			get => (ImageSource?)GetValue(ImageSourceProperty);
 			set => SetValue(ImageSourceProperty, value);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return ImageSource;
 		}
 
 		public override bool Equals(object? obj) =>

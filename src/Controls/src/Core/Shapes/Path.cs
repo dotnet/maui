@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Path']/Docs/*" />
-	public sealed partial class Path : Shape
+	[ContentProperty(nameof(Data))]
+	public sealed partial class Path : Shape, IEnumerable
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Path() : base()
@@ -33,6 +35,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			set { SetValue(DataProperty, value); }
 			get { return (Geometry)GetValue(DataProperty); }
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Data;
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='RenderTransform']/Docs/*" />

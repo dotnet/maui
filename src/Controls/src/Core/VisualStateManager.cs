@@ -361,7 +361,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualStateGroup']/Docs/*" />
 	[RuntimeNameProperty(nameof(Name))]
 	[ContentProperty(nameof(States))]
-	public sealed class VisualStateGroup
+	public sealed class VisualStateGroup : IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public VisualStateGroup()
@@ -377,6 +377,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='States']/Docs/*" />
 		public IList<VisualState> States { get; }
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> States.GetEnumerator();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='CurrentState']/Docs/*" />
 		public VisualState CurrentState { get; internal set; }
@@ -565,7 +568,8 @@ namespace Microsoft.Maui.Controls
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualState']/Docs/*" />
 	[RuntimeNameProperty(nameof(Name))]
-	public sealed class VisualState
+	[ContentProperty(nameof(Setters))]
+	public sealed class VisualState : IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public VisualState()
@@ -583,6 +587,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="//Member[@MemberName='TargetType']/Docs/*" />
 		public Type TargetType { get; set; }
 		internal VisualStateGroup VisualStateGroup { get; set; }
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Setters.GetEnumerator();
 
 		internal VisualState Clone()
 		{

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -12,7 +13,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController, IEnumerable
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -110,6 +111,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Page?)GetValue(PageProperty);
 			set => SetValue(PageProperty, value);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Page;
 		}
 
 		public double X

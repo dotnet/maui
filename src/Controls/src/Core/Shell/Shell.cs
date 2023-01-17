@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs/*" />
 	[ContentProperty(nameof(Items))]
-	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>
+	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IEnumerable
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
 		public Page CurrentPage => (CurrentSection as IShellSectionController)?.PresentedPage;
@@ -1046,6 +1046,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Items']/Docs/*" />
 		public IList<ShellItem> Items => (IList<ShellItem>)GetValue(ItemsProperty);
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Items.GetEnumerator();
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='ItemTemplate']/Docs/*" />
 		public DataTemplate ItemTemplate

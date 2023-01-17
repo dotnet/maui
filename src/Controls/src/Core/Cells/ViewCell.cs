@@ -1,4 +1,5 @@
 #nullable disable
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ViewCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.ViewCell']/Docs/*" />
 	[ContentProperty("View")]
-	public class ViewCell : Cell
+	public class ViewCell : Cell, IEnumerable
 	{
 		ReadOnlyCollection<Element> _logicalChildren;
 
@@ -44,6 +45,11 @@ namespace Microsoft.Maui.Controls
 				ForceUpdateSize();
 				OnPropertyChanged();
 			}
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return View;
 		}
 
 		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren ?? base.LogicalChildrenInternal;

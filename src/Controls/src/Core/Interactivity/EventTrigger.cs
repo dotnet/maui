@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.EventTrigger']/Docs/*" />
 	[ContentProperty("Actions")]
-	public sealed class EventTrigger : TriggerBase
+	public sealed class EventTrigger : TriggerBase, IEnumerable
 	{
 		static readonly MethodInfo s_handlerinfo = typeof(EventTrigger).GetRuntimeMethods().Single(mi => mi.Name == "OnEventTriggered" && mi.IsPublic == false);
 		readonly List<BindableObject> _associatedObjects = new List<BindableObject>();
@@ -28,6 +29,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="//Member[@MemberName='Actions']/Docs/*" />
 		public IList<TriggerAction> Actions { get; }
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Actions.GetEnumerator();
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="//Member[@MemberName='Event']/Docs/*" />
 		public string Event

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathFigure']/Docs/*" />
 	[ContentProperty("Segments")]
-	public sealed class PathFigure : BindableObject, IAnimatable
+	public sealed class PathFigure : BindableObject, IAnimatable, IEnumerable
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public PathFigure()
@@ -44,6 +45,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(SegmentsProperty, value); }
 			get { return (PathSegmentCollection)GetValue(SegmentsProperty); }
 		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Segments.GetEnumerator();
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='StartPoint']/Docs/*" />
 		public Point StartPoint

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableView']/Docs/*" />
 	[ContentProperty(nameof(Root))]
-	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
+	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement, IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='RowHeightProperty']/Docs/*" />
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(TableView), -1);
@@ -88,6 +89,9 @@ namespace Microsoft.Maui.Controls
 				OnModelChanged();
 			}
 		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Root.GetEnumerator();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='RowHeight']/Docs/*" />
 		public int RowHeight

@@ -1,8 +1,11 @@
 #nullable disable
+using System.Collections;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polygon']/Docs/*" />
-	public sealed partial class Polygon : Shape
+	[ContentProperty(nameof(Points))]
+	public sealed partial class Polygon : Shape, IEnumerable
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Polygon() : base()
@@ -28,6 +31,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(PointsProperty, value); }
 			get { return (PointCollection)GetValue(PointsProperty); }
 		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Points.GetEnumerator();
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='FillRule']/Docs/*" />
 		public FillRule FillRule

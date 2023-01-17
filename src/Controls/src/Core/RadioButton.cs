@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
@@ -10,7 +11,8 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadioButton']/Docs/*" />
-	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement
+	[ContentProperty(nameof(Content))]
+	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement, IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CheckedVisualState']/Docs/*" />
 		public const string CheckedVisualState = "Checked";
@@ -100,6 +102,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => GetValue(ContentProperty);
 			set => SetValue(ContentProperty, value);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Content;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='Value']/Docs/*" />

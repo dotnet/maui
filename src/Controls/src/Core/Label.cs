@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.Label']/Docs/*" />
 	[ContentProperty(nameof(Text))]
-	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement
+	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement, IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='HorizontalTextAlignmentProperty']/Docs/*" />
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
@@ -155,6 +155,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(TextProperty); }
 			set { SetValue(TextProperty, value); }
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Text;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextColor']/Docs/*" />

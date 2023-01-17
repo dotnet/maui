@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/GradientBrush.xml" path="Type[@FullName='Microsoft.Maui.Controls.GradientBrush']/Docs/*" />
 	[ContentProperty(nameof(GradientStops))]
-	public abstract class GradientBrush : Brush
+	public abstract class GradientBrush : Brush, IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/GradientBrush.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public GradientBrush()
@@ -28,6 +29,9 @@ namespace Microsoft.Maui.Controls
 			get => (GradientStopCollection)GetValue(GradientStopsProperty);
 			set => SetValue(GradientStopsProperty, value);
 		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> GradientStops.GetEnumerator();
 
 		static void OnGradientStopsChanged(BindableObject bindable, object oldValue, object newValue)
 		{

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
+	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IEnumerable
 	{
 		#region IScrollViewController
 
@@ -151,6 +152,11 @@ namespace Microsoft.Maui.Controls
 				OnPropertyChanged();
 				Handler?.UpdateValue(nameof(Content));
 			}
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Content;
 		}
 
 		void ContentSizeChanged(object sender, EventArgs e)

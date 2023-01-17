@@ -1,4 +1,5 @@
 #nullable disable
+using System.Collections;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentView']/Docs/*" />
 	[ContentProperty("Content")]
-	public partial class ContentView : TemplatedView
+	public partial class ContentView : TemplatedView, IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -16,6 +17,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (View)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Content;
 		}
 
 		protected override void OnBindingContextChanged()

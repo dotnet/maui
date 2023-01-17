@@ -1,4 +1,5 @@
 #nullable disable
+using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TransformGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.TransformGroup']/Docs/*" />
 	[ContentProperty("Children")]
-	public sealed class TransformGroup : Transform
+	public sealed class TransformGroup : Transform, IEnumerable
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TransformGroup.xml" path="//Member[@MemberName='ChildrenProperty']/Docs/*" />
 		public static readonly BindableProperty ChildrenProperty =
@@ -25,6 +26,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(ChildrenProperty, value); }
 			get { return (TransformCollection)GetValue(ChildrenProperty); }
 		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Children.GetEnumerator();
 
 		static void OnTransformGroupChanged(BindableObject bindable, object oldValue, object newValue)
 		{

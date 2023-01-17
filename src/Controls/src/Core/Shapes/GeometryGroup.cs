@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.GeometryGroup']/Docs/*" />
 	[ContentProperty("Children")]
-	public class GeometryGroup : Geometry
+	public class GeometryGroup : Geometry, IEnumerable
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='ChildrenProperty']/Docs/*" />
 		public static readonly BindableProperty ChildrenProperty =
@@ -35,6 +36,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(ChildrenProperty, value); }
 			get { return (GeometryCollection)GetValue(ChildrenProperty); }
 		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Children.GetEnumerator();
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='FillRule']/Docs/*" />
 		public FillRule FillRule

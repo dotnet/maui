@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="Type[@FullName='Microsoft.Maui.Controls.Span']/Docs/*" />
 	[ContentProperty("Text")]
-	public class Span : GestureElement, IFontElement, IStyleElement, ITextElement, ILineHeightElement, IDecorableTextElement
+	public class Span : GestureElement, IFontElement, IStyleElement, ITextElement, ILineHeightElement, IDecorableTextElement, IEnumerable
 	{
 		internal readonly MergedStyle _mergedStyle;
 
@@ -85,6 +86,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(TextProperty); }
 			set { SetValue(TextProperty, value); }
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Text;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='FontFamilyProperty']/Docs/*" />

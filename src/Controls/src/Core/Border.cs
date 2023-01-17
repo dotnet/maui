@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
@@ -9,7 +10,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class Border : View, IContentView, IBorderView, IPaddingElement
+	public class Border : View, IContentView, IBorderView, IPaddingElement, IEnumerable
 	{
 		float[]? _strokeDashPattern;
 		ReadOnlyCollection<Element>? _logicalChildren;
@@ -28,6 +29,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (View?)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Content;
 		}
 
 		public Thickness Padding

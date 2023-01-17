@@ -1,9 +1,11 @@
 #nullable disable
+using System.Collections;
+
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs/*" />
 	[ContentProperty("Content")]
-	public partial class ContentPage : TemplatedPage
+	public partial class ContentPage : TemplatedPage, IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentPage), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -13,6 +15,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (View)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Content;
 		}
 
 		protected override void OnBindingContextChanged()

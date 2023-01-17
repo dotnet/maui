@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="Type[@FullName='Microsoft.Maui.Controls.FormattedString']/Docs/*" />
 	[ContentProperty("Spans")]
-	public class FormattedString : Element
+	public class FormattedString : Element, IEnumerable
 	{
 		readonly SpanCollection _spans = new SpanCollection();
 		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged;
@@ -27,6 +28,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='Spans']/Docs/*" />
 		public IList<Span> Spans => _spans;
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Spans.GetEnumerator();
 
 		public static explicit operator string(FormattedString formatted) => formatted.ToString();
 

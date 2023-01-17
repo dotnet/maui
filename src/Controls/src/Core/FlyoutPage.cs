@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutPage']/Docs/*" />
 	[ContentProperty(nameof(Detail))]
-	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
+	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IEnumerable
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsGestureEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
@@ -69,6 +70,11 @@ namespace Microsoft.Maui.Controls
 				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail));
 				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail));
 			}
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			yield return Detail;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsGestureEnabled']/Docs/*" />

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="Type[@FullName='Microsoft.Maui.Controls.MultiBinding']/Docs/*" />
 	[ContentProperty(nameof(Bindings))]
-	public sealed class MultiBinding : BindingBase
+	public sealed class MultiBinding : BindingBase, IEnumerable
 	{
 		IMultiValueConverter _converter;
 		object _converterParameter;
@@ -52,6 +53,9 @@ namespace Microsoft.Maui.Controls
 				_bindings = value;
 			}
 		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Bindings.GetEnumerator();
 
 		internal override BindingBase Clone()
 		{

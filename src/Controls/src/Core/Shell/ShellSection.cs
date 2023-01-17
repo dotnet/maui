@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellSection']/Docs/*" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement
+	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IEnumerable
 	{
 		#region PropertyKeys
 
@@ -248,6 +249,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Items']/Docs/*" />
 		public IList<ShellContent> Items => (IList<ShellContent>)GetValue(ItemsProperty);
 		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Items.GetEnumerator();
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Stack']/Docs/*" />
 		public IReadOnlyList<Page> Stack => _navStack;

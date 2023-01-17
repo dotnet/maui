@@ -1,12 +1,13 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/MultiTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.MultiTrigger']/Docs/*" />
 	[ContentProperty("Setters")]
-	public sealed class MultiTrigger : TriggerBase
+	public sealed class MultiTrigger : TriggerBase, IEnumerable
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/MultiTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public MultiTrigger([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new MultiCondition(), targetType)
@@ -24,5 +25,8 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return base.Setters; }
 		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> Setters.GetEnumerator();
 	}
 }
