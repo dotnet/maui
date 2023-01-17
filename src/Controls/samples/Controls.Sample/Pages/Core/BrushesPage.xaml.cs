@@ -30,40 +30,48 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnUpdateSolidColorClicked(object sender, EventArgs e)
 		{
-			if(SolidBrushBorder.Background is SolidColorBrush solidColorBrush)
-				solidColorBrush.Color = GetRandomColor();
+			var color = GetRandomColor();
+
+			if (SolidBrushBorder.Background is SolidColorBrush solidColorBrush)
+				solidColorBrush.Color = color;
 
 			if (SolidBrushPolygon.Fill is SolidColorBrush solidBrushPolygon)
-				solidBrushPolygon.Color = GetRandomColor();
+				solidBrushPolygon.Color = color;
 		}
 
 		void OnUpdateLinearColorsClicked(object sender, EventArgs e)
 		{
+			var gradientStop = GetRandomGradientStop();
+			var color = GetRandomColor();
+
 			if (LinearBrushBorder.Background is LinearGradientBrush linearBrushBorder)
 			{
-				GradientStop randomStop = linearBrushBorder.GradientStops[GetRandomGradientStop()];
-				randomStop.Color = GetRandomColor();
+				GradientStop randomStop = linearBrushBorder.GradientStops[gradientStop];
+				randomStop.Color = color;
 			}
 
 			if (LinearBrushPolygon.Fill is LinearGradientBrush linearBrushPolygon)
 			{
-				GradientStop randomStop = linearBrushPolygon.GradientStops[GetRandomGradientStop()];
-				randomStop.Color = GetRandomColor();
+				GradientStop randomStop = linearBrushPolygon.GradientStops[gradientStop];
+				randomStop.Color = color;
 			}
 		}
 
 		void OnUpdateRadialColorsClicked(object sender, EventArgs e)
 		{
+			var gradientStop = GetRandomGradientStop();
+			var color = GetRandomColor();
+
 			if (RadialBrushBorder.Background is RadialGradientBrush radialGradientBrush)
 			{
-				GradientStop firstStop = radialGradientBrush.GradientStops[GetRandomGradientStop()];
-				firstStop.Color = GetRandomColor();
+				GradientStop firstStop = radialGradientBrush.GradientStops[gradientStop];
+				firstStop.Color = color;
 			}
 
 			if (RadialBrushPolygon.Fill is RadialGradientBrush radialBrushPolygon)
 			{
-				GradientStop firstStop = radialBrushPolygon.GradientStops[GetRandomGradientStop()];
-				firstStop.Color = GetRandomColor();
+				GradientStop firstStop = radialBrushPolygon.GradientStops[gradientStop];
+				firstStop.Color = color;
 			}
 		}
 			
