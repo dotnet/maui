@@ -341,34 +341,13 @@ Task("uitest")
 	DotNetCoreTool("tool", settings);
 
 	Information("Run UITEsts {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,EnvironmentVariable("DOTNET_ROOT"));
 
 	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
 	if (!string.IsNullOrEmpty(failed)) {
 		throw new Exception($"At least {failed} test(s) failed.");
 	}
 });
-
-void RunTestWithLocalDotNet(string csproj)
-{
-    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{CONFIGURATION}.binlog";
-    var results = $"{name}-{CONFIGURATION}.trx";
-
-    if(localDotnet)
-        SetDotNetEnvironmentVariables();
-
-    DotNetCoreTest(csproj,
-        new DotNetCoreTestSettings
-        {
-            Configuration = CONFIGURATION,
-           // ToolPath = DOTNET_PATH,
-            NoBuild = false,
-            Logger = $"trx;LogFileName={results}",
-           	ResultsDirectory = GetTestResultsDirectory(),
-            ArgumentCustomization = args => args.Append($"-bl:{binlog}")
-        });
-}
 
 
 void RunMSBuildWithDotNet(

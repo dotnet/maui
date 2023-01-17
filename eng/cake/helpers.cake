@@ -121,3 +121,25 @@ bool IsTarget(string target) =>
 
 bool TargetStartsWith(string target) =>
     Argument<string>("target", "Default").StartsWith(target, StringComparison.InvariantCultureIgnoreCase);
+
+void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPath, Dictionary<string,string> argsExtra = null)
+{
+    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
+    var binlog = $"{GetLogDirectory()}/{name}-{configuration}.binlog";
+    var results = $"{name}-{configuration}.trx";
+
+    if(localDotnet)
+        SetDotNetEnvironmentVariables(dotnetPath);
+
+    var settings = new DotNetCoreTestSettings
+        {
+            Configuration = configuration,
+            ToolPath = dotnetPath,
+            NoBuild = false,
+            Logger = $"trx;LogFileName={results}",
+           	ResultsDirectory = GetTestResultsDirectory(),
+            ArgumentCustomization = args => args.Append($"-bl:{binlog}")
+        };
+        
+    DotNetCoreTest(csproj, settings);
+}
