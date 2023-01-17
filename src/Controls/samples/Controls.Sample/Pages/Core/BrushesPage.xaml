@@ -4,6 +4,15 @@
     x:Class="Maui.Controls.Sample.Pages.BrushesPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Brushes">
+    <TabbedPage.Resources>
+        <ResourceDictionary>
+
+            <Color x:Key="PrimaryColor">#0099ff</Color>
+
+            <SolidColorBrush x:Key="PrimaryColorBrush" Color="{DynamicResource PrimaryColor}" />
+
+        </ResourceDictionary>
+    </TabbedPage.Resources>
     <ContentPage
         Title="SolidColorBrush">
         <ScrollView>
@@ -263,6 +272,102 @@
                     HeightRequest="120"
                     WidthRequest="120"
                     StyleClass="radialGradientStyleWithCssRight" />
+            </StackLayout>
+        </ScrollView>
+    </ContentPage>
+    <ContentPage
+        Title="Brush Changes">
+        <ScrollView>
+            <StackLayout Margin="12">
+                <Label
+                    FontAttributes="Bold"
+                    Text="Static and Dynamic Resources"/>
+                <Label
+                    Text="Fixed color"
+                    Style="{StaticResource Headline}" />
+                <Polygon
+                    Fill="Blue"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Label
+                    Text="Dynamic color"
+                    Style="{StaticResource Headline}" />
+                <Polygon
+                    Fill="{DynamicResource PrimaryColorBrush}"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Label
+                    FontAttributes="Bold"
+                    Text="Update Brush Colors"/>
+                <Label
+                    Text="SolidColorBrush"/>
+                <Border
+                    x:Name="SolidBrushBorder"
+                    Stroke="LightGray"
+                    StrokeShape="RoundRectangle 12"
+                    HeightRequest="120">
+                    <Border.Background>
+                        <SolidColorBrush Color="Red" />
+                    </Border.Background>
+                </Border>
+                <Button
+                    Text="Update Color"
+                    Clicked="OnUpdateSolidColorClicked"/>
+                <Label
+                    Text="LinearGradientBrush"/>
+                <Border
+                    x:Name="LinearBrushBorder"
+                    Stroke="LightGray"
+                    StrokeShape="RoundRectangle 12"
+                    HeightRequest="120">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                            <GradientStop Color="Blue" Offset="0.3"/>
+                            <GradientStop Color="Purple" Offset="0.6"/>
+                            <GradientStop Color="Green" Offset="0.9"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                <Button
+                    Text="Update Colors"
+                    Clicked="OnUpdateLinearColorsClicked"/>
+                <Label
+                    Text="RadialGradientBrush"/>
+                <Border
+                    x:Name="RadialBrushBorder"
+                    Stroke="LightGray"
+                    StrokeShape="RoundRectangle 12"
+                    HeightRequest="120">
+                    <Border.Background>
+                        <RadialGradientBrush Center="0.5, 0.5" Radius="60">
+                            <GradientStop Color="Blue" Offset="0.3"/>
+                            <GradientStop Color="Purple" Offset="0.6"/>
+                            <GradientStop Color="Green" Offset="0.9"/>
+                        </RadialGradientBrush>
+                    </Border.Background>
+                </Border>
+                <Button
+                    Text="Update Colors"
+                    Clicked="OnUpdateRadialColorsClicked"/>
+                <Label
+                    FontAttributes="Bold"
+                    Text="BindingContext"/>
+                <Label
+                    Text="Brush BindingContext"
+                    Style="{StaticResource Headline}" />
+                 <Border
+                    x:Name="BindingContextBorder"
+                    StrokeShape="RoundRectangle 12"
+                    HeightRequest="100">
+                     <Border.Background>
+                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                             <GradientStop Offset="0" Color="{Binding Start}" x:Name="gstop1" />
+                             <GradientStop Offset="1" Color="{Binding Stop}" x:Name="gstop2" />
+                         </LinearGradientBrush>
+                     </Border.Background>
+                     <StackLayout>
+                         <Label BindingContext="{x:Reference Name=gstop1}" Text="{Binding Color}"/>
+                         <Label BindingContext="{x:Reference Name=gstop2}" Text="{Binding Color}"/>
+                     </StackLayout>
+                </Border>
             </StackLayout>
         </ScrollView>
     </ContentPage>
