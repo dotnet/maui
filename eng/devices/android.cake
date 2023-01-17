@@ -12,7 +12,7 @@ string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?
 // optional
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var USE_DOTNET = Argument("dotnet", true);
-var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_ROOT"));
+var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net7.0-android" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
@@ -339,84 +339,5 @@ Task("uitest")
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra: properties);
 
 });
-
-
-void RunMSBuildWithDotNet(
-    string sln,
-    Dictionary<string, string> properties = null,
-    string target = "Build",
-    bool warningsAsError = false,
-    bool restore = true,
-    string targetFramework = null,
-    bool forceDotNetBuild = false,
-    int maxCpuCount = 0)
-{
-    var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
-
-    var name = System.IO.Path.GetFileNameWithoutExtension(sln);
-    var type = useDotNetBuild ? "dotnet" : "msbuild";
-    var binlog = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{GetLogDirectory()}/{name}-{CONFIGURATION}-{target}-{type}.binlog\"" :
-        $"\"{GetLogDirectory()}/{name}-{CONFIGURATION}-{target}-{targetFramework}-{type}.binlog\"";
-    
-    if(localDotnet)
-        SetDotNetEnvironmentVariables();
-
-    var msbuildSettings = new DotNetCoreMSBuildSettings()
-        .SetConfiguration(CONFIGURATION)
-        .SetMaxCpuCount(maxCpuCount)
-        .WithTarget(target)
-        .EnableBinaryLogger(binlog);
-
-    if (warningsAsError)
-    {
-        msbuildSettings.TreatAllWarningsAs(MSBuildTreatAllWarningsAs.Error);
-    }
-
-    if (properties != null)
-    {
-        foreach (var property in properties)
-        {
-            msbuildSettings.WithProperty(property.Key, property.Value);
-        }
-    }
-
-    var dotnetBuildSettings = new DotNetCoreBuildSettings
-    {
-        MSBuildSettings = msbuildSettings,
-    };
-
-    dotnetBuildSettings.ArgumentCustomization = args =>
-    {
-        if (!restore)
-            args.Append("--no-restore");
-
-        if (!string.IsNullOrEmpty(targetFramework))
-            args.Append($"-f {targetFramework}");
-
-        return args;
-    };
-
-    if (USE_DOTNET)
-        dotnetBuildSettings.ToolPath = DOTNET_PATH;
-
-    DotNetCoreBuild(sln, dotnetBuildSettings);
-}
-
-void SetDotNetEnvironmentVariables()
-{
-    var dotnet = MakeAbsolute(Directory("../../bin/dotnet/")).ToString();
-
-    SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_ROOT", dotnet);
-    SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
-    SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
-    SetEnvironmentVariable("PATH", dotnet, prepend: true);
-
-    // Get "full" .binlog in Project System Tools
-    if (HasArgument("dbg"))
-        SetEnvironmentVariable("MSBuildDebugEngine", "1");
-}
 
 RunTarget(TARGET);
