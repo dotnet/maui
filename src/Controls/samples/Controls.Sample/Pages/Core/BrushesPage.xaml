@@ -357,7 +357,7 @@
                     StrokeShape="RoundRectangle 12"
                     HeightRequest="120">
                     <Border.Background>
-                        <RadialGradientBrush Center="0.5, 0.5" Radius="60">
+                        <RadialGradientBrush Center="0.5, 0.5">
                             <GradientStop Color="Blue" Offset="0.3"/>
                             <GradientStop Color="Purple" Offset="0.6"/>
                             <GradientStop Color="Green" Offset="0.9"/>
@@ -369,7 +369,7 @@
                     Points="10,10 100,20 150,45 70,50"
                     Stroke="LightGray">
                     <Polygon.Fill>
-                        <RadialGradientBrush Center="0.5, 0.5" Radius="60">
+                        <RadialGradientBrush Center="0.5, 0.5">
                             <GradientStop Color="Blue" Offset="0.3"/>
                             <GradientStop Color="Purple" Offset="0.6"/>
                             <GradientStop Color="Green" Offset="0.9"/>
