@@ -26,6 +26,8 @@ steps:
         npm install -g appium@next
         appium -v
         appium driver install uiautomator2
+        appium driver install xcuitest
+        appium driver install mac2
     displayName: "Install Appium"
     continueOnError: true
 
