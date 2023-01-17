@@ -117,6 +117,9 @@ namespace Maui.Controls.Sample
 #else
 				logging.AddConsole();
 #endif
+
+				// Enable maximum logging for BlazorWebView
+				logging.AddFilter("Microsoft.AspNetCore.Components.WebView", LogLevel.Trace);
 			});
 
 			services.AddSingleton<ITextService, TextService>();

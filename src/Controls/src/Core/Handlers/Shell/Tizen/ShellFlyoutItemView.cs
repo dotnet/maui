@@ -1,5 +1,3 @@
-#nullable enable
-
 using GColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Microsoft.Maui.Controls.Platform
