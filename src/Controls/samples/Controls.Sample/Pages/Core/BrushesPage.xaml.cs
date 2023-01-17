@@ -32,13 +32,22 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if(SolidBrushBorder.Background is SolidColorBrush solidColorBrush)
 				solidColorBrush.Color = GetRandomColor();
+
+			if (SolidBrushPolygon.Background is SolidColorBrush solidBrushPolygon)
+				solidBrushPolygon.Color = GetRandomColor();
 		}
 
 		void OnUpdateLinearColorsClicked(object sender, EventArgs e)
 		{
-			if (LinearBrushBorder.Background is LinearGradientBrush linearGradientBrush)
+			if (LinearBrushBorder.Background is LinearGradientBrush linearBrushBorder)
 			{
-				GradientStop randomStop = linearGradientBrush.GradientStops[GetRandomGradientStop()];
+				GradientStop randomStop = linearBrushBorder.GradientStops[GetRandomGradientStop()];
+				randomStop.Color = GetRandomColor();
+			}
+
+			if (LinearBrushPolygon.Background is LinearGradientBrush linearBrushPolygon)
+			{
+				GradientStop randomStop = linearBrushPolygon.GradientStops[GetRandomGradientStop()];
 				randomStop.Color = GetRandomColor();
 			}
 		}
@@ -48,6 +57,12 @@ namespace Maui.Controls.Sample.Pages
 			if (RadialBrushBorder.Background is RadialGradientBrush radialGradientBrush)
 			{
 				GradientStop firstStop = radialGradientBrush.GradientStops[GetRandomGradientStop()];
+				firstStop.Color = GetRandomColor();
+			}
+
+			if (RadialBrushPolygon.Background is RadialGradientBrush radialBrushPolygon)
+			{
+				GradientStop firstStop = radialBrushPolygon.GradientStops[GetRandomGradientStop()];
 				firstStop.Color = GetRandomColor();
 			}
 		}

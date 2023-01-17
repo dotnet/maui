@@ -308,6 +308,14 @@
                         <SolidColorBrush Color="Red" />
                     </Border.Background>
                 </Border>
+                <Polygon
+                    x:Name="SolidBrushPolygon"
+                    Points="10,10 100,20 150,45 70,50"
+                    Stroke="LightGray">
+                    <Polygon.Fill>
+                        <SolidColorBrush Color="Red" />
+                    </Polygon.Fill>
+                </Polygon>
                 <Button
                     Text="Update Color"
                     Clicked="OnUpdateSolidColorClicked"/>
@@ -326,6 +334,18 @@
                         </LinearGradientBrush>
                     </Border.Background>
                 </Border>
+                <Polygon
+                    x:Name="LinearBrushPolygon"
+                    Points="10,10 100,20 150,45 70,50"
+                    Stroke="LightGray">
+                    <Polygon.Fill>
+                        <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                            <GradientStop Color="Blue" Offset="0.3"/>
+                            <GradientStop Color="Purple" Offset="0.6"/>
+                            <GradientStop Color="Green" Offset="0.9"/>
+                        </LinearGradientBrush>
+                    </Polygon.Fill>
+                </Polygon>
                 <Button
                     Text="Update Colors"
                     Clicked="OnUpdateLinearColorsClicked"/>
@@ -344,6 +364,18 @@
                         </RadialGradientBrush>
                     </Border.Background>
                 </Border>
+                <Polygon
+                    x:Name="RadialBrushPolygon"
+                    Points="10,10 100,20 150,45 70,50"
+                    Stroke="LightGray">
+                    <Polygon.Fill>
+                        <RadialGradientBrush Center="0.5, 0.5" Radius="60">
+                            <GradientStop Color="Blue" Offset="0.3"/>
+                            <GradientStop Color="Purple" Offset="0.6"/>
+                            <GradientStop Color="Green" Offset="0.9"/>
+                        </RadialGradientBrush>
+                    </Polygon.Fill>
+                </Polygon>
                 <Button
                     Text="Update Colors"
                     Clicked="OnUpdateRadialColorsClicked"/>
@@ -368,6 +400,15 @@
                          <Label BindingContext="{x:Reference Name=gstop2}" Text="{Binding Color}"/>
                      </StackLayout>
                 </Border>
+                <Polygon
+                    Points="10,10 100,20 150,45 70,50">
+                    <Polygon.Fill>
+                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                             <GradientStop Offset="0" Color="{Binding Start}" />
+                             <GradientStop Offset="1" Color="{Binding Stop}" />
+                         </LinearGradientBrush>
+                     </Polygon.Fill>
+                </Polygon>
             </StackLayout>
         </ScrollView>
     </ContentPage>
