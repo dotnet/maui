@@ -14,8 +14,8 @@ parameters:
 
 stages:
 
-  - stage: android_device_tests
-    displayName: Android Device Tests
+  - stage: android_ui_tests
+    displayName: Android UITests
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
@@ -44,8 +44,8 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
-  - stage: ios_device_tests
-    displayName: iOS Device Tests
+  - stage: ios_ui_tests
+    displayName: iOS UITests
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
