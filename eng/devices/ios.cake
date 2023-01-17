@@ -3,18 +3,26 @@
 
 string TARGET = Argument("target", "Test");
 
+const string defaultVersion = "14.4";
+
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? "");
-string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? "ios-simulator-64_14.4"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
+string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
+var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net7.0-ios" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("IOS_TEST_APP") ?? "");
+FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("IOS_TEST_APP_PROJECT") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS") ?? "");
+
+//these are for appium iOS UITests
+string udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
+string iosVersion = Argument("iosversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? defaultVersion);
 
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
@@ -26,6 +34,7 @@ Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
+Information("DOTNET_PATH: {0}", DOTNET_PATH);
 
 Setup(context =>
 {
@@ -126,7 +135,7 @@ Task("Test")
 	.Does(() =>
 {
 	if (string.IsNullOrEmpty(TEST_APP)) {
-		if (string.IsNullOrEmpty(PROJECT.FullPath))
+		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
 		var binDir = USE_DOTNET
 			? PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
@@ -168,6 +177,55 @@ Task("Test")
 	if (!string.IsNullOrEmpty(failed)) {
 		throw new Exception($"At least {failed} test(s) failed.");
 	}
+});
+
+Task("uitest")
+	.Does(() =>
+{
+	if (string.IsNullOrEmpty(TEST_APP) ) {
+		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+			throw new Exception("If no app was specified, an app must be provided.");
+		var binDir = USE_DOTNET
+			? TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
+			: TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(PLATFORM).Combine(CONFIGURATION).FullPath;
+		var apps = GetDirectories(binDir + "/*.app");
+		TEST_APP = apps.First().FullPath;
+	}
+	if (string.IsNullOrEmpty(TEST_RESULTS)) {
+		TEST_RESULTS = TEST_APP + "-results";
+	}
+
+	Information("Test Device: {0}", TEST_DEVICE);
+	Information("Test App: {0}", TEST_APP);
+	Information("Test Results Directory: {0}", TEST_RESULTS);
+
+	CleanDirectories(TEST_RESULTS);
+
+	Information("Install with xharness: {0}",TEST_APP);
+	var settings = new DotNetCoreToolSettings {
+		DiagnosticOutput = true,
+		ArgumentCustomization = args => args.Append("run xharness apple install " +
+		$"--app=\"{TEST_APP}\" " +
+		$"--targets=\"{TEST_DEVICE}\" " +
+		$"--output-directory=\"{TEST_RESULTS}\" " +
+		$"--verbosity=\"Debug\" ")
+	};
+
+	try {
+		DotNetCoreTool("tool", settings);
+	} finally {
+
+		var sims = ListAppleSimulators();
+	 	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
+		var simXH = xharness.First();
+		Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
+		SetEnvironmentVariable("IOS_SIMULATOR_UDID",simXH.UDID);
+		SetEnvironmentVariable("IOS_PLATFORM_VERSION", iosVersion);
+		
+	}
+
+	Information("Run UITests {0}",PROJECT.FullPath);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, EnvironmentVariable("DOTNET_ROOT"));
 });
 
 RunTarget(TARGET);

@@ -6,8 +6,8 @@ using OpenQA.Selenium.Appium;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
-	[TestFixture(TestDevice.Android)]
-	// [TestFixture(TestDevice.iOS)]
+	//[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.iOS)]
 	// [TestFixture(TestDevice.Mac)]
 	// [TestFixture(TestDevice.Windows)]
 	public class AppiumPlatformsTestBase : AppiumUITestBase
@@ -52,9 +52,9 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 					//_appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, "MainActivity");
 					break;
 				case TestDevice.iOS:
-					testConfig.DeviceName = "iPad (10th generation)";
-					testConfig.PlatformVersion = "16.2";
-					testConfig.Udid = "E198E6C0-0337-4990-8494-7B078BAD3070";
+					testConfig.DeviceName = "iPhone X";
+					testConfig.PlatformVersion = Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "14.4";
+					testConfig.Udid = Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "";
 					break;
 				case TestDevice.Mac:
 

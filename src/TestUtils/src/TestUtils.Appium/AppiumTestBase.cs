@@ -105,6 +105,8 @@ namespace Microsoft.Maui.Appium
 				appiumOptions.AddAdditionalAppiumOption("testName", testConfig.TestName);
 			if (testConfig.FullReset)
 				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "true");
+
+			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout , 3000);
 		}
 
 	}
