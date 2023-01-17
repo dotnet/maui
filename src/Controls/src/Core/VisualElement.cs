@@ -233,44 +233,37 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='BackgroundProperty']/Docs/*" />
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
-			propertyChanging: (bindable, oldvalue, newvalue) =>
-			{
-				if (oldvalue != null)
-					(bindable as VisualElement)?.StopNotifyingBackgroundChanges();
-			},
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				if (newvalue != null)
-					(bindable as VisualElement)?.NotifyBackgroundChanges();
+				var element = (VisualElement)bindable;
+
+				if (element == null)
+					return;
+
+				element.OnBackgroundPropertyChanged(oldvalue, newvalue);
 			});
 
-		void NotifyBackgroundChanges()
+		void OnBackgroundPropertyChanged(object oldValue, object newValue)
 		{
-			if (Background is ImmutableBrush)
-				return;
-
-			if (Background != null)
+			if (oldValue is Brush oldBrush)
 			{
-				Background.Parent = this;
-				Background.PropertyChanged += OnBackgroundChanged;
+				oldBrush.Parent = null;
+				oldBrush.PropertyChanged -= OnBackgroundChanged;
 
-				if (Background is GradientBrush gradientBrush)
-					gradientBrush.InvalidateGradientBrushRequested += InvalidateGradientBrushRequested;
-			}
-		}
-
-		void StopNotifyingBackgroundChanges()
-		{
-			if (Background is ImmutableBrush)
-				return;
-
-			if (Background != null)
-			{
-				Background.Parent = null;
-				Background.PropertyChanged -= OnBackgroundChanged;
-
-				if (Background is GradientBrush gradientBrush)
+				if (oldValue is GradientBrush gradientBrush)
 					gradientBrush.InvalidateGradientBrushRequested -= InvalidateGradientBrushRequested;
+			}
+
+			if (newValue is Brush newBrush)
+			{
+				if (newBrush is ImmutableBrush)
+					return;
+
+				newBrush.Parent = this;
+				newBrush.PropertyChanged += OnBackgroundChanged;
+
+				if (newBrush is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested += InvalidateGradientBrushRequested;
 			}
 		}
 

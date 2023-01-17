@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
@@ -22,12 +23,28 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='FillProperty']/Docs/*" />
 		public static readonly BindableProperty FillProperty =
 			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,
-				propertyChanged: OnBrushChanged);
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					var shape = (Shape)bindable;
+
+					if (shape == null)
+						return;
+
+					shape.OnBrushPropertyChanged(oldvalue, newvalue);
+				});
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeProperty']/Docs/*" />
 		public static readonly BindableProperty StrokeProperty =
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null,
-				propertyChanged: OnBrushChanged);
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					var shape = (Shape)bindable;
+
+					if (shape == null)
+						return;
+
+					shape.OnBrushPropertyChanged(oldvalue, newvalue);
+				});
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeThicknessProperty']/Docs/*" />
 		public static readonly BindableProperty StrokeThicknessProperty =
@@ -162,15 +179,56 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		float IStroke.StrokeMiterLimit => (float)StrokeMiterLimit;
 
-		static void OnBrushChanged(BindableObject bindable, object oldValue, object newValue)
+		protected override void OnBindingContextChanged()
 		{
-			((Shape)bindable).UpdateBrushParent((Brush)newValue);
+			PropagateBindingContextToBrush();
+
+			base.OnBindingContextChanged();
 		}
 
-		void UpdateBrushParent(Brush brush)
+		void PropagateBindingContextToBrush()
 		{
-			if (brush != null && brush is not ImmutableBrush)
-				brush.Parent = this;
+			if (Fill != null)
+				SetInheritedBindingContext(Fill, BindingContext);
+
+			if (Stroke != null)
+				SetInheritedBindingContext(Stroke, BindingContext);
+		}
+
+		void OnBrushPropertyChanged(object oldValue, object newValue)
+		{
+			if (oldValue is Brush oldBrush)
+			{
+				oldBrush.Parent = null;
+				oldBrush.PropertyChanged -= OnBrushChanged;
+
+				if (oldValue is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested -= InvalidateGradientBrushRequested;
+			}
+
+			if (newValue is Brush newBrush)
+			{
+				if (newBrush is ImmutableBrush)
+					return;
+
+				newBrush.Parent = this;
+				newBrush.PropertyChanged += OnBrushChanged;
+
+				if (newBrush is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested += InvalidateGradientBrushRequested;
+			}
+		}
+
+		void OnBrushChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			OnPropertyChanged(nameof(Fill));
+			OnPropertyChanged(nameof(Stroke));
+		}
+
+		void InvalidateGradientBrushRequested(object? sender, EventArgs e)
+		{
+			OnPropertyChanged(nameof(Fill));
+			OnPropertyChanged(nameof(Stroke));
 		}
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)

@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var oldItem in e.OldItems)
 				{
-					if (!(oldItem is GradientStop oldStop))
+					if (oldItem is not GradientStop oldStop)
 						continue;
 
 					oldStop.Parent = null;
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var newItem in e.NewItems)
 				{
-					if (!(newItem is GradientStop newStop))
+					if (newItem is not GradientStop newStop)
 						continue;
 
 					newStop.Parent = this;

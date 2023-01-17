@@ -1,3 +1,4 @@
-#nullable enable
+﻿#nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.Shapes.Shape.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
