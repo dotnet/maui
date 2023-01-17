@@ -26,6 +26,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(HitTestingPage), "Hit Testing",
 				"Demonstrates VisualTreeElementExtensions hit testing methods"),
+
+			new SectionModel(typeof(FluentExamplePage), "Fluent API",
+				"Content page created using fluent extension methods"),
 		};
 	}
 }
