@@ -17,6 +17,7 @@ var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("ANDROID_TEST_APP") ?? "");
+FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("ANDROID_TEST_APP_PROJECT") ?? "");
 var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TEST_APP_PACKAGE_NAME") ?? "");
 var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
@@ -258,13 +259,15 @@ Task("Test")
 });
 
 Task("uitest")
-	//.IsDependentOn("Build")
 	.Does(() =>
 {
 	if (string.IsNullOrEmpty(TEST_APP)) {
-		if (string.IsNullOrEmpty(PROJECT.FullPath))
+		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).FullPath;
+		
+		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
+		Information("Test app bin folder {0}", binFolder);
+		var binDir = binFolder.Combine(CONFIGURATION + "/net7.0-android").FullPath;
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;
@@ -314,20 +317,6 @@ Task("uitest")
 	lines = AdbShell("getprop debug.mono.log", adbSettings);
 	Information("{0}", string.Join("\n", lines));
 
-
-	if (localDotnet)
-	{
-		SetDotNetEnvironmentVariables();
-	}
-
-	//build samples
-	// Information("Build Samples with localDotnet: {0}",localDotnet);
-	// RunMSBuildWithDotNet("../../Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
-    //       //  ["UseWorkload"] = "true",
-    //         // ["GenerateAppxPackageOnBuild"] = "true",
-    //        // ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-    //     }, maxCpuCount: 1);
-
 	//install apk on the emulator
 	Information("Install with xharness: {0}",TEST_APP);
 	var settings = new DotNetCoreToolSettings {
@@ -349,10 +338,6 @@ Task("uitest")
 
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra: properties);
 
-	// var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
-	// if (!string.IsNullOrEmpty(failed)) {
-	// 	throw new Exception($"At least {failed} test(s) failed.");
-	// }
 });
 
 
