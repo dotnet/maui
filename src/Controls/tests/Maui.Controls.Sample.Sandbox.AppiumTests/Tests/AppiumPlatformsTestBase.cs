@@ -28,7 +28,8 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		public void TearDown()
 		{
 			//this crashes on Android
-			//Driver?.ResetApp();
+			if(!IsAndroid)
+				Driver?.ResetApp();
 		}
 
 

@@ -144,7 +144,7 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
                 {
                     foreach(var prop in argsExtra)
                     {
-                        args.Append($"/p:{prop.Key}=\"{prop.Value}\"");
+                        args.Append($"-property:{prop.Key}=\"{prop.Value}\"");
                     }
                 }
                 return args;
