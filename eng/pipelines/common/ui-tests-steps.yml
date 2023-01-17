@@ -56,7 +56,7 @@ steps:
     condition: always()
     inputs:
       testResultsFormat: VSTest
-      testResultsFiles: '$(TestResultsDirectory)/**/*.trx'
+      testResultsFiles: '$(TestResultsDirectory)/*.trx'
       testRunTitle: '$(System.PhaseName)'
 
   - task: PublishBuildArtifacts@1
