@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls.Shapes
+﻿#nullable disable
+namespace Microsoft.Maui.Controls.Shapes
 {
 	public sealed partial class RoundRectangle : Shape
 	{

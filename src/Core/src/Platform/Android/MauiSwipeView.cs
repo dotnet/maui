@@ -223,8 +223,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_contentView != null)
 			{
-				_contentView.RemoveFromParent();
-				_contentView.Dispose();
+				if (!_contentView.IsDisposed())
+				{
+					_contentView.RemoveFromParent();
+					_contentView.Dispose();
+				}
 				_contentView = null;
 			}
 
@@ -234,6 +237,7 @@ namespace Microsoft.Maui.Platform
 			else
 				_contentView = CreateEmptyContent();
 
+			_contentView.RemoveFromParent();
 			AddView(_contentView);
 		}
 
@@ -665,6 +669,12 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateSwipeItemViewLayout(ISwipeItemView swipeItemView)
 		{
+			if (swipeItemView?.Handler is not IPlatformViewHandler handler)
+				return;
+
+			var swipeItemSize = GetSwipeItemSize(swipeItemView);
+			handler.LayoutVirtualView(0, 0, (int)swipeItemSize.Width, (int)swipeItemSize.Height);
+
 			swipeItemView?.Handler?.ToPlatform().InvalidateMeasure(swipeItemView);
 		}
 
@@ -1157,11 +1167,6 @@ namespace Microsoft.Maui.Platform
 
 			if (isHorizontal)
 			{
-				if (swipeItem is ISwipeItem)
-				{
-					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeViewExtensions.SwipeItemWidth ? SwipeViewExtensions.SwipeItemWidth : threshold), contentHeight);
-				}
-
 				if (swipeItem is ISwipeItemView horizontalSwipeItemView)
 				{
 					var swipeItemViewSizeRequest = horizontalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity);
@@ -1175,15 +1180,14 @@ namespace Microsoft.Maui.Platform
 
 					return new Size(swipeItemWidth, contentHeight);
 				}
+
+				if (swipeItem is ISwipeItem)
+				{
+					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeViewExtensions.SwipeItemWidth ? SwipeViewExtensions.SwipeItemWidth : threshold), contentHeight);
+				}
 			}
 			else
 			{
-				if (swipeItem is ISwipeItem)
-				{
-					var swipeItemHeight = GetSwipeItemHeight();
-					return new Size(contentWidth / items.Count, (threshold > 0 && threshold < swipeItemHeight) ? threshold : swipeItemHeight);
-				}
-
 				if (swipeItem is ISwipeItemView verticalSwipeItemView)
 				{
 					var swipeItemViewSizeRequest = verticalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity);
@@ -1196,6 +1200,12 @@ namespace Microsoft.Maui.Platform
 						swipeItemHeight = threshold > contentHeight ? threshold : contentHeight;
 
 					return new Size(contentWidth / items.Count, swipeItemHeight);
+				}
+
+				if (swipeItem is ISwipeItem)
+				{
+					var swipeItemHeight = GetSwipeItemHeight();
+					return new Size(contentWidth / items.Count, (threshold > 0 && threshold < swipeItemHeight) ? threshold : swipeItemHeight);
 				}
 			}
 

@@ -23,21 +23,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ControlsHandlerTestBase
 	{
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
-
-
-		protected bool GetExcludedWithChildren(IViewHandler viewHandler) =>
-			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
-
-		public AView GetSemanticPlatformElement(IViewHandler viewHandler)
-		{
-			if (viewHandler.PlatformView is AndroidX.AppCompat.Widget.SearchView sv)
-				return sv.FindViewById(Resource.Id.search_button)!;
-
-			return (AView)viewHandler.PlatformView;
-		}
-
 		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{

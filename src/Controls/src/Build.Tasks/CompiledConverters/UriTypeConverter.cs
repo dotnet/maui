@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.XamlC
 
 			yield return Create(Ldstr, value);
 			yield return Create(Ldc_I4_0); //UriKind.RelativeOrAbsolute
-			yield return Create(Newobj, module.ImportCtorReference(("System", "System", "Uri"), parameterTypes: new[] {
+			yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("System", "System", "Uri"), parameterTypes: new[] {
 				("mscorlib", "System", "String"),
 				("System", "System", "UriKind")}));
 		}
