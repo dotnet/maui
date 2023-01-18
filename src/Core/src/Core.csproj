@@ -57,6 +57,8 @@
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
 
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
 </Project>

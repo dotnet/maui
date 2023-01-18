@@ -17,4 +17,6 @@
 		<ProjectReference Include="..\..\..\SingleProject\Resizetizer\src\Resizetizer.csproj" />
 	</ItemGroup>
 
+	<Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
 </Project>

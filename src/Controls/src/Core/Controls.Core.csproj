@@ -61,6 +61,8 @@
     </ItemGroup>
   </Target>
 
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
 </Project>

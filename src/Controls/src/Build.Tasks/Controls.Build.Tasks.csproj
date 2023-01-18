@@ -82,4 +82,6 @@
 		</ItemGroup>
 	</Target>
 
+	<Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
 </Project>
