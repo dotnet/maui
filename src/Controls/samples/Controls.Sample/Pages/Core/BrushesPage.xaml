@@ -7,10 +7,15 @@
     <TabbedPage.Resources>
         <ResourceDictionary>
 
-            <Color x:Key="PrimaryColor">#0099ff</Color>
+            <Color x:Key="SharedColor">#0099ff</Color>
 
-            <SolidColorBrush x:Key="PrimaryColorBrush" Color="{DynamicResource PrimaryColor}" />
+            <SolidColorBrush x:Key="SharedSolidColorBrush" Color="{DynamicResource SharedColor}" />
 
+            <LinearGradientBrush x:Key="SharedGradientBrush"  EndPoint="1,0">
+                <GradientStop Color="Yellow" Offset="0.1" />
+                <GradientStop Color="Green" Offset="1.0" />
+            </LinearGradientBrush>
+            
         </ResourceDictionary>
     </TabbedPage.Resources>
     <ContentPage
@@ -281,7 +286,9 @@
             <StackLayout Margin="12">
                 <Label
                     FontAttributes="Bold"
-                    Text="Static and Dynamic Resources"/>
+                    Text="Static and Dynamic Resources"
+                    SemanticProperties.Description="In this section, we use static and dynamic resources."
+                    ToolTipProperties.Text="In this section, we use static and dynamic resources."/>
                 <Label
                     Text="Fixed color"
                     Style="{StaticResource Headline}" />
@@ -292,11 +299,35 @@
                     Text="Dynamic color"
                     Style="{StaticResource Headline}" />
                 <Polygon
-                    Fill="{DynamicResource PrimaryColorBrush}"
+                    Fill="{DynamicResource SharedSolidColorBrush}"
                     Points="10,10 100,20 150,45 70,50" />
                 <Label
                     FontAttributes="Bold"
-                    Text="Update Brush Colors"/>
+                    Text="Sharing Brushes Resources"
+                    SemanticProperties.Description="In this section, we use the same brush with different Views."
+                    ToolTipProperties.Text="In this section, we use the same brush with different Views."/>
+                <!-- VALIDATE BRUSH PARENT -->
+                <Label
+                    Text="Static"/>
+                <Polygon
+                    Fill="{StaticResource SharedGradientBrush}"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Polygon
+                    Fill="{StaticResource SharedGradientBrush}"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Label
+                    Text="Dynamic"/>
+                <Polygon
+                    Fill="{DynamicResource SharedGradientBrush}"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Polygon
+                    Fill="{DynamicResource SharedGradientBrush}"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Label
+                    FontAttributes="Bold"
+                    Text="Update Brush Colors"
+                    SemanticProperties.Description="In this section, we update brushes properties to validate that the changes are notified."
+                    ToolTipProperties.Text="In this section, we update brushes properties to validate that the changes are notified."/>
                 <Label
                     Text="SolidColorBrush"/>
                 <Border
@@ -381,7 +412,9 @@
                     Clicked="OnUpdateRadialColorsClicked"/>
                 <Label
                     FontAttributes="Bold"
-                    Text="BindingContext"/>
+                    Text="BindingContext"
+                    SemanticProperties.Description="In this section, validate the BindingContext propagation binding values to the GradientBrush colors."
+                    ToolTipProperties.Text="In this section, validate the BindingContext propagation binding values to the GradientBrush colors."/>
                 <Label
                     Text="Brush BindingContext"
                     Style="{StaticResource Headline}" />
