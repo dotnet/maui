@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
@@ -162,6 +164,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				return;
 			}
 
+			var logger = Services.GetService<ILogger<BlazorWebView>>() ?? NullLogger<BlazorWebView>.Instance;
+
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
 			string appRootDir;
@@ -179,6 +183,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			var contentRootRelativePath = Path.GetRelativePath(appRootDir, contentRootDirFullPath);
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
 
+			logger.CreatingFileProvider(contentRootDirFullPath, hostPageRelativePath);
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
 			_webviewManager = new WebView2WebViewManager(
@@ -191,15 +196,20 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				hostPageRelativePath,
 				(args) => UrlLoading?.Invoke(this, args),
 				(args) => BlazorWebViewInitializing?.Invoke(this, args),
-				(args) => BlazorWebViewInitialized?.Invoke(this, args));
+				(args) => BlazorWebViewInitialized?.Invoke(this, args),
+				logger);
 
 			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			foreach (var rootComponent in RootComponents)
 			{
+				logger.AddingRootComponent(rootComponent.ComponentType.FullName ?? string.Empty, rootComponent.Selector, rootComponent.Parameters?.Count ?? 0);
+
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
+
+			logger.StartingInitialNavigation(StartPath);
 			_webviewManager.Navigate(StartPath);
 		}
 

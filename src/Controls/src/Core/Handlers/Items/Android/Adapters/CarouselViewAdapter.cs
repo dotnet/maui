@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
 

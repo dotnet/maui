@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using ObjCRuntime;
 using UIKit;
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace Microsoft.Maui.Controls.Handlers

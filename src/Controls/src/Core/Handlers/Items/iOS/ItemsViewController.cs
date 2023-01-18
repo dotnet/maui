@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -117,7 +118,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_isEmpty)
 			{
-				_measurementCells.Clear();
+				_measurementCells?.Clear();
 				ItemsViewLayout?.ClearCellSizeCache();
 			}
 
@@ -222,7 +223,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateItemsSource()
 		{
-			_measurementCells.Clear();
+			_measurementCells?.Clear();
 			ItemsViewLayout?.ClearCellSizeCache();
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
@@ -266,7 +267,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var bindingContext = ItemsSource[indexPath];
 
 			// If we've already created a cell for this index path (for measurement), re-use the content
-			if (_measurementCells.TryGetValue(bindingContext, out TemplatedCell measurementCell))
+			if (_measurementCells != null && _measurementCells.TryGetValue(bindingContext, out TemplatedCell measurementCell))
 			{
 				_measurementCells.Remove(bindingContext);
 				measurementCell.ContentSizeChanged -= CellContentSizeChanged;
@@ -613,7 +614,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateTemplatedCell(templatedCell, indexPath);
 
 			// Keep this cell around, we can transfer the contents to the actual cell when the UICollectionView creates it
-			_measurementCells[ItemsSource[indexPath]] = templatedCell;
+			if (_measurementCells != null)
+				_measurementCells[ItemsSource[indexPath]] = templatedCell;
 
 			return templatedCell;
 		}

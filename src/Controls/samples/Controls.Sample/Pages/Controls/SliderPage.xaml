@@ -67,9 +67,16 @@
                     Clicked="OnUpdateMinimumButtonClicked" />
                 <Button
                     Text="Update Maximum"
-                    Clicked="OnUpdateMaximumButtonClicked" /> 
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+                    Clicked="OnUpdateMaximumButtonClicked" />
+                </HorizontalStackLayout>
+                <Label
+                    Text="Edge case - Same Minimum, Maximum and Value"
+                    Style="{StaticResource Headline}"/>
+                <Slider 
+                    Maximum="100"
+                    Minimum="100" 
+                    Value="100" />
+            </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>
