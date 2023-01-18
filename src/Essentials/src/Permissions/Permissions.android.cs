@@ -16,9 +16,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public static bool IsDeclaredInManifest(string permission)
 		{
 			var context = Application.Context;
-#pragma warning disable 618
+#pragma warning disable CS0618, CA1416, CA1422
 			var packageInfo = context.PackageManager.GetPackageInfo(context.PackageName, PackageInfoFlags.Permissions);
-#pragma warning restore 618
+#pragma warning restore CS0618, CA1416, CA1422
 			var requestedPermissions = packageInfo?.RequestedPermissions;
 
 			return requestedPermissions?.Any(r => r.Equals(permission, StringComparison.OrdinalIgnoreCase)) ?? false;
