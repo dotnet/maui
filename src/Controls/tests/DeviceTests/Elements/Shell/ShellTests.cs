@@ -696,8 +696,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Toolbar Title")]
-		public async Task ToolbarTitle()
+		[Fact(DisplayName = "Toolbar Title Initializes")]
+		public async Task ToolbarTitleIntializes()
 		{
 			SetupBuilder();
 			var navPage = new Shell()
