@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 		WeakReference<IBorderStroke>? _clip;
 		CAShapeLayer? _childMaskLayer;
 		internal event EventHandler? LayoutSubviewsChanged;
+		bool _measureValid;
 
 		public ContentView()
 		{
@@ -29,6 +30,7 @@ namespace Microsoft.Maui.Platform
 			var height = size.Height;
 
 			var crossPlatformSize = CrossPlatformMeasure(width, height);
+			_measureValid = true;
 
 			return crossPlatformSize.ToCGSize();
 		}
@@ -39,7 +41,12 @@ namespace Microsoft.Maui.Platform
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
 
-			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
+			if (!_measureValid)
+			{
+				CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
+				_measureValid = true;
+			}
+
 			CrossPlatformArrange?.Invoke(bounds);
 
 			if (ChildMaskLayer != null)
@@ -52,6 +59,7 @@ namespace Microsoft.Maui.Platform
 
 		public override void SetNeedsLayout()
 		{
+			_measureValid = false;
 			base.SetNeedsLayout();
 			Superview?.SetNeedsLayout();
 		}

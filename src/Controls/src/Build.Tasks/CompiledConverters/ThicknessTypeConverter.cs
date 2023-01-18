@@ -22,30 +22,30 @@ namespace Microsoft.Maui.Controls.XamlC
 				{
 					case 1:
 						if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out l))
-							return GenerateIL(module, l);
+							return GenerateIL(context, module, l);
 						break;
 					case 2:
 						if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out l) &&
 							double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out t))
-							return GenerateIL(module, l, t);
+							return GenerateIL(context, module, l, t);
 						break;
 					case 4:
 						if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out l) &&
 							double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out t) &&
 							double.TryParse(thickness[2], NumberStyles.Number, CultureInfo.InvariantCulture, out r) &&
 							double.TryParse(thickness[3], NumberStyles.Number, CultureInfo.InvariantCulture, out b))
-							return GenerateIL(module, l, t, r, b);
+							return GenerateIL(context, module, l, t, r, b);
 						break;
 				}
 			}
 			throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Thickness));
 		}
 
-		IEnumerable<Instruction> GenerateIL(ModuleDefinition module, params double[] args)
+		IEnumerable<Instruction> GenerateIL(ILContext context, ModuleDefinition module, params double[] args)
 		{
 			foreach (var d in args)
 				yield return Instruction.Create(OpCodes.Ldc_R8, d);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui", "Thickness"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui", "Microsoft.Maui", "Thickness"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
 		}
 	}
 
