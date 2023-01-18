@@ -14,8 +14,15 @@ internal static class DeploymentManagerAutoInitializer
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	internal static void AccessWindowsAppSDK()
 	{
-		//var options = new DeploymentInitializeOptions();
-		//Result = DeploymentManager.Initialize(options);
+		try
+		{
+			var options = new DeploymentInitializeOptions();
+			Result = DeploymentManager.Initialize(options);
+		}
+		catch (Exception ex)
+		{
+			Result = new DeploymentResult(DeploymentStatus.Unknown, ex);
+		}
 	}
 
 	public static DeploymentResult Result { get; private set; } = null!;
