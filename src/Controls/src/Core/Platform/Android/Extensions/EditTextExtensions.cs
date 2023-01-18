@@ -24,24 +24,15 @@ namespace Microsoft.Maui.Controls.Platform
 				(editText.InputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
 				(editText.InputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
 
-			// Setting the text causes the cursor to be reset to position zero.
-			// So, let's retain the current cursor position and calculate a new cursor
-			// position if the text was modified by a Converter.
 			var oldText = editText.Text ?? string.Empty;
-			var newText = TextTransformUtilites.GetTransformedText(
-				inputView?.Text,
-				isPasswordEnabled ? TextTransform.None : inputView.TextTransform
-				);
+			var newText = TextTransformUtilites.GetTransformedText(inputView?.Text,
+					isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
 
 			if (oldText != newText)
-				editText.Text = newText;
-
-			// Re-calculate the cursor offset position if the text was modified by a Converter.
-			// but if the text is being set by code, let's just move the cursor to the end.
-			var cursorOffset = newText.Length - oldText.Length;
-			int cursorPosition = editText.IsFocused ? editText.GetCursorPosition(cursorOffset) : editText.Text.Length;
-
-			editText.SetSelection(cursorPosition);
+			{
+				// Update the text and keep the cursor position 
+				editText.SetTextKeepState(newText);
+			}
 		}
 	}
 }
