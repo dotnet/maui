@@ -1,4 +1,6 @@
-﻿namespace Maui.Controls.Sample.Pages
+﻿using Microsoft.Maui.Controls;
+
+namespace Maui.Controls.Sample.Pages
 {
 	public partial class ContentViewPage
 	{
@@ -14,7 +16,7 @@
 	{
 		private string _text;
 
-		public MainViewModel()
+		public ContentViewModel()
 		{
 			_text = "Content";
 		}
