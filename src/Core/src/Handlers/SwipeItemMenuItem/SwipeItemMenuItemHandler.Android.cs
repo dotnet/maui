@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
@@ -132,7 +133,8 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var iconSize = GetIconSize();
-			var textPadding = 2;
+			var density = PlatformView.Resources?.DisplayMetrics?.Density ?? 1.0f;
+			var textPadding = 1* density;
 			var buttonPadding = (int)((contentHeight - (iconSize + lineHeight + textPadding)) / 2);
 
 			PlatformView.SetPadding(0, buttonPadding, 0, buttonPadding);

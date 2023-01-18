@@ -75,7 +75,7 @@
                     <SwipeItems
                         Mode="Reveal">
                         <SwipeItem
-                            Text="View"
+                            Text="Test (Ajg)"
                             BackgroundColor="Green"/>
                         <SwipeItem
                             Text="Test (Ajg)"
