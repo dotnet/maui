@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IPlatformViewHandler _handler;
 
 		bool _disposed;
-		WeakReference<PlatformView> _platformView;
+		WeakReference<PlatformView>? _platformView;
 		UIAccessibilityTrait _addedFlags;
 		bool? _defaultAccessibilityRespondsToUserInteraction;
 
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				if (_platformView.TryGetTarget(out var target))
+				if (_platformView?.TryGetTarget(out var target) == true)
 					return target;
 				return null;
 			}
@@ -104,6 +104,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_gestureRecognizers.Clear();
 
 			Disconnect();
+
+			_platformView = null;
 		}
 
 		static IList<GestureElement>? GetChildGestures(
