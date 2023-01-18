@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using Android.App;
 using Android.Views;
 using AndroidX.AppCompat.App;

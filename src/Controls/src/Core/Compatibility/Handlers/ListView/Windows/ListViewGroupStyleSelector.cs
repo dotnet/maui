@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility

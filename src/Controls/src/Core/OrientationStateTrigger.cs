@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 
