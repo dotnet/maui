@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections;
 using Microsoft.Maui.Controls.Handlers.Items;
 using TSize = Tizen.UIExtensions.Common.Size;

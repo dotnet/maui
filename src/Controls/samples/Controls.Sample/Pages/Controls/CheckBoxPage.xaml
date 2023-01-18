@@ -6,17 +6,37 @@
     Title="CheckBox">
     <views:BasePage.Content>
         <VerticalStackLayout Margin="12">
-            <Label Text="Default" Style="{StaticResource Headline}"/>
+            <Label
+                Text="Default"
+                Style="{StaticResource Headline}"/>
             <CheckBox/>
-
-            <Label Text="Colored" Style="{StaticResource Headline}"/>
-            <CheckBox Color="Purple" />
-            
-            <Label Text="Disabled" Style="{StaticResource Headline}"/>
+            <Label
+                Text="Colored"
+                Style="{StaticResource Headline}"/>
+            <CheckBox
+                Color="Purple" />
+            <Label
+                Text="Disabled"
+                Style="{StaticResource Headline}"/>
             <CheckBox IsEnabled="False" />
-            
-            <Label Text="Disabled Colored" Style="{StaticResource Headline}"/>
-            <CheckBox IsEnabled="False" Color="Purple" IsChecked="True" />
+            <Label
+                Text="Disabled Colored"
+                Style="{StaticResource Headline}"/>
+            <CheckBox
+                IsEnabled="False"
+                Color="Purple"
+                IsChecked="True" />
+            <Label
+                Text="Change IsChecked"
+                Style="{StaticResource Headline}"/>
+            <HorizontalStackLayout>
+                <Button
+                    x:Name="ChangeIsCheckedButton"
+                    Clicked="OnChangeIsCheckedButtonClicked"/>
+                <CheckBox
+                    x:Name="IsCheckedCheckBox"
+                    IsChecked="True"/>
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

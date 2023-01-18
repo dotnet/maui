@@ -78,32 +78,6 @@ namespace Microsoft.Maui.DeviceTests
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
-		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
-		public async Task VerticalTextAlignmentInitializesCorrectily()
-		{
-			var xplatVerticalTextAlignment = TextAlignment.End;
-
-			var entry = new EntryStub
-			{
-				Text = "Test",
-				VerticalTextAlignment = xplatVerticalTextAlignment
-			};
-
-			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.Bottom;
-
-			var values = await GetValueAsync(entry, (handler) =>
-			{
-				return new
-				{
-					ViewValue = entry.VerticalTextAlignment,
-					PlatformViewValue = GetNativeVerticalTextAlignment(handler)
-				};
-			});
-
-			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
-			values.PlatformViewValue.AssertHasFlag(expectedValue);
-		}
-
 		static AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
 			entryHandler.PlatformView;
 
@@ -211,7 +185,10 @@ namespace Microsoft.Maui.DeviceTests
 			GetNativeEntry(entryHandler).TextAlignment;
 
 		Android.Views.GravityFlags GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Gravity;
+			GetNativeEntry(entryHandler).Gravity & Android.Views.GravityFlags.VerticalGravityMask;
+
+		Android.Views.GravityFlags GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToVerticalGravityFlags();
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;

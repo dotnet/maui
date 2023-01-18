@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
@@ -22,6 +23,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_actualView = new FrameView();
 			AddSubview(_actualView);
+		}
+
+		public FrameRenderer(IPropertyMapper mapper)
+			: this(mapper, CommandMapper)
+		{
+		}
+
+		public FrameRenderer(IPropertyMapper mapper, CommandMapper commandMapper) : base(mapper, commandMapper)
+		{
+			AutoPackage = false;
 		}
 
 		public override void AddSubview(UIView view)
