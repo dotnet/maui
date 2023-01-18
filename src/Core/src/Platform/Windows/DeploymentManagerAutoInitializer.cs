@@ -27,17 +27,6 @@ internal static class DeploymentManagerAutoInitializer
 
 	public static DeploymentResult Result { get; private set; } = null!;
 
-	public static void ThrowIfFailed()
-	{
-		if (Result?.Status == DeploymentStatus.Ok)
-			return;
-
-		if (Result?.ExtendedError is null)
-			throw new SystemException($"Unknown WindowsAppRuntime.DeploymentManager.Initialize error.");
-
-		throw new SystemException($"WindowsAppRuntime.DeploymentManager.Initialize error (0x{Result.ExtendedError?.HResult:X}): {Result.ExtendedError?.Message}", Result.ExtendedError);
-	}
-
 	public static void LogIfFailed(IServiceProvider services)
 	{
 		if (Result?.Status == DeploymentStatus.Ok)
@@ -47,9 +36,15 @@ internal static class DeploymentManagerAutoInitializer
 		if (logger is null)
 			return;
 
-		if (Result?.ExtendedError is null)
+		var error = Result?.ExtendedError;
+		if (error is null)
+		{
 			logger.LogError($"Unknown WindowsAppRuntime.DeploymentManager.Initialize error.");
+		}
 		else
-			logger.LogError(Result.ExtendedError, "WindowsAppRuntime.DeploymentManager.Initialize error ({HResult}): {ErrorMessage}", Result.ExtendedError?.HResult, Result.ExtendedError?.Message);
+		{
+			var hresult = string.Format("0x{0:X}", error.HResult);
+			logger.LogError(error, "WindowsAppRuntime.DeploymentManager.Initialize error ({HResult}): {ErrorMessage}", hresult, error.Message);
+		}
 	}
 }
