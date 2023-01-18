@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var path = GetInnerPath(strokeWidth);
 
+			base.TransformPathForBounds(path, viewBounds);
+
 			return path;
 		}
 
@@ -54,11 +56,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			var path = new PathF();
 
-			float x = (float)StrokeThickness / 2;
-			float y = (float)StrokeThickness / 2;
+			float x = (float)strokeWidth / 2;
+			float y = (float)strokeWidth / 2;
 
-			float w = (float)(Width - StrokeThickness);
-			float h = (float)(Height - StrokeThickness);
+			float w = (float)(Width - strokeWidth);
+			float h = (float)(Height - strokeWidth);
 
 			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft - strokeWidth);
 			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight - strokeWidth);
