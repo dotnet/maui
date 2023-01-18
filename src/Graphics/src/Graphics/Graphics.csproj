@@ -13,7 +13,7 @@
     <Product>Microsoft.Maui.Graphics</Product>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CA1307;CA1309;CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CA1307;CA1309;CS1591;RS0026;RS0027;RS0041</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
@@ -24,5 +24,7 @@
   </ItemGroup>
 
   <Import Project="..\..\..\Workload\Shared\LibraryPacks.targets" />
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
 </Project>
