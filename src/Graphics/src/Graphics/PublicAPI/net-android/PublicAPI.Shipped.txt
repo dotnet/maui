@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.Graphics.Resource
+Microsoft.Maui.Graphics.Resource.Resource() -> void
