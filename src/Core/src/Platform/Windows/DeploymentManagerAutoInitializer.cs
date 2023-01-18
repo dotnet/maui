@@ -1,42 +1,48 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.LifecycleEvents;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
+using Microsoft.Windows.ApplicationModel.WindowsAppRuntime;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui;
+
+internal static class DeploymentManagerAutoInitializer
 {
-	internal static class DeploymentManagerAutoInitializer
+#pragma warning disable CA2255 // The 'ModuleInitializer' attribute should not be used in libraries
+	[ModuleInitializer]
+#pragma warning restore CA2255 // The 'ModuleInitializer' attribute should not be used in libraries
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	internal static void AccessWindowsAppSDK()
 	{
-		[global::System.Runtime.CompilerServices.ModuleInitializer]
-		internal static void AccessWindowsAppSDK()
-		{
-			Result = global::Microsoft.Windows.ApplicationModel.WindowsAppRuntime.DeploymentManager.Initialize(new());
-		}
+		//var options = new DeploymentInitializeOptions();
+		//Result = DeploymentManager.Initialize(options);
+	}
 
-		public static global::Microsoft.Windows.ApplicationModel.WindowsAppRuntime.DeploymentResult Result { get; private set; }
+	public static DeploymentResult Result { get; private set; } = null!;
 
-		public static void ThrowIfFailed()
-		{
-			if (Result?.Status == DeploymentStatus.Ok)
-				return;
+	public static void ThrowIfFailed()
+	{
+		if (Result?.Status == DeploymentStatus.Ok)
+			return;
 
-			if (Result?.ExtendedError is null)
-				throw new global::System.SystemException($"Unknown WindowsAppRuntime.DeploymentManager.Initialize error.");
+		if (Result?.ExtendedError is null)
+			throw new SystemException($"Unknown WindowsAppRuntime.DeploymentManager.Initialize error.");
 
-			throw new global::System.SystemException($"WindowsAppRuntime.DeploymentManager.Initialize error (0x{Result.ExtendedError?.HResult:X}): {Result.ExtendedError?.Message}", Result.ExtendedError);
-		}
+		throw new SystemException($"WindowsAppRuntime.DeploymentManager.Initialize error (0x{Result.ExtendedError?.HResult:X}): {Result.ExtendedError?.Message}", Result.ExtendedError);
+	}
 
-		public static void LogIfFailed(IServiceProvider services)
-		{
-			if (Result?.Status == DeploymentStatus.Ok)
-				return;
+	public static void LogIfFailed(IServiceProvider services)
+	{
+		if (Result?.Status == DeploymentStatus.Ok)
+			return;
 
-			var logger = services.CreateLogger<DeploymentManagerAutoInitializer>();
+		var logger = services.CreateLogger("Microsoft.Maui.DeploymentManagerAutoInitializer");
+		if (logger is null)
+			return;
 
-			if (Result?.ExtendedError is null)
-				loger.LogError($"Unknown WindowsAppRuntime.DeploymentManager.Initialize error.");
-
-			loger.LogError($"WindowsAppRuntime.DeploymentManager.Initialize error (0x{Result.ExtendedError?.HResult:X}): {Result.ExtendedError?.Message}", Result.ExtendedError);
-		}
+		if (Result?.ExtendedError is null)
+			logger.LogError($"Unknown WindowsAppRuntime.DeploymentManager.Initialize error.");
+		else
+			logger.LogError(Result.ExtendedError, "WindowsAppRuntime.DeploymentManager.Initialize error ({HResult}): {ErrorMessage}", Result.ExtendedError?.HResult, Result.ExtendedError?.Message);
 	}
 }
