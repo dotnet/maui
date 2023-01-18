@@ -163,6 +163,8 @@ Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.AncestorLevel.set -> void
 Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.Mode.get -> Microsoft.Maui.Controls.RelativeBindingSourceMode
 Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.Mode.set -> void
 Microsoft.Maui.Controls.Xaml.RelativeSourceExtension.RelativeSourceExtension() -> void
+Microsoft.Maui.Controls.Xaml.Resource
+Microsoft.Maui.Controls.Xaml.Resource.Resource() -> void
 Microsoft.Maui.Controls.Xaml.StaticExtension
 Microsoft.Maui.Controls.Xaml.StaticExtension.StaticExtension() -> void
 Microsoft.Maui.Controls.Xaml.StaticResourceExtension
