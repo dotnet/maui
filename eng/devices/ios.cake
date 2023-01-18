@@ -229,7 +229,9 @@ Task("uitest")
 	{
 		["ExtraDefineConstants"] = "IOSUITEST"
 	};
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra : properties);
+	
+	var dotnetP = MakeAbsolute(Directory("../../bin/dotnet/"));
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, dotnetP, properties);
 });
 
 RunTarget(TARGET);

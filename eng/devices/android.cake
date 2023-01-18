@@ -339,7 +339,8 @@ Task("uitest")
 		["ExtraDefineConstants"] = "ANDROID"
 	};
 
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra: properties);
+	var dotnetP = MakeAbsolute(Directory("../../bin/dotnet/"));
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, dotnetP, properties);
 
 });
 

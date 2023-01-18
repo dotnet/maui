@@ -139,6 +139,7 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
            	ResultsDirectory = GetTestResultsDirectory(),
             ArgumentCustomization = args => 
             { 
+                args.Append($"-v:diag");
                 args.Append($"-bl:{binlog}");
                 if(argsExtra != null)
                 {
