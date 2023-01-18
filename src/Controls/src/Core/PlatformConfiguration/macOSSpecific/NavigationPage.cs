@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 {
 	using FormsElement = Maui.Controls.NavigationPage;

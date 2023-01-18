@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Android.Views;
 using Microsoft.Maui.Graphics;

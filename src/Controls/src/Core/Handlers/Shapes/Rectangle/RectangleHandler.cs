@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Shapes;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Shapes;
 
 namespace Microsoft.Maui.Controls.Handlers
 {

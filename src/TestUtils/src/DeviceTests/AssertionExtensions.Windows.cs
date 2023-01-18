@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
@@ -40,6 +41,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
 		{
 			throw new NotImplementedException();
 		}
@@ -112,6 +118,12 @@ namespace Microsoft.Maui.DeviceTests
 				return true;
 			});
 
+		// Windows does ok running these tests in parallel but there's definitely
+		// a limit where it'll eventually be too many windows.
+		// So, for now we're limiting this to 10 parallel windows which seems 
+		// to work fine.
+		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(10);
+
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action) =>
 			view.AttachAndRun(window => action());
 
@@ -125,51 +137,61 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (view.Parent == null)
 			{
-				// prepare to wait for element to be in the UI
-				tcs = new TaskCompletionSource();
-				unloadedTcs = new TaskCompletionSource();
-
-				view.Loaded += OnViewLoaded;
-
-				// attach to the UI
-				Grid grid;
-				var window = new Window
-				{
-					Content = new Grid
-					{
-						HorizontalAlignment = HorizontalAlignment.Center,
-						VerticalAlignment = VerticalAlignment.Center,
-						Children =
-						{
-							(grid = new Grid
-							{
-								Width = view.Width,
-								Height = view.Height,
-								Children =
-								{
-									view
-								}
-							})
-						}
-					}
-				};
-				window.Activate();
-
-				// wait for element to be loaded
-				await tcs.Task;
-				view.Unloaded += OnViewUnloaded;
-
 				T result;
+
 				try
 				{
-					result = await Run(() => action(window));
+					await _attachAndRunSemaphore.WaitAsync();
+
+					// prepare to wait for element to be in the UI
+					tcs = new TaskCompletionSource();
+					unloadedTcs = new TaskCompletionSource();
+
+					view.Loaded += OnViewLoaded;
+
+					// attach to the UI
+					Grid grid;
+					var window = new Window
+					{
+						Content = new Grid
+						{
+							HorizontalAlignment = HorizontalAlignment.Center,
+							VerticalAlignment = VerticalAlignment.Center,
+							Children =
+							{
+								(grid = new Grid
+								{
+									Width = view.Width,
+									Height = view.Height,
+									Children =
+									{
+										view
+									}
+								})
+							}
+						}
+					};
+					window.Activate();
+
+					// wait for element to be loaded
+					await tcs.Task;
+					view.Unloaded += OnViewUnloaded;
+
+					try
+					{
+						result = await Run(() => action(window));
+					}
+					finally
+					{
+						grid.Children.Clear();
+						await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+						await Task.Delay(10);
+						window.Close();
+					}
 				}
 				finally
 				{
-					grid.Children.Clear();
-					await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-					await Task.Delay(10);
-					window.Close();
+					_attachAndRunSemaphore.Release();
 				}
 
 				return result;

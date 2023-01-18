@@ -9,3 +9,8 @@ override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Instance.get -> Microsoft.Maui.Controls.IMessagingCenter
 *REMOVED*Microsoft.Maui.Controls.IMessagingCenter
+virtual Microsoft.Maui.Controls.VisualElement.IsEnabledCore.get -> bool
+Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
+override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool

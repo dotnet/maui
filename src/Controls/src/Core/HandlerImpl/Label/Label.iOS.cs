@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Platform;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
