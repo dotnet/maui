@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
@@ -16,6 +17,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static Task<string> CreateColorAtPointErrorAsync(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
+			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+
 		public static Task WaitForKeyboardToShow(this FrameworkElement view, int timeout = 1000)
 		{
 			throw new NotImplementedException();
@@ -41,6 +45,11 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
+		public static Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static Task FocusView(this FrameworkElement view, int timeout = 1000)
 		{
 			throw new NotImplementedException();
@@ -55,12 +64,12 @@ namespace Microsoft.Maui.DeviceTests
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
 		public static async Task<string> CreateColorError(this CanvasBitmap bitmap, string message) =>
-			$"{message} This is what it looked like:<img>{await bitmap.ToBase64String()}</img>";
+			$"{message} This is what it looked like:<img>{await bitmap.ToBase64StringAsync()}</img>";
 
 		public static async Task<string> CreateEqualError(this CanvasBitmap bitmap, CanvasBitmap other, string message) =>
-			$"{message} This is what it looked like: <img>{await bitmap.ToBase64String()}</img> and <img>{await other.ToBase64String()}</img>";
+			$"{message} This is what it looked like: <img>{await bitmap.ToBase64StringAsync()}</img> and <img>{await other.ToBase64StringAsync()}</img>";
 
-		public static async Task<string> ToBase64String(this CanvasBitmap bitmap)
+		public static async Task<string> ToBase64StringAsync(this CanvasBitmap bitmap)
 		{
 			using var ms = new InMemoryRandomAccessStream();
 			await bitmap.SaveAsync(ms, CanvasBitmapFileFormat.Png);
@@ -80,89 +89,117 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task AttachAndRun(this FrameworkElement view, Action action) =>
-			view.AttachAndRun(() =>
+			view.AttachAndRun(window => action());
+
+		public static Task AttachAndRun(this FrameworkElement view, Action<Window> action) =>
+			view.AttachAndRun((window) =>
 			{
-				action();
+				action(window);
 				return Task.FromResult(true);
 			});
 
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action) =>
-			view.AttachAndRun(() =>
+			view.AttachAndRun(window => action());
+
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action) =>
+			view.AttachAndRun((window) =>
 			{
-				var result = action();
+				var result = action(window);
 				return Task.FromResult(result);
 			});
 
 		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
-			view.AttachAndRun(async () =>
+			view.AttachAndRun(window => action());
+
+		public static Task AttachAndRun(this FrameworkElement view, Func<Window, Task> action) =>
+			view.AttachAndRun(async (window) =>
 			{
-				await action();
+				await action(window);
 				return true;
 			});
 
-		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action)
+		// Windows does ok running these tests in parallel but there's definitely
+		// a limit where it'll eventually be too many windows.
+		// So, for now we're limiting this to 10 parallel windows which seems 
+		// to work fine.
+		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(10);
+
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action) =>
+			view.AttachAndRun(window => action());
+
+		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action)
 		{
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
 			TaskCompletionSource? tcs = null;
 			TaskCompletionSource? unloadedTcs = null;
-			Window? window = null;
 
 			if (view.Parent == null)
 			{
-				// prepare to wait for element to be in the UI
-				tcs = new TaskCompletionSource();
-				unloadedTcs = new TaskCompletionSource();
-
-				view.Loaded += OnViewLoaded;
-
-				// attach to the UI
-				Grid grid;
-				window = new Window
-				{
-					Content = new Grid
-					{
-						HorizontalAlignment = HorizontalAlignment.Center,
-						VerticalAlignment = VerticalAlignment.Center,
-						Children =
-						{
-							(grid = new Grid
-							{
-								Width = view.Width,
-								Height = view.Height,
-								Children =
-								{
-									view
-								}
-							})
-						}
-					}
-				};
-				window.Activate();
-
-				// wait for element to be loaded
-				await tcs.Task;
-				view.Unloaded += OnViewUnloaded;
-
 				T result;
+
 				try
 				{
-					result = await Run(action);
+					await _attachAndRunSemaphore.WaitAsync();
+
+					// prepare to wait for element to be in the UI
+					tcs = new TaskCompletionSource();
+					unloadedTcs = new TaskCompletionSource();
+
+					view.Loaded += OnViewLoaded;
+
+					// attach to the UI
+					Grid grid;
+					var window = new Window
+					{
+						Content = new Grid
+						{
+							HorizontalAlignment = HorizontalAlignment.Center,
+							VerticalAlignment = VerticalAlignment.Center,
+							Children =
+							{
+								(grid = new Grid
+								{
+									Width = view.Width,
+									Height = view.Height,
+									Children =
+									{
+										view
+									}
+								})
+							}
+						}
+					};
+					window.Activate();
+
+					// wait for element to be loaded
+					await tcs.Task;
+					view.Unloaded += OnViewUnloaded;
+
+					try
+					{
+						result = await Run(() => action(window));
+					}
+					finally
+					{
+						grid.Children.Clear();
+						await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+						await Task.Delay(10);
+						window.Close();
+					}
 				}
 				finally
 				{
-					grid.Children.Clear();
-					await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-					await Task.Delay(10);
-					window.Close();
+					_attachAndRunSemaphore.Release();
 				}
 
 				return result;
 			}
 			else
 			{
-				return await Run(action);
+				var window = view.GetParentOfType<Window>() ?? throw new InvalidOperationException("View was attached to a window but there was no window.");
+				return await Run(() => action(window));
 			}
 
 			static async Task<T> Run(Func<Task<T>> action)
@@ -184,18 +221,25 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task<CanvasBitmap> ToBitmap(this FrameworkElement view) =>
-			view.AttachAndRun(async () =>
+			view.AttachAndRun(async (window) =>
 			{
 				if (view.Parent is Border wrapper)
 					view = wrapper;
+
+				var device = CanvasDevice.GetSharedDevice();
+
+				// HELP?
+				// The simple act of doing a window capture results in the next render method
+				// working on DirectX controls (such as Win2D).
+				// We could use this window bitmap directly, but that is extra effort to crop
+				// to the view bounds... so until this breaks...
+				using var windowBitmap = await CaptureHelper.RenderAsync(window, device);
 
 				var bmp = new RenderTargetBitmap();
 				await bmp.RenderAsync(view);
 				var pixels = await bmp.GetPixelsAsync();
 				var width = bmp.PixelWidth;
 				var height = bmp.PixelHeight;
-
-				var device = CanvasDevice.GetSharedDevice();
 
 				return CanvasBitmap.CreateFromBytes(device, pixels, width, height, DirectXPixelFormat.B8G8R8A8UIntNormalized);
 			});
@@ -253,13 +297,13 @@ namespace Microsoft.Maui.DeviceTests
 			return await AssertContainsColor(bitmap, expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtPoint(this FrameworkElement view, WColor expectedColor, int x, int y)
+		public static async Task<CanvasBitmap> AssertColorAtPointAsync(this FrameworkElement view, WColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtCenter(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtCenterAsync(this FrameworkElement view, WColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
@@ -289,7 +333,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static async Task AssertEqual(this CanvasBitmap bitmap, CanvasBitmap other)
+		public static async Task AssertEqualAsync(this CanvasBitmap bitmap, CanvasBitmap other)
 		{
 			Assert.NotNull(bitmap);
 			Assert.NotNull(other);

@@ -32,14 +32,32 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
-		public static Task WaitForFocused(this UIView view, int timeout = 1000)
+		public static async Task WaitForFocused(this UIView view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+			if (!view.IsFocused())
+			{
+				await Wait(() => view.IsFocused(), timeout);
+			}
+
+			Assert.True(view.IsFocused());
 		}
+
+		public static async Task WaitForUnFocused(this UIView view, int timeout = 1000)
+		{
+			if (view.IsFocused())
+			{
+				await Wait(() => view.IsFocused(), timeout);
+			}
+
+			Assert.False(view.IsFocused());
+		}
+
+		static bool IsFocused(this UIView view) => view.Focused || view.IsFirstResponder;
 
 		public static Task FocusView(this UIView view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+			view.Focus(new FocusRequest(false));
+			return WaitForFocused(view, timeout);
 		}
 
 		public static Task ShowKeyboardForView(this UIView view, int timeout = 1000)
@@ -91,17 +109,24 @@ namespace Microsoft.Maui.DeviceTests
 			// Give the UI time to refresh
 			await Task.Delay(100);
 
-			var result = await action();
+			T result;
 
-			view.RemoveFromSuperview();
+			try
+			{
+				result = await action();
+			}
+			finally
+			{
+				view.RemoveFromSuperview();
 
-			// Give the UI time to refresh
-			await Task.Delay(100);
+				// Give the UI time to refresh
+				await Task.Delay(100);
+			}
 
 			return result;
 		}
 
-		static UIView FindContentView()
+		public static UIView FindContentView()
 		{
 			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 			{
@@ -246,13 +271,13 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, (int)bitmap.Size.Width - 1, (int)bitmap.Size.Height - 1);
 		}
 
-		public static async Task<UIImage> AssertColorAtPoint(this UIView view, UIColor expectedColor, int x, int y)
+		public static async Task<UIImage> AssertColorAtPointAsync(this UIView view, UIColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<UIImage> AssertColorAtCenter(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtCenterAsync(this UIView view, UIColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
@@ -308,7 +333,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task AssertEqual(this UIImage bitmap, UIImage other)
+		public static Task AssertEqualAsync(this UIImage bitmap, UIImage other)
 		{
 			Assert.NotNull(bitmap);
 			Assert.NotNull(other);

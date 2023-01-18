@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -245,6 +246,9 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyBackgroundChanges()
 		{
+			if (Background is ImmutableBrush)
+				return;
+
 			if (Background != null)
 			{
 				Background.Parent = this;
@@ -257,6 +261,9 @@ namespace Microsoft.Maui.Controls
 
 		void StopNotifyingBackgroundChanges()
 		{
+			if (Background is ImmutableBrush)
+				return;
+
 			if (Background != null)
 			{
 				Background.Parent = null;

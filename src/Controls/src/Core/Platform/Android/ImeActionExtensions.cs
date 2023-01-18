@@ -1,4 +1,5 @@
-﻿using Android.Views.InputMethods;
+﻿#nullable disable
+using Android.Views.InputMethods;
 
 namespace Microsoft.Maui.Controls.Platform.Android
 {

@@ -1,7 +1,4 @@
-﻿#nullable enable
-
-
-namespace Microsoft.Maui.Controls.Platform
+﻿namespace Microsoft.Maui.Controls.Platform
 {
 	public static partial class SemanticExtensions
 	{
