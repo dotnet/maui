@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 
 			Services = applicationContext.Services;
 
-			DeploymentManagerAutoInitializer.LogIfFailed(Services.CreateLogger<DeploymentManagerAutoInitializer>());
+			DeploymentManagerAutoInitializer.LogIfFailed(Services);
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
