@@ -26,10 +26,12 @@ namespace Microsoft.Maui
 			throw new global::System.SystemException($"WindowsAppRuntime.DeploymentManager.Initialize error (0x{Result.ExtendedError?.HResult:X}): {Result.ExtendedError?.Message}", Result.ExtendedError);
 		}
 
-		public static void LogIfFailed(ILogger logger)
+		public static void LogIfFailed(IServiceProvider services)
 		{
 			if (Result?.Status == DeploymentStatus.Ok)
 				return;
+
+			var logger = services.CreateLogger<DeploymentManagerAutoInitializer>();
 
 			if (Result?.ExtendedError is null)
 				loger.LogError($"Unknown WindowsAppRuntime.DeploymentManager.Initialize error.");
