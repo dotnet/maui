@@ -27,6 +27,8 @@ namespace Maui.Controls.Sample.Pages
 							new BorderClipPlayground(), Navigation),
 						GalleryBuilder.NavButton("Border using styles", () =>
 							new BorderStyles(), Navigation),
+						GalleryBuilder.NavButton("Border using Content Layout", () =>
+							new BorderLayout(), Navigation),
 					}
 				}
 			};
