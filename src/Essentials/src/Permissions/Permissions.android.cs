@@ -16,7 +16,7 @@ namespace Microsoft.Maui.ApplicationModel
 		public static bool IsDeclaredInManifest(string permission)
 		{
 			var context = Application.Context;
-#pragma warning disable CS0618, CA1416, CA1422
+#pragma warning disable CS0618, CA1416, CA1422 // TODO: might be a binding issue in xamarin/xamarin-android
 			var packageInfo = context.PackageManager.GetPackageInfo(context.PackageName, PackageInfoFlags.Permissions);
 #pragma warning restore CS0618, CA1416, CA1422
 			var requestedPermissions = packageInfo?.RequestedPermissions;
