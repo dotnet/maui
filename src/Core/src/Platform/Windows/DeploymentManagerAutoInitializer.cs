@@ -17,8 +17,6 @@ namespace Microsoft.Maui
 
 		public static void ThrowIfFailed()
 		{
-			throw new Exception("yay");
-
 			if (Result?.Status == DeploymentStatus.Ok)
 				return;
 
@@ -26,6 +24,17 @@ namespace Microsoft.Maui
 				throw new global::System.SystemException($"Unknown WindowsAppRuntime.DeploymentManager.Initialize error.");
 
 			throw new global::System.SystemException($"WindowsAppRuntime.DeploymentManager.Initialize error (0x{Result.ExtendedError?.HResult:X}): {Result.ExtendedError?.Message}", Result.ExtendedError);
+		}
+
+		public static void LogIfFailed(ILogger logger)
+		{
+			if (Result?.Status == DeploymentStatus.Ok)
+				return;
+
+			if (Result?.ExtendedError is null)
+				loger.LogError($"Unknown WindowsAppRuntime.DeploymentManager.Initialize error.");
+
+			loger.LogError($"WindowsAppRuntime.DeploymentManager.Initialize error (0x{Result.ExtendedError?.HResult:X}): {Result.ExtendedError?.Message}", Result.ExtendedError);
 		}
 	}
 }
