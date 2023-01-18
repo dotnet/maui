@@ -28,6 +28,8 @@ namespace Microsoft.Maui
 
 			Services = applicationContext.Services;
 
+			DeploymentManagerAutoInitializer.LogOrSomething();
+
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
 			Application = Services.GetRequiredService<IApplication>();
