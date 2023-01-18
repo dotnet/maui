@@ -272,12 +272,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
-
-			foreach (var sublayer in layer.Sublayers)
-			{
-				UpdateBackgroundLayerFrame(sublayer, bounds);
-			}
-
+						
 			foreach (var sublayer in layer.Sublayers)
 			{
 				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != bounds)
@@ -285,6 +280,8 @@ namespace Microsoft.Maui.Platform
 					sublayer.Frame = bounds;
 					break;
 				}
+
+				UpdateBackgroundLayerFrame(sublayer, bounds);
 			}
 		}
 
