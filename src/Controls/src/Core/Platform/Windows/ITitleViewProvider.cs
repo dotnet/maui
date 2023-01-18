@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal interface ITitleViewProvider

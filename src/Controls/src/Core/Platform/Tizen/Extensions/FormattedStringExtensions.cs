@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Internals;
 using TFormattedString = Tizen.UIExtensions.Common.FormattedString;
 using TSpan = Tizen.UIExtensions.Common.Span;
 

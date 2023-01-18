@@ -1,3 +1,4 @@
+#nullable disable
 #define DO_NOT_CHECK_FOR_BINDING_REUSE
 
 using System;
