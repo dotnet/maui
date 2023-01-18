@@ -21,14 +21,14 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		Task RequestAsync(ShareTextRequest request);
 
 		/// <summary>
-		/// Show the operating systems user interface to share a single file.
+		/// Show the operating system's user interface to share a single file.
 		/// </summary>
 		/// <param name="request">A <see cref="ShareFileRequest"/> object containing the details of the data to share.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		Task RequestAsync(ShareFileRequest request);
 
 		/// <summary>
-		/// Show the operating systems user interface to share multiple files.
+		/// Show the operating system's user interface to share multiple files.
 		/// </summary>
 		/// <param name="request">A <see cref="ShareMultipleFilesRequest"/> object containing the details of the data to share.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	public static partial class Share
 	{
 		/// <summary>
-		/// Show the operating systems user interface to share text.
+		/// Show the operating system's user interface to share text.
 		/// </summary>
 		/// <param name="text">The text to share.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			Current.RequestAsync(text);
 
 		/// <summary>
-		/// Show the operating systems user interface to share text.
+		/// Show the operating system's user interface to share text.
 		/// </summary>
 		/// <param name="text">The text to share.</param>
 		/// <param name="title">The title to display on the operating system share dialog.</param>
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			Current.RequestAsync(text, title);
 
 		/// <summary>
-		/// Show the operating systems user interface to share text.
+		/// Show the operating system's user interface to share text.
 		/// </summary>
 		/// <param name="request">A <see cref="ShareTextRequest"/> object containing the details of the data to share.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			Current.RequestAsync(request);
 
 		/// <summary>
-		/// Show the operating systems user interface to share a single file.
+		/// Show the operating system's user interface to share a single file.
 		/// </summary>
 		/// <param name="request">A <see cref="ShareFileRequest"/> object containing the details of the data to share.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			Current.RequestAsync(request);
 
 		/// <summary>
-		/// Show the operating systems user interface to share multiple files.
+		/// Show the operating system's user interface to share multiple files.
 		/// </summary>
 		/// <param name="request">A <see cref="ShareMultipleFilesRequest"/> object containing the details of the data to share.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	public static class ShareExtensions
 	{
 		/// <summary>
-		/// Show the operating systems user interface to share text.
+		/// Show the operating system's user interface to share text.
 		/// </summary>
 		/// <param name="share">The object this method is invoked on.</param>
 		/// <param name="text">The text to share.</param>
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	public abstract class ShareRequestBase
 	{
 		/// <summary>
-		/// Gets or sets the title to use on the operating systems share user interface.
+		/// Gets or sets the title to use on the operating system's share user interface.
 		/// </summary>
 		public string? Title { get; set; }
 
