@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Accessibility
 	public interface ISemanticScreenReader
 	{
 		/// <summary>
-		/// Announces the specified text through the operating systems screen reader.
+		/// Announces the specified text through the operating system's screen reader.
 		/// </summary>
 		/// <param name="text">The text to announce.</param>
 		void Announce(string text);
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Accessibility
 	public static partial class SemanticScreenReader
 	{
 		/// <summary>
-		/// Announces the specified text through the operating systems screen reader.
+		/// Announces the specified text through the operating system's screen reader.
 		/// </summary>
 		/// <param name="text">The text to announce.</param>
 		public static void Announce(string text)
