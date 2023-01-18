@@ -11,9 +11,10 @@
 
             <SolidColorBrush x:Key="SharedSolidColorBrush" Color="{DynamicResource SharedColor}" />
 
-            <LinearGradientBrush x:Key="SharedGradientBrush"  EndPoint="1,0">
-                <GradientStop Color="Yellow" Offset="0.1" />
-                <GradientStop Color="Green" Offset="1.0" />
+            <LinearGradientBrush x:Key="SharedGradientBrush" StartPoint="0,1" EndPoint="0,0">
+                <GradientStop Color="Blue" Offset="0.3"/>
+                <GradientStop Color="Purple" Offset="0.6"/>
+                <GradientStop Color="Green" Offset="0.9"/>
             </LinearGradientBrush>
             
         </ResourceDictionary>
