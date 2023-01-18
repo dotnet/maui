@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		CAShapeLayer? ChildMaskLayer
+		internal CAShapeLayer? ChildMaskLayer
 		{
 			get => _childMaskLayer;
 			set
