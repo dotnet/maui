@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,7 +17,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public IItemsViewSource ItemsSource { get; protected set; }
 		public TItemsView ItemsView { get; }
+
+		// ItemsViewLayout provides an accessor to the typed UICollectionViewLayout. It's also important to note that the
+		// initial UICollectionViewLayout which is passed in to the ItemsViewController (and accessed via the Layout property)
+		// _does not_ get updated when the layout is updated for the CollectionView. That property only refers to the
+		// original layout. So it's unlikely that you would ever want to use .Layout; use .ItemsViewLayout instead.
+		// See https://developer.apple.com/documentation/uikit/uicollectionviewcontroller/1623980-collectionviewlayout
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
+
 		bool _initialized;
 		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
@@ -110,7 +118,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_isEmpty)
 			{
-				_measurementCells.Clear();
+				_measurementCells?.Clear();
 				ItemsViewLayout?.ClearCellSizeCache();
 			}
 
@@ -215,7 +223,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateItemsSource()
 		{
-			_measurementCells.Clear();
+			_measurementCells?.Clear();
 			ItemsViewLayout?.ClearCellSizeCache();
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
@@ -259,7 +267,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var bindingContext = ItemsSource[indexPath];
 
 			// If we've already created a cell for this index path (for measurement), re-use the content
-			if (_measurementCells.TryGetValue(bindingContext, out TemplatedCell measurementCell))
+			if (_measurementCells != null && _measurementCells.TryGetValue(bindingContext, out TemplatedCell measurementCell))
 			{
 				_measurementCells.Remove(bindingContext);
 				measurementCell.ContentSizeChanged -= CellContentSizeChanged;
@@ -303,7 +311,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (cell == visibleCells[n])
 				{
-					Layout?.InvalidateLayout();
+					ItemsViewLayout?.InvalidateLayout();
 					return;
 				}
 			}
@@ -606,7 +614,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateTemplatedCell(templatedCell, indexPath);
 
 			// Keep this cell around, we can transfer the contents to the actual cell when the UICollectionView creates it
-			_measurementCells[ItemsSource[indexPath]] = templatedCell;
+			if (_measurementCells != null)
+				_measurementCells[ItemsSource[indexPath]] = templatedCell;
 
 			return templatedCell;
 		}

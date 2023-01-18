@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls
+﻿#nullable disable
+namespace Microsoft.Maui.Controls
 {
 	public abstract class FlyoutBase : Element, IFlyout
 	{

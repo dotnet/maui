@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
@@ -7,6 +8,22 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/BindableObjectExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableObjectExtensions']/Docs/*" />
 	public static class BindableObjectExtensions
 	{
+		internal static void RefreshPropertyValue(this BindableObject self, BindableProperty property, object value)
+		{
+			var ctx = self.GetContext(property);
+			if (ctx?.Binding is not null)
+			{
+				// support bound properties
+				if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
+					ctx.Binding.Apply(false);
+			}
+			else
+			{
+				// support normal/code properties
+				self.SetValue(property, value);
+			}
+		}
+
 		internal static void PropagateBindingContext<T>(this BindableObject self, IEnumerable<T> children)
 		{
 			PropagateBindingContext(self, children, BindableObject.SetInheritedBindingContext);

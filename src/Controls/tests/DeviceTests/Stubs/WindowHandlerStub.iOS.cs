@@ -38,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				}
 				else
 				{
-					PlatformView.RootViewController.View.AddSubview(view);
+					AssertionExtensions.FindContentView().AddSubview(view);
 				}
 			});
 		}
