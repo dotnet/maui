@@ -23,7 +23,7 @@ var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TES
 var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
 
-string androidVersion = Argument("version", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? defaultVersion);
+var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? defaultVersion);
 
 // other
 string CONFIGURATION = "Debug"; // needs to be debug so unit tests get discovered
