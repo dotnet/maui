@@ -4,6 +4,7 @@ parameters:
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
+  agentPoolAccessToken: ''
   projects:
     - name: name
       desc: Human Description
@@ -38,6 +39,7 @@ stages:
                       path: ${{ project.android }}
                       device: android-emulator-32_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -64,3 +66,4 @@ stages:
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}

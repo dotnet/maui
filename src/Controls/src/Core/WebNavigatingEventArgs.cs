@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigatingEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebNavigatingEventArgs']/Docs/*" />

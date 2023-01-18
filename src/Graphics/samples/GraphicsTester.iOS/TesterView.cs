@@ -1,9 +1,9 @@
 using System;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
 using CoreGraphics;
 using Foundation;
 using GraphicsTester.Scenarios;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 
 namespace GraphicsTester.iOS

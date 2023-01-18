@@ -8,8 +8,8 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapPinsGallery
 	{
-		private readonly Random _locationRandomSeed = new();
-		private int _locationIncrement = 0;
+		readonly Random _locationRandomSeed = new();
+		int _locationIncrement = 0;
 
 		// TODO generate actual random pins
 		private readonly Position[] _randomLocations =
@@ -62,26 +62,26 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 				Location = new Position(47.64232, -122.13684),
 			};
 
-			microsoftPin.MarkerClicked += (s, a) =>
+			microsoftPin.MarkerClicked += (sender, args) =>
 			{
-				DisplayAlert("Marker", "OK", "OK");
+				DisplayAlert("Marker", $"Marker Clicked: {((Pin)sender).Label}", "OK");
 			};
 
 			// TODO this doesn't seem to work on iOS?
-			microsoftPin.InfoWindowClicked += (s, a) =>
+			microsoftPin.InfoWindowClicked += (sender, args) =>
 			{
-				DisplayAlert("Info", "OK", "OK");
+				DisplayAlert("Info", $"Info Window Clicked: {((Pin)sender).Label}", "OK");
 			};
 
 			pinsMap.Pins.Add(microsoftPin);
 		}
 
-		private void AddPin_Clicked(object sender, EventArgs e)
+		void OnAddPinClicked(object sender, EventArgs e)
 		{
 			AddPin();
 		}
 
-		private void RemovePin_Clicked(object sender, EventArgs e)
+		void OnRemovePinClicked(object sender, EventArgs e)
 		{
 			if (pinsMap.Pins.Count > 0)
 			{
@@ -90,7 +90,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			}
 		}
 
-		private void Add10Pins_Clicked(object sender, EventArgs e)
+		void OnAdd10PinsClicked(object sender, EventArgs e)
 		{
 			for (int i = 0; i <= 10; i++)
 			{
@@ -98,13 +98,18 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			}
 		}
 
-		private void AddPin()
+		void AddPin()
 		{
 			pinsMap.Pins.Add(new Pin()
 			{
 				Label = $"Location {_locationIncrement++}",
 				Location = _randomLocations[_locationRandomSeed.Next(0, _randomLocations.Length)],
 			});
+		}
+
+		void OnMapClicked(object sender, MapClickedEventArgs e)
+		{
+			DisplayAlert("Map", $"Map {e.Location.Latitude}, {e.Location.Longitude} clicked.", "Ok");
 		}
 	}
 }

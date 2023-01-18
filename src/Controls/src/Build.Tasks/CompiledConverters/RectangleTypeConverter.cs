@@ -26,10 +26,10 @@ namespace Microsoft.Maui.Controls.XamlC
 				!double.TryParse(xywh[3], NumberStyles.Number, CultureInfo.InvariantCulture, out h))
 				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Rect));
 
-			return GenerateIL(x, y, w, h, module);
+			return GenerateIL(context, x, y, w, h, module);
 		}
 
-		IEnumerable<Instruction> GenerateIL(double x, double y, double w, double h, ModuleDefinition module)
+		IEnumerable<Instruction> GenerateIL(ILContext context, double x, double y, double w, double h, ModuleDefinition module)
 		{
 			//			IL_0000:  ldc.r8 3.1000000000000001
 			//			IL_0009:  ldc.r8 4.2000000000000002
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			yield return Instruction.Create(OpCodes.Ldc_R8, y);
 			yield return Instruction.Create(OpCodes.Ldc_R8, w);
 			yield return Instruction.Create(OpCodes.Ldc_R8, h);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Rect"), parameterTypes: new[] {
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Rect"), parameterTypes: new[] {
 				("mscorlib", "System", "Double"),
 				("mscorlib", "System", "Double"),
 				("mscorlib", "System", "Double"),

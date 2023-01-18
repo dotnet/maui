@@ -14,7 +14,8 @@
                 <Button
                     Text="Button"/>
                 <Button
-                    Text="Button with Tooltip" ToolTipProperties.Text="This is a tooltip!" />
+                    Text="Button with Tooltip" 
+                    ToolTipProperties.Text="This is a tooltip!" />
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>
@@ -49,7 +50,10 @@
                     Text="Background"
                     Style="{StaticResource Headline}" />
                 <Button 
-                    Text="Background">
+                    x:Name="BackgroundButton"
+                    Text="Background"
+                    HorizontalOptions="Center"
+                    Clicked="OnBackgroundButtonClicked">
                     <Button.Background>
                         <LinearGradientBrush EndPoint="1,0">
                             <GradientStop Color="Yellow"
