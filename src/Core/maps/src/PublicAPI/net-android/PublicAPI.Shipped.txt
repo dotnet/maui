@@ -81,6 +81,8 @@ Microsoft.Maui.Maps.MapType.Hybrid = 2 -> Microsoft.Maui.Maps.MapType
 Microsoft.Maui.Maps.MapType.Satellite = 1 -> Microsoft.Maui.Maps.MapType
 Microsoft.Maui.Maps.MapType.Street = 0 -> Microsoft.Maui.Maps.MapType
 Microsoft.Maui.Maps.Platform.MapExtensions
+Microsoft.Maui.Maps.Resource
+Microsoft.Maui.Maps.Resource.Resource() -> void
 override Microsoft.Maui.Maps.Distance.Equals(object? obj) -> bool
 override Microsoft.Maui.Maps.Distance.GetHashCode() -> int
 override Microsoft.Maui.Maps.Handlers.MapElementHandler.CreatePlatformElement() -> Java.Lang.Object!
