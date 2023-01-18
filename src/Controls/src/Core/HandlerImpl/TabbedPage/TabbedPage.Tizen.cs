@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Tizen.NUI;

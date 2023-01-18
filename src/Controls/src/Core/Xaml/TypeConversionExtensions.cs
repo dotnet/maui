@@ -1,3 +1,4 @@
+#nullable disable
 //
 // TypeConversionExtensions.cs
 //

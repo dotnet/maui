@@ -1,7 +1,9 @@
+#nullable disable
 using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
+	// TODO Rename this class to not have a typo
 	/// <summary>
 	/// A utilities class for text transformations.
 	/// </summary>
