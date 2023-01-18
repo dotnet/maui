@@ -1,3 +1,4 @@
+#nullable disable
 #if __MOBILE__
 using System;
 using System.Collections.Generic;

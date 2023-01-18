@@ -1,5 +1,3 @@
-#nullable enable
-
 using Microsoft.Maui.Controls.Shapes;
 using GColor = Microsoft.Maui.Graphics.Color;
 using GColors = Microsoft.Maui.Graphics.Colors;

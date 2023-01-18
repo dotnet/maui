@@ -2,3 +2,7 @@
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Platform.MauiLabel.LayoutSubviews() -> void
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Platform.MauiTextField.WillMoveToWindow(UIKit.UIWindow? window) -> void
+override Microsoft.Maui.Platform.MauiTextView.WillMoveToWindow(UIKit.UIWindow? window) -> void
+*REMOVED*override Microsoft.Maui.Handlers.PageHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.PageHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
