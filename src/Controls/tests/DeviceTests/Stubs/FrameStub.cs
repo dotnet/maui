@@ -98,5 +98,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return _parent ?? (IElement)base.Parent;
 			}
 		}
+
+		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() =>
+			PropertyMapperOverrides;
+
+		public PropertyMapper PropertyMapperOverrides
+		{
+			get;
+			set;
+		}
 	}
 }
