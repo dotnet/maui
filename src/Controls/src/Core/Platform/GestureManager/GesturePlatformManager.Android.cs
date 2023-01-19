@@ -25,12 +25,12 @@ namespace Microsoft.Maui.Controls.Platform
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
 		View? View => Element as View;
-		AView? _control;
+		WeakReference<AView>? _control;
 
 		public GesturePlatformManager(IViewHandler handler)
 		{
 			_handler = handler;
-			_control = _handler.ToPlatform();
+			_control = new WeakReference<AView>(_handler.ToPlatform());
 			_tapAndPanAndSwipeDetector = new Lazy<TapAndPanGestureDetector>(InitializeTapAndPanAndSwipeDetector);
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
@@ -42,14 +42,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				if (_control.IsAlive())
-					return _control;
+				if (_control?.TryGetTarget(out var target) == true && target.IsAlive())
+					return target;
 
 				return null;
 			}
 			set
 			{
-				_control = value;
+				if (value != null)
+					_control = new WeakReference<AView>(value);
+				else
+					_control = null;
 			}
 		}
 
