@@ -137,9 +137,10 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
             NoBuild = noBuild,
             Logger = $"trx;LogFileName={results}",
            	ResultsDirectory = GetTestResultsDirectory(),
+            Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
-                args.Append($"-v:diag");
+               
                 args.Append($"-bl:{binlog}");
                 if(argsExtra != null)
                 {

@@ -12,7 +12,10 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 	[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
 	[TestFixture(TestDevice.Mac)]
+#elif WINTEST
+	[TestFixture(TestDevice.Windows)]
 #endif
+
 	public class AppiumPlatformsTestBase : AppiumUITestBase
 	{
 		TestDevice _testDevice;
@@ -25,7 +28,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		public void TearDown()
 		{
 			//this crashes on Android
-			if(!IsAndroid)
+			if(!IsAndroid && !IsWindows)
 				Driver?.ResetApp();
 		}
 
