@@ -548,14 +548,20 @@ namespace Microsoft.Maui.DeviceTests
 			return platformView;
 		}
 
-		public static void TapBackButton(this UINavigationBar uINavigationBar)
+
+		static UIView GetBackButton(this UINavigationBar uINavigationBar)
 		{
 			var item = uINavigationBar.FindDescendantView<UIView>(result =>
 			{
 				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
 			});
 
-			_ = item ?? throw new Exception("Unable to locate back button view");
+			return item ?? throw new Exception("Unable to locate back button view");
+		}
+
+		public static void TapBackButton(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.GetBackButton();
 
 			var recognizer = item!.GestureRecognizers!.OfType<UITapGestureRecognizer>().FirstOrDefault();
 			_ = recognizer ?? throw new Exception("Unable to Back Button TapGestureRecognizer");
@@ -580,16 +586,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static string? GetBackButtonText(this UINavigationBar uINavigationBar)
 		{
-			var item = uINavigationBar.FindDescendantView<UIView>(result =>
-			{
-				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
-			});
-
-			_ = item ?? throw new Exception("Unable to locate TitleBar Control");
+			var item = uINavigationBar.GetBackButton();
 
 			var titleLabel = item.FindDescendantView<UILabel>();
 
-			_ = item ?? throw new Exception("Unable to locate UILabel Inside UINavigationBar");
+			_ = item ?? throw new Exception("Unable to locate BackButton UILabel Inside UINavigationBar");
 			return titleLabel?.Text;
 		}
 	}
