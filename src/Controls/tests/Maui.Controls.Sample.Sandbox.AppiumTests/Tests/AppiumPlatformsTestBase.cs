@@ -15,7 +15,6 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 #elif WINTEST
 	[TestFixture(TestDevice.Windows)]
 #endif
-
 	public class AppiumPlatformsTestBase : AppiumUITestBase
 	{
 		TestDevice _testDevice;
