@@ -33,6 +33,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="{0}" />
+        <image name="{imageView.image}" />
     </resources>
 </document>
