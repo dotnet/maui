@@ -712,6 +712,7 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		// static field to hold value when propagating back out the recursion
 		static bool IsRtl = false;
 
 		internal static UIView? FindNextView(this UIView view, UIView superView, Func<UIView, bool> isValidType)
