@@ -78,8 +78,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			mauiContext ??= MauiContext;
 			handler.SetMauiContext(mauiContext);
-			handler.SetVirtualView(element);
 			element.Handler = handler;
+			handler.SetVirtualView(element);
 
 			if (element is IView view && handler is IViewHandler viewHandler)
 			{

@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Platform
 	public class LayoutView : MauiView
 	{
 		bool _userInteractionEnabled;
+		bool _measureValid;
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also
@@ -23,6 +24,7 @@ namespace Microsoft.Maui.Platform
 			var height = size.Height;
 
 			var crossPlatformSize = CrossPlatformMeasure(width, height);
+			_measureValid = true;
 
 			return crossPlatformSize.ToCGSize();
 		}
@@ -35,24 +37,33 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
-			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
+
+			if (!_measureValid)
+			{
+				CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
+				_measureValid = true;
+			}
+
 			CrossPlatformArrange?.Invoke(bounds);
 		}
 
 		public override void SetNeedsLayout()
 		{
+			_measureValid = false;
 			base.SetNeedsLayout();
 			Superview?.SetNeedsLayout();
 		}
 
 		public override void SubviewAdded(UIView uiview)
 		{
+			_measureValid = false;
 			base.SubviewAdded(uiview);
 			Superview?.SetNeedsLayout();
 		}
 
 		public override void WillRemoveSubview(UIView uiview)
 		{
+			_measureValid = false;
 			base.WillRemoveSubview(uiview);
 			Superview?.SetNeedsLayout();
 		}
