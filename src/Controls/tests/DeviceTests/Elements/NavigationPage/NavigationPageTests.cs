@@ -92,7 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				Assert.True(await AssertionExtensions.Wait(()=> IsNavigationBarVisible(handler)));
+				Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(handler)));
 				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, false);
 				Assert.True(await AssertionExtensions.Wait(() => !IsNavigationBarVisible(handler)));
 				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, true);
