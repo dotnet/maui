@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			Logger.CreatingAndroidWebkitWebView();
 
-#pragma warning disable CA1416, CA1412, CA1422 // Validate platform compatibility
 			var blazorAndroidWebView = new BlazorAndroidWebView(Context!)
 			{
 #pragma warning disable 618 // This can probably be replaced with LinearLayout(LayoutParams.MatchParent, LayoutParams.MatchParent); just need to test that theory
