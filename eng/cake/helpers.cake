@@ -154,7 +154,7 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
         };
     if(!string.IsNullOrEmpty(dotnetPath))
     {
-        settings.ToolPath = dotnetPath;
+        settings.ToolPath = $"{dotnetPath}/dotnet.exe";
     }
 
     DotNetCoreTest(csproj, settings);
