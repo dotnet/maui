@@ -322,6 +322,11 @@
             <Output TaskParameter="Hash" PropertyName="_MauiSplashInputsFileHash" />
         </GetFileHash>
 
+        <!-- Add the inputs file's hash to the splash items -->
+        <ItemGroup>
+            <_MauiSplashScreenWithHashes Update="@(_MauiSplashScreenWithHashes)" InputsFileHash="$(_MauiSplashInputsFileHash)" />
+        </ItemGroup>
+
         <ItemGroup>
             <FileWrites Include="$(_ResizetizerInputsFile)" />
             <FileWrites Include="$(_MauiFontInputsFile)" />
@@ -391,10 +396,14 @@
         <!-- iOS, but not Catalyst -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
             <!-- Add a Link attribute in the form of '<filename>_<inputshash>.<extension>' -->
-            <_MauiSplashScreenWithLink Include="@(_MauiSplashScreenWithHashes->HasMetadata('Link'))" />
-            <_MauiSplashScreenWithoutLink Include="@(_MauiSplashScreenWithHashes)" Exclude="@(_MauiSplashScreenWithLink)" />
-            <_MauiSplashScreenWithHashesInFilename Include="@(_MauiSplashScreenWithoutLink)" Link="%(Filename)_$(_MauiSplashInputsFileHash)%(Extension)" />
-            <_MauiSplashScreenWithHashesInFilename Include="@(_MauiSplashScreenWithLink)" Link="$([System.IO.Path]::GetFilenameWithoutExtension('%(Link)'))_$(_MauiSplashInputsFileHash)$([System.IO.Path]::GetExtension('%(Link)'))" />
+          <_MauiSplashScreenWithHashesInFilename
+              Include="@(_MauiSplashScreenWithHashes->HasMetadata('Link'))"
+              OriginalLink="%(_MauiSplashScreenWithHashes.Link)"
+              Link="$([System.IO.Path]::GetFilenameWithoutExtension('%(_MauiSplashScreenWithHashes.Link)'))_%(InputsFileHash)$([System.IO.Path]::GetExtension('%(_MauiSplashScreenWithHashes.Link)'))" />
+          <_MauiSplashScreenWithHashesInFilename
+              Include="@(_MauiSplashScreenWithHashes)"
+              Exclude="@(_MauiSplashScreenWithHashesInFilename)"
+              Link="%(Filename)_%(InputsFileHash)%(Extension)" />
         </ItemGroup>
         <GenerateSplashStoryboard
             Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'"
