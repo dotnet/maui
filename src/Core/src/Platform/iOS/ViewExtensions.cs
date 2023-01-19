@@ -699,55 +699,53 @@ namespace Microsoft.Maui.Platform
 				layer.CornerRadius = stroke.CornerRadius;
 		}
 
-		internal static UIViewController? GetViewController<T>(this UIView view) where T : UIViewController
+		internal static T? FindResponder<T>(this UIView view) where T : UIResponder
 		{
 			var nextResponder = view as UIResponder;
 			while (nextResponder is not null)
 			{
 				nextResponder = nextResponder.NextResponder;
 
-				if (nextResponder is T viewController)
-					return viewController;
+				if (nextResponder is T responder)
+					return responder;
 			}
 			return null;
 		}
 
-		internal static UIView? FindNextView(this UIView view, UIView superView, Type[] requestedTypes)
-		{
-			if (requestedTypes is null)
-				return null;
+		static bool IsRtl = false;
 
+		internal static UIView? FindNextView(this UIView view, UIView superView, Func<UIView, bool> isValidType)
+		{
 			// calculate the original CGRect parameters once here instead of multiple times later
 			var originalRect = view.ConvertRectToView(view.Bounds, null);
 
-			var nextField = superView.SearchBestNextView(originalRect, null, requestedTypes);
+			IsRtl = false;
+			var nextField = superView.FindNextView(originalRect, null, isValidType);
+
+			// wrap around to the top if we are at the end to mirror Xamarin.Forms behavior
+			if (nextField is null)
+				nextField = superView.FindNextView(new CGRect(float.MinValue, float.MinValue, 0, 0), null, isValidType);
+
 			return nextField;
 		}
 
-		static UIView? SearchBestNextView(this UIView view, CGRect originalRect, UIView? currentBest, Type[] requestedTypes)
+		static UIView? FindNextView(this UIView view, CGRect originalRect, UIView? currentBest, Func<UIView, bool> isValidType)
 		{
+			IsRtl |= view.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
+
 			foreach (var child in view.Subviews)
 			{
-				var inheritsType = false;
-
-				foreach (var t in requestedTypes)
-				{
-					if (child.GetType().IsSubclassOf(t) || child.GetType() == t)
-					{
-						inheritsType = true;
-						break;
-					}
-				}
-
-				if (inheritsType && child.CanBecomeFirstResponder())
+				if (isValidType(child) && child.CanBecomeFirstResponder())
 				{
 					if (TryFindNewBestView(originalRect, currentBest, child, out var newBest))
+					{
 						currentBest = newBest;
+					}
 				}
 
 				else if (child.Subviews.Length > 0 && !child.Hidden && child.Alpha > 0f)
 				{
-					var newBestChild = child.SearchBestNextView(originalRect, currentBest, requestedTypes);
+					var newBestChild = child.FindNextView(originalRect, currentBest, isValidType);
 					if (newBestChild is not null && TryFindNewBestView(originalRect, currentBest, newBestChild, out var newBest))
 						currentBest = newBest;
 				}
@@ -768,6 +766,16 @@ namespace Microsoft.Maui.Platform
 				(currentBestRect is null || newViewRect.Top < cbrValue.Top))
 			{
 				return true;
+			}
+
+			else if (IsRtl)
+			{
+				if (originalRect.Top == newViewRect.Top &&
+					 originalRect.Right > newViewRect.Right &&
+					 (currentBestRect is null || newViewRect.Right > cbrValue.Right))
+				{
+					return true;
+				}
 			}
 
 			else if (originalRect.Top == newViewRect.Top &&
