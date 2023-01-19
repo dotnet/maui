@@ -72,7 +72,7 @@
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiIcon Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" />
     <MauiFont Include="Resources\Fonts\*" />
-    <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
+    <MauiSplashScreen Include="Resources\Splash\dotnet_splash.svg" Color="#FFFFFF" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+.buildtasks/
 .nuspec/**/*.dll
 .nuspec/**/*.dylib
 .nuspec/**/*.so
