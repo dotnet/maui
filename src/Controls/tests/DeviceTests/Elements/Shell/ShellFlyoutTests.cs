@@ -65,6 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if ANDROID || WINDOWS
 		[Fact]
 		public async Task FlyoutHeaderAdaptsToMinimumHeight()
 		{
@@ -87,11 +88,10 @@ namespace Microsoft.Maui.DeviceTests
 				AssertionExtensions.CloseEnough(flyoutFrame.Height, 30);
 			});
 		}
-
-#if !WINDOWS
-
+#endif
 
 #if ANDROID
+
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
 		public async Task FlyoutHeaderMinimumHeight(FlyoutHeaderBehavior behavior)
@@ -134,13 +134,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FlyoutContentSetsCorrectBottomPaddingWhenMinHeightIsSetForFlyoutHeader()
 		{
-			var layout = new VerticalStackLayout()
-			{
-				new Label() { Text = "Flyout Header" }
-			};
-
 			await RunShellTest(shell =>
 			{
+				var layout = new VerticalStackLayout()
+				{
+					new Label() { Text = "Flyout Header" }
+				};
 
 				layout.MinimumHeightRequest = 30;
 				shell.FlyoutHeader = layout;
@@ -158,21 +157,17 @@ namespace Microsoft.Maui.DeviceTests
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
 				// validate footer position
-				AssertionExtensions.CloseEnough(footerFrame.Y + layout.Margin.Top, headerFrame.Height + contentFrame.Height);
+				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height);
 			});
 		}
-#endif
 
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
 		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(FlyoutHeaderBehavior behavior)
 		{
-			// flyoutHeader.Margin.Top gets set to the SafeAreaPadding
-			// so we have to account for that in the default setup
-			var flyoutHeader = new Label() { Text = "Flyout Header" };
 			await RunShellTest(shell =>
 			{
-				shell.FlyoutHeader = flyoutHeader;
+				shell.FlyoutHeader = new Label() { Text = "Flyout Header" };
 				shell.FlyoutFooter = new Label() { Text = "Flyout Footer" };
 				shell.FlyoutContent = new VerticalStackLayout() { new Label() { Text = "Flyout Content" } };
 				shell.FlyoutHeaderBehavior = behavior;
@@ -188,25 +183,24 @@ namespace Microsoft.Maui.DeviceTests
 
 				// validate header position
 				AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
-				AssertionExtensions.CloseEnough(flyoutHeader.Margin.Top, headerFrame.Y, message: "Header Y");
+				AssertionExtensions.CloseEnough(0, headerFrame.Y, message: "Header Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
 
 				// validate content position
 				AssertionExtensions.CloseEnough(0, contentFrame.X, message: "Content X");
-				AssertionExtensions.CloseEnough(headerFrame.Height + flyoutHeader.Margin.Top, contentFrame.Y, epsilon: 0.5, message: "Content Y");
+				AssertionExtensions.CloseEnough(headerFrame.Height, contentFrame.Y, epsilon: 0.5, message: "Content Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, contentFrame.Width, message: "Content Width");
 
 				// validate footer position
 				AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + flyoutHeader.Margin.Top, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
 				//All three views should measure to the height of the flyout
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height + flyoutHeader.Margin.Top, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
 			});
 		}
 
-#if ANDROID
 		[Fact]
 		public async Task FlyoutHeaderCollapsesOnScroll()
 		{
@@ -238,6 +232,7 @@ namespace Microsoft.Maui.DeviceTests
 			async (shell, handler) =>
 			{
 				await OpenFlyout(handler);
+				await Task.Delay(10);
 
 				var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
 
@@ -294,8 +289,6 @@ namespace Microsoft.Maui.DeviceTests
 				);
 			});
 		}
-#endif
-
 #endif
 
 		async Task RunShellTest(Action<Shell> action, Func<Shell, ShellHandler, Task> testAction)
