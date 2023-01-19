@@ -427,17 +427,6 @@
                 <TargetPath>%(_MauiSplashImages.Filename)%(_MauiSplashImages.Extension)</TargetPath>
             </BundleResource>
         </ItemGroup>
-        <!-- If on Windows, using build host, copy the files over to build server host too -->
-        <ItemGroup Condition="'$(BuildSessionId)' != '' and '$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(IsMacEnabled)'=='true'">
-            <_MauiSplashToCopyToBuildServer Include="@(_MauiSplashAssets)">
-                <TargetPath>%(Identity)</TargetPath>
-            </_MauiSplashToCopyToBuildServer>
-        </ItemGroup>
-        <CopyFilesToBuildServer
-            Condition="'$(BuildSessionId)' != '' and '$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(IsMacEnabled)'=='true'"
-            SessionId="$(BuildSessionId)"
-            Files="@(_MauiSplashToCopyToBuildServer)"
-        />
 
         <!-- Windows App SDK -->
         <GenerateSplashAssets
@@ -553,18 +542,6 @@
             <TizenTpkUserIncludeFiles Include="@(_MauiFontCopied)"  Condition="'@(_MauiFontCopied)' != ''" TizenTpkSubDir="res\fonts\" />
         </ItemGroup>
 
-        <!-- iOS Only -->
-        <!-- If on Windows, using build host, copy the files over to build server host too -->
-        <ItemGroup Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'">
-            <_MauiFontsToCopyToBuildServer Include="@(_MauiFontBundleResource);@(_MauiFontPListFiles)">
-                <TargetPath>%(Identity)</TargetPath>
-            </_MauiFontsToCopyToBuildServer>
-        </ItemGroup>
-        <CopyFilesToBuildServer
-            Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
-            SessionId="$(BuildSessionId)"
-            Files="@(_MauiFontsToCopyToBuildServer)" />
-
         <!-- Touch/create our stamp file for outputs -->
         <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
 
@@ -623,18 +600,6 @@
 
             <FileWrites Include="@(_ResizetizerCollectedBundleResourceImages)" />
         </ItemGroup>
-
-        <!-- iOS Only -->
-        <!-- If on Windows, using build host, copy the files over to build server host too -->
-        <ItemGroup Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'">
-            <_MauiImagesToCopyToBuildServer Include="@(_ResizetizerCollectedBundleResourceImages)">
-                <TargetPath>%(Identity)</TargetPath>
-            </_MauiImagesToCopyToBuildServer>
-        </ItemGroup>
-        <CopyFilesToBuildServer
-            Condition="'$(BuildSessionId)' != '' And '$(_ResizetizerIsiOSApp)' == 'True' And '$(IsMacEnabled)'=='true'"
-            SessionId="$(BuildSessionId)"
-            Files="@(_MauiImagesToCopyToBuildServer)" />
 
         <!-- Android -->
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
