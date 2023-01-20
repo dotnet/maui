@@ -1,5 +1,5 @@
 ﻿using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.NUI.GraphicsView;
+using Microsoft.Maui.Graphics.Skia.Views;
 
 namespace Microsoft.Maui.Platform
 {

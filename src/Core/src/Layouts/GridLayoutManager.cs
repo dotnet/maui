@@ -302,14 +302,7 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = 0; n < definitions.Length; n++)
 				{
-					var current = definitions[n].Size;
-
-					if (current <= 0 && !definitions[n].IsStar)
-					{
-						continue;
-					}
-
-					sum += current;
+					sum += definitions[n].Size;
 
 					if (n > 0)
 					{
@@ -337,6 +330,19 @@ namespace Microsoft.Maui.Layouts
 				CompressStarMeasurements();
 			}
 
+			Size MeasureCell(Cell cell, double width, double height)
+			{
+				if (cell.LastMeasureHeight == height && cell.LastMeasureWidth == width)
+				{
+					return cell.LastMeasureResult;
+				}
+
+				var result = _childrenToLayOut[cell.ViewIndex].Measure(width, height);
+				cell.CacheMeasure(width, height, result);
+
+				return result;
+			}
+
 			void MeasureCellsWithUnknowns()
 			{
 				for (int n = 0; n < _cells.Length; n++)
@@ -353,7 +359,7 @@ namespace Microsoft.Maui.Layouts
 					var availableWidth = cell.IsColumnSpanAuto ? double.PositiveInfinity : AvailableWidth(cell);
 					var availableHeight = cell.IsRowSpanAuto ? double.PositiveInfinity : AvailableHeight(cell);
 
-					var measure = _childrenToLayOut[cell.ViewIndex].Measure(availableWidth, availableHeight);
+					var measure = MeasureCell(cell, availableWidth, availableHeight);
 
 					if (cell.IsColumnSpanAuto)
 					{
@@ -590,7 +596,7 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					var measure = _childrenToLayOut[cell.ViewIndex].Measure(width, height);
+					var measure = MeasureCell(cell, width, height);
 
 					if (cell.IsColumnSpanStar && cell.ColumnSpan > 1)
 					{
@@ -686,26 +692,20 @@ namespace Microsoft.Maui.Layouts
 			{
 				if (_grid.VerticalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridHeight))
 				{
-					if (_grid.DesiredSize.Height < targetSize.Height)
-					{
-						// Reset the size on all star rows
-						ZeroOutStarSizes(_rows);
+					// Reset the size on all star rows
+					ZeroOutStarSizes(_rows);
 
-						// And compute them for the actual arrangement height
-						ResolveStarRows(targetSize.Height);
-					}
+					// And compute them for the actual arrangement height
+					ResolveStarRows(targetSize.Height);
 				}
 
 				if (_grid.HorizontalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridWidth))
 				{
-					if (_grid.DesiredSize.Width < targetSize.Width)
-					{
-						// Reset the size on all star rows
-						ZeroOutStarSizes(_columns);
+					// Reset the size on all star columns
+					ZeroOutStarSizes(_columns);
 
-						// And compute them for the actual arrangement width
-						ResolveStarColumns(targetSize.Width);
-					}
+					// And compute them for the actual arrangement width
+					ResolveStarColumns(targetSize.Width);
 				}
 			}
 
@@ -735,7 +735,7 @@ namespace Microsoft.Maui.Layouts
 					var start = cell.Row;
 					var end = start + cell.RowSpan;
 
-					var desiredHeight = _childrenToLayOut[cell.ViewIndex].DesiredSize.Height;
+					var desiredHeight = Math.Min(_gridHeightConstraint, _childrenToLayOut[cell.ViewIndex].DesiredSize.Height);
 
 					ExpandStarsInSpan(desiredHeight, _rows, copy, start, end);
 				}
@@ -763,7 +763,7 @@ namespace Microsoft.Maui.Layouts
 					var start = cell.Column;
 					var end = start + cell.ColumnSpan;
 
-					var cellRequiredWidth = _childrenToLayOut[cell.ViewIndex].DesiredSize.Width;
+					var cellRequiredWidth = Math.Min(_gridWidthConstraint, _childrenToLayOut[cell.ViewIndex].DesiredSize.Width);
 
 					ExpandStarsInSpan(cellRequiredWidth, _columns, copy, start, end);
 				}
@@ -774,7 +774,14 @@ namespace Microsoft.Maui.Layouts
 			static Definition[] ScratchCopy(Definition[] original)
 			{
 				var copy = new Definition[original.Length];
-				original.CopyTo(copy, 0);
+
+				for (int n = 0; n < original.Length; n++)
+				{
+					copy[n] = new Definition(original[n].GridLength)
+					{
+						Size = original[n].Size
+					};
+				}
 
 				// zero out the star sizes in the copy
 				ZeroOutStarSizes(copy);
@@ -816,7 +823,7 @@ namespace Microsoft.Maui.Layouts
 					{
 						if (updated[n].IsStar)
 						{
-							updated[n].Update(toAdd);
+							updated[n].Size += toAdd;
 						}
 					}
 				}
@@ -916,6 +923,17 @@ namespace Microsoft.Maui.Layouts
 			{
 				// Avoiding Enum.HasFlag here for performance reasons; we don't need the type check
 				return (a & b) == b;
+			}
+
+			public double LastMeasureWidth { get; private set; } = -1;
+			public double LastMeasureHeight { get; private set; } = -1;
+			public Size LastMeasureResult { get; private set; }
+
+			public void CacheMeasure(double width, double height, Size result)
+			{
+				LastMeasureHeight = height;
+				LastMeasureWidth = width;
+				LastMeasureResult = result;
 			}
 		}
 

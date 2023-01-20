@@ -110,7 +110,9 @@ namespace Microsoft.Maui.ApplicationModel
 				EnsureMainThread();
 
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
+#pragma warning disable CA1422 // Validate platform compatibility
 				return await RequestLocationAsync(true, lm => lm.RequestWhenInUseAuthorization());
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 			}
 
@@ -120,7 +122,9 @@ namespace Microsoft.Maui.ApplicationModel
 					return PermissionStatus.Disabled;
 
 #pragma warning disable CA1416 // TODO: CLLocationManager.Status has [UnsupportedOSPlatform("ios14.0")], [UnsupportedOSPlatform("macos11.0")], [UnsupportedOSPlatform("tvos14.0")], [UnsupportedOSPlatform("watchos7.0")]
+#pragma warning disable CA1422 // Validate platform compatibility
 				var status = CLLocationManager.Status;
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 
 				return status switch

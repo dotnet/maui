@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -68,17 +66,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers
-		{
-			get
-			{
-				if (_handler?.VirtualView is IGestureController gc &&
-					gc.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
-					return oc;
-
-				return null;
-			}
-		}
+		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers =>
+			(_handler.VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
 
 		// TODO MAUI
 		// Do we need to provide a hook for this in the handlers?
@@ -565,11 +554,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool ValidateGesture(TapGestureRecognizer g)
 			{
-				if (e is RightTappedRoutedEventArgs &&
-					(g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+				if (e is RightTappedRoutedEventArgs)
 				{
-					// Currently we only support single right clicks on WinUI
-					return g.NumberOfTapsRequired == 1;
+					// Currently we only support single right clicks
+					if ((g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+						return g.NumberOfTapsRequired == 1;
+					else
+						return false;
 				}
 
 				if ((g.Buttons & ButtonsMask.Primary) != ButtonsMask.Primary)

@@ -24,9 +24,16 @@ namespace Microsoft.Maui.Platform
 			platformView.AccessibilityLabel = semantics.Description;
 			platformView.AccessibilityHint = semantics.Hint;
 
-			// UIControl elements automatically have IsAccessibilityElement set to true
-			if (platformView is not UIControl && (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
-				platformView.IsAccessibilityElement = true;
+			if ((!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
+			{
+				// Most UIControl elements automatically have IsAccessibilityElement set to true
+				if (platformView is not UIControl)
+					platformView.IsAccessibilityElement = true;
+				// UIStepper and UIPageControl inherit from UIControl but iOS marks `IsAccessibilityElement` to false
+				// because they are composite controls.
+				else if (platformView is UIStepper || platformView is UIPageControl)
+					platformView.IsAccessibilityElement = true;
+			}
 
 			if (semantics.IsHeading)
 			{

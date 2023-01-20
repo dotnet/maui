@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,14 +15,12 @@ namespace Microsoft.Maui.Controls
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="//Member[@MemberName='DisableCss']/Docs/*" />
 		DisableCss = 1 << 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="//Member[@MemberName='SkipRenderers']/Docs/*" />
 		SkipRenderers = 1 << 1,
 	}
 }
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar' and position()=0]/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class Registrar<TRegistrable> where TRegistrable : class
 	{
@@ -31,7 +30,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 		static Type[] _defaultVisualRenderers = new[] { _defaultVisualType };
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][1]/Docs/*" />
 		public void Register(Type tview, Type trender, Type[] supportedVisuals, short priority)
 		{
 			supportedVisuals = supportedVisuals ?? _defaultVisualRenderers;
@@ -73,10 +71,8 @@ namespace Microsoft.Maui.Controls.Internals
 			//	});
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][2]/Docs/*" />
 		public void Register(Type tview, Type trender, Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Register'][3]/Docs/*" />
 		public void Register(Type tview, Type trender) => Register(tview, trender, _defaultVisualRenderers);
 
 		internal TRegistrable GetHandler(Type type) => GetHandler(type, _defaultVisualType);
@@ -86,6 +82,8 @@ namespace Microsoft.Maui.Controls.Internals
 			Type handlerType = GetHandlerType(type, visualType ?? _defaultVisualType);
 			if (handlerType == null)
 				return null;
+
+			Registrar.CheckIfRendererIsCompatibilityRenderer(handlerType);
 
 			object handler = DependencyResolver.ResolveOrCreate(handlerType);
 
@@ -102,6 +100,8 @@ namespace Microsoft.Maui.Controls.Internals
 			else
 			{
 				Type handlerType = GetHandlerType(type, visual?.GetType() ?? _defaultVisualType);
+				Registrar.CheckIfRendererIsCompatibilityRenderer(handlerType);
+
 				if (handlerType != null)
 					returnValue = (TRegistrable)DependencyResolver.ResolveOrCreate(handlerType, source, visual?.GetType(), args);
 			}
@@ -109,19 +109,16 @@ namespace Microsoft.Maui.Controls.Internals
 			return returnValue;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler'][1]/Docs/*" />
 		public TOut GetHandler<TOut>(Type type) where TOut : class, TRegistrable
 		{
 			return GetHandler(type) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandler'][2]/Docs/*" />
 		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : class, TRegistrable
 		{
 			return GetHandler(type, null, null, args) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject'][1]/Docs/*" />
 		public TOut GetHandlerForObject<TOut>(object obj) where TOut : class, TRegistrable
 		{
 			if (obj == null)
@@ -133,7 +130,6 @@ namespace Microsoft.Maui.Controls.Internals
 			return GetHandler(type, (obj as IVisualController)?.EffectiveVisual?.GetType()) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerForObject'][2]/Docs/*" />
 		public TOut GetHandlerForObject<TOut>(object obj, params object[] args) where TOut : class, TRegistrable
 		{
 			if (obj == null)
@@ -145,10 +141,8 @@ namespace Microsoft.Maui.Controls.Internals
 			return GetHandler(type, obj, (obj as IVisualController)?.EffectiveVisual, args) as TOut;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType'][1]/Docs/*" />
 		public Type GetHandlerType(Type viewType) => GetHandlerType(viewType, _defaultVisualType);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerType'][2]/Docs/*" />
 		public Type GetHandlerType(Type viewType, Type visualType)
 		{
 			visualType = visualType ?? _defaultVisualType;
@@ -174,7 +168,6 @@ namespace Microsoft.Maui.Controls.Internals
 				return null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='GetHandlerTypeForObject']/Docs/*" />
 		public Type GetHandlerTypeForObject(object obj)
 		{
 			if (obj == null)
@@ -312,7 +305,6 @@ namespace Microsoft.Maui.Controls.Internals
 		// If the user has called Forms.Init() this will register all found types 
 		// into the handlers registrar and then it will use this factory to create a shim
 		internal static Func<object, IViewHandler> RendererToHandlerShim { get; private set; }
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterRendererToHandlerShim']/Docs/*" />
 		public static void RegisterRendererToHandlerShim(Func<object, IViewHandler> handlerShim)
 		{
 			RendererToHandlerShim = handlerShim;
@@ -377,7 +369,6 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterEffect']/Docs/*" />
 		public static void RegisterEffect(string resolutionName, string id, Type effectType)
 		{
 			Effects[resolutionName + "." + id] = effectType;
@@ -480,6 +471,17 @@ namespace Microsoft.Maui.Controls.Internals
 			DependencyService.Initialize(assemblies);
 
 			Profile.FrameEnd();
+		}
+
+		internal static void CheckIfRendererIsCompatibilityRenderer(Type rendererType)
+		{
+			if (typeof(IRegisterable).IsAssignableFrom(rendererType))
+				return;
+
+			if (typeof(IElementHandler).IsAssignableFrom(rendererType))
+			{
+				throw new InvalidOperationException($"{rendererType} will work with AddHandler. Please use AddHandler instead of AddCompatibilityRenderer.");
+			}
 		}
 	}
 }

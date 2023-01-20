@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -180,7 +179,6 @@ namespace Microsoft.Maui.Controls
 		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : PlatformAppTheme;
 
 		static Color? _accentColor;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AccentColor']/Docs/*" />
 		public static Color? AccentColor
 		{
 			get => _accentColor ??= GetAccentColor();

@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		{
 			get
 			{
+#pragma warning disable CA1422 // Validate platform compatibility
 				var uiLabel = new UILabel
 				{
 #pragma warning disable CA1416 // TODO: UILabel.MinimumFontSize has [UnsupportedOSPlatform("ios6.0")]
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 					LineBreakMode = UILineBreakMode.WordWrap,
 					Text = "Sample Native Control",
 				};
+#pragma warning restore CA1422 // Validate platform compatibility
 				return uiLabel.ToView();
 			}
 		}

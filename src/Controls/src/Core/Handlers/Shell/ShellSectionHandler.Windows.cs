@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
@@ -38,7 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapCurrentItem(ShellSectionHandler handler, ShellSection item)
 		{
-			handler.SyncNavigationStack(false);
+			handler.SyncNavigationStack(false, null);
 		}
 
 		ShellSection? _shellSection;
@@ -76,10 +74,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnNavigationRequested(object? sender, NavigationRequestedEventArgs e)
 		{
-			SyncNavigationStack(e.Animated);
+			SyncNavigationStack(e.Animated, e);
 		}
 
-		void SyncNavigationStack(bool animated)
+		void SyncNavigationStack(bool animated, NavigationRequestedEventArgs? e)
 		{
 			// Current Item might transition to null while visibility is adjusting on shell
 			// so we just ignore this and eventually when shell knows
@@ -92,9 +90,15 @@ namespace Microsoft.Maui.Controls.Handlers
 				(VirtualView.CurrentItem as IShellContentController).GetOrCreateContent()
 			};
 
-			for (var i = 1; i < VirtualView.Navigation.NavigationStack.Count; i++)
+			// PopToRoot in the xplat code fires before the navigation stack has been updated
+			// Once we get shell all converted over to newer navigation APIs this will all be a bit
+			// less leaky
+			if (e?.RequestType != NavigationRequestType.PopToRoot)
 			{
-				pageStack.Add(VirtualView.Navigation.NavigationStack[i]);
+				for (var i = 1; i < VirtualView.Navigation.NavigationStack.Count; i++)
+				{
+					pageStack.Add(VirtualView.Navigation.NavigationStack[i]);
+				}
 			}
 
 			// The point of this is to push the shell navigation over to using the INavigationStack

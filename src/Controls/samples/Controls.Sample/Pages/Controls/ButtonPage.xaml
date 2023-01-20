@@ -14,7 +14,8 @@
                 <Button
                     Text="Button"/>
                 <Button
-                    Text="Button with Tooltip" ToolTipProperties.Text="This is a tooltip!" />
+                    Text="Button with Tooltip" 
+                    ToolTipProperties.Text="This is a tooltip!" />
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>
@@ -43,7 +44,10 @@
                     Text="Background"
                     Style="{StaticResource Headline}" />
                 <Button 
-                    Text="Background">
+                    x:Name="BackgroundButton"
+                    Text="Background"
+                    HorizontalOptions="Center"
+                    Clicked="OnBackgroundButtonClicked">
                     <Button.Background>
                         <LinearGradientBrush EndPoint="1,0">
                             <GradientStop Color="Yellow"
@@ -125,7 +129,7 @@
                     Style="{StaticResource Headline}"/>
                 <Button 
                     x:Name="positionChange" ContentLayout="Top" TextColor="White" Background="Black" 
-                    ImageSource="settings.png" Text="settings" />
+                    ImageSource="settings.png" Text="settings" Clicked="OnPositionChange" />
                 <Button 
                     WidthRequest="200"  HorizontalOptions="Fill" x:Name="decreaseSpacing" Text="Decrease Spacing" 
                     Clicked="OnDecreaseSpacing" TextColor="White" Background="Black" ></Button>

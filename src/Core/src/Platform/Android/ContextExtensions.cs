@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 	{
 		// Caching this display density here means that all pixel calculations are going to be based on the density
 		// of the first Context these extensions are run against. That's probably fine, but if we run into a 
-		// situation where subsequent activities can be launched with a different display density from the intial
+		// situation where subsequent activities can be launched with a different display density from the initial
 		// activity, we'll need to remove this cached value or cache it in a Dictionary<Context, float>
 		static float s_displayDensity = float.MinValue;
 

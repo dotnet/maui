@@ -126,10 +126,6 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var intent = new Intent(Intent.ActionView, AndroidUri.Parse(uri));
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-#if __ANDROID_24__
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				flags |= ActivityFlags.LaunchAdjacent;
-#endif
 			intent.SetFlags(flags);
 
 			return intent;

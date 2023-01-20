@@ -67,9 +67,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			void UpdateIsEnabled(bool isEnabled)
 			{
 				UserInteractionEnabled = isEnabled;
-#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
+#pragma warning disable CA1416, CA1422  // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				TextLabel.Enabled = isEnabled;
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 			}
 
 			void ViewCellPropertyChanged(object sender, PropertyChangedEventArgs e)

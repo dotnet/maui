@@ -1,15 +1,14 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WFrame = Microsoft.UI.Xaml.Controls.Frame;
-using WApp = Microsoft.UI.Xaml.Application;
 using Microsoft.UI.Xaml.Navigation;
+using WApp = Microsoft.UI.Xaml.Application;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
+using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 using WPage = Microsoft.UI.Xaml.Controls.Page;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -40,6 +39,7 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
 				_navigationView.SetApplicationResource("NavigationViewHeaderMargin", null);
 				_navigationView.SetApplicationResource("NavigationViewContentMargin", null);
+				_navigationView.SetApplicationResource("NavigationViewMinimalContentMargin", null);
 
 				return _navigationView;
 			}
@@ -66,10 +66,8 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
-			_connectedToHandler = false;
-
-			if (args.OldHandler != null && args.NewHandler == null)
-				OnHandlerDisconnected(args.OldHandler.PlatformView as FrameworkElement);
+			if (args?.OldHandler?.PlatformView is FrameworkElement fe)
+				OnHandlerDisconnected(fe);
 		}
 
 		void OnHandlerConnected()

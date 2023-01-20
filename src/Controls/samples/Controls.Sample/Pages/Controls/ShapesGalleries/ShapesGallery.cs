@@ -21,6 +21,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 						GalleryBuilder.NavButton("Polygon Gallery", () => new PolygonGallery(), Navigation),
 						GalleryBuilder.NavButton("Polyline Gallery", () => new PolylineGallery(), Navigation),
 						GalleryBuilder.NavButton("Rectangle Gallery", () => new RectangleGallery(), Navigation),
+						GalleryBuilder.NavButton("Composition Gallery", () => new CompositionGallery(), Navigation),
 						GalleryBuilder.NavButton("LineCap Gallery", () => new LineCapGallery(), Navigation),
 						GalleryBuilder.NavButton("LineJoin Gallery", () => new LineJoinGallery(), Navigation),
 						GalleryBuilder.NavButton("AutoSize Shapes Gallery", () => new AutoSizeShapesGallery(), Navigation),

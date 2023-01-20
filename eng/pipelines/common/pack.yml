@@ -1,21 +1,14 @@
 parameters:
   platform: ''
   poolName: ''
-  provisionatorChannel: latest
   artifact: 'nuget'
-
+  
 steps:
-  - ${{ if eq(parameters.platform, 'macOS') }}:
-    - template: agent-cleanser/v1.yml@xamarin-templates
-      parameters:
-        UninstallMono: false
-        UninstallXamarinMac: false
-        CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
   - template: provision.yml
     parameters:
       platform: ${{ parameters.platform }}
       poolName: ${{ parameters.poolName }}
-      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3

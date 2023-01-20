@@ -1,11 +1,19 @@
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/ClearButtonVisibility.xml" path="Type[@FullName='Microsoft.Maui.ClearButtonVisibility']/Docs/*" />
+	/// <summary>
+	/// Enumerates values that influence clear button visibility behavior on input fields.
+	/// Typically this is a button inside of the input field, near the end, which clears the input when pressed.
+	/// </summary>
 	public enum ClearButtonVisibility
 	{
-		/// <include file="../../docs/Microsoft.Maui/ClearButtonVisibility.xml" path="//Member[@MemberName='Never']/Docs/*" />
+		/// <summary>
+		/// Never show a clear button.
+		/// </summary>
 		Never,
-		/// <include file="../../docs/Microsoft.Maui/ClearButtonVisibility.xml" path="//Member[@MemberName='WhileEditing']/Docs/*" />
+
+		/// <summary>
+		/// Only show a clear button in the input field while the input field has focus and is being edited.
+		/// </summary>
 		WhileEditing
 	}
 }

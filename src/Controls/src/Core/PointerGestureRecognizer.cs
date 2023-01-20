@@ -1,7 +1,7 @@
-#nullable enable
 using System;
-using Microsoft.Maui.Graphics;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -153,6 +153,37 @@ namespace Microsoft.Maui.Controls
 
 			EventHandler<PointerEventArgs>? handler = PointerMoved;
 			handler?.Invoke(sender, new PointerEventArgs(getPosition));
+		}
+
+		internal static void SetupForPointerOverVSM(
+			VisualElement element,
+			Action<bool> updatePointerState,
+			ref PointerGestureRecognizer? recognizer)
+		{
+			bool hasPointerOverVSM =
+				element.HasVisualState(VisualStateManager.CommonStates.PointerOver);
+
+			if (hasPointerOverVSM && recognizer == null)
+			{
+				recognizer = new PointerGestureRecognizer();
+
+				recognizer.PointerEntered += (s, e) =>
+				{
+					updatePointerState.Invoke(true);
+				};
+
+				recognizer.PointerExited += (s, e) =>
+				{
+					updatePointerState.Invoke(false);
+				};
+
+				((IGestureController)element).CompositeGestureRecognizers.Add(recognizer);
+			}
+			else if (!hasPointerOverVSM && recognizer != null)
+			{
+				((IGestureController)element).CompositeGestureRecognizers.Remove(recognizer);
+				recognizer = null;
+			}
 		}
 	}
 }

@@ -28,7 +28,6 @@
       "src\\Workload\\Microsoft.Maui.Sdk\\Microsoft.Maui.Sdk.csproj",
       "src\\Workload\\Microsoft.Maui.Core.Ref\\Microsoft.Maui.Core.Ref.csproj",
       "src\\Workload\\Microsoft.Maui.Core.Runtime\\Microsoft.Maui.Core.Runtime.csproj",
-      "src\\Workload\\Microsoft.Maui.Dependencies\\Microsoft.Maui.Dependencies.csproj",
       "src\\Workload\\Microsoft.Maui.Essentials.Ref\\Microsoft.Maui.Essentials.Ref.csproj",
       "src\\Workload\\Microsoft.Maui.Essentials.Runtime\\Microsoft.Maui.Essentials.Runtime.csproj",
       "src\\Workload\\Microsoft.Maui.Resizetizer.Sdk\\Microsoft.Maui.Resizetizer.Sdk.csproj",

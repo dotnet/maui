@@ -259,7 +259,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Editable;
-    
+
 		int GetNativeSelectionLength(EditorHandler editorHandler)
 		{
 			var nativeEditor = GetNativeEditor(editorHandler);
@@ -269,5 +269,32 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		TextAlignment GetNativeVerticalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).VerticalTextAlignment;
+
+		TextAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment;
+
+#if !MACCATALYST
+		[Fact(DisplayName = "Completed Event Fires")]
+		public async Task CompletedEventFiresFromTappingDone()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Test"
+			};
+
+			int completedCount = 0;
+			editor.Completed += (_, _) => completedCount++;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(editor);
+				TapDoneOnInputAccessoryView(handler.PlatformView);
+			});
+
+			Assert.Equal(1, completedCount);
+		}
+#endif
 	}
 }

@@ -39,7 +39,7 @@ Create a new project and run it:
 ```bash
 $ mkdir foo && cd foo
 $ ../bin/dotnet/dotnet new maui
-$ ../bin/dotnet/dotnet build -c Release -t:Run -f net6.0-android
+$ ../bin/dotnet/dotnet build -c Release -t:Run -f net7.0-android
 ```
 
 Run the app a few times and make sure you get good launch times:

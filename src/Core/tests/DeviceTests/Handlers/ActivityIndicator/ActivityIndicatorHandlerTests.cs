@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ActivityIndicator)]
-	public partial class ActivityIndicatorHandlerTests : HandlerTestBase<ActivityIndicatorHandler, ActivityIndicatorStub>
+	public partial class ActivityIndicatorHandlerTests : CoreHandlerTestBase<ActivityIndicatorHandler, ActivityIndicatorStub>
 	{
 		[Theory(DisplayName = "IsRunning Initializes Correctly")]
 		[InlineData(true)]
@@ -22,7 +22,8 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(activityIndicator, () => activityIndicator.IsRunning, GetNativeIsRunning, activityIndicator.IsRunning);
 		}
 
-		[Fact(DisplayName = "Background Updates Correctly")]
+		[Fact(DisplayName = "Background Updates Correctly",
+			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
 		public async Task BackgroundUpdatesCorrectly()
 		{
 			var activityIndicator = new ActivityIndicatorStub()

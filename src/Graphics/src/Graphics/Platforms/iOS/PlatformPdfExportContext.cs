@@ -68,11 +68,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				try
 				{
-#if IOS16_0_OR_GREATER
-					UIGraphics.EndPDFContext();
-#else
+#pragma warning disable CS0618 // Type or member is obsolete
 					UIGraphics.EndPDFContent();
-#endif
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 				catch (Exception exc)
 				{

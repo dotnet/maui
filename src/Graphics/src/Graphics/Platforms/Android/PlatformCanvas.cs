@@ -1,10 +1,10 @@
-using Microsoft.Maui.Graphics.Platform.Text;
-using Microsoft.Maui.Graphics.Text;
+using System;
+using System.Numerics;
 using Android.Content;
 using Android.Graphics;
 using Android.Text;
-using System;
-using System.Numerics;
+using Microsoft.Maui.Graphics.Platform.Text;
+using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
@@ -602,6 +602,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			_canvas.Save();
 			_canvas.Translate(x, y - CurrentState.ScaledFontSize);
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 			var layout = new StaticLayout(
 				value,
 				CurrentState.FontPaint,
@@ -610,6 +612,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				1f,
 				0f,
 				false);
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 			layout.Draw(_canvas);
 			_canvas.Restore();
 		}

@@ -7,12 +7,12 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Border)]
-	public partial class BorderHandlerTests : HandlerTestBase<BorderHandler, BorderStub>
+	public partial class BorderHandlerTests : CoreHandlerTestBase<BorderHandler, BorderStub>
 	{
 		[Theory(DisplayName = "Background Initializes Correctly")]
-		[InlineData(0xFF0000)]
-		[InlineData(0x00FF00)]
-		[InlineData(0x0000FF)]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
 		public async Task BackgroundInitializesCorrectly(uint color)
 		{
 			var expected = Color.FromUint(color);
@@ -32,9 +32,9 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Stroke Initializes Correctly")]
-		[InlineData(0xFF0000)]
-		[InlineData(0x00FF00)]
-		[InlineData(0x0000FF)]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
 		public async Task StrokeInitializesCorrectly(uint color)
 		{
 			var expected = Color.FromUint(color);

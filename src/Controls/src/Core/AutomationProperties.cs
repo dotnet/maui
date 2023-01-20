@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="Type[@FullName='Microsoft.Maui.Controls.AutomationProperties']/Docs/*" />
@@ -9,7 +10,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='IsInAccessibleTreeProperty']/Docs/*" />
 		public static readonly BindableProperty IsInAccessibleTreeProperty = BindableProperty.Create("IsInAccessibleTree", typeof(bool?), typeof(AutomationProperties), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='ExcludedWithChildrenProperty']/Docs/*" />
 		public static readonly BindableProperty ExcludedWithChildrenProperty = BindableProperty.Create("ExcludedWithChildren", typeof(bool?), typeof(AutomationProperties), null);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='LabeledByProperty']/Docs/*" />
@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Controls
 			return (bool?)bindable.GetValue(IsInAccessibleTreeProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='GetExcludedWithChildren']/Docs/*" />
 		public static bool? GetExcludedWithChildren(BindableObject bindable)
 		{
 			return (bool?)bindable.GetValue(ExcludedWithChildrenProperty);
@@ -61,7 +60,6 @@ namespace Microsoft.Maui.Controls
 			bindable.SetValue(IsInAccessibleTreeProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='SetExcludedWithChildren']/Docs/*" />
 		public static void SetExcludedWithChildren(BindableObject bindable, bool? value)
 		{
 			bindable.SetValue(ExcludedWithChildrenProperty, value);

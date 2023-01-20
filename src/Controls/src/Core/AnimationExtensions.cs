@@ -1,3 +1,4 @@
+#nullable disable
 //
 // Tweener.cs
 //
@@ -47,7 +48,6 @@ namespace Microsoft.Maui.Controls
 			s_tweeners = new Dictionary<int, Animation>();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Add']/Docs/*" />
 		public static int Add(this IAnimationManager animationManager, Action<double> step)
 		{
 			var id = s_currentTweener++;
@@ -61,7 +61,6 @@ namespace Microsoft.Maui.Controls
 			animation.Commit(animationManager);
 			return id;
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Insert']/Docs/*" />
 		public static int Insert(this IAnimationManager animationManager, Func<long, bool> step)
 		{
 			var id = s_currentTweener++;
@@ -75,7 +74,6 @@ namespace Microsoft.Maui.Controls
 			animation.Commit(animationManager);
 			return id;
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='Remove']/Docs/*" />
 		public static void Remove(this IAnimationManager animationManager, int tickerId)
 		{
 			var animation = s_tweeners[tickerId];

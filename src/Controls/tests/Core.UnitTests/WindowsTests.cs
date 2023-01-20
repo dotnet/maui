@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		void DeActivatedFiresDisappearingEvent()
+		void DestroyedFiresDisappearingEvent()
 		{
 			int disappear = 0;
 			int appear = 0;
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cp.Appearing += (_, __) => appear++;
 			cp.Disappearing += (_, __) => disappear++;
 
-			window.Deactivated();
+			window.Destroying();
 			Assert.Equal(1, disappear);
 			Assert.Equal(0, appear);
 		}
@@ -314,8 +314,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cp.Appearing += (_, __) => appear++;
 			cp.Disappearing += (_, __) => disappear++;
 
+			var app = window.Parent as TestApp;
 			Assert.Equal(0, disappear);
-			window.Deactivated();
+			window.Destroying();
+
+			// simulate platform requesting another window for the same page
+			_ = app.CreateWindow(cp);
+
 			window.Activated();
 			Assert.Equal(1, disappear);
 			Assert.Equal(1, appear);
@@ -440,6 +445,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(double.NaN, coreWindow.MaximumWidth);
 			Assert.Equal(double.NaN, coreWindow.MaximumHeight);
+		}
+
+		[Fact]
+		public void ShellTitleChangePropagatesToWindow()
+		{
+			var app = new TestApp();
+			var shell = new ShellTestBase.TestShell() { Title = "test" };
+			var window = app.CreateWindow();
+			bool fired = false;
+			window.Page = shell;
+			window.Handler = new WindowHandlerStub(new PropertyMapper<IWindow, WindowHandlerStub>()
+			{
+				[nameof(IWindow.Title)] = (_, _) => fired = true
+			});
+
+			// reset after setting handler
+			fired = false;
+			shell.Title = "new title";
+
+
+			Assert.Equal(shell.Title, (window as IWindow).Title);
+			Assert.True(fired);
+		}
+
+		[Fact]
+		public void PreviousShellDisconnectsFromWindowPropertyChanged()
+		{
+			var app = new TestApp();
+			var oldShell = new Shell() { Title = "Old Shell" };
+			var window = app.CreateWindow(oldShell);
+			bool fired = false;
+
+			window.Handler = new WindowHandlerStub(new PropertyMapper<IWindow, WindowHandlerStub>()
+			{
+				[nameof(IWindow.Title)] = (_, _) =>
+				{
+					fired = true;
+				}
+			});
+
+			window.Page = new Shell() { Title = "test" };
+
+			// reset after setting handler
+			fired = false;
+
+			oldShell.Title = "new title";
+			Assert.Equal("test", (window as IWindow).Title);
+			Assert.False(fired);
 		}
 
 		[Theory]

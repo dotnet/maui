@@ -1,12 +1,12 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -18,10 +18,10 @@ namespace Microsoft.Maui.Controls.Platform
 		Lazy<ScaleGestureDetector> _scaleDetector;
 		Lazy<TapAndPanGestureDetector> _tapAndPanAndSwipeDetector;
 		Lazy<DragAndDropGestureHandler> _dragAndDropGestureHandler;
+		Lazy<PointerGestureHandler> _pointerGestureHandler;
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
-
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
 		View? View => Element as View;
@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_tapAndPanAndSwipeDetector = new Lazy<TapAndPanGestureDetector>(InitializeTapAndPanAndSwipeDetector);
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
+			_pointerGestureHandler = new Lazy<PointerGestureHandler>(InitializePointerHandler);
 			SetupElement(null, Element);
 		}
 
@@ -105,6 +106,11 @@ namespace Microsoft.Maui.Controls.Platform
 			return new DragAndDropGestureHandler(() => View, () => Control);
 		}
 
+		PointerGestureHandler InitializePointerHandler()
+		{
+			return new PointerGestureHandler(() => View, () => Control);
+		}
+
 		TapAndPanGestureDetector InitializeTapAndPanAndSwipeDetector()
 		{
 			if (Control?.Context == null)
@@ -121,7 +127,8 @@ namespace Microsoft.Maui.Controls.Platform
 				}),
 				new PanGestureHandler(() => View),
 				new SwipeGestureHandler(() => View),
-				InitializeDragAndDropHandler()
+				InitializeDragAndDropHandler(),
+				InitializePointerHandler()
 			);
 
 			return new TapAndPanGestureDetector(context, listener);
@@ -199,7 +206,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (oldElement != null)
 			{
 				if (oldElement is View ov &&
-					ov.GestureRecognizers is INotifyCollectionChanged incc)
+					ov.GetCompositeGestureRecognizers() is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged -= GestureCollectionChanged;
 				}
@@ -211,7 +218,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_handler = newElement.Handler;
 				if (newElement is View ov &&
-					ov.GestureRecognizers is INotifyCollectionChanged incc)
+					ov.GetCompositeGestureRecognizers() is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged += GestureCollectionChanged;
 				}
@@ -222,12 +229,14 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateInputTransparent();
 			UpdateIsEnabled();
 			UpdateDragAndDrop();
+			UpdatePointer();
 			SetupGestures();
 		}
 
 		void GestureCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateDragAndDrop();
+			UpdatePointer();
 			SetupGestures();
 
 			if (_tapAndPanAndSwipeDetector.IsValueCreated)
@@ -238,8 +247,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateDragAndDrop()
 		{
-			if (View?.GestureRecognizers?.Count > 0)
+			if (View?.GetCompositeGestureRecognizers()?.Count > 0)
 				_dragAndDropGestureHandler.Value.SetupHandlerForDrop();
+		}
+
+		void UpdatePointer()
+		{
+			if (View?.GetCompositeGestureRecognizers()?.Count > 0)
+				_pointerGestureHandler.Value.SetupHandlerForPointer();
 		}
 
 		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)

@@ -1,0 +1,23 @@
+name: PR code format check - push results
+on:
+  workflow_run:
+    workflows: ["PR code format check"]
+    types:
+      - completed
+
+permissions:
+  pull-requests: write
+  contents: write
+  
+jobs:
+  push-and-notify:
+    name: Push autoformatted code and notify user
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: 'Push autoformatted patch'
+        uses: rolfbjarne/autoformat-push@v0.1
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}

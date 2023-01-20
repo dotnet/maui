@@ -4,11 +4,12 @@ Versions of .NET MAUI are being released in sync with new .NET versions. More in
 
 ## Past .NET MAUI Releases
 
-Below you can find a list of all the previous releases of .NET MAUI, excluding prereleases.
+Below you can find a list of all the previous releases of .NET MAUI, excluding pre-releases.
 For a full list, including release notes, please refer to our [Releases page](https://github.com/dotnet/maui/releases).
 
 | Version | Release Date |
 |---------|--------------|
+| [6.0.536 (Service Release 4.1)](https://github.com/dotnet/maui/releases/tag/6.0.536) | 2022/09/14 |
 | [6.0.486 (Service Release 4)](https://github.com/dotnet/maui/releases/tag/6.0.486) | 2022/08/09 |
 | [6.0.424 (Service Release 3.1)](https://github.com/dotnet/maui/releases/tag/6.0.424) | 2022/08/01 |
 | [6.0.419 (Service Release 3)](https://github.com/dotnet/maui/releases/tag/6.0.419) | 2022/07/20 |

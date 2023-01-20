@@ -9,9 +9,9 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	[Category(TestCategory.ListView)]
-	public partial class ListViewTests : HandlerTestBase
+	public partial class ListViewTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{

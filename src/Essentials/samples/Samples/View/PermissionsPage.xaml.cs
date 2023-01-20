@@ -22,15 +22,19 @@ namespace Samples.View
 		{
 			base.OnAppearing();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<PermissionItem, Exception>(this, nameof(PermissionException), async (p, ex) =>
 				await DisplayAlert("Permission Error", ex.Message, "OK"));
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		protected override void OnDisappearing()
 		{
 			base.OnDisappearing();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Unsubscribe<PermissionItem, Exception>(this, nameof(PermissionException));
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

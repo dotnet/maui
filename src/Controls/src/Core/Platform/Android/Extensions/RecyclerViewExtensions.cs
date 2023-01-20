@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Text;
 using AndroidX.RecyclerView.Widget;
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateSelection(this RecyclerView recyclerView, SelectableItemsView selectableItemsView)
 		{
 			var mode = selectableItemsView.SelectionMode;
-			//TODO: on NET7 implement a ISelectableItemsViewAdapter interface on the adapter
+			//TODO: on NET8 implement a ISelectableItemsViewAdapter interface on the adapter
 			var adapter = recyclerView.GetAdapter() as ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource>;
 			if (adapter == null)
 				return;

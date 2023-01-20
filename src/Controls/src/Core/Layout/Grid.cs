@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Layouts;
@@ -145,7 +146,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ColumnSpacingProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetColumn'][2]/Docs/*" />
 		public int GetColumn(IView view)
 		{
 			return view switch
@@ -155,7 +155,6 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetColumnSpan'][2]/Docs/*" />
 		public int GetColumnSpan(IView view)
 		{
 			return view switch
@@ -165,7 +164,6 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetRow'][2]/Docs/*" />
 		public int GetRow(IView view)
 		{
 			return view switch
@@ -175,7 +173,6 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='GetRowSpan'][2]/Docs/*" />
 		public int GetRowSpan(IView view)
 		{
 			return view switch
@@ -185,19 +182,16 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='AddRowDefinition']/Docs/*" />
 		public void AddRowDefinition(RowDefinition gridRowDefinition)
 		{
 			RowDefinitions.Add(gridRowDefinition);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='AddColumnDefinition']/Docs/*" />
 		public void AddColumnDefinition(ColumnDefinition gridColumnDefinition)
 		{
 			ColumnDefinitions.Add(gridColumnDefinition);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetRow'][2]/Docs/*" />
 		public void SetRow(IView view, int row)
 		{
 			switch (view)
@@ -212,7 +206,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetRowSpan'][2]/Docs/*" />
 		public void SetRowSpan(IView view, int span)
 		{
 			switch (view)
@@ -227,7 +220,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetColumn'][2]/Docs/*" />
 		public void SetColumn(IView view, int col)
 		{
 			switch (view)
@@ -242,7 +234,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='SetColumnSpan'][2]/Docs/*" />
 		public void SetColumnSpan(IView view, int span)
 		{
 			switch (view)

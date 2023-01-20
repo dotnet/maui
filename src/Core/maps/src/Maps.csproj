@@ -5,9 +5,17 @@
     <RootNamespace>Microsoft.Maui.Maps</RootNamespace>
     <AssemblyName>Microsoft.Maui.Maps</AssemblyName>
     <Nullable>enable</Nullable>
-    <IsPackable>true</IsPackable>
+    <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
+
+    <!-- Add specifics for this NuGet -->
+    <IsPackable>True</IsPackable>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>dotnet-maui;maui;maps;map;ios;android;macos</PackageTags>
+    <Title>.NET MAUI Maps Core</Title>
+    <Description>.NET MAUI Maps provides a map control for .NET MAUI apps. This only contains the core types. If you want the Map control, please install the Microsoft.Maui.Controls.Maps package.</Description>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
@@ -28,4 +36,9 @@
   </ItemGroup>
   
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+
+  <!-- Add icon for NuGet -->
+  <ItemGroup>
+    <None Include="..\..\..\..\Assets\icon.png" PackagePath="icon.png" Pack="true" />
+  </ItemGroup>
 </Project>

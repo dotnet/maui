@@ -25,10 +25,10 @@ using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
 using Circle = Microsoft.Maui.Controls.Maps.Circle;
+using IList = System.Collections.IList;
 using Math = System.Math;
 using Polygon = Microsoft.Maui.Controls.Maps.Polygon;
 using Polyline = Microsoft.Maui.Controls.Maps.Polyline;
-using IList = System.Collections.IList;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 {
@@ -89,7 +89,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			{
 				if (Element != null)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 					((ObservableCollection<Pin>)Element.Pins).CollectionChanged -= OnPinCollectionChanged;
 					foreach (Pin pin in Element.Pins)
@@ -149,7 +151,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 					child.PropertyChanged -= MapElementPropertyChanged;
 				}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				if (NativeMap != null)
 				{
@@ -165,7 +169,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 			Control.GetMapAsync(this);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<Map, MapSpan>(this, MoveMessageName, OnMoveToRegionMessage, Map);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			((INotifyCollectionChanged)Map.Pins).CollectionChanged += OnPinCollectionChanged;
 			((INotifyCollectionChanged)Map.MapElements).CollectionChanged += OnMapElementCollectionChanged;

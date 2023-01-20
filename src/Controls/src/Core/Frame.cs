@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -82,5 +83,11 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBorderColorSet() => IsSet(BorderColorProperty);
 
 		bool IBorderElement.IsBorderWidthSet() => false;
+	}
+
+	internal static class FrameExtensions
+	{
+		internal static bool IsClippedToBoundsSet(this Frame frame, bool defaultValue) =>
+			frame.IsSet(Compatibility.Layout.IsClippedToBoundsProperty) ? frame.IsClippedToBounds : defaultValue;
 	}
 }

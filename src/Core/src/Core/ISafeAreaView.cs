@@ -6,7 +6,7 @@
 	public interface ISafeAreaView
 	{
 		/// <summary>
-		/// Is used to ensure that content is positioned on an area of the screen that is safe for all devices.
+		/// Ensure that content is positioned on an area of the screen that is safe for all devices.
 		/// </summary>
 		bool IgnoreSafeArea { get; }
 	}

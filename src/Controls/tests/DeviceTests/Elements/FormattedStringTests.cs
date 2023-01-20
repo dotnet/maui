@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Label)]
-	public partial class FormattedStringTests : HandlerTestBase
+	public partial class FormattedStringTests : ControlsHandlerTestBase
 	{
 		[Fact]
 		public async Task NativeFormattedStringContainsSpan()

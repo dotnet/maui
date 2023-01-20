@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Maui.Controls.RefreshView;
@@ -7,13 +8,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	{
 		public enum RefreshPullDirection
 		{
-			/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='LeftToRight']/Docs/*" />
 			LeftToRight,
-			/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='TopToBottom']/Docs/*" />
 			TopToBottom,
-			/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='RightToLeft']/Docs/*" />
 			RightToLeft,
-			/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/RefreshView.xml" path="//Member[@MemberName='BottomToTop']/Docs/*" />
 			BottomToTop
 		}
 

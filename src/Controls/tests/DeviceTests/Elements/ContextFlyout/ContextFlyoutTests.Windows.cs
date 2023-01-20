@@ -1,14 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Platform;
-using Microsoft.Maui.Handlers;
-using Xunit;
-using System.Linq;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ContextFlyoutTests : HandlerTestBase
+	public partial class ContextFlyoutTests : ControlsHandlerTestBase
 	{
 		[Fact(DisplayName = "Context flyout creates expected WinUI elements")]
 		public async Task ContextFlyoutCreatesExpectedWinUIElements()

@@ -48,7 +48,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 					{
 						this.FadeTo(0.1);
 						this.TranslateTo(X, Y - 1000);
+#pragma warning disable CS0618 // Type or member is obsolete
 						MessagingCenter.Send(this, "remove");
+#pragma warning restore CS0618 // Type or member is obsolete
 					}
 					else
 					{

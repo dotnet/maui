@@ -14,7 +14,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
-	public partial class NavigationPageTests : HandlerTestBase
+	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
 		// We only want to fire BackButtonVisible Toolbar events if the user
 		// is changing the default behavior of the BackButtonVisibility
@@ -47,17 +47,5 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(failed);
 			});
 		}
-
-		public bool IsNavigationBarVisible(IElementHandler handler) =>
-			IsNavigationBarVisible(handler.MauiContext);
-
-		public bool IsNavigationBarVisible(IMauiContext mauiContext)
-		{
-			return GetPlatformToolbar(mauiContext)?
-					.LayoutParameters?.Height > 0;
-		}
-
-		string GetToolbarTitle(IElementHandler handler) =>
-			GetPlatformToolbar(handler).Title;
 	}
 }

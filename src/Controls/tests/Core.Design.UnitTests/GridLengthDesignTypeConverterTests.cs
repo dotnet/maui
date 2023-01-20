@@ -5,6 +5,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class GridLengthDesignTypeConverterTests
 	{
+		[Fact]
+		public void GridLength_CanConvertFromString()
+		{
+			GridLengthDesignTypeConverter converter = new GridLengthDesignTypeConverter();
+			bool canConvert = converter.CanConvertFrom(typeof(string));
+			Assert.True(canConvert);
+		}
+
 		[Theory]
 		[InlineData("auto")]
 		[InlineData("Auto ")]

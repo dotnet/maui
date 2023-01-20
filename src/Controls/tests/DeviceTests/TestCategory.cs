@@ -2,8 +2,13 @@
 {
 	public static class TestCategory
 	{
+		public const string Accessibility = "Accessibility";
+		public const string Application = "Application";
 		public const string Behavior = "Behavior";
+		public const string Border = "Border";
+		public const string BoxView = "BoxView";
 		public const string Button = "Button";
+		public const string CarouselView = "CarouselView";
 		public const string CheckBox = "CheckBox";
 		public const string Compatibility = "Compatibility";
 		public const string ContentView = "ContentView";
@@ -27,7 +32,9 @@
 		public const string SearchBar = "SearchBar";
 		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
+		public const string Toolbar = "Toolbar";
 		public const string TemplatedView = "TemplatedView";
+		public const string View = "View";
 		public const string VisualElement = "VisualElement";
 		public const string VisualElementTree = "VisualElementTree";
 		public const string Window = "Window";

@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Input;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices.Sensors;
 
@@ -36,7 +35,7 @@ namespace Samples.ViewModel
 		}
 
 		public string[] Speeds { get; } =
-		   Enum.GetNames(typeof(SensorSpeed));
+			Enum.GetNames(typeof(SensorSpeed));
 
 		public int Speed
 		{
@@ -47,12 +46,14 @@ namespace Samples.ViewModel
 		public override void OnAppearing()
 		{
 			Barometer.ReadingChanged += OnBarometerReadingChanged;
+
 			base.OnAppearing();
 		}
 
 		public override void OnDisappearing()
 		{
 			OnStop();
+
 			Barometer.ReadingChanged -= OnBarometerReadingChanged;
 
 			base.OnDisappearing();
@@ -71,23 +72,22 @@ namespace Samples.ViewModel
 			}
 		}
 
-		void OnBarometerReadingChanged(object sender, BarometerChangedEventArgs e)
-		{
-			Pressure = e.Reading.PressureInHectopascals;
-		}
-
 		void OnStop()
 		{
 			try
 			{
-				IsActive = false;
 				Barometer.Stop();
-				Barometer.ReadingChanged -= OnBarometerReadingChanged;
+				IsActive = false;
 			}
 			catch (Exception ex)
 			{
-				System.Diagnostics.Debug.WriteLine($"An exception occured: {ex.Message}");
+				Debug.WriteLine("Unable to stop barometer: {0}", ex);
 			}
+		}
+
+		void OnBarometerReadingChanged(object sender, BarometerChangedEventArgs e)
+		{
+			Pressure = e.Reading.PressureInHectopascals;
 		}
 	}
 }

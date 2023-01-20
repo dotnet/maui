@@ -1,4 +1,5 @@
-﻿using System;
+#nullable disable
+using System;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,7 +8,6 @@ namespace Microsoft.Maui.Controls
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='ControlsRadioButtonMapper']/Docs/*" />
 		public static IPropertyMapper<RadioButton, RadioButtonHandler> ControlsRadioButtonMapper =
 			   new PropertyMapper<RadioButton, RadioButtonHandler>(RadioButtonHandler.Mapper)
 			   {

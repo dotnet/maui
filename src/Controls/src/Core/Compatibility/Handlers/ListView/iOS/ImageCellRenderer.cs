@@ -1,3 +1,4 @@
+#nullable disable
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Foundation;
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var source = cell.ImageSource;
 
-#pragma warning disable CA1416 // TODO: 'UITableViewCell.ImageView' is unsupported on: 'ios' 14.0 and later
+#pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.ImageView' is unsupported on: 'ios' 14.0 and later
 			target.ImageView.Image = null;
 
 			source.LoadImage(cell.FindMauiContext(), (result) =>
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					});
 				}
 			});
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 		}
 	}
 }

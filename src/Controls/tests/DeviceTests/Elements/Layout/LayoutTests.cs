@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Layout)]
-	public partial class LayoutTests : HandlerTestBase
+	public partial class LayoutTests : ControlsHandlerTestBase
 	{
 		[Theory]
 		[InlineData(true, true, true)]
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 					return updatingHandler.PlatformView.ToBitmap();
 				});
 
-				await initialBitmap.AssertEqual(updatingBitmap);
+				await initialBitmap.AssertEqualAsync(updatingBitmap);
 			});
 
 			static void CreateLayout(Type layoutType, out Layout layout, out Label label)

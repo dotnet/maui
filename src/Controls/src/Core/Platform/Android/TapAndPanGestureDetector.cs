@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Android.Content;
@@ -33,7 +31,7 @@ namespace Microsoft.Maui.Controls.Platform
 			IsLongpressEnabled = _listener.EnableLongPressGestures;
 		}
 
-		public override bool OnTouchEvent(MotionEvent? ev)
+		public override bool OnTouchEvent(MotionEvent ev)
 		{
 			if (base.OnTouchEvent(ev))
 				return true;

@@ -2,39 +2,25 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.TabbedPage)]
-	public partial class TabbedPageTests : HandlerTestBase
+	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-				});
-			});
-		}
-
 		[Fact(DisplayName = "Toolbar Visible When Pushing To TabbedPage")]
 		public async Task ToolbarVisibleWhenPushingToTabbedPage()
 		{
@@ -227,19 +213,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(tabbedPage.CurrentPage, tabbedPage.Children[1]);
 				return Task.CompletedTask;
 			});
-		}
-
-
-		TabbedPage CreateBasicTabbedPage()
-		{
-			return new TabbedPage()
-			{
-				Title = "Tabbed Page",
-				Children =
-				{
-					new ContentPage() { Title = "Page 1" }
-				}
-			};
 		}
 	}
 }

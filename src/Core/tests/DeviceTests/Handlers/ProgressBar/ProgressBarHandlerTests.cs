@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ProgressBar)]
-	public partial class ProgressBarHandlerTests : HandlerTestBase<ProgressBarHandler, ProgressBarStub>
+	public partial class ProgressBarHandlerTests : CoreHandlerTestBase<ProgressBarHandler, ProgressBarStub>
 	{
 		[Theory(DisplayName = "Progress Initializes Correctly")]
 		[InlineData(0.25)]

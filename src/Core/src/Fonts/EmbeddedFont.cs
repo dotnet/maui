@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 		/// The name of this font.
 		/// </summary>
 		public string? FontName { get; set; }
-		
+
 		/// <summary>
 		/// A <see cref="Stream"/> with which the contents of this font can be accessed.
 		/// </summary>

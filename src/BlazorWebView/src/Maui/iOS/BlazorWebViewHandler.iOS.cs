@@ -5,6 +5,8 @@ using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using UIKit;
@@ -47,10 +49,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			})();
 		";
 
+		private ILogger? _logger;
+		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
+
 		/// <inheritdoc />
 		[SupportedOSPlatform("ios11.0")]
 		protected override WKWebView CreatePlatformView()
 		{
+			Logger.CreatingWebKitWKWebView();
+
 			var config = new WKWebViewConfiguration();
 
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
@@ -77,6 +84,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				WebView = webview
 			});
+
+			Logger.CreatedWebKitWKWebView();
 
 			return webview;
 		}
@@ -127,6 +136,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
+			Logger.CreatingFileProvider(contentRootDir, hostPageRelativePath);
+
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
 			_webviewManager = new IOSWebViewManager(
@@ -137,7 +148,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				fileProvider,
 				VirtualView.JSComponents,
 				contentRootDir,
-				hostPageRelativePath);
+				hostPageRelativePath,
+				Logger);
 
 			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
@@ -145,12 +157,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				foreach (var rootComponent in RootComponents)
 				{
+					Logger.AddingRootComponent(rootComponent.ComponentType?.FullName ?? string.Empty, rootComponent.Selector ?? string.Empty, rootComponent.Parameters?.Count ?? 0);
+
 					// Since the page isn't loaded yet, this will always complete synchronously
 					_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 				}
 			}
 
-			_webviewManager.Navigate("/");
+			Logger.StartingInitialNavigation(VirtualView.StartPath);
+			_webviewManager.Navigate(VirtualView.StartPath);
 		}
 
 		internal IFileProvider CreateFileProvider(string contentRootDir)
@@ -190,7 +205,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			[SupportedOSPlatform("ios11.0")]
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
-				var responseBytes = GetResponseBytes(urlSchemeTask.Request.Url.AbsoluteString, out var contentType, statusCode: out var statusCode);
+				var responseBytes = GetResponseBytes(urlSchemeTask.Request.Url?.AbsoluteString ?? "", out var contentType, statusCode: out var statusCode);
 				if (statusCode == 200)
 				{
 					using (var dic = new NSMutableDictionary<NSString, NSString>())
@@ -199,8 +214,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						dic.Add((NSString)"Content-Type", (NSString)contentType);
 						// Disable local caching. This will prevent user scripts from executing correctly.
 						dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
-						using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
-						urlSchemeTask.DidReceiveResponse(response);
+						if (urlSchemeTask.Request.Url != null)
+						{
+							using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
+							urlSchemeTask.DidReceiveResponse(response);
+						}
+
 					}
 					urlSchemeTask.DidReceiveData(NSData.FromArray(responseBytes));
 					urlSchemeTask.DidFinish();
@@ -211,6 +230,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(url);
 				url = QueryStringHelper.RemovePossibleQueryString(url);
+
+				_webViewHandler.Logger.HandlingWebRequest(url);
+
 				if (_webViewHandler._webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
 				{
 					statusCode = 200;
@@ -221,10 +243,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 					contentType = headers["Content-Type"];
 
+					_webViewHandler?.Logger.ResponseContentBeingSent(url, statusCode);
+
 					return ms.ToArray();
 				}
 				else
 				{
+					_webViewHandler?.Logger.ReponseContentNotFound(url);
+
 					statusCode = 404;
 					contentType = string.Empty;
 					return Array.Empty<byte>();

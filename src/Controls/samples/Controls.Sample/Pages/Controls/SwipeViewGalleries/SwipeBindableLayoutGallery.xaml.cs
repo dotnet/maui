@@ -15,8 +15,12 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			InitializeComponent();
 			BindingContext = new SwipeViewGalleryViewModel();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<SwipeViewGalleryViewModel>(this, "favourite", sender => { DisplayAlert("SwipeView", "Favourite", "Ok"); });
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<SwipeViewGalleryViewModel>(this, "delete", sender => { DisplayAlert("SwipeView", "Delete", "Ok"); });
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 
@@ -64,17 +68,23 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 
 		void OnFavourite()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Send(this, "favourite");
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnDelete()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Send(this, "delete");
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnTap()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Send(this, "tap");
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

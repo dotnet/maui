@@ -10,7 +10,10 @@ namespace Microsoft.Maui.Animations
 		long _lastUpdate;
 		bool _disposedValue;
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Instantiate a new <see cref="AnimationManager"/> object.
+		/// </summary>
+		/// <param name="ticker">An instance of <see cref="ITicker"/> that will be used to time the animations.</param>
 		public AnimationManager(ITicker ticker)
 		{
 			_lastUpdate = GetCurrentTick();
@@ -93,7 +96,6 @@ namespace Microsoft.Maui.Animations
 			}
 		}
 
-		/// <inheritdoc/>
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!_disposedValue)

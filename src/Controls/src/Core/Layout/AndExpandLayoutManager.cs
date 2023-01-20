@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿#nullable disable
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -27,6 +28,13 @@ namespace Microsoft.Maui.Controls
 
 		public Size ArrangeChildren(Rect bounds)
 		{
+			if (_manager == null)
+			{
+				// This shouldn't really happen, but some compatibility layouts might be 
+				// forcing a layout without a measure, so we'll have to ensure measurement happens here
+				Measure(bounds.Width, bounds.Height);
+			}
+
 			return _manager.ArrangeChildren(bounds);
 		}
 
@@ -49,9 +57,15 @@ namespace Microsoft.Maui.Controls
 				RowSpacing = stackLayout.Spacing,
 			};
 
+			var row = 0;
 			for (int n = 0; n < stackLayout.Count; n++)
 			{
 				var child = stackLayout[n];
+
+				if (child.Visibility != Visibility.Visible)
+				{
+					continue;
+				}
 
 				if (child is View view && view.VerticalOptions.Expands)
 				{
@@ -63,7 +77,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				grid.Add(child);
-				grid.SetRow(child, n);
+				grid.SetRow(child, row);
+
+				row += 1;
 			}
 
 			return grid;
@@ -78,9 +94,15 @@ namespace Microsoft.Maui.Controls
 				ColumnSpacing = stackLayout.Spacing
 			};
 
+			var column = 0;
 			for (int n = 0; n < stackLayout.Count; n++)
 			{
 				var child = stackLayout[n];
+
+				if (child.Visibility != Visibility.Visible)
+				{
+					continue;
+				}
 
 				if (child is View view && view.HorizontalOptions.Expands)
 				{
@@ -92,7 +114,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				grid.Add(child);
-				grid.SetColumn(child, n);
+				grid.SetColumn(child, column);
+
+				column += 1;
 			}
 
 			return grid;

@@ -3,15 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Gms.Common.Apis;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.OS;
 using Java.Lang;
+using Java.Util.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Maps.Platform;
 using Microsoft.Maui.Platform;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
@@ -77,56 +80,31 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapMapType(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
-			if (googleMap == null)
-				return;
-
-			googleMap.MapType = map.MapType switch
-			{
-				MapType.Street => GoogleMap.MapTypeNormal,
-				MapType.Satellite => GoogleMap.MapTypeSatellite,
-				MapType.Hybrid => GoogleMap.MapTypeHybrid,
-				_ => throw new ArgumentOutOfRangeException(),
-			};
+			googleMap?.UpdateMapType(map);
 		}
 
 		public static void MapIsShowingUser(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
-			if (googleMap == null)
-				return;
-
-			if (handler?.MauiContext?.Context == null)
-				return;
-
-			SetIsShowingUser(handler, map, googleMap).FireAndForget(handler);
+			googleMap?.UpdateIsShowingUser(map, handler?.MauiContext);
 		}
 
 		public static void MapIsScrollEnabled(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
-			if (googleMap == null)
-				return;
-
-			googleMap.UiSettings.ScrollGesturesEnabled = map.IsScrollEnabled;
+			googleMap?.UpdateIsScrollEnabled(map);
 		}
 
 		public static void MapIsTrafficEnabled(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
-			if (googleMap == null)
-				return;
-
-			googleMap.TrafficEnabled = map.IsTrafficEnabled;
+			googleMap?.UpdateIsTrafficEnabled(map);
 		}
 
 		public static void MapIsZoomEnabled(IMapHandler handler, IMap map)
 		{
 			GoogleMap? googleMap = handler?.Map;
-			if (googleMap == null)
-				return;
-
-			googleMap.UiSettings.ZoomControlsEnabled = map.IsZoomEnabled;
-			googleMap.UiSettings.ZoomGesturesEnabled = map.IsZoomEnabled;
+			googleMap?.UpdateIsZoomEnabled(map);
 		}
 
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
@@ -304,9 +282,20 @@ namespace Microsoft.Maui.Maps.Handlers
 			Map = map;
 
 			map.SetOnCameraMoveListener(_mapReady);
+
 			map.MarkerClick += OnMarkerClick;
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
+
+			if (VirtualView != null)
+			{
+				map.UpdateMapType(VirtualView);
+				map.UpdateIsShowingUser(VirtualView, MauiContext);
+				map.UpdateIsScrollEnabled(VirtualView);
+				map.UpdateIsTrafficEnabled(VirtualView);
+				map.UpdateIsZoomEnabled(VirtualView);
+			}
+
 			InitialUpdate();
 		}
 
@@ -572,37 +561,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			circle.MapElementId = nativeCircle.Id;
 
 			_circles.Add(nativeCircle);
-		}
-
-		static async Task SetIsShowingUser(IMapHandler handler, IMap map, GoogleMap googleMap)
-		{
-			if (map.IsShowingUser)
-			{
-				var locationStatus = await ApplicationModel.Permissions.CheckStatusAsync<Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse>();
-
-				if (locationStatus == ApplicationModel.PermissionStatus.Granted)
-				{
-					googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = true;
-				}
-				else
-				{
-					var locationResult = await Microsoft.Maui.ApplicationModel.Permissions.RequestAsync<Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse>();
-					if (locationResult == ApplicationModel.PermissionStatus.Granted)
-					{
-						googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = true;
-						return;
-					}
-					else
-					{
-						handler.MauiContext?.Services.GetService<ILogger<MapHandler>>()?.LogWarning("Missing location permissions for IsShowingUser");
-						googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
-					}
-				}
-			}
-			else
-			{
-				googleMap.MyLocationEnabled = googleMap.UiSettings.MyLocationButtonEnabled = false;
-			}
 		}
 	}
 

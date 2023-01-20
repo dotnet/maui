@@ -251,8 +251,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformView == null)
 				return new Rect();
-			var screenPostion = platformView.ScreenPosition;
-			return new TRect(screenPostion.X, screenPostion.Y, platformView.SizeWidth, platformView.SizeHeight).ToDP();
+			var screenPosition = platformView.ScreenPosition;
+			return new TRect(screenPosition.X, screenPosition.Y, platformView.SizeWidth, platformView.SizeHeight).ToDP();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
@@ -332,6 +332,14 @@ namespace Microsoft.Maui.Platform
 
 			view.RemovedFromWindow += routedEventHandler;
 			return disposable;
+		}
+
+		internal static bool NeedsContainer(this IView? view)
+		{
+			if (view is IBorderView border)
+				return border?.Shape != null || border?.Stroke != null;
+
+			return false;
 		}
 	}
 }

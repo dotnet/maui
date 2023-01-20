@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Skia.Views;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
-using Tizen.UIExtensions.NUI.GraphicsView;
 using NView = Tizen.NUI.BaseComponents.View;
 using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;

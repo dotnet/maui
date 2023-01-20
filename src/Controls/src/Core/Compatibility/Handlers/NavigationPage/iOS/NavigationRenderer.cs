@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<NavigationPage, NavigationRenderer> CommandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
 		ViewHandlerDelegator<NavigationPage> _viewHandlerWrapper;
 		bool _navigating = false;
+		VisualElement _element;
 
 		[Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
@@ -56,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		NavigationPage NavPage => Element as NavigationPage;
 		INavigationPageController NavPageController => NavPage;
 
-		public VisualElement Element { get => _viewHandlerWrapper.Element; }
+		public VisualElement Element { get => _viewHandlerWrapper.Element ?? _element; }
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -74,6 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			(this as IElementHandler).SetVirtualView(element);
+			_element = element;
 		}
 
 		public UIViewController ViewController
@@ -726,7 +729,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var barTextColor = NavPage.BarTextColor;
 			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
 
-#pragma warning disable CA1416 // TODO:   'UIApplication.StatusBarStyle' is unsupported on: 'ios' 9.0 and later
+#pragma warning disable CA1416, CA1422 // TODO:   'UIApplication.StatusBarStyle' is unsupported on: 'ios' 9.0 and later
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
 			{
 				// Use dark text color for status bar
@@ -744,7 +747,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Use light text color for status bar
 				UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.LightContent;
 			}
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 		}
 
 		void UpdateToolBarVisible()
@@ -993,9 +996,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
-#pragma warning disable CA1416 // TODO: 'UIViewController.AutomaticallyAdjustsScrollViewInsets' is unsupported on: 'ios' 11.0 and later
+#pragma warning disable CA1416, CA1422 // TODO: 'UIViewController.AutomaticallyAdjustsScrollViewInsets' is unsupported on: 'ios' 11.0 and later
 				AutomaticallyAdjustsScrollViewInsets = false;
-#pragma warning restore
+#pragma warning restore CA1416, CA1422
 
 				_navigation = new WeakReference<NavigationRenderer>(navigation);
 			}
@@ -1484,13 +1487,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return ivh.ViewController.PreferredInterfaceOrientationForPresentation();
 				return base.PreferredInterfaceOrientationForPresentation();
 			}
-
+#pragma warning disable CA1422 // Validate platform compatibility
 			public override bool ShouldAutorotate()
 			{
 				if (Child?.Handler is IPlatformViewHandler ivh)
+
 					return ivh.ViewController.ShouldAutorotate();
 				return base.ShouldAutorotate();
 			}
+#pragma warning restore CA1422 // Validate platform compatibility
 
 			[System.Runtime.Versioning.UnsupportedOSPlatform("ios6.0")]
 			[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
@@ -1556,6 +1561,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
 			_viewHandlerWrapper.SetVirtualView(view, ElementChanged, false);
+			_element = view as VisualElement;
 
 			void ElementChanged(ElementChangedEventArgs<NavigationPage> e)
 			{

@@ -1,11 +1,10 @@
-﻿#nullable enable
-using AView = Android.Views.View;
+﻿using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class RadioButton
 	{
-		public static void MapContent(RadioButtonHandler handler, RadioButton radioButton) 
+		public static void MapContent(RadioButtonHandler handler, RadioButton radioButton)
 			=> MapContent((IRadioButtonHandler)handler, radioButton);
 
 		public static void MapContent(IRadioButtonHandler handler, RadioButton radioButton)

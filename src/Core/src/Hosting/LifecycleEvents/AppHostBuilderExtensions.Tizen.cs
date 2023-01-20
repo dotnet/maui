@@ -17,7 +17,7 @@ namespace Microsoft.Maui.LifecycleEvents
 			tizen
 				.OnCreate((app) =>
 				{
-					// OnCreate is only ever called once when the app is initally created
+					// OnCreate is only ever called once when the app is initially created
 					app.GetWindow().Created();
 				})
 				.OnResume(app =>

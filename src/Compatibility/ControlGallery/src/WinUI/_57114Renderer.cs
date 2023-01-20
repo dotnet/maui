@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 		void OnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

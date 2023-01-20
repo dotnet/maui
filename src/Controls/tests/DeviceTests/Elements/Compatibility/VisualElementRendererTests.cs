@@ -10,7 +10,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Compatibility)]
-	public partial class VisualElementRendererTests : HandlerTestBase
+	public partial class VisualElementRendererTests : ControlsHandlerTestBase
 	{
 		class LegacyComponent : View
 		{

@@ -1,13 +1,9 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Android.Views;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
-using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -56,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform
 					if (!CheckButtonMask(recognizer, e))
 						continue;
 
-					recognizer.SendTapped(view, CalculatePosition);
+					recognizer.SendTapped(view, (view) => e.CalculatePosition(GetView(), view));
 					captured = true;
 				}
 			}
@@ -70,7 +66,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!CheckButtonMask(gestureRecognizer, e))
 					continue;
 
-				gestureRecognizer.SendTapped(view, CalculatePosition);
+				gestureRecognizer.SendTapped(view, (view) => e.CalculatePosition(GetView(), view));
 				captured = true;
 			}
 
@@ -88,39 +84,6 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				return (tapGestureRecognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
-			}
-
-			Point? CalculatePosition(IElement? element)
-			{
-				var context = GetView()?.Handler?.MauiContext?.Context;
-
-				if (context == null)
-					return null;
-
-				if (e == null)
-					return null;
-
-				if (element == null)
-				{
-					return new Point(context.FromPixels(e.RawX), context.FromPixels(e.RawY));
-				}
-
-				if (element == GetView())
-				{
-					return new Point(context.FromPixels(e.GetX()), context.FromPixels(e.GetY()));
-				}
-
-				if (element?.Handler?.PlatformView is AView aView)
-				{
-					var location = aView.GetLocationOnScreenPx();
-
-					var x = e.RawX - location.X;
-					var y = e.RawY - location.Y;
-
-					return new Point(context.FromPixels(x), context.FromPixels(y));
-				}
-
-				return null;
 			}
 		}
 

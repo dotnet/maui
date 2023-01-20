@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ContentView)]
-	public partial class ContentViewTests : HandlerTestBase
+	public partial class ContentViewTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{

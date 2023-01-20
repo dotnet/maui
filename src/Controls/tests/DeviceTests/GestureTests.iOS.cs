@@ -14,7 +14,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Gesture)]
-	public class GestureTests : HandlerTestBase
+	public class GestureTests : ControlsHandlerTestBase
 	{
 		[Fact]
 		public async Task UserInteractionEnabledTrueWhenInitializedWithGestureRecognizer()

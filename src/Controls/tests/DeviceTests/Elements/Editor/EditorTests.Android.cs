@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class EditorTests
 	{
 		AppCompatEditText GetPlatformControl(EditorHandler handler) =>

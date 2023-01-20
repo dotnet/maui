@@ -12,6 +12,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Devices;
 using System;
 
 #if ANDROID || IOS || MACCATALYST
@@ -27,9 +28,9 @@ namespace Microsoft.Maui.DeviceTests
 
 	[Category(TestCategory.Window)]
 #if ANDROID || IOS || MACCATALYST
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
-	public partial class WindowTests : HandlerTestBase
+	public partial class WindowTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
@@ -59,6 +60,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
 					handlers.AddHandler<ShellContent, ShellContentHandler>();
 #endif
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<Editor, EditorHandler>();
+					handlers.AddHandler<SearchBar, SearchBarHandler>();
 				});
 			});
 		}
@@ -77,16 +81,39 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(swapOrder.Page);
 				while (!swapOrder.IsFinished())
 				{
+					var previousRootPage = window.Page?.GetType();
 					var nextRootPage = swapOrder.GetNextPageType();
 					window.Page = nextRootPage;
 
 					try
 					{
 						await OnLoadedAsync(swapOrder.Page);
+
+#if !IOS && !MACCATALYST
+
+						var toolbar = GetToolbar(handler);
+
+						// Shell currently doesn't create the handler on the xplat toolbar with Android
+						// Because Android has lots of toolbars spread out between the viewpagers that
+						var platformToolBar = GetPlatformToolbar(handler);
+						Assert.Equal(platformToolBar != null, toolbar != null);
+
+						if (platformToolBar != null)
+						{
+							if (DeviceInfo.Current.Platform == DevicePlatform.WinUI ||
+								window.Page is not Shell)
+							{
+								Assert.Equal(toolbar?.Handler?.PlatformView, platformToolBar);
+							}
+
+							Assert.True(IsNavigationBarVisible(handler));
+						}
+#endif
+
 					}
 					catch (Exception exc)
 					{
-						throw new Exception($"Failed to swap to {nextRootPage}", exc);
+						throw new Exception($"Failed to swap to {nextRootPage} from {previousRootPage}", exc);
 					}
 				}
 			});

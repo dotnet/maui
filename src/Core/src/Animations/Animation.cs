@@ -240,10 +240,8 @@ namespace Microsoft.Maui.Animations
 				Step?.Invoke(Progress);
 				HasFinished = percent == 1;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				//TODO log exception
-				Console.WriteLine(ex);
 				HasFinished = true;
 			}
 		}
@@ -334,8 +332,8 @@ namespace Microsoft.Maui.Animations
 		}
 
 		/// <summary>
-		/// Removes this animation from it's <see cref="Parent"/>.
-		/// If there is no <see cref="Parent"/>, nothing will happen.
+		/// Removes this animation from it's parent.
+		/// If there is no parent, nothing will happen.
 		/// </summary>
 		public void RemoveFromParent()
 		{
@@ -344,12 +342,13 @@ namespace Microsoft.Maui.Animations
 				view?.RemoveAnimation(this);
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Gets a value that specifies if this animation has been disposed.
+		/// </summary>
 		public bool IsDisposed => _disposedValue;
 
 		private bool _disposedValue = false; // To detect redundant calls
 
-		/// <inheritdoc/>
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!_disposedValue)

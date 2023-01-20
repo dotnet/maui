@@ -104,11 +104,11 @@ namespace Microsoft.Maui.Platform
 					break;
 				case FlowDirection.RightToLeft:
 					platformView.LayoutDirection = ALayoutDirection.Rtl;
-					platformView.TextDirection = ATextDirection.Rtl;
+					platformView.TextDirection = ATextDirection.FirstStrongRtl;
 					break;
 				case FlowDirection.LeftToRight:
 					platformView.LayoutDirection = ALayoutDirection.Ltr;
-					platformView.TextDirection = ATextDirection.Ltr;
+					platformView.TextDirection = ATextDirection.FirstStrongLtr;
 					break;
 			}
 		}

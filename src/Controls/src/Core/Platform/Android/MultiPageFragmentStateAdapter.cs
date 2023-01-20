@@ -1,3 +1,4 @@
+#nullable disable
 using System.Diagnostics.CodeAnalysis;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;

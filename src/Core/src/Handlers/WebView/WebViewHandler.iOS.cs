@@ -516,7 +516,7 @@ namespace Microsoft.Maui.Handlers
 			}
 			catch (Exception)
 			{
-				Console.WriteLine($"Could not load {url} as local file");
+				MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning("Could not load {url} as local file", url);
 			}
 
 			return false;

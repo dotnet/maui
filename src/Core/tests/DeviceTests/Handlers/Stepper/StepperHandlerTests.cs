@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Stepper)]
-	public partial class StepperHandlerTests : HandlerTestBase<StepperHandler, StepperStub>
+	public partial class StepperHandlerTests : CoreHandlerTestBase<StepperHandler, StepperStub>
 	{
 		[Fact(DisplayName = "Is Value Initializes Correctly")]
 		public async Task ValueInitializesCorrectly()

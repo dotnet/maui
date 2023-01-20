@@ -1,6 +1,5 @@
 using System;
 using System.Windows.Input;
-using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Controls;

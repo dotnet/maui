@@ -3,8 +3,8 @@ using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using WSize = global::Windows.Foundation.Size;
 using WRect = global::Windows.Foundation.Rect;
+using WSize = global::Windows.Foundation.Size;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Platform
