@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Storage
 		/// </summary>
 		/// <param name="key">The key to retrieve the value for.</param>
 		/// <returns>The decrypted string value or <see langword="null"/> if a value was not found.</returns>
-		Task<string> GetAsync(string key);
+		Task<string?> GetAsync(string key);
 
 		/// <summary>
 		/// Sets and encrypts a value for a given key.
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Storage
 		/// </summary>
 		/// <param name="key">The key to retrieve the value for.</param>
 		/// <returns>The decrypted string value or <see langword="null"/> if a value was not found.</returns>
-		public static Task<string> GetAsync(string key) =>
+		public static Task<string?> GetAsync(string key) =>
 			Current.GetAsync(key);
 
 		/// <summary>
@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Storage
 		internal static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
 #endif
 
-		public Task<string> GetAsync(string key)
+		public Task<string?> GetAsync(string key)
 		{
 			if (string.IsNullOrWhiteSpace(key))
 				throw new ArgumentNullException(nameof(key));
