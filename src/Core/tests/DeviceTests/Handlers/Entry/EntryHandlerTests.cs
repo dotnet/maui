@@ -495,6 +495,32 @@ namespace Microsoft.Maui.DeviceTests
 				() => entry.CharacterSpacing = newSize);
 		}
 
+		[Theory(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.End)]
+		public async Task VerticalTextAlignmentInitializesCorrectly(TextAlignment textAlignment)
+		{
+			var entry = new EntryStub
+			{
+				VerticalTextAlignment = textAlignment
+			};
+
+			var platformAlignment = GetNativeVerticalTextAlignment(textAlignment);
+
+			// attach for windows because it uses control templates
+			var values = await GetValueAsync(entry, (handler) =>
+				handler.PlatformView.AttachAndRun(() =>
+					new
+					{
+						ViewValue = entry.VerticalTextAlignment,
+						PlatformViewValue = GetNativeVerticalTextAlignment(handler)
+					}));
+
+			Assert.Equal(textAlignment, values.ViewValue);
+			Assert.Equal(platformAlignment, values.PlatformViewValue);
+		}
+
 #if ANDROID
 		[Fact]
 		public async Task NextMovesToNextEntrySuccessfully()

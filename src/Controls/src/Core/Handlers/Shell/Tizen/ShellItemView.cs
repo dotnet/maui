@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -140,7 +138,7 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				MakeSimplePopup().Open();
-			} 
+			}
 		}
 
 		Popup MakeSimplePopup()
@@ -244,7 +242,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_bottomTabBar.LayoutManager = new GridLayoutManager(false, items.Count > MaxBottomItems ? MaxBottomItems : items.Count);
 			_bottomTabBar.Adaptor = _adaptor = CreateItemAdaptor(items);
 			_adaptor.SelectionChanged += OnTabItemSelected;
-			
+
 			_bottomTabBar.RequestItemSelect(_lastSelected);
 
 			_cachedGroups = ShellItem.Items;

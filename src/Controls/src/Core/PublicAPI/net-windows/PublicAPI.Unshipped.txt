@@ -1,4 +1,11 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
+~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 ~override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string propertyName = null) -> void
+virtual Microsoft.Maui.Controls.VisualElement.IsEnabledCore.get -> bool
+Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
+override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool

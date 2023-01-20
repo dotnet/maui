@@ -49,9 +49,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// so we know we can safely invoke the UrlLoading event.
 			var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri);
 			_webViewHandler.UrlLoading(callbackArgs);
+			_webViewHandler.Logger.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
 
 			if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
 			{
+				_webViewHandler.Logger.LaunchExternalBrowser(uri);
 				try
 				{
 					var intent = Intent.ParseUri(uri.OriginalString, IntentUriType.Scheme);
@@ -84,6 +86,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(requestUri);
 			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
 
+			_webViewHandler?.Logger.HandlingWebRequest(requestUri);
+
 			if (requestUri != null &&
 				_webViewHandler != null &&
 				_webViewHandler.WebviewManager != null &&
@@ -91,7 +95,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var contentType = headers["Content-Type"];
 
+				_webViewHandler?.Logger.ResponseContentBeingSent(requestUri, statusCode);
+
 				return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, content);
+			}
+			else
+			{
+				_webViewHandler?.Logger.ReponseContentNotFound(requestUri ?? string.Empty);
 			}
 
 			return base.ShouldInterceptRequest(view, request);
@@ -111,6 +121,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private void RunBlazorStartupScripts(AWebView view)
 		{
+			_webViewHandler?.Logger.RunningBlazorStartupScripts();
+
 			// Confirm Blazor hasn't already initialized
 			view.EvaluateJavascript(@"
 				(function() { return typeof(window.__BlazorStarted); })();
@@ -171,6 +183,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						", new JavaScriptValueCallback(_ =>
 						{
 							// Done; no more action required
+							_webViewHandler?.Logger.BlazorStartupScriptsFinished();
 						}));
 					}));
 			}));

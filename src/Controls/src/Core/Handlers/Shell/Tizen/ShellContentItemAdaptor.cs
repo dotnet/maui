@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Collections;
 using Microsoft.Maui.Controls.Handlers.Items;
 using GColor = Microsoft.Maui.Graphics.Color;
@@ -11,7 +9,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		ItemAppearance _itemAppearance;
 
-		public ShellContentItemAdaptor(Element element, IEnumerable items) : base(element, items, GetTemplate()) 
+		public ShellContentItemAdaptor(Element element, IEnumerable items) : base(element, items, GetTemplate())
 		{
 			_itemAppearance = new ItemAppearance();
 		}

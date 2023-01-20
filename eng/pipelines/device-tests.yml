@@ -101,6 +101,11 @@ stages:
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
           android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        - name: graphics
+          desc: Graphics
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          android: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
         - name: core
           desc: Core
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
