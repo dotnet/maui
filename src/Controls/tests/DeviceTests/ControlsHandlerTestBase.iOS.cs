@@ -5,8 +5,6 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -66,19 +64,13 @@ namespace Microsoft.Maui.DeviceTests
 			return !vcs[vcs.Length - 1].NavigationItem.HidesBackButton;
 		}
 
-		protected bool IsNavigationBarVisible(IElementHandler handler)
-		{
-			var platformToolbar = GetPlatformToolbar(handler);
-			return platformToolbar?.Window != null;
-		}
-
 		protected object GetTitleView(IElementHandler handler)
 		{
 			var activeVC = GetVisibleViewController(handler);
 			if (activeVC.NavigationItem.TitleView is
 				ShellPageRendererTracker.TitleViewContainer tvc)
 			{
-				return tvc.Subviews[0];
+				return tvc.View.Handler.PlatformView;
 			}
 
 			return null;
@@ -86,70 +78,24 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIViewController[] GetActiveChildViewControllers(IElementHandler handler)
 		{
-			if (handler is IWindowHandler wh)
-			{
-				handler = wh.VirtualView.Content.Handler;
-			}
-
 			if (handler is ShellRenderer renderer)
 			{
 				if (renderer.ChildViewControllers[0] is ShellItemRenderer sir)
 				{
-					return sir.SelectedViewController.ChildViewControllers;
+					if (sir.ChildViewControllers[0] is ShellSectionRenderer ssr)
+					{
+						return ssr.ChildViewControllers;
+					}
 				}
 			}
 
-			var containerVC = (handler as IPlatformViewHandler).ViewController;
-			var view = handler.VirtualView.Parent;
-
-			while (containerVC == null && view != null)
-			{
-				containerVC = (view?.Handler as IPlatformViewHandler).ViewController;
-				view = view?.Parent;
-			}
-
-			if (containerVC == null)
-				return new UIViewController[0];
-
-			return new[] { containerVC };
+			throw new NotImplementedException();
 		}
 
 		UIViewController GetVisibleViewController(IElementHandler handler)
 		{
 			var vcs = GetActiveChildViewControllers(handler);
 			return vcs[vcs.Length - 1];
-		}
-
-		protected UINavigationBar GetPlatformToolbar(IElementHandler handler)
-		{
-			var visibleController = GetVisibleViewController(handler);
-			if (visibleController is UINavigationController nc)
-				return nc.NavigationBar;
-
-			var navController = visibleController.NavigationController;
-			return navController?.NavigationBar;
-		}
-
-		protected Size GetTitleViewExpectedSize(IElementHandler handler)
-		{
-			var titleContainer = GetPlatformToolbar(handler).FindDescendantView<UIView>(result =>
-			{
-				return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
-			});
-
-			return new Size(titleContainer.Frame.Width, titleContainer.Frame.Height);
-		}
-
-		protected string GetToolbarTitle(IElementHandler handler)
-		{
-			var toolbar = GetPlatformToolbar(handler);
-			return AssertionExtensions.GetToolbarTitle(toolbar);
-		}
-
-		protected string GetBackButtonText(IElementHandler handler)
-		{
-			var toolbar = GetPlatformToolbar(handler);
-			return AssertionExtensions.GetBackButtonText(toolbar);
 		}
 	}
 }

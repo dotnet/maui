@@ -962,8 +962,7 @@ namespace Microsoft.Maui.Controls
 					}
 					else
 					{
-
-						this.FindParentOfType<Shell>().SendPageAppearing(presentedPage);
+						presentedPage.SendAppearing();
 					}
 				}
 			}
