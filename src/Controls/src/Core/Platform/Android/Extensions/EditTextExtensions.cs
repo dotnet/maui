@@ -18,19 +18,43 @@ namespace Microsoft.Maui.Controls.Platform
 			editText.ImeOptions = imeOptions;
 		}
 
-		public static void UpdateText(this EditText editText, InputView inputView)
+		static (string oldText, string newText) GetTexts(EditText editText, InputView inputView) 
 		{
-			bool isPasswordEnabled =
-				(editText.InputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
-				(editText.InputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
-
 			var oldText = editText.Text ?? string.Empty;
+
+			var inputType = editText.InputType;
+
+			bool isPasswordEnabled =
+				(inputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
+				(inputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
+
 			var newText = TextTransformUtilites.GetTransformedText(inputView?.Text,
 					isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
 
+			return (oldText, newText);
+		}
+
+		public static void UpdateText(this EditText editText, InputView inputView)
+		{
+			(var oldText, var newText) = GetTexts(editText, inputView);
+
 			if (oldText != newText)
 			{
-				// Update the text and keep the cursor position 
+				editText.Text = newText;
+
+				// When updating from xplat->plat, we set the selection (cursor) to the end of the text
+				editText.SetSelection(newText.Length);
+			}
+		}
+
+		internal static void UpdateTextFromPlatform(this EditText editText, InputView inputView)
+		{
+			(var oldText, var newText) = GetTexts(editText, inputView);
+
+			if (oldText != newText)
+			{
+				// This update is happening while inputting text into the EditText, so we want to avoid 
+				// resettting the cursor position and selection
 				editText.SetTextKeepState(newText);
 			}
 		}
