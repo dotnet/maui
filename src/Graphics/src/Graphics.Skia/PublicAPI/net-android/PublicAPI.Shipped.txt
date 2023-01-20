@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.Graphics.Skia.Resource
+Microsoft.Maui.Graphics.Skia.Resource.Resource() -> void
