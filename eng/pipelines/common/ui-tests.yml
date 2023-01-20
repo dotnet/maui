@@ -64,7 +64,10 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: ios
-                      version: ${{ version }}
+                      ${{ if eq(version, 'latest') }}:
+                        version: 14.4
+                      ${{ if ne(version, 'latest') }}:
+                        version: ${{ version }}
                       path: ${{ project.ios }}
                       app: ${{ project.app }}
                       ${{ if eq(version, 'latest') }}:
