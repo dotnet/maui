@@ -18,3 +18,11 @@ static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this Android.Widget.EditText! platformView, Microsoft.Maui.IView! view) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.AppCompatEditText!
+*REMOVED*override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.AppCompatEditText!
+*REMOVED*override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+*REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, Android.Graphics.Drawables.Drawable? clearButtonDrawable) -> void
+*REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, System.Func<Android.Graphics.Drawables.Drawable?>? getClearButtonDrawable) -> void
