@@ -9,7 +9,11 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
+#if MAUI_GRAPHICS_WIN2D
 	public static class W2DExtensions
+#else
+	public static class GraphicsExtensions
+#endif
 	{
 		public static global::Windows.UI.Color AsColor(this Color color, Color defaultColor, float alpha = 1)
 		{

@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Graphics.Platform
 	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
 	public
+#else
+	internal
 #endif
 	static class AsyncPump
 	{

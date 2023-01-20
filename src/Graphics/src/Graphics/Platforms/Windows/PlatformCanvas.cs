@@ -19,7 +19,13 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
-	public class W2DCanvas : AbstractCanvas<W2DCanvasState>, IBlurrableCanvas
+#if MAUI_GRAPHICS_WIN2D
+	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformCanvas instead.")]
+	public class W2DCanvas
+#else
+	public class PlatformCanvas
+#endif
+		: AbstractCanvas<PlatformCanvasState>, IBlurrableCanvas
 	{
 		private CanvasDrawingSession _session;
 		private CanvasRenderTarget _patternContext;
@@ -45,8 +51,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		private bool _bitmapPatternFills;
 
+#if MAUI_GRAPHICS_WIN2D
 		public W2DCanvas()
-			: base(new W2DCanvasStateService(), new W2DStringSizeService())
+#else
+		public PlatformCanvas()
+#endif
+			: base(new PlatformCanvasStateService(), new PlatformStringSizeService())
 		{
 		}
 
@@ -378,9 +388,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (paint is ImagePaint imagePaint)
 			{
-				if (imagePaint.Image is W2DImage image)
+				if (imagePaint.Image is PlatformImage image)
 				{
-					var bitmapBrush = new CanvasImageBrush(_session, image.PlatformImage)
+					var bitmapBrush = new CanvasImageBrush(_session, image.PlatformRepresentation)
 					{
 						ExtendX = CanvasEdgeBehavior.Wrap,
 						ExtendY = CanvasEdgeBehavior.Wrap
@@ -486,7 +496,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var commandList = new CanvasCommandList(_session);
 			using (var patternSession = commandList.CreateDrawingSession())
 			{
-				var canvas = new W2DCanvas { Session = patternSession };
+				var canvas = new PlatformCanvas { Session = patternSession };
 				pattern?.Draw(canvas);
 			}
 
@@ -502,7 +512,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				using (var imageSession = context.CreateDrawingSession())
 				{
 					imageSession.Clear(WColors.Transparent);
-					var canvas = new W2DCanvas { Session = imageSession };
+					var canvas = new PlatformCanvas { Session = imageSession };
 					pattern.Draw(canvas);
 				}
 
@@ -514,7 +524,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
-			if (image is W2DImage platformImage)
+			if (image is PlatformImage platformImage)
 			{
 				SetRect(x, y, width, height);
 
@@ -524,7 +534,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				After:
 								Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, global::Windows.Foundation.Rect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
 				*/
-				Draw(s => s.DrawImage(platformImage.PlatformImage, _rect, WRect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
+				Draw(s => s.DrawImage(platformImage.PlatformRepresentation, _rect, WRect.Empty, CurrentState.Alpha, CanvasImageInterpolation.Linear));
 			}
 		}
 
@@ -707,7 +717,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			base.SaveState();
 		}
 
-		protected override void StateRestored(W2DCanvasState state)
+		protected override void StateRestored(PlatformCanvasState state)
 		{
 			if (_session != null)
 			{

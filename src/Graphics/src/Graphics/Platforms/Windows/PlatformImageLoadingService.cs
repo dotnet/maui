@@ -8,15 +8,23 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
-	public class W2DImageLoadingService : IImageLoadingService
+#if MAUI_GRAPHICS_WIN2D
+	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService instead.")]
+	public class W2DImageLoadingService
+#else
+	public class PlatformImageLoadingService
+#endif
+		: IImageLoadingService
 	{
 		public IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			return W2DImage.FromStream(stream, formatHint);
+			return PlatformImage.FromStream(stream, formatHint);
 		}
 	}
 
+#if MAUI_GRAPHICS_WIN2D
 	[Obsolete]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class SkiaImageLoadingService : W2DImageLoadingService { }
+#endif
 }

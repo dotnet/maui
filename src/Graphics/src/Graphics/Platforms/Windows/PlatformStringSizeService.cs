@@ -8,7 +8,13 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
-	public class W2DStringSizeService : IStringSizeService
+#if MAUI_GRAPHICS_WIN2D
+	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformStringSizeService instead.")]
+	public class W2DStringSizeService
+#else
+	public class PlatformStringSizeService
+#endif
+		: IStringSizeService
 	{
 		public SizeF GetStringSize(string value, IFont font, float textSize)
 			=> GetStringSize(value, font, textSize, HorizontalAlignment.Left, VerticalAlignment.Top);
