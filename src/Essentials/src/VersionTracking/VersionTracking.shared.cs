@@ -7,98 +7,184 @@ using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.ApplicationModel
 {
+	/// <summary>
+	/// The VersionTracking API provides an easy way to track an app's version on a device.
+	/// </summary>
 	public interface IVersionTracking
 	{
+		/// <summary>
+		/// Starts tracking version information.
+		/// </summary>
 		void Track();
 
+		/// <summary>
+		/// Gets a value indicating whether this is the first time this app has ever been launched on this device.
+		/// </summary>
 		bool IsFirstLaunchEver { get; }
 
+		/// <summary>
+		/// Gets a value indicating if this is the first launch of the app for the current version number.
+		/// </summary>
 		bool IsFirstLaunchForCurrentVersion { get; }
 
+		/// <summary>
+		/// Gets a value indicating if this is the first launch of the app for the current build number.
+		/// </summary>
 		bool IsFirstLaunchForCurrentBuild { get; }
 
+		/// <summary>
+		/// Gets the current version number of the app.
+		/// </summary>
 		string CurrentVersion { get; }
 
+		/// <summary>
+		/// Gets the current build of the app.
+		/// </summary>
 		string CurrentBuild { get; }
 
+		/// <summary>
+		/// Gets the version number for the previously run version.
+		/// </summary>
 		string? PreviousVersion { get; }
 
+		/// <summary>
+		/// Gets the build number for the previously run version.
+		/// </summary>
 		string? PreviousBuild { get; }
 
+		/// <summary>
+		/// Gets the version number of the first version of the app that was installed on this device.
+		/// </summary>
 		string? FirstInstalledVersion { get; }
 
+		/// <summary>
+		/// Gets the build number of first version of the app that was installed on this device.
+		/// </summary>
 		string? FirstInstalledBuild { get; }
 
+		/// <summary>
+		/// Gets the collection of version numbers of the app that ran on this device.
+		/// </summary>
 		IReadOnlyList<string> VersionHistory { get; }
 
+		/// <summary>
+		/// Gets the collection of build numbers of the app that ran on this device.
+		/// </summary>
 		IReadOnlyList<string> BuildHistory { get; }
 
+		/// <summary>
+		/// Determines if this is the first launch of the app for a specified version number.
+		/// </summary>
+		/// <param name="version">The version number.</param>
+		/// <returns><see langword="true"/> if this is the first launch of the app for the specified version number; otherwise <see langword="false"/>.</returns>
 		bool IsFirstLaunchForVersion(string version);
 
+		/// <summary>
+		/// Determines if this is the first launch of the app for a specified build number.
+		/// </summary>
+		/// <param name="build">The build number.</param>
+		/// <returns><see langword="true"/> if this is the first launch of the app for the specified build number; otherwise <see langword="false"/>.</returns>
 		bool IsFirstLaunchForBuild(string build);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="Type[@FullName='Microsoft.Maui.Essentials.VersionTracking']/Docs/*" />
+	/// <summary>
+	/// The VersionTracking API provides an easy way to track an app's version on a device.
+	/// </summary>
 	public static partial class VersionTracking
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='Track']/Docs/*" />
+		/// <summary>
+		/// Starts tracking version information.
+		/// </summary>
 		public static void Track()
 			=> Default.Track();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchEver']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether this is the first time this app has ever been launched on this device.
+		/// </summary>
 		public static bool IsFirstLaunchEver
 			=> Default.IsFirstLaunchEver;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForCurrentVersion']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating if this is the first launch of the app for the current version number.
+		/// </summary>
 		public static bool IsFirstLaunchForCurrentVersion
 			=> Default.IsFirstLaunchForCurrentVersion;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForCurrentBuild']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating if this is the first launch of the app for the current build number.
+		/// </summary>
 		public static bool IsFirstLaunchForCurrentBuild
 			=> Default.IsFirstLaunchForCurrentBuild;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='CurrentVersion']/Docs/*" />
+		/// <summary>
+		/// Gets the current version number of the app.
+		/// </summary>
 		public static string CurrentVersion
 			=> Default.CurrentVersion;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='CurrentBuild']/Docs/*" />
+		/// <summary>
+		/// Gets the current build of the app.
+		/// </summary>
 		public static string CurrentBuild
 			=> Default.CurrentBuild;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='PreviousVersion']/Docs/*" />
+		/// <summary>
+		/// Gets the version number for the previously run version.
+		/// </summary>
 		public static string? PreviousVersion
 			=> Default.PreviousVersion;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='PreviousBuild']/Docs/*" />
+		/// <summary>
+		/// Gets the build number for the previously run version.
+		/// </summary>
 		public static string? PreviousBuild
 			=> Default.PreviousBuild;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='FirstInstalledVersion']/Docs/*" />
+		/// <summary>
+		/// Gets the version number of the first version of the app that was installed on this device.
+		/// </summary>
 		public static string? FirstInstalledVersion
 			=> Default.FirstInstalledVersion;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='FirstInstalledBuild']/Docs/*" />
+		/// <summary>
+		/// Gets the build number of first version of the app that was installed on this device.
+		/// </summary>
 		public static string? FirstInstalledBuild
 			=> Default.FirstInstalledBuild;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='VersionHistory']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of version numbers of the app that ran on this device.
+		/// </summary>
 		public static IEnumerable<string> VersionHistory
 			=> Default.VersionHistory;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='BuildHistory']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of build numbers of the app that ran on this device.
+		/// </summary>
 		public static IEnumerable<string> BuildHistory
 			=> Default.BuildHistory;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForVersion']/Docs/*" />
+		/// <summary>
+		/// Determines if this is the first launch of the app for a specified version number.
+		/// </summary>
+		/// <param name="version">The version number.</param>
+		/// <returns><see langword="true"/> if this is the first launch of the app for the specified version number; otherwise <see langword="false"/>.</returns>
 		public static bool IsFirstLaunchForVersion(string version)
 			=> Default.IsFirstLaunchForVersion(version);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/VersionTracking.xml" path="//Member[@MemberName='IsFirstLaunchForBuild']/Docs/*" />
+		/// <summary>
+		/// Determines if this is the first launch of the app for a specified build number.
+		/// </summary>
+		/// <param name="build">The build number.</param>
+		/// <returns><see langword="true"/> if this is the first launch of the app for the specified build number; otherwise <see langword="false"/>.</returns>
 		public static bool IsFirstLaunchForBuild(string build)
 			=> Default.IsFirstLaunchForBuild(build);
 
 		static IVersionTracking? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IVersionTracking Default =>
 			defaultImplementation ??= new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
 

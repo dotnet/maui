@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Graphics;
 

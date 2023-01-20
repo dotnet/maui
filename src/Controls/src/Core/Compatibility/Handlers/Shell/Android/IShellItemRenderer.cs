@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using AndroidX.Fragment.App;
 
