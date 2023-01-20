@@ -86,7 +86,7 @@ namespace FormsGallery
 }]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/WebView.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/WebView.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -726,7 +726,7 @@ namespace FormsGallery
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.WebViewSourceTypeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.WebViewSourceTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

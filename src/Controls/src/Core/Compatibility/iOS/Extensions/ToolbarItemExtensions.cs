@@ -1,3 +1,4 @@
+#nullable disable
 using System.ComponentModel;
 using CoreGraphics;
 using ObjCRuntime;
@@ -105,9 +106,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			void UpdateTextAndStyle()
 			{
 				Title = _item.Text;
-#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios8.0")]
+#pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios8.0")]
 				Style = UIBarButtonItemStyle.Bordered;
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 				Image = null;
 			}
 		}

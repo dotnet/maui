@@ -10,6 +10,28 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
 		[Fact]
+		public async Task UpdatingSourceWorks()
+		{
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				Source = new FileImageSourceStub("red.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+				await image.Wait();
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
+
+				image.Source = new FileImageSourceStub("blue.png");
+				handler.UpdateValue(nameof(IImage.Source));
+				await image.Wait();
+				await handler.PlatformView.AssertContainsColor(Colors.Blue);
+			});
+		}
+
+		[Fact]
 		public async Task LoadDrawableAsyncReturnsWithSameImageAndDoesNotHang()
 		{
 			var service = new FileImageSourceService();
@@ -37,6 +59,34 @@ namespace Microsoft.Maui.DeviceTests
 						Task.Delay(5_000));
 
 					Assert.Equal(TaskStatus.RanToCompletion, secondResultTask.Status);
+				});
+			});
+		}
+
+		[Theory]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#000000")]
+		public async Task LoadDrawableAsyncWithFileLoadsFileInsteadOfResource(string colorHex)
+		{
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var service = new FileImageSourceService();
+
+			var filename = BaseImageSourceServiceTests.CreateBitmapFile(100, 100, expectedColor, "blue.png");
+			var imageSource = new FileImageSourceStub(filename);
+
+			var image = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<TImageHandler>(image);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					var result = await service.LoadDrawableAsync(imageSource, handler.PlatformView);
+
+					await handler.PlatformView.AssertColorAtCenterAsync(expectedColor.ToPlatform());
 				});
 			});
 		}

@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(_MauiDotNetTfm)-android;$(_MauiDotNetTfm)-maccatalyst;$(_MauiDotNetTfm)-ios</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(TargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(TargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(TargetFrameworks)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <ApplicationTitle>Profiling</ApplicationTitle>

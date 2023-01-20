@@ -1,13 +1,14 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.GeometryHelper']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.GeometryHelper']/Docs/*" />
 	public static class GeometryHelper
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][1]/Docs/*" />
 		public static PathGeometry FlattenGeometry(Geometry geoSrc, double tolerance)
 		{
 			// Return empty PathGeometry if Geometry is null
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return pathGeoDst;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][2]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][2]/Docs/*" />
 		public static void FlattenGeometry(PathGeometry pathGeoDst, Geometry geoSrc, double tolerance, Matrix matxPrevious)
 		{
 			var points = new List<Point>();
@@ -227,7 +228,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenCubicBezier']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenCubicBezier']/Docs/*" />
 		public static void FlattenCubicBezier(List<Point> points, Point ptStart, Point ptCtrl1, Point ptCtrl2, Point ptEnd, double tolerance)
 		{
 			int max = (int)((ptCtrl1.Distance(ptStart) + ptCtrl2.Distance(ptCtrl1) + ptEnd.Distance(ptCtrl2)) / tolerance);
@@ -250,7 +251,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenQuadraticBezier']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenQuadraticBezier']/Docs/*" />
 		public static void FlattenQuadraticBezier(List<Point> points, Point ptStart, Point ptCtrl, Point ptEnd, double tolerance)
 		{
 			int max = (int)((ptCtrl.Distance(ptStart) + ptEnd.Distance(ptCtrl)) / tolerance);
@@ -272,7 +273,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		}
 
 		// More information: http://www.charlespetzold.com/blog/2008/01/Mathematics-of-ArcSegment.html
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenArc']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenArc']/Docs/*" />
 		public static void FlattenArc(List<Point> points, Point pt1, Point pt2, double radiusX, double radiusY, double angleRotation,
 			bool isLargeArc, bool isCounterclockwise, double tolerance)
 		{

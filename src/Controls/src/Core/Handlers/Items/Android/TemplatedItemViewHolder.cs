@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -41,7 +42,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			itemsView.RemoveLogicalChild(View);
-			View.BindingContext = null;
 		}
 
 		public void Bind(object itemBindingContext, ItemsView itemsView,

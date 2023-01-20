@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Hosting
 	/// </summary>
 	public sealed class MauiAppBuilder
 	{
-		private readonly MauiApplicationServiceCollection _services = new();
+		private readonly ServiceCollection _services = new();
 		private Func<IServiceProvider>? _createServiceProvider;
 		private readonly Lazy<ConfigurationManager> _configuration;
 		private ILoggingBuilder? _logging;
@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureImageSources();
 				this.ConfigureAnimations();
 				this.ConfigureCrossPlatformLifecycleEvents();
+				this.ConfigureWindowEvents();
 				this.ConfigureDispatching();
 
 				this.UseEssentials();
@@ -152,7 +153,7 @@ namespace Microsoft.Maui.Hosting
 			MauiApp builtApplication = new MauiApp(serviceProvider);
 
 			// Mark the service collection as read-only to prevent future modifications
-			_services.IsReadOnly = true;
+			_services.MakeReadOnly();
 
 			var initServices = builtApplication.Services.GetServices<IMauiInitializeService>();
 			if (initServices != null)
@@ -196,7 +197,7 @@ namespace Microsoft.Maui.Hosting
 
 		private sealed class NullLogger<T> : ILogger<T>, IDisposable
 		{
-			public IDisposable BeginScope<TState>(TState state) => this;
+			public IDisposable BeginScope<TState>(TState state) where TState : notnull => this;
 
 			public void Dispose() { }
 

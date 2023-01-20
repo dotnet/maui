@@ -3,7 +3,7 @@ parameters:
   vmImage: windows-latest 
 
 stages:
-  - template: vs-insertion/stage/v1.yml@xamarin-templates
+  - template: vs-insertion/stage/v1.yml@yaml-templates
     parameters:
       dependsOn: nuget_signing
       approvalTimeoutInMinutes: 1
@@ -33,7 +33,7 @@ stages:
     dependsOn: nuget_signing
     condition: and(succeeded(), eq(variables.signingCondition, true))
     jobs:
-    - template: compliance/sbom/job.v1.yml@xamarin-templates
+    - template: compliance/sbom/job.v1.yml@yaml-templates
       parameters:
         artifactNames: [ nuget, vs-msi-nugets, vsdrop-signed ]
         artifactMap: [ nuget/signed ]                           # Use artifacts that match the filter from the signed directory and not the top-level directory for the nuget artifact

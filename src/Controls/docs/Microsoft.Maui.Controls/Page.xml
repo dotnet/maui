@@ -43,7 +43,7 @@
     <summary>A <see cref="T:Microsoft.Maui.Controls.VisualElement" /> that occupies the entire screen.</summary>
     <remarks>
       <para>
-        <see cref="T:Microsoft.Maui.Controls.Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="T:Microsoft.Maui.Controls.Page" /> class are most prominently used as the top level UI element in Microsoft.Maui.Controls applications. In addition to their role as the main pages of <see cref="N:Microsoft.Maui.Controls" /> applications, <see cref="T:Microsoft.Maui.Controls.Page" /> objects and their descendants can be used with navigation classes, such as <see cref="T:Microsoft.Maui.Controls.NavigationPage" /> or <see cref="T:Microsoft.Maui.Controls.MasterDetailPage" />, among others, to provide rich user experiences that conform to the expected behaviors on each platform.</para>
+        <see cref="T:Microsoft.Maui.Controls.Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="T:Microsoft.Maui.Controls.Page" /> class are most prominently used as the top level UI element in Microsoft.Maui.Controls applications. In addition to their role as the main pages of <see cref="N:Microsoft.Maui.Controls" /> applications, <see cref="T:Microsoft.Maui.Controls.Page" /> objects and their descendants can be used with navigation classes, such as <see cref="T:Microsoft.Maui.Controls.NavigationPage" /> or <see cref="T:Microsoft.Maui.Controls.FlyoutPage" />, among others, to provide rich user experiences that conform to the expected behaviors on each platform.</para>
     </remarks>
   </Docs>
   <Members>
@@ -256,10 +256,10 @@
       </Docs>
     </Member>
     <Member MemberName="ContainerArea">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Rectangle ContainerArea { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Rectangle ContainerArea" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Shapes.Rectangle ContainerArea { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Shapes.Rectangle ContainerArea" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Page.ContainerArea" />
-      <MemberSignature Language="F#" Value="member this.ContainerArea : Microsoft.Maui.Controls.Rectangle with get, set" Usage="Microsoft.Maui.Controls.Page.ContainerArea" />
+      <MemberSignature Language="F#" Value="member this.ContainerArea : Microsoft.Maui.Controls.Shapes.Rectangle with get, set" Usage="Microsoft.Maui.Controls.Page.ContainerArea" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IPageController.ContainerArea</InterfaceMember>
@@ -275,7 +275,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Rectangle</ReturnType>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Rectangle</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
@@ -421,10 +421,10 @@
       </Docs>
     </Member>
     <Member MemberName="DisplayPromptAsync">
-      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;string&gt; DisplayPromptAsync (string title, string message, string accept, string cancel, string placeholder, int maxLength, Microsoft.Maui.Controls.Keyboard keyboard);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Threading.Tasks.Task`1&lt;string&gt; DisplayPromptAsync(string title, string message, string accept, string cancel, string placeholder, int32 maxLength, class Microsoft.Maui.Controls.Keyboard keyboard) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Page.DisplayPromptAsync(System.String,System.String,System.String,System.String,System.String,System.Int32,Microsoft.Maui.Controls.Keyboard)" />
-      <MemberSignature Language="F#" Value="member this.DisplayPromptAsync : string * string * string * string * string * int * Microsoft.Maui.Controls.Keyboard -&gt; System.Threading.Tasks.Task&lt;string&gt;" Usage="page.DisplayPromptAsync (title, message, accept, cancel, placeholder, maxLength, keyboard)" />
+      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;string&gt; DisplayPromptAsync (string title, string message, string accept, string cancel, string placeholder, int maxLength, Microsoft.Maui.Keyboard keyboard);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Threading.Tasks.Task`1&lt;string&gt; DisplayPromptAsync(string title, string message, string accept, string cancel, string placeholder, int32 maxLength, class Microsoft.Maui.Keyboard keyboard) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Page.DisplayPromptAsync(System.String,System.String,System.String,System.String,System.String,System.Int32,Microsoft.Maui.Keyboard)" />
+      <MemberSignature Language="F#" Value="member this.DisplayPromptAsync : string * string * string * string * string * int * Microsoft.Maui.Keyboard -&gt; System.Threading.Tasks.Task&lt;string&gt;" Usage="page.DisplayPromptAsync (title, message, accept, cancel, placeholder, maxLength, keyboard)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -448,7 +448,7 @@
         <Parameter Name="cancel" Type="System.String" />
         <Parameter Name="placeholder" Type="System.String" />
         <Parameter Name="maxLength" Type="System.Int32" />
-        <Parameter Name="keyboard" Type="Microsoft.Maui.Controls.Keyboard" />
+        <Parameter Name="keyboard" Type="Microsoft.Maui.Keyboard" />
       </Parameters>
       <Docs>
         <param name="title">To be added.</param>
@@ -464,10 +464,10 @@
       </Docs>
     </Member>
     <Member MemberName="DisplayPromptAsync">
-      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;string&gt; DisplayPromptAsync (string title, string message, string accept = &quot;OK&quot;, string cancel = &quot;Cancel&quot;, string placeholder = default, int maxLength = -1, Microsoft.Maui.Controls.Keyboard keyboard = default, string initialValue = &quot;&quot;);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Threading.Tasks.Task`1&lt;string&gt; DisplayPromptAsync(string title, string message, string accept, string cancel, string placeholder, int32 maxLength, class Microsoft.Maui.Controls.Keyboard keyboard, string initialValue) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Page.DisplayPromptAsync(System.String,System.String,System.String,System.String,System.String,System.Int32,Microsoft.Maui.Controls.Keyboard,System.String)" />
-      <MemberSignature Language="F#" Value="member this.DisplayPromptAsync : string * string * string * string * string * int * Microsoft.Maui.Controls.Keyboard * string -&gt; System.Threading.Tasks.Task&lt;string&gt;" Usage="page.DisplayPromptAsync (title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue)" />
+      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;string&gt; DisplayPromptAsync (string title, string message, string accept = &quot;OK&quot;, string cancel = &quot;Cancel&quot;, string placeholder = default, int maxLength = -1, Microsoft.Maui.Keyboard keyboard = default, string initialValue = &quot;&quot;);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Threading.Tasks.Task`1&lt;string&gt; DisplayPromptAsync(string title, string message, string accept, string cancel, string placeholder, int32 maxLength, class Microsoft.Maui.Keyboard keyboard, string initialValue) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Page.DisplayPromptAsync(System.String,System.String,System.String,System.String,System.String,System.Int32,Microsoft.Maui.Keyboard,System.String)" />
+      <MemberSignature Language="F#" Value="member this.DisplayPromptAsync : string * string * string * string * string * int * Microsoft.Maui.Keyboard * string -&gt; System.Threading.Tasks.Task&lt;string&gt;" Usage="page.DisplayPromptAsync (title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -483,7 +483,7 @@
         <Parameter Name="cancel" Type="System.String" />
         <Parameter Name="placeholder" Type="System.String" />
         <Parameter Name="maxLength" Type="System.Int32" />
-        <Parameter Name="keyboard" Type="Microsoft.Maui.Controls.Keyboard" />
+        <Parameter Name="keyboard" Type="Microsoft.Maui.Keyboard" />
         <Parameter Name="initialValue" Type="System.String" />
       </Parameters>
       <Docs>
@@ -1030,10 +1030,10 @@
       </Docs>
     </Member>
     <Member MemberName="Padding">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Thickness Padding { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Thickness Padding" />
+      <MemberSignature Language="C#" Value="publicMicrosoft.Maui.Thickness Padding { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetypeMicrosoft.Maui.Thickness Padding" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Page.Padding" />
-      <MemberSignature Language="F#" Value="member this.Padding : Microsoft.Maui.Controls.Thickness with get, set" Usage="Microsoft.Maui.Controls.Page.Padding" />
+      <MemberSignature Language="F#" Value="member this.Padding :Microsoft.Maui.Thickness with get, set" Usage="Microsoft.Maui.Controls.Page.Padding" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -1047,7 +1047,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Thickness</ReturnType>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>The space between the content of the <see cref="T:Microsoft.Maui.Controls.Page" /> and it's border.</summary>

@@ -1,11 +1,12 @@
-﻿using System;
+#nullable disable
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Hosting;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs" />
-	public partial class Element : Maui.IElement, IEffectControlProvider
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs/*" />
+	public partial class Element : Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement
 	{
 		IElementHandler _handler;
 		EffectsFactory _effectsFactory;
@@ -13,7 +14,6 @@ namespace Microsoft.Maui.Controls
 		Maui.IElement Maui.IElement.Parent => Parent;
 		EffectsFactory EffectsFactory => _effectsFactory ??= Handler.MauiContext.Services.GetRequiredService<EffectsFactory>();
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Handler']/Docs" />
 		public IElementHandler Handler
 		{
 			get => _handler;
@@ -98,5 +98,8 @@ namespace Microsoft.Maui.Controls
 				effect.Element = this;
 			}
 		}
+
+		ToolTip IToolTipElement.ToolTip => ToolTipProperties.GetToolTip(this);
+		IFlyout IContextFlyoutElement.ContextFlyout => FlyoutBase.GetContextFlyout(this);
 	}
 }

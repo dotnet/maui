@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using CoreGraphics;
 using ObjCRuntime;
@@ -55,8 +56,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (shell.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
 			{
-				var positionY = shellWidth - openPixels;
-				flyout.Frame = new CGRect(positionY, 0, flyoutWidth, flyoutHeight);
+				var positionX = shellWidth - openPixels;
+				flyout.Frame = new CGRect(positionX, 0, flyoutWidth, flyoutHeight);
 			}
 			else
 			{

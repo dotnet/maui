@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Compatibility;
@@ -70,9 +71,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void UpdateIsEnabled(bool isEnabled)
 			{
 				UserInteractionEnabled = isEnabled;
-#pragma warning disable CA1416 // TODO: TextLabel is unsupported on: 'ios' 14.0 and later
+#pragma warning disable CA1416, CA1422 // TODO: TextLabel is unsupported on: 'ios' 14.0 and later
 				TextLabel.Enabled = isEnabled;
-#pragma warning restore C1416
+#pragma warning restore C1416, CA1422
 			}
 
 			void ViewCellPropertyChanged(object sender, PropertyChangedEventArgs e)

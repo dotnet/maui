@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Windows.Input;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices.Sensors;
 
@@ -107,7 +106,7 @@ namespace Samples.ViewModel
 				$"Speed: {(location.Speed.HasValue ? location.Speed.Value.ToString() : notAvailable)}\n" +
 				$"Date (UTC): {location.Timestamp:d}\n" +
 				$"Time (UTC): {location.Timestamp:T}\n" +
-				$"Moking Provider: {location.IsFromMockProvider}";
+				$"Mocking Provider: {location.IsFromMockProvider}";
 		}
 
 		public override void OnDisappearing()

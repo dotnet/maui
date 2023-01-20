@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -5,11 +6,11 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NameScope']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NameScope']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NameScope : INameScope
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='NameScopeProperty']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='NameScopeProperty']/Docs/*" />
 		public static readonly BindableProperty NameScopeProperty =
 			BindableProperty.CreateAttached("NameScope", typeof(INameScope), typeof(NameScope), default(INameScope));
 
@@ -33,10 +34,10 @@ namespace Microsoft.Maui.Controls.Internals
 			=> _values.TryGetValue(scopedObject, out var name) ? name : null;
 
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='GetNameScope']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='GetNameScope']/Docs/*" />
 		public static INameScope GetNameScope(BindableObject bindable) => (INameScope)bindable.GetValue(NameScopeProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='SetNameScope']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='SetNameScope']/Docs/*" />
 		public static void SetNameScope(BindableObject bindable, INameScope value)
 		{
 			if (bindable.GetValue(NameScopeProperty) == null)

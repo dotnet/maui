@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Picker)]
-	public partial class PickerHandlerTests : HandlerTestBase<PickerHandler, PickerStub>
+	public partial class PickerHandlerTests : CoreHandlerTestBase<PickerHandler, PickerStub>
 	{
 		[Theory(DisplayName = "Updating Font Does Not Affect HorizontalTextAlignment")]
 		[InlineData(10, 20)]
@@ -81,6 +81,23 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeVerticalTextAlignment,
 				nameof(IPicker.Title),
 				() => picker.Title = newText);
+		}
+
+		[Category(TestCategory.Picker)]
+		public class PickerTextStyleTests : TextStyleHandlerTests<PickerHandler, PickerStub>
+		{
+			protected override void SetText(PickerStub stub)
+			{
+				if (stub.Items.Count > 0)
+				{
+					stub.SelectedItem = stub.Items[0];
+				}
+				else
+				{
+					stub.Items = new List<string> { "test" };
+					stub.SelectedItem = "test";
+				}
+			}
 		}
 	}
 }

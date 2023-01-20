@@ -15,13 +15,16 @@ namespace Microsoft.Maui.Platform
 				return searchBar.GetSearchTextField();
 		}
 
-		// TODO: NET7 maybe make this public?
+		// TODO: NET8 maybe make this public?
 		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var background = searchBar.Background;
 
 			if (background is SolidPaint solidPaint)
 				uiSearchBar.BarTintColor = solidPaint.Color.ToPlatform();
+
+			if (background is GradientPaint gradientPaint)
+				ViewExtensions.UpdateBackground(uiSearchBar, gradientPaint);
 
 			if (background == null)
 				uiSearchBar.BarTintColor = UISearchBar.Appearance.BarTintColor;
@@ -103,9 +106,12 @@ namespace Microsoft.Maui.Platform
 			uiSearchBar.UserInteractionEnabled = !(searchBar.IsReadOnly || searchBar.InputTransparent);
 		}
 
+		internal static bool ShouldShowCancelButton(this ISearchBar searchBar) =>
+			!string.IsNullOrEmpty(searchBar.Text);
+
 		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
-			uiSearchBar.ShowsCancelButton = !string.IsNullOrEmpty(uiSearchBar.Text);
+			uiSearchBar.ShowsCancelButton = searchBar.ShouldShowCancelButton();
 
 			// We can't cache the cancel button reference because iOS drops it when it's not displayed
 			// and creates a brand new one when necessary, so we have to look for it each time

@@ -13,6 +13,12 @@
               "hostId": "vs", 
               "componentType": "SetupComponent" 
         }
-    
-   ]
+   ],
+   "symbolInfo": [
+    {
+      "id": "Framework",
+      "persistenceScope": "shared",
+      "persistenceScopeName": "maui"
+    }
+  ]
 }

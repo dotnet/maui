@@ -1,10 +1,11 @@
-﻿using System;
+#nullable disable
+using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Rectangle']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Rectangle']/Docs/*" />
 	public partial class Rectangle : IShape
 	{
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -16,15 +17,17 @@ namespace Microsoft.Maui.Controls.Shapes
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="//Member[@MemberName='GetPath']/Docs" />
 		public override PathF GetPath()
 		{
+			var width = WidthForPathComputation;
+			var height = HeightForPathComputation;
+
 			var path = new PathF();
 
 			float x = (float)StrokeThickness / 2;
 			float y = (float)StrokeThickness / 2;
-			float w = (float)(Width - StrokeThickness);
-			float h = (float)(Height - StrokeThickness);
+			float w = (float)(width - StrokeThickness);
+			float h = (float)(height - StrokeThickness);
 			float cornerRadius = (float)Math.Max(RadiusX, RadiusY);
 
 			// TODO: Create specific Path taking into account RadiusX and RadiusY

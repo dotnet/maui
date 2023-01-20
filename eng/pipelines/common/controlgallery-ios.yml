@@ -7,6 +7,8 @@ steps:
     condition: ne(variables['REQUIRED_XCODE'], '')
     inputs:
       provisioning_script: $(provisionator.xcode)
+    env:
+      AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provisionator'
@@ -14,6 +16,8 @@ steps:
     inputs:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
+    env:
+      AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
   - script: |
       echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"

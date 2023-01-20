@@ -1,13 +1,14 @@
+#nullable disable
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageView.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataPackageView']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageView.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataPackageView']/Docs/*" />
 	public class DataPackageView
 	{
 		DataPackage DataPackage { get; }
 		internal DataPackagePropertySetView PropertiesInternal { get; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageView.xml" path="//Member[@MemberName='Properties']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageView.xml" path="//Member[@MemberName='Properties']/Docs/*" />
 		public DataPackagePropertySetView Properties { get; }
 
 		internal DataPackageView(DataPackage dataPackage)
@@ -18,13 +19,13 @@ namespace Microsoft.Maui.Controls
 			Properties = new DataPackagePropertySetView(DataPackage.Properties);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageView.xml" path="//Member[@MemberName='GetImageAsync']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageView.xml" path="//Member[@MemberName='GetImageAsync']/Docs/*" />
 		public Task<ImageSource> GetImageAsync()
 		{
 			return Task.FromResult(DataPackage.Image);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageView.xml" path="//Member[@MemberName='GetTextAsync']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageView.xml" path="//Member[@MemberName='GetTextAsync']/Docs/*" />
 		public Task<string> GetTextAsync()
 		{
 			return Task.FromResult(DataPackage.Text);

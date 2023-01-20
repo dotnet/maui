@@ -4,6 +4,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Converters
 {
+	/// <inheritdoc/>
 	public class CornerRadiusTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Converters
 		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
 		{
 			var strValue = value?.ToString();
+
 			if (strValue != null)
 			{
 				value = strValue.Trim();
@@ -65,7 +67,9 @@ namespace Microsoft.Maui.Converters
 		{
 			if (value is not CornerRadius cr)
 				throw new NotSupportedException();
-			return $"{cr.TopLeft.ToString(CultureInfo.InvariantCulture)}, {cr.TopRight.ToString(CultureInfo.InvariantCulture)}, {cr.BottomLeft.ToString(CultureInfo.InvariantCulture)}, {cr.BottomRight.ToString(CultureInfo.InvariantCulture)}";
+
+			return $"{cr.TopLeft.ToString(CultureInfo.InvariantCulture)}, {cr.TopRight.ToString(CultureInfo.InvariantCulture)}, " +
+				$"{cr.BottomLeft.ToString(CultureInfo.InvariantCulture)}, {cr.BottomRight.ToString(CultureInfo.InvariantCulture)}";
 
 		}
 	}

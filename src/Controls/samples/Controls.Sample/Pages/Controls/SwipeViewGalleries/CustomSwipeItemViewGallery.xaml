@@ -40,15 +40,16 @@
                             Mode="Reveal">
                             <SwipeItemView
                                 Command="{Binding Source={x:Reference CustomSwipeItemCollectionView}, Path=BindingContext.FavouriteCommand}">
-                                <Grid
-                                    WidthRequest="100">
-                                    <BoxView
-                                        BackgroundColor="{StaticResource SwipeItemBackgroundColor}"
-                                        CornerRadius="0, 6, 0, 6" />
-                                        <Label
-                                            Text="Favourite"
-                                            Style="{StaticResource SwipeItemTextStyle}"/>
-                                </Grid>
+                                <Border
+                                    WidthRequest="100"
+                                    BackgroundColor="{StaticResource SwipeItemBackgroundColor}">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="0, 6, 0, 6" />
+                                    </Border.StrokeShape>
+                                    <Label
+                                        Text="Favourite"
+                                        Style="{StaticResource SwipeItemTextStyle}"/>
+                                </Border>
                             </SwipeItemView>
                         </SwipeItems>
                     </SwipeView.RightItems>

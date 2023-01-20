@@ -69,8 +69,10 @@ namespace Microsoft.Maui.DeviceTests
 		Color GetNativeTextColor(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).CurrentTitleColor.ToColor();
 
+#pragma warning disable CA1416, CA1422
 		UIEdgeInsets GetNativePadding(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).ContentEdgeInsets;
+#pragma warning restore CA1416, CA1422
 
 		Task PerformClick(IButton button)
 		{

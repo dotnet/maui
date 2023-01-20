@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -23,10 +24,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override Microsoft.UI.Xaml.DataTemplate SelectTemplateCore(object item)
 		{
-			if (item is MenuFlyoutSeparator)
+			if (item is UI.Xaml.Controls.MenuFlyoutSeparator)
 				return SeperatorTemplate;
 
 			if (item is MenuItem)
+				return MenuItemTemplate;
+
+			if (item is NavigationViewItemViewModel nvm && nvm.Data is MenuItem)
 				return MenuItemTemplate;
 
 			return BaseShellItemTemplate;

@@ -13,7 +13,7 @@
   <Interfaces />
   <Attributes>
     <Attribute>
-      <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.Shapes.TransformTypeConverter))</AttributeName>
+      <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.Shapes.TransformTypeConverter))</AttributeName>
     </Attribute>
   </Attributes>
   <Docs>

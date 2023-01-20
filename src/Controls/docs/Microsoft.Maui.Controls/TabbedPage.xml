@@ -142,7 +142,7 @@ class TabbedPageDemoPage2 : TabbedPage
       ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/TabbedPage.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/TabbedPage.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -189,10 +189,10 @@ class TabbedPageDemoPage2 : TabbedPage
       </Docs>
     </Member>
     <Member MemberName="BarBackgroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color BarBackgroundColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color BarBackgroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BarBackgroundColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BarBackgroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.TabbedPage.BarBackgroundColor" />
-      <MemberSignature Language="F#" Value="member this.BarBackgroundColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.TabbedPage.BarBackgroundColor" />
+      <MemberSignature Language="F#" Value="member this.BarBackgroundColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.TabbedPage.BarBackgroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -200,7 +200,7 @@ class TabbedPageDemoPage2 : TabbedPage
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the background color of the bar.</summary>
@@ -246,10 +246,10 @@ class TabbedPageDemoPage2 : TabbedPage
       </Docs>
     </Member>
     <Member MemberName="BarTextColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color BarTextColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color BarTextColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BarTextColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BarTextColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.TabbedPage.BarTextColor" />
-      <MemberSignature Language="F#" Value="member this.BarTextColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.TabbedPage.BarTextColor" />
+      <MemberSignature Language="F#" Value="member this.BarTextColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.TabbedPage.BarTextColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -257,7 +257,7 @@ class TabbedPageDemoPage2 : TabbedPage
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color of text on the bar.</summary>
@@ -347,17 +347,17 @@ class TabbedPageDemoPage2 : TabbedPage
       </Docs>
     </Member>
     <Member MemberName="SelectedTabColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color SelectedTabColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color SelectedTabColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color SelectedTabColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color SelectedTabColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.TabbedPage.SelectedTabColor" />
-      <MemberSignature Language="F#" Value="member this.SelectedTabColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.TabbedPage.SelectedTabColor" />
+      <MemberSignature Language="F#" Value="member this.SelectedTabColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.TabbedPage.SelectedTabColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -384,17 +384,17 @@ class TabbedPageDemoPage2 : TabbedPage
       </Docs>
     </Member>
     <Member MemberName="UnselectedTabColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color UnselectedTabColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color UnselectedTabColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color UnselectedTabColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color UnselectedTabColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.TabbedPage.UnselectedTabColor" />
-      <MemberSignature Language="F#" Value="member this.UnselectedTabColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.TabbedPage.UnselectedTabColor" />
+      <MemberSignature Language="F#" Value="member this.UnselectedTabColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.TabbedPage.UnselectedTabColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

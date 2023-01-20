@@ -8,6 +8,8 @@ steps:
     inputs:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
+    env:
+      AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
   
   - task: Bash@3
     displayName: 'Cake Provision'

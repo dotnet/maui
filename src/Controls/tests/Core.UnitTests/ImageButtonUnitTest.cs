@@ -3,11 +3,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-
-	public class ImageButtonTests : CommandSourceTests<ImageButton>
+	public class ImageButtonTests : VisualElementCommandSourceTests<ImageButton>
 	{
 		[Fact]
 		public void TestSizing()
@@ -41,7 +41,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(25, result.Request.Width);
 			Assert.Equal(5, result.Request.Height);
 		}
-
 
 		[Fact]
 		public void TestAspectFillSizingWithConstrainedHeight()
@@ -319,7 +318,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IButtonController)view).SendReleased();
 
-			Assert.True(released == isEnabled ? true : false);
+			// Released should always fire, even if the button is disabled
+			// Otherwise, a press which disables a button will leave it in the
+			// Pressed state forever
+			Assert.True(released);
 		}
 
 		protected override ImageButton CreateSource()
@@ -346,7 +348,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			get { return ImageButton.CommandParameterProperty; }
 		}
-
 
 		[Fact]
 		public void TestBindingContextPropagation()
@@ -378,31 +379,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-
-		[Fact]
-		public void CommandCanExecuteUpdatesEnabled()
-		{
-			var button = new ImageButton();
-
-			bool result = false;
-
-			var bindingContext = new
-			{
-				Command = new Command(() => { }, () => result)
-			};
-
-			button.SetBinding(ImageButton.CommandProperty, "Command");
-			button.BindingContext = bindingContext;
-
-			Assert.False(button.IsEnabled);
-
-			result = true;
-
-			bindingContext.Command.ChangeCanExecute();
-
-			Assert.True(button.IsEnabled);
-		}
-
 		[Fact]
 		public void ButtonClickWhenCommandCanExecuteFalse()
 		{
@@ -417,6 +393,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				?.SendClicked();
 
 			Assert.False(invoked);
+		}
+
+		[Fact]
+		public void PressedVisualState()
+		{
+			var vsgList = CreateTestStateGroups();
+			var stateGroup = vsgList[0];
+			var element = new ImageButton();
+			VisualStateManager.SetVisualStateGroups(element, vsgList);
+
+			element.SendPressed();
+			Assert.Equal(PressedStateName, stateGroup.CurrentState.Name);
+
+			element.SendReleased();
+			Assert.NotEqual(PressedStateName, stateGroup.CurrentState.Name);
 		}
 	}
 }

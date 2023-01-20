@@ -45,7 +45,7 @@ item.XcodeSelect();
 
 LogInstalledXcodes();
 
-var appleSdkOverride = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Preferences", "Xamarin", "Settings.plist");
+var appleSdkOverride = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Preferences", "Xamarin", "Settings.plist");
 Item("Override Apple SDK Settings")
     .Condition(item => !File.Exists(appleSdkOverride) || GetSettingValue(appleSdkOverride, "AppleSdkRoot") != GetSelectedXcodePath())
     .Action(item =>

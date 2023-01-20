@@ -654,21 +654,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(gestureRecognizer.Parent);
 		}
 
-
-		[Fact]
-		public void ClearingGestureRecognizers()
-		{
-			var view = new View();
-			var gestureRecognizer = new TapGestureRecognizer();
-
-			view.GestureRecognizers.Add(gestureRecognizer);
-			view.GestureRecognizers.Clear();
-
-
-			Assert.Equal(0, (view as IGestureController).CompositeGestureRecognizers.Count);
-			Assert.Null(gestureRecognizer.Parent);
-		}
-
 		[Fact]
 		public void WidthRequestEffectsGetSizeRequest()
 		{

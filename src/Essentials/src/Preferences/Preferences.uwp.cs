@@ -71,6 +71,8 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName)
 		{
+			Preferences.CheckIsSupportedType<T>();
+
 			lock (locker)
 			{
 				var appDataContainer = GetApplicationDataContainer(sharedName);
@@ -82,7 +84,14 @@ namespace Microsoft.Maui.Storage
 					return;
 				}
 
-				appDataContainer.Values[key] = value;
+				if (value is DateTime dt)
+				{
+					appDataContainer.Values[key] = dt.ToBinary();
+				}
+				else
+				{
+					appDataContainer.Values[key] = value;
+				}
 			}
 		}
 
@@ -95,7 +104,16 @@ namespace Microsoft.Maui.Storage
 				{
 					var tempValue = appDataContainer.Values[key];
 					if (tempValue != null)
-						return (T)tempValue;
+					{
+						if (defaultValue is DateTime dt)
+						{
+							return (T)(object)DateTime.FromBinary((long)tempValue);
+						}
+						else
+						{
+							return (T)tempValue;
+						}
+					}
 				}
 			}
 

@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Devices;
@@ -55,14 +56,14 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="Type[@FullName='Microsoft.Maui.Controls.On']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="Type[@FullName='Microsoft.Maui.Controls.On']/Docs/*" />
 	[ContentProperty("Value")]
 	public class On
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="//Member[@MemberName='Platform']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="//Member[@MemberName='Platform']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> Platform { get; set; }
-		/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="//Member[@MemberName='Value']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="//Member[@MemberName='Value']/Docs/*" />
 		public object Value { get; set; }
 	}
 }

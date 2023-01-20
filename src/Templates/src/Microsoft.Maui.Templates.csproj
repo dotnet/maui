@@ -31,7 +31,7 @@
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <PackageType>Template</PackageType>
-    <PackageId>Microsoft.Maui.Templates-$(_MauiDotNetVersion)</PackageId>
+    <PackageId>Microsoft.Maui.Templates.net$(_MauiDotNetVersionMajor)</PackageId>
     <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>
     <Description>Templates for .NET MAUI.</Description>

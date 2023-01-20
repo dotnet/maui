@@ -1,11 +1,11 @@
+using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Maui.Controls.Platform;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
-using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -15,17 +15,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public FrameRenderer()
 		{
 			AutoPackage = false;
-		}
-
-		protected override AutomationPeer OnCreateAutomationPeer()
-		{
-			// We need an automation peer so we can interact with this in automated tests
-			if (Control == null)
-			{
-				return new FrameworkElementAutomationPeer(this);
-			}
-
-			return new FrameworkElementAutomationPeer(Control);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)

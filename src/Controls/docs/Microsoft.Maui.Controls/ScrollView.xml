@@ -55,9 +55,9 @@ MainPage = new ContentPage
     Content = new ScrollView { Content = stack }
 };]]></code>
       </example>
-      <block type="note">Application developers should not nest one <see cref="T:Microsoft.Maui.Controls.ScrollView" /> within another. Additionally, they should refrain from nesting them  other elements that can scroll, such as <see cref="T:Microsoft.Maui.Controls.WebView" />.</block>
+      Note: application developers should not nest one <see cref="T:Microsoft.Maui.Controls.ScrollView" /> within another. Additionally, they should refrain from nesting them other elements that can scroll, such as <see cref="T:Microsoft.Maui.Controls.WebView" />.
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/ScrollView.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/ScrollView.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -115,10 +115,10 @@ MainPage = new ContentPage
       </Docs>
     </Member>
     <Member MemberName="ContentSize">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Size ContentSize { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Size ContentSize" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Size ContentSize { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Size ContentSize" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ScrollView.ContentSize" />
-      <MemberSignature Language="F#" Value="member this.ContentSize : Microsoft.Maui.Controls.Size" Usage="Microsoft.Maui.Controls.ScrollView.ContentSize" />
+      <MemberSignature Language="F#" Value="member this.ContentSize : Microsoft.Maui.Graphics.Size" Usage="Microsoft.Maui.Controls.ScrollView.ContentSize" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -133,11 +133,11 @@ MainPage = new ContentPage
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets the size of the Content. This is a bindable property.</summary>
-        <value>A <see cref="T:Microsoft.Maui.Controls.Size" /> that represents the size of the content.</value>
+        <value>A <see cref="T:Microsoft.Maui.Graphics.Size" /> that represents the size of the content.</value>
         <remarks>
         </remarks>
       </Docs>
@@ -242,10 +242,10 @@ MainPage = new ContentPage
       </Docs>
     </Member>
     <Member MemberName="LayoutAreaOverride">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Rectangle LayoutAreaOverride { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Rectangle LayoutAreaOverride" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Shapes.Rectangle LayoutAreaOverride { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Shapes.Rectangle LayoutAreaOverride" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride" />
-      <MemberSignature Language="F#" Value="member this.LayoutAreaOverride : Microsoft.Maui.Controls.Rectangle with get, set" Usage="Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride" />
+      <MemberSignature Language="F#" Value="member this.LayoutAreaOverride : Microsoft.Maui.Controls.Shapes.Rectangle with get, set" Usage="Microsoft.Maui.Controls.ScrollView.LayoutAreaOverride" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IScrollViewController.LayoutAreaOverride</InterfaceMember>
@@ -260,7 +260,7 @@ MainPage = new ContentPage
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Rectangle</ReturnType>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Rectangle</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -338,10 +338,10 @@ MainPage = new ContentPage
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
-      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.Controls.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ScrollView.OnSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="scrollView.OnSizeRequest (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="scrollView.OnSizeRequest (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -361,7 +361,7 @@ MainPage = new ContentPage
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -372,7 +372,7 @@ MainPage = new ContentPage
         <param name="heightConstraint">The available height for the element to use.</param>
         <summary>This method is called during the measure pass of a layout cycle to get the desired size of an element.</summary>
         <returns>
-          A <see cref="T:Microsoft.Maui.Controls.SizeRequest" /> which contains the desired size of the element.
+          A <see cref="T:Microsoft.Maui.SizeRequest" /> which contains the desired size of the element.
         </returns>
         <remarks>The results of this method will be (-1, -1) if the element has not yet been realized with a platform specific backing control. Overriding this method does not require a call to the base class so long as a valid SizeRequest is returned.</remarks>
       </Docs>

@@ -2,15 +2,15 @@ using System;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Placemark']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Placemark']/Docs/*" />
 	public class Placemark
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Placemark()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public Placemark(Placemark placemark)
 		{
 			if (placemark == null)
@@ -33,40 +33,40 @@ namespace Microsoft.Maui.Devices.Sensors
 			AdminArea = placemark.AdminArea;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='Location']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='Location']/Docs/*" />
 		public Location Location { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='CountryCode']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='CountryCode']/Docs/*" />
 		public string CountryCode { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='CountryName']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='CountryName']/Docs/*" />
 		public string CountryName { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='FeatureName']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='FeatureName']/Docs/*" />
 		public string FeatureName { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='PostalCode']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='PostalCode']/Docs/*" />
 		public string PostalCode { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='SubLocality']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='SubLocality']/Docs/*" />
 		public string SubLocality { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='Thoroughfare']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='Thoroughfare']/Docs/*" />
 		public string Thoroughfare { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='SubThoroughfare']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='SubThoroughfare']/Docs/*" />
 		public string SubThoroughfare { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='Locality']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='Locality']/Docs/*" />
 		public string Locality { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='AdminArea']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='AdminArea']/Docs/*" />
 		public string AdminArea { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='SubAdminArea']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='SubAdminArea']/Docs/*" />
 		public string SubAdminArea { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='ToString']/Docs/*" />
 		public override string ToString() =>
 			$"{nameof(Location)}: {Location}, {nameof(CountryCode)}: {CountryCode}, " +
 			$"{nameof(CountryName)}: {CountryName}, {nameof(FeatureName)}: {FeatureName}, " +

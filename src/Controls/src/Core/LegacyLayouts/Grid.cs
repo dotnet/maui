@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -66,6 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				new PlatformConfigurationRegistry<Grid>(this));
 		}
 
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Grid> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

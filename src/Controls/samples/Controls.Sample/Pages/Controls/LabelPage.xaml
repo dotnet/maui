@@ -14,6 +14,8 @@
                 <Label
                     Text="Label"/>
                 <Label
+                    Text="Label with Tooltip" ToolTipProperties.Text="This has a tooltip!" />
+                <Label
                     Text="TextColor"
                     Style="{StaticResource Headline}"/>
                 <Label

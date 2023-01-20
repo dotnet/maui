@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 
 namespace Microsoft.Maui.Controls
@@ -7,13 +8,13 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CarouselPage>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CarouselPage.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/CarouselPage.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public CarouselPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<CarouselPage>>(() => new PlatformConfigurationRegistry<CarouselPage>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CarouselPage.xml" path="//Member[@MemberName='On']/Docs" />
+		/// <inheritdoc/>
 		public new IPlatformElementConfiguration<T, CarouselPage> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

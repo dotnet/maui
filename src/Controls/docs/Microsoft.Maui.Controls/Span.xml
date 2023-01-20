@@ -56,10 +56,10 @@
       </Docs>
     </Member>
     <Member MemberName="BackgroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color BackgroundColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color BackgroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BackgroundColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BackgroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Span.BackgroundColor" />
-      <MemberSignature Language="F#" Value="member this.BackgroundColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Span.BackgroundColor" />
+      <MemberSignature Language="F#" Value="member this.BackgroundColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Span.BackgroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -71,7 +71,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the Color of the span background.</summary>
@@ -286,7 +286,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -318,10 +318,10 @@
       </Docs>
     </Member>
     <Member MemberName="ForegroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color ForegroundColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color ForegroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color ForegroundColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color ForegroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Span.ForegroundColor" />
-      <MemberSignature Language="F#" Value="member this.ForegroundColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Span.ForegroundColor" />
+      <MemberSignature Language="F#" Value="member this.ForegroundColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Span.ForegroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -333,7 +333,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the Color for the text in the span.</summary>
@@ -490,10 +490,10 @@
       </Docs>
     </Member>
     <Member MemberName="TextColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TextColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TextColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TextColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TextColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Span.TextColor" />
-      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Span.TextColor" />
+      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Span.TextColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -501,7 +501,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text color.</summary>
@@ -529,10 +529,10 @@
       </Docs>
     </Member>
     <Member MemberName="TextDecorations">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextDecorations TextDecorations { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextDecorations TextDecorations" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextDecorations TextDecorations { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextDecorations TextDecorations" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Span.TextDecorations" />
-      <MemberSignature Language="F#" Value="member this.TextDecorations : Microsoft.Maui.Controls.TextDecorations with get, set" Usage="Microsoft.Maui.Controls.Span.TextDecorations" />
+      <MemberSignature Language="F#" Value="member this.TextDecorations : Microsoft.Maui.TextDecorations with get, set" Usage="Microsoft.Maui.Controls.Span.TextDecorations" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IDecorableTextElement.TextDecorations</InterfaceMember>
@@ -542,10 +542,10 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextDecorations</ReturnType>
+        <ReturnType>Microsoft.Maui.TextDecorations</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the <see cref="T:Microsoft.Maui.Controls.TextDecorations" /> applied to this span.</summary>
+        <summary>Gets or sets the <see cref="T:Microsoft.Maui.TextDecorations" /> applied to this span.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>

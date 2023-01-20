@@ -239,42 +239,42 @@ namespace Microsoft.Maui.Graphics.Win2D
 			try
 			{
 #endif
-			var textFormat = (CurrentState.Font ?? Graphics.Font.Default).ToCanvasTextFormat(CurrentState.FontSize);
-			textFormat.VerticalAlignment = CanvasVerticalAlignment.Top;
+				var textFormat = (CurrentState.Font ?? Graphics.Font.Default).ToCanvasTextFormat(CurrentState.FontSize);
+				textFormat.VerticalAlignment = CanvasVerticalAlignment.Top;
 
-			switch (horizontalAlignment)
-			{
-				case HorizontalAlignment.Left:
-					_rect.X = x;
-					_rect.Width = CanvasSize.Width;
-					textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Left;
-					break;
-				case HorizontalAlignment.Right:
-					_rect.X = x - CanvasSize.Width;
-					_rect.Width = CanvasSize.Width;
-					textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Right;
-					break;
-				default:
-					_rect.X = x - _canvasSize.Width;
-					_rect.Width = _canvasSize.Width * 2;
-					textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Center;
-					break;
-			}
+				switch (horizontalAlignment)
+				{
+					case HorizontalAlignment.Left:
+						_rect.X = x;
+						_rect.Width = CanvasSize.Width;
+						textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Left;
+						break;
+					case HorizontalAlignment.Right:
+						_rect.X = x - CanvasSize.Width;
+						_rect.Width = CanvasSize.Width;
+						textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Right;
+						break;
+					default:
+						_rect.X = x - _canvasSize.Width;
+						_rect.Width = _canvasSize.Width * 2;
+						textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Center;
+						break;
+				}
 
-			_rect.Y = y - CurrentState.FontSize;
-			_rect.Height = CurrentState.FontSize * 2;
+				_rect.Y = y - CurrentState.FontSize;
+				_rect.Height = CurrentState.FontSize * 2;
 
-			_point1.X = (float)_rect.X;
-			_point1.Y = (float)_rect.Y;
+				_point1.X = (float)_rect.X;
+				_point1.Y = (float)_rect.Y;
 
-			var textLayout = new CanvasTextLayout(
-				_session,
-				value,
-				textFormat,
-				(float)_rect.Width,
-				(float)_rect.Height);
+				var textLayout = new CanvasTextLayout(
+					_session,
+					value,
+					textFormat,
+					(float)_rect.Width,
+					(float)_rect.Height);
 
-			Draw(ctx => ctx.DrawTextLayout(textLayout, _point1, CurrentState.PlatformFontBrush));
+				Draw(ctx => ctx.DrawTextLayout(textLayout, _point1, CurrentState.PlatformFontBrush));
 
 #if DEBUG
 

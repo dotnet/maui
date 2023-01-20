@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -85,6 +86,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Same(parent, parent.Background.Parent);
 			Assert.Same(context, parent.Background.BindingContext);
+		}
+
+		[Fact]
+		public void TestGetGradientStopHashCode()
+		{
+			var gradientStop = new GradientStop();
+			_ = gradientStop.GetHashCode();
+			// This test is just validating that calling `GetHashCode` doesn't throw
+		}
+
+		[Fact]
+		public void ImmutableBrushDoesntSetParent()
+		{
+			var grid = new Grid();
+			grid.Background = SolidColorBrush.Green;
+			Assert.Null(SolidColorBrush.Green.Parent);
+		}
+
+		[Fact]
+		public void InvalidOperationExceptionWhenSettingParentOnImmutableBrush()
+		{
+			Assert.Throws<InvalidOperationException>(() => SolidColorBrush.Green.Parent = new Grid());
 		}
 	}
 }

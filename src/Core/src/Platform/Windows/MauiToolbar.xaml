@@ -22,7 +22,7 @@
 
             <Image x:Name="titleIcon" Grid.Column="0" />
 
-            <ContentControl x:Name="menuContent" Grid.Column="1"></ContentControl>
+            <ContentControl IsTabStop="False" x:Name="menuContent" Grid.Column="1"></ContentControl>
             
             <!-- This border is used so that the container for the TextBlock matches the height of the backbutton
                  and then we center the TextBlock to that. This causes the backbutton and textblock to line up.
@@ -31,7 +31,7 @@
                 <TextBlock VerticalAlignment="Center" x:Name="title" TextWrapping="NoWrap" Margin="10,0,0,0"/>
             </Border>
 
-            <ContentControl x:Name="titleView" Grid.Column="3" HorizontalAlignment="Stretch" 
+            <ContentControl IsTabStop="False" x:Name="titleView" Grid.Column="3" HorizontalAlignment="Stretch" 
                             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
 
         </Grid>

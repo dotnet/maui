@@ -1,146 +1,106 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using ElmSharp;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Skia;
 using Microsoft.Maui.Graphics.Skia.Views;
-using SkiaSharp.Views.Tizen;
 using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.ElmSharp;
-using Rect = Microsoft.Maui.Graphics.Rect;
+using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
+using TRect = Tizen.UIExtensions.Common.Rect;
+using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : Canvas
+	public partial class WrapperView : ViewGroup, IMeasurable
 	{
 		Lazy<SkiaGraphicsView> _drawableCanvas;
-		Lazy<SKClipperView> _clipperView;
-		EvasObject? _content;
+		Lazy<MauiClipperView> _clipperView;
+		NView? _content;
+		MauiDrawable _mauiDrawable;
 
-		public WrapperView(EvasObject parent) : base(parent)
+		public WrapperView() : base()
 		{
+			_mauiDrawable = new MauiDrawable();
 			_drawableCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
-				var view = new SkiaGraphicsView(parent)
+				var view = new SkiaGraphicsView()
 				{
-					IgnorePixelScaling = true,
-					Drawable = new MauiDrawable(),
-					PassEvents = true
+					Drawable = _mauiDrawable
 				};
 				view.Show();
 				Children.Add(view);
 				view.Lower();
-				Content?.RaiseTop();
 				return view;
 			});
 
-			_clipperView = new Lazy<SKClipperView>(() =>
+			_clipperView = new Lazy<MauiClipperView>(() =>
 			{
-				var clipper = new SKClipperView(parent)
-				{
-					PassEvents = true
-				};
-				clipper.DrawClip += OnClipPaint;
+				var clipper = new MauiClipperView();
 				clipper.Show();
-				clipper.DeviceScalingFactor = (float)DeviceInfo.ScalingFactor;
 				Children.Add(clipper);
-				clipper.Lower();
-				Content?.RaiseTop();
+				SetupClipperView(clipper);
 				return clipper;
 			});
 
 			LayoutUpdated += OnLayout;
 		}
 
+		public NView? Content
+		{
+			get => _content;
+			set
+			{
+				UpdateContent(value, _content);
+				_content = value;
+			}
+		}
+
+		bool NeedToUpdateCanvas => _drawableCanvas.IsValueCreated || _mauiDrawable.Background != null || _mauiDrawable.Shape != null || _mauiDrawable.Border != null || _mauiDrawable.Shadow != null;
+
 		public void UpdateBackground(Paint? paint)
 		{
-			UpdateDrawableCanvas(paint);
+			_mauiDrawable.Background = paint;
+			UpdateDrawableCanvas();
 		}
 
 		public void UpdateShape(IShape? shape)
 		{
-			UpdateDrawableCanvas(shape);
+			_mauiDrawable.Shape = shape;
+			UpdateDrawableCanvas();
 		}
 
-		public void UpdateBorder(IBorderStroke border)
+		public void UpdateBorder(IBorderStroke? border)
 		{
-			((MauiDrawable)_drawableCanvas.Value.Drawable).Border = border;
-			UpdateShape(border.Shape);
+			Border = border;
 		}
 
 		partial void ShadowChanged()
 		{
-			if (!_drawableCanvas.IsValueCreated && Shadow is null)
-				return;
-
-			((MauiDrawable)_drawableCanvas.Value.Drawable).Shadow = Shadow;
-
-			if (Shadow != null)
-			{
-				_drawableCanvas.Value.SetClip(null);
-			}
+			_mauiDrawable.Shadow = Shadow;
 			UpdateDrawableCanvas(true);
 		}
 
 		partial void ClipChanged()
 		{
-			if (_drawableCanvas.IsValueCreated || Clip is not null)
+			_mauiDrawable.Clip = Clip;
+			if (_clipperView.IsValueCreated || Clip != null)
 			{
-				((MauiDrawable)_drawableCanvas.Value.Drawable).Clip = Clip;
-				UpdateDrawableCanvas(false);
+				_clipperView.Value.Clip = Clip;
 			}
-
-			if (_clipperView.IsValueCreated || Clip is not null)
-				_clipperView.Value.Invalidate();
 		}
 
-		void UpdateDrawableCanvas(Paint? paint)
+		partial void BorderChanged()
 		{
-			if (_drawableCanvas.IsValueCreated || paint is not null)
+			_mauiDrawable.Border = Border;
+			UpdateShape(Border?.Shape);
+			UpdateDrawableCanvas(Border != null);
+		}
+
+		void UpdateDrawableCanvas(bool geometryUpdate = false)
+		{
+			if (NeedToUpdateCanvas)
 			{
-				((MauiDrawable)_drawableCanvas.Value.Drawable).Background = paint;
+				if (geometryUpdate)
+					UpdateDrawableCanvasGeometry();
 				_drawableCanvas.Value.Invalidate();
-			}
-		}
-
-		void UpdateDrawableCanvas(IShape? shape)
-		{
-			if (_drawableCanvas.IsValueCreated || shape is not null)
-			{
-				((MauiDrawable)_drawableCanvas.Value.Drawable).Shape = shape;
-				_drawableCanvas.Value.Invalidate();
-			}
-		}
-
-		void UpdateDrawableCanvas(bool isShadowUpdated)
-		{
-			if (isShadowUpdated)
-			{
-				UpdateDrawableCanvasGeometry();
-			}
-			_drawableCanvas.Value.Invalidate();
-		}
-
-		void OnClipPaint(object? sender, DrawClipEventArgs e)
-		{
-			var canvas = e.Canvas;
-			var width = e.DirtyRect.Width;
-			var height = e.DirtyRect.Height;
-
-			canvas.FillColor = Colors.Transparent;
-			canvas.FillRectangle(e.DirtyRect);
-
-			canvas.FillColor = Colors.White;
-			var clipPath = Clip?.PathForBounds(new Rect(0, 0, width, height)) ?? null;
-			if (clipPath == null)
-			{
-				return;
-			}
-			canvas.FillPath(clipPath);
-			Content?.SetClipperCanvas(_clipperView.Value);
-			if (_drawableCanvas.IsValueCreated)
-			{
-				_drawableCanvas.Value.SetClipperCanvas(_clipperView.Value);
 			}
 		}
 
@@ -148,163 +108,80 @@ namespace Microsoft.Maui.Platform
 		{
 			if (Content != null)
 			{
-				Content.Geometry = Geometry;
-			}
-
-			if (_drawableCanvas.IsValueCreated)
-			{
-				UpdateDrawableCanvas(true);
+				Content.UpdateBounds(new TRect(0, 0, Size.Width, Size.Height));
 			}
 
 			if (_clipperView.IsValueCreated)
 			{
-				_clipperView.Value.Geometry = Geometry;
-				_clipperView.Value.Invalidate();
-				if (Shadow != null)
-				{
-					_drawableCanvas.Value.SetClip(null);
-				}
+				_clipperView.Value.UpdateBounds(new TRect(0, 0, Size.Width, Size.Height));
+			}
+
+			UpdateDrawableCanvas(true);
+		}
+
+		void SetupClipperView(MauiClipperView clipper)
+		{
+			if (_content != null)
+			{
+				Children.Remove(_content);
+				clipper.Add(_content);
 			}
 		}
 
-		public EvasObject? Content
+		void UpdateContent(NView? newValue, NView? oldValue)
 		{
-			get => _content;
-			set
+			// remove content from WrapperView
+			if (oldValue != null)
 			{
-				if (_content != value)
+				if (_clipperView.IsValueCreated)
 				{
-					if (_content != null)
-					{
-						Children.Remove(_content);
-						_content = null;
-					}
-					_content = value;
-					if (_content != null)
-					{
-						Children.Add(_content);
-						_content.RaiseTop();
-					}
+					_clipperView.Value.Remove(oldValue);
+				}
+				else
+				{
+					Children.Remove(oldValue);
+				}
+			}
+
+			if (newValue != null)
+			{
+				if (_clipperView.IsValueCreated)
+				{
+					_clipperView.Value.Add(newValue);
+				}
+				else
+				{
+					Children.Add(newValue);
 				}
 			}
 		}
 
 		void UpdateDrawableCanvasGeometry()
 		{
-			if (_drawableCanvas.IsValueCreated)
+			var bounds = new TRect(0, 0, SizeWidth, SizeHeight);
+			if (Shadow != null)
 			{
-				var shadowMargin = GetShadowMargin(Shadow);
-				_drawableCanvas.Value.UpdateBounds(Geometry.ToDP().ExpandTo(shadowMargin).ToPixel());
-				((MauiDrawable)_drawableCanvas.Value.Drawable).ShadowThickness = shadowMargin;
+				var shadowThinkness = Shadow.GetShadowMargin();
+				_mauiDrawable.ShadowThickness = shadowThinkness;
+				bounds = bounds.ToDP().ExpandTo(shadowThinkness).ToPixel();
+			}
+			_drawableCanvas.Value.UpdateBounds(bounds);
+		}
+
+		TSize IMeasurable.Measure(double availableWidth, double availableHeight)
+		{
+			if (Content is IMeasurable measurable)
+			{
+				return measurable.Measure(availableWidth, availableHeight);
+			}
+			else if (Content != null)
+			{
+				return Content.NaturalSize2D.ToCommon();
+			}
+			else
+			{
+				return NaturalSize2D.ToCommon();
 			}
 		}
-
-		Thickness GetShadowMargin(IShadow? shadow)
-		{
-			double left = 0;
-			double top = 0;
-			double right = 0;
-			double bottom = 0;
-
-			var offsetX = shadow == null ? 0 : shadow.Offset.X;
-			var offsetY = shadow == null ? 0 : shadow.Offset.Y;
-			var blurRadius = shadow == null ? 0 : ((double)shadow.Radius);
-			var spreadSize = blurRadius * 3;
-			var spreadLeft = offsetX - spreadSize;
-			var spreadRight = offsetX + spreadSize;
-			var spreadTop = offsetY - spreadSize;
-			var spreadBottom = offsetY + spreadSize;
-			if (left > spreadLeft)
-				left = spreadLeft;
-			if (top > spreadTop)
-				top = spreadTop;
-			if (right < spreadRight)
-				right = spreadRight;
-			if (bottom < spreadBottom)
-				bottom = spreadBottom;
-
-			return new Thickness(Math.Abs(left), Math.Abs(top), Math.Abs(right), Math.Abs(bottom));
-		}
-	}
-
-	public class DrawClipEventArgs : EventArgs
-	{
-		public DrawClipEventArgs(ICanvas canvas, RectF dirtyRect)
-		{
-			Canvas = canvas;
-			DirtyRect = dirtyRect;
-		}
-
-		public ICanvas Canvas { get; set; }
-
-		public RectF DirtyRect { get; set; }
-	}
-
-	public class SKClipperView : SKCanvasView
-	{
-		private SkiaCanvas _canvas;
-		private ScalingCanvas _scalingCanvas;
-
-		public SKClipperView(EvasObject parent) : base(parent)
-		{
-			_canvas = new SkiaCanvas();
-			_scalingCanvas = new ScalingCanvas(_canvas);
-			PaintSurface += OnPaintSurface;
-		}
-
-		public float DeviceScalingFactor { get; set; }
-		public bool ClippingRequired { get; set; }
-		public event EventHandler<DrawClipEventArgs>? DrawClip;
-
-		public new void Invalidate()
-		{
-			ClippingRequired = true;
-			OnDrawFrame();
-			ClippingRequired = false;
-		}
-
-		protected virtual void OnPaintSurface(object? sender, SKPaintSurfaceEventArgs e)
-		{
-			var skiaCanvas = e.Surface.Canvas;
-			skiaCanvas.Clear();
-
-			_canvas.Canvas = skiaCanvas;
-			_scalingCanvas.ResetState();
-
-			float width = e.Info.Width;
-			float height = e.Info.Height;
-			if (DeviceScalingFactor > 0)
-			{
-				width = width / DeviceScalingFactor;
-				height = height / DeviceScalingFactor;
-			}
-
-			_scalingCanvas.SaveState();
-
-			if (DeviceScalingFactor > 0)
-				_scalingCanvas.Scale(DeviceScalingFactor, DeviceScalingFactor);
-			DrawClip?.Invoke(this, new DrawClipEventArgs(_scalingCanvas, new RectF(0, 0, width, height)));
-			_scalingCanvas.RestoreState();
-		}
-	}
-
-	public static class ClipperExtension
-	{
-		public static void SetClipperCanvas(this EvasObject target, SKClipperView clipper)
-		{
-			if (target != null && clipper.ClippingRequired)
-			{
-				var realHandle = elm_object_part_content_get(clipper, "elm.swallow.content");
-
-				target.SetClip(null); // To restore original image
-				evas_object_clip_set(target, realHandle);
-			}
-		}
-
-		[DllImport("libevas.so.1")]
-		internal static extern void evas_object_clip_set(IntPtr obj, IntPtr clip);
-
-		[DllImport("libelementary.so.1")]
-		internal static extern IntPtr elm_object_part_content_get(IntPtr obj, string part);
 	}
 }

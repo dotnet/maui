@@ -1,8 +1,10 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -25,6 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool? _defaultBarTranslucent;
 		IMauiContext _mauiContext;
 		UITabBarAppearance _tabBarAppearance;
+		VisualElement _element;
 
 		IMauiContext MauiContext => _mauiContext;
 		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewMapper);
@@ -54,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return (TabbedPage)Element; }
 		}
 
-		public VisualElement Element => _viewHandlerWrapper.Element;
+		public VisualElement Element => _viewHandlerWrapper.Element ?? _element;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -69,6 +72,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
+			_element = element;
 
 			FinishedCustomizingViewControllers += HandleFinishedCustomizingViewControllers;
 			Tabbed.PropertyChanged += OnPropertyChanged;
@@ -127,9 +131,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_tabBarAppearance?.Dispose();
 				_tabBarAppearance = null;
 
-				Page.SendDisappearing();
+				Page?.SendDisappearing();
+
 				Tabbed.PropertyChanged -= OnPropertyChanged;
 				Tabbed.PagesChanged -= OnPagesChanged;
+
 				FinishedCustomizingViewControllers -= HandleFinishedCustomizingViewControllers;
 			}
 

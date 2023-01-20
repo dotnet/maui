@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Android.Content;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (this.IsAlive())
 			{
-				RequestLayout();
+				PlatformInterop.RequestLayoutIfNeeded(this);
 			}
 			else if (sender is VisualElement ve)
 			{

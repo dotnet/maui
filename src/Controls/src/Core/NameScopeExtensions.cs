@@ -1,12 +1,12 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/NameScopeExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.NameScopeExtensions']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/NameScopeExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.NameScopeExtensions']/Docs/*" />
 	public static class NameScopeExtensions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/NameScopeExtensions.xml" path="//Member[@MemberName='FindByName']/Docs" />
 		public static T FindByName<T>(this Element element, string name)
 		{
 			try

@@ -37,7 +37,9 @@ namespace Samples.Model
 				}
 				catch (Exception ex)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					MessagingCenter.Send<PermissionItem, Exception>(this, nameof(PermissionException), ex);
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			});
 
@@ -51,7 +53,9 @@ namespace Samples.Model
 				}
 				catch (Exception ex)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					MessagingCenter.Send<PermissionItem, Exception>(this, nameof(PermissionException), ex);
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			});
 
@@ -65,7 +69,9 @@ namespace Samples.Model
 				}
 				catch (Exception ex)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					MessagingCenter.Send<PermissionItem, Exception>(this, nameof(PermissionException), ex);
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			});
 	}

@@ -35,10 +35,10 @@
     <remarks>
       <para>The visual representation of a DatePicker is very similar to the one of <see cref="T:Microsoft.Maui.Controls.Entry" />, except that a special control for picking a date appears in place of a keyboard.</para>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/DatePicker.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/DatePicker.TripleScreenShot.png" />
       </para>
       <example>
-        <para>The example below creates a working <see cref="T:Microsoft.Maui.Controls.DatePicker" /> that displays the current date and allows the user to select a date between the specified ranges. The value for the <see cref="P:Microsoft.Maui.Controls.DatePicker.Date" /> property is specified with the <c>x:Static</c> markup extension, and the <see cref="P:Microsoft.Maui.Controls.DatePicker.MinimumDate" /> and <see cref="P:Microsoft.Maui.Controls.DatePicker.MaximumDate" /> properties are specified by calling the <see cref="M:System.DateTime.Parse*" /> method with the <c>x:FactoryMethod</c> and <x>x:Arguments</x> tags. <block type="note">The example below requires a namespace declaration in the root <c>ContentPage</c> or <c>ContentView</c> tags. In particular, <c>xmlns:sys="clr-namespace:System;assembly=mscorlib"</c> must appear in the attribute list for the root element, so that the XAML parser can resolve the name, <c>sys:DateTime</c>.</block></para>
+        <para>The example below creates a working <see cref="T:Microsoft.Maui.Controls.DatePicker" /> that displays the current date and allows the user to select a date between the specified ranges. The value for the <see cref="P:Microsoft.Maui.Controls.DatePicker.Date" /> property is specified with the <c>x:Static</c> markup extension, and the <see cref="P:Microsoft.Maui.Controls.DatePicker.MinimumDate" /> and <see cref="P:Microsoft.Maui.Controls.DatePicker.MaximumDate" /> properties are specified by calling the <see cref="M:System.DateTime.Parse*" /> method with the <c>x:FactoryMethod</c> and `x:Arguments` tags. Note: the example below requires a namespace declaration in the root <c>ContentPage</c> or <c>ContentView</c> tags. In particular, <c>xmlns:sys="clr-namespace:System;assembly=mscorlib"</c> must appear in the attribute list for the root element, so that the XAML parser can resolve the name, <c>sys:DateTime</c>.</para>
         <code lang="XAML"><![CDATA[<StackLayout>
       <DatePicker VerticalOptions="CenterAndExpand" Date="{x:Static sys:DateTime.Now}">
          <DatePicker.Format>yyyy-MM-dd</DatePicker.Format>
@@ -292,7 +292,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -514,10 +514,10 @@
       </Docs>
     </Member>
     <Member MemberName="TextColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TextColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TextColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TextColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TextColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.DatePicker.TextColor" />
-      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.DatePicker.TextColor" />
+      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.DatePicker.TextColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -525,7 +525,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text color for the date picker.</summary>

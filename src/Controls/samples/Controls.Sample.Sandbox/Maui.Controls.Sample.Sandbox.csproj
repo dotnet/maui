@@ -8,8 +8,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
-    <ApplicationId>com.microsoft.maui.sample</ApplicationId>
+    <ApplicationTitle>.NET MAUI Controls Sandbox</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.sandbox</ApplicationId>
+    <ApplicationIdGuid>5ee3361c-1cf9-443e-87f1-a7667fba9caa</ApplicationIdGuid>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
   </PropertyGroup>
@@ -24,6 +26,13 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
+    <PackageReference Include="Microsoft.Maui.Controls.Foldable" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
   </ItemGroup>
 
   <ItemGroup>

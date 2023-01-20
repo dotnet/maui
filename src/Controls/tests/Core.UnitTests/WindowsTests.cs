@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -283,7 +284,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		void DeActivatedFiresDisappearingEvent()
+		void DestroyedFiresDisappearingEvent()
 		{
 			int disappear = 0;
 			int appear = 0;
@@ -295,7 +296,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cp.Appearing += (_, __) => appear++;
 			cp.Disappearing += (_, __) => disappear++;
 
-			window.Deactivated();
+			window.Destroying();
 			Assert.Equal(1, disappear);
 			Assert.Equal(0, appear);
 		}
@@ -313,8 +314,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cp.Appearing += (_, __) => appear++;
 			cp.Disappearing += (_, __) => disappear++;
 
+			var app = window.Parent as TestApp;
 			Assert.Equal(0, disappear);
-			window.Deactivated();
+			window.Destroying();
+
+			// simulate platform requesting another window for the same page
+			_ = app.CreateWindow(cp);
+
 			window.Activated();
 			Assert.Equal(1, disappear);
 			Assert.Equal(1, appear);
@@ -351,6 +357,202 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Single(window.LogicalChildren);
 			Assert.Equal(app.NavigationProxy, window.NavigationProxy.Inner);
 			Assert.Equal(window.NavigationProxy, page.NavigationProxy.Inner);
+		}
+
+		[Fact]
+		public void SettingCoreFrameOnlyFiresEventOnce()
+		{
+			var sizeChangedCount = 0;
+			var propertyChanges = new List<string>();
+
+			var window = new TestWindow();
+			window.SizeChanged += (sender, e) => sizeChangedCount++;
+			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
+
+			Assert.Equal(1, sizeChangedCount);
+			Assert.Equal(new[] { "X", "Y", "Width", "Height" }, propertyChanges);
+		}
+
+		[Fact]
+		public void SettingSameCoreFrameDoesNothing()
+		{
+			var sizeChangedCount = 0;
+			var propertyChanges = new List<string>();
+
+			var window = new TestWindow();
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
+
+			window.SizeChanged += (sender, e) => sizeChangedCount++;
+			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
+
+			Assert.Equal(0, sizeChangedCount);
+			Assert.Empty(propertyChanges);
+		}
+
+		[Fact]
+		public void UpdatingSingleCoordinateOnlyFiresSinglePropertyAndFrameEvent()
+		{
+			var sizeChangedCount = 0;
+			var propertyChanges = new List<string>();
+
+			var window = new TestWindow();
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
+
+			window.SizeChanged += (sender, e) => sizeChangedCount++;
+			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+
+			((IWindow)window).FrameChanged(new Rect(100, 250, 300, 400));
+
+			Assert.Equal(1, sizeChangedCount);
+			Assert.Equal(new[] { "Y" }, propertyChanges);
+		}
+
+		[Fact]
+		public void UpdatingSingleBoundOnlyFiresSingleProperty()
+		{
+			var sizeChangedCount = 0;
+			var propertyChanges = new List<string>();
+
+			var window = new TestWindow();
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
+
+			window.SizeChanged += (sender, e) => sizeChangedCount++;
+			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+
+			((IWindow)window).FrameChanged(new Rect(100, 200, 350, 400));
+
+			Assert.Equal(1, sizeChangedCount);
+			Assert.Equal(new[] { "Width" }, propertyChanges);
+		}
+
+		[Fact]
+		public void DefaultBoundsArePassedToCoreCorrectly()
+		{
+			var controlsWindow = new TestWindow();
+			var coreWindow = controlsWindow as IWindow;
+
+			Assert.Equal(double.NaN, coreWindow.X);
+			Assert.Equal(double.NaN, coreWindow.Y);
+			Assert.Equal(double.NaN, coreWindow.Width);
+			Assert.Equal(double.NaN, coreWindow.Height);
+
+			Assert.Equal(double.NaN, coreWindow.MinimumWidth);
+			Assert.Equal(double.NaN, coreWindow.MinimumHeight);
+
+			Assert.Equal(double.NaN, coreWindow.MaximumWidth);
+			Assert.Equal(double.NaN, coreWindow.MaximumHeight);
+		}
+
+		[Fact]
+		public void ShellTitleChangePropagatesToWindow()
+		{
+			var app = new TestApp();
+			var shell = new ShellTestBase.TestShell() { Title = "test" };
+			var window = app.CreateWindow();
+			bool fired = false;
+			window.Page = shell;
+			window.Handler = new WindowHandlerStub(new PropertyMapper<IWindow, WindowHandlerStub>()
+			{
+				[nameof(IWindow.Title)] = (_, _) => fired = true
+			});
+
+			// reset after setting handler
+			fired = false;
+			shell.Title = "new title";
+
+
+			Assert.Equal(shell.Title, (window as IWindow).Title);
+			Assert.True(fired);
+		}
+
+		[Fact]
+		public void PreviousShellDisconnectsFromWindowPropertyChanged()
+		{
+			var app = new TestApp();
+			var oldShell = new Shell() { Title = "Old Shell" };
+			var window = app.CreateWindow(oldShell);
+			bool fired = false;
+
+			window.Handler = new WindowHandlerStub(new PropertyMapper<IWindow, WindowHandlerStub>()
+			{
+				[nameof(IWindow.Title)] = (_, _) =>
+				{
+					fired = true;
+				}
+			});
+
+			window.Page = new Shell() { Title = "test" };
+
+			// reset after setting handler
+			fired = false;
+
+			oldShell.Title = "new title";
+			Assert.Equal("test", (window as IWindow).Title);
+			Assert.False(fired);
+		}
+
+		[Theory]
+		[InlineData(double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN)]
+		[InlineData(-1, -1, -1, -1, -1, -1, double.NaN, double.NaN)]
+		[InlineData(0, 0, 100, 100, 0, 0, 100, 100)]
+		public void BoundsArePassedToCoreCorrectly(double inX, double inY, double inW, double inH, double outX, double outY, double outW, double outH)
+		{
+			var controlsWindow = new TestWindow
+			{
+				X = inX,
+				Y = inY,
+				Width = inW,
+				Height = inH
+			};
+
+			var coreWindow = controlsWindow as IWindow;
+
+			Assert.Equal(outX, coreWindow.X);
+			Assert.Equal(outY, coreWindow.Y);
+			Assert.Equal(outW, coreWindow.Width);
+			Assert.Equal(outH, coreWindow.Height);
+		}
+
+		[Theory]
+		[InlineData(double.NaN, double.NaN, double.NaN, double.NaN)]
+		[InlineData(-1, -1, double.NaN, double.NaN)]
+		[InlineData(100, 100, 100, 100)]
+		[InlineData(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity)]
+		public void MaxDimensionsArePassedToCoreCorrectly(double inW, double inH, double outW, double outH)
+		{
+			var controlsWindow = new TestWindow
+			{
+				MaximumWidth = inW,
+				MaximumHeight = inH
+			};
+
+			var coreWindow = controlsWindow as IWindow;
+
+			Assert.Equal(outW, coreWindow.MaximumWidth);
+			Assert.Equal(outH, coreWindow.MaximumHeight);
+		}
+
+		[Theory]
+		[InlineData(double.NaN, double.NaN, double.NaN, double.NaN)]
+		[InlineData(-1, -1, double.NaN, double.NaN)]
+		[InlineData(100, 100, 100, 100)]
+		[InlineData(0, 0, 0, 0)]
+		public void MinDimensionsArePassedToCoreCorrectly(double inW, double inH, double outW, double outH)
+		{
+			var controlsWindow = new TestWindow
+			{
+				MinimumWidth = inW,
+				MinimumHeight = inH
+			};
+
+			var coreWindow = controlsWindow as IWindow;
+
+			Assert.Equal(outW, coreWindow.MinimumWidth);
+			Assert.Equal(outH, coreWindow.MinimumHeight);
 		}
 	}
 }

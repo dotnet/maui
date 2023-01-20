@@ -4,37 +4,31 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Tizen.UIExtensions.ElmSharp;
 using AppFW = Tizen.Applications;
 
 namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<Image>?> GetImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
-			GetImageAsync((IFileImageSource)imageSource, image, cancellationToken);
+		public override Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(IImageSource imageSource, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IFileImageSource)imageSource, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<Image>?> GetImageAsync(IFileImageSource imageSource, Image image, CancellationToken cancellationToken = default)
+		public Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(IFileImageSource imageSource, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
-				return null;
+				return FromResult(null);
 
 			var filename = imageSource.File;
 			try
 			{
 				if (!string.IsNullOrEmpty(filename))
 				{
-					var isLoadComplated = await image.LoadAsync(GetPath(filename), cancellationToken);
-
-					if (!isLoadComplated)
+					var image = new MauiImageSource
 					{
-						//If it fails, call the Load function to remove the previous image.
-						image.Load(string.Empty);
-						throw new InvalidOperationException("Unable to load image file.");
-					}
-
-					var result = new ImageSourceServiceResult(image);
-					return result;
+						ResourceUrl = GetPath(filename)
+					};
+					var result = new ImageSourceServiceResult(image, () => image.Dispose());
+					return FromResult(result);
 				}
 				else
 				{
@@ -47,6 +41,9 @@ namespace Microsoft.Maui
 				throw;
 			}
 		}
+
+		static Task<IImageSourceServiceResult<MauiImageSource>?> FromResult(IImageSourceServiceResult<MauiImageSource>? result) =>
+			Task.FromResult(result);
 
 		static string GetPath(string res)
 		{

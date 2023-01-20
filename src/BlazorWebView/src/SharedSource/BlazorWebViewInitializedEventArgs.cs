@@ -14,7 +14,7 @@ using AWebView = Android.Webkit.WebView;
 #elif IOS || MACCATALYST
 using WebKit;
 #elif TIZEN
-using TWebView = Tizen.WebView.WebView;
+using TWebView = Tizen.NUI.BaseComponents.WebView;
 #endif
 
 namespace Microsoft.AspNetCore.Components.WebView

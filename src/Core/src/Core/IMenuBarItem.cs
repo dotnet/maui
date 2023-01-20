@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Represents a top-level menu in a MenuBar view.
+	/// </summary>
 	public interface IMenuBarItem : IList<IMenuElement>, IElement
 	{
 		string Text { get; }

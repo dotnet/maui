@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Label label = new Label { Text = "Click the image to resize", VerticalOptions = LayoutOptions.Center };
 
 				var tapGestureRecognizer = new TapGestureRecognizer();
-				tapGestureRecognizer.Tapped += (object sender, EventArgs e) =>
+				tapGestureRecognizer.Tapped += (sender, e) =>
 				{
 					if (_image.HeightRequest < 250)
 					{

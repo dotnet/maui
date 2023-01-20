@@ -1,58 +1,48 @@
-using ElmSharp;
+using Microsoft.Maui.Graphics;
+using NGestureDetector = Tizen.NUI.GestureDetector;
+using NGestureStateType = Tizen.NUI.Gesture.StateType;
+using NPinchGestureDetector = Tizen.NUI.PinchGestureDetector;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public class PinchGestureHandler : GestureHandler
 	{
-		Graphics.Point _currentScalePoint;
-		int _previousPinchRadius;
-		double _originalPinchScale;
-		IViewHandler _handler;
-
-		public PinchGestureHandler(IGestureRecognizer recognizer, IViewHandler handler) : base(recognizer)
+		double _pinchStartingScale = 1;
+		public PinchGestureHandler(IGestureRecognizer recognizer) : base(recognizer)
 		{
-			_handler = handler;
+			NativeDetector.Detected += OnDetected;
 		}
 
-		public override GestureLayer.GestureType Type
+		new IPinchGestureController Recognizer => (IPinchGestureController)base.Recognizer;
+		new NPinchGestureDetector NativeDetector => (NPinchGestureDetector)base.NativeDetector;
+
+		protected override NGestureDetector CreateNativeDetector(IGestureRecognizer recognizer)
 		{
-			get
+			return new NPinchGestureDetector();
+		}
+
+		void OnDetected(object source, NPinchGestureDetector.DetectedEventArgs e)
+		{
+			if (e.PinchGesture.State == NGestureStateType.Started)
 			{
-				return GestureLayer.GestureType.Zoom;
+				_pinchStartingScale = View!.Scale;
+				var initialScalePoint = new Point(e.PinchGesture.LocalCenterPoint.X / NativeView!.Size.Width, e.PinchGesture.LocalCenterPoint.Y / NativeView.Size.Height);
+				Recognizer.SendPinchStarted(View, initialScalePoint);
 			}
-		}
-
-		protected override void OnStarted(View sender, object data)
-		{
-			var geometry = (_handler.PlatformView as EvasObject).Geometry;
-			var zoomData = (GestureLayer.ZoomData)data;
-			_currentScalePoint = new Graphics.Point((zoomData.X - geometry.X) / (double)geometry.Width, (zoomData.Y - geometry.Y) / (double)geometry.Height);
-			_originalPinchScale = sender.Scale;
-			_previousPinchRadius = zoomData.Radius;
-			(Recognizer as IPinchGestureController)?.SendPinchStarted(sender, _currentScalePoint);
-		}
-
-		protected override void OnMoved(View sender, object data)
-		{
-			var zoomData = (GestureLayer.ZoomData)data;
-			if (_previousPinchRadius <= 0)
-				_previousPinchRadius = 1;
-			// functionality limitation: _currentScalePoint is not updated
-			(Recognizer as IPinchGestureController)?.SendPinch(sender,
-				1 + _originalPinchScale * (zoomData.Radius - _previousPinchRadius) / _previousPinchRadius,
-				_currentScalePoint
-			);
-			_previousPinchRadius = zoomData.Radius;
-		}
-
-		protected override void OnCompleted(View sender, object data)
-		{
-			(Recognizer as IPinchGestureController)?.SendPinchEnded(sender);
-		}
-
-		protected override void OnCanceled(View sender, object data)
-		{
-			(Recognizer as IPinchGestureController)?.SendPinchCanceled(sender);
+			else if (e.PinchGesture.State == NGestureStateType.Continuing)
+			{
+				var currentScalePoint = new Point(e.PinchGesture.LocalCenterPoint.X / NativeView!.Size.Width, e.PinchGesture.LocalCenterPoint.Y / NativeView.Size.Height);
+				var scale = 1 + (e.PinchGesture.Scale - 1) * _pinchStartingScale;
+				Recognizer.SendPinch(View, scale, currentScalePoint);
+			}
+			else if (e.PinchGesture.State == NGestureStateType.Finished)
+			{
+				Recognizer.SendPinchEnded(View);
+			}
+			else if (e.PinchGesture.State == NGestureStateType.Cancelled)
+			{
+				Recognizer.SendPinchCanceled(View);
+			}
 		}
 	}
 }

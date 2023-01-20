@@ -1,4 +1,3 @@
-﻿#nullable enable
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
@@ -6,10 +5,10 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
 	public partial class VisualElement : IView
 	{
-		Semantics _semantics;
+		Semantics? _semantics;
 		bool _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
@@ -17,7 +16,6 @@ namespace Microsoft.Maui.Controls
 
 		Rect _frame = new Rect(0, 0, -1, -1);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Frame']/Docs" />
 		public Rect Frame
 		{
 			get => _frame;
@@ -30,7 +28,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Handler']/Docs" />
 		new public IViewHandler? Handler
 		{
 			get => (IViewHandler?)base.Handler;
@@ -62,7 +59,6 @@ namespace Microsoft.Maui.Controls
 
 		IShadow IView.Shadow => Shadow;
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ShadowProperty']/Docs" />
 		public static readonly BindableProperty ShadowProperty =
  			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -76,7 +72,6 @@ namespace Microsoft.Maui.Controls
 						(bindable as VisualElement)?.NotifyShadowChanges();
 				});
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Shadow']/Docs" />
 		public Shadow Shadow
 		{
 			get { return (Shadow)GetValue(ShadowProperty); }
@@ -95,17 +90,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ZIndex']/Docs" />
 		public int ZIndex
 		{
 			get { return (int)GetValue(ZIndexProperty); }
 			set { SetValue(ZIndexProperty, value); }
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='DesiredSize']/Docs" />
 		public Size DesiredSize { get; protected set; }
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Arrange']/Docs" />
 		public void Arrange(Rect bounds)
 		{
 			Layout(bounds);
@@ -125,7 +117,7 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Layout']/Docs" />
+		/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Layout']/Docs/*" />
 		public void Layout(Rect bounds)
 		{
 			Bounds = bounds;
@@ -170,15 +162,24 @@ namespace Microsoft.Maui.Controls
 
 		Visibility IView.Visibility => IsVisible.ToVisibility();
 
-		Semantics IView.Semantics
-		{
-			get => _semantics;
-		}
+		Semantics? IView.Semantics => UpdateSemantics();
 
-		// We don't want to initialize Semantics until someone explicitly 
-		// wants to modify some aspect of the semantics class
-		internal Semantics SetupSemantics() =>
+		private protected virtual Semantics? UpdateSemantics()
+		{
+			if (!this.IsSet(SemanticProperties.HintProperty) &&
+				!this.IsSet(SemanticProperties.DescriptionProperty) &&
+				!this.IsSet(SemanticProperties.HeadingLevelProperty))
+			{
+				_semantics = null;
+				return _semantics;
+			}
+
 			_semantics ??= new Semantics();
+			_semantics.Description = SemanticProperties.GetDescription(this);
+			_semantics.HeadingLevel = SemanticProperties.GetHeadingLevel(this);
+			_semantics.Hint = SemanticProperties.GetHint(this);
+			return _semantics;
+		}
 
 		static double EnsurePositive(double value)
 		{
@@ -338,6 +339,9 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(Shadow, BindingContext);
 		}
 
+		/// <summary>
+		/// Indicates if a VisualElement is connected to the main object tree.
+		/// </summary>
 		public bool IsLoaded
 		{
 			get
@@ -352,6 +356,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Occurs when a VisualElement has been constructed and added to the object tree.
+		/// This event may occur before the VisualElement has been measured so should not be relied on for size information.  
+		/// </summary>
 		public event EventHandler? Loaded
 		{
 			add
@@ -369,6 +377,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Occurs when this VisualElement is no longer connected to the main object tree.
+		/// </summary>
 		public event EventHandler? Unloaded
 		{
 			add
@@ -410,6 +421,7 @@ namespace Microsoft.Maui.Controls
 				oldWindow.HandlerChanged -= visualElement.OnWindowHandlerChanged;
 
 			visualElement.UpdatePlatformUnloadedLoadedWiring(newValue as Window);
+			visualElement.InvalidateStateTriggers(newValue != null);
 		}
 
 		void OnWindowHandlerChanged(object? sender, EventArgs e)

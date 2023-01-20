@@ -184,7 +184,7 @@ public static void OneWayDemo ()
         <summary>Gets or sets object that contains the properties that will be targeted by the bound properties that belong to this <see cref="T:Microsoft.Maui.Controls.BindableObject" />.</summary>
         <value>An <see cref="T:System.Object" /> that contains the properties that will be targeted by the bound properties that belong to this <see cref="T:Microsoft.Maui.Controls.BindableObject" />. This is a bindable property.</value>
         <remarks>
-          <block subset="none" type="note">Typically, the runtime performance is better if  <see cref="P:Microsoft.Maui.Controls.BindableObject.BindingContext" /> is set after all calls to <see cref="M:Microsoft.Maui.Controls.BindableObject.SetBinding(Microsoft.Maui.Controls.BindableProperty,Microsoft.Maui.Controls.BindingBase)" /> have been made.</block>
+          Typically, the runtime performance is better if  <see cref="P:Microsoft.Maui.Controls.BindableObject.BindingContext" /> is set after all calls to <see cref="M:Microsoft.Maui.Controls.BindableObject.SetBinding(Microsoft.Maui.Controls.BindableProperty,Microsoft.Maui.Controls.BindingBase)" /> have been made.
           <para>The following example shows how to apply a BindingContext and a Binding to a Label (inherits from BindableObject):</para>
           <example>
             <code lang="csharp lang-csharp"><![CDATA[
@@ -249,7 +249,7 @@ Debug.WriteLine (label.Text); // prints "John Doe"
       <Docs>
         <summary>Implements the bound property whose interface is provided by the <see cref="P:Microsoft.Maui.Controls.BindableObject.BindingContext" /> property.</summary>
         <remarks>
-          <block subset="none" type="note">Typically, the runtime performance is better if  <see cref="P:Microsoft.Maui.Controls.BindableObject.BindingContext" /> is set after all calls to <see cref="M:Microsoft.Maui.Controls.BindableObject.SetBinding(Microsoft.Maui.Controls.BindableProperty,Microsoft.Maui.Controls.BindingBase)" /> have been made.</block>
+          Typically, the runtime performance is better if  <see cref="P:Microsoft.Maui.Controls.BindableObject.BindingContext" /> is set after all calls to <see cref="M:Microsoft.Maui.Controls.BindableObject.SetBinding(Microsoft.Maui.Controls.BindableProperty,Microsoft.Maui.Controls.BindingBase)" /> have been made.
           <para>The following example shows how to set a binding to the BindingContext:</para>
           <example>
             <code lang="csharp lang-csharp"><![CDATA[
@@ -967,7 +967,7 @@ class MyBindable : BindableObject
         <summary>Unapplies all previously set bindings.</summary>
         <remarks>
           <para>This method removes all current bindings from the current context.</para>
-          <block subset="none" type="note">Changing a bound property requires that the binding count for a bound property must be 0. The <see cref="M:Microsoft.Maui.Controls.BindableObject.UnapplyBindings" /> method merely decrements the count, and does not remove all bindings everywhere.</block>
+          Changing a bound property requires that the binding count for a bound property must be 0. The <see cref="M:Microsoft.Maui.Controls.BindableObject.UnapplyBindings" /> method merely decrements the count, and does not remove all bindings everywhere.
         </remarks>
       </Docs>
     </Member>

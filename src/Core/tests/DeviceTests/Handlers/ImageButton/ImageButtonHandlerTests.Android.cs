@@ -6,7 +6,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageButtonHandlerTests
 	{
-		[Fact(DisplayName = "Clip ImageButton with Background works Correctly")]
+		[Fact(DisplayName = "Clip ImageButton with Background works Correctly",
+			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
 		public async Task ClipImageButtonWithBackgroundWorks()
 		{
 			Color expected = Colors.Yellow;
@@ -44,14 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 				shapeableImageView.ContentPaddingBottom);
 		}
 
-		Task ValidateHasColor(IImageButton imageButton, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformImageButton = GetPlatformImageButton(CreateHandler(imageButton));
-				action?.Invoke();
-				platformImageButton.AssertContainsColor(color);
-			});
-		}
+		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>
+			imageButtonHandler.PlatformView.Drawable != null;
 	}
 }

@@ -6,7 +6,6 @@ using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Media
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/MediaPicker.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MediaPicker']/Docs" />
 	partial class MediaPickerImplementation : IMediaPicker
 	{
 		public bool IsCaptureSupported =>

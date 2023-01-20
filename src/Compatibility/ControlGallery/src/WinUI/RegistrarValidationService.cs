@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 [assembly: Dependency(typeof(RegistrarValidationService))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
+	[System.Obsolete]
 	public class RegistrarValidationService : IRegistrarValidationService
 	{
 		public bool Validate(VisualElement element, out string message)

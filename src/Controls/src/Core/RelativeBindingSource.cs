@@ -1,14 +1,15 @@
+#nullable disable
 using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.RelativeBindingSource']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.RelativeBindingSource']/Docs/*" />
 	public sealed class RelativeBindingSource
 	{
 		static RelativeBindingSource _self;
 		static RelativeBindingSource _templatedParent;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public RelativeBindingSource(
 			RelativeBindingSourceMode mode,
 			Type ancestorType = null,
@@ -29,25 +30,25 @@ namespace Microsoft.Maui.Controls
 			AncestorLevel = ancestorLevel;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='Mode']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='Mode']/Docs/*" />
 		public RelativeBindingSourceMode Mode
 		{
 			get;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='AncestorType']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='AncestorType']/Docs/*" />
 		public Type AncestorType
 		{
 			get;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='AncestorLevel']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='AncestorLevel']/Docs/*" />
 		public int AncestorLevel
 		{
 			get;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='Self']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='Self']/Docs/*" />
 		public static RelativeBindingSource Self
 		{
 			get
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='TemplatedParent']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='TemplatedParent']/Docs/*" />
 		public static RelativeBindingSource TemplatedParent
 		{
 			get

@@ -1,6 +1,7 @@
+#nullable disable
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Slider.xml" path="Type[@FullName='Microsoft.Maui.Controls.Slider']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/Slider.xml" path="Type[@FullName='Microsoft.Maui.Controls.Slider']/Docs/*" />
 	public partial class Slider : ISlider
 	{
 		IImageSource ISlider.ThumbImageSource => ThumbImageSource;

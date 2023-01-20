@@ -13,26 +13,13 @@ namespace Microsoft.Maui.Platform
 	// so we'd like to stick with the older one for now
 	public class MauiWebViewNavigationDelegate : NSObject, IWKNavigationDelegate
 	{
-		readonly WeakReference<WebViewHandler> _handler;
+		readonly WeakReference<IWebViewHandler> _handler;
 		WebNavigationEvent _lastEvent;
 
-		public MauiWebViewNavigationDelegate(WebViewHandler handler)
+		public MauiWebViewNavigationDelegate(IWebViewHandler handler)
 		{
 			_ = handler ?? throw new ArgumentNullException("handler");
-			_handler = new WeakReference<WebViewHandler>(handler);
-		}
-
-		WebViewHandler? Handler
-		{
-			get
-			{
-				if (_handler.TryGetTarget(out var handler))
-				{
-					return handler;
-				}
-
-				return null;
-			}
+			_handler = new WeakReference<IWebViewHandler>(handler);
 		}
 
 		[Export("webView:didFinishNavigation:")]
@@ -125,7 +112,7 @@ namespace Microsoft.Maui.Platform
 					navEvent = WebNavigationEvent.NewPage;
 					break;
 				case WKNavigationType.BackForward:
-					navEvent = handler.CurrentNavigationEvent;
+					navEvent = CurrentNavigationEvent;
 					break;
 				case WKNavigationType.Reload:
 					navEvent = WebNavigationEvent.Refresh;
@@ -156,6 +143,25 @@ namespace Microsoft.Maui.Platform
 		string GetCurrentUrl()
 		{
 			return Handler?.PlatformView?.Url?.AbsoluteUrl?.ToString() ?? string.Empty;
+		}
+
+		internal WebNavigationEvent CurrentNavigationEvent
+		{
+			get;
+			set;
+		}
+
+		IWebViewHandler? Handler
+		{
+			get
+			{
+				if (_handler.TryGetTarget(out var handler))
+				{
+					return handler;
+				}
+
+				return null;
+			}
 		}
 	}
 }

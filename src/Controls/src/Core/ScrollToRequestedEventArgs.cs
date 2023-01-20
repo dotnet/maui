@@ -1,8 +1,9 @@
+#nullable disable
 using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollToRequestedEventArgs']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollToRequestedEventArgs']/Docs/*" />
 	public class ScrollToRequestedEventArgs : EventArgs, ITemplatedItemsListScrollToRequestedEventArgs
 	{
 		internal ScrollToRequestedEventArgs(double scrollX, double scrollY, bool shouldAnimate)
@@ -38,22 +39,22 @@ namespace Microsoft.Maui.Controls
 			//Mode = ScrollToMode.GroupAndIem;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='Element']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='Element']/Docs/*" />
 		public Element Element { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='Mode']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='Mode']/Docs/*" />
 		public ScrollToMode Mode { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='Position']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='Position']/Docs/*" />
 		public ScrollToPosition Position { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ScrollX']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ScrollX']/Docs/*" />
 		public double ScrollX { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ScrollY']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ScrollY']/Docs/*" />
 		public double ScrollY { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ShouldAnimate']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ShouldAnimate']/Docs/*" />
 		public bool ShouldAnimate { get; private set; }
 
 		internal object Group { get; private set; }
@@ -74,7 +75,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ToRequest']/Docs" />
 		public ScrollToRequest ToRequest()
 		{
 			return new ScrollToRequest(ScrollX, ScrollY, !ShouldAnimate);

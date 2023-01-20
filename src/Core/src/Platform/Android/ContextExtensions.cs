@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 	{
 		// Caching this display density here means that all pixel calculations are going to be based on the density
 		// of the first Context these extensions are run against. That's probably fine, but if we run into a 
-		// situation where subsequent activities can be launched with a different display density from the intial
+		// situation where subsequent activities can be launched with a different display density from the initial
 		// activity, we'll need to remove this cached value or cache it in a Dictionary<Context, float>
 		static float s_displayDensity = float.MinValue;
 
@@ -69,6 +69,13 @@ namespace Microsoft.Maui.Platform
 				context.FromPixels(rect.Y),
 				context.FromPixels(rect.Width),
 				context.FromPixels(rect.Height));
+
+		internal static Rect FromPixels(this Context context, Android.Graphics.Rect rect) =>
+			new Rect(
+				context.FromPixels(rect.Left),
+				context.FromPixels(rect.Top),
+				context.FromPixels(rect.Width()),
+				context.FromPixels(rect.Height()));
 
 		public static void HideKeyboard(this Context self, global::Android.Views.View view)
 		{
@@ -297,10 +304,14 @@ namespace Microsoft.Maui.Platform
 			if (platformWindow is null)
 				return null;
 
-			foreach (var window in MauiApplication.Current.Application.Windows)
+			var windows = WindowExtensions.GetWindows();
+			foreach (var window in windows)
 			{
-				if (window?.Handler?.PlatformView == platformWindow)
-					return window;
+				if (window.Handler?.PlatformView is Android.App.Activity activity)
+				{
+					if (activity == platformWindow)
+						return window;
+				}
 			}
 
 			return null;

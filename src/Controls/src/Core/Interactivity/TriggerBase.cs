@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.TriggerBase']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.TriggerBase']/Docs/*" />
 	public abstract class TriggerBase : BindableObject, IAttachedObject
 	{
 		bool _isSealed;
@@ -27,13 +28,13 @@ namespace Microsoft.Maui.Controls
 			Condition.ConditionChanged = OnConditionChanged;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='EnterActions']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='EnterActions']/Docs/*" />
 		public IList<TriggerAction> EnterActions { get; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='ExitActions']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='ExitActions']/Docs/*" />
 		public IList<TriggerAction> ExitActions { get; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='IsSealed']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='IsSealed']/Docs/*" />
 		public bool IsSealed
 		{
 			get { return _isSealed; }
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='TargetType']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='TargetType']/Docs/*" />
 		public Type TargetType { get; }
 
 		internal Condition Condition { get; }

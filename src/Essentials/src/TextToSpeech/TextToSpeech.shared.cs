@@ -14,18 +14,18 @@ namespace Microsoft.Maui.Media
 		Task SpeakAsync(string text, SpeechOptions? options = default, CancellationToken cancelToken = default);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="Type[@FullName='Microsoft.Maui.Essentials.TextToSpeech']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="Type[@FullName='Microsoft.Maui.Essentials.TextToSpeech']/Docs/*" />
 	public static partial class TextToSpeech
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='GetLocalesAsync']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='GetLocalesAsync']/Docs/*" />
 		public static Task<IEnumerable<Locale>> GetLocalesAsync() =>
 			Default.GetLocalesAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][1]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][1]/Docs/*" />
 		public static Task SpeakAsync(string text, CancellationToken cancelToken = default) =>
 			Default.SpeakAsync(text, default, cancelToken);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][2]/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/TextToSpeech.xml" path="//Member[@MemberName='SpeakAsync'][2]/Docs/*" />
 		public static Task SpeakAsync(string text, SpeechOptions? options, CancellationToken cancelToken = default) =>
 			Default.SpeakAsync(text, options, cancelToken);
 
@@ -152,19 +152,19 @@ namespace Microsoft.Maui.Media
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Locale']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Locale']/Docs/*" />
 	public class Locale
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Language']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Language']/Docs/*" />
 		public string Language { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Country']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Country']/Docs/*" />
 		public string Country { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Name']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Name']/Docs/*" />
 		public string Name { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Id']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Locale.xml" path="//Member[@MemberName='Id']/Docs/*" />
 		public string Id { get; }
 
 		internal Locale(string language, string country, string name, string id)
@@ -176,16 +176,16 @@ namespace Microsoft.Maui.Media
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SpeechOptions']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SpeechOptions']/Docs/*" />
 	public class SpeechOptions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Locale']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Locale']/Docs/*" />
 		public Locale? Locale { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Pitch']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Pitch']/Docs/*" />
 		public float? Pitch { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Volume']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Essentials/SpeechOptions.xml" path="//Member[@MemberName='Volume']/Docs/*" />
 		public float? Volume { get; set; }
 	}
 }

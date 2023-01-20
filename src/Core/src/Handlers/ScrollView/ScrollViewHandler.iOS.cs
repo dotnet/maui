@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				handler.PlatformView.SetContentOffset(new CoreGraphics.CGPoint(request.HoriztonalOffset, request.VerticalOffset), !request.Instant);
+				handler.PlatformView.SetContentOffset(new CoreGraphics.CGPoint(request.HorizontalOffset, request.VerticalOffset), !request.Instant);
 
 				if (request.Instant)
 				{
@@ -150,21 +150,21 @@ namespace Microsoft.Maui.Handlers
 				Tag = ContentPanelTag
 			};
 
-			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer);
+			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer, platformScrollView);
 
 			platformScrollView.ClearSubviews();
 			contentContainer.AddSubview(platformContent);
 			platformScrollView.AddSubview(contentContainer);
 		}
 
-		static Func<Rect, Size> ArrangeScrollViewContent(Func<Rect, Size> internalArrange, ContentView container)
+		static Func<Rect, Size> ArrangeScrollViewContent(Func<Rect, Size> internalArrange, ContentView container, UIScrollView platformScrollView)
 		{
 			return (rect) =>
 			{
 				if (container.Superview is UIScrollView scrollView)
 				{
 					// Ensure the container is at least the size of the UIScrollView itself, so that the 
-					// cross-platform layout logic makes sense and the contents don't arrange out side the 
+					// cross-platform layout logic makes sense and the contents don't arrange outside the 
 					// container. (Everything will look correct if they do, but hit testing won't work properly.)
 
 					var scrollViewBounds = scrollView.Bounds;
@@ -176,7 +176,9 @@ namespace Microsoft.Maui.Handlers
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
 
-				return internalArrange(rect);
+				var contentSize = internalArrange(rect);
+				platformScrollView.ContentSize = contentSize;
+				return contentSize;
 			};
 		}
 
@@ -223,7 +225,7 @@ namespace Microsoft.Maui.Handlers
 			var virtualView = VirtualView;
 			var platformView = PlatformView;
 
-			if (platformView == null || virtualView == null || virtualView.PresentedContent == null)
+			if (platformView == null || virtualView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}

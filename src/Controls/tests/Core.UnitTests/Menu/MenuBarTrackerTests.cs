@@ -5,7 +5,6 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.MenuBarTests
 {
-
 	public class MenuBarTrackerTests : BaseTestFixture
 	{
 		[Fact]

@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Input;
-using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices.Sensors;
@@ -51,7 +50,7 @@ namespace Samples.ViewModel
 		}
 
 		public string[] Speeds { get; } =
-		   Enum.GetNames(typeof(SensorSpeed));
+			Enum.GetNames(typeof(SensorSpeed));
 
 		public int Speed
 		{
@@ -62,15 +61,43 @@ namespace Samples.ViewModel
 		public override void OnAppearing()
 		{
 			Magnetometer.ReadingChanged += OnReadingChanged;
+
 			base.OnAppearing();
 		}
 
 		public override void OnDisappearing()
 		{
 			OnStop();
+
 			Magnetometer.ReadingChanged -= OnReadingChanged;
 
 			base.OnDisappearing();
+		}
+
+		async void OnStart()
+		{
+			try
+			{
+				Magnetometer.Start((SensorSpeed)Speed);
+				IsActive = true;
+			}
+			catch (Exception ex)
+			{
+				await DisplayAlertAsync($"Unable to start magnetometer: {ex.Message}");
+			}
+		}
+
+		void OnStop()
+		{
+			try
+			{
+				Magnetometer.Stop();
+				IsActive = false;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Unable to stop magnetometer: {0}", ex);
+			}
 		}
 
 		void OnReadingChanged(object sender, MagnetometerChangedEventArgs e)
@@ -93,25 +120,6 @@ namespace Samples.ViewModel
 					Z = data.MagneticField.Z;
 					break;
 			}
-		}
-
-		async void OnStart()
-		{
-			try
-			{
-				Magnetometer.Start((SensorSpeed)Speed);
-				IsActive = true;
-			}
-			catch (Exception ex)
-			{
-				await DisplayAlertAsync($"Unable to start magnetometer: {ex.Message}");
-			}
-		}
-
-		void OnStop()
-		{
-			IsActive = false;
-			Magnetometer.Stop();
 		}
 	}
 }

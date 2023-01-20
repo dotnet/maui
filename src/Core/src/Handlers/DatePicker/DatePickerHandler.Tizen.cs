@@ -1,88 +1,49 @@
-using System;
-using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.ElmSharp;
-using TEntry = Tizen.UIExtensions.ElmSharp.Entry;
-using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
-using EcoreMainloop = ElmSharp.EcoreMainloop;
+using Tizen.NUI;
+using Tizen.UIExtensions.NUI;
+using NEntry = Tizen.UIExtensions.NUI.Entry;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : ViewHandler<IDatePicker, TEntry>
+	public partial class DatePickerHandler : ViewHandler<IDatePicker, NEntry>
 	{
-		const string DialogTitle = "Choose Date";
-		Lazy<IDateTimeDialog>? _lazyDialog;
+		protected override NEntry CreatePlatformView() => new MauiPicker();
 
-		protected override TEntry CreatePlatformView()
+		protected override void ConnectHandler(NEntry platformView)
 		{
-			var entry = new EditfieldEntry(PlatformParent)
-			{
-				IsSingleLine = true,
-				HorizontalTextAlignment = TTextAlignment.Center,
-				InputPanelShowByOnDemand = true,
-				IsEditable = false
-			};
-			entry.SetVerticalTextAlignment(0.5);
-			return entry;
-		}
-
-		protected override void ConnectHandler(TEntry platformView)
-		{
-			platformView.TextBlockFocused += OnTextBlockFocused;
-			platformView.EntryLayoutFocused += OnFocused;
-			platformView.EntryLayoutUnfocused += OnUnfocused;
-
-			_lazyDialog = new Lazy<IDateTimeDialog>(() =>
-			{
-				var dialog = new DateTimePickerDialog(PlatformParent)
-				{
-					Title = DialogTitle
-				};
-				dialog.DateTimeChanged += OnDateTimeChanged;
-				dialog.PickerOpened += OnPickerOpened;
-				dialog.PickerClosed += OnPickerClosed;
-				return dialog;
-			});
-
+			platformView.TouchEvent += OnTouch;
+			platformView.KeyEvent += OnKeyEvent;
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(TEntry platformView)
+		protected override void DisconnectHandler(NEntry platformView)
 		{
-			if (_lazyDialog != null && _lazyDialog.IsValueCreated)
-			{
-				_lazyDialog.Value.DateTimeChanged -= OnDateTimeChanged;
-				_lazyDialog.Value.PickerOpened -= OnPickerOpened;
-				_lazyDialog.Value.PickerClosed -= OnPickerClosed;
-				_lazyDialog.Value.Unrealize();
-				_lazyDialog = null;
-			}
+			if (!platformView.HasBody())
+				return;
 
-			platformView.TextBlockFocused -= OnTextBlockFocused;
-			platformView.EntryLayoutFocused -= OnFocused;
-			platformView.EntryLayoutUnfocused -= OnUnfocused;
-
+			platformView.TouchEvent -= OnTouch;
+			platformView.KeyEvent -= OnKeyEvent;
 			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateFormat(datePicker);
+			handler.PlatformView.UpdateFormat(datePicker);
 		}
 
 		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateDate(datePicker);
+			handler.PlatformView.UpdateDate(datePicker);
 		}
 
 		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
-			handler.PlatformView?.UpdateFont(datePicker, fontManager);
+			handler.PlatformView.UpdateFont(datePicker, fontManager);
 		}
 
 		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateTextColor(datePicker);
+			handler.PlatformView.UpdateTextColor(datePicker);
 		}
 
 		[MissingMapper]
@@ -91,42 +52,54 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker) { }
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker) { }
-
-		protected virtual void OnDateTimeChanged(object? sender, DateChangedEventArgs dcea)
+		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			if (VirtualView == null || PlatformView == null)
-				return;
-
-			VirtualView.Date = dcea.NewDate.Date;
+			handler.PlatformView.UpdateCharacterSpacing(datePicker);
 		}
 
-		void OnTextBlockFocused(object? sender, EventArgs e)
+		bool OnTouch(object source, Tizen.NUI.BaseComponents.View.TouchEventArgs e)
 		{
-			if (VirtualView == null || PlatformView == null || _lazyDialog == null)
-				return;
+			if (e.Touch.GetState(0) != PointStateType.Up)
+				return false;
 
-			// For EFL Entry, the event will occur even if it is currently disabled.
-			// If the problem is resolved, no conditional statement is required.
-			if (VirtualView.IsEnabled)
+			if (VirtualView == null)
+				return false;
+
+			OpenPopupAsync();
+			return true;
+		}
+
+		bool OnKeyEvent(object source, Tizen.NUI.BaseComponents.View.KeyEventArgs e)
+		{
+			if (e.Key.IsAcceptKeyEvent())
 			{
-				var dialog = _lazyDialog.Value;
-				dialog.DateTime = VirtualView.Date;
-				dialog.MaximumDateTime = VirtualView.MaximumDate;
-				dialog.MinimumDateTime = VirtualView.MinimumDate;
-				// You need to call Show() after ui thread occupation because of EFL problem.
-				// Otherwise, the content of the popup will not receive focus.
-				EcoreMainloop.Post(() => dialog.Show());
+				OpenPopupAsync();
+				return true;
 			}
+			return false;
 		}
 
-		protected virtual void OnPickerOpened(object? sender, EventArgs args)
+		async void OpenPopupAsync()
 		{
-		}
+			if (VirtualView == null)
+				return;
 
-		protected virtual void OnPickerClosed(object? sender, EventArgs args)
-		{
+			var modalStack = MauiContext?.GetModalStack();
+			if (modalStack != null)
+			{
+				await modalStack.PushDummyPopupPage(async () =>
+				{
+					try
+					{
+						using var popup = new MauiDateTimePicker(VirtualView.Date, false);
+						VirtualView.Date = await popup.Open();
+					}
+					catch
+					{
+						// Cancel
+					}
+				});
+			}
 		}
 	}
 }

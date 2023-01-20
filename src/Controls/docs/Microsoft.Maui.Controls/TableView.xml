@@ -78,7 +78,7 @@ public class App : Application
           ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/TableView.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/TableView.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -156,9 +156,7 @@ public class App : Application
         <value>To be added.</value>
         <remarks>
           <para>When the <see cref="P:Microsoft.Maui.Controls.TableView.HasUnevenRows" /> property is <see langword="true" />, application developers can set the <see cref="P:Microsoft.Maui.Controls.Cell.Height" /> properties to control the height of <see cref="T:Microsoft.Maui.Controls.Cell" /> items in the table. When the <see cref="P:Microsoft.Maui.Controls.TableView.HasUnevenRows" /> property is <see langword="true" />, the <see cref="P:Microsoft.Maui.Controls.TableView.RowHeight" /> property is ignored. When the <see cref="P:Microsoft.Maui.Controls.TableView.HasUnevenRows" /> property is <see langword="false" />, app developers can set the <see cref="P:Microsoft.Maui.Controls.TableView.RowHeight" /> property to set the height of all Cells, and their individual <see cref="P:Microsoft.Maui.Controls.Cell.Height" /> properties are ignored.</para>
-          <block subset="none" type="note">
-            <para>Developers must specify row heights on the iOS platform, even when <see cref="P:Microsoft.Maui.Controls.TableView.HasUnevenRows" /> is <see langword="true" />.</para>
-          </block>
+          <para>Note: developers must specify row heights on the iOS platform, even when <see cref="P:Microsoft.Maui.Controls.TableView.HasUnevenRows" /> is <see langword="true" />.</para>
         </remarks>
       </Docs>
     </Member>
@@ -350,10 +348,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
-      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.Controls.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.TableView.OnSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="tableView.OnSizeRequest (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="tableView.OnSizeRequest (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -372,7 +370,7 @@ public class App : Application
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />

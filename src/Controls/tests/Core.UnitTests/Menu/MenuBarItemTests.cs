@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 {
 	[Category("MenuBarItem")]
 	public class MenuBarItemTests :
-		MenuBarTestBase<MenuBarItem, IMenuElement, MenuFlyoutItem, MenuBarItemHandlerUpdate>
+		MenuTestBase<MenuBarItem, IMenuElement, MenuFlyoutItem, MenuBarItemHandlerUpdate>
 	{
 		protected override int GetIndex(MenuBarItemHandlerUpdate handlerUpdate) =>
 			handlerUpdate.Index;

@@ -1,12 +1,10 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeView']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeView']/Docs/*" />
 	public partial class SwipeView : ISwipeView
 	{
 		bool _isOpen;

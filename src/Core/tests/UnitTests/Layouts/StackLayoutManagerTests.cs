@@ -68,5 +68,17 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			return stack;
 		}
+
+		protected IStackLayout SetUpVisibilityTestStack(double viewWidth, double viewHeight, double spacing)
+		{
+			var startView = CreateTestView(new Size(viewWidth, viewHeight));
+			var middleView = CreateTestView(new Size(viewWidth, viewHeight));
+			var endView = CreateTestView(new Size(viewWidth, viewHeight));
+
+			var stack = CreateTestLayout(new List<IView> { startView, middleView, endView });
+			stack.Spacing.Returns(spacing);
+
+			return stack;
+		}
 	}
 }

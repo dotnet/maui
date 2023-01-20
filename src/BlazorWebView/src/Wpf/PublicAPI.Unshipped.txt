@@ -1,1 +1,4 @@
-﻿#nullable enable
+#nullable enable
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPath.get -> string!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPath.set -> void
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPathProperty -> System.Windows.DependencyProperty!

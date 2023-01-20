@@ -2,22 +2,40 @@
 
 namespace Microsoft.Maui.Devices
 {
+	/// <summary>
+	/// The HapticFeedback API lets you control haptic feedback on the device.
+	/// </summary>
 	public interface IHapticFeedback
 	{
+		/// <summary>
+		/// Gets a value indicating whether haptic feedback is supported on this device.
+		/// </summary>
 		bool IsSupported { get; }
 
+		/// <summary>
+		/// Perform a type of haptic feedback on the device.
+		/// </summary>
+		/// <param name="type">The haptic feedback type to perform.</param>
 		void Perform(HapticFeedbackType type);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/HapticFeedback.xml" path="Type[@FullName='Microsoft.Maui.Essentials.HapticFeedback']/Docs" />
+	/// <summary>
+	/// The HapticFeedback API lets you control haptic feedback on the device.
+	/// </summary>
 	public static class HapticFeedback
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/HapticFeedback.xml" path="//Member[@MemberName='Perform']/Docs" />
+		/// <summary>
+		/// Perform a type of haptic feedback on the device.
+		/// </summary>
+		/// <param name="type">The haptic feedback type to perform.</param>
 		public static void Perform(HapticFeedbackType type = HapticFeedbackType.Click) =>
 			Default.Perform(type);
 
 		static IHapticFeedback? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IHapticFeedback Default =>
 			defaultImplementation ??= new HapticFeedbackImplementation();
 

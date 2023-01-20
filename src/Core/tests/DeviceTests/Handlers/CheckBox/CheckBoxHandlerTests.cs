@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.CheckBox)]
-	public partial class CheckBoxHandlerTests : HandlerTestBase<CheckBoxHandler, CheckBoxStub>
+	public partial class CheckBoxHandlerTests : CoreHandlerTestBase<CheckBoxHandler, CheckBoxStub>
 	{
 		[Theory(DisplayName = "IsChecked Initializes Correctly")]
 		[InlineData(true)]
@@ -22,8 +22,8 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(checkBoxStub, () => checkBoxStub.IsChecked, GetNativeIsChecked, checkBoxStub.IsChecked);
 		}
 
-		[Fact(DisplayName = "Foreground Updates Correctly")]
-		public async Task ForegroundUpdatesCorrectly()
+		[Fact(DisplayName = "Foreground Initializes Correctly")]
+		public async Task ForegroundInitializesCorrectly()
 		{
 			var checkBoxStub = new CheckBoxStub()
 			{
@@ -32,6 +32,27 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidateColor(checkBoxStub, Colors.Red);
+		}
+
+		[Theory(DisplayName = "Foreground Updates Correctly")]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF0000FF)]
+		public async Task ForegroundUpdatesCorrectly(uint color)
+		{
+			var checkBoxStub = new CheckBoxStub
+			{
+				Foreground = new SolidPaint(Colors.Black),
+				IsChecked = true
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(checkBoxStub);
+				var expected = Color.FromUint(color);
+				checkBoxStub.Foreground = new SolidPaint(expected);
+				handler.UpdateValue(nameof(checkBoxStub.Foreground));
+				await ValidateColor(checkBoxStub, expected);
+			});
 		}
 	}
 }

@@ -169,7 +169,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.BrushTypeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.BrushTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -182,10 +182,10 @@
       </Docs>
     </Member>
     <Member MemberName="BackgroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color BackgroundColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color BackgroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BackgroundColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BackgroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.VisualElement.BackgroundColor" />
-      <MemberSignature Language="F#" Value="member this.BackgroundColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.VisualElement.BackgroundColor" />
+      <MemberSignature Language="F#" Value="member this.BackgroundColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.VisualElement.BackgroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -199,11 +199,11 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color which will fill the background of a VisualElement. This is a bindable property.</summary>
-        <value>The color that is used to fill the background of a VisualElement. The default is <see cref="P:Microsoft.Maui.Controls.Color.Default" />.</value>
+        <value>The color that is used to fill the background of a VisualElement.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -410,10 +410,10 @@
       </Docs>
     </Member>
     <Member MemberName="Bounds">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Rectangle Bounds { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Rectangle Bounds" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Shapes.Rectangle Bounds { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Shapes.Rectangle Bounds" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.VisualElement.Bounds" />
-      <MemberSignature Language="F#" Value="member this.Bounds : Microsoft.Maui.Controls.Rectangle" Usage="Microsoft.Maui.Controls.VisualElement.Bounds" />
+      <MemberSignature Language="F#" Value="member this.Bounds : Microsoft.Maui.Controls.Shapes.Rectangle" Usage="Microsoft.Maui.Controls.VisualElement.Bounds" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -427,12 +427,12 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Rectangle</ReturnType>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Rectangle</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets the bounds of the element.</summary>
         <value>The bounds of an element, in device-independent units.</value>
-        <remarks>Bounds is assigned during the Layout cycle by a call to <see cref="M:Microsoft.Maui.Controls.VisualElement.Layout(Microsoft.Maui.Controls.Rectangle)" />.</remarks>
+        <remarks>Bounds is assigned during the Layout cycle by a call to <see cref="M:Microsoft.Maui.Controls.VisualElement.Layout(Microsoft.Maui.Graphics.Rect)" />.</remarks>
         <altmember cref="P:Microsoft.Maui.Controls.VisualElement.WidthRequest" />
         <altmember cref="P:Microsoft.Maui.Controls.VisualElement.HeightRequest" />
       </Docs>
@@ -494,7 +494,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.Shapes.PathGeometryConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.Shapes.PathGeometryConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -553,10 +553,10 @@
       </Docs>
     </Member>
     <Member MemberName="FlowDirection">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.FlowDirection FlowDirection { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.FlowDirection FlowDirection" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.FlowDirection FlowDirection { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.FlowDirection FlowDirection" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.VisualElement.FlowDirection" />
-      <MemberSignature Language="F#" Value="member this.FlowDirection : Microsoft.Maui.Controls.FlowDirection with get, set" Usage="Microsoft.Maui.Controls.VisualElement.FlowDirection" />
+      <MemberSignature Language="F#" Value="member this.FlowDirection : Microsoft.Maui.FlowDirection with get, set" Usage="Microsoft.Maui.Controls.VisualElement.FlowDirection" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -564,7 +564,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.FlowDirection</ReturnType>
+        <ReturnType>Microsoft.Maui.FlowDirection</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the layout flow direction.</summary>
@@ -670,46 +670,6 @@
         <summary>Occurs when the element receives focus.</summary>
         <remarks>Focused event is raised whenever the VisualElement receives focus. This event is not bubbled through the Microsoft.Maui.Controls stack and is received directly from the native control. This event is emitted by the IsFocusedProperty setter.</remarks>
         <altmember cref="P:Microsoft.Maui.Controls.VisualElement.IsFocused" />
-      </Docs>
-    </Member>
-    <Member MemberName="GetSizeRequest">
-      <MemberSignature Language="C#" Value="public virtual Microsoft.Maui.Controls.SizeRequest GetSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance valuetype Microsoft.Maui.Controls.SizeRequest GetSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.VisualElement.GetSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="abstract member GetSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest&#xA;override this.GetSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="visualElement.GetSizeRequest (widthConstraint, heightConstraint)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.1.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="widthConstraint" Type="System.Double" />
-        <Parameter Name="heightConstraint" Type="System.Double" />
-      </Parameters>
-      <Docs>
-        <param name="widthConstraint">The available width that a parent element can allocated to a child. Value will be between 0 and double.PositiveInfinity.</param>
-        <param name="heightConstraint">The available height that a parent element can allocated to a child. Value will be between 0 and double.PositiveInfinity.</param>
-        <summary>Returns the <see cref="T:Microsoft.Maui.Controls.SizeRequest" /> of the element. Calling this method begins the measure pass of a layout cycle.</summary>
-        <returns>A <see cref="T:Microsoft.Maui.Controls.SizeRequest" /> which contains a requested size and a minimum size.</returns>
-        <remarks>Calling GetSizeRequest causes a measure pass to occur for the subtree of elements it is called on. It is ideal to only call GetSizeRequest when needed as excessive calls can negatively impact the performance of your app. Overriding GetSizeRequest should only be done if you want to ignore Width/HeightRequest. More likely a subclass would wish to override <see cref="M:Microsoft.Maui.Controls.VisualElement.OnSizeRequest(System.Double,System.Double)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Height">
@@ -1225,7 +1185,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.VisualElement/VisibilityConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.VisualElement/VisibilityConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -1298,10 +1258,10 @@
       </Docs>
     </Member>
     <Member MemberName="Layout">
-      <MemberSignature Language="C#" Value="public void Layout (Microsoft.Maui.Controls.Rectangle bounds);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Layout(valuetype Microsoft.Maui.Controls.Rectangle bounds) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.VisualElement.Layout(Microsoft.Maui.Controls.Rectangle)" />
-      <MemberSignature Language="F#" Value="member this.Layout : Microsoft.Maui.Controls.Rectangle -&gt; unit" Usage="visualElement.Layout bounds" />
+      <MemberSignature Language="C#" Value="public void Layout (Microsoft.Maui.Graphics.Rect bounds);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Layout(valuetype Microsoft.Maui.Graphics.Rect bounds) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.VisualElement.Layout(Microsoft.Maui.Graphics.Rect)" />
+      <MemberSignature Language="F#" Value="member this.Layout : Microsoft.Maui.Graphics.Rect -&gt; unit" Usage="visualElement.Layout bounds" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -1318,7 +1278,7 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="bounds" Type="Microsoft.Maui.Controls.Rectangle" />
+        <Parameter Name="bounds" Type="Microsoft.Maui.Graphics.Rect" />
       </Parameters>
       <Docs>
         <param name="bounds">The new bounds of the element.</param>
@@ -1327,10 +1287,10 @@
       </Docs>
     </Member>
     <Member MemberName="Measure">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.SizeRequest Measure (double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Microsoft.Maui.Controls.SizeRequest Measure(float64 widthConstraint, float64 heightConstraint, valuetype Microsoft.Maui.Controls.MeasureFlags flags) cil managed" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.SizeRequest Measure (double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Microsoft.Maui.SizeRequest Measure(float64 widthConstraint, float64 heightConstraint, valuetype Microsoft.Maui.Controls.MeasureFlags flags) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.VisualElement.Measure(System.Double,System.Double,Microsoft.Maui.Controls.MeasureFlags)" />
-      <MemberSignature Language="F#" Value="member this.Measure : double * double * Microsoft.Maui.Controls.MeasureFlags -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="visualElement.Measure (widthConstraint, heightConstraint, flags)" />
+      <MemberSignature Language="F#" Value="member this.Measure : double * double * Microsoft.Maui.Controls.MeasureFlags -&gt; Microsoft.Maui.SizeRequest" Usage="visualElement.Measure (widthConstraint, heightConstraint, flags)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -1338,7 +1298,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -1406,7 +1366,7 @@
         <value>The minimum height the element requires. Default value is -1.</value>
         <remarks>
           <para>
-            MinimumHeightRequest is used to override the results of a call to <see cref="M:Microsoft.Maui.Controls.VisualElement.GetSizeRequest(System.Double,System.Double)" /> by setting the minimum height property. This causes overflow handling to shrink this element to its minimum height before elements who do not have a minimum size set.
+            MinimumHeightRequest is used to override the results of a call to GetSizeRequest by setting the minimum height property. This causes overflow handling to shrink this element to its minimum height before elements who do not have a minimum size set.
           </para>
           <para>
               The following example sets the MinimumHeightRequest to enable an image to shrink below its normal size.
@@ -1478,7 +1438,7 @@
         <value>The minimum width the element requires. Default value is -1.</value>
         <remarks>
           <para>
-            MinimumWidthRequest is used to override the results of a call to <see cref="M:Microsoft.Maui.Controls.VisualElement.GetSizeRequest(System.Double,System.Double)" /> by setting the minimum width property. This causes overflow handling to shrink this element to its minimum width before elements who do not have a minimum size set.
+            MinimumWidthRequest is used to override the results of a call to GetSizeRequest by setting the minimum width property. This causes overflow handling to shrink this element to its minimum width before elements who do not have a minimum size set.
           </para>
           <para>
               The following example sets the MinimumWidthRequest to enable an image to shrink below its normal size.
@@ -1695,10 +1655,10 @@
       </Docs>
     </Member>
     <Member MemberName="OnMeasure">
-      <MemberSignature Language="C#" Value="protected virtual Microsoft.Maui.Controls.SizeRequest OnMeasure (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig newslot virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnMeasure(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected virtual Microsoft.Maui.SizeRequest OnMeasure (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig newslot virtual instance valuetype Microsoft.Maui.SizeRequest OnMeasure(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.VisualElement.OnMeasure(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="abstract member OnMeasure : double * double -&gt; Microsoft.Maui.Controls.SizeRequest&#xA;override this.OnMeasure : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="visualElement.OnMeasure (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="abstract member OnMeasure : double * double -&gt; Microsoft.Maui.SizeRequest&#xA;override this.OnMeasure : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="visualElement.OnMeasure (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -1706,7 +1666,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -1752,10 +1712,10 @@
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
-      <MemberSignature Language="C#" Value="protected virtual Microsoft.Maui.Controls.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig newslot virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected virtual Microsoft.Maui.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig newslot virtual instance valuetype Microsoft.Maui.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.VisualElement.OnSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="abstract member OnSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest&#xA;override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="visualElement.OnSizeRequest (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="abstract member OnSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest&#xA;override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="visualElement.OnSizeRequest (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -1777,7 +1737,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -1787,7 +1747,7 @@
         <param name="widthConstraint">The available width for the element to use.</param>
         <param name="heightConstraint">The available height for the element to use.</param>
         <summary>This method is called during the measure pass of a layout cycle to get the desired size of an element.</summary>
-        <returns>A <see cref="T:Microsoft.Maui.Controls.SizeRequest" /> which contains the desired size of the element.</returns>
+        <returns>A <see cref="T:Microsoft.Maui.SizeRequest" /> which contains the desired size of the element.</returns>
         <remarks>The results of this method will be (-1, -1) if the element has not yet been realized with a platform specific backing control. Overriding this method does not require a call to the base class so long as a valid SizeRequest is returned.</remarks>
       </Docs>
     </Member>

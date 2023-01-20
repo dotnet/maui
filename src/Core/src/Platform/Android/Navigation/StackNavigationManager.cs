@@ -3,15 +3,10 @@ using System.Collections.Generic;
 using Android.Content;
 using Android.OS;
 using Android.Views;
-using AndroidX.AppCompat.View;
-using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.DrawerLayout.Widget;
+using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
-using Google.Android.Material.AppBar;
-using Kotlin.Collections;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -23,6 +18,7 @@ namespace Microsoft.Maui.Platform
 		FragmentNavigator? _fragmentNavigator;
 		NavGraph? _navGraph;
 		IView? _currentPage;
+		Callbacks? _fragmentLifecycleCallbacks;
 		internal IView? VirtualView { get; private set; }
 		internal IStackNavigation? NavigationView { get; private set; }
 		internal bool IsNavigating => ActiveRequestedArgs != null;
@@ -76,9 +72,9 @@ namespace Microsoft.Maui.Platform
 		 * This is also the reason why we aren't using the custom animation features on the navigation component itself.
 		 * Because we might be popping but visually pushing.
 		 * 
-		 * The Fragments that are on the stack also do not have a hard connection to the page they originally rendereded.
+		 * The Fragments that are on the stack also do not have a hard connection to the page they originally rendered.
 		 * Whenever a fragment is the "visible" fragment it just figures out what the current page is and displays that.
-		 * Fragments are recreated everytime they are pushed on the stack but the handler renderer is not.
+		 * Fragments are recreated every time they are pushed on the stack but the handler renderer is not.
 		 * It's just attached to a new fragment
 		 * */
 		void ApplyNavigationRequest(NavigationRequest args)
@@ -292,6 +288,17 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			if (_fragmentLifecycleCallbacks != null)
+			{
+				if (_navHost?.NavController != null && _navHost.NavController.IsAlive())
+					_navHost.NavController.RemoveOnDestinationChangedListener(_fragmentLifecycleCallbacks);
+
+				ChildFragmentManager?.UnregisterFragmentLifecycleCallbacks(_fragmentLifecycleCallbacks);
+
+				_fragmentLifecycleCallbacks.Disconnect();
+				_fragmentLifecycleCallbacks = null;
+			}
+
 			VirtualView = null;
 			NavigationView = null;
 			_navHost = null;
@@ -333,11 +340,13 @@ namespace Microsoft.Maui.Platform
 					   .GetNavigator(Java.Lang.Class.FromType(typeof(NavGraphNavigator)));
 
 				_navGraph = new NavGraph(navGraphNavigator);
+			}
 
-
-				var callbacks = new Callbacks(this);
-				NavHost.NavController.AddOnDestinationChangedListener(callbacks);
-				NavHost.ChildFragmentManager.RegisterFragmentLifecycleCallbacks(callbacks, false);
+			if (_fragmentLifecycleCallbacks == null)
+			{
+				_fragmentLifecycleCallbacks = new Callbacks(this);
+				NavHost.NavController.AddOnDestinationChangedListener(_fragmentLifecycleCallbacks);
+				ChildFragmentManager?.RegisterFragmentLifecycleCallbacks(_fragmentLifecycleCallbacks, false);
 			}
 
 			ApplyNavigationRequest(e);
@@ -345,7 +354,7 @@ namespace Microsoft.Maui.Platform
 
 		// Fragments are always destroyed if they aren't visible
 		// The Handler/PlatformView associated with the visible IView remain intact
-		// The performance hit of destorying/recreating fragments should be negligible
+		// The performance hit of destroying/recreating fragments should be negligible
 		// Hopefully this behavior survives implementation
 		// This will need to be tested with Maps and WebViews to make sure they behave efficiently
 		// being removed and then added back to a different Fragment
@@ -373,6 +382,23 @@ namespace Microsoft.Maui.Platform
 
 		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle? bundle)
 		{
+		}
+
+		FragmentManager? ChildFragmentManager
+		{
+			get
+			{
+				// If you try to access `ChildFragmentManager` and the `NavHost`
+				// isn't attached to a context then android will throw an IllegalStateException
+				if (_navHost.IsAlive() &&
+					_navHost?.Context != null &&
+					_navHost.ChildFragmentManager.IsAlive())
+				{
+					return _navHost.ChildFragmentManager;
+				}
+
+				return null;
+			}
 		}
 
 		internal class StackLayoutInflater : LayoutInflater
@@ -413,25 +439,27 @@ namespace Microsoft.Maui.Platform
 			AndroidX.Fragment.App.FragmentManager.FragmentLifecycleCallbacks,
 			NavController.IOnDestinationChangedListener
 		{
-			StackNavigationManager _stackNavigationManager;
+			StackNavigationManager? _stackNavigationManager;
 
 			public Callbacks(StackNavigationManager navigationLayout)
 			{
 				_stackNavigationManager = navigationLayout;
 			}
+
 			#region IOnDestinationChangedListener
 
 			void NavController.IOnDestinationChangedListener.OnDestinationChanged(
 				NavController p0, NavDestination p1, Bundle? p2)
 			{
-				_stackNavigationManager.OnDestinationChanged(p0, p1, p2);
+				_stackNavigationManager?.OnDestinationChanged(p0, p1, p2);
 			}
+
 			#endregion
 
 			#region FragmentLifecycleCallbacks
 			public override void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f)
 			{
-				if (_stackNavigationManager.VirtualView == null)
+				if (_stackNavigationManager?.VirtualView == null)
 					return;
 
 				if (f is NavigationViewFragment pf)
@@ -449,8 +477,7 @@ namespace Microsoft.Maui.Platform
 
 				// Wire up the toolbar to the currently made visible Fragment
 				var controller = NavHostFragment.FindNavController(f);
-				var appbarConfigBuilder =
-					new AppBarConfiguration
+				_ = new AppBarConfiguration
 						.Builder(_stackNavigationManager.NavGraph);
 
 				if (platformToolbar != null && toolbar != null && toolbar.Handler?.MauiContext != null)
@@ -466,6 +493,9 @@ namespace Microsoft.Maui.Platform
 				AndroidX.Fragment.App.FragmentManager fm,
 				AndroidX.Fragment.App.Fragment f)
 			{
+				if (_stackNavigationManager?.VirtualView == null)
+					return;
+
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentDestroyed(fm, pf);
 
@@ -473,6 +503,10 @@ namespace Microsoft.Maui.Platform
 			}
 			#endregion
 
+			internal void Disconnect()
+			{
+				_stackNavigationManager = null;
+			}
 		}
 	}
 }

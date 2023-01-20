@@ -9,16 +9,15 @@
         <viewmodels:TextToSpeechViewModel />
     </ContentPage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Easily let your device speak for you." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <Label Text="Text :" />
                 <Editor Text="{Binding Text}" AutoSize="TextChanges" />
                 <Button Text="Speak" Command="{Binding SpeakCommand}" CommandParameter="{Binding Source={x:Reference SwitchMultiple}, Path=IsToggled}" IsEnabled="{Binding IsNotBusy}" />
                 <Button Text="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" />
-
 
                 <Label Text="Multiple Lines Of Text" HorizontalOptions="Start" />
                 <Switch HorizontalOptions="Center" x:Name="SwitchMultiple"/>
@@ -36,10 +35,10 @@
 
                 <Button Text="Pick Locale" Command="{Binding PickLocaleCommand}" IsVisible="{Binding AdvancedOptions}"/>
                 <Label Text="{Binding Locale}" IsVisible="{Binding AdvancedOptions}"/>
-                
+
                 <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
             </StackLayout>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </views:BasePage>

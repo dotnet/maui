@@ -180,13 +180,8 @@ namespace Microsoft.Maui.Handlers
 			appbarLayout.AddView(nativeToolBar, 0);
 		}
 
-		public virtual bool NeedsContainer
+		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
-			get
-			{
-				return VirtualView?.Clip != null || VirtualView?.Shadow != null
-					|| (VirtualView as IBorder)?.Border != null || VirtualView?.InputTransparent == true;
-			}
 		}
 
 		void OnPlatformViewFocusChange(object? sender, PlatformView.FocusChangeEventArgs e)

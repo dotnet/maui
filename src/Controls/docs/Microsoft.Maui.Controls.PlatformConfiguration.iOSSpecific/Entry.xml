@@ -154,10 +154,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetCursorColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetCursorColor (Microsoft.Maui.Controls.BindableObject element);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetCursorColor(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetCursorColor (Microsoft.Maui.Controls.BindableObject element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetCursorColor(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.GetCursorColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetCursorColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.GetCursorColor element" />
+      <MemberSignature Language="F#" Value="static member GetCursorColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.GetCursorColor element" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -165,7 +165,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -178,10 +178,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetCursorColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetCursorColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry&gt; config);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetCursorColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Entry&gt; config) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetCursorColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry&gt; config);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetCursorColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Entry&gt; config) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.GetCursorColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry})" />
-      <MemberSignature Language="F#" Value="static member GetCursorColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Entry&gt; -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.GetCursorColor config" />
+      <MemberSignature Language="F#" Value="static member GetCursorColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Entry&gt; -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.GetCursorColor config" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -189,7 +189,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry&gt;" RefType="this" />
@@ -253,10 +253,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetCursorColor">
-      <MemberSignature Language="C#" Value="public static void SetCursorColor (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetCursorColor(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.SetCursorColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetCursorColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.SetCursorColor (element, value)" />
+      <MemberSignature Language="C#" Value="public static void SetCursorColor (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetCursorColor(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.SetCursorColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetCursorColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.SetCursorColor (element, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -268,7 +268,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="element">The element whose cursor color to Set.</param>
@@ -278,10 +278,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetCursorColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry&gt; SetCursorColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry&gt; config, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Entry&gt; SetCursorColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Entry&gt; config, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.SetCursorColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry},Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetCursorColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Entry&gt; * Microsoft.Maui.Controls.Color -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Entry&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.SetCursorColor (config, value)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry&gt; SetCursorColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry&gt; config, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Entry&gt; SetCursorColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Entry&gt; config, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.SetCursorColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry},Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetCursorColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Entry&gt; * Microsoft.Maui.Graphics.Color -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Entry&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry.SetCursorColor (config, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -293,7 +293,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Entry&gt;" RefType="this" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="config">The platform configuration for the element whose cursor color to Set.</param>

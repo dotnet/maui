@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -10,7 +8,7 @@ namespace Microsoft.Maui.Controls.Platform
 	class GestureManager : IDisposable
 	{
 		IViewHandler? _handler;
-		GestureDetector? _gestureDetector;
+		Lazy<GestureDetector> _gestureDetector;
 		bool _disposed = false;
 
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
@@ -18,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public GestureManager(IViewHandler handler)
 		{
 			_handler = handler;
-			_gestureDetector = null;
+			_gestureDetector = new Lazy<GestureDetector>(() => new GestureDetector(handler));
 			SetupElement(null, Element);
 		}
 
@@ -30,7 +28,6 @@ namespace Microsoft.Maui.Controls.Platform
 					ov.GestureRecognizers is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged -= OnGestureRecognizerCollectionChanged;
-					_gestureDetector?.Clear();
 				}
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
@@ -43,15 +40,14 @@ namespace Microsoft.Maui.Controls.Platform
 					incc.CollectionChanged += OnGestureRecognizerCollectionChanged;
 					if (ov.GestureRecognizers.Count > 0)
 					{
-						_gestureDetector = new GestureDetector(_handler);
-						_gestureDetector.AddGestures(ov.GestureRecognizers);
+						_gestureDetector.Value.AddGestures(ov.GestureRecognizers);
 					}
 				}
 				newElement.PropertyChanged += OnElementPropertyChanged;
-			}
 
-			UpdateInputTransparent();
-			UpdateIsEnabled();
+				UpdateInputTransparent();
+				UpdateIsEnabled();
+			}
 		}
 
 		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -68,7 +64,7 @@ namespace Microsoft.Maui.Controls.Platform
 			GC.SuppressFinalize(this);
 		}
 
-		public void Dispose(bool disposing)
+		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
 			{
@@ -80,10 +76,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (disposing)
 			{
 				SetupElement(Element, null);
-				if (_gestureDetector != null)
+				if (_gestureDetector.IsValueCreated)
 				{
-					_gestureDetector.Dispose();
-					_gestureDetector = null;
+					_gestureDetector.Value.Dispose();
 				}
 				_handler = null;
 			}
@@ -91,45 +86,40 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateInputTransparent()
 		{
-			if (Element != null && _gestureDetector != null)
+			if (Element != null && _gestureDetector.IsValueCreated)
 			{
-				_gestureDetector.InputTransparent = Element.InputTransparent;
+				_gestureDetector.Value.InputTransparent = Element.InputTransparent;
 			}
 		}
 
 		void UpdateIsEnabled()
 		{
-			if (Element != null && _gestureDetector != null)
+			if (Element != null && _gestureDetector.IsValueCreated)
 			{
-				_gestureDetector.IsEnabled = Element.IsEnabled;
+				_gestureDetector.Value.IsEnabled = Element.IsEnabled;
 			}
 		}
 
 		void OnGestureRecognizerCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (_gestureDetector == null)
-			{
-				_gestureDetector = new GestureDetector(_handler);
-			}
-
 			// Gestures will be registered/unregistered according to changes in the GestureRecognizers list
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					_gestureDetector.AddGestures(e.NewItems?.OfType<IGestureRecognizer>());
+					_gestureDetector.Value.AddGestures(e.NewItems?.OfType<IGestureRecognizer>());
 					break;
 
 				case NotifyCollectionChangedAction.Replace:
-					_gestureDetector.RemoveGestures(e.OldItems?.OfType<IGestureRecognizer>());
-					_gestureDetector.AddGestures(e.NewItems?.OfType<IGestureRecognizer>());
+					_gestureDetector.Value.RemoveGestures(e.OldItems?.OfType<IGestureRecognizer>());
+					_gestureDetector.Value.AddGestures(e.NewItems?.OfType<IGestureRecognizer>());
 					break;
 
 				case NotifyCollectionChangedAction.Remove:
-					_gestureDetector.RemoveGestures(e.OldItems?.OfType<IGestureRecognizer>());
+					_gestureDetector.Value.RemoveGestures(e.OldItems?.OfType<IGestureRecognizer>());
 					break;
 
 				case NotifyCollectionChangedAction.Reset:
-					_gestureDetector.Clear();
+					_gestureDetector.Value.Clear();
 					break;
 			}
 		}

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +13,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs" />
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
 	public partial class NavigationPage : IStackNavigationView, IToolbarElement
 	{
 		// If the user is making overlapping navigation requests this is used to fire once all navigation 
@@ -225,15 +226,6 @@ namespace Microsoft.Maui.Controls
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
-
-			if (Handler == null && FindMyToolbar() is IToolbar tb)
-			{
-				tb.Handler = null;
-				if (tb.Parent is Window w)
-					w.Toolbar = null;
-				else if (tb.Parent is Page p)
-					p.Toolbar = null;
-			}
 
 			if (Navigation is MauiNavigationImpl && InternalChildren.Count > 0)
 			{

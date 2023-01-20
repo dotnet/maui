@@ -2,5 +2,5 @@
 
 namespace Microsoft.Maui
 {
-	public record ScrollToRequest(double HoriztonalOffset, double VerticalOffset, bool Instant);
+	public record ScrollToRequest(double HorizontalOffset, double VerticalOffset, bool Instant);
 }

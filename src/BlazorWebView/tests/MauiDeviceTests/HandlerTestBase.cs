@@ -6,6 +6,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.DeviceTests;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {

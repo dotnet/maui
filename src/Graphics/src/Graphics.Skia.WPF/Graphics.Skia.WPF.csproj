@@ -7,6 +7,8 @@
     <RootNamespace>Microsoft.Maui.Graphics.Skia</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Skia.WPF</AssemblyName>
     <IsPackable>false</IsPackable>
+    <IsTrimmable>false</IsTrimmable>
+    <NoWarn>$(NoWarn);RS0041</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +19,7 @@
     <ProjectReference Include="..\Graphics.Skia\Graphics.Skia.csproj" />
     <ProjectReference Include="..\Graphics\Graphics.csproj" />
   </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
 </Project>

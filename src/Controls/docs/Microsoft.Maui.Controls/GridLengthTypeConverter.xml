@@ -1,7 +1,7 @@
-<Type Name="GridLengthTypeConverter" FullName="Microsoft.Maui.Controls.GridLengthTypeConverter">
-  <TypeSignature Language="C#" Value="public class GridLengthTypeConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit GridLengthTypeConverter extends Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.GridLengthTypeConverter" />
+<Type Name="GridLengthTypeConverter" FullName="Microsoft.Maui.GridLength.StarTypeConverter">
+  <TypeSignature Language="C#" Value="public class GridLengthTypeConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit GridLengthTypeConverter extends System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="DocId" Value="T:Microsoft.Maui.GridLength.StarTypeConverter" />
   <TypeSignature Language="F#" Value="type GridLengthTypeConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
     <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -15,18 +15,18 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>
     <Attribute>
-      <AttributeName>Microsoft.Maui.Controls.Xaml.TypeConversion(typeof(Microsoft.Maui.Controls.GridLength))</AttributeName>
+      <AttributeName>Microsoft.Maui.Controls.Xaml.TypeConversion(typeof(Microsoft.Maui.GridLength.Star))</AttributeName>
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>A <see cref="T:Microsoft.Maui.Controls.TypeConverter" /> that converts from strings to <see cref="T:Microsoft.Maui.Controls.GridLength" />s.</summary>
+    <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> that converts from strings to <see cref="T:Microsoft.Maui.GridLength.Star" />s.</summary>
     <remarks>
-      <para>The following example shows some uses of <see cref="T:Microsoft.Maui.Controls.GridLengthTypeConverter" />:</para>
+      <para>The following example shows some uses of <see cref="T:Microsoft.Maui.GridLength.StarTypeConverter" />:</para>
       <example>
         <code lang="csharp lang-csharp"><![CDATA[
 			var converter = new GridLengthTypeConverter ();
@@ -45,7 +45,7 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public GridLengthTypeConverter ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.GridLengthTypeConverter.#ctor" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.GridLength.StarTypeConverter.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -60,14 +60,14 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.GridLength" /> object with default values.</summary>
+        <summary>Creates a new <see cref="T:Microsoft.Maui.GridLength.Star" /> object with default values.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
       <MemberSignature Language="C#" Value="public override object ConvertFromInvariantString (string value);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance object ConvertFromInvariantString(string value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.GridLengthTypeConverter.ConvertFromInvariantString(System.String)" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.GridLength.StarTypeConverter.ConvertFromInvariantString(System.String)" />
       <MemberSignature Language="F#" Value="override this.ConvertFromInvariantString : string -&gt; obj" Usage="gridLengthTypeConverter.ConvertFromInvariantString value" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -83,7 +83,7 @@
       </Parameters>
       <Docs>
         <param name="value">The value to convert.</param>
-        <summary>Converts a valid grid length descriptor in to a <see cref="T:Microsoft.Maui.Controls.GridLength" />.</summary>
+        <summary>Converts a valid grid length descriptor in to a <see cref="T:Microsoft.Maui.GridLength.Star" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

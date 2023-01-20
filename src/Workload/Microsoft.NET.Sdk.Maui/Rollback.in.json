@@ -5,6 +5,8 @@
   "microsoft.net.sdk.macos": "@MicrosoftmacOSSdkPackageVersion@/@DotNetMaciOSManifestVersionBand@",
   "microsoft.net.sdk.maui": "@VERSION@/@DotNetMauiManifestVersionBand@",
   "microsoft.net.sdk.tvos": "@MicrosofttvOSSdkPackageVersion@/@DotNetMaciOSManifestVersionBand@",
-  "microsoft.net.workload.mono.toolchain": "@MicrosoftNETCoreAppRefPackageVersion@/@DotNetMonoManifestVersionBand@",
-  "microsoft.net.workload.emscripten": "@MicrosoftNETWorkloadEmscriptenPackageVersion@/@DotNetEmscriptenManifestVersionBand@"
+  "microsoft.net.workload.mono.toolchain.net6": "@MicrosoftNETCoreAppRefPackageVersion@/@DotNetMonoManifestVersionBand@",
+  "microsoft.net.workload.mono.toolchain.net7": "@MicrosoftNETCoreAppRefPackageVersion@/@DotNetMonoManifestVersionBand@",
+  "microsoft.net.workload.emscripten.net6": "@MicrosoftNETWorkloadEmscriptenPackageVersion@/@DotNetEmscriptenManifestVersionBand@",
+  "microsoft.net.workload.emscripten.net7": "@MicrosoftNETWorkloadEmscriptenPackageVersion@/@DotNetEmscriptenManifestVersionBand@"
 }

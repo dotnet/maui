@@ -6,7 +6,7 @@ using PlatformView = AndroidX.AppCompat.Widget.AppCompatTextView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.TextBlock;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.Label;
+using PlatformView = Tizen.UIExtensions.NUI.Label;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -17,13 +17,16 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
-#if __IOS__ || TIZEN
+#if IOS || TIZEN
 			[nameof(ILabel.Background)] = MapBackground,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #elif WINDOWS
 			[nameof(ILabel.Background)] = MapBackground,
 			[nameof(ILabel.Height)] = MapHeight,
 			[nameof(ILabel.Opacity)] = MapOpacity,
+#endif
+#if TIZEN
+			[nameof(ILabel.Shadow)] = MapShadow,
 #endif
 			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ITextStyle.Font)] = MapFont,
@@ -34,24 +37,26 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.Text)] = MapText,
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
-		};
-
-		public static CommandMapper<IActivityIndicator, ILabelHandler> CommandMapper = new(ViewCommandMapper)
-		{
-		};
-
-		static LabelHandler()
-		{
-#if __IOS__
-			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
+#if ANDROID
+			[nameof(ILabel.Background)] = MapBackground,
 #endif
-		}
+		};
+
+		public static CommandMapper<ILabel, ILabelHandler> CommandMapper = new(ViewCommandMapper)
+		{
+		};
 
 		public LabelHandler() : base(Mapper)
 		{
 		}
 
-		public LabelHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public LabelHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public LabelHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

@@ -56,11 +56,13 @@
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
-    <ProjectReference Include="..\..\Foldable\src\Controls.Foldable.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Controls.Foldable" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,7 +72,7 @@
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiIcon Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" />
     <MauiFont Include="Resources\Fonts\*" />
-    <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
+    <MauiSplashScreen Include="Resources\Splash\dotnet_splash.svg" Color="#FFFFFF" />
   </ItemGroup>
 
   <ItemGroup>

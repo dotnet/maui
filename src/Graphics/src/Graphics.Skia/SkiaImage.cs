@@ -100,38 +100,39 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
-			throw new NotImplementedException();
-			// todo: implement me
+			var skStream = GetSkStream(format, quality);
 
-			/*
-		 switch (format)
-		 {
-			case ImageFormat.Jpeg:
-			   image.Compress (Bitmap.CompressFormat.Jpeg, (int)(quality * 100), stream);
-			   break;
-			default:
-			   image.Compress (Bitmap.CompressFormat.Png, 100, stream);
-			   break;
-		 }
-			*/
+			using (skStream)
+			{
+				skStream.CopyTo(stream);
+			}
 		}
 
-		public Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
+		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
-			throw new NotImplementedException();
-			// todo: implement me
+			var skStream = GetSkStream(format, quality);
+			using (skStream)
+			{
+				await skStream.CopyToAsync(stream);
+			}
+		}
 
-			/*
-		 switch (format)
-		 {
-			case ImageFormat.Jpeg:
-			   await image.CompressAsync (Bitmap.CompressFormat.Jpeg, (int)(quality * 100), stream);
-			   break;
-			default:
-			   await image.CompressAsync (Bitmap.CompressFormat.Png, 100, stream);
-			   break;
-		 }
-			*/
+		private Stream GetSkStream(ImageFormat format, float quality)
+		{
+			// Skia quality range from 0-100, this is supported by jpeg and webp. Higher values correspond to improved visual quality, but less compression.
+			const int MaxSKQuality = 100;
+			var skQuality = (int)(MaxSKQuality * quality);
+			SKEncodedImageFormat skEncodedImageFormat = format switch
+			{
+				ImageFormat.Png => SKEncodedImageFormat.Png,
+				ImageFormat.Jpeg => SKEncodedImageFormat.Jpeg,
+				ImageFormat.Bmp or ImageFormat.Gif or ImageFormat.Tiff => throw new PlatformNotSupportedException($"Skia does not support {format} format."),
+				_ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+			};
+
+			var skData = _image.Encode(skEncodedImageFormat, skQuality);
+			var skStream = skData.AsStream(streamDisposesData: true);
+			return skStream;
 		}
 
 		public void Dispose()

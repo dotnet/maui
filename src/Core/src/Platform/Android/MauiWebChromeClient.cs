@@ -11,15 +11,14 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiWebChromeClient : WebChromeClient
 	{
-		readonly WebViewHandler _handler;
-		Activity _activity;
+		WeakReference<Activity> _activityRef;
 		List<int> _requestCodes;
 
-		public MauiWebChromeClient(WebViewHandler handler)
+		public MauiWebChromeClient(IWebViewHandler handler)
 		{
-			_handler = handler ?? throw new ArgumentNullException("handler");
+			_ = handler ?? throw new ArgumentNullException("handler");
 
-			SetContext(_handler.Context);
+			SetContext(handler);
 		}
 
 		public override bool OnShowFileChooser(WebView webView, IValueCallback filePathCallback, FileChooserParams fileChooserParams)
@@ -30,7 +29,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UnregisterCallbacks()
 		{
-			if (_requestCodes == null || _requestCodes.Count == 0 || _activity == null)
+			if (_requestCodes == null || _requestCodes.Count == 0 || !_activityRef.TryGetTarget(out Activity _))
 				return;
 
 			foreach (int requestCode in _requestCodes)
@@ -43,7 +42,7 @@ namespace Microsoft.Maui.Platform
 
 		protected bool ChooseFile(IValueCallback filePathCallback, Intent intent, string title)
 		{
-			if (_activity == null)
+			if (!_activityRef.TryGetTarget(out Activity activity))
 				return false;
 
 			Action<Result, Intent> callback = (resultCode, intentData) =>
@@ -61,7 +60,7 @@ namespace Microsoft.Maui.Platform
 
 			_requestCodes.Add(newRequestCode);
 
-			_activity.StartActivityForResult(Intent.CreateChooser(intent, title), newRequestCode);
+			activity.StartActivityForResult(Intent.CreateChooser(intent, title), newRequestCode);
 
 			return true;
 		}
@@ -74,20 +73,25 @@ namespace Microsoft.Maui.Platform
 			base.Dispose(disposing);
 		}
 
+		internal void Disconnect()
+		{
+			UnregisterCallbacks();
+			_activityRef = null;
+		}
+
 		protected virtual Object ParseResult(Result resultCode, Intent data)
 		{
 			return FileChooserParams.ParseResult((int)resultCode, data);
 		}
 
-		void SetContext(Context thisActivity)
+		void SetContext(IWebViewHandler handler)
 		{
-			_activity = thisActivity as Activity;
+			var activity = (handler?.MauiContext?.Context?.GetActivity()) ?? ApplicationModel.Platform.CurrentActivity;
 
-			if (_activity == null)
-				_activity = ApplicationModel.Platform.CurrentActivity;
+			if (activity == null)
+				handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
 
-			if (_activity == null)
-				_handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
+			_activityRef = new WeakReference<Activity>(activity);
 		}
 	}
 }

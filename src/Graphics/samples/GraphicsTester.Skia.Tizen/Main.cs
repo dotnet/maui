@@ -1,80 +1,112 @@
 using System;
-using ElmSharp;
-using Tizen.Applications;
 using GraphicsTester.Scenarios;
 using Microsoft.Maui.Graphics.Skia.Views;
+using Tizen.Applications;
+using Tizen.NUI;
+using Tizen.NUI.BaseComponents;
+using Tizen.NUI.Components;
 
 namespace GraphicsTester.Skia.Tizen
 {
-	class Program : CoreUIApplication
+	class Program : NUIApplication
 	{
+		SimpleViewStack _stack;
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
-			CreateTesterView();
+			FocusManager.Instance.EnableDefaultAlgorithm(true);
+			Initialize();
+			_stack.Push(CreateTesterView());
 		}
 
-		private void CreateTesterView()
+		private void Initialize()
 		{
-			Window window = new Window("GraphicsTester")
-			{
-				AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270 | DisplayRotation.Degree_90
-			};
-			window.Show();
-			window.BackButtonPressed += (s, e) =>
-			{
-				EcoreMainloop.Quit();
-			};
+			View.SetDefaultGrabTouchAfterLeave(true);
+			Window.Instance.KeyEvent += OnKeyEvent;
 
-			Conformant conformant = new Conformant(window);
-			conformant.Show();
-
-			Naviframe navi = new Naviframe(window)
+			_stack = new SimpleViewStack
 			{
-				PreserveContentOnPop = true,
-				DefaultBackButtonEnabled = true
-			};
-			navi.Show();
-
-			GenList list = new GenList(window)
-			{
-				AlignmentX = -1,
-				AlignmentY = -1,
-				WeightX = 1,
-				WeightY = 1
-			};
-			GenItemClass defaultClass = new GenItemClass("default")
-			{
-				GetTextHandler = (data, part) =>
-				{
-					var scenario = data as AbstractScenario;
-					return scenario == null ? "" : scenario.GetType().Name;
-				}
-			};
-			foreach (var scenario in ScenarioList.Scenarios)
-			{
-				list.Append(defaultClass, scenario);
-			}
-
-			SkiaGraphicsView graphicsView = new SkiaGraphicsView(window)
-			{
-				AlignmentX = -1,
-				AlignmentY = -1,
-				WeightX = 1,
-				WeightY = 1,
 				BackgroundColor = Color.White
 			};
-			graphicsView.Show();
+			Window.Instance.GetDefaultLayer().Add(_stack);
 
-			list.ItemSelected += (s, e) =>
+			Window.Instance.AddAvailableOrientation(Window.WindowOrientation.Landscape);
+			Window.Instance.AddAvailableOrientation(Window.WindowOrientation.LandscapeInverse);
+			Window.Instance.AddAvailableOrientation(Window.WindowOrientation.Portrait);
+			Window.Instance.AddAvailableOrientation(Window.WindowOrientation.PortraitInverse);
+		}
+
+		private View CreateTesterView()
+		{
+			var layout = new View
 			{
-				var scenario = ScenarioList.Scenarios[e.Item.Index - 1];
-				graphicsView.Drawable = scenario;
-				navi.Push(graphicsView, scenario.GetType().Name);
+				HeightResizePolicy = ResizePolicyType.FillToParent,
+				WidthResizePolicy = ResizePolicyType.FillToParent,
+				Layout = new LinearLayout
+				{
+					LinearOrientation = LinearLayout.Orientation.Vertical,
+				}
 			};
-			list.Show();
-			navi.Push(list, "GraphicsTester.Skia.Tizen");
-			conformant.SetContent(navi);
+
+			EventHandler<ClickedEventArgs> clicked = (object sender, ClickedEventArgs args) =>
+			{
+				var scenario = ((sender as View).BindingContext as AbstractScenario);
+				var graphicsView = new SkiaGraphicsView
+				{
+					Drawable = scenario
+				};
+				_stack.Push(graphicsView);
+			};
+
+
+			var collectionview = new ScrollableBase
+			{
+				Layout = new LinearLayout
+				{
+					LinearOrientation = LinearLayout.Orientation.Vertical
+				}
+			};
+
+			foreach (var scenario in ScenarioList.Scenarios)
+			{
+				var itemView = new DefaultLinearItem();
+
+				itemView.Focusable = true;
+				itemView.BindingContext = scenario;
+				itemView.Clicked += clicked;
+
+				var label = new TextLabel
+				{
+					VerticalAlignment = VerticalAlignment.Center,
+					WidthSpecification = LayoutParamPolicies.MatchParent,
+					HeightSpecification = LayoutParamPolicies.MatchParent,
+				};
+
+				label.PixelSize = 30;
+				label.Text = scenario.ToString();
+
+				itemView.Add(label);
+				collectionview.Add(itemView);
+			}
+			layout.Add(collectionview);
+
+			return layout;
+		}
+
+		private void OnKeyEvent(object sender, Window.KeyEventArgs e)
+		{
+			if (e.Key.State == Key.StateType.Down && (e.Key.KeyPressedName == "XF86Back" || e.Key.KeyPressedName == "Escape"))
+			{
+				if (_stack.Stack.Count > 1)
+				{
+					_stack.Pop();
+				}
+				else
+				{
+					Exit();
+				}
+			}
 		}
 
 		static void Main(string[] args)

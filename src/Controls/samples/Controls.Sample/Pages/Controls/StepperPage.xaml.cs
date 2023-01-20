@@ -14,5 +14,19 @@ namespace Maui.Controls.Sample.Pages
 		{
 			Debug.WriteLine($"Stepper Value: {args.NewValue}");
 		}
+
+		void OnEnableButtonClicked(object sender, System.EventArgs e)
+		{
+			if (EnableStepper.IsEnabled)
+			{
+				EnableStepper.IsEnabled = false;
+				EnableButton.Text = "Enable Stepper";
+			}
+			else
+			{
+				EnableStepper.IsEnabled = true;
+				EnableButton.Text = "Disable Stepper";
+			}
+		}
 	}
 }

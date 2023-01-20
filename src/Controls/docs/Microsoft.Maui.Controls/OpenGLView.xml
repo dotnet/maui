@@ -99,7 +99,7 @@ namespace opengl
           ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/OpenGLView.Example.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/OpenGLView.Example.png" />
       </para>
     </remarks>
   </Docs>
@@ -263,10 +263,10 @@ namespace opengl
       </Docs>
     </Member>
     <Member MemberName="OnDisplay">
-      <MemberSignature Language="C#" Value="public Action&lt;Microsoft.Maui.Controls.Rectangle&gt; OnDisplay { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class System.Action`1&lt;valuetype Microsoft.Maui.Controls.Rectangle&gt; OnDisplay" />
+      <MemberSignature Language="C#" Value="public Action&lt;Microsoft.Maui.Controls.Shapes.Rectangle&gt; OnDisplay { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Action`1&lt;valuetype Microsoft.Maui.Controls.Shapes.Rectangle&gt; OnDisplay" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.OpenGLView.OnDisplay" />
-      <MemberSignature Language="F#" Value="member this.OnDisplay : Action&lt;Microsoft.Maui.Controls.Rectangle&gt; with get, set" Usage="Microsoft.Maui.Controls.OpenGLView.OnDisplay" />
+      <MemberSignature Language="F#" Value="member this.OnDisplay : Action&lt;Microsoft.Maui.Controls.Shapes.Rectangle&gt; with get, set" Usage="Microsoft.Maui.Controls.OpenGLView.OnDisplay" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -280,7 +280,7 @@ namespace opengl
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Action&lt;Microsoft.Maui.Controls.Rectangle&gt;</ReturnType>
+        <ReturnType>System.Action&lt;Microsoft.Maui.Controls.Shapes.Rectangle&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Overridden to create a custom rendering loop.</summary>

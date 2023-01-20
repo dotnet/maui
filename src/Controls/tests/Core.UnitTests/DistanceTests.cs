@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Maps;
 using Xunit;
 
 
@@ -64,10 +65,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			const double EPSILON = 0.001;
 
-			Position position1 = new Position(37.403992, -122.034988);
-			Position position2 = new Position(37.776691, -122.416534);
+			var position1 = new Devices.Sensors.Location(37.403992, -122.034988);
+			var position2 = new Devices.Sensors.Location(37.776691, -122.416534);
 
-			Distance distance = Distance.BetweenPositions(position1, position2);
+			var distance = Distance.BetweenPositions(position1, position2);
 
 			Assert.True(Math.Abs(distance.Meters - 53363.08) < EPSILON);
 			Assert.True(Math.Abs(distance.Kilometers - 53.36308) < EPSILON);

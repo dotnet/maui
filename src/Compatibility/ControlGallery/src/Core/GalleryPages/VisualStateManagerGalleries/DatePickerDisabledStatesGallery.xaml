@@ -73,7 +73,7 @@
 				<Button Text="Toggle IsEnabled" x:Name="Button2" Clicked="Button2_OnClicked" />
 
 				<!-- This section verifies that the default colors for a DatePicker's text is cached and can be reverted to -->
-				<Label Text="This DatePicker uses null for the intial text/background, and colors from the VSM when disabled."/>
+				<Label Text="This DatePicker uses null for the initial text/background, and colors from the VSM when disabled."/>
 				<DatePicker x:Name="Picker3" Style="{StaticResource DefaultInInitialState}" TextColor="Default" 
 							BackgroundColor="Default">
 				</DatePicker>

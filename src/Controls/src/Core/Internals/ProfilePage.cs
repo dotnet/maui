@@ -1,3 +1,5 @@
+#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,30 +8,30 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ProfileDatum']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ProfileDatum']/Docs/*" />
 	public class ProfileDatum
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Name']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Name']/Docs/*" />
 		public string Name;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Id']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Id']/Docs/*" />
 		public string Id;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Ticks']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Ticks']/Docs/*" />
 		public long Ticks;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='SubTicks']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='SubTicks']/Docs/*" />
 		public long SubTicks;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Depth']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Depth']/Docs/*" />
 		public int Depth;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Path']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Path']/Docs/*" />
 		public string Path;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Line']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Line']/Docs/*" />
 		public int Line;
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ContentPageEx.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ContentPageEx']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ContentPageEx.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ContentPageEx']/Docs/*" />
 	public static class ContentPageEx
 	{
 		const long MS = TimeSpan.TicksPerMillisecond;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ContentPageEx.xml" path="//Member[@MemberName='Data']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ContentPageEx.xml" path="//Member[@MemberName='Data']/Docs/*" />
 		public static List<ProfileDatum> Data = new List<ProfileDatum>();
 
 		private static void ASSERT(bool condition)
@@ -91,7 +93,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ContentPageEx.xml" path="//Member[@MemberName='LoadProfile']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ContentPageEx.xml" path="//Member[@MemberName='LoadProfile']/Docs/*" />
 		public static void LoadProfile(this ContentPage page)
 		{
 			Profile.Stop();

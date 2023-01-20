@@ -57,6 +57,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			public bool IgnoreSafeArea { get; }
 			public Thickness Padding { get; }
 			public bool InputTransparent { get; set; }
+
 			IElementHandler IElement.Handler { get; set; }
 
 			public void InvalidateArrange()

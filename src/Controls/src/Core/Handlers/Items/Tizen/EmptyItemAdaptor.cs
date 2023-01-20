@@ -1,29 +1,25 @@
-﻿#nullable enable
-
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using ElmSharp;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
+using TSize = Tizen.UIExtensions.Common.Size;
+using XLabel = Microsoft.Maui.Controls.Label;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public class EmptyItemAdaptor : ItemTemplateAdaptor, IEmptyAdaptor
+	public class EmptyItemAdaptor : ItemTemplateAdaptor
 	{
 		static DataTemplate s_defaultEmptyTemplate = new DataTemplate(typeof(EmptyView));
 
-		IMauiContext _context;
-
-		public EmptyItemAdaptor(ItemsView itemsView) : this(itemsView, itemsView.ItemsSource, itemsView.ItemTemplate) { }
+		View? _createdEmptyView;
 
 		public EmptyItemAdaptor(ItemsView itemsView, IEnumerable items, DataTemplate template) : base(itemsView, items, template)
 		{
-			_context = itemsView.Handler!.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 		}
 
 		public static EmptyItemAdaptor Create(ItemsView itemsView)
 		{
-			DataTemplate? template = null;
+			DataTemplate template;
 			if (itemsView.EmptyView is View emptyView)
 			{
 				template = new DataTemplate(() =>
@@ -35,52 +31,117 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				template = itemsView.EmptyViewTemplate ?? s_defaultEmptyTemplate;
 			}
-			var empty = new List<object>
-			{
-				itemsView.EmptyView ?? new object()
-			};
-			return new EmptyItemAdaptor(itemsView, empty, template);
+
+			return new EmptyItemAdaptor(itemsView, new List<object>(), template);
 		}
 
-		public override Size MeasureItem(int widthConstraint, int heightConstraint)
+		public override NView? GetFooterView()
 		{
-			return new Size(widthConstraint, heightConstraint);
+			return null;
 		}
 
-		public override EvasObject CreateNativeView(int index, EvasObject parent)
+		public override NView? GetHeaderView()
 		{
-			View? emptyView = null;
-			if (ItemTemplate is DataTemplateSelector selector)
+			View emptyView = (View)ItemTemplate.CreateContent();
+
+			if (emptyView.Handler is IPlatformViewHandler platformHandler)
+				platformHandler.Dispose();
+
+			emptyView.Handler = null;
+			if (emptyView != (Element as ItemsView)?.EmptyView)
+				emptyView.BindingContext = (Element as ItemsView)?.EmptyView;
+
+			var header = CreateHeaderView();
+			if (header != null)
 			{
-				emptyView = selector.SelectTemplate(this[index], Element).CreateContent() as View;
+				if (header.Handler is IPlatformViewHandler nativeHandler)
+					nativeHandler.Dispose();
+				header.Handler = null;
+			}
+
+			var footer = CreateFooterView();
+			if (footer != null)
+			{
+				if (footer.Handler is IPlatformViewHandler nativeHandler)
+					nativeHandler.Dispose();
+				footer.Handler = null;
+			}
+
+			bool isHorizontal = false;
+
+			if (CollectionView is Tizen.UIExtensions.NUI.CollectionView cv)
+			{
+				if (cv.LayoutManager != null)
+				{
+					isHorizontal = cv.LayoutManager.IsHorizontal;
+				}
+			}
+
+			var layout = new Grid();
+
+			if (isHorizontal)
+			{
+				layout.ColumnDefinitions.Add(new ColumnDefinition
+				{
+					Width = GridLength.Auto,
+				});
+				layout.ColumnDefinitions.Add(new ColumnDefinition
+				{
+					Width = GridLength.Star,
+				});
+				layout.ColumnDefinitions.Add(new ColumnDefinition
+				{
+					Width = GridLength.Auto,
+				});
 			}
 			else
 			{
-				emptyView = ItemTemplate.CreateContent() as View;
+				layout.RowDefinitions.Add(new RowDefinition
+				{
+					Height = GridLength.Auto,
+				});
+				layout.RowDefinitions.Add(new RowDefinition
+				{
+					Height = GridLength.Star,
+				});
+				layout.RowDefinitions.Add(new RowDefinition
+				{
+					Height = GridLength.Auto,
+				});
 			}
-
-			var header = CreateHeaderView();
-			var footer = CreateFooterView();
-			var layout = new StackLayout();
 
 			if (header != null)
 			{
-				layout.Children.Add(header);
+				layout.Add(header, 0, 0);
 			}
-			layout.Children.Add(emptyView);
+
+			if (isHorizontal)
+				layout.Add(emptyView, 1, 0);
+			else
+				layout.Add(emptyView, 0, 1);
+
 			if (footer != null)
 			{
-				layout.Children.Add(footer);
+				if (isHorizontal)
+					layout.Add(footer, 2, 0);
+				else
+					layout.Add(footer, 0, 2);
 			}
 
 			layout.Parent = Element;
+			_createdEmptyView = layout;
 
-			return layout.ToPlatform(_context);
+			return layout.ToPlatform(MauiContext);
 		}
 
-		public override void RemoveNativeView(EvasObject native)
+		public override TSize MeasureHeader(double widthConstraint, double heightConstraint)
 		{
-			native.Unrealize();
+			return (CollectionView as NView)!.Size.ToCommon();
+		}
+
+		public override TSize MeasureItem(double widthConstraint, double heightConstraint)
+		{
+			return new TSize(widthConstraint, heightConstraint);
 		}
 
 		class EmptyView : StackLayout
@@ -90,7 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				HorizontalOptions = LayoutOptions.Fill;
 				VerticalOptions = LayoutOptions.Fill;
 				Children.Add(
-					new Label
+					new XLabel
 					{
 						Text = "No items found",
 						VerticalOptions = LayoutOptions.Center,

@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Xaml.Internals;
 
-using EObject = ElmSharp.EvasObject;
+using NUI = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -11,9 +11,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			nativeValue = null;
-			if ((value is EObject) && toType.IsAssignableFrom(typeof(View)))
+			if ((value is NUI) && toType.IsAssignableFrom(typeof(View)))
 			{
-				nativeValue = ((EObject)value).ToView();
+				nativeValue = ((NUI)value).ToView();
 				return true;
 			}
 			return false;

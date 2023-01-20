@@ -1,10 +1,9 @@
-﻿#nullable enable
-using Microsoft.Maui.Controls.Platform;
+﻿using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/View.xml" path="Type[@FullName='Microsoft.Maui.Controls.View']/Docs" />
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/View.xml" path="Type[@FullName='Microsoft.Maui.Controls.View']/Docs/*" />
 	public partial class View : IView, IPropertyMapperView, IHotReloadableView
 	{
 		Thickness IView.Margin => Margin;
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Controls
 
 		protected PropertyMapper propertyMapper;
 
-		protected PropertyMapper<T> GetRendererOverrides<T>() where T : IView =>
+		internal protected PropertyMapper<T> GetRendererOverrides<T>() where T : IView =>
 			(PropertyMapper<T>)(propertyMapper as PropertyMapper<T> ?? (propertyMapper = new PropertyMapper<T>()));
 
 		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() => propertyMapper;

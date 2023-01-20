@@ -1,33 +1,22 @@
-﻿using ElmSharp;
-using Tizen.UIExtensions.ElmSharp;
+﻿using Tizen.UIExtensions.NUI.GraphicsView;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class SwitchExtensions
 	{
-		public static void UpdateIsOn(this Check platformCheck, ISwitch view)
+		public static void UpdateIsOn(this Switch platformCheck, ISwitch view)
 		{
-			platformCheck.IsChecked = view.IsOn;
+			platformCheck.IsToggled = view.IsOn;
 		}
 
-		public static void UpdateTrackColor(this Check platformCheck, ISwitch view)
+		public static void UpdateTrackColor(this Switch platformCheck, ISwitch view)
 		{
-			if (view.ThumbColor != null)
-			{
-				platformCheck.Color = view.TrackColor.ToPlatformEFL();
-			}
+			platformCheck.OnColor = view.TrackColor.ToPlatform();
 		}
 
-		public static void UpdateThumbColor(this Check platformCheck, ISwitch view)
+		public static void UpdateThumbColor(this Switch platformCheck, ISwitch view)
 		{
-			if (view.ThumbColor == null)
-			{
-				platformCheck.DeleteOnColors();
-			}
-			else
-			{
-				platformCheck.SetOnColors(view.ThumbColor.ToPlatformEFL());
-			}
+			platformCheck.ThumbColor = view.ThumbColor.ToPlatform();
 		}
 	}
 }

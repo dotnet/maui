@@ -3,40 +3,67 @@ using System;
 
 namespace Microsoft.Maui.Devices
 {
+	/// <summary>
+	/// Represents information about the device screen.
+	/// </summary>
 	public interface IDeviceDisplay
 	{
+		/// <summary>
+		/// Gets or sets if the screen should be kept on.
+		/// </summary>
 		bool KeepScreenOn { get; set; }
 
+		/// <summary>
+		/// Gets the main screen's display info.
+		/// </summary>
 		DisplayInfo MainDisplayInfo { get; }
 
+		/// <summary>
+		/// Occurs when the main display's info changes.
+		/// </summary>
 		event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayInfoChangedEventArgs']/Docs" />
+	/// <summary>
+	/// Main display information event arguments.
+	/// </summary>
 	public class DisplayInfoChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DisplayInfoChangedEventArgs"/> class.
+		/// </summary>
+		/// <param name="displayInfo">The display info associated to this event.</param>
 		public DisplayInfoChangedEventArgs(DisplayInfo displayInfo) =>
 			DisplayInfo = displayInfo;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayInfoChangedEventArgs.xml" path="//Member[@MemberName='DisplayInfo']/Docs" />
+		/// <summary>
+		/// Gets the current display info for the main display associated to this event.
+		/// </summary>
 		public DisplayInfo DisplayInfo { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceDisplay']/Docs" />
+	/// <summary>
+	/// Represents information about the device screen.
+	/// </summary>
 	public static class DeviceDisplay
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='KeepScreenOn']/Docs" />
+		/// <summary>
+		/// Gets or sets if the screen should be kept on.
+		/// </summary>
 		public static bool KeepScreenOn
 		{
 			get => Current.KeepScreenOn;
 			set => Current.KeepScreenOn = value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfo']/Docs" />
+		/// <summary>
+		/// Gets the main screen's display info.
+		/// </summary>
 		public static DisplayInfo MainDisplayInfo => Current.MainDisplayInfo;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='MainDisplayInfoChanged']/Docs" />
+		/// <summary>
+		/// Occurs when the main display's info changes.
+		/// </summary>
 		public static event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
 		{
 			add => Current.MainDisplayInfoChanged += value;
@@ -51,10 +78,12 @@ namespace Microsoft.Maui.Devices
 
 		static IDeviceDisplay? currentImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IDeviceDisplay Current =>
 			currentImplementation ??= new DeviceDisplayImplementation();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceDisplay.xml" path="//Member[@MemberName='SetCurrent']/Docs" />
 		internal static void SetCurrent(IDeviceDisplay? implementation) =>
 			currentImplementation = implementation;
 	}

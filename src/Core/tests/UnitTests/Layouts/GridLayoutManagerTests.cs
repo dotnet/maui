@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Maui.Controls;
@@ -129,13 +130,30 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			grid.GetColumnSpan(view).Returns(colSpan);
 		}
 
-		Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity, double left = 0, double top = 0)
+		static Size MeasureAndArrangeFixed(IGridLayout grid, double widthConstraint, double heightConstraint, double left = 0, double top = 0)
+		{
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(widthConstraint, heightConstraint);
+
+			var arrangeSize = new Size(widthConstraint, heightConstraint);
+
+			manager.ArrangeChildren(new Rect(new Point(left, top), arrangeSize));
+
+			return measuredSize;
+		}
+
+		static Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity, double left = 0, double top = 0)
 		{
 			var manager = new GridLayoutManager(grid);
 			var measuredSize = manager.Measure(widthConstraint, heightConstraint);
 			manager.ArrangeChildren(new Rect(new Point(left, top), measuredSize));
 
 			return measuredSize;
+		}
+
+		static Size MeasureAndArrangeAuto(IGridLayout grid)
+		{
+			return MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity, 0, 0);
 		}
 
 		[Category(GridAutoSizing)]
@@ -154,7 +172,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Set up the row/column values and spans
 			SetLocation(grid, view);
 
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 
 			// No rows/columns were specified, so the implied */* is used; we're measuring with infinity, so
 			// we expect that the view will be arranged at its measured size
@@ -178,7 +196,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 1);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 
 			// Column width is 100, viewSize is less than that, so it should be able to layout out at full size
 			AssertArranged(view0, 0, 0, 100, 10);
@@ -208,7 +226,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view3, row: 1, col: 1);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 
 			// Verify that the views are getting measured at all, and that they're being measured at 
 			// the appropriate sizes
@@ -246,7 +264,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 1);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 
 			// Column width is 100, viewSize is less, so it should be able to layout at full size
 			AssertArranged(view0, 0, 0, 100, viewSize.Height);
@@ -272,7 +290,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 1);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 
 			// Row height is 100, so full view should fit
 			AssertArranged(view0, 0, 0, viewSize.Width, 100);
@@ -290,7 +308,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view);
 			SetLocation(grid, view);
 
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 			AssertArranged(view, 0, 0, 100, 100);
 		}
 
@@ -305,7 +323,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, row: 1);
 
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 			AssertArranged(view0, 0, 0, 100, 100);
 
 			// With column width 100 and spacing of 10, we expect the second column to start at 110
@@ -353,7 +371,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpacing, GridAutoSizing)]
-		[Fact(DisplayName = "Empty rows should not incur additional row spacing")]
+		[Fact(DisplayName = "Empty rows should still count for row spacing")]
 		public void RowSpacingForEmptyRows()
 		{
 			var grid = CreateGridLayout(rows: "100, auto, 100", rowSpacing: 10);
@@ -364,12 +382,32 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, row: 2);
 
-			var manager = new GridLayoutManager(grid);
-			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
-			// Because the auto row has no content, we expect it to have height zero
-			// and we expect that it won't add more row spacing 
-			Assert.Equal(100 + 100 + 10, measure.Height);
+			Assert.Equal(100 + 100 + 10 + 10, measure.Height);
+			AssertArranged(view2, new Rect(0, 100 + 10 + 10, 100, 100));
+		}
+
+		[Category(GridSpacing, GridAutoSizing)]
+		[Fact(DisplayName = "Auto rows with collapsed views should still count for row spacing")]
+		public void RowSpacingForAutoRowsWithCollapsedViews()
+		{
+			var grid = CreateGridLayout(rows: "100, auto, 100", rowSpacing: 10);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view2);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+
+			view1.Visibility.Returns(Visibility.Collapsed);
+
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(100 + 100 + 10 + 10, measure.Height);
+			AssertArranged(view2, new Rect(0, 100 + 10 + 10, 100, 100));
 		}
 
 		[Category(GridSpacing)]
@@ -381,7 +419,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view);
 			SetLocation(grid, view);
 
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 			AssertArranged(view, 0, 0, 100, 100);
 		}
 
@@ -396,13 +434,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
 
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 			AssertArranged(view0, 0, 0, 100, 100);
 
 			// With column width 100 and spacing of 10, we expect the second column to start at 110
 			AssertArranged(view1, 110, 0, 100, 100);
 		}
 
+		[Category(GridSpacing)]
 		[Fact(DisplayName = "Measure should include column spacing")]
 		public void MeasureTwoColumnsWithSpacing()
 		{
@@ -443,10 +482,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Category(GridSpacing, GridAutoSizing)]
-		[Fact(DisplayName = "Empty columns should not incur additional column spacing")]
+		[Fact(DisplayName = "Empty columns still count for column spacing")]
 		public void ColumnSpacingForEmptyColumns()
 		{
-			var grid = CreateGridLayout(columns: "100, auto, 100", colSpacing: 10);
+			var grid = CreateGridLayout(columns: "auto, auto, auto", colSpacing: 10);
 			var view0 = CreateTestView(new Size(100, 100));
 			var view2 = CreateTestView(new Size(100, 100));
 
@@ -454,12 +493,32 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, col: 2);
 
-			var manager = new GridLayoutManager(grid);
-			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
-			// Because the auto column has no content, we expect it to have width zero
-			// and we expect that it won't add more column spacing 
-			Assert.Equal(100 + 100 + 10, measure.Width);
+			Assert.Equal(100 + 100 + 10 + 10, measure.Width);
+			AssertArranged(view2, new Rect(100 + 10 + 10, 0, 100, 100));
+		}
+
+		[Category(GridSpacing, GridAutoSizing)]
+		[Fact(DisplayName = "Auto columns with collapsed views should still count for column spacing")]
+		public void AutoColumnsWithCollapsedViews()
+		{
+			var grid = CreateGridLayout(columns: "100, auto, 100", colSpacing: 10);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view2);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			view1.Visibility.Returns(Visibility.Collapsed);
+
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(100 + 100 + 10 + 10, measure.Width);
+			AssertArranged(view2, new Rect(100 + 10 + 10, 0, 100, 100));
 		}
 
 		[Category(GridSpan)]
@@ -471,7 +530,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0, rowSpan: 2);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			AssertArranged(view0, 0, 0, 100, 100);
 			Assert.Equal(100, measuredSize.Width);
@@ -492,7 +551,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, rowSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 1);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(100 + 50, measuredSize.Width);
 			Assert.Equal(100, measuredSize.Height);
@@ -515,7 +574,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 0, col: 1);
 			SetLocation(grid, view2, row: 1, col: 1);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(150, measuredSize.Width);
 			Assert.Equal(50 + 50 + 5, measuredSize.Height);
@@ -543,7 +602,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, colSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 1);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(100, measuredSize.Width);
 			Assert.Equal(100 + 50, measuredSize.Height);
@@ -567,7 +626,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 1, col: 0);
 			SetLocation(grid, view2, row: 1, col: 1);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(50 + 50 + 5, measuredSize.Width);
 			Assert.Equal(100 + 50, measuredSize.Height);
@@ -594,7 +653,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, rowSpan: 2);
 			SetLocation(grid, view1, row: 0, col: 1);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(30 + 50, measuredSize.Width);
 			Assert.Equal(50, measuredSize.Height);
@@ -615,7 +674,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, colSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 0);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(50, measuredSize.Width);
 			Assert.Equal(30 + 50, measuredSize.Height);
@@ -634,7 +693,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			SetLocation(grid, view0, row: 1, col: 1);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(15 + 85, measuredSize.Width);
 			Assert.Equal(10 + 40, measuredSize.Height);
@@ -654,7 +713,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, row: 0, col: 0, colSpan: 2);
 			SetLocation(grid, view1, row: 0, col: 1, rowSpan: 2);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(60, measuredSize.Width);
 			Assert.Equal(60, measuredSize.Height);
@@ -675,7 +734,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, rowSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 1);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(100 + 50, measuredSize.Width);
 			Assert.Equal(100, measuredSize.Height);
@@ -699,7 +758,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, colSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 1);
 
-			var measuredSize = MeasureAndArrange(grid);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(100, measuredSize.Width);
 			Assert.Equal(100 + 10, measuredSize.Height);
@@ -759,7 +818,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Row height is auto, so it gets the height of the view
 			// Column is *, so it should get the whole width
@@ -779,7 +838,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Row height is auto, so it gets the height of the view
 			// The column is 3*, but it's the only column, so it should get the full width
@@ -805,7 +864,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 1);
 			SetLocation(grid, view2, col: 2);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Row height is auto, so it gets the height of the view
 			// Columns are *,*,*, so each view should be arranged at 1/3 the width
@@ -839,7 +898,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Row height is auto, so it gets the height of the view
 			// First column should get 1/3 of the width, second should get 2/3
@@ -891,7 +950,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Column width is auto, so it gets the width of the view
 			// Row is *, so it should get the whole height
@@ -911,7 +970,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Column width is auto, so it gets the width of the view
 			// The row is 3*, but it's the only row, so it should get the full height
@@ -937,7 +996,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 1);
 			SetLocation(grid, view2, row: 2);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Column width is auto, so it gets the width of the view
 			// Rows are *,*,*, so each view should be arranged at 1/3 the height
@@ -965,7 +1024,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, row: 1);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Column width is auto, so it gets the width of the view
 			// First row should get 1/3 of the height, second should get 2/3
@@ -1024,7 +1083,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 1);
 			SetLocation(grid, view2, col: 2);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Row height is auto, so it gets the height of the view
 			// Columns are 3*,100,* 
@@ -1047,7 +1106,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 
 			// Using 300,300 - the implied row/column are GridLength.Star
-			MeasureAndArrange(grid, 300, 300);
+			MeasureAndArrangeFixed(grid, 300, 300);
 
 			// Since it's using GridLength.Star, we expect the view to be arranged at the full size of the grid
 			AssertArranged(view0, 0, 0, 300, 300);
@@ -1170,7 +1229,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Set up the row/column values and spans
 			SetLocation(grid, view);
 
-			var size = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			var size = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(100, size.Width);
 			Assert.Equal(100, size.Height);
@@ -1241,7 +1300,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0, row, col);
 
-			MeasureAndArrange(grid, 100 * cols, 100 * rows);
+			MeasureAndArrangeFixed(grid, 100 * cols, 100 * rows);
 
 			AssertArranged(view0, 100 * actualCol, 100 * actualRow, 100, 100);
 		}
@@ -1286,7 +1345,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0, row, col, rowSpan, colSpan);
 
-			MeasureAndArrange(grid, 100 * GridSize, 100 * GridSize);
+			MeasureAndArrangeFixed(grid, 100 * GridSize, 100 * GridSize);
 
 			AssertArranged(
 				view0,
@@ -1375,6 +1434,26 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.Equal(expectedHeight, measure.Height);
+		}
+
+		[Theory]
+		[InlineData("*", "*")]
+		[InlineData("auto", "auto")]
+		public void MeasureRespectsLargestChildMinimumSize(string columns, string rows)
+		{
+			var grid = CreateGridLayout(columns: columns, rows: rows);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(200, 200));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1);
+
+			var layoutManager = new GridLayoutManager(grid);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(200, measure.Height);
+			Assert.Equal(200, measure.Width);
 		}
 
 		[Category(GridAbsoluteSizing)]
@@ -1501,7 +1580,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0);
 			SetLocation(grid, view1);
 
-			MeasureAndArrange(grid, constraintSize, constraintSize);
+			MeasureAndArrangeFixed(grid, constraintSize, constraintSize);
 
 			var expectedRectangle = new Rect(0, 0, expectedSize, expectedSize);
 
@@ -1556,7 +1635,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 1);
 			SetLocation(grid, view2, col: 2);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Row height is auto, so it gets the height of the view
 			var expectedHeight = viewSize.Height;
@@ -1596,7 +1675,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 1);
 			SetLocation(grid, view2, row: 2);
 
-			MeasureAndArrange(grid, screenWidth, screenHeight);
+			MeasureAndArrangeFixed(grid, screenWidth, screenHeight);
 
 			// Column width is auto, so it gets the width of the view
 			var expectedWidth = viewSize.Width;
@@ -1631,12 +1710,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 2);
 
 			var manager = new GridLayoutManager(grid);
-			var width = 100 + colSpacing + 100 + colSpacing + 100;
-			var measure = manager.Measure(width, double.PositiveInfinity);
+			var widthConstraint = 100 + colSpacing + 100 + colSpacing + 100;
+			var measure = manager.Measure(widthConstraint, double.PositiveInfinity);
 
-			Assert.Equal(width, measure.Width);
+			var expectedWidthMeasure = 100 + colSpacing + 0 + colSpacing + 100;
 
-			manager.ArrangeChildren(new Rect(0, 0, measure.Width, measure.Height));
+			Assert.Equal(expectedWidthMeasure, measure.Width);
+
+			manager.ArrangeChildren(new Rect(0, 0, widthConstraint, measure.Height));
 			AssertArranged(view0, new Rect(0, 0, 100, 100));
 			AssertArranged(view1, new Rect(220, 0, 100, 100));
 		}
@@ -1655,34 +1736,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 2);
 
 			var manager = new GridLayoutManager(grid);
-			var height = 100 + rowSpacing + 100 + rowSpacing + 100;
-			var measure = manager.Measure(double.PositiveInfinity, height);
+			var heightConstraint = 100 + rowSpacing + 100 + rowSpacing + 100;
+			var measure = manager.Measure(double.PositiveInfinity, heightConstraint);
 
-			Assert.Equal(height, measure.Height);
+			var expectedHeightMeasure = 100 + rowSpacing + 0 + rowSpacing + 100;
 
-			manager.ArrangeChildren(new Rect(0, 0, measure.Width, measure.Height));
+			Assert.Equal(expectedHeightMeasure, measure.Height);
+
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width, heightConstraint));
 			AssertArranged(view0, new Rect(0, 0, 100, 100));
 			AssertArranged(view1, new Rect(0, 220, 100, 100));
-		}
-
-		[Fact(DisplayName = "Grids with RTL FlowDirection should order columns from the right")]
-		public void RtlShouldReverseColumnOrder()
-		{
-			var grid = CreateGridLayout(columns: "100, 100", colSpacing: 10);
-			var view0 = CreateTestView(new Size(100, 100));
-			var view1 = CreateTestView(new Size(100, 100));
-			SubstituteChildren(grid, view0, view1);
-			SetLocation(grid, view0);
-			SetLocation(grid, view1, col: 1);
-
-			grid.FlowDirection.Returns(FlowDirection.RightToLeft);
-
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
-
-			// Because the Grid is RTL, we expect the view in column 1 to be on the left,
-			// and the view in column 0 to be on the right
-			AssertArranged(view1, 0, 0, 100, 100);
-			AssertArranged(view0, 110, 0, 100, 100);
 		}
 
 		[Fact]
@@ -1700,7 +1763,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, col: 1);
 			SetLocation(grid, view1, row: 1, colSpan: 2);
 
-			MeasureAndArrange(grid, 200, 200);
+			MeasureAndArrangeFixed(grid, 200, 200);
 
 			// We expect that column 0 has no width, so view0 will be arranged at 0,0
 			AssertArranged(view0, 0, 0, 200, 10);
@@ -1722,7 +1785,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 
 			// Verify that the view is getting measured at the appropriate height (50)
 			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(50));
@@ -1746,7 +1809,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, row: 1);
 			SetLocation(grid, view1, col: 1, rowSpan: 2);
 
-			MeasureAndArrange(grid, 200, 200);
+			MeasureAndArrangeFixed(grid, 200, 200);
 
 			// We expect that row 0 has no height, so view0 will be arranged at 0,0
 			AssertArranged(view0, 0, 0, 10, 200);
@@ -1768,7 +1831,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 
 			// Assuming no constraints on space
-			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			MeasureAndArrangeAuto(grid);
 
 			// Verify that the view is getting measured at the appropriate width (50)
 			view0.Received().Measure(Arg.Is<double>(50), Arg.Any<double>());
@@ -1789,7 +1852,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			SubstituteChildren(grid, view0);
 
-			MeasureAndArrange(grid, 500, 500);
+			MeasureAndArrangeFixed(grid, 500, 500);
 
 			// Verify that the view is getting measured at the appropriate height (infinity)
 			view0.Received().Measure(Arg.Is<double>(500), Arg.Is(double.PositiveInfinity));
@@ -1807,7 +1870,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			SubstituteChildren(grid, view0);
 
-			MeasureAndArrange(grid, 500, 500);
+			MeasureAndArrangeFixed(grid, 500, 500);
 
 			// Verify that the view is getting measured at the appropriate width (infinity)
 			view0.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Is<double>(500));
@@ -1827,14 +1890,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			SubstituteChildren(grid, view0, view1);
 
-			var measuredSize = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(10, measuredSize.Height);
 		}
 
 		[Fact("Star Column Width is correct when the first child is Collapsed")]
 		[Category(GridStarSizing)]
-		public void StarCoumnWidthCorrectWhenFirstChildCollapsed()
+		public void StarColumnWidthCorrectWhenFirstChildCollapsed()
 		{
 			var grid = CreateGridLayout(columns: "*");
 
@@ -1846,7 +1909,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			SubstituteChildren(grid, view0, view1);
 
-			var measuredSize = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			var measuredSize = MeasureAndArrangeAuto(grid);
 
 			Assert.Equal(10, measuredSize.Width);
 		}
@@ -1865,6 +1928,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measuredSize = MeasureAndArrange(grid, 300, double.PositiveInfinity);
 
 			// we expect that the child will be arranged within measured size
+			// TODO this test might be improperly named, and also the measuredSize.Width should probably be 300
+
 			AssertArranged(view0, 0, 0, measuredSize.Width, measuredSize.Height);
 		}
 
@@ -1875,11 +1940,13 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(LayoutAlignment.Start, false)]
 		[InlineData(LayoutAlignment.End, true)]
 		[InlineData(LayoutAlignment.End, false)]
-		public void StarColumnsAreAutoWhenGridAlignmentIsNotFill(LayoutAlignment alignment, bool impliedColumn)
+		[InlineData(LayoutAlignment.Fill, true)]
+		[InlineData(LayoutAlignment.Fill, false)]
+		public void GridMeasuresStarColumnToChildWidth(LayoutAlignment alignment, bool impliedColumn)
 		{
-			string columns = impliedColumn ? null : "*";
+			string layoutData = impliedColumn ? null : "*";
 
-			var grid = CreateGridLayout(columns: columns);
+			var grid = CreateGridLayout(columns: layoutData);
 
 			grid.HorizontalLayoutAlignment.Returns(alignment);
 
@@ -1887,9 +1954,32 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			SubstituteChildren(grid, view0);
 
-			var measuredSize = MeasureAndArrange(grid, 100, 100);
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(100, 100);
 
 			Assert.Equal(20, measuredSize.Width);
+		}
+
+		[Theory]
+		[InlineData(true, 100)]
+		[InlineData(false, 100)]
+		[InlineData(true, 15)]
+		[InlineData(false, 15)]
+		public void FillGridArrangesStarColumnToWidthConstraint(bool implied, double constraint)
+		{
+			string layoutData = implied ? null : "*";
+
+			var grid = CreateGridLayout(columns: layoutData);
+
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+
+			MeasureAndArrangeFixed(grid, constraint, 100);
+
+			AssertArranged(view0, new Rect(0, 0, constraint, 100));
 		}
 
 		[Theory]
@@ -1899,20 +1989,99 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(LayoutAlignment.Start, false)]
 		[InlineData(LayoutAlignment.End, true)]
 		[InlineData(LayoutAlignment.End, false)]
-		public void StarRowsAreAutoWhenGridAlignmentIsNotFill(LayoutAlignment alignment, bool impliedRow)
+		public void NonFillGridArrangesStarColumnToChildWidth(LayoutAlignment alignment, bool implied)
 		{
-			string rows = impliedRow ? null : "*";
+			string layoutData = implied ? null : "*";
 
-			var grid = CreateGridLayout(rows: rows);
+			var grid = CreateGridLayout(columns: layoutData);
+
+			grid.HorizontalLayoutAlignment.Returns(alignment);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+
+			var measure = MeasureAndArrangeFixed(grid, 100, 100);
+
+			Assert.Equal(20, measure.Height);
+			Assert.Equal(20, measure.Width);
+
+			AssertArranged(view0, new Rect(0, 0, 20, 100));
+		}
+
+		[Theory]
+		[InlineData(LayoutAlignment.Center, true)]
+		[InlineData(LayoutAlignment.Center, false)]
+		[InlineData(LayoutAlignment.Start, true)]
+		[InlineData(LayoutAlignment.Start, false)]
+		[InlineData(LayoutAlignment.End, true)]
+		[InlineData(LayoutAlignment.End, false)]
+		[InlineData(LayoutAlignment.Fill, true)]
+		[InlineData(LayoutAlignment.Fill, false)]
+		public void GridMeasuresStarRowToChildHeight(LayoutAlignment alignment, bool implied)
+		{
+			string layoutData = implied ? null : "*";
+
+			var grid = CreateGridLayout(rows: layoutData);
+
 			grid.VerticalLayoutAlignment.Returns(alignment);
 
 			var view0 = CreateTestView(new Size(20, 20));
 
 			SubstituteChildren(grid, view0);
 
-			var measuredSize = MeasureAndArrange(grid, 100, 100);
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(100, 100);
 
 			Assert.Equal(20, measuredSize.Height);
+		}
+
+		[Theory]
+		[InlineData(true, 100)]
+		[InlineData(false, 100)]
+		[InlineData(true, 15)]
+		[InlineData(false, 15)]
+		public void FillGridArrangesStarRowToHeightConstraint(bool implied, double constraint)
+		{
+			string layoutData = implied ? null : "*";
+
+			var grid = CreateGridLayout(rows: layoutData);
+
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+
+			MeasureAndArrangeFixed(grid, 100, constraint);
+
+			AssertArranged(view0, new Rect(0, 0, 100, constraint));
+		}
+
+		[Theory]
+		[InlineData(LayoutAlignment.Center, true)]
+		[InlineData(LayoutAlignment.Center, false)]
+		[InlineData(LayoutAlignment.Start, true)]
+		[InlineData(LayoutAlignment.Start, false)]
+		[InlineData(LayoutAlignment.End, true)]
+		[InlineData(LayoutAlignment.End, false)]
+		public void NonFillGridArrangesStarRowToChildHeight(LayoutAlignment alignment, bool impliedRow)
+		{
+			string layoutData = impliedRow ? null : "*";
+
+			var grid = CreateGridLayout(rows: layoutData);
+			grid.VerticalLayoutAlignment.Returns(alignment);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+
+			var measure = MeasureAndArrangeFixed(grid, 100, 100);
+
+			Assert.Equal(20, measure.Height);
+			Assert.Equal(20, measure.Width);
+
+			AssertArranged(view0, new Rect(0, 0, 100, 20));
 		}
 
 		[Fact]
@@ -1972,7 +2141,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(LayoutAlignment.Start)]
 		[InlineData(LayoutAlignment.End)]
 		[InlineData(LayoutAlignment.Fill)]
-		public void StarRowsShouldFitKnownDimensions(LayoutAlignment verticalAlignment)
+		public void StarRowsShouldFitExplicitDimensions(LayoutAlignment verticalAlignment)
 		{
 			var grid = CreateGridLayout(rows: "*");
 			grid.VerticalLayoutAlignment.Returns(verticalAlignment);
@@ -1984,8 +2153,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new GridLayoutManager(grid);
 			var gridMeasure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			// Because the Grid has an explicit height, we expect the single Star row
-			// to have that height.
+			// Because the Grid has an explicit height, we expect the measurement to have that height
 			Assert.Equal(100, gridMeasure.Height);
 
 			manager.ArrangeChildren(new Rect(Point.Zero, gridMeasure));
@@ -2000,7 +2168,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(LayoutAlignment.Start)]
 		[InlineData(LayoutAlignment.End)]
 		[InlineData(LayoutAlignment.Fill)]
-		public void StarColumnsShouldFitKnownDimensions(LayoutAlignment horizontalAlignment)
+		public void StarColumnsShouldFitExplicitDimensions(LayoutAlignment horizontalAlignment)
 		{
 			var grid = CreateGridLayout(columns: "*");
 			grid.HorizontalLayoutAlignment.Returns(horizontalAlignment);
@@ -2012,8 +2180,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new GridLayoutManager(grid);
 			var gridMeasure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			// Because the Grid has an explicit width, we expect the single Star column
-			// to have that width.
+			// Because the Grid has an explicit width, we expect the measurement to have that width.
 			Assert.Equal(100, gridMeasure.Width);
 
 			manager.ArrangeChildren(new Rect(Point.Zero, gridMeasure));
@@ -2021,6 +2188,176 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Because the child has HorizontalAlignment.Fill, we expect it to fill up the 100
 			// units in the Star column
 			AssertArranged(view0, new Rect(0, 0, 100, 20));
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarColumnsHaveChildWidthsWhenGridCentered()
+		{
+			var grid = CreateGridLayout(columns: "*,*");
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Center);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(10, 10));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view1, col: 1);
+
+			_ = MeasureAndArrange(grid, 200, 200);
+
+			AssertArranged(view0, new Rect(0, 0, 20, 20));
+			AssertArranged(view1, new Rect(20, 0, 10, 20));
+		}
+
+		[Fact]
+		[Category(GridStarSizing, GridSpan)]
+		public void MeasureStarAndExplicitColumnSpan()
+		{
+			var grid = CreateGridLayout(columns: "40,*");
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Center);
+
+			var view0 = CreateTestView(new Size(100, 20));
+			view0.Width.Returns(100);
+
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, col: 0, colSpan: 2);
+
+			var measure = MeasureAndArrange(grid, 200, 200);
+
+			Assert.Equal(100, measure.Width);
+
+			AssertArranged(view0, new Rect(0, 0, 100, 20));
+		}
+
+		[Fact]
+		[Category(GridStarSizing, GridSpan)]
+		public void MeasureAutoAndExplicitColumnSpan()
+		{
+			var grid = CreateGridLayout(columns: "40,auto");
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Center);
+
+			var view0 = CreateTestView(new Size(100, 20));
+			view0.Width.Returns(100);
+
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, col: 0, colSpan: 2);
+
+			var measure = MeasureAndArrange(grid, 200, 200);
+
+			Assert.Equal(100, measure.Width);
+
+			AssertArranged(view0, new Rect(0, 0, 100, 20));
+		}
+
+		[Fact]
+		[Category(GridStarSizing, GridSpan)]
+		public void MeasureStarAndExplicitRowSpan()
+		{
+			var grid = CreateGridLayout(rows: "40,*");
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Center);
+
+			var view0 = CreateTestView(new Size(20, 100));
+			view0.Height.Returns(100);
+
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row: 0, rowSpan: 2);
+
+			var measure = MeasureAndArrange(grid, 200, 200);
+
+			Assert.Equal(100, measure.Height);
+
+			AssertArranged(view0, new Rect(0, 0, 20, 100));
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void ChildInStarRowWithInfiniteSpaceIsMeasuredWithInfinity()
+		{
+			var grid = CreateGridLayout(rows: "*");
+			var view0 = CreateTestView(new Size(20, 100));
+			SubstituteChildren(grid, view0);
+
+			_ = MeasureAndArrange(grid, 200, double.PositiveInfinity);
+
+			view0.Received().Measure(Arg.Any<double>(), Arg.Is(double.PositiveInfinity));
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void ChildInStarColumnWithInfiniteSpaceIsMeasuredWithInfinity()
+		{
+			var grid = CreateGridLayout(columns: "*");
+			var view0 = CreateTestView(new Size(100, 20));
+			SubstituteChildren(grid, view0);
+
+			_ = MeasureAndArrange(grid, double.PositiveInfinity, 200);
+
+			view0.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Any<double>());
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarColumnWidthLimitedToGridWidth()
+		{
+			var grid = CreateGridLayout(columns: "*", rows: "Auto, Auto");
+
+			var screenWidth = 500;
+
+			var view0 = CreateTestView(new Size(600, 20));
+			var view1 = CreateTestView(new Size(100, 20));
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 1);
+
+			SubstituteChildren(grid, view0, view1);
+
+			_ = MeasureAndArrange(grid, screenWidth, 200);
+
+			AssertArranged(view1, new Rect(0, 20, 500, 20));
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarRowHeightLimitedToGridHeight()
+		{
+			var grid = CreateGridLayout(rows: "*", columns: "Auto, Auto");
+
+			var screenHeight = 500;
+
+			var view0 = CreateTestView(new Size(20, 600));
+			var view1 = CreateTestView(new Size(20, 100));
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+
+			SubstituteChildren(grid, view0, view1);
+
+			_ = MeasureAndArrange(grid, 200, screenHeight);
+
+			AssertArranged(view1, new Rect(20, 0, 20, 500));
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarsExpandToFixedSizes()
+		{
+			var grid = CreateGridLayout();
+			grid.DesiredSize.Returns(new Size(100, 120));
+			grid.Width.Returns(100);
+			grid.Height.Returns(120);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			view0.Width.Returns(20);
+			view0.Height.Returns(20);
+			view0.HorizontalLayoutAlignment.Returns(LayoutAlignment.End);
+			view0.VerticalLayoutAlignment.Returns(LayoutAlignment.Start);
+
+			SetLocation(grid, view0);
+			SubstituteChildren(grid, view0);
+
+			_ = MeasureAndArrange(grid);
+
+			AssertArranged(view0, new Rect(0, 0, 100, 120));
 		}
 	}
 }

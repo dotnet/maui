@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(insertCount == 1, "The CollectionChanged event should have fired with an Add exactly 1 time");
 		});
 
-		[Fact("Intial item count should match wrapped collection.")]
+		[Fact("Initial item count should match wrapped collection.")]
 		public Task InitialItemCountsMatch() => DispatcherTest.Run(async () =>
 		{
 			var _dispatcher = Dispatcher.GetForCurrentThread();

@@ -1,4 +1,4 @@
-﻿using ElmSharp;
+﻿using Tizen.UIExtensions.NUI.GraphicsView;
 
 namespace Microsoft.Maui.Platform
 {
@@ -6,12 +6,12 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateProgress(this ProgressBar platformProgressBar, IProgress progress)
 		{
-			platformProgressBar.Value = progress.Progress;
+			platformProgressBar.Progress = progress.Progress;
 		}
 
 		public static void UpdateProgressColor(this ProgressBar platformProgressBar, IProgress progress)
 		{
-			platformProgressBar.Color = progress.ProgressColor.ToPlatformEFL();
+			platformProgressBar.ProgressColor = progress.ProgressColor.ToPlatform();
 		}
 	}
 }

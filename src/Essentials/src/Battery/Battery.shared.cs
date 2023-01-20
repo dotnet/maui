@@ -3,44 +3,87 @@ using System;
 
 namespace Microsoft.Maui.Devices
 {
+	/// <summary>
+	/// Methods and properties for battery and charging information of the device.
+	/// </summary>
+	/// <remarks>
+	/// <para>Platform specific remarks:</para>
+	/// <para>- Android: <c>Battery_Stats</c> permission must be set in manifest.</para>
+	/// <para>- iOS: Simulator will not return battery information, must be run on device.</para>
+	/// <para>- Windows: None.</para>
+	/// </remarks>
 	public interface IBattery
 	{
+		/// <summary>
+		/// Gets the current charge level of the device from 0.0 to 1.0.
+		/// </summary>
+		/// <remarks>Returns -1 if no battery exists.</remarks>
 		double ChargeLevel { get; }
 
+		/// <summary>
+		/// Gets the charging state of the device.
+		/// </summary>
 		BatteryState State { get; }
 
+		/// <summary>
+		/// Gets the current power source for the device.
+		/// </summary>
 		BatteryPowerSource PowerSource { get; }
 
+		/// <summary>
+		/// Gets the current energy saver status of the device.
+		/// </summary>
 		EnergySaverStatus EnergySaverStatus { get; }
 
+		/// <summary>
+		/// Occurs when battery properties change.
+		/// </summary>
 		event EventHandler<BatteryInfoChangedEventArgs> BatteryInfoChanged;
 
+		/// <summary>
+		/// Occurs when the energy saver status changes.
+		/// </summary>
 		event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Battery']/Docs" />
+	/// <summary>
+	/// Methods and properties for battery and charging information of the device.
+	/// </summary>
 	public static class Battery
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='ChargeLevel']/Docs" />
+		/// <summary>
+		/// Gets the current charge level of the device from 0.0 to 1.0.
+		/// </summary>
+		/// <remarks>Returns -1 if no battery exists.</remarks>
 		public static double ChargeLevel => Default.ChargeLevel;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='State']/Docs" />
+		/// <summary>
+		/// Gets the charging state of the device.
+		/// </summary>
 		public static BatteryState State => Default.State;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='PowerSource']/Docs" />
+		/// <summary>
+		/// Gets the current power source for the device.
+		/// </summary>
 		public static BatteryPowerSource PowerSource => Default.PowerSource;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='EnergySaverStatus']/Docs" />
+		/// <summary>
+		/// Gets the current energy saver status of the device.
+		/// </summary>
 		public static EnergySaverStatus EnergySaverStatus => Default.EnergySaverStatus;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='BatteryInfoChanged']/Docs" />
+		/// <summary>
+		/// Event trigger when battery properties have changed.
+		/// </summary>
 		public static event EventHandler<BatteryInfoChangedEventArgs> BatteryInfoChanged
 		{
 			add => Default.BatteryInfoChanged += value;
 			remove => Default.BatteryInfoChanged -= value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Battery.xml" path="//Member[@MemberName='EnergySaverStatusChanged']/Docs" />
+		/// <summary>
+		/// Occurs when the energy saver status changes.
+		/// </summary>
 		public static event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged
 		{
 			add => Default.EnergySaverStatusChanged += value;
@@ -49,6 +92,9 @@ namespace Microsoft.Maui.Devices
 
 		static IBattery? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>s
 		public static IBattery Default =>
 			defaultImplementation ??= new BatteryImplementation();
 
@@ -132,53 +178,77 @@ namespace Microsoft.Maui.Devices
 			=> EnergySaverStatusChangedInternal?.Invoke(null, e);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryState.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BatteryState']/Docs" />
+	/// <summary>
+	/// Describes possible states of the battery.
+	/// </summary>
 	public enum BatteryState
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryState.xml" path="//Member[@MemberName='Unknown']/Docs" />
+		/// <summary>Battery state could not be determined.</summary>
 		Unknown = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryState.xml" path="//Member[@MemberName='Charging']/Docs" />
+
+		/// <summary>Battery is actively being charged by a power source.</summary>
 		Charging = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryState.xml" path="//Member[@MemberName='Discharging']/Docs" />
+
+		/// <summary>Battery is not plugged in and discharging.</summary>
 		Discharging = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryState.xml" path="//Member[@MemberName='Full']/Docs" />
+
+		/// <summary>Battery is full.</summary>
 		Full = 3,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryState.xml" path="//Member[@MemberName='NotCharging']/Docs" />
+
+		/// <summary>Battery is not charging or discharging, but in an inbetween state.</summary>
 		NotCharging = 4,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryState.xml" path="//Member[@MemberName='NotPresent']/Docs" />
+
+		/// <summary>Battery does not exist on the device.</summary>
 		NotPresent = 5
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryPowerSource.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BatteryPowerSource']/Docs" />
+	/// <summary>
+	/// Enumerates power sources with which the device and battery can be powered or charged.
+	/// </summary>
 	public enum BatteryPowerSource
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryPowerSource.xml" path="//Member[@MemberName='Unknown']/Docs" />
+		/// <summary>Power source can not be determined.</summary>
 		Unknown = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryPowerSource.xml" path="//Member[@MemberName='Battery']/Docs" />
+
+		/// <summary>Power source is the battery and is currently not being charged.</summary>
 		Battery = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryPowerSource.xml" path="//Member[@MemberName='AC']/Docs" />
+
+		/// <summary>Power source is an AC Charger.</summary>
 		AC = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryPowerSource.xml" path="//Member[@MemberName='Usb']/Docs" />
+
+		/// <summary>Power source is a USB port.</summary>
 		Usb = 3,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryPowerSource.xml" path="//Member[@MemberName='Wireless']/Docs" />
+
+		/// <summary>Power source is wireless.</summary>
 		Wireless = 4
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/EnergySaverStatus.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EnergySaverStatus']/Docs" />
+	/// <summary>
+	/// Enumerates states that the energy saver van have on the device.
+	/// </summary>
 	public enum EnergySaverStatus
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EnergySaverStatus.xml" path="//Member[@MemberName='Unknown']/Docs" />
+		/// <summary>Status of energy saving is unknown.</summary>
 		Unknown = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EnergySaverStatus.xml" path="//Member[@MemberName='On']/Docs" />
+
+		/// <summary>Energy saving is on.</summary>
 		On = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EnergySaverStatus.xml" path="//Member[@MemberName='Off']/Docs" />
+
+		/// <summary>Energy saving is off.</summary>
 		Off = 2
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryInfoChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BatteryInfoChangedEventArgs']/Docs" />
+	/// <summary>
+	/// Event arguments containing the current reading of <see cref="IBattery"/>.
+	/// </summary>
 	public class BatteryInfoChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryInfoChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="BatteryInfoChangedEventArgs"/> class.
+		/// </summary>
+		/// <param name="level">The current level of the battery.</param>
+		/// <param name="state">The state of the battery.</param>
+		/// <param name="source">The source of the battery.</param>
 		public BatteryInfoChangedEventArgs(double level, BatteryState state, BatteryPowerSource source)
 		{
 			ChargeLevel = level;
@@ -186,35 +256,54 @@ namespace Microsoft.Maui.Devices
 			PowerSource = source;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryInfoChangedEventArgs.xml" path="//Member[@MemberName='ChargeLevel']/Docs" />
+		/// <summary>
+		/// Gets the current charge level of the device from 0.0 to 1.0.
+		/// </summary>
 		public double ChargeLevel { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryInfoChangedEventArgs.xml" path="//Member[@MemberName='State']/Docs" />
+		/// <summary>
+		/// Gets the charging state of the device.
+		/// </summary>
 		public BatteryState State { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryInfoChangedEventArgs.xml" path="//Member[@MemberName='PowerSource']/Docs" />
+		/// <summary>
+		/// Gets the current power source for the device.
+		/// </summary>
 		public BatteryPowerSource PowerSource { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BatteryInfoChangedEventArgs.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <summary>
+		/// Returns a string representation of this instance of <see cref="BatteryInfoChangedEventArgs"/>.
+		/// </summary>
+		/// <returns>A string representation of this instance in the format of <c>ChargeLevel: {value}, State: {value}, PowerSource: {value}</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(ChargeLevel)}: {ChargeLevel.ToString()}, " +
 			$"{nameof(State)}: {State}, " +
 			$"{nameof(PowerSource)}: {PowerSource}";
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/EnergySaverStatusChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.EnergySaverStatusChangedEventArgs']/Docs" />
+	/// <summary>
+	/// Event arguments when the energy saver status changes.
+	/// </summary>
 	public class EnergySaverStatusChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EnergySaverStatusChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EnergySaverStatusChangedEventArgs"/> class.
+		/// </summary>
+		/// <param name="saverStatus">The current status of the event.</param>
 		public EnergySaverStatusChangedEventArgs(EnergySaverStatus saverStatus)
 		{
 			EnergySaverStatus = saverStatus;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EnergySaverStatusChangedEventArgs.xml" path="//Member[@MemberName='EnergySaverStatus']/Docs" />
+		/// <summary>
+		/// Gets the current status of energy saver mode.
+		/// </summary>
 		public EnergySaverStatus EnergySaverStatus { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/EnergySaverStatusChangedEventArgs.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <summary>
+		/// Returns a string representation of this instance of <see cref="EnergySaverStatusChangedEventArgs"/>.
+		/// </summary>
+		/// <returns>A string representation of this instance in the format of <c>EnergySaverStatus: {value}</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(EnergySaverStatus)}: {EnergySaverStatus}";
 	}

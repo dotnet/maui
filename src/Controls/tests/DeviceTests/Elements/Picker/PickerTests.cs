@@ -11,7 +11,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Picker)]
-	public partial class PickerTests : HandlerTestBase
+	public partial class PickerTests : ControlsHandlerTestBase
 	{
 		[Fact]
 		public async Task ItemsUpdateWithCollectionChanges()

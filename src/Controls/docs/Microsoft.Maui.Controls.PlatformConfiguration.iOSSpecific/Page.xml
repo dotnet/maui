@@ -136,10 +136,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetSafeAreaInsets">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Thickness GetSafeAreaInsets (Microsoft.Maui.Controls.BindableObject element);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Thickness GetSafeAreaInsets(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
+      <MemberSignature Language="C#" Value="public staticMicrosoft.Maui.Thickness GetSafeAreaInsets (Microsoft.Maui.Controls.BindableObject element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetypeMicrosoft.Maui.Thickness GetSafeAreaInsets(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetSafeAreaInsets(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetSafeAreaInsets : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Thickness" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetSafeAreaInsets element" />
+      <MemberSignature Language="F#" Value="static member GetSafeAreaInsets : Microsoft.Maui.Controls.BindableObject -&gt;Microsoft.Maui.Thickness" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetSafeAreaInsets element" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -147,7 +147,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Thickness</ReturnType>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -397,10 +397,10 @@
       </Docs>
     </Member>
     <Member MemberName="SafeAreaInsets">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Thickness SafeAreaInsets (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page&gt; config);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Thickness SafeAreaInsets(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Page&gt; config) cil managed" />
+      <MemberSignature Language="C#" Value="public staticMicrosoft.Maui.Thickness SafeAreaInsets (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page&gt; config);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetypeMicrosoft.Maui.Thickness SafeAreaInsets(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Page&gt; config) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SafeAreaInsets(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page})" />
-      <MemberSignature Language="F#" Value="static member SafeAreaInsets : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page&gt; -&gt; Microsoft.Maui.Controls.Thickness" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SafeAreaInsets config" />
+      <MemberSignature Language="F#" Value="static member SafeAreaInsets : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page&gt; -&gt;Microsoft.Maui.Thickness" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SafeAreaInsets config" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -408,15 +408,15 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Thickness</ReturnType>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page&gt;" RefType="this" />
       </Parameters>
       <Docs>
         <param name="config">The element whose safe area insets to return.</param>
-        <summary>Returns a <see cref="T:Microsoft.Maui.Controls.Thickness" /> object that represents the safe area insets.</summary>
-        <returns>A <see cref="T:Microsoft.Maui.Controls.Thickness" /> object that represents the safe area insets.</returns>
+        <summary>Returns a <see cref="T:Microsoft.Maui.Thickness" /> object that represents the safe area insets.</summary>
+        <returns>A <see cref="T:Microsoft.Maui.Thickness" /> object that represents the safe area insets.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -669,10 +669,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetSafeAreaInsets">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page&gt; SetSafeAreaInsets (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page&gt; config, Microsoft.Maui.Controls.Thickness value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Page&gt; SetSafeAreaInsets(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Page&gt; config, valuetype Microsoft.Maui.Controls.Thickness value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetSafeAreaInsets(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page},Microsoft.Maui.Controls.Thickness)" />
-      <MemberSignature Language="F#" Value="static member SetSafeAreaInsets : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page&gt; * Microsoft.Maui.Controls.Thickness -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetSafeAreaInsets (config, value)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page&gt; SetSafeAreaInsets (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page&gt; config,Microsoft.Maui.Thickness value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Page&gt; SetSafeAreaInsets(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.Page&gt; config, valuetypeMicrosoft.Maui.Thickness value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetSafeAreaInsets(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page},Microsoft.Maui.Thickness)" />
+      <MemberSignature Language="F#" Value="static member SetSafeAreaInsets : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page&gt; *Microsoft.Maui.Thickness -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetSafeAreaInsets (config, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -689,7 +689,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.Page&gt;" RefType="this" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Thickness" />
+        <Parameter Name="value" Type="Microsoft.Maui.Thickness" />
       </Parameters>
       <Docs>
         <param name="config">The element whose safe area insets to set.</param>

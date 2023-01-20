@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
@@ -41,6 +42,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(expected, color);
+		}
+
+		/// <summary>
+		/// If a UISwitch grows beyond 101 pixels it's no longer
+		/// clickable via Voice Over
+		/// </summary>
+		/// <returns></returns>
+		[Fact(DisplayName = "Ensure UISwitch Stays Below 101 Width")]
+		public async Task EnsureUISwitchStaysBelow101Width()
+		{
+			var switchStub = new SwitchStub()
+			{
+				Width = 400,
+				Height = 400
+			};
+
+			var width = await GetValueAsync(switchStub, handler => GetNativeSwitch(handler).Bounds.Width);
+
+			Assert.True(width < 100, $"UISwitch width is too much {width}");
 		}
 	}
 }

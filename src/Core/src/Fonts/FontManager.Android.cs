@@ -8,6 +8,7 @@ using AApplication = Android.App.Application;
 
 namespace Microsoft.Maui
 {
+	/// <inheritdoc/>
 	public class FontManager : IFontManager
 	{
 		static readonly string[] FontFolders = new[]
@@ -22,16 +23,25 @@ namespace Microsoft.Maui
 
 		Typeface? _defaultTypeface;
 
+		/// <summary>
+		/// Creates a new <see cref="EmbeddedFontLoader"/> instance.
+		/// </summary>
+		/// <param name="fontRegistrar">A <see cref="IFontRegistrar"/> instance to retrieve details from about registered fonts.</param>
+		/// <param name="serviceProvider">The applications <see cref="IServiceProvider"/>.
+		/// Typically this is provided through dependency injection.</param>
 		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{
 			_fontRegistrar = fontRegistrar;
 			_serviceProvider = serviceProvider;
 		}
 
+		/// <inheritdoc/>
 		public double DefaultFontSize => 14; // 14sp
 
+		/// <inheritdoc/>
 		public Typeface DefaultTypeface => _defaultTypeface ??= Typeface.Default!;
 
+		/// <inheritdoc/>
 		public Typeface? GetTypeface(Font font)
 		{
 			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.Family) && font.Slant == FontSlant.Default))
@@ -40,6 +50,7 @@ namespace Microsoft.Maui
 			return _typefaces.GetOrAdd((font.Family, font.Weight, font.Slant != FontSlant.Default), CreateTypeface);
 		}
 
+		/// <inheritdoc/>
 		public FontSize GetFontSize(Font font, float defaultFontSize = 0)
 		{
 			var size = font.Size <= 0 || double.IsNaN(font.Size)

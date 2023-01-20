@@ -19,8 +19,14 @@ using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Hosting;
 
+
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
+
+#if ANDROID
+using Android.Gms.Common;
+using Android.Gms.Maps;
 #endif
 
 namespace Maui.Controls.Sample
@@ -37,11 +43,10 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
-
-			appBuilder.UseMauiApp<XamlApp>();
-#if TIZEN
-			appBuilder.UseMauiCompatibility();
+#if __ANDROID__ || __IOS__
+			appBuilder.UseMauiMaps();
 #endif
+			appBuilder.UseMauiApp<XamlApp>();
 			var services = appBuilder.Services;
 
 			if (UseMauiGraphicsSkia)
@@ -112,6 +117,9 @@ namespace Maui.Controls.Sample
 #else
 				logging.AddConsole();
 #endif
+
+				// Enable maximum logging for BlazorWebView
+				logging.AddFilter("Microsoft.AspNetCore.Components.WebView", LogLevel.Trace);
 			});
 
 			services.AddSingleton<ITextService, TextService>();

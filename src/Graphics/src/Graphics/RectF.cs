@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Graphics
 
 		public static bool operator ==(RectF r1, RectF r2)
 		{
-			return (r1.Location == r2.Location) && (r1.Size == r2.Size);
+			return r1.Equals(r2);
 		}
 
 		public static bool operator !=(RectF r1, RectF r2)

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -5,11 +6,11 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NotifyCollectionChangedEventArgsExtensions']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NotifyCollectionChangedEventArgsExtensions']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class NotifyCollectionChangedEventArgsExtensions
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='Apply&lt;TFrom&gt;'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='Apply&lt;TFrom&gt;'][1]/Docs/*" />
 		public static void Apply<TFrom>(this NotifyCollectionChangedEventArgs self, IList<TFrom> from, IList<object> to)
 		{
 			self.Apply((o, i, b) => to.Insert(i, o), (o, i) => to.RemoveAt(i), () =>
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Internals
 			});
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='Apply'][1]/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='Apply'][1]/Docs/*" />
 		public static NotifyCollectionChangedAction Apply(this NotifyCollectionChangedEventArgs self, Action<object, int, bool> insert, Action<object, int> removeAt, Action reset)
 		{
 			if (self == null)
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return self.Action;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='WithCount']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NotifyCollectionChangedEventArgsExtensions.xml" path="//Member[@MemberName='WithCount']/Docs/*" />
 		public static NotifyCollectionChangedEventArgsEx WithCount(this NotifyCollectionChangedEventArgs e, int count)
 		{
 			switch (e.Action)

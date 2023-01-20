@@ -12,7 +12,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Static class specifying the attached properties that allow a <see cref="T:Microsoft.Maui.Controls.Layout`1" /> work with a data-bound <see cref="T:System.Collections.IEnumerable" />.</summary>
+    <summary>Static class specifying the attached properties that allow a <see cref="T:Microsoft.Maui.Controls.ILayout" /> work with a data-bound <see cref="T:System.Collections.IEnumerable" />.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>

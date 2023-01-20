@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -17,12 +18,114 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static async Task SendValueToKeyboard(this AView view, char value, int timeout = 1000)
+		{
+			await view.ShowKeyboardForView(timeout);
+
+			// I tried various permutations of KeyEventActions to set the keyboard in upper case
+			// But I wasn't successful
+			if (Enum.TryParse($"{value}".ToUpper(), out Keycode result))
+			{
+				view.OnCreateInputConnection(new EditorInfo())?
+					.SendKeyEvent(new KeyEvent(10, 10, KeyEventActions.Down, result, 0));
+
+				view.OnCreateInputConnection(new EditorInfo())?
+					.SendKeyEvent(new KeyEvent(10, 10, KeyEventActions.Up, result, 0));
+			}
+		}
+
+		public static async Task SendKeyboardReturnType(this AView view, ReturnType returnType, int timeout = 1000)
+		{
+			await view.ShowKeyboardForView(timeout);
+
+			view
+				.OnCreateInputConnection(new EditorInfo())?
+				.PerformEditorAction(returnType.ToPlatform());
+
+			// Let the action propagate
+			await Task.Delay(10);
+		}
+
+		public static async Task WaitForFocused(this AView view, int timeout = 1000)
+		{
+			if (!view.IsFocused)
+			{
+				TaskCompletionSource focusSource = new TaskCompletionSource();
+				view.FocusChange += OnFocused;
+				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+				// Even thuogh the event fires focus hasn't fully been achieved
+				await Task.Delay(10);
+
+				void OnFocused(object? sender, AView.FocusChangeEventArgs e)
+				{
+					if (!e.HasFocus)
+						return;
+
+					view.FocusChange -= OnFocused;
+					focusSource.SetResult();
+				}
+			}
+		}
+
+		public static async Task WaitForUnFocused(this AView view, int timeout = 1000)
+		{
+			if (view.IsFocused)
+			{
+				TaskCompletionSource focusSource = new TaskCompletionSource();
+				view.FocusChange += OnUnFocused;
+				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+				// Even though the event fires unfocus hasn't fully been achieved
+				await Task.Delay(10);
+
+				void OnUnFocused(object? sender, AView.FocusChangeEventArgs e)
+				{
+					if (e.HasFocus)
+						return;
+
+					view.FocusChange -= OnUnFocused;
+					focusSource.SetResult();
+				}
+			}
+		}
+
+		public static Task FocusView(this AView view, int timeout = 1000)
+		{
+			if (!view.IsFocused)
+			{
+				view.Focus(new FocusRequest(view.IsFocused));
+				return view.WaitForFocused(timeout);
+			}
+
+			return Task.CompletedTask;
+		}
+
+		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000)
+		{
+			await view.FocusView(timeout);
+			KeyboardManager.ShowKeyboard(view);
+			await view.WaitForKeyboardToShow(timeout);
+		}
+
+		public static async Task WaitForKeyboardToShow(this AView view, int timeout = 1000)
+		{
+			var result = await Wait(() => KeyboardManager.IsSoftKeyboardVisible(view), timeout);
+			Assert.True(result);
+
+		}
+
+		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000)
+		{
+			var result = await Wait(() => !KeyboardManager.IsSoftKeyboardVisible(view), timeout);
+			Assert.True(result);
+		}
+
 		public static Task<bool> WaitForLayout(AView view, int timeout = 1000)
 		{
 			var tcs = new TaskCompletionSource<bool>();
 
 			view.LayoutChange += OnLayout;
-
 			var cts = new CancellationTokenSource();
 			cts.Token.Register(() => OnLayout(view), true);
 			cts.CancelAfter(timeout);
@@ -36,6 +139,7 @@ namespace Microsoft.Maui.DeviceTests
 				if (view.Handle != IntPtr.Zero)
 					view.LayoutChange -= OnLayout;
 
+				// let the layout resolve after changing
 				tcs.TrySetResult(e != null);
 			}
 		}
@@ -236,13 +340,13 @@ namespace Microsoft.Maui.DeviceTests
 			return AssertContainsColor(bitmap, expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtPoint(this AView view, AColor expectedColor, int x, int y)
+		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<Bitmap> AssertColorAtCenter(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
@@ -272,7 +376,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static Task AssertEqual(this Bitmap bitmap, Bitmap other)
+		public static Task AssertEqualAsync(this Bitmap bitmap, Bitmap other)
 		{
 			Assert.NotNull(bitmap);
 			Assert.NotNull(other);
@@ -316,5 +420,12 @@ namespace Microsoft.Maui.DeviceTests
 			OperatingSystem.IsAndroidVersionAtLeast(28)
 				? (FontWeight)typeface.Weight
 				: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
+
+		public static bool IsAccessibilityElement(this AView view) =>
+			view.GetSemanticPlatformElement().IsImportantForAccessibility;
+
+
+		public static bool IsExcludedWithChildren(this AView view) =>
+			view.GetSemanticPlatformElement().ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
 	}
 }

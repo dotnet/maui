@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateBackground(picker);
 		}
 
-		// Uncomment me on NET7 [Obsolete]
+		// TODO Uncomment me on NET8 [Obsolete]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
