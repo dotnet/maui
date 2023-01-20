@@ -1,3 +1,4 @@
+#nullable disable
 using Android.Content;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 

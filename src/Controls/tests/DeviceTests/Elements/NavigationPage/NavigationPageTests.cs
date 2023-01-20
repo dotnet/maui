@@ -25,12 +25,13 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 #if IOS || MACCATALYST
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 #else
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler<Frame, FrameRenderer>();
 				});
 			});
@@ -50,7 +51,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if !IOS && !MACCATALYST
-
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()
 		{
@@ -82,21 +82,21 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(IsBackButtonVisible(handler));
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "Set Has Navigation Bar")]
 		public async Task SetHasNavigationBar()
 		{
 			SetupBuilder();
-			var navPage = new NavigationPage(new ContentPage());
+			var navPage = new NavigationPage(new ContentPage() { Title = "Nav Bar" });
 
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				Assert.True(IsNavigationBarVisible(handler));
+				Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(handler)));
 				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, false);
-				Assert.False(IsNavigationBarVisible(handler));
+				Assert.True(await AssertionExtensions.Wait(() => !IsNavigationBarVisible(handler)));
 				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, true);
-				Assert.True(IsNavigationBarVisible(handler));
-				return Task.CompletedTask;
+				Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(handler)));
 			});
 		}
 
@@ -112,10 +112,11 @@ namespace Microsoft.Maui.DeviceTests
 				var contentPage = new ContentPage();
 				window.Page = contentPage;
 				await OnLoadedAsync(contentPage);
-				Assert.False(IsNavigationBarVisible(handler));
+				Assert.True(await AssertionExtensions.Wait(() => !IsNavigationBarVisible(handler)));
 			});
 		}
 
+#if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Toolbar Items Map Correctly")]
 		public async Task ToolbarItemsMapCorrectly()
 		{
@@ -135,6 +136,7 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "Toolbar Title")]
 		public async Task ToolbarTitle()
@@ -170,6 +172,8 @@ namespace Microsoft.Maui.DeviceTests
 			// Just verifying that nothing crashes
 		}
 
+
+#if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Insert Page Before RootPage ShowsBackButton")]
 		public async Task InsertPageBeforeRootPageShowsBackButton()
 		{
@@ -190,6 +194,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(IsBackButtonVisible(navPage.Handler));
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "Remove Root Page Hides Back Button")]
 		public async Task RemoveRootPageHidesBackButton()
@@ -244,6 +249,5 @@ namespace Microsoft.Maui.DeviceTests
 				};
 			});
 		}
-#endif
 	}
 }

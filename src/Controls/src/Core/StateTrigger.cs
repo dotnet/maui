@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/StateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.StateTrigger']/Docs/*" />
