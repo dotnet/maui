@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
@@ -32,14 +33,32 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
-		public static Task WaitForFocused(this UIView view, int timeout = 1000)
+		public static async Task WaitForFocused(this UIView view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+			if (!view.IsFocused())
+			{
+				await Wait(() => view.IsFocused(), timeout);
+			}
+
+			Assert.True(view.IsFocused());
 		}
+
+		public static async Task WaitForUnFocused(this UIView view, int timeout = 1000)
+		{
+			if (view.IsFocused())
+			{
+				await Wait(() => view.IsFocused(), timeout);
+			}
+
+			Assert.False(view.IsFocused());
+		}
+
+		static bool IsFocused(this UIView view) => view.Focused || view.IsFirstResponder;
 
 		public static Task FocusView(this UIView view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+			view.Focus(new FocusRequest(false));
+			return WaitForFocused(view, timeout);
 		}
 
 		public static Task ShowKeyboardForView(this UIView view, int timeout = 1000)
@@ -108,7 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 			return result;
 		}
 
-		static UIView FindContentView()
+		public static UIView FindContentView()
 		{
 			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 			{
@@ -527,6 +546,51 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return platformView;
+		}
+
+		public static void TapBackButton(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			_ = item ?? throw new Exception("Unable to locate back button view");
+
+			var recognizer = item!.GestureRecognizers!.OfType<UITapGestureRecognizer>().FirstOrDefault();
+			_ = recognizer ?? throw new Exception("Unable to Back Button TapGestureRecognizer");
+
+			recognizer.State = UIGestureRecognizerState.Ended;
+		}
+
+		public static string? GetToolbarTitle(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			_ = item ?? throw new Exception("Unable to locate TitleBar Control");
+
+			var titleLabel = item.FindDescendantView<UILabel>();
+
+			_ = item ?? throw new Exception("Unable to locate UILabel Inside UINavigationBar");
+			return titleLabel?.Text;
+		}
+
+		public static string? GetBackButtonText(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			_ = item ?? throw new Exception("Unable to locate TitleBar Control");
+
+			var titleLabel = item.FindDescendantView<UILabel>();
+
+			_ = item ?? throw new Exception("Unable to locate UILabel Inside UINavigationBar");
+			return titleLabel?.Text;
 		}
 	}
 }

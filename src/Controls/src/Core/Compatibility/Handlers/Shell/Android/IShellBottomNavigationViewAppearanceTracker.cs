@@ -1,3 +1,4 @@
+#nullable disable
 
 using System;
 using Google.Android.Material.BottomNavigation;
