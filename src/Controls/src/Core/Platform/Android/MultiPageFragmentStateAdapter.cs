@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void CheckItemKeys()
 		{
-			for (var i = 0; i < keys.Count; i++)
+			for (var i = keys.Count - 1; i >= 0; i--)
 			{
 				ItemKey item = keys[i];
 
@@ -137,6 +137,13 @@ namespace Microsoft.Maui.Controls.Platform
 					Disconnect();
 			}
 
+			// This will only ever fire once. This is purely waiting
+			// for the xplat view to get filled in with a PlatformView.
+			// Once a handler is set, then this key is locked to that platformview. 
+			// If that handler gets disconnected (OnHandlerChanging) then we have to
+			// disconnect this key, and once the same page is requested again a new key/handler 
+			// will need to get created. We can't reuse keys for different PlatformViews.
+			// The ItemKey/PlatformView relationship is immutable
 			void OnHandlerChanged(object? sender, EventArgs e)
 			{
 				if (_page == null || _platformView != null)
