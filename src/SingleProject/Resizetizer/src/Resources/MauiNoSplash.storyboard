@@ -18,12 +18,7 @@
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="{imageView.image}" translatesAutoresizingMaskIntoConstraints="NO" id="aT4-1l-d9a">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                            </imageView>
-                        </subviews>
+                        <subviews />
                         <color key="backgroundColor" red="{color.red}" green="{color.green}" blue="{color.blue}" alpha="{color.alpha}" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
                 </viewController>
@@ -32,7 +27,4 @@
             <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="{imageView.image}" />
-    </resources>
 </document>

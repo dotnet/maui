@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		readonly string _drawable;
 		readonly string _drawable_v31;
 
+		static readonly Dictionary<string, string> ResizeMetadata = new() { ["Resize"] = "true" };
+
 		public GenerateSplashAndroidResourcesTests()
 		{
 			_colors = Path.Combine(DestinationDirectory, "values", "maui_colors.xml");
@@ -22,11 +24,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			_drawable_v31 = Path.Combine(DestinationDirectory, "drawable-v31", "maui_splash_image.xml");
 		}
 
-		protected GenerateSplashAndroidResources GetNewTask(ITaskItem splash) =>
+		protected GenerateSplashAndroidResources GetNewTask(params ITaskItem[] splash) =>
 			new()
 			{
-				MauiSplashScreen = new[] { splash },
+				MauiSplashScreen = splash,
 				IntermediateOutputPath = DestinationDirectory,
+				InputsFile = "mauisplash.inputs",
 				BuildEngine = this,
 			};
 
@@ -84,6 +87,188 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			AssertImageFile("maui_splash_image.xml", _drawable, $"@drawable/{outputImage}");
 			AssertImageFile("maui_splash_image_v31.xml", _drawable_v31, $"@drawable/{outputImage}");
+		}
+
+		[Fact]
+		public void NoItemsSucceed()
+		{
+			var task = GetNewTask();
+
+			var success = task.Execute();
+
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+		}
+
+		[Fact]
+		public void NullItemsSucceed()
+		{
+			var task = GetNewTask(null);
+
+			var success = task.Execute();
+
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+		}
+
+		[Fact]
+		public void NonExistantFileFails()
+		{
+			var items = new[]
+			{
+				new TaskItem("non-existant.png"),
+			};
+
+			var task = GetNewTask(items);
+
+			var success = task.Execute();
+
+			Assert.False(success);
+		}
+
+		[Fact]
+		public void ValidFileSucceeds()
+		{
+			var items = new[]
+			{
+				new TaskItem("images/camera.png"),
+			};
+
+			var task = GetNewTask(items);
+
+			var success = task.Execute();
+
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+		}
+
+		[Fact]
+		public void ValidVectorFileSucceeds()
+		{
+			var items = new[]
+			{
+				new TaskItem("images/camera.svg"),
+			};
+
+			var task = GetNewTask(items);
+
+			var success = task.Execute();
+
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+		}
+
+		[Fact]
+		public void SingleImageWithOnlyPathSucceeds()
+		{
+			var items = new[]
+			{
+				new TaskItem("images/camera.png", ResizeMetadata),
+			};
+
+			var task = GetNewTask(items);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileSize("drawable-mdpi/camera.png", 1792, 1792);  // 1x
+			AssertFileSize("drawable-xhdpi/camera.png", 3584, 3584); // 2x
+		}
+
+		[Fact]
+		public void SingleVectorImageWithOnlyPathSucceeds()
+		{
+			var items = new[]
+			{
+				new TaskItem("images/camera.svg"),
+			};
+
+			var task = GetNewTask(items);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileSize("drawable-mdpi/camera.png", 1792, 1792);  // 1x
+			AssertFileSize("drawable-xhdpi/camera.png", 3584, 3584); // 2x
+		}
+
+		[Fact]
+		public void TwoImagesWithOnlyPathOnlyGeneratesFirstImage()
+		{
+			var items = new[]
+			{
+				new TaskItem("images/camera.png", ResizeMetadata),
+				new TaskItem("images/camera_color.png", ResizeMetadata),
+			};
+
+			var task = GetNewTask(items);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileSize("drawable-mdpi/camera.png", 1792, 1792);
+			AssertFileNotExists("drawable-mdpi/camera_color.png");
+
+			AssertFileSize("drawable-xhdpi/camera.png", 3584, 3584);
+			AssertFileNotExists("drawable-xhdpi/camera_color.png");
+		}
+
+		[Fact]
+		public void SingleImageNoResizeSucceeds()
+		{
+			var items = new[]
+			{
+				new TaskItem("images/camera.png", new Dictionary<string, string>
+				{
+					["Resize"] = bool.FalseString,
+				}),
+			};
+
+			var task = GetNewTask(items);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileSize("drawable/camera.png", 1792, 1792);
+			AssertFileMatches("drawable/camera.png");
+		}
+
+		[Fact]
+		public void SingleVectorImageNoResizeSucceeds()
+		{
+			var items = new[]
+			{
+				new TaskItem("images/camera.svg", new Dictionary<string, string>
+				{
+					["Resize"] = bool.FalseString,
+				}),
+			};
+
+			var task = GetNewTask(items);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileSize("drawable/camera.png", 1792, 1792);
+		}
+
+		[Theory]
+		[InlineData(null, "camera")]
+		[InlineData("", "camera")]
+		[InlineData("camera", "camera")]
+		[InlineData("camera.png", "camera")]
+		[InlineData("folder/camera.png", "camera")]
+		[InlineData("the_alias", "the_alias")]
+		[InlineData("the_alias.png", "the_alias")]
+		[InlineData("folder/the_alias.png", "the_alias")]
+		public void SingleImageWithBaseSizeSucceeds(string alias, string outputName)
+		{
+			var items = new[]
+			{
+				new TaskItem("images/camera.png", new Dictionary<string, string>
+				{
+					["BaseSize"] = "44",
+					["Link"] = alias,
+				}),
+			};
+
+			var task = GetNewTask(items);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileSize($"drawable-mdpi/{outputName}.png", 44, 44);
+			AssertFileSize($"drawable-xhdpi/{outputName}.png", 88, 88);
 		}
 
 		void AssertColorsFile(string expectedFilename, string color)
