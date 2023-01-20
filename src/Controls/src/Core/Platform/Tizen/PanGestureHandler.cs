@@ -1,5 +1,3 @@
-#nullable enable
-
 using NGestureDetector = Tizen.NUI.GestureDetector;
 using NGestureStateType = Tizen.NUI.Gesture.StateType;
 using NPanGestureDetector = Tizen.NUI.PanGestureDetector;

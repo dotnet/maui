@@ -23,7 +23,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 
 			if (value.StartsWith(ShapeConverter.Ellipse, StringComparison.Ordinal))
 			{
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Ellipse"), parameterTypes: null));
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Ellipse"), parameterTypes: null));
 
 				yield break;
 			}
@@ -33,7 +33,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				var parts = value.Split(ShapeConverter.Delimiter, 2);
 				if (parts.Length != 2)
 				{
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Line"), parameterTypes: null));
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Line"), parameterTypes: null));
 					yield break;
 				}
 
@@ -42,7 +42,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 
 				if (points == null || points.Count == 0)
 				{
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Line"), parameterTypes: null));
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Line"), parameterTypes: null));
 					yield break;
 				}
 
@@ -53,7 +53,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 					yield return Instruction.Create(OpCodes.Ldc_R8, p1.Y);
 					yield return Instruction.Create(OpCodes.Ldc_R8, 0d);
 					yield return Instruction.Create(OpCodes.Ldc_R8, 0d);
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Line"), parameterTypes: new[] {
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Line"), parameterTypes: new[] {
 																								("mscorlib", "System", "Double"),
 																								("mscorlib", "System", "Double"),
 																								("mscorlib", "System", "Double"),
@@ -68,7 +68,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				yield return Instruction.Create(OpCodes.Ldc_R8, p2.X);
 				yield return Instruction.Create(OpCodes.Ldc_R8, p2.Y);
 
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Line"), parameterTypes: new[] {
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Line"), parameterTypes: new[] {
 																							("mscorlib", "System", "Double"),
 																							("mscorlib", "System", "Double"),
 																							("mscorlib", "System", "Double"),
@@ -85,17 +85,17 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				var parts = value.Split(ShapeConverter.Delimiter, 2);
 				if (parts.Length != 2)
 				{
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Path"), parameterTypes: null));
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Path"), parameterTypes: null));
 					yield break;
 				}
 
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Path"), parameterTypes: null));
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Path"), parameterTypes: null));
 				yield return Instruction.Create(OpCodes.Dup);
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "PathGeometryConverter"), parameterTypes: null));
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "PathGeometryConverter"), parameterTypes: null));
 				yield return Instruction.Create(OpCodes.Ldstr, parts[1]);
-				yield return Instruction.Create(OpCodes.Call, module.ImportMethodReference(("System", "System.ComponentModel", "TypeConverter"), "ConvertFromInvariantString", parameterTypes: new[] {
+				yield return Instruction.Create(OpCodes.Call, module.ImportMethodReference(context.Cache, ("System", "System.ComponentModel", "TypeConverter"), "ConvertFromInvariantString", parameterTypes: new[] {
 					("mscorlib", "System", "String")}));
-				yield return Instruction.Create(OpCodes.Call, module.ImportPropertySetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Path"), "Data"));
+				yield return Instruction.Create(OpCodes.Call, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Path"), "Data"));
 				yield break;
 			}
 
@@ -104,7 +104,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				var parts = value.Split(ShapeConverter.Delimiter, 2);
 				if (parts.Length != 2)
 				{
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polygon"), parameterTypes: null));
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polygon"), parameterTypes: null));
 					yield break;
 				}
 
@@ -113,16 +113,16 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 
 				if (points == null || points.Count == 0)
 				{
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polygon"), parameterTypes: null));
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polygon"), parameterTypes: null));
 					yield break;
 				}
 
-				foreach (var instruction in CreatePointCollection(module, points))
+				foreach (var instruction in CreatePointCollection(context, module, points))
 				{
 					yield return instruction;
 				}
 
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polygon"), parameterTypes: new[] {
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polygon"), parameterTypes: new[] {
 																							("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "PointCollection")}));
 				yield break;
 			}
@@ -132,7 +132,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				var parts = value.Split(ShapeConverter.Delimiter, 2);
 				if (parts.Length != 2)
 				{
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polyline"), parameterTypes: null));
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polyline"), parameterTypes: null));
 					yield break;
 				}
 
@@ -141,23 +141,23 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 
 				if (points == null || points.Count == 0)
 				{
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polyline"), parameterTypes: null));
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polyline"), parameterTypes: null));
 					yield break;
 				}
 
-				foreach (var instruction in CreatePointCollection(module, points))
+				foreach (var instruction in CreatePointCollection(context, module, points))
 				{
 					yield return instruction;
 				}
 
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polyline"), parameterTypes: new[] {
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Polyline"), parameterTypes: new[] {
 																							("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "PointCollection")}));
 				yield break;
 			}
 
 			if (value.StartsWith(ShapeConverter.Rectangle, StringComparison.Ordinal))
 			{
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Rectangle"), parameterTypes: null));
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Rectangle"), parameterTypes: null));
 				yield break;
 			}
 
@@ -166,11 +166,11 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				var parts = value.Split(ShapeConverter.Delimiter, 2);
 				if (parts.Length != 2)
 				{
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), parameterTypes: null));
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), parameterTypes: null));
 					yield break;
 				}
 
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), parameterTypes: null));
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), parameterTypes: null));
 				yield return Instruction.Create(OpCodes.Dup);
 
 				var cornerRadiusTypeConverter = new Converters.CornerRadiusTypeConverter();
@@ -181,22 +181,22 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				yield return Instruction.Create(OpCodes.Ldc_R8, cornerRadius.BottomLeft);
 				yield return Instruction.Create(OpCodes.Ldc_R8, cornerRadius.BottomRight);
 
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui", "CornerRadius"), parameterTypes: new[] {
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui", "Microsoft.Maui", "CornerRadius"), parameterTypes: new[] {
 					("mscorlib", "System", "Double"),
 					("mscorlib", "System", "Double"),
 					("mscorlib", "System", "Double"),
 					("mscorlib", "System", "Double")}));
 
-				yield return Instruction.Create(OpCodes.Call, module.ImportPropertySetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), "CornerRadius"));
+				yield return Instruction.Create(OpCodes.Call, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), "CornerRadius"));
 				yield break;
 			}
 		}
 		throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(IShape));
 	}
 
-	IEnumerable<Instruction> CreatePointCollection(ModuleDefinition module, PointCollection points)
+	IEnumerable<Instruction> CreatePointCollection(ILContext context, ModuleDefinition module, PointCollection points)
 	{
-		var pointType = module.ImportReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Point"));
+		var pointType = module.ImportReference(context.Cache, ("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Point"));
 		yield return Instruction.Create(OpCodes.Ldc_I4, points.Count);
 		yield return Instruction.Create(OpCodes.Newarr, pointType);
 
@@ -206,7 +206,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 			yield return Instruction.Create(OpCodes.Dup);
 			yield return Instruction.Create(OpCodes.Ldc_I4, i);
 
-			foreach (var instruction in pointTypeConverter.CreatePoint(module, points[i]))
+			foreach (var instruction in pointTypeConverter.CreatePoint(context, module, points[i]))
 			{
 				yield return instruction;
 			}
@@ -215,6 +215,6 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 			yield return Instruction.Create(OpCodes.Stelem_Any, pointType);
 		}
 
-		yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(type: ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "PointCollection"), paramCount: 1));
+		yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, type: ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "PointCollection"), paramCount: 1));
 	}
 }
