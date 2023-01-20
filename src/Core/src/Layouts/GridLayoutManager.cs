@@ -330,6 +330,19 @@ namespace Microsoft.Maui.Layouts
 				CompressStarMeasurements();
 			}
 
+			Size MeasureCell(Cell cell, double width, double height)
+			{
+				if (cell.LastMeasureHeight == height && cell.LastMeasureWidth == width)
+				{
+					return cell.LastMeasureResult;
+				}
+
+				var result = _childrenToLayOut[cell.ViewIndex].Measure(width, height);
+				cell.CacheMeasure(width, height, result);
+
+				return result;
+			}
+
 			void MeasureCellsWithUnknowns()
 			{
 				for (int n = 0; n < _cells.Length; n++)
@@ -346,7 +359,7 @@ namespace Microsoft.Maui.Layouts
 					var availableWidth = cell.IsColumnSpanAuto ? double.PositiveInfinity : AvailableWidth(cell);
 					var availableHeight = cell.IsRowSpanAuto ? double.PositiveInfinity : AvailableHeight(cell);
 
-					var measure = _childrenToLayOut[cell.ViewIndex].Measure(availableWidth, availableHeight);
+					var measure = MeasureCell(cell, availableWidth, availableHeight);
 
 					if (cell.IsColumnSpanAuto)
 					{
@@ -583,7 +596,7 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					var measure = _childrenToLayOut[cell.ViewIndex].Measure(width, height);
+					var measure = MeasureCell(cell, width, height);
 
 					if (cell.IsColumnSpanStar && cell.ColumnSpan > 1)
 					{
@@ -910,6 +923,17 @@ namespace Microsoft.Maui.Layouts
 			{
 				// Avoiding Enum.HasFlag here for performance reasons; we don't need the type check
 				return (a & b) == b;
+			}
+
+			public double LastMeasureWidth { get; private set; } = -1;
+			public double LastMeasureHeight { get; private set; } = -1;
+			public Size LastMeasureResult { get; private set; }
+
+			public void CacheMeasure(double width, double height, Size result)
+			{
+				LastMeasureHeight = height;
+				LastMeasureWidth = width;
+				LastMeasureResult = result;
 			}
 		}
 

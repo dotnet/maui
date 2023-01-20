@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		readonly View _view;
 		IPlatformViewHandler _renderer;
+		UIView _platformView;
 		bool _disposed;
 		internal event EventHandler HeaderSizeChanged;
 
@@ -17,13 +19,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_view = view;
 
-			_renderer = (IPlatformViewHandler)view.ToHandler(view.FindMauiContext());
-
-			AddSubview(view.ToPlatform());
+			UpdatePlatformView();
 			ClipsToBounds = true;
-			view.MeasureInvalidated += OnMeasureInvalidated;
 			MeasuredHeight = double.NaN;
 			Margin = new Thickness(0);
+		}
+
+		internal void UpdatePlatformView()
+		{
+			_renderer = (IPlatformViewHandler)_view.ToHandler(_view.FindMauiContext());
+			_platformView = _view.ToPlatform();
+
+			if (_platformView.Superview != this)
+				AddSubview(_platformView);
+		}
+
+		bool IsPlatformViewValid()
+		{
+			if (View == null || _platformView == null || _renderer == null)
+				return false;
+
+			return _platformView.Superview == this;
 		}
 
 		internal View View => _view;
@@ -46,7 +62,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal bool MeasureIfNeeded()
 		{
-			if (View == null)
+			if (!IsPlatformViewValid())
 				return false;
 
 			if (double.IsNaN(MeasuredHeight) || Frame.Width != View.Width)
@@ -65,6 +81,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void ReMeasure()
 		{
+			if (!IsPlatformViewValid())
+				return;
+
 			if (Height != null && MatchHeight)
 			{
 				MeasuredHeight = Height.Value;
@@ -80,6 +99,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnMeasureInvalidated(object sender, System.EventArgs e)
 		{
+			if (!IsPlatformViewValid())
+				return;
+
 			ReMeasure();
 			LayoutSubviews();
 		}
@@ -90,10 +112,43 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ReMeasure();
 		}
 
+		public override void WillRemoveSubview(UIView uiview)
+		{
+			Disconnect();
+			base.WillRemoveSubview(uiview);
+		}
+
+		public override void AddSubview(UIView view)
+		{
+			if (view == _platformView)
+				_view.MeasureInvalidated += OnMeasureInvalidated;
+
+			base.AddSubview(view);
+
+		}
+
 		public override void LayoutSubviews()
 		{
+			if (!IsPlatformViewValid())
+				return;
+
 			var platformFrame = new Rect(0, 0, Width ?? Frame.Width, Height ?? MeasuredHeight);
+
+			var width = Width ?? Frame.Width;
+			var height = Height ?? MeasuredHeight;
+
+			if (MatchHeight)
+			{
+				(_view as IView).Measure(width, height);
+			}
+
 			(_view as IView).Arrange(platformFrame);
+		}
+
+		internal void Disconnect()
+		{
+			if (_view != null)
+				_view.MeasureInvalidated -= OnMeasureInvalidated;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -103,12 +158,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				if (_view != null)
-					_view.MeasureInvalidated -= OnMeasureInvalidated;
+				Disconnect();
 
-				_renderer?.DisconnectHandler();
+				if (_platformView.Superview == this)
+					_platformView.RemoveFromSuperview();
+
 				_renderer = null;
-
+				_platformView = null;
 				_disposed = true;
 			}
 

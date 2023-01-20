@@ -1,3 +1,4 @@
+#nullable disable
 using Android.Graphics.Drawables;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Handlers.Compatibility;

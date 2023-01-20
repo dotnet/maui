@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿#nullable disable
+using Microsoft.Maui.Controls;
 using TFontAttributes = Tizen.UIExtensions.Common.FontAttributes;
 
 namespace Microsoft.Maui.Controls.Platform
