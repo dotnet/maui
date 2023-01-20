@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Platform
 				wrapperView.Border = border;
 		}
 
-		internal static T? FindDescendantView<T>(this UIView view, Func<T, bool> predicate) where T : UIView
+		public static T? FindDescendantView<T>(this UIView view) where T : UIView
 		{
 			var queue = new Queue<UIView>();
 			queue.Enqueue(view);
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var descendantView = queue.Dequeue();
 
-				if (descendantView is T result && predicate.Invoke(result))
+				if (descendantView is T result)
 					return result;
 
 				for (var i = 0; i < descendantView.Subviews?.Length; i++)
@@ -256,9 +256,6 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
-
-		public static T? FindDescendantView<T>(this UIView view) where T : UIView =>
-			FindDescendantView<T>(view, (_) => true);
 
 		public static void UpdateBackgroundLayerFrame(this UIView view)
 		{
@@ -484,18 +481,6 @@ namespace Microsoft.Maui.Platform
 			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
 			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
 			return new Rect(nvb.X, nvb.Y, nvb.Width, nvb.Height);
-		}
-
-		internal static Rect GetFrameRelativeTo(this UIView view, UIView relativeTo)
-		{
-			var viewWindowLocation = view.GetLocationOnScreen();
-			var relativeToLocation = relativeTo.GetLocationOnScreen();
-
-			return
-				new Rect(
-						new Point(viewWindowLocation.X - relativeToLocation.X, viewWindowLocation.Y - relativeToLocation.Y),
-						new Graphics.Size(view.Bounds.Width, view.Bounds.Height)
-					);
 		}
 
 		internal static UIView? GetParent(this UIView? view)
