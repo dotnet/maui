@@ -332,15 +332,20 @@ Task("uitest")
 	};
 	DotNetCoreTool("tool", settings);
 
+	//we need to build tests first to pass ExtraDefineConstants
+	Information("Build UITests {0}",PROJECT.FullPath);
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
+	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append("/p:ExtraDefineConstants=ANDROID")
+				.Append("/bl:" + binlog),
+			ToolPath = DOTNET_PATH,
+	});
+
 	Information("Run UITests {0}",PROJECT.FullPath);
-
-	var properties = new Dictionary<string,string>
-	{
-		["ExtraDefineConstants"] = "ANDROID"
-	};
-
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra: properties);
-
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
 });
 
 RunTarget(TARGET);

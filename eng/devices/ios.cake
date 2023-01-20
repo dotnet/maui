@@ -223,14 +223,20 @@ Task("uitest")
 		
 	}
 
-	Information("Run UITests {0}",PROJECT.FullPath);
+	//we need to build tests first to pass ExtraDefineConstants
+	Information("Build UITests project {0}",PROJECT.FullPath);
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
+	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append("/p:ExtraDefineConstants=IOSUITEST")
+				.Append("/bl:" + binlog),
+			ToolPath = DOTNET_PATH,
+	});
 
-	var properties = new Dictionary<string,string>
-	{
-		["ExtraDefineConstants"] = "IOSUITEST"
-	};
-	
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra: properties);
+	Information("Run UITests project {0}",PROJECT.FullPath);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
 });
 
 RunTarget(TARGET);
