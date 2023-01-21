@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			var oldListViewBase = platformView;
-		
+
 			if (oldListViewBase != null)
 			{
 				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
