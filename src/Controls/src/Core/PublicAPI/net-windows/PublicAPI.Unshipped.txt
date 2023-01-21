@@ -8,3 +8,11 @@ Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
 override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
+*REMOVED*~override Microsoft.Maui.Controls.Handlers.PolygonHandler.ConnectHandler(Microsoft.Maui.Graphics.Win2D.W2DGraphicsView nativeView) -> void
+*REMOVED*~override Microsoft.Maui.Controls.Handlers.PolygonHandler.DisconnectHandler(Microsoft.Maui.Graphics.Win2D.W2DGraphicsView nativeView) -> void
+*REMOVED*~override Microsoft.Maui.Controls.Handlers.PolylineHandler.ConnectHandler(Microsoft.Maui.Graphics.Win2D.W2DGraphicsView nativeView) -> void
+*REMOVED*~override Microsoft.Maui.Controls.Handlers.PolylineHandler.DisconnectHandler(Microsoft.Maui.Graphics.Win2D.W2DGraphicsView nativeView) -> void
+~override Microsoft.Maui.Controls.Handlers.PolygonHandler.ConnectHandler(Microsoft.Maui.Platform.MauiShapeView nativeView) -> void
+~override Microsoft.Maui.Controls.Handlers.PolygonHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiShapeView nativeView) -> void
+~override Microsoft.Maui.Controls.Handlers.PolylineHandler.ConnectHandler(Microsoft.Maui.Platform.MauiShapeView nativeView) -> void
+~override Microsoft.Maui.Controls.Handlers.PolylineHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiShapeView nativeView) -> void

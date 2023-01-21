@@ -1,13 +1,12 @@
 ﻿#nullable disable
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Win2D;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class PolylineHandler
 	{
-		protected override void ConnectHandler(W2DGraphicsView nativeView)
+		protected override void ConnectHandler(MauiShapeView nativeView)
 		{
 			if (VirtualView is Polyline polyline)
 				polyline.Points.CollectionChanged += OnPointsCollectionChanged;
@@ -15,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(W2DGraphicsView nativeView)
+		protected override void DisconnectHandler(MauiShapeView nativeView)
 		{
 			if (VirtualView is Polyline polyline)
 				polyline.Points.CollectionChanged -= OnPointsCollectionChanged;

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 	public class PlatformTouchGraphicsView : UserControl
 	{
 		IGraphicsView? _graphicsView;
-		readonly W2DGraphicsView _platformGraphicsView;
+		readonly PlatformGraphicsView _platformGraphicsView;
 		bool _isTouching = false;
 		bool _isInBounds = false;
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		{
 			ManipulationMode = ManipulationModes.All;
 
-			Content = _platformGraphicsView = new W2DGraphicsView();
+			Content = _platformGraphicsView = new PlatformGraphicsView();
 		}
 
 		public void UpdateDrawable(IGraphicsView graphicsView)

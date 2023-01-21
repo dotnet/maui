@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Graphics.Platform
 	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformGraphicsView instead.")]
 	public sealed class W2DGraphicsView
 #else
-	public sealed class PlatformGraphicsView
+	public class PlatformGraphicsView
 #endif
 		: UserControl
 	{

@@ -465,6 +465,10 @@ Microsoft.Maui.Graphics.PictureExtensions
 Microsoft.Maui.Graphics.PicturePattern
 Microsoft.Maui.Graphics.PictureReaderExtensions
 Microsoft.Maui.Graphics.PictureWriterExtensions
+Microsoft.Maui.Graphics.Platform.PlatformImage
+Microsoft.Maui.Graphics.Platform.PlatformImage.Dispose() -> void
+Microsoft.Maui.Graphics.Platform.PlatformImage.Height.get -> float
+Microsoft.Maui.Graphics.Platform.PlatformImage.Width.get -> float
 Microsoft.Maui.Graphics.Point
 Microsoft.Maui.Graphics.Point.Deconstruct(out double x, out double y) -> void
 Microsoft.Maui.Graphics.Point.Distance(Microsoft.Maui.Graphics.Point other) -> double
@@ -996,6 +1000,16 @@ virtual Microsoft.Maui.Graphics.Paint.IsTransparent.get -> bool
 ~Microsoft.Maui.Graphics.PictureCanvas.StrokeDashPattern.set -> void
 ~Microsoft.Maui.Graphics.PicturePattern.PicturePattern(Microsoft.Maui.Graphics.IPicture picture) -> void
 ~Microsoft.Maui.Graphics.PicturePattern.PicturePattern(Microsoft.Maui.Graphics.IPicture picture, float stepX, float stepY) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Downsize(float maxWidthOrHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Draw(Microsoft.Maui.Graphics.ICanvas canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.PlatformImage(Microsoft.Graphics.Canvas.ICanvasResourceCreator creator, Microsoft.Graphics.Canvas.CanvasBitmap bitmap) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.PlatformRepresentation.get -> Microsoft.Graphics.Canvas.CanvasBitmap
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Resize(float width, float height, Microsoft.Maui.Graphics.ResizeMode resizeMode = Microsoft.Maui.Graphics.ResizeMode.Fit, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Graphics.Platform.PlatformImage.ToImage(int width, int height, float scale = 1) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.ToPlatformImage() -> Microsoft.Maui.Graphics.IImage
 ~Microsoft.Maui.Graphics.Point.Equals(object o, double epsilon) -> bool
 ~Microsoft.Maui.Graphics.PointF.Equals(object o, float epsilon) -> bool
 ~Microsoft.Maui.Graphics.RadialGradientPaint.RadialGradientPaint(Microsoft.Maui.Graphics.GradientPaint gradientPaint) -> void
@@ -1219,6 +1233,7 @@ virtual Microsoft.Maui.Graphics.Paint.IsTransparent.get -> bool
 ~static Microsoft.Maui.Graphics.PictureWriterExtensions.SaveAsBytes(this Microsoft.Maui.Graphics.IPictureWriter target, Microsoft.Maui.Graphics.IPicture picture) -> byte[]
 ~static Microsoft.Maui.Graphics.PictureWriterExtensions.SaveAsBytesAsync(this Microsoft.Maui.Graphics.IPictureWriter target, Microsoft.Maui.Graphics.IPicture picture) -> System.Threading.Tasks.Task<byte[]>
 ~static Microsoft.Maui.Graphics.PictureWriterExtensions.SaveAsStream(this Microsoft.Maui.Graphics.IPictureWriter target, Microsoft.Maui.Graphics.IPicture picture) -> System.IO.Stream
+~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
 ~static Microsoft.Maui.Graphics.Point.TryParse(string value, out Microsoft.Maui.Graphics.Point point) -> bool
 ~static Microsoft.Maui.Graphics.PointF.TryParse(string value, out Microsoft.Maui.Graphics.PointF pointF) -> bool
 ~static Microsoft.Maui.Graphics.Rect.TryParse(string value, out Microsoft.Maui.Graphics.Rect rectangle) -> bool

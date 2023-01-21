@@ -524,7 +524,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
-			if (image is PlatformImage platformImage)
+			if (image.ToPlatformImage() is Platform.PlatformImage platformImage)
 			{
 				SetRect(x, y, width, height);
 

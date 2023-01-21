@@ -2,14 +2,8 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Microsoft.Maui.Dispatching;
-using Xunit;
-
-#if WINDOWS
-using Microsoft.Maui.Graphics.Win2D;
-using PlatformImageLoadingService = Microsoft.Maui.Graphics.Win2D.W2DImageLoadingService;
-#else
 using Microsoft.Maui.Graphics.Platform;
-#endif
+using Xunit;
 
 namespace Microsoft.Maui.Graphics.DeviceTests;
 

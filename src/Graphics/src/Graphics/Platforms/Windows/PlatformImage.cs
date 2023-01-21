@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Graphics.Platform
 	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformImage instead.")]
 	internal class W2DImage
 #else
-	internal class PlatformImage
+	public class PlatformImage
 #endif
 		: IImage
 	{
@@ -118,7 +118,11 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage ToPlatformImage()
 		{
+#if MAUI_GRAPHICS_WIN2D
+			return new Platform.PlatformImage(_creator, _bitmap);
+#else
 			return this;
+#endif
 		}
 
 		public IImage ToImage(int width, int height, float scale = 1f)

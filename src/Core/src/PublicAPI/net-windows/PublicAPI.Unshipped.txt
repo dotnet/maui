@@ -1,2 +1,14 @@
 #nullable enable
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Platform.MauiShapeView
+Microsoft.Maui.Platform.MauiShapeView.MauiShapeView() -> void
+Microsoft.Maui.Handlers.IShapeViewHandler.PlatformView.get -> Microsoft.Maui.Platform.MauiShapeView!
+override Microsoft.Maui.Handlers.ShapeViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiShapeView!
+static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Microsoft.Maui.Graphics.Platform.PlatformGraphicsView! PlatformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
+static Microsoft.Maui.Platform.ShapesExtensions.InvalidateShape(this Microsoft.Maui.Graphics.Platform.PlatformGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
+static Microsoft.Maui.Platform.ShapesExtensions.UpdateShape(this Microsoft.Maui.Graphics.Platform.PlatformGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
+*REMOVED*Microsoft.Maui.Handlers.IShapeViewHandler.PlatformView.get -> Microsoft.Maui.Graphics.Win2D.W2DGraphicsView!
+*REMOVED*override Microsoft.Maui.Handlers.ShapeViewHandler.CreatePlatformView() -> Microsoft.Maui.Graphics.Win2D.W2DGraphicsView!
+*REMOVED*static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Microsoft.Maui.Graphics.Win2D.W2DGraphicsView! PlatformGraphicsView, Microsoft.Maui.IGraphicsView! graphicsView) -> void
+*REMOVED*static Microsoft.Maui.Platform.ShapesExtensions.InvalidateShape(this Microsoft.Maui.Graphics.Win2D.W2DGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
+*REMOVED*static Microsoft.Maui.Platform.ShapesExtensions.UpdateShape(this Microsoft.Maui.Graphics.Win2D.W2DGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
