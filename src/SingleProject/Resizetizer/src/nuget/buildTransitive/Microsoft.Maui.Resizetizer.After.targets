@@ -292,6 +292,11 @@
             <MauiImage Include="@(MauiIcon)" IsAppIcon="True" />
         </ItemGroup>
 
+        <!-- Add a hash to the splash screen so we can use it later -->
+        <GetFileHash Files="@(MauiSplashScreen)">
+            <Output TaskParameter="Items" ItemName="_MauiSplashScreenWithHashes" />
+        </GetFileHash>
+
         <!-- Write out item spec and metadata to a file we can use as an inputs for the resize target -->
         <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
         <WriteLinesToFile
@@ -308,9 +313,19 @@
 
         <WriteLinesToFile
             File="$(_MauiSplashInputsFile)"
-            Lines="@(MauiSplashScreen->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);ForegroundScale=%(ForegroundScale)')"
+            Lines="@(_MauiSplashScreenWithHashes->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);ForegroundScale=%(ForegroundScale);FileHash=%(FileHash)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
+
+        <!-- Get a hash of the splash screen inputs file -->
+        <GetFileHash Files="$(_MauiSplashInputsFile)">
+            <Output TaskParameter="Hash" PropertyName="_MauiSplashInputsFileHash" />
+        </GetFileHash>
+
+        <!-- Add the inputs file's hash to the splash items -->
+        <ItemGroup>
+            <_MauiSplashScreenWithHashes Update="@(_MauiSplashScreenWithHashes)" InputsFileHash="$(_MauiSplashInputsFileHash)" />
+        </ItemGroup>
 
         <ItemGroup>
             <FileWrites Include="$(_ResizetizerInputsFile)" />
@@ -379,10 +394,21 @@
         </ItemGroup>
 
         <!-- iOS, but not Catalyst -->
+        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+            <!-- Add a Link attribute in the form of '<filename>_<inputshash>.<extension>' -->
+          <_MauiSplashScreenWithHashesInFilename
+              Include="@(_MauiSplashScreenWithHashes->HasMetadata('Link'))"
+              OriginalLink="%(_MauiSplashScreenWithHashes.Link)"
+              Link="$([System.IO.Path]::GetFilenameWithoutExtension('%(_MauiSplashScreenWithHashes.Link)'))_%(InputsFileHash)$([System.IO.Path]::GetExtension('%(_MauiSplashScreenWithHashes.Link)'))" />
+          <_MauiSplashScreenWithHashesInFilename
+              Include="@(_MauiSplashScreenWithHashes)"
+              Exclude="@(_MauiSplashScreenWithHashesInFilename)"
+              Link="%(Filename)_%(InputsFileHash)%(Extension)" />
+        </ItemGroup>
         <GenerateSplashStoryboard
             Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
-            MauiSplashScreen="@(MauiSplashScreen)"
+            MauiSplashScreen="@(_MauiSplashScreenWithHashesInFilename)"
             InputsFile="$(_MauiSplashInputsFile)"
         />
         <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">

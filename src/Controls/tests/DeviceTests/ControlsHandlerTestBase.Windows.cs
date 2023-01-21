@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -125,12 +124,6 @@ namespace Microsoft.Maui.DeviceTests
 		protected MauiToolbar GetPlatformToolbar(IElementHandler handler) =>
 			GetPlatformToolbar(handler.MauiContext);
 
-		protected Size GetTitleViewExpectedSize(IElementHandler handler)
-		{
-			var headerView = GetPlatformToolbar(handler.MauiContext);
-			return new Size(headerView.ActualWidth, headerView.ActualHeight);
-		}
-
 		public bool ToolbarItemsMatch(
 			IElementHandler handler,
 			params ToolbarItem[] toolbarItems)
@@ -150,13 +143,10 @@ namespace Microsoft.Maui.DeviceTests
 			return true;
 		}
 
-		protected FrameworkElement GetTitleView(IElementHandler handler)
+		protected object GetTitleView(IElementHandler handler)
 		{
 			var toolbar = GetPlatformToolbar(handler);
-			return (FrameworkElement)toolbar.TitleView;
+			return toolbar.TitleView;
 		}
-
-		protected string GetToolbarTitle(IElementHandler handler) =>
-			GetPlatformToolbar(handler).Title;
 	}
 }
