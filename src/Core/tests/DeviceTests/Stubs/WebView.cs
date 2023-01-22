@@ -9,6 +9,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public CookieContainer Cookies { get; }
 		public bool CanGoBack { get; set; }
 		public bool CanGoForward { get; set; }
+		public string UserAgent { get; set; }
 
 		public void GoBack() { }
 		public void GoForward() { }
