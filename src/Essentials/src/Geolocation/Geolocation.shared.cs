@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -29,12 +30,36 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <returns>A <see cref="Location"/> object containing current location information or <see langword="null"/> if no location could be determined.</returns>
 		Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken);
 
+		/// <summary>
+		/// Indicates if currently listening to location updates while the app is in foreground.
+		/// </summary>
 		bool IsListeningForeground { get; }
 
+		/// <summary>
+		/// Occurs while listening to location updates.
+		/// </summary>
 		event EventHandler<LocationEventArgs>? LocationChanged;
 
+		/// <summary>
+		/// Starts listening to location updates using the <see cref="LocationChanged"/> event. Events
+		/// may only sent when the app is in the foreground. Requests
+		///  <see cref="Permissions.LocationWhenInUse"/> from the user.
+		/// </summary>
+		/// <remarks>
+		/// Will throw <see cref="ArgumentNullException"/> if request is null.
+		/// Will throw <see cref="FeatureNotSupportedException"/> if listening is not supported on this platform.
+		/// Will throw <see cref="InvalidOperationException"/> if already listening; check
+		/// <see cref="IsListeningForeground"/> to see if already listening.
+		/// </remarks>
+		/// <param name="request">The listening request parameters to use.</param>
+		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request);
 
+		/// <summary>
+		/// Stop listening for location updates when the app is in the foreground.
+		/// </summary>
+		/// <returns><see langword="true"/> if successfully stopped, or not currently listening, or
+		/// <see langword="false"/> when an error occurred.</returns>
 		Task<bool> StopListeningForegroundAsync();
 	}
 
@@ -81,17 +106,40 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken) =>
 			Current.GetLocationAsync(request, cancelToken);
 
+		/// <summary>
+		/// Indicates if currently listening to location updates while the app is in foreground.
+		/// </summary>
 		public static bool IsListeningForeground { get => Current.IsListeningForeground; }
 
+		/// <summary>
+		/// Occurs while listening to location updates.
+		/// </summary>
 		public static event EventHandler<LocationEventArgs> LocationChanged
 		{
 			add => Current.LocationChanged += value;
 			remove => Current.LocationChanged -= value;
 		}
 
+		/// <summary>
+		/// Starts listening to location updates using the <see cref="LocationChanged"/> event. Events
+		/// may only be sent when the app is in the foreground. Requests
+		///  <see cref="Permissions.LocationWhenInUse"/> from the user.
+		/// </summary>
+		/// <remarks>
+		/// Will throw <see cref="FeatureNotSupportedException"/> if listening is not supported on this platform.
+		/// Will throw <see cref="InvalidOperationException"/> if already listening; check
+		/// <see cref="IsListeningForeground"/> to see if already listening.
+		/// </remarks>
+		/// <param name="request">The listening request parameters to use.</param>
+		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		public static Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request) =>
 			Current.StartListeningForegroundAsync(request);
 
+		/// <summary>
+		/// Stop listening for location updates when the app is in the foreground.
+		/// </summary>
+		/// <returns><see langword="true"/> if successfully stopped, or not currently listening, or
+		/// <see langword="false"/> when an error occurred.</returns>
 		public static Task<bool> StopListeningForegroundAsync() =>
 			Current.StopListeningForegroundAsync();
 
