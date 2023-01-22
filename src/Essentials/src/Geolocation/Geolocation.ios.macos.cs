@@ -150,10 +150,10 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		public Task<bool> StopListeningForegroundAsync()
+		public void StopListeningForeground()
 		{
 			if (!IsListeningForeground)
-				return Task.FromResult(true);
+				return;
 
 			listeningManager.StopUpdatingLocation();
 
@@ -166,8 +166,6 @@ namespace Microsoft.Maui.Devices.Sensors
 			listeningManager.Delegate = null;
 
 			listeningManager = null;
-
-			return Task.FromResult(true);
 		}
 	}
 

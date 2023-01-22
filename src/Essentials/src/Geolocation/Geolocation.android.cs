@@ -176,16 +176,16 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		public Task<bool> StopListeningForegroundAsync()
+		public void StopListeningForeground()
 		{
 			if (continuousListener == null)
-				return Task.FromResult(true);
+				return;
 
 			continuousListener.LocationHandler = null;
 			continuousListener.ErrorHandler = null;
 
 			if (listeningProviders == null)
-				return Task.FromResult(true);
+				return;
 
 			for (var i = 0; i < listeningProviders.Count; i++)
 			{
@@ -193,8 +193,6 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 
 			continuousListener = null;
-
-			return Task.FromResult(true);
 		}
 
 		static (string Provider, float Accuracy) GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)

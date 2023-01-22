@@ -146,11 +146,9 @@ namespace Samples.ViewModel
 			{
 				Geolocation.LocationChanged -= Geolocation_LocationChanged;
 
-				var success = await Geolocation.StopListeningForegroundAsync();
+				Geolocation.StopListeningForeground();
 
-				ListeningLocationStatus = success
-					? "Stopped listening for foreground location updates"
-					: "Couldn't stop listening";
+				ListeningLocationStatus = "Stopped listening for foreground location updates";
 			}
 			catch (Exception ex)
 			{

@@ -14,7 +14,7 @@ static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Thre
 Microsoft.Maui.Devices.Sensors.IGeolocation.IsListeningForeground.get -> bool
 Microsoft.Maui.Devices.Sensors.IGeolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.LocationEventArgs!>?
 Microsoft.Maui.Devices.Sensors.IGeolocation.StartListeningForegroundAsync(Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest! request) -> System.Threading.Tasks.Task<bool>!
-Microsoft.Maui.Devices.Sensors.IGeolocation.StopListeningForegroundAsync() -> System.Threading.Tasks.Task<bool>!
+Microsoft.Maui.Devices.Sensors.IGeolocation.StopListeningForeground() -> void
 Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest
 Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.DesiredAccuracy.get -> Microsoft.Maui.Devices.Sensors.GeolocationAccuracy
 Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.DesiredAccuracy.set -> void
@@ -29,4 +29,4 @@ Microsoft.Maui.Devices.Sensors.LocationEventArgs.LocationEventArgs(Microsoft.Mau
 static Microsoft.Maui.Devices.Sensors.Geolocation.IsListeningForeground.get -> bool
 static Microsoft.Maui.Devices.Sensors.Geolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.LocationEventArgs!>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.StartListeningForegroundAsync(Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest! request) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.Devices.Sensors.Geolocation.StopListeningForegroundAsync() -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.StopListeningForeground() -> void

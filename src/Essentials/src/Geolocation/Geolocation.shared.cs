@@ -64,9 +64,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Stop listening for location updates when the app is in the foreground.
 		/// </summary>
-		/// <returns><see langword="true"/> if successfully stopped, or not currently listening, or
-		/// <see langword="false"/> when an error occurred.</returns>
-		Task<bool> StopListeningForegroundAsync();
+		void StopListeningForeground();
 	}
 
 	/// <summary>
@@ -153,10 +151,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Stop listening for location updates when the app is in the foreground.
 		/// </summary>
-		/// <returns><see langword="true"/> if successfully stopped, or not currently listening, or
-		/// <see langword="false"/> when an error occurred.</returns>
-		public static Task<bool> StopListeningForegroundAsync() =>
-			Current.StopListeningForegroundAsync();
+		public static void StopListeningForeground() =>
+			Current.StopListeningForeground();
 
 		static IGeolocation Current => Devices.Sensors.Geolocation.Default;
 

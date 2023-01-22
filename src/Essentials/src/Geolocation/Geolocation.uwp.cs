@@ -86,28 +86,26 @@ namespace Microsoft.Maui.Devices.Sensors
 			return true;
 		}
 
-		public Task<bool> StopListeningForegroundAsync()
+		public void StopListeningForeground()
 		{
 			if (!IsListeningForeground || listeningGeolocator == null)
-				return Task.FromResult(true);
+				return;
 
 			listeningGeolocator.PositionChanged -= OnLocatorPositionChanged;
 			listeningGeolocator.StatusChanged -= OnLocatorStatusChanged;
 
 			listeningGeolocator = null;
-
-			return Task.FromResult(true);
 		}
 
 		void OnLocatorPositionChanged(Geolocator sender, PositionChangedEventArgs e) =>
 			OnLocationChanged(e.Position.ToLocation());
 
-		async void OnLocatorStatusChanged(Geolocator sender, StatusChangedEventArgs e)
+		void OnLocatorStatusChanged(Geolocator sender, StatusChangedEventArgs e)
 		{
 			if (!IsListeningForeground)
 				return;
 
-			await StopListeningForegroundAsync();
+			StopListeningForeground();
 
 			GeolocationError error;
 			switch (e.Status)
