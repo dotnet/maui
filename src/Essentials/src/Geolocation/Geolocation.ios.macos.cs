@@ -156,6 +156,13 @@ namespace Microsoft.Maui.Devices.Sensors
 				return Task.FromResult(true);
 
 			listeningManager.StopUpdatingLocation();
+
+			if (listeningManager.Delegate is ContinuousLocationListener listener)
+			{
+				listener.LocationHandler = null;
+				listener.ErrorHandler = null;
+			}
+
 			listeningManager.Delegate = null;
 
 			listeningManager = null;
