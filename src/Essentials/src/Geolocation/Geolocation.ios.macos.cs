@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		CLLocationManager listeningManager;
 
-		public bool IsListening { get => listeningManager != null; }
+		public bool IsListeningForeground { get => listeningManager != null; }
 
 		public async Task<Location> GetLastKnownLocationAsync()
 		{
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			_ = request ?? throw new ArgumentNullException(nameof(request));
 
-			if (IsListening)
+			if (IsListeningForeground)
 				throw new InvalidOperationException("Already listening to location changes.");
 
 			if (!CLLocationManager.LocationServicesEnabled)
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public Task<bool> StopListeningForegroundAsync()
 		{
-			if (!IsListening)
+			if (!IsListeningForeground)
 				return Task.FromResult(true);
 
 			listeningManager.StopUpdatingLocation();

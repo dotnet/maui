@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
-		public bool IsListening { get => false; }
+		public bool IsListeningForeground { get => false; }
 
 		public Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;

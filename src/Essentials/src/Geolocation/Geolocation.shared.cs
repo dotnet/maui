@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <returns>A <see cref="Location"/> object containing current location information or <see langword="null"/> if no location could be determined.</returns>
 		Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken);
 
-		bool IsListening { get; }
+		bool IsListeningForeground { get; }
 
 		event EventHandler<LocationEventArgs>? LocationChanged;
 
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancelToken) =>
 			Current.GetLocationAsync(request, cancelToken);
 
-		public static bool IsListening { get => Current.IsListening; }
+		public static bool IsListeningForeground { get => Current.IsListeningForeground; }
 
 		public static event EventHandler<LocationEventArgs> LocationChanged
 		{

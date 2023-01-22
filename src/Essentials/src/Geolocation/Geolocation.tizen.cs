@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		Location lastKnownLocation = new Location();
 
-		public bool IsListening { get => false; }
+		public bool IsListeningForeground { get => false; }
 
 		public Task<Location> GetLastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
 

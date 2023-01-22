@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		static LocationManager LocationManager =>
 			locationManager ??= Application.Context.GetSystemService(Context.LocationService) as LocationManager;
 
-		public bool IsListening { get => continuousListener != null; }
+		public bool IsListeningForeground { get => continuousListener != null; }
 
 		public async Task<Location> GetLastKnownLocationAsync()
 		{
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			_ = request ?? throw new ArgumentNullException(nameof(request));
 
-			if (IsListening)
+			if (IsListeningForeground)
 				throw new InvalidOperationException("Already listening to location changes.");
 
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();

@@ -53,7 +53,7 @@ namespace Samples.ViewModel
 			set => SetProperty(ref accuracy, value);
 		}
 
-		public bool IsListening => Geolocation.IsListening;
+		public bool IsListening => Geolocation.IsListeningForeground;
 
 		public bool IsNotListening => !IsListening;
 

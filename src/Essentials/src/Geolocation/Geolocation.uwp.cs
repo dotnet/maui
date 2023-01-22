@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		Geolocator? listeningGeolocator;
 
-		public bool IsListening { get => false; }
+		public bool IsListeningForeground { get => false; }
 
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (request.MinimumTime.TotalMilliseconds < 0)
 				throw new ArgumentOutOfRangeException(nameof(request), "MinimumTime must be positive.");
 
-			if (IsListening)
+			if (IsListeningForeground)
 				throw new InvalidOperationException("Already listening to location updates.");
 
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public Task<bool> StopListeningForegroundAsync()
 		{
-			if (!IsListening || listeningGeolocator == null)
+			if (!IsListeningForeground || listeningGeolocator == null)
 				return Task.FromResult(true);
 
 			listeningGeolocator.PositionChanged -= OnLocatorPositionChanged;
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		async void OnLocatorStatusChanged(Geolocator sender, StatusChangedEventArgs e)
 		{
-			if (IsListening)
+			if (IsListeningForeground)
 			{
 				await StopListeningForegroundAsync();
 			}
