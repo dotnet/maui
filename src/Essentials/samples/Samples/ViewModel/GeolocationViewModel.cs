@@ -140,7 +140,7 @@ namespace Samples.ViewModel
 			ListeningLocation = FormatLocation(e.Location);
 		}
 
-		async void OnStopListening()
+		void OnStopListening()
 		{
 			try
 			{
