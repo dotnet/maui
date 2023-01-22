@@ -67,7 +67,7 @@
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <SvgSkiaPackageVersion>0.5.13</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.2.0</FizzlerPackageVersion>
-    <GtkSharpPackageVersion>3.24.24.64</GtkSharpPackageVersion>
+    <GtkSharpPackageVersion>3.24.24.34</GtkSharpPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">7.0.100</DotNetVersionBand>
