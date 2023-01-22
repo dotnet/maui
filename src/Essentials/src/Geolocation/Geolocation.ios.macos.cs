@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
-		public async Task<bool> StartListeningForegroundAsync(ListeningRequest request)
+		public async Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request)
 		{
 			_ = request ?? throw new ArgumentNullException(nameof(request));
 

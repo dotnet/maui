@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		event EventHandler<LocationEventArgs>? LocationChanged;
 
-		Task<bool> StartListeningForegroundAsync(ListeningRequest request);
+		Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request);
 
 		Task<bool> StopListeningForegroundAsync();
 	}
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			remove => Current.LocationChanged -= value;
 		}
 
-		public static Task<bool> StartListeningForegroundAsync(ListeningRequest request) =>
+		public static Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request) =>
 			Current.StartListeningForegroundAsync(request);
 
 		public static Task<bool> StopListeningForegroundAsync() =>

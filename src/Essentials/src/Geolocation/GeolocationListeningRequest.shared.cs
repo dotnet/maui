@@ -2,19 +2,19 @@
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class ListeningRequest
+	public partial class GeolocationListeningRequest
 	{
-		public ListeningRequest()
+		public GeolocationListeningRequest()
 			: this(GeolocationAccuracy.Default)
 		{
 		}
 
-		public ListeningRequest(GeolocationAccuracy accuracy)
+		public GeolocationListeningRequest(GeolocationAccuracy accuracy)
 			:this(accuracy, TimeSpan.FromSeconds(1))
 		{
 		}
 
-		public ListeningRequest(GeolocationAccuracy accuracy, TimeSpan minimumTime)
+		public GeolocationListeningRequest(GeolocationAccuracy accuracy, TimeSpan minimumTime)
 		{
 			DesiredAccuracy = accuracy;
 			MinimumTime = minimumTime;

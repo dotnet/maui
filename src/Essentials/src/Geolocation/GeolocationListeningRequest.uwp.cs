@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class ListeningRequest
+	public partial class GeolocationListeningRequest
 	{
 		internal uint PlatformDesiredAccuracy
 		{

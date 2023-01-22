@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			return lastKnownLocation;
 		}
 
-		public Task<bool> StartListeningForegroundAsync(ListeningRequest request) =>
+		public Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public Task<bool> StopListeningForegroundAsync() =>

@@ -5,7 +5,7 @@ using CoreLocation;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class ListeningRequest
+	public partial class GeolocationListeningRequest
 	{
 		internal double PlatformDesiredAccuracy
 		{
