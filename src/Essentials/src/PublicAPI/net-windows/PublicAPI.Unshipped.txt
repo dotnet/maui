@@ -1,7 +1,15 @@
 #nullable enable
 *REMOVED*Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
 *REMOVED*static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
+Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationError.PositionUnavailable = 0 -> Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationError.Unauthorized = 1 -> Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationErrorEventArgs
+Microsoft.Maui.Devices.Sensors.GeolocationErrorEventArgs.Error.get -> Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationErrorEventArgs.GeolocationErrorEventArgs(Microsoft.Maui.Devices.Sensors.GeolocationError geolocationError) -> void
+Microsoft.Maui.Devices.Sensors.IGeolocation.LocationError -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationErrorEventArgs!>?
 Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.LocationError -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationErrorEventArgs!>!
 static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
 Microsoft.Maui.Devices.Sensors.IGeolocation.IsListeningForeground.get -> bool
 Microsoft.Maui.Devices.Sensors.IGeolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.LocationEventArgs!>?

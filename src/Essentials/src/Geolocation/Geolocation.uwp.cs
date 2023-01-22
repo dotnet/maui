@@ -104,10 +104,27 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		async void OnLocatorStatusChanged(Geolocator sender, StatusChangedEventArgs e)
 		{
-			if (IsListeningForeground)
+			if (!IsListeningForeground)
+				return;
+
+			await StopListeningForegroundAsync();
+
+			GeolocationError error;
+			switch (e.Status)
 			{
-				await StopListeningForegroundAsync();
+				case PositionStatus.Disabled:
+					error = GeolocationError.Unauthorized;
+					break;
+
+				case PositionStatus.NoData:
+					error = GeolocationError.PositionUnavailable;
+					break;
+
+				default:
+					return;
 			}
+
+			OnLocationError(error);
 		}
 	}
 }

@@ -152,6 +152,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			var continuousListener = new ContinuousLocationListener(LocationManager, providerInfo.Accuracy, listeningProviders);
 			continuousListener.LocationHandler = HandleLocation;
+			continuousListener.ErrorHandler = HandleError;
 
 			// start getting location updates
 			// make sure to use a thread with a looper
@@ -168,6 +169,11 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				OnLocationChanged(location.ToLocation());
 			}
+
+			void HandleError(GeolocationError geolocationError)
+			{
+				OnLocationError(geolocationError);
+			}
 		}
 
 		public Task<bool> StopListeningForegroundAsync()
@@ -176,6 +182,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				return Task.FromResult(true);
 
 			continuousListener.LocationHandler = null;
+			continuousListener.ErrorHandler = null;
 
 			if (listeningProviders == null)
 				return Task.FromResult(true);
@@ -365,6 +372,8 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		internal Action<AndroidLocation> LocationHandler { get; set; }
 
+		internal Action<GeolocationError> ErrorHandler { get; set; }
+
 		internal ContinuousLocationListener(LocationManager manager, float desiredAccuracy, IEnumerable<string> providers)
 		{
 			this.manager = manager;
@@ -389,7 +398,11 @@ namespace Microsoft.Maui.Devices.Sensors
 		void ILocationListener.OnProviderDisabled(string provider)
 		{
 			lock (activeProviders)
-				activeProviders.Remove(provider);
+			{
+				if (activeProviders.Remove(provider) &&
+					activeProviders.Count == 0)
+					ErrorHandler?.Invoke(GeolocationError.PositionUnavailable);
+			}
 		}
 
 		void ILocationListener.OnProviderEnabled(string provider)

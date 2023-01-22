@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreLocation;
+using Foundation;
 using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
@@ -122,6 +123,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			var listener = new ContinuousLocationListener();
 			listener.LocationHandler += HandleLocation;
+			listener.ErrorHandler += HandleError;
 
 			listeningManager.DesiredAccuracy = request.PlatformDesiredAccuracy;
 			listeningManager.Delegate = listener;
@@ -140,6 +142,11 @@ namespace Microsoft.Maui.Devices.Sensors
 			void HandleLocation(CLLocation clLocation)
 			{
 				OnLocationChanged(clLocation?.ToLocation(reducedAccuracy));
+			}
+
+			void HandleError(GeolocationError error)
+			{
+				OnLocationError(error);
 			}
 		}
 
@@ -185,6 +192,8 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		internal Action<CLLocation> LocationHandler { get; set; }
 
+		internal Action<GeolocationError> ErrorHandler { get; set; }
+
 		public override void LocationsUpdated(CLLocationManager manager, CLLocation[] locations)
 		{
 			var location = locations?.LastOrDefault();
@@ -193,6 +202,19 @@ namespace Microsoft.Maui.Devices.Sensors
 				return;
 
 			LocationHandler?.Invoke(location);
+		}
+
+		public override void Failed(CLLocationManager manager, NSError error)
+		{
+			if ((CLError)error.Code == CLError.Network)
+				ErrorHandler?.Invoke(GeolocationError.PositionUnavailable);
+		}
+
+		public override void AuthorizationChanged(CLLocationManager manager, CLAuthorizationStatus status)
+		{
+			if (status == CLAuthorizationStatus.Denied ||
+				status == CLAuthorizationStatus.Restricted)
+				ErrorHandler?.Invoke(GeolocationError.Unauthorized);
 		}
 
 		public override bool ShouldDisplayHeadingCalibration(CLLocationManager manager) => false;
