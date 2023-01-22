@@ -1607,14 +1607,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				//On the parentIL, copy the scope to a field
 				parentIl.Emit(OpCodes.Dup); //Duplicate the nestedclass instance
-				parentIl.Append(kvp.Value.Item1.LoadAs(module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")), module));
-				var fieldDefScope = new FieldDefinition($"_scope{i++}", FieldAttributes.Assembly, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
+				parentIl.Append(kvp.Value.Item1.LoadAs(parentContext.Cache, module.ImportReference(parentContext.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")), module));
+				var fieldDefScope = new FieldDefinition($"_scope{i++}", FieldAttributes.Assembly, module.ImportReference(parentContext.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
 				anonType.Fields.Add(fieldDefScope);
 				parentIl.Emit(OpCodes.Stfld, fieldDefScope);
 
 				//On the templateIL, copy the field to a var, and populate the Scopes
 				templateIl.Emit(OpCodes.Ldarg_0);
-				var varDefScope = new VariableDefinition(module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
+				var varDefScope = new VariableDefinition(module.ImportReference(parentContext.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
 				loadTemplate.Body.Variables.Add(varDefScope);
 				templateIl.Emit(OpCodes.Ldfld, fieldDefScope);
 				templateIl.Emit(OpCodes.Stloc, varDefScope);

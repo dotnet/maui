@@ -570,7 +570,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 
 			yield return Instruction.Create(OpCodes.Ldc_I4, scopes.Count);
-			yield return Instruction.Create(OpCodes.Newarr, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
+			yield return Instruction.Create(OpCodes.Newarr, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
 
 			var i = 0;
 			foreach (var scope in scopes)
@@ -619,7 +619,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					yield return instruction;
 
 				yield return Create(Ldc_I4_0); //don't ask
-				yield return Create(Newobj, module.ImportCtorReference(
+				yield return Create(Newobj, module.ImportCtorReference(context.Cache,
 					("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 4));
 					
 				//store the provider so we can register it again with a different key
