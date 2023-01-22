@@ -1,0 +1,191 @@
+#nullable enable
+Microsoft.Maui.Graphics.Platform.Gtk.CanvasExtensions
+Microsoft.Maui.Graphics.Platform.Gtk.ColorExtensions
+Microsoft.Maui.Graphics.Platform.Gtk.FontExtensions
+Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions
+Microsoft.Maui.Graphics.Platform.Gtk.GtkBitmapExportContext
+Microsoft.Maui.Graphics.Platform.Gtk.GtkBitmapExportContext.Format.get -> Microsoft.Maui.Graphics.ImageFormat
+Microsoft.Maui.Graphics.Platform.Gtk.GtkBitmapExportContext.GtkBitmapExportContext(int width, int height, float dpi) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView
+Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView.BackgroundColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView.BackgroundColor.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView.Drawable.get -> Microsoft.Maui.Graphics.IDrawable?
+Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView.Drawable.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView.GtkGraphicsView() -> void
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.Dispose() -> void
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage!
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.Downsize(float maxWidthOrHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage!
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.Draw(Microsoft.Maui.Graphics.ICanvas! canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.GtkImage(Gdk.Pixbuf! pix) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.Height.get -> float
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.NativeImage.get -> Gdk.Pixbuf?
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.Resize(float width, float height, Microsoft.Maui.Graphics.ResizeMode resizeMode = Microsoft.Maui.Graphics.ResizeMode.Fit, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage!
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.Save(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.SaveAsync(System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.ToImage(int width, int height, float scale = 1) -> Microsoft.Maui.Graphics.IImage!
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.ToPlatformImage() -> Microsoft.Maui.Graphics.IImage!
+Microsoft.Maui.Graphics.Platform.Gtk.GtkImage.Width.get -> float
+Microsoft.Maui.Graphics.Platform.Gtk.HardwareInformations
+Microsoft.Maui.Graphics.Platform.Gtk.ImageExtensions
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Character = 8 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.CharacterElipsis = Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Ellipsis | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Character | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Tail -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.CharacterWrap = Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Wrap | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Character | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Tail -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Ellipsis = 4 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Head = 32 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.HeadTruncation = Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Truncation | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Character | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Head -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Middle = 64 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.MiddleTruncation = Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Truncation | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Character | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Middle -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.None = 0 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.NoWrap = 0 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Tail = 128 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.TailTruncation = Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Truncation | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Character | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Tail -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Truncation = 2 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Word = 16 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.WordCharacterWrap = Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Character | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.WordWrap -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.WordElipsis = Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Ellipsis | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Word | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Tail -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.WordWrap = Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Wrap | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Word | Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Tail -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode.Wrap = 1 -> Microsoft.Maui.Graphics.Platform.Gtk.LineBreakMode
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.AddEllipse(Cairo.Context! context, float x, float y, float width, float height) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.Context.get -> Cairo.Context!
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.Context.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.DrawFillPaint(Cairo.Context? context, Microsoft.Maui.Graphics.Paint? paint, Microsoft.Maui.Graphics.RectF rectangle) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.DrawPixbuf(Cairo.Context! context, Gdk.Pixbuf! pixbuf, double x, double y, double width, double height) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.DrawShadow(bool fill) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.Fill(bool preserve = false) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformCanvas() -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.Alpha.get -> float
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.Alpha.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.Antialias.get -> Cairo.Antialias
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.Antialias.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.BlendMode.get -> Microsoft.Maui.Graphics.BlendMode
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.BlendMode.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.FillColor.get -> Cairo.Color
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.FillColor.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.FillPaint.get -> (Microsoft.Maui.Graphics.Paint! paint, Microsoft.Maui.Graphics.RectF rectangle)
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.FillPaint.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.Font.get -> Microsoft.Maui.Graphics.IFont?
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.Font.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.FontColor.get -> Cairo.Color
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.FontColor.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.FontSize.get -> float
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.FontSize.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.LineCap.get -> Cairo.LineCap
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.LineCap.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.LineJoin.get -> Cairo.LineJoin
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.LineJoin.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.MiterLimit.get -> double
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.MiterLimit.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.NativeDash.get -> double[]!
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.PlatformCanvasState() -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.PlatformCanvasState(Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState! prototype) -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.Shadow.get -> (Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color! color)
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.Shadow.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.StrokeColor.get -> Cairo.Color
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.StrokeColor.set -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasStateService
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasStateService.CreateCopy(Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState! prototype) -> Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState!
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasStateService.CreateNew(object! context) -> Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState!
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasStateService.PlatformCanvasStateService() -> void
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformStringSizeService
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformStringSizeService.GetStringSize(string! value, Microsoft.Maui.Graphics.IFont! font, float aFontSize, Microsoft.Maui.Graphics.HorizontalAlignment aHorizontalAlignment, Microsoft.Maui.Graphics.VerticalAlignment aVerticalAlignment) -> Microsoft.Maui.Graphics.SizeF
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformStringSizeService.GetStringSize(string! value, Microsoft.Maui.Graphics.IFont! font, float fontSize) -> Microsoft.Maui.Graphics.SizeF
+Microsoft.Maui.Graphics.Platform.Gtk.PlatformStringSizeService.PlatformStringSizeService() -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.GtkBitmapExportContext.Canvas.get -> Microsoft.Maui.Graphics.ICanvas!
+override Microsoft.Maui.Graphics.Platform.Gtk.GtkBitmapExportContext.Dispose() -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.GtkBitmapExportContext.Image.get -> Microsoft.Maui.Graphics.IImage?
+override Microsoft.Maui.Graphics.Platform.Gtk.GtkBitmapExportContext.WriteToStream(System.IO.Stream! stream) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView.OnDrawn(Cairo.Context! context) -> bool
+override Microsoft.Maui.Graphics.Platform.Gtk.GtkGraphicsView.OnSizeAllocated(Gdk.Rectangle allocation) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.Alpha.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.Antialias.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.BlendMode.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.ClipPath(Microsoft.Maui.Graphics.PathF! path, Microsoft.Maui.Graphics.WindingMode windingMode = Microsoft.Maui.Graphics.WindingMode.NonZero) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.ClipRectangle(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.DrawImage(Microsoft.Maui.Graphics.IImage! image, float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.DrawString(string! value, float x, float y, float width, float height, Microsoft.Maui.Graphics.HorizontalAlignment horizontalAlignment, Microsoft.Maui.Graphics.VerticalAlignment verticalAlignment, Microsoft.Maui.Graphics.TextFlow textFlow = Microsoft.Maui.Graphics.TextFlow.ClipBounds, float lineSpacingAdjustment = 0) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.DrawString(string! value, float x, float y, Microsoft.Maui.Graphics.HorizontalAlignment horizontalAlignment) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.DrawText(Microsoft.Maui.Graphics.Text.IAttributedText! value, float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.FillArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.FillColor.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.FillEllipse(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.FillPath(Microsoft.Maui.Graphics.PathF! path, Microsoft.Maui.Graphics.WindingMode windingMode) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.FillRectangle(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.Font.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.FontColor.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.FontSize.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.MiterLimit.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformConcatenateTransform(System.Numerics.Matrix3x2 transform) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformDrawEllipse(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformDrawLine(float x1, float y1, float x2, float y2) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformDrawPath(Microsoft.Maui.Graphics.PathF! path) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformDrawRectangle(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformDrawRoundedRectangle(float x, float y, float width, float height, float radius) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformRotate(float degrees, float radians) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformRotate(float degrees, float radians, float x, float y) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformScale(float fx, float fy) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformSetStrokeDashPattern(float[]! strokePattern, float strokeDashOffset, float strokeSize) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformStrokeSize.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.PlatformTranslate(float tx, float ty) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.RestoreState() -> bool
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.SaveState() -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.SetFillPaint(Microsoft.Maui.Graphics.Paint! paint, Microsoft.Maui.Graphics.RectF rectangle) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.SetShadow(Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color! color) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.StrokeColor.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.StrokeLineCap.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.StrokeLineJoin.set -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvas.SubtractFromClip(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.Gtk.PlatformCanvasState.Dispose() -> void
+static Microsoft.Maui.Graphics.Platform.Gtk.CanvasExtensions.GetSize(this Cairo.Surface! it) -> Microsoft.Maui.Graphics.Size?
+static Microsoft.Maui.Graphics.Platform.Gtk.CanvasExtensions.ToAntialias(bool antialias) -> Cairo.Antialias
+static Microsoft.Maui.Graphics.Platform.Gtk.CanvasExtensions.ToFillRule(this Microsoft.Maui.Graphics.WindingMode windingMode) -> Cairo.FillRule
+static Microsoft.Maui.Graphics.Platform.Gtk.CanvasExtensions.ToLineCap(this Microsoft.Maui.Graphics.LineCap lineCap) -> Cairo.LineCap
+static Microsoft.Maui.Graphics.Platform.Gtk.CanvasExtensions.ToLineJoin(this Microsoft.Maui.Graphics.LineJoin lineJoin) -> Cairo.LineJoin
+static Microsoft.Maui.Graphics.Platform.Gtk.ColorExtensions.ToCairoColor(this Gdk.RGBA color) -> Cairo.Color
+static Microsoft.Maui.Graphics.Platform.Gtk.ColorExtensions.ToCairoColor(this Microsoft.Maui.Graphics.Color! color) -> Cairo.Color
+static Microsoft.Maui.Graphics.Platform.Gtk.ColorExtensions.ToColor(this Cairo.Color color) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Platform.Gtk.ColorExtensions.ToColor(this Gdk.RGBA color) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Platform.Gtk.ColorExtensions.ToGdkRgba(this Microsoft.Maui.Graphics.Color! color) -> Gdk.RGBA
+static Microsoft.Maui.Graphics.Platform.Gtk.FontExtensions.Default.get -> Pango.FontDescription!
+static Microsoft.Maui.Graphics.Platform.Gtk.FontExtensions.GetSize(this Pango.FontDescription! it) -> double
+static Microsoft.Maui.Graphics.Platform.Gtk.FontExtensions.ToFontDescription(this Microsoft.Maui.Graphics.IFont! it) -> Pango.FontDescription!
+static Microsoft.Maui.Graphics.Platform.Gtk.FontExtensions.ToFontStyleType(this Pango.Style it) -> Microsoft.Maui.Graphics.FontStyleType
+static Microsoft.Maui.Graphics.Platform.Gtk.FontExtensions.ToFontWeight(this Pango.Weight it) -> double
+static Microsoft.Maui.Graphics.Platform.Gtk.FontExtensions.ToPangoStyle(this Microsoft.Maui.Graphics.FontStyleType it) -> Pango.Style
+static Microsoft.Maui.Graphics.Platform.Gtk.FontExtensions.ToPangoWeight(this int it) -> Pango.Weight
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ScaledFromPango(this int it) -> double
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ScaledFromPangoF(this int it) -> float
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ScaledToPango(this double it) -> int
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ScaledToPango(this float it) -> int
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ScaledToPango(this int it) -> int
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToNative(this Microsoft.Maui.Graphics.Point it) -> Gdk.Point
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToNative(this Microsoft.Maui.Graphics.PointF it) -> Gdk.Point
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToNative(this Microsoft.Maui.Graphics.Rect it) -> Gdk.Rectangle
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToNative(this Microsoft.Maui.Graphics.RectF it) -> Gdk.Rectangle
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToNative(this Microsoft.Maui.Graphics.Size it) -> Gdk.Size
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToNative(this Microsoft.Maui.Graphics.SizeF it) -> Gdk.Size
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToPoint(this Gdk.Point it) -> Microsoft.Maui.Graphics.Point
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToPointF(this Cairo.PointD it) -> Microsoft.Maui.Graphics.PointF
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToPointF(this Gdk.Point it) -> Microsoft.Maui.Graphics.PointF
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToRect(this Gdk.Rectangle it) -> Microsoft.Maui.Graphics.Rect
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToRectF(this Gdk.Rectangle it) -> Microsoft.Maui.Graphics.RectF
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToSize(this Gdk.Size it) -> Microsoft.Maui.Graphics.Size
+static Microsoft.Maui.Graphics.Platform.Gtk.GraphicsExtensions.ToSizeF(this Gdk.Size it) -> Microsoft.Maui.Graphics.SizeF
+static Microsoft.Maui.Graphics.Platform.Gtk.HardwareInformations.CurrentMonitor.get -> Gdk.Monitor!
+static Microsoft.Maui.Graphics.Platform.Gtk.HardwareInformations.CurrentScaleFaktor -> int
+static Microsoft.Maui.Graphics.Platform.Gtk.HardwareInformations.DefaultDisplay.get -> Gdk.Display!
+static Microsoft.Maui.Graphics.Platform.Gtk.HardwareInformations.DefaultResolution.get -> double
+static Microsoft.Maui.Graphics.Platform.Gtk.HardwareInformations.DefaultScreen.get -> Gdk.Screen!
+static Microsoft.Maui.Graphics.Platform.Gtk.HardwareInformations.GetMonitors() -> System.Collections.Generic.IEnumerable<Gdk.Monitor!>!
+static Microsoft.Maui.Graphics.Platform.Gtk.HardwareInformations.PrimaryMonitor.get -> Gdk.Monitor!
+static Microsoft.Maui.Graphics.Platform.Gtk.HardwareInformations.SystemVisual.get -> Gdk.Visual!
+static Microsoft.Maui.Graphics.Platform.Gtk.ImageExtensions.CreatePattern(this Gdk.Pixbuf? pixbuf, double scaleFactor) -> Cairo.Pattern?
+static Microsoft.Maui.Graphics.Platform.Gtk.ImageExtensions.CreatePixbuf(this Cairo.ImageSurface? surface) -> Gdk.Pixbuf?
+static Microsoft.Maui.Graphics.Platform.Gtk.ImageExtensions.SaveToStream(this Cairo.ImageSurface? surface, System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> Gdk.Pixbuf?
+static Microsoft.Maui.Graphics.Platform.Gtk.ImageExtensions.SaveToStream(this Gdk.Pixbuf? pixbuf, System.IO.Stream! stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> bool
+static Microsoft.Maui.Graphics.Platform.Gtk.ImageExtensions.ToImageExtension(this Microsoft.Maui.Graphics.ImageFormat imageFormat) -> string!
