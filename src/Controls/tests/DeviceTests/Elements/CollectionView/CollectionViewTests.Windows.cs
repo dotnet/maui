@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var collectionView = new CollectionView()
 			{
-				ItemTemplate = new DataTemplate(() =>
+				ItemTemplate = new Controls.DataTemplate(() =>
 				{
 					return new VerticalStackLayout()
 					{
