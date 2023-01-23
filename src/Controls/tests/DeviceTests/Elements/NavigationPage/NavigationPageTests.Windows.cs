@@ -21,6 +21,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.NavigationPage)]
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
+
+		string GetToolbarTitle(IElementHandler handler) =>
+			GetPlatformToolbar(handler).Title;
+
+
 		[Fact(DisplayName = "Back Button Enabled Changes with push/pop")]
 		public async Task BackButtonEnabledChangesWithPushPop()
 		{
