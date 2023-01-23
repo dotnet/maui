@@ -3,7 +3,7 @@
 
 string TARGET = Argument("target", "Test");
 
-const string defaultVersion = "14.4";
+const string defaultVersion = "16.2";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? "");
