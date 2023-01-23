@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Media
 			if (OperatingSystem.IsAndroidVersionAtLeast(33)) // >= 33
 				await Permissions.EnsureGrantedAsync<Permissions.Media>();
 			else // <= 32
-				await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
+				await Permissions.EnsureGrantedAsync<Permissions.StorageRead>();
 
 			var capturePhotoIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
 
