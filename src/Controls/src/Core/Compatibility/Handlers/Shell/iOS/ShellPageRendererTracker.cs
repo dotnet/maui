@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -462,7 +462,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void WillMoveToSuperview(UIView newSuper)
 			{
-				if (newSuper != null)
+				if (newSuper != null && newSuper.Bounds != CGRect.Empty)
 				{
 					if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 						Frame = new CGRect(Frame.X, newSuper.Bounds.Y, Frame.Width, newSuper.Bounds.Height);
