@@ -26,6 +26,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	/// <summary>
 	/// The SMS API enables an application to open the default SMS application with a specified message to send to a recipient.
 	/// </summary>
+	/// <remarks>When using this on Android targeting Android 11 (R API 30) you must update your Android Manifest with queries that are used with the new package visibility requirements. See the conceptual docs for more information.</remarks>
 	public static class Sms
 	{
 		/// <summary>
