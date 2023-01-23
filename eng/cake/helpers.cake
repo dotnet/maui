@@ -137,7 +137,7 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
             NoBuild = noBuild,
             Logger = $"trx;LogFileName={results}",
            	ResultsDirectory = GetTestResultsDirectory(),
-            Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
+            //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
                
