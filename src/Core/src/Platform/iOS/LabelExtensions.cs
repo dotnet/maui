@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Platform
 				StringEncoding = NSStringEncoding.UTF8
 			};
 
-			NSError? nsError = null;
+			NSError nsError = new();
 
 			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
 		}
