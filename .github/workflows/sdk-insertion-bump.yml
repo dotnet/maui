@@ -41,7 +41,7 @@ jobs:
           token: ${{ secrets.MEGAPIPELINE_PAT }}
           event-type: 'sdk_insertion'
           repository: 'xamarin/sdk-insertions'
-          client-payload: '{"repository": "dotnet/maui", "branch": "${{ input.branch }}", "commit": "${{ input.commit }}", "commit_message": "${{ input.commit_title }}"}'
+          client-payload: '{"repository": "dotnet/maui", "branch": "${{ inputs.branch }}", "commit": "${{ inputs.commit }}", "commit_message": "${{ inputs.commit_title }}"}'
 
       # if push event
 
