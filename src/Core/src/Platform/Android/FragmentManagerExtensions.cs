@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 		public static bool IsDestroyed(this FragmentManager? obj, Context? context)
 		{
-			if (obj == null)
+			if (obj == null || obj.IsDisposed())
 				return true;
 
 			if (context == null)
@@ -68,25 +68,7 @@ namespace Microsoft.Maui.Platform
 			if (obj.IsDestroyed)
 				return true;
 
-			if (context.IsDestroyed())
-				return true;
-
-			return obj.IsDisposed();
-		}
-
-		public static bool IsDestroyed(this Android.App.FragmentManager? obj)
-		{
-			if (obj == null)
-				return true;
-
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1422 // Validate platform compatibility
-			if (OperatingSystem.IsAndroidVersionAtLeast(21) && obj.IsDestroyed)
-				return true;
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-
-			return obj.IsDisposed();
+			return context.IsDestroyed();
 		}
 	}
 }
