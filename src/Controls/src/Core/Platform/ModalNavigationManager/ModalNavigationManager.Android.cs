@@ -19,6 +19,13 @@ namespace Microsoft.Maui.Controls.Platform
 	internal partial class ModalNavigationManager
 	{
 		ViewGroup? _modalParentView;
+
+		// This is only here for the device tests to use.
+		// With the device tests we have a `FakeActivityRootView` and a `WindowTestFragment`
+		// that we use to replicate the `DecorView` and `MainActivity`
+		// The tests will set this to the `FakeActivityRootView` so that the `modals`
+		// are part of the correct testing space.
+		// If/When we move to opening new activities we can remove this code.
 		internal void SetModalParentView(ViewGroup viewGroup)
 		{
 			_modalParentView = viewGroup;
