@@ -16,7 +16,7 @@ using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GestureManager : IDisposable
+	class GesturePlatformManager : IDisposable
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Platform
 		UITouchEventArgs? _shouldReceiveTouch;
 		DragAndDropDelegate? _dragAndDropDelegate;
 
-		public GestureManager(IViewHandler handler)
+		public GesturePlatformManager(IViewHandler handler)
 		{
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static IList<GestureElement>? GetChildGestures(
 			CGPoint originPoint,
-			WeakReference weakEventTracker, WeakReference weakRecognizer, GestureManager? eventTracker, View? view)
+			WeakReference weakEventTracker, WeakReference weakRecognizer, GesturePlatformManager? eventTracker, View? view)
 		{
 			if (!weakRecognizer.IsAlive)
 				return null;
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Platform
 			UITapGestureRecognizer? uITapGestureRecognizer = null)
 		{
 			var recognizer = weakRecognizer.Target as IGestureRecognizer;
-			var eventTracker = weakEventTracker.Target as GestureManager;
+			var eventTracker = weakEventTracker.Target as GesturePlatformManager;
 			var view = eventTracker?._handler?.VirtualView as View;
 
 			WeakReference? weakPlatformRecognizer = null;
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static Point? CalculatePosition(IElement? element, CGPoint originPoint, WeakReference? weakPlatformRecognizer, WeakReference weakEventTracker)
 		{
-			var eventTracker = weakEventTracker.Target as GestureManager;
+			var eventTracker = weakEventTracker.Target as GesturePlatformManager;
 			var virtualView = eventTracker?._handler?.VirtualView as View;
 			var platformRecognizer = weakPlatformRecognizer?.Target as UIGestureRecognizer;
 			var platformView = eventTracker?.PlatformView;
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var uiRecognizer = CreatePointerRecognizer(r =>
 				{
 					if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
-						weakEventTracker.Target is GestureManager eventTracker &&
+						weakEventTracker.Target is GesturePlatformManager eventTracker &&
 						eventTracker._handler?.VirtualView is View view &&
 						eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
 					{
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var returnAction = new Action<SwipeDirection>((direction) =>
 				{
 					var swipeGestureRecognizer = weakRecognizer.Target as SwipeGestureRecognizer;
-					var eventTracker = weakEventTracker.Target as GestureManager;
+					var eventTracker = weakEventTracker.Target as GesturePlatformManager;
 					var view = eventTracker?._handler.VirtualView as View;
 
 					if (swipeGestureRecognizer != null && view != null)
@@ -287,7 +287,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var uiRecognizer = CreatePinchRecognizer(r =>
 				{
 					if (weakRecognizer.Target is IPinchGestureController pinchGestureRecognizer &&
-						weakEventTracker.Target is GestureManager eventTracker &&
+						weakEventTracker.Target is GesturePlatformManager eventTracker &&
 						eventTracker._handler?.VirtualView is View view &&
 						UIApplication.SharedApplication.GetKeyWindow() is UIWindow window)
 					{
@@ -345,7 +345,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var uiRecognizer = CreatePanRecognizer(panRecognizer.TouchPoints, r =>
 				{
-					var eventTracker = weakEventTracker.Target as GestureManager;
+					var eventTracker = weakEventTracker.Target as GesturePlatformManager;
 					var view = eventTracker?._handler?.VirtualView as View;
 
 					var panGestureRecognizer = weakRecognizer.Target as IPanGestureController;
@@ -436,7 +436,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			Action<UITapGestureRecognizer> action = new Action<UITapGestureRecognizer>((sender) =>
 			{
-				var eventTracker = weakEventTracker.Target as GestureManager;
+				var eventTracker = weakEventTracker.Target as GesturePlatformManager;
 				var originPoint = sender.LocationInView(eventTracker?.PlatformView);
 				ProcessRecognizerHandlerTap(weakEventTracker, weakRecognizer, originPoint, (int)sender.NumberOfTapsRequired, sender);
 			});
@@ -793,7 +793,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// Store a reference to the platform delegate so that it is not garbage collected
 			FakeRightClickDelegate? _dontCollectMePlease;
 
-			public FakeRightClickContextMenuInteraction(TapGestureRecognizer tapGestureRecognizer, GestureManager gestureManager)
+			public FakeRightClickContextMenuInteraction(TapGestureRecognizer tapGestureRecognizer, GesturePlatformManager gestureManager)
 				: base(new FakeRightClickDelegate(tapGestureRecognizer, gestureManager))
 			{
 				_dontCollectMePlease = Delegate as FakeRightClickDelegate;
@@ -807,7 +807,7 @@ namespace Microsoft.Maui.Controls.Platform
 				WeakReference _gestureManager;
 
 				public TapGestureRecognizer? TapGestureRecognizer => _recognizer.Target as TapGestureRecognizer;
-				public FakeRightClickDelegate(TapGestureRecognizer tapGestureRecognizer, GestureManager gestureManager)
+				public FakeRightClickDelegate(TapGestureRecognizer tapGestureRecognizer, GesturePlatformManager gestureManager)
 				{
 					_recognizer = new WeakReference(tapGestureRecognizer);
 					_gestureManager = new WeakReference(gestureManager);
