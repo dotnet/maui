@@ -441,8 +441,28 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class StorageRead : BasePlatformPermission
 		{
-			public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
-				new (string, bool)[] { (Manifest.Permission.ReadExternalStorage, true) };
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+			{
+				get
+				{
+					var permissions = new List<(string, bool)>();
+
+#if __ANDROID_33__
+					if (OperatingSystem.IsAndroidVersionAtLeast(33) && Application.Context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Tiramisu)
+					{
+						permissions.Add((Manifest.Permission.ReadMediaAudio, true));
+						permissions.Add((Manifest.Permission.ReadMediaImages, true));
+						permissions.Add((Manifest.Permission.ReadMediaVideo, true));
+					}
+					else
+#endif
+					{
+						permissions.Add((Manifest.Permission.ReadExternalStorage, true));
+					}
+
+					return permissions.ToArray();
+				}
+			}
 		}
 
 		public partial class StorageWrite : BasePlatformPermission

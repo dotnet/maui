@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Media
 				throw new FeatureNotSupportedException();
 
 			await Permissions.EnsureGrantedAsync<Permissions.Camera>();
-			await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
+			await Permissions.EnsureGrantedAsync<Permissions.StorageRead>();
 
 			var capturePhotoIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
 
