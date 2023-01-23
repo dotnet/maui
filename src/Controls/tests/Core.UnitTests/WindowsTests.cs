@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -281,6 +282,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_ = new TestApp().CreateWindow(cp);
 
 			Assert.True(passed);
+		}
+
+		[Fact]
+		public void AddingTabSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var window = new Window(new TabbedPage() { Children = { cp } });
+
+			Assert.Equal(window, btn.Window);
+		}
+
+		[Fact]
+		public void RemovingTabUnSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var tabbedPage = new TabbedPage() { Children = { cp, new ContentPage() } };
+			var window = new Window(tabbedPage);
+
+			Assert.Equal(window, btn.Window);
+			tabbedPage.Children.RemoveAt(0);
+			Assert.Null(btn.Window);
+		}
+
+		[Fact]
+		public async Task PushingPageSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var secondPage = new ContentPage { Content = grid };
+			var np = new NavigationPage(new ContentPage());
+			var window = new Window(np);
+			await np.PushAsync(secondPage);
+
+			Assert.Equal(window, btn.Window);
+		}
+
+		[Fact]
+		public async Task PoppingPageUnsetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var secondPage = new ContentPage { Content = grid };
+			var np = new NavigationPage(new ContentPage());
+			var window = new Window(np);
+			await np.PushAsync(secondPage);
+			await np.PopAsync();
+
+			Assert.Null(btn.Window);
+		}
+
+		[Fact]
+		public void PoppingPageUnSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var tabbedPage = new TabbedPage() { Children = { cp, new ContentPage() } };
+			var window = new Window(tabbedPage);
+
+			Assert.Equal(window, btn.Window);
+			tabbedPage.Children.RemoveAt(0);
+			Assert.Null(btn.Window);
 		}
 
 		[Fact]
