@@ -21,7 +21,7 @@ parameters:
 
 - name: gitHubToken
   type: string
-  default: $(Github.Token)
+  default: $(github--pat--vs-mobiletools-engineering-service2)
 
 steps:
   - template: provision.yml
