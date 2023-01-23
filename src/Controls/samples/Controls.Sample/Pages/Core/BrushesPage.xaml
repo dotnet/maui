@@ -11,11 +11,17 @@
 
             <SolidColorBrush x:Key="SharedSolidColorBrush" Color="{DynamicResource SharedColor}" />
 
-            <LinearGradientBrush x:Key="SharedGradientBrush" StartPoint="0,1" EndPoint="0,0">
+            <LinearGradientBrush x:Key="SharedLinearGradientBrush" StartPoint="0,1" EndPoint="0,0">
                 <GradientStop Color="Blue" Offset="0.3"/>
                 <GradientStop Color="Purple" Offset="0.6"/>
                 <GradientStop Color="Green" Offset="0.9"/>
             </LinearGradientBrush>
+
+            <RadialGradientBrush x:Key="SharedRadialGradientBrush" Center="0.5, 0.5">
+                <GradientStop Color="Blue" Offset="0.3"/>
+                <GradientStop Color="Purple" Offset="0.6"/>
+                <GradientStop Color="Green" Offset="0.9"/>
+            </RadialGradientBrush>
             
         </ResourceDictionary>
     </TabbedPage.Resources>
@@ -284,7 +290,9 @@
     <ContentPage
         Title="Brush Changes">
         <ScrollView>
-            <StackLayout Margin="12">
+            <StackLayout
+                x:Name="BrushChangesLayout"
+                Margin="12">
                 <Label
                     FontAttributes="Bold"
                     Text="Static and Dynamic Resources"
@@ -311,18 +319,18 @@
                 <Label
                     Text="Static"/>
                 <Polygon
-                    Fill="{StaticResource SharedGradientBrush}"
+                    Fill="{StaticResource SharedLinearGradientBrush}"
                     Points="10,10 100,20 150,45 70,50" />
                 <Polygon
-                    Fill="{StaticResource SharedGradientBrush}"
+                    Fill="{StaticResource SharedLinearGradientBrush}"
                     Points="10,10 100,20 150,45 70,50" />
                 <Label
                     Text="Dynamic"/>
                 <Polygon
-                    Fill="{DynamicResource SharedGradientBrush}"
+                    Fill="{DynamicResource SharedLinearGradientBrush}"
                     Points="10,10 100,20 150,45 70,50" />
                 <Polygon
-                    Fill="{DynamicResource SharedGradientBrush}"
+                    Fill="{DynamicResource SharedLinearGradientBrush}"
                     Points="10,10 100,20 150,45 70,50" />
                 <Label
                     FontAttributes="Bold"
@@ -348,69 +356,56 @@
                         <SolidColorBrush Color="Red" />
                     </Polygon.Fill>
                 </Polygon>
-                <Button
-                    Text="Update Color"
-                    Clicked="OnUpdateSolidColorClicked"/>
+                <HorizontalStackLayout>
+                    <Button
+                        Text="Update Color"
+                        Clicked="OnUpdateSolidColorClicked"/>
+                    <Button
+                        Text="Remove Polygon"
+                        Clicked="OnRemovePolygonSolidColorClicked"/>
+                </HorizontalStackLayout>
                 <Label
                     Text="LinearGradientBrush"/>
                 <Border
                     x:Name="LinearBrushBorder"
                     Stroke="LightGray"
                     StrokeShape="RoundRectangle 12"
-                    HeightRequest="120">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
-                            <GradientStop Color="Blue" Offset="0.3"/>
-                            <GradientStop Color="Purple" Offset="0.6"/>
-                            <GradientStop Color="Green" Offset="0.9"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                </Border>
+                    HeightRequest="120"
+                    Background="{StaticResource SharedLinearGradientBrush}" />
                 <Polygon
                     x:Name="LinearBrushPolygon"
                     Points="10,10 100,20 150,45 70,50"
-                    Stroke="LightGray">
-                    <Polygon.Fill>
-                        <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
-                            <GradientStop Color="Blue" Offset="0.3"/>
-                            <GradientStop Color="Purple" Offset="0.6"/>
-                            <GradientStop Color="Green" Offset="0.9"/>
-                        </LinearGradientBrush>
-                    </Polygon.Fill>
-                </Polygon>
-                <Button
-                    Text="Update Colors"
-                    Clicked="OnUpdateLinearColorsClicked"/>
+                    Stroke="LightGray"
+                    Fill="{StaticResource SharedLinearGradientBrush}" />
+                <HorizontalStackLayout>
+                    <Button
+                        Text="Update Colors"
+                        Clicked="OnUpdateLinearColorsClicked"/>
+                    <Button
+                        Text="Remove Polygon"
+                        Clicked="OnRemovePolygonLinearColorsClicked"/>
+                </HorizontalStackLayout>
                 <Label
                     Text="RadialGradientBrush"/>
                 <Border
                     x:Name="RadialBrushBorder"
                     Stroke="LightGray"
                     StrokeShape="RoundRectangle 12"
-                    HeightRequest="120">
-                    <Border.Background>
-                        <RadialGradientBrush Center="0.5, 0.5">
-                            <GradientStop Color="Blue" Offset="0.3"/>
-                            <GradientStop Color="Purple" Offset="0.6"/>
-                            <GradientStop Color="Green" Offset="0.9"/>
-                        </RadialGradientBrush>
-                    </Border.Background>
-                </Border>
+                    HeightRequest="120"
+                    Background="{StaticResource SharedRadialGradientBrush}" />
                 <Polygon
                     x:Name="RadialBrushPolygon"
                     Points="10,10 100,20 150,45 70,50"
-                    Stroke="LightGray">
-                    <Polygon.Fill>
-                        <RadialGradientBrush Center="0.5, 0.5">
-                            <GradientStop Color="Blue" Offset="0.3"/>
-                            <GradientStop Color="Purple" Offset="0.6"/>
-                            <GradientStop Color="Green" Offset="0.9"/>
-                        </RadialGradientBrush>
-                    </Polygon.Fill>
-                </Polygon>
-                <Button
-                    Text="Update Colors"
-                    Clicked="OnUpdateRadialColorsClicked"/>
+                    Stroke="LightGray"
+                    Fill="{StaticResource SharedRadialGradientBrush}" />
+                <HorizontalStackLayout>
+                    <Button
+                        Text="Update Colors"
+                        Clicked="OnUpdateRadialColorsClicked"/>
+                    <Button
+                        Text="Remove Polygon"
+                        Clicked="OnRemovePolygonRadialColorsClicked"/>
+                </HorizontalStackLayout>
                 <Label
                     FontAttributes="Bold"
                     Text="BindingContext"

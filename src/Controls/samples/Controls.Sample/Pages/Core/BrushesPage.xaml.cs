@@ -39,6 +39,11 @@ namespace Maui.Controls.Sample.Pages
 				solidBrushPolygon.Color = color;
 		}
 
+		void OnRemovePolygonSolidColorClicked(object sender, EventArgs e)
+		{
+			BrushChangesLayout.Children.Remove(SolidBrushPolygon);
+		}
+
 		void OnUpdateLinearColorsClicked(object sender, EventArgs e)
 		{
 			var gradientStop = GetRandomGradientStop();
@@ -55,6 +60,11 @@ namespace Maui.Controls.Sample.Pages
 				GradientStop randomStop = linearBrushPolygon.GradientStops[gradientStop];
 				randomStop.Color = color;
 			}
+		}
+
+		void OnRemovePolygonLinearColorsClicked(object sender, EventArgs e)
+		{
+			BrushChangesLayout.Children.Remove(LinearBrushPolygon);
 		}
 
 		void OnUpdateRadialColorsClicked(object sender, EventArgs e)
@@ -74,7 +84,12 @@ namespace Maui.Controls.Sample.Pages
 				firstStop.Color = color;
 			}
 		}
-			
+
+		void OnRemovePolygonRadialColorsClicked(object sender, EventArgs e)
+		{
+			BrushChangesLayout.Children.Remove(RadialBrushPolygon);
+		}
+
 		int GetRandomGradientStop()
 		{
 			return _random.Next(3);
