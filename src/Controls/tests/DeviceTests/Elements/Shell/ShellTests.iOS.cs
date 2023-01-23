@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -194,6 +197,35 @@ namespace Microsoft.Maui.DeviceTests
 					navigatingFired++;
 					e.Cancel();
 				}
+			});
+		}
+
+		[Fact(DisplayName = "TitleView renders correctly")]
+		public async Task TitleViewRendersCorrectly()
+		{
+			SetupBuilder();
+
+			var expected = Colors.Red;
+
+			var shellTitleView = new VerticalStackLayout { BackgroundColor = expected };
+			var titleViewContent = new Label { Text = "TitleView" };
+			shellTitleView.Children.Add(titleViewContent);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				Shell.SetTitleView(shell, shellTitleView);
+
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await Task.Delay(100);
+				Assert.NotNull(shell.Handler);
+				var platformShellTitleView = shellTitleView.ToPlatform();
+				Assert.Equal(platformShellTitleView, GetTitleView(handler));
+				Assert.NotEqual(platformShellTitleView.Frame, CGRect.Empty);
+				Assert.Equal(platformShellTitleView.BackgroundColor.ToColor(), expected);
 			});
 		}
 
