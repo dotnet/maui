@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.Controls.Xaml.Resource
+Microsoft.Maui.Controls.Xaml.Resource.Resource() -> void

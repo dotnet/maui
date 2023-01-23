@@ -763,8 +763,6 @@ Microsoft.Maui.Devices.Sensors.SensorSpeed.Game = 2 -> Microsoft.Maui.Devices.Se
 Microsoft.Maui.Devices.Sensors.SensorSpeed.UI = 1 -> Microsoft.Maui.Devices.Sensors.SensorSpeed
 Microsoft.Maui.Devices.Vibration
 Microsoft.Maui.Devices.VibrationExtensions
-Microsoft.Maui.Essentials.Resource
-Microsoft.Maui.Essentials.Resource.Resource() -> void
 Microsoft.Maui.Media.IMediaPicker
 Microsoft.Maui.Media.IMediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
 Microsoft.Maui.Media.IMediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!

@@ -105,8 +105,6 @@ Microsoft.Maui.Controls.Maps.Polyline.Remove(Microsoft.Maui.Devices.Sensors.Loca
 Microsoft.Maui.Controls.Maps.Polyline.RemoveAt(int index) -> void
 Microsoft.Maui.Controls.Maps.Polyline.this[int index].get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Controls.Maps.Polyline.this[int index].set -> void
-Microsoft.Maui.Controls.Maps.Resource
-Microsoft.Maui.Controls.Maps.Resource.Resource() -> void
 override Microsoft.Maui.Controls.Maps.Map.OnHandlerChanged() -> void
 override Microsoft.Maui.Controls.Maps.Pin.Equals(object? obj) -> bool
 override Microsoft.Maui.Controls.Maps.Pin.GetHashCode() -> int

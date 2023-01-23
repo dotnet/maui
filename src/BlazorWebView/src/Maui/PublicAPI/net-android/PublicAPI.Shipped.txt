@@ -25,8 +25,6 @@ Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.RootComponents.get -
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.UrlLoading(Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs! args) -> void
 Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder
 Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-Microsoft.AspNetCore.Components.WebView.Maui.Resource
-Microsoft.AspNetCore.Components.WebView.Maui.Resource.Resource() -> void
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.get -> System.Type?
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.ComponentType.set -> void
