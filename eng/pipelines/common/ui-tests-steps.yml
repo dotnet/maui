@@ -49,7 +49,7 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-samples --configuration="Release" --verbosity=diagnostic
     displayName: 'Build the samples'
 
-  - script: appium server --base-path=/wd/hub &
+  - script: appium server --base-path=/wd/hub --log="$(LogDirectory)/appium_logs.txt" &
     displayName: "Start Appium server"
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
