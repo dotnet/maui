@@ -7,8 +7,6 @@
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
 		<UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug'">True</UseInterpreter>
 		<MtouchLink Condition="'$(MtouchLink)' == '' and '$(Configuration)' == 'Debug' and '$(UseInterpreter)' == 'true'">None</MtouchLink>
-		<!-- Revert this later, this should go in xamarin/xamarin-android -->
-		<_IsTrimmingEnabled Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">true</_IsTrimmingEnabled>
 	</PropertyGroup>
 
 	<ItemGroup>
