@@ -447,7 +447,7 @@ namespace Microsoft.Maui.ApplicationModel
 				{
 					var permissions = new List<(string, bool)>();
 
-#if __ANDROID_33__
+#if ANDROID33
 					if (OperatingSystem.IsAndroidVersionAtLeast(33) && Application.Context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Tiramisu)
 					{
 						permissions.Add((Manifest.Permission.ReadMediaAudio, true));
