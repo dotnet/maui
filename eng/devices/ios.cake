@@ -27,7 +27,7 @@ var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSIO
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
 string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimulator-x64" : "ios-x64";
-string CONFIGURATION = "Release";
+string CONFIGURATION = Argument("configuration", "Debug");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 
 Information("Project File: {0}", PROJECT);

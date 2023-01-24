@@ -26,7 +26,7 @@ var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? defaultVersion);
 
 // other
-string CONFIGURATION = "Debug"; // needs to be debug so unit tests get discovered
+string CONFIGURATION = Argument("configuration", "Debug");
 string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
 string DEVICE_ID = "";
 string DEVICE_ARCH = "";

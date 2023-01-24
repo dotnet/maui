@@ -7,6 +7,7 @@ parameters:
   version: '' #the iOS version
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
+  configuration : "Debug"
 
 steps:
 
@@ -51,7 +52,7 @@ steps:
     displayName: "Install Appium"
     continueOnError: true
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
     env:
@@ -61,16 +62,16 @@ steps:
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
-  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
+  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
     displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="Release" --verbosity=diagnostic
+  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Build the samples'
 
   # - script: appium server --base-path=/wd/hub --log="$(LogDirectory)/appium_logs_${{ parameters.platform }}.log" &
   #   displayName: "Start Appium server"
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}"  --configuration="Release" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
     displayName: $(Agent.JobName)
   
   - task: PublishTestResults@2

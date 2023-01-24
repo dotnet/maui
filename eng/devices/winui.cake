@@ -18,7 +18,7 @@ DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrE
 var TEST_APP = Argument("app", EnvironmentVariable("WINDOWS_TEST_APP") ?? "");
 FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_TEST_APP_PROJECT") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
-string CONFIGURATION = Argument("configuration", "Release");
+string CONFIGURATION = Argument("configuration", "Debug");
 
 var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFORM_VERSION") ?? defaultVersion);
 
