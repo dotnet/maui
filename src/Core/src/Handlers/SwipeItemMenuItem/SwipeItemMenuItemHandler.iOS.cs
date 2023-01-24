@@ -5,6 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
+	// TODO: Make this public on .NET 8
 	internal class SwipeItemButton : UIButton
 	{
 		internal event EventHandler? FrameChanged;
@@ -92,6 +93,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSwipeItemFrameChanged(object? sender, EventArgs e)
 		{
+			// Adjust the size of the icon in case of changing the size of the SwipeItem.
 			if (this is ISwipeItemMenuItemHandler swipeItemMenuItemHandler)
 				swipeItemMenuItemHandler.UpdateValue(nameof(ISwipeItemMenuItem.Source));
 		}
