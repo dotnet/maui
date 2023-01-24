@@ -263,18 +263,21 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		/// <inheritdoc cref="Control.Dispose(bool)" />
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing)
+			if (disposing && _webviewManager is not null)
 			{
-				// Dispose this component's contents and block on completion so that user-written disposal logic and
+				// Await disposal of this component's contents so that user-written disposal logic and
 				// Razor component disposal logic will complete first. Then call base.Dispose(), which will dispose
 				// the WebView2 control. This order is critical because once the WebView2 is disposed it will prevent
 				// Razor component code from working because it requires the WebView to exist.
-				_webviewManager?
-					.DisposeAsync()
-					.AsTask()
-					.GetAwaiter()
-					.GetResult();
+				// Dispatch because this is going to be async, and we want to catch any errors.
+				_ = ComponentsDispatcher.InvokeAsync(async () =>
+				{
+					await _webviewManager.DisposeAsync();
+					base.Dispose(disposing);
+				});
+				return;
 			}
+
 			base.Dispose(disposing);
 		}
 
