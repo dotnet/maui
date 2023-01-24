@@ -95,6 +95,7 @@ stages:
                     parameters:
                       platform: winui
                       version: "10.0.19041"
+                      device: windows10
                       path: ${{ project.winui }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
