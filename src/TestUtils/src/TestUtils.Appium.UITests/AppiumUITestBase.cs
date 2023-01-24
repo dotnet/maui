@@ -20,6 +20,8 @@ namespace TestUtils.Appium.UITests
 			//Mac is throwing if we call ActivateApp
 			if (TestConfig.TestDevice != TestDevice.Mac && TestConfig.TestDevice != TestDevice.Windows)
 				Driver?.ActivateApp(TestConfig.AppId);
+
+			//Driver?.LaunchApp();
 		}
 		
 		public void Teardown() => Driver?.Quit();

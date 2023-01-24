@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Appium
 			var service = new AppiumServiceBuilder()
 				.WithArguments(arguments)
 				.UsingPort(port)
+				.WithLogFile(new FileInfo("appium.log"))
 				.Build();
 			
 			service.OutputDataReceived += (s,e) => Debug.WriteLine($"Appium {e.Data}");
@@ -56,10 +57,12 @@ namespace Microsoft.Maui.Appium
 			if (driverUri == null)
 				driverUri = new Uri($"http://localhost:{Port}/wd/hub");
 
-			//if (Server != null && !Server.IsRunning)
-			//{
-			//	throw new InvalidOperationException("Appium Server is not running");
-			//}
+			Task.Delay(1000).Wait();
+
+			while (Server != null && !Server.IsRunning)
+			{
+				Task.Delay(1000).Wait();
+			}
 			return TestConfig.TestDevice switch
 			{
 				TestDevice.Android => new AndroidDriver(driverUri, AppiumOptions),

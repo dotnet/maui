@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Appium;
 using NUnit.Framework;
+using OpenQA.Selenium;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
@@ -14,6 +15,9 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		[Test()]
 		public void TestLogin()
 		{
+			//just to make the test pass, we need a way t wait for the app to lauch
+			App?.WaitForElement("btnLogin");
+
 			Driver?.FindElement(ByAutomationId("entryUsername")).SendKeys("user@email.com");
 			Driver?.FindElement(ByAutomationId("entryPassword")).SendKeys("password");
 			Driver?.FindElement(ByAutomationId("btnLogin")).Click();
