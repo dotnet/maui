@@ -635,6 +635,45 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "LifeCycleEvents Fire When Navigating Top Tabs")]
+		public async Task LifeCycleEventsFireWhenNavigatingTopTabs()
+		{
+			SetupBuilder();
+
+			var page1 = new LifeCycleTrackingPage() { Content = new Label() { Padding = 40, Text = "Page 1", Background = SolidColorBrush.Purple } };
+			var page2 = new LifeCycleTrackingPage() { Content = new Label() { Padding = 40, Text = "Page 2", Background = SolidColorBrush.Green } };
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new Tab()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Title = "Tab 1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Title = "Tab 2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnNavigatedToAsync(page1);
+
+				Assert.Equal(0, page2.OnNavigatedToCount);
+				await TapToSelect(page2);
+				Assert.Equal(page2.Parent, shell.CurrentItem.CurrentItem.CurrentItem);
+				page2.AssertLifeCycleCounts();
+			});
+		}
+
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{
