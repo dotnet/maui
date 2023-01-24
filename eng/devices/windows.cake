@@ -24,7 +24,7 @@ var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFOR
 // other
 string PLATFORM = "windows";
 string DOTNET_PLATFORM = $"win10-x64";
-string CONFIGURATION = "Release";
+string CONFIGURATION = Argument("configuration", "Release");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 
 Information("Project File: {0}", PROJECT);

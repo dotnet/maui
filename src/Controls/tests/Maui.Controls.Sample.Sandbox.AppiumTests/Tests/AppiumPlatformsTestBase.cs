@@ -67,7 +67,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 					break;
 				case TestDevice.Windows:
 					testConfig.DeviceName = "WindowsPC";
-					testConfig.AppPath = "D:\\repos\\dotnet\\maui\\src\\Controls\\samples\\Controls.Sample.Sandbox\\bin\\Debug\\net7.0-windows10.0.20348\\win10-x64\\Maui.Controls.Sample.Sandbox.exe";
+					testConfig.AppPath = Environment.GetEnvironmentVariable("WINDOWS_APP_PATH") ?? "";
 					break;
 			}
 

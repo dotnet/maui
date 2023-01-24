@@ -218,6 +218,7 @@ Task("uitest")
 	 	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
 		var simXH = xharness.First();
 		Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
+		Information("The platform version to run tests: {0}", iosVersion);
 		SetEnvironmentVariable("IOS_SIMULATOR_UDID",simXH.UDID);
 		SetEnvironmentVariable("IOS_PLATFORM_VERSION", iosVersion);
 		
