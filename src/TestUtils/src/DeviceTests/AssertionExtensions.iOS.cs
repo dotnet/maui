@@ -576,6 +576,12 @@ namespace Microsoft.Maui.DeviceTests
 				return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
 			});
 
+			//Pre iOS 15
+			item = item ?? uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UINavigationBarContentView", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
 			_ = item ?? throw new Exception("Unable to locate TitleBar Control");
 
 			var titleLabel = item.FindDescendantView<UILabel>();
