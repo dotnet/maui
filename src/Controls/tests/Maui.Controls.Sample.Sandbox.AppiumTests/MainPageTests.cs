@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		[Test()]
 		public void TestLogin()
 		{
-			//just to make the test pass, we need a way t wait for the app to lauch
+			//just to make the test pass, we need a way t wait for the app to launch
 			App?.WaitForElement("btnLogin");
 
 			Driver?.FindElement(ByAutomationId("entryUsername")).SendKeys("user@email.com");
