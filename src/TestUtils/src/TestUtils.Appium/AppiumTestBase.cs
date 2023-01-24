@@ -1,29 +1,50 @@
-﻿using OpenQA.Selenium;
+﻿using System.Diagnostics;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Mac;
+using OpenQA.Selenium.Appium.Service;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.DevTools.V104.Page;
+using OpenQA.Selenium.DevTools.V105.Page;
 
 namespace Microsoft.Maui.Appium
 {
 	public abstract class AppiumTestBase
 	{
+		const int Port = 4723;
+		protected AppiumLocalService Server;
 		protected AppiumDriver? Driver;
 		protected AppiumOptions AppiumOptions;
 		protected TestConfig? TestConfig;
-	
+
 		public bool IsAndroid => Driver != null && Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
 		public bool IsWindows => Driver != null && Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Windows");
 
 		public AppiumTestBase()
 		{
 			AppiumOptions = new AppiumOptions();
+			Server = GetServer();
+			Server.Start();
 		}
 
 		public abstract TestConfig GetTestConfig();
+
+		protected virtual AppiumLocalService GetServer(int port = Port)
+		{
+			var arguments = new OpenQA.Selenium.Appium.Service.Options.OptionCollector();
+			arguments.AddArguments(new KeyValuePair<string, string>("--base-path", "/wd/hub"));
+
+			var service = new AppiumServiceBuilder()
+				.WithArguments(arguments)
+				.UsingPort(port)
+				.Build();
+			
+			service.OutputDataReceived += (s,e) => Debug.WriteLine($"Appium {e.Data}");
+			return service;
+		}
 
 		protected virtual AppiumDriver? GetDriver(Uri? driverUri = null)
 		{
@@ -33,8 +54,12 @@ namespace Microsoft.Maui.Appium
 			SetGeneralAppiumOptions(AppiumOptions, TestConfig);
 
 			if (driverUri == null)
-				driverUri = new Uri("http://localhost:4723/wd/hub");
-			
+				driverUri = new Uri($"http://localhost:{Port}/wd/hub");
+
+			//if (Server != null && !Server.IsRunning)
+			//{
+			//	throw new InvalidOperationException("Appium Server is not running");
+			//}
 			return TestConfig.TestDevice switch
 			{
 				TestDevice.Android => new AndroidDriver(driverUri, AppiumOptions),
@@ -55,7 +80,7 @@ namespace Microsoft.Maui.Appium
 
 			if (!string.IsNullOrEmpty(TestConfig.DeviceName))
 				appiumOptions.DeviceName = TestConfig.DeviceName;
-			
+
 			if (!string.IsNullOrEmpty(TestConfig.PlatformVersion))
 				appiumOptions.PlatformVersion = TestConfig.PlatformVersion;
 
@@ -106,7 +131,7 @@ namespace Microsoft.Maui.Appium
 			if (testConfig.FullReset)
 				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "true");
 
-			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout , 3000);
+			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout, 3000);
 		}
 
 	}
