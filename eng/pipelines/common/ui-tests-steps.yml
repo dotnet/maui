@@ -1,10 +1,10 @@
 parameters:
-  platform: '' # [ android, ios, winui ]
+  platform: '' # [ android, ios, windows ]
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
   app: '' #path to app to test
-  version: '' #the iOS version
+  version: '' #the iOS version'
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   configuration : "Debug"
@@ -13,9 +13,9 @@ steps:
 
   - template: provision.yml
     parameters:
-      ${{ if eq(parameters.platform, 'winui') }}:
+      ${{ if eq(parameters.platform, 'windows') }}:
         platform: windows
-      ${{ if ne(parameters.platform, 'winui') }}:
+      ${{ if ne(parameters.platform, 'windows') }}:
         platform: macos
       skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -65,7 +65,7 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
     displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
+  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic 
     displayName: 'Build the samples'
 
   # - script: appium server --base-path=/wd/hub --log="$(LogDirectory)/appium_logs_${{ parameters.platform }}.log" &
