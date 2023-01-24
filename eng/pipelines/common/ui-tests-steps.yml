@@ -10,14 +10,14 @@ parameters:
 
 steps:
 
-    - template: provision.yml
-      parameters:
-        ${{ if eq(parameters.platform, 'winui') }}:
-          platform: windows
-        ${{ if ne(parameters.platform, 'winui') }}:
-          platform: macos
-        skipXcode: false
-        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+  - template: provision.yml
+    parameters:
+      ${{ if eq(parameters.platform, 'winui') }}:
+        platform: windows
+      ${{ if ne(parameters.platform, 'winui') }}:
+        platform: macos
+      skipXcode: false
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - task: NodeTool@0
     inputs:
