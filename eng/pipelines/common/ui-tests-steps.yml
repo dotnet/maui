@@ -34,6 +34,7 @@ steps:
         appium driver install uiautomator2
         appium driver install xcuitest
         appium driver install mac2
+        appium driver install --source=npm appium-windows-driver
     displayName: "Install Appium"
     continueOnError: true
 
