@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				catch (TaskCanceledException ex)
 				{
 					cancelled = true;
-					throw ex;
+					throw;
 				}
 
 				if (cancellationToken.IsCancellationRequested)

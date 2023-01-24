@@ -626,6 +626,8 @@ Microsoft.Maui.Graphics.ResizeMode
 Microsoft.Maui.Graphics.ResizeMode.Bleed = 1 -> Microsoft.Maui.Graphics.ResizeMode
 Microsoft.Maui.Graphics.ResizeMode.Fit = 0 -> Microsoft.Maui.Graphics.ResizeMode
 Microsoft.Maui.Graphics.ResizeMode.Stretch = 2 -> Microsoft.Maui.Graphics.ResizeMode
+Microsoft.Maui.Graphics.Resource
+Microsoft.Maui.Graphics.Resource.Resource() -> void
 Microsoft.Maui.Graphics.ScalingCanvas
 Microsoft.Maui.Graphics.ScalingCanvas.Alpha.set -> void
 Microsoft.Maui.Graphics.ScalingCanvas.Antialias.set -> void

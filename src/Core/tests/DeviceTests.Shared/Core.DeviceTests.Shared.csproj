@@ -5,6 +5,8 @@
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.DeviceTests.Shared</AssemblyName>
+    <!-- Avoids conflict in Controls.DeviceTests.csproj -->
+    <AndroidResgenNamespace>Microsoft.Maui.DeviceTests.Shared</AndroidResgenNamespace>
     <!--<Nullable>enable</Nullable>-->
     <NoWarn>$(NoWarn),CA1416</NoWarn>
   </PropertyGroup>
