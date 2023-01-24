@@ -18,13 +18,13 @@ DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrE
 var TEST_APP = Argument("app", EnvironmentVariable("WINDOWS_TEST_APP") ?? "");
 FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_TEST_APP_PROJECT") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
+string CONFIGURATION = Argument("configuration", "Release");
 
 var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFORM_VERSION") ?? defaultVersion);
 
 // other
 string PLATFORM = "windows";
 string DOTNET_PLATFORM = $"win10-x64";
-string CONFIGURATION = Argument("configuration", "Release");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 
 Information("Project File: {0}", PROJECT);
@@ -81,6 +81,8 @@ Task("uitest")
 		["ExtraDefineConstants"] = "WINTEST"
 	};
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_windows.log");
+	
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra : properties);
 });
 
