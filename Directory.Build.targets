@@ -54,15 +54,6 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
-  <!--
-    Comment out this section if you need to update Resource.designer.cs files.
-    See .github/DEVELOPMENT.md#Android for details.
-  -->
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true'">
-    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
-    <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
-  </PropertyGroup>
-
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
   <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
