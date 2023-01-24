@@ -61,7 +61,6 @@ Task("uitest")
 		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath;
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
-		Information("Apps: {0}", apps);
 		TEST_APP = apps.First().FullPath;
 	}
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
@@ -81,7 +80,7 @@ Task("uitest")
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
+		//	ToolPath = DOTNET_PATH,
 	});
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
