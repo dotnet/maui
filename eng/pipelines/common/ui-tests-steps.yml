@@ -1,5 +1,5 @@
 parameters:
-  platform: '' # [ android, ios ]
+  platform: '' # [ android, ios, windows ]
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
@@ -9,11 +9,12 @@ parameters:
   agentPoolAccessToken: ''
 
 steps:
-  - template: provision.yml
-    parameters:
-      platform: macos
-      skipXcode: false
-      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+  - ${{ if ne(parameters.platform, 'windows') }}:
+    - template: provision.yml
+      parameters:
+        platform: macos
+        skipXcode: false
+        provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - task: NodeTool@0
     inputs:
