@@ -31,10 +31,23 @@ steps:
         node -v
         npm install -g appium@next
         appium -v
-        appium driver install uiautomator2
-        appium driver install xcuitest
-        appium driver install mac2
-        appium driver install --source=npm appium-windows-driver
+        $x = appium driver list --installed --json  | ConvertFrom-Json
+        if(!$x.windows)
+        {
+            appium driver install --source=npm appium-windows-driver
+        }
+        if(!$x.uiautomator2)
+        {
+            appium driver install uiautomator2
+        }
+        if(!$x.xcuitest)
+        {
+            appium driver install xcuitest
+        }
+        if(!$x.mac2)
+        {
+            appium driver install mac2
+        }
     displayName: "Install Appium"
     continueOnError: true
 
