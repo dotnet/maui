@@ -7,7 +7,7 @@ parameters:
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
-  configuration : "Debug"
+  configuration : "Release"
 
 steps:
 
