@@ -23,8 +23,11 @@ namespace TestUtils.Appium.UITests
 
 			//Driver?.LaunchApp();
 		}
-		
-		public void Teardown() => Driver?.Quit();
 
+		public void Teardown()
+		{
+			Driver?.Quit();
+			Server.Dispose();
+		}
 	}
 }
