@@ -236,6 +236,8 @@ Task("uitest")
 			ToolPath = DOTNET_PATH,
 	});
 
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_ios.log");
+
 	Information("Run UITests project {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
 });

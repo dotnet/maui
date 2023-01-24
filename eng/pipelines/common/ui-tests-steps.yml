@@ -1,5 +1,5 @@
 parameters:
-  platform: '' # [ android, ios, windows ]
+  platform: '' # [ android, ios, winui ]
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
@@ -9,10 +9,13 @@ parameters:
   agentPoolAccessToken: ''
 
 steps:
-  - ${{ if ne(parameters.platform, 'windows') }}:
+
     - template: provision.yml
       parameters:
-        platform: macos
+        ${{ if eq(parameters.platform, 'winui') }}:
+          platform: windows
+        ${{ if ne(parameters.platform, 'winui') }}:
+          platform: macos
         skipXcode: false
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
 

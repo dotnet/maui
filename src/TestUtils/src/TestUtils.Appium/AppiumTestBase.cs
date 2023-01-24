@@ -37,13 +37,15 @@ namespace Microsoft.Maui.Appium
 			var arguments = new OpenQA.Selenium.Appium.Service.Options.OptionCollector();
 			arguments.AddArguments(new KeyValuePair<string, string>("--base-path", "/wd/hub"));
 
+			var logFile = Environment.GetEnvironmentVariable("APPIUM_LOG_FILE") ?? "appium.log";
+
 			var service = new AppiumServiceBuilder()
 				.WithArguments(arguments)
 				.UsingPort(port)
-				.WithLogFile(new FileInfo("appium.log"))
+				.WithLogFile(new FileInfo(logFile))
 				.Build();
-			
-			service.OutputDataReceived += (s,e) => Debug.WriteLine($"Appium {e.Data}");
+
+			service.OutputDataReceived += (s, e) => Debug.WriteLine($"Appium {e.Data}");
 			return service;
 		}
 

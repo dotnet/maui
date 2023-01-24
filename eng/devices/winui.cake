@@ -74,16 +74,21 @@ Task("uitest")
 
 	CleanDirectories(TEST_RESULTS);
 
-	Information("Run UITests {0}",PROJECT.FullPath);
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
+	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append("/p:ExtraDefineConstants=WINTEST")
+				.Append("/bl:" + binlog),
+			ToolPath = DOTNET_PATH,
+	});
 
-	var properties = new Dictionary<string,string>
-	{
-		["ExtraDefineConstants"] = "WINTEST"
-	};
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_windows.log");
-	
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra : properties);
+
+	Information("Run UITests {0}", PROJECT.FullPath);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
 });
 
 RunTarget(TARGET);

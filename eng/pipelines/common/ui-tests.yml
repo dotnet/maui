@@ -11,7 +11,7 @@ parameters:
       desc: Human Description
       android: /optional/path/to/android.csproj
       ios: /optional/path/to/ios.csproj
-      windows: /optional/path/to/windows.csproj
+      winui: /optional/path/to/winui.csproj
       app: /optional/path/to/app.csproj
 
 stages:
@@ -79,13 +79,13 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
-  - stage: windows_ui_tests
-    displayName: windows UITests
+  - stage: winui_ui_tests
+    displayName: WinUI UITests
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.windows, '') }}:
-              - job: windows_ui_tests_${{ project.name }}
+        - ${{ if ne(project.winui, '') }}:
+              - job: winui_ui_tests_${{ project.name }}
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
@@ -93,9 +93,9 @@ stages:
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
-                      platform: windows
+                      platform: winui
                       version: "10.0.19041"
-                      path: ${{ project.windows }}
+                      path: ${{ project.winui }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
