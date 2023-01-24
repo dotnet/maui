@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTrimmable>false</IsTrimmable>
-    <AndroidGenerateResourceDesigner>true</AndroidGenerateResourceDesigner>
+    <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
   </PropertyGroup>

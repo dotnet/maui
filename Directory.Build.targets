@@ -58,7 +58,7 @@
     Disable generation of obj/Debug/net8.0-android/__Microsoft.Android.Resource.Designer.cs
     Enable this individually in projects that declare/use AndroidResource IDs.
   -->
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true'">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true' AND '$(MauiGenerateResourceDesigner)' != 'true'">
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
   </PropertyGroup>
 
