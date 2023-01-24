@@ -1,6 +1,7 @@
 parameters:
   androidPool: { }
   iosPool: { }
+  windowsPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
@@ -10,6 +11,7 @@ parameters:
       desc: Human Description
       android: /optional/path/to/android.csproj
       ios: /optional/path/to/ios.csproj
+      windows: /optional/path/to/windows.csproj
       app: /optional/path/to/app.csproj
 
 stages:
@@ -74,5 +76,26 @@ stages:
                         device: ios-simulator-64
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+  - stage: windows_ui_tests
+    displayName: windows UITests
+    dependsOn: []
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.windows, '') }}:
+              - job: windows_ui_tests_${{ project.name }}
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }}
+                pool: ${{ parameters.windowsPool }}
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: windows
+                      version: "10.0.19041"
+                      path: ${{ project.windows }}
+                      app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
