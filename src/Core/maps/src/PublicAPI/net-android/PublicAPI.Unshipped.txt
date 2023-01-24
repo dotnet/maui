@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.Maui.Maps.Resource
-Microsoft.Maui.Maps.Resource.Resource() -> void

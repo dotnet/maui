@@ -54,6 +54,14 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
+<!--
+    Disable generation of obj/Debug/net8.0-android/__Microsoft.Android.Resource.Designer.cs
+    Enable this individually in projects that declare/use AndroidResource IDs.
+  -->
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true'">
+    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+  </PropertyGroup>
+
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
   <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
