@@ -25,7 +25,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AppCompatCheckBox platformView)
 		{
-			platformView.CheckedChange -= OnCheckedChange;
+			if (platformView.IsAlive())
+				platformView.CheckedChange -= OnCheckedChange;
 		}
 
 		// This is an Android-specific mapping

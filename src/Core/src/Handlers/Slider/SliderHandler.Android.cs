@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(SeekBar platformView)
 		{
 			ChangeListener.Handler = null;
-			platformView.SetOnSeekBarChangeListener(null);
+
+			if (platformView.IsAlive())
+				platformView.SetOnSeekBarChangeListener(null);
 		}
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)

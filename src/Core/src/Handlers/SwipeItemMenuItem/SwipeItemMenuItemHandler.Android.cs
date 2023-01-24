@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AView platformView)
 		{
 			base.DisconnectHandler(platformView);
-			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
+
+			if (platformView.IsAlive())
+				platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 		}
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ITextStyle view)

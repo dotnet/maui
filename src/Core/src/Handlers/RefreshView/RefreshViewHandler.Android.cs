@@ -22,9 +22,13 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiSwipeRefreshLayout platformView)
 		{
-			// If we're being disconnected from the xplat element, then we should no longer be managing its children
-			platformView.Refresh -= OnSwipeRefresh;
-			platformView.UpdateContent(null, null);
+			if (platformView.IsAlive())
+			{
+				// If we're being disconnected from the xplat element, then we should no longer be managing its children
+				platformView.Refresh -= OnSwipeRefresh;
+				platformView.UpdateContent(null, null);
+			}
+
 			base.DisconnectHandler(platformView);
 		}
 

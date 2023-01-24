@@ -36,10 +36,14 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(SearchView platformView)
 		{
 			FocusListener.Handler = null;
-			platformView.SetOnQueryTextFocusChangeListener(null);
 
-			platformView.QueryTextChange -= OnQueryTextChange;
-			platformView.QueryTextSubmit -= OnQueryTextSubmit;
+			if (platformView.IsAlive())
+			{
+				platformView.SetOnQueryTextFocusChangeListener(null);
+
+				platformView.QueryTextChange -= OnQueryTextChange;
+				platformView.QueryTextSubmit -= OnQueryTextSubmit;
+			}
 		}
 
 		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)

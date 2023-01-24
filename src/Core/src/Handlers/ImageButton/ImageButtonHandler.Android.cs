@@ -25,9 +25,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ShapeableImageView platformView)
 		{
-			platformView.FocusChange -= OnFocusChange;
-			platformView.Click -= OnClick;
-			platformView.Touch -= OnTouch;
+			if (platformView.IsAlive())
+			{
+				platformView.FocusChange -= OnFocusChange;
+				platformView.Click -= OnClick;
+				platformView.Touch -= OnTouch;
+			}
 
 			base.DisconnectHandler(platformView);
 

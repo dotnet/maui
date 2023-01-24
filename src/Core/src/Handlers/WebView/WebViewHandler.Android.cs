@@ -56,9 +56,13 @@ namespace Microsoft.Maui.Handlers
 				mauiWebViewClient.Disconnect();
 
 			_webChromeClient?.Disconnect();
-			platformView.SetWebChromeClient(null);
 
-			platformView.StopLoading();
+			if (platformView.IsAlive())
+			{
+				platformView.SetWebChromeClient(null);
+
+				platformView.StopLoading();
+			}
 
 			_webViewClient = null;
 			_webChromeClient = null;

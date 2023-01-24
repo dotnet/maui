@@ -57,8 +57,12 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
-			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
-			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
+			if (platformView.IsAlive())
+			{
+				platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
+				platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
+			}
+
 			OnViewDetachedFromWindow();
 
 			base.DisconnectHandler(platformView);

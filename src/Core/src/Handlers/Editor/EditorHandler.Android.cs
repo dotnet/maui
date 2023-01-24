@@ -50,12 +50,15 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
-			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
-			platformView.TextChanged -= OnTextChanged;
+			if (platformView.IsAlive())
+			{
+				platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+				platformView.TextChanged -= OnTextChanged;
 
-			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			if (_set && platformView is MauiAppCompatEditText editText)
-				editText.SelectionChanged -= OnSelectionChanged;
+				// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+				if (_set && platformView is MauiAppCompatEditText editText)
+					editText.SelectionChanged -= OnSelectionChanged;
+			}
 
 			_set = false;
 		}

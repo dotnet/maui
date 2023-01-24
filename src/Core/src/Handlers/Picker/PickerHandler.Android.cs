@@ -26,8 +26,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
-			platformView.FocusChange -= OnFocusChange;
-			platformView.Click -= OnClick;
+			if (platformView.IsAlive())
+			{
+				platformView.FocusChange -= OnFocusChange;
+				platformView.Click -= OnClick;
+			}
 
 			base.DisconnectHandler(platformView);
 		}

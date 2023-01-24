@@ -56,14 +56,18 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
-			platformView.TextChanged -= OnTextChanged;
-			platformView.FocusChange -= OnFocusedChange;
-			platformView.Touch -= OnTouch;
-			platformView.EditorAction -= OnEditorAction;
 
-			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			if (_set && platformView is MauiAppCompatEditText editText)
-				editText.SelectionChanged -= OnSelectionChanged;
+			if (platformView.IsAlive())
+			{
+				platformView.TextChanged -= OnTextChanged;
+				platformView.FocusChange -= OnFocusedChange;
+				platformView.Touch -= OnTouch;
+				platformView.EditorAction -= OnEditorAction;
+
+				// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+				if (_set && platformView is MauiAppCompatEditText editText)
+					editText.SelectionChanged -= OnSelectionChanged;
+			}
 
 			_set = false;
 		}
