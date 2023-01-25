@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact("WebBrowser autoplays HTML5 Video"
 #if ANDROID || IOS || MACCATALYST
-			, Skip = "Capturing a screenshot/image of a WebView on Android does not also capture the video canvas contents required for this test."
+			, Skip = "Capturing a screenshot/image of a WebView does not also capture the video canvas contents required for this test."
 #endif
 			)]
 		public async Task WebViewPlaysHtml5Video()
