@@ -2,6 +2,8 @@
 Microsoft.Maui.Graphics.Skia.FontExtensions
 Microsoft.Maui.Graphics.Skia.PlatformBitmapExportService
 Microsoft.Maui.Graphics.Skia.PlatformBitmapExportService.PlatformBitmapExportService() -> void
+Microsoft.Maui.Graphics.Skia.Resource
+Microsoft.Maui.Graphics.Skia.Resource.Resource() -> void
 Microsoft.Maui.Graphics.Skia.SKColorExtensions
 Microsoft.Maui.Graphics.Skia.SKGraphicsExtensions
 Microsoft.Maui.Graphics.Skia.SkiaBitmapExportContext
