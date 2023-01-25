@@ -128,6 +128,8 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
     var binlog = $"{GetLogDirectory()}/{name}-{configuration}.binlog";
     var results = $"{name}-{configuration}.trx";
 
+    Information("Run Test binlog: {0}", binlog);
+
     var settings = new DotNetCoreTestSettings
         {
             Configuration = configuration,
