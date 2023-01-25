@@ -1,5 +1,5 @@
 parameters:
-  platform: '' # [ android, ios, windows ]
+  platform: '' # [ android, ios, windows, catalyst ]
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
