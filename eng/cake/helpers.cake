@@ -128,9 +128,6 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
     var binlog = $"{GetLogDirectory()}/{name}-{configuration}.binlog";
     var results = $"{name}-{configuration}.trx";
 
-    if(localDotnet)
-        SetDotNetEnvironmentVariables(dotnetPath);
-
     var settings = new DotNetCoreTestSettings
         {
             Configuration = configuration,
@@ -140,7 +137,6 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
             //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
-               
                 args.Append($"-bl:{binlog}");
                 if(argsExtra != null)
                 {
@@ -152,10 +148,6 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
                 return args;
             }
         };
-    if(!string.IsNullOrEmpty(dotnetPath))
-    {
-        settings.ToolPath = $"{dotnetPath}/dotnet.exe";
-    }
 
     DotNetCoreTest(csproj, settings);
 }
