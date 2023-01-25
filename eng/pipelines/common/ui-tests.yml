@@ -118,7 +118,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: catalyst
-                      version: ""
+                      version: "13.1"
                       device: mac
                       path: ${{ project.mac }}
                       app: ${{ project.app }}
