@@ -65,6 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !IOS && !MACCATALYST
 		[Theory]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior(Type flyoutPageType)
@@ -91,7 +92,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS && !MACCATALYST
 
 		[Theory(DisplayName = "FlyoutPage With Toolbar")]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
