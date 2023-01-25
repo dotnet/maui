@@ -333,7 +333,7 @@ Task("uitest")
 	DotNetCoreTool("tool", settings);
 
 	//we need to build tests first to pass ExtraDefineConstants
-	Information("Build UITests {0}",PROJECT.FullPath);
+	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
 	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {

@@ -11,15 +11,13 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?
 
 // optional
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
-var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net7.0-maccatalyst" : ""));
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? "net7.0-maccatalyst");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("MAC_TEST_APP") ?? "");
 FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
-
 
 // other
 string PLATFORM = "mac";
@@ -56,9 +54,7 @@ Task("uitest")
 	if (string.IsNullOrEmpty(TEST_APP) ) {
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = USE_DOTNET
-			? TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
-			: TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(PLATFORM).Combine(CONFIGURATION).FullPath;
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath;
 		var apps = GetDirectories(binDir + "/*.app");
 		TEST_APP = apps.First().FullPath;
 	}
@@ -72,29 +68,19 @@ Task("uitest")
 
 	CleanDirectories(TEST_RESULTS);
 
-	// Information("Install with xharness: {0}",TEST_APP);
-	// var settings = new DotNetCoreToolSettings {
-	// 	DiagnosticOutput = true,
-	// 	ArgumentCustomization = args => args.Append("run xharness apple install " +
-	// 	$"--app=\"{TEST_APP}\" " +
-	// 	$"--targets=\"{TEST_DEVICE}\" " +
-	// 	$"--output-directory=\"{TEST_RESULTS}\" " +
-	// 	$"--verbosity=\"Debug\" ")
-	// };
+	Information("Build UITests project {0}",PROJECT.FullPath);
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-mac.binlog";
+	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append("/p:ExtraDefineConstants=MACUITEST")
+				.Append("/bl:" + binlog),
+		//	ToolPath = DOTNET_PATH,
+	});
 
-	// try {
-	// 	DotNetCoreTool("tool", settings);
-	// } finally {
-		
-	// }
-
-	Information("Run UITests {0}",PROJECT.FullPath);
-
-	var properties = new Dictionary<string,string>
-	{
-		["ExtraDefineConstants"] = "MACUITEST"
-	};
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, argsExtra : properties);
+	Information("Run UITests project {0}",PROJECT.FullPath);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
 });
 
 RunTarget(TARGET);

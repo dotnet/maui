@@ -2,6 +2,7 @@ parameters:
   androidPool: { }
   iosPool: { }
   windowsPool: { }
+  macosPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
@@ -12,6 +13,7 @@ parameters:
       android: /optional/path/to/android.csproj
       ios: /optional/path/to/ios.csproj
       winui: /optional/path/to/winui.csproj
+      mac: /optional/path/to/mac.csproj
       app: /optional/path/to/app.csproj
 
 stages:
@@ -97,6 +99,28 @@ stages:
                       version: "10.0.19041"
                       device: windows10
                       path: ${{ project.winui }}
+                      app: ${{ project.app }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+  - stage: mac_ui_tests
+    displayName: macOS UITests
+    dependsOn: []
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.mac, '') }}:
+              - job: mac_ui_tests_${{ project.name }}
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }}
+                pool: ${{ parameters.macosPool }}
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: macos
+                      version: ""
+                      device: mac
+                      path: ${{ project.mac }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
