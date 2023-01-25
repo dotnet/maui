@@ -30,7 +30,7 @@
 	<string>Assets.xcassets/appicon.appiconset</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Access to your location is required for cool things to happen!</string>
-    <key>UIApplicationSceneManifest</key>
+	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<true/>
@@ -51,5 +51,7 @@
 	<array>
 		<string>com.microsoft.maui.sample.default</string>
 	</array>
+	<key>MinimumOSVersion</key>
+	<string>10.0</string>
 </dict>
 </plist>

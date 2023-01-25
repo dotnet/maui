@@ -3,5 +3,34 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
-
+     <VerticalStackLayout>
+        <Border StrokeThickness="20"
+                            Stroke="Silver"
+                            Background="White"
+                            Margin="0"
+                            Padding="0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="30" />
+            </Border.StrokeShape>
+            <Grid HeightRequest="30" BackgroundColor="Green">
+                <StackLayout Orientation="Horizontal">
+                    <Frame Padding="0" HasShadow="false"
+                                       BackgroundColor="Maroon"
+                                       CornerRadius="20"
+                                       HeightRequest="40"
+                                       WidthRequest="40" VerticalOptions="Center" >
+                    </Frame>
+                    <Label Text="Parameters"
+                                       VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"
+                                       FontSize="Medium" FontFamily="Bold"
+                                       HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                    <Frame Padding="0" HasShadow="false" CornerRadius="0" Margin="0,0,-20,0"
+                                       BackgroundColor="Blue"
+                                       HeightRequest="40"
+                                       WidthRequest="40" VerticalOptions="Center" >
+                    </Frame>
+                </StackLayout>
+            </Grid>
+        </Border>
+    </VerticalStackLayout>
 </ContentPage>

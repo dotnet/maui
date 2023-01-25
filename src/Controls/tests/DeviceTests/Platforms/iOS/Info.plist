@@ -28,5 +28,7 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
+	<key>MinimumOSVersion</key>
+	<string>10.0</string>
 </dict>
 </plist>
