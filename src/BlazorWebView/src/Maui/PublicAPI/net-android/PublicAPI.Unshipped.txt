@@ -3,6 +3,4 @@ Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.StartPath.get -> stri
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.StartPath.set -> void
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.StartPath.get -> string!
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.StartPath.set -> void
-Microsoft.AspNetCore.Components.WebView.Maui.Resource
-Microsoft.AspNetCore.Components.WebView.Maui.Resource.Resource() -> void
 static readonly Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.StartPathProperty -> Microsoft.Maui.Controls.BindableProperty!
