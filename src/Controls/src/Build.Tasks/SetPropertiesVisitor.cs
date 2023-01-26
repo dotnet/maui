@@ -1595,6 +1595,33 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Root = root,
 				XamlFilePath = parentContext.XamlFilePath,
 			};
+
+			//Instanciate nested class
+			var parentIl = parentContext.IL;
+			parentIl.Emit(OpCodes.Newobj, ctor);
+
+			//Copy the scopes over for x:Reference to work
+			//the scopes will be copied to fields of the anon type, the templateIL will copy them as VariableDef and populate context.Scopes
+			var i = 0;
+			foreach (var kvp in parentContext.Scopes)
+			{
+				//On the parentIL, copy the scope to a field
+				parentIl.Emit(OpCodes.Dup); //Duplicate the nestedclass instance
+				parentIl.Append(kvp.Value.Item1.LoadAs(parentContext.Cache, module.ImportReference(parentContext.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")), module));
+				var fieldDefScope = new FieldDefinition($"_scope{i++}", FieldAttributes.Assembly, module.ImportReference(parentContext.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
+				anonType.Fields.Add(fieldDefScope);
+				parentIl.Emit(OpCodes.Stfld, fieldDefScope);
+
+				//On the templateIL, copy the field to a var, and populate the Scopes
+				templateIl.Emit(OpCodes.Ldarg_0);
+				var varDefScope = new VariableDefinition(module.ImportReference(parentContext.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
+				loadTemplate.Body.Variables.Add(varDefScope);
+				templateIl.Emit(OpCodes.Ldfld, fieldDefScope);
+				templateIl.Emit(OpCodes.Stloc, varDefScope);
+				templateContext.Scopes[kvp.Key] = new Tuple<VariableDefinition, IList<string>>(varDefScope, kvp.Value.Item2);
+			}
+
+			//inflate the template
 			node.Accept(new CreateObjectVisitor(templateContext), null);
 			node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
 			node.Accept(new SetFieldVisitor(templateContext), null);
@@ -1604,9 +1631,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			templateIl.Append(templateContext.Variables[node].LoadAs(parentContext.Cache, module.TypeSystem.Object, module));
 			templateIl.Emit(OpCodes.Ret);
 
-			//Instanciate nested class
-			var parentIl = parentContext.IL;
-			parentIl.Emit(OpCodes.Newobj, ctor);
 
 			//Copy required local vars
 			parentIl.Emit(OpCodes.Dup); //Duplicate the nestedclass instance

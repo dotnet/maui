@@ -2,9 +2,9 @@
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GestureManager : IDisposable
+	class GesturePlatformManager : IDisposable
 	{
-		public GestureManager(IViewHandler handler)
+		public GesturePlatformManager(IViewHandler handler)
 		{
 		}
 
