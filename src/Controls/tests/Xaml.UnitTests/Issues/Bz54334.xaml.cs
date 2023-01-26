@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
-using CommunityToolkit.Mvvm.Messaging;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {

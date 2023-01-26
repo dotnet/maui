@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 			editText.ImeOptions = imeOptions;
 		}
 
-		static (string oldText, string newText) GetTexts(EditText editText, InputView inputView) 
+		static (string oldText, string newText) GetTexts(EditText editText, InputView inputView)
 		{
 			var oldText = editText.Text ?? string.Empty;
 

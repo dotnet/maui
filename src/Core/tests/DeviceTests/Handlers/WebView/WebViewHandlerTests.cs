@@ -41,7 +41,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var webView = new WebViewStub { 
+				var webView = new WebViewStub
+				{
 					Width = 300,
 					Height = 200,
 				};
