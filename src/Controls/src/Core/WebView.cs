@@ -184,6 +184,10 @@ namespace Microsoft.Maui.Controls
 				if (source != null)
 					SetInheritedBindingContext(source, BindingContext);
 			}
+#if WINDOWS
+			else if (propertyName == nameof(Window) && Window is not null)
+				Window.Destroying += OnWindowDestroying;
+#endif
 
 			base.OnPropertyChanged(propertyName);
 		}

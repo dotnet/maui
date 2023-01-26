@@ -35,9 +35,13 @@ namespace Microsoft.Maui.Handlers
 				platformView.CoreWebView2.HistoryChanged -= OnHistoryChanged;
 				platformView.CoreWebView2.NavigationStarting -= OnNavigationStarting;
 				platformView.CoreWebView2.NavigationCompleted -= OnNavigationCompleted;
+
+				platformView.CoreWebView2.Stop();
 			}
 
 			platformView.CoreWebView2Initialized -= OnCoreWebView2Initialized;
+
+			platformView.Close();
 
 			base.DisconnectHandler(platformView);
 		}
