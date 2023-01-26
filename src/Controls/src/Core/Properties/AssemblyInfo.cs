@@ -4,6 +4,13 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
 using Compatibility = Microsoft.Maui.Controls.Compatibility;
 
+[assembly: InternalsVisibleTo("Maui.Controls.Sample")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Essentials.Sample")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.Android")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI")]
+[assembly: InternalsVisibleTo("Compatibility.ControlGallery.WinUI")]
+
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
@@ -52,6 +59,8 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
+
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 [assembly: Preserve]
 

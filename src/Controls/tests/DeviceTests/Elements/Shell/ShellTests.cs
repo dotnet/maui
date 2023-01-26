@@ -596,6 +596,84 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Navigate to Root with BackButtonBehavior no Crash")]
+		public async Task NavigateToRootWithBackButtonBehaviorNoCrash()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				var secondPage = new ContentPage();
+				await shell.Navigation.PushAsync(secondPage);
+				Assert.True(IsBackButtonVisible(shell.Handler));
+
+				bool canExecute = true;
+				Command command = new Command(() => { }, () => canExecute);
+				BackButtonBehavior behavior = new BackButtonBehavior()
+				{
+					IsVisible = false,
+					Command = command
+				};
+
+				Shell.SetBackButtonBehavior(secondPage, behavior);
+				Assert.False(IsBackButtonVisible(shell.Handler));
+				behavior.IsVisible = true;
+				NavigationPage.SetHasBackButton(shell.CurrentPage, true);
+
+				await shell.Navigation.PopToRootAsync(false);
+				await Task.Delay(100);
+				canExecute = false;
+
+				command.ChangeCanExecute();
+				Assert.NotNull(shell.Handler);
+			});
+		}
+
+		[Fact(DisplayName = "LifeCycleEvents Fire When Navigating Top Tabs")]
+		public async Task LifeCycleEventsFireWhenNavigatingTopTabs()
+		{
+			SetupBuilder();
+
+			var page1 = new LifeCycleTrackingPage() { Content = new Label() { Padding = 40, Text = "Page 1", Background = SolidColorBrush.Purple } };
+			var page2 = new LifeCycleTrackingPage() { Content = new Label() { Padding = 40, Text = "Page 2", Background = SolidColorBrush.Green } };
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new Tab()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Title = "Tab 1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Title = "Tab 2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnNavigatedToAsync(page1);
+
+				Assert.Equal(0, page2.OnNavigatedToCount);
+				await TapToSelect(page2);
+				Assert.Equal(page2.Parent, shell.CurrentItem.CurrentItem.CurrentItem);
+				page2.AssertLifeCycleCounts();
+			});
+		}
+
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{

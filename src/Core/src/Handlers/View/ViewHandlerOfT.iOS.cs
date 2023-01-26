@@ -41,19 +41,31 @@ namespace Microsoft.Maui.Handlers
 		protected override void RemoveContainer()
 		{
 			if (PlatformView == null || ContainerView == null || PlatformView.Superview != ContainerView)
+			{
+				CleanupContainerView(ContainerView);
+				ContainerView = null;
 				return;
+			}
 
 			var oldParent = (UIView?)ContainerView.Superview;
 
 			var oldIndex = oldParent?.IndexOfSubview(ContainerView);
-			ContainerView.RemoveFromSuperview();
-			ContainerView.Dispose();
+			CleanupContainerView(ContainerView);
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)
 				oldParent?.InsertSubview(PlatformView, idx);
 			else
 				oldParent?.AddSubview(PlatformView);
+
+			void CleanupContainerView(UIView? containerView)
+			{
+				if (containerView is WrapperView wrapperView)
+				{
+					wrapperView.RemoveFromSuperview();
+					wrapperView.Dispose();
+				}
+			}
 		}
 	}
 }

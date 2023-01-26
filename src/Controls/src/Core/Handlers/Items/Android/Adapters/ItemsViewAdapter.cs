@@ -1,10 +1,10 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Android.Content;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Object = Java.Lang.Object;
 using ViewGroup = Android.Views.ViewGroup;
-
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

@@ -19,6 +19,14 @@
   </Target>
 
   <!--
+    Workaround for https://github.com/microsoft/WindowsAppSDK/issues/3108
+  -->
+  <Target
+    Name="_MauiAddImplicitDefineConstantsBeforeXamlPreCompile"
+    BeforeTargets="XamlPreCompile"
+    DependsOnTargets="AddImplicitDefineConstants" />
+
+  <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
   -->
   <Import Project="WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' " />

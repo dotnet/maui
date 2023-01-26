@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+﻿#nullable disable
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.InputView;
