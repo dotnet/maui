@@ -1,6 +1,8 @@
 <Project>
 
   <Import Project="BundledVersions.targets" />
-  <Import Project="Microsoft.Maui.Sdk.targets" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
+  <Import Project="Microsoft.Maui.Sdk.targets" />
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/>
 
 </Project>

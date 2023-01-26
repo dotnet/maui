@@ -29,15 +29,15 @@ Task("dotnet")
     .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
-        if (!localDotnet) 
-            return;
+        // if (!localDotnet) 
+        //     return;
 
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
-        {
-            MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
-                .SetConfiguration(configuration),
-        });
+        // DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        // {
+        //     MSBuildSettings = new DotNetCoreMSBuildSettings()
+        //         .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
+        //         .SetConfiguration(configuration),
+        // });
     });
 
 Task("dotnet-local-workloads")
@@ -468,8 +468,8 @@ Task("dotnet-diff")
 // Tasks for Local Development
 Task("VS")
     .Description("Provisions .NET 6, and launches an instance of Visual Studio using it.")
-    .IsDependentOn("Clean")
-    .IsDependentOn("dotnet")
+    // .IsDependentOn("Clean")
+    // .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
     .IsDependentOn("dotnet-pack") // Run conditionally 
     .Does(() =>
