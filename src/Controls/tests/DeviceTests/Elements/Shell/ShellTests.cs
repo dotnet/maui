@@ -848,6 +848,8 @@ namespace Microsoft.Maui.DeviceTests
 				var titleView1PlatformSize = titleView1.GetBoundingBox();
 				Assert.Equal(containerSize.Width, titleView1PlatformSize.Width);
 				Assert.Equal(containerSize.Height, titleView1PlatformSize.Height);
+				Assert.True(containerSize.Height > 0);
+				Assert.True(containerSize.Width > 0);
 
 			});
 		}
