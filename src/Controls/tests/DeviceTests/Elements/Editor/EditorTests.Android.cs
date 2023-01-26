@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var editor = new Editor
 			{
-				Text = "TET", 
+				Text = "TET",
 				TextTransform = TextTransform.Uppercase
 			};
 

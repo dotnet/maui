@@ -4,9 +4,9 @@ using System.IO;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using UIKit;
 using WebKit;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Platform
 {

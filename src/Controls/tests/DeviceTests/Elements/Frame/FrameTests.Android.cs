@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Shapes;
@@ -9,7 +10,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
-using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.DeviceTests
 {
