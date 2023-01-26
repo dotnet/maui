@@ -15,15 +15,15 @@ namespace Maui.Controls.Sample.Pages
 		{
 			HasShadowFrame.HasShadow = !HasShadowFrame.HasShadow;
 		}
-		
+
 		void OnAddContentButtonClicked(object sender, EventArgs e)
 		{
-			ContentFrame.Content = new Label 
-			{ 
-				Text= "Content", 
-				HorizontalOptions = LayoutOptions.Center, 
-				VerticalOptions = LayoutOptions.Center, 
-				Margin = 12 
+			ContentFrame.Content = new Label
+			{
+				Text = "Content",
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				Margin = 12
 			};
 		}
 
@@ -47,4 +47,4 @@ namespace Maui.Controls.Sample.Pages
 			ContentFrame.Content = null;
 		}
 	}
-}	
+}

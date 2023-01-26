@@ -10,7 +10,7 @@ public partial class Maui8149 : ContentView
 {
 
 	public Maui8149() => InitializeComponent();
-	
+
 	public Maui8149(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
@@ -29,7 +29,7 @@ public partial class Maui8149 : ContentView
 				MockCompiler.Compile(typeof(Maui8149));
 
 			var page = new Maui8149(useCompiledXaml);
-			Assert.That((page.Content as Maui8149View).Text, Is.EqualTo("Microsoft.Maui.Controls.Xaml.UnitTests.Maui8149"));			
+			Assert.That((page.Content as Maui8149View).Text, Is.EqualTo("Microsoft.Maui.Controls.Xaml.UnitTests.Maui8149"));
 		}
 	}
 }
