@@ -1,4 +1,4 @@
-<views:BasePage
+﻿<views:BasePage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.WebViewPage"
@@ -123,6 +123,9 @@
 					x:Name="EvalResultLabel"
                     Text="..."
                     Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Load HTML5 Video"
+                    Clicked="OnLoadHtml5VideoClicked" />
                 <StackLayout
                     IsVisible="{OnPlatform Android=True, Default=False}">
                     <Label
