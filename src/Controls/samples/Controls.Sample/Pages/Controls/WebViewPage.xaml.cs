@@ -101,5 +101,10 @@ namespace Maui.Controls.Sample.Pages
 		{
 			MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().EnableZoomControls(true);
 		}
+
+		void OnLoadHtml5VideoClicked(object sender, EventArgs e)
+		{
+			MauiWebView.Source = new UrlWebViewSource { Url = "video.html" };
+		}
 	}
 }

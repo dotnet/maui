@@ -7,6 +7,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Samples.ViewModel;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Samples.Model
 {
@@ -37,9 +38,7 @@ namespace Samples.Model
 				}
 				catch (Exception ex)
 				{
-#pragma warning disable CS0618 // Type or member is obsolete
-					MessagingCenter.Send<PermissionItem, Exception>(this, nameof(PermissionException), ex);
-#pragma warning restore CS0618 // Type or member is obsolete
+					WeakReferenceMessenger.Default.Send(ex, nameof(PermissionException));
 				}
 			});
 
@@ -53,9 +52,7 @@ namespace Samples.Model
 				}
 				catch (Exception ex)
 				{
-#pragma warning disable CS0618 // Type or member is obsolete
-					MessagingCenter.Send<PermissionItem, Exception>(this, nameof(PermissionException), ex);
-#pragma warning restore CS0618 // Type or member is obsolete
+					WeakReferenceMessenger.Default.Send(ex, nameof(PermissionException));
 				}
 			});
 
@@ -69,9 +66,7 @@ namespace Samples.Model
 				}
 				catch (Exception ex)
 				{
-#pragma warning disable CS0618 // Type or member is obsolete
-					MessagingCenter.Send<PermissionItem, Exception>(this, nameof(PermissionException), ex);
-#pragma warning restore CS0618 // Type or member is obsolete
+					WeakReferenceMessenger.Default.Send(ex, nameof(PermissionException));
 				}
 			});
 	}
