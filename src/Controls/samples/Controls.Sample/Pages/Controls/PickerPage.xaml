@@ -30,6 +30,20 @@
             <Label Text="VerticalTextAlignment=Center + HeightRequest=100" Style="{StaticResource Headline}"/>
             <Picker Title="Select an item" ItemsSource="{Binding PickerItems}" VerticalTextAlignment="Center" HeightRequest="100"/>
 
+            <Label
+                 Text="Background"
+                 Style="{StaticResource Headline}" />
+            <Picker 
+                 x:Name="BackgroundPicker"/>
+            <Button
+                 x:Name="UpdateBackgroundButton"
+                 Text="Update Background"
+                 Clicked="OnUpdateBackgroundButtonClicked"/>
+            <Button
+                 x:Name="ClearBackgroundButton"
+                 Text="Clear Background"
+                 Clicked="OnClearBackgroundButtonClicked"/>
+           
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
