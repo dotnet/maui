@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.405-servicing.22621.2" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.406-servicing.23063.13" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>86ea005bc59f885f82f0d846bd3e73b2be3ef961</Sha>
+      <Sha>738e9b92b37f72a6e04878fc7a68695eaa34da7b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.14" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>2e45bc7afff1a13b024da5f8f5579fbb39b62af2</Sha>
+      <Sha>dea5221901ad8abc25a33308e35cf5fa28a212ea</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="32.0.490">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="32.0.493">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>b572470d129d3ddfb0e95a65c4043da9e17a72fc</Sha>
+      <Sha>e759fc9645589095b534afaf1d16d8caa2296272</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="16.2.19">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -28,9 +28,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>ad4dea0a6fc33676ee35d89190d7a076f08435d3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.300" Version="6.0.13" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.300" Version="6.0.14" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>14d64a811e8d4140438f9a8288abb139cb56d5de</Sha>
+      <Sha>9f2e9f6ec690ad8f4aea16b33f4a4bcc11b3d2cb</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
