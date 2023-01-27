@@ -1,16 +1,16 @@
 using System;
 using System.ComponentModel;
-using Windows.System;
-using Windows.UI.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using Windows.System;
+using Windows.UI.Text;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.InputView;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.Extensions.Logging;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

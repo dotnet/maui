@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
+using Microsoft.Maui.ApplicationModel;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {

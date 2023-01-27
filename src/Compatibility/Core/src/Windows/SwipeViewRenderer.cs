@@ -1,15 +1,15 @@
 using System;
-using System.Linq;
-using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using WSwipeBehaviorOnInvoked = Microsoft.UI.Xaml.Controls.SwipeBehaviorOnInvoked;
 using WSwipeControl = Microsoft.UI.Xaml.Controls.SwipeControl;
-using WSwipeItems = Microsoft.UI.Xaml.Controls.SwipeItems;
 using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
+using WSwipeItems = Microsoft.UI.Xaml.Controls.SwipeItems;
 using WSwipeMode = Microsoft.UI.Xaml.Controls.SwipeMode;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
