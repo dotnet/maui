@@ -1,8 +1,8 @@
-﻿using Microsoft.Graphics.Canvas;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Graphics.Canvas;
 using Windows.Storage.Streams;
 
 namespace Microsoft.Maui.Graphics.Win2D

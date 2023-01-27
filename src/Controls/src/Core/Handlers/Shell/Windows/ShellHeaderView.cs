@@ -1,5 +1,5 @@
-using Microsoft.UI.Xaml;
 using System.ComponentModel;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {

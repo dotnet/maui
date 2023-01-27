@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
-using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls.Xaml.Internals;
+using Microsoft.UI.Xaml;
 
 
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.NativeValueConverterService))]

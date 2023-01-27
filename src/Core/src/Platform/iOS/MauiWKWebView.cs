@@ -4,9 +4,9 @@ using System.IO;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using UIKit;
 using WebKit;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Platform
 {
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public void LoadUrl(string? url)
-		{	
+		{
 			try
 			{
 				var uri = new Uri(url ?? string.Empty);
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Platform
 				// someone is passing in a local bundled file page. If we can find a better way
 				// to detect that scenario, we should use it; until then, we'll fall back to 
 				// local file loading here and see if that works:
-				if(!string.IsNullOrEmpty(url))
+				if (!string.IsNullOrEmpty(url))
 				{
 					if (!LoadFile(url))
 					{
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Platform
 
 			return config;
 		}
-		
+
 		bool LoadFile(string url)
 		{
 			try

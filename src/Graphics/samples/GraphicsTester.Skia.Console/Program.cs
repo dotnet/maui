@@ -1,9 +1,9 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using GraphicsTester.Scenarios;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Skia;
-using GraphicsTester.Scenarios;
-using System.Linq;
-using System.IO;
 
 namespace GraphicsTester.Skia.ConsoleApp
 {

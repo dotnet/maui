@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Devices
 		public static DeviceType DeviceType => Current.DeviceType;
 
 		static IDeviceInfo? currentImplementation;
-		
+
 		/// <summary>
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>

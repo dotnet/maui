@@ -1,7 +1,7 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using CoreText;
 using Foundation;
-using System;
 
 namespace Microsoft.Maui.Graphics.Platform
 {

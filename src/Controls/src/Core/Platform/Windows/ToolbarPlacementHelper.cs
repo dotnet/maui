@@ -1,8 +1,8 @@
 using System;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.Maui.Devices;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Platform

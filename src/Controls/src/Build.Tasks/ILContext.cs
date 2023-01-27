@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Build.Utilities;
+using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
