@@ -263,7 +263,7 @@ Task("dotnet-pack-maui")
             ReplaceTextInFiles(
                 originalNuget,
                  $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-                $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
+                $"<add key=\"local\" value=\"{nugetSource}\" />");
         }
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
         {

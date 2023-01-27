@@ -17,7 +17,7 @@ parameters:
 
 - name: nugetFolder
   type: string
-  default: ''
+  default: 'artifacts'
   
 
 - name: prepareSteps
