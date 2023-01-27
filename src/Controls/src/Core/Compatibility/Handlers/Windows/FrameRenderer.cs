@@ -135,7 +135,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void PackChild()
 		{
 			if (Element.Content == null)
+			{
+				Control.Child = null;
 				return;
+			}
 
 			Control.Child = Element.Content.ToPlatform(MauiContext);
 		}

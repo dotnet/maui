@@ -298,8 +298,6 @@ namespace Microsoft.Maui.Platform
 				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
 
-			bool hasPassword = false;
-
 			if (textInput is IEntry entry && entry.IsPassword)
 			{
 				if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
@@ -307,8 +305,6 @@ namespace Microsoft.Maui.Platform
 
 				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
 					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
-
-				hasPassword = true;
 			}
 
 			editText.InputType = nativeInputTypeToUpdate;
@@ -316,7 +312,7 @@ namespace Microsoft.Maui.Platform
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
 
-			if (hasPassword && textInput is IElement element)
+			if (textInput is IElement element)
 			{
 				var services = element.Handler?.MauiContext?.Services;
 
@@ -357,16 +353,16 @@ namespace Microsoft.Maui.Platform
 			if (motionEvent is null)
 				return false;
 
+			if (motionEvent.Action != MotionEventActions.Up)
+				return false;
+
 			var rBounds = getClearButtonDrawable?.Invoke()?.Bounds;
 			var buttonWidth = rBounds?.Width();
 
 			if (buttonWidth <= 0)
 				return false;
 
-			if (motionEvent.Action != MotionEventActions.Up)
-				return false;
-
-			var x = motionEvent.RawX;
+			var x = motionEvent.GetX();
 			var y = motionEvent.GetY();
 
 			var flowDirection = platformView.LayoutDirection;

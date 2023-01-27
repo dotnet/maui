@@ -60,6 +60,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var config = new WKWebViewConfiguration();
 
+			// By default, setting inline media playback to allowed, including autoplay
+			// and picture in picture, since these things MUST be set during the webview
+			// creation, and have no effect if set afterwards.
+			// A custom handler factory delegate could be set to disable these defaults
+			// but if we do not set them here, they cannot be changed once the
+			// handler's platform view is created, so erring on the side of wanting this
+			// capability by default.
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(10) || OperatingSystem.IsIOSVersionAtLeast(10))
+			{
+				config.AllowsPictureInPictureMediaPlayback = true;
+				config.AllowsInlineMediaPlayback = true;
+				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
+			}
+
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
 			{
 				Configuration = config
