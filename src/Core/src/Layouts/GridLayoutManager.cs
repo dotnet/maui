@@ -929,7 +929,7 @@ namespace Microsoft.Maui.Layouts
 			public double LastMeasureHeight { get; private set; } = -1;
 			public Size LastMeasureResult { get; private set; }
 
-			public void CacheMeasure(double width, double height, Size result) 
+			public void CacheMeasure(double width, double height, Size result)
 			{
 				LastMeasureHeight = height;
 				LastMeasureWidth = width;
