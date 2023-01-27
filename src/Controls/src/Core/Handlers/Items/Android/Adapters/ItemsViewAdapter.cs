@@ -87,25 +87,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var itemContentView = _createItemContentView.Invoke(ItemsView, context);
 
+			// See if our cached templates have a match
+			if (viewTypeDataTemplates.TryGetValue(viewType, out var dataTemplate))
+			{
+				return new TemplatedItemViewHolder(itemContentView, dataTemplate, IsSelectionEnabled(parent, viewType));
+			}
+
 			return new TemplatedItemViewHolder(itemContentView, ItemsView.ItemTemplate, IsSelectionEnabled(parent, viewType));
 		}
 
 		public override int ItemCount => ItemsSource.Count;
 
+		System.Collections.Generic.Dictionary<int, DataTemplate> viewTypeDataTemplates = new();
+
 		public override int GetItemViewType(int position)
 		{
 			if (_usingItemTemplate)
 			{
-				// If we're using a template selector, using the 
-				// selected DataTemplate's 'Type'
-				// and get the hashcode to get a reasonably unique
-				// value for the DataTemplate for us to recycle
-				// all views using this DataTemplate with
-				return _itemTemplateSelector?
-					.SelectTemplate(
-						ItemsSource.GetItem(position),
-						ItemsView)
-					?.Type?.GetHashCode() ?? ItemViewType.TemplatedItem;
+				if (_itemTemplateSelector is null)
+					return ItemViewType.TemplatedItem;
+
+				var item = ItemsSource?.GetItem(position);
+
+				var template = _itemTemplateSelector?.SelectTemplate(item, ItemsView);
+				var id = template?.Id ?? ItemViewType.TemplatedItem;
+
+				// Cache the data template for future use
+				if (!viewTypeDataTemplates.ContainsKey(id))
+					viewTypeDataTemplates.Add(id, template);
+
+				return id;
 			}
 
 			// No template, just use the Text view
@@ -126,6 +137,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				base.Dispose(disposing);
 			}
+		}
+
+		public override long GetItemId(int position)
+		{
+			return position;
 		}
 
 		public virtual int GetPositionForItem(object item)
