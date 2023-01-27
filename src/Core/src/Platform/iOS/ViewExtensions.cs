@@ -712,81 +712,43 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		// static field to hold value when propagating back out the recursion
-		static bool IsRtl = false;
-
 		internal static UIView? FindNextView(this UIView view, UIView superView, Func<UIView, bool> isValidType)
 		{
-			// calculate the original CGRect parameters once here instead of multiple times later
-			var originalRect = view.ConvertRectToView(view.Bounds, null);
+			var passedOriginal = false;
 
-			IsRtl = false;
-			var nextField = superView.FindNextView(originalRect, null, isValidType);
+			var nextView = superView.FindNextView(view, ref passedOriginal, isValidType);
 
-			// wrap around to the top if we are at the end to mirror Xamarin.Forms behavior
-			if (nextField is null)
-				nextField = superView.FindNextView(new CGRect(float.MinValue, float.MinValue, 0, 0), null, isValidType);
+			// if we did not find the next view, try to find the first one
+			nextView ??= superView.FindNextView(null, ref passedOriginal, isValidType);
 
-			return nextField;
+			return nextView;
 		}
 
-		static UIView? FindNextView(this UIView view, CGRect originalRect, UIView? currentBest, Func<UIView, bool> isValidType)
+		static UIView? FindNextView(this UIView view, UIView? origView, ref bool passedOriginal, Func<UIView, bool> isValidType)
 		{
-			IsRtl |= view.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
-
 			foreach (var child in view.Subviews)
 			{
-				if (isValidType(child) && child.CanBecomeFirstResponder())
+				if (isValidType(child))
 				{
-					if (TryFindNewBestView(originalRect, currentBest, child, out var newBest))
-					{
-						currentBest = newBest;
-					}
+					if (origView is null)
+						return child;
+
+					if (passedOriginal)
+						return child;
+
+					if (child == origView)
+						passedOriginal = true;
 				}
 
 				else if (child.Subviews.Length > 0 && !child.Hidden && child.Alpha > 0f)
 				{
-					var newBestChild = child.FindNextView(originalRect, currentBest, isValidType);
-					if (newBestChild is not null && TryFindNewBestView(originalRect, currentBest, newBestChild, out var newBest))
-						currentBest = newBest;
+					var nextLevel = child.FindNextView(origView, ref passedOriginal, isValidType);
+					if (nextLevel is not null)
+						return nextLevel;
 				}
 			}
 
-			return currentBest;
-		}
-
-		static bool TryFindNewBestView(CGRect originalRect, UIView? currentBest, UIView newView, out UIView newBest)
-		{
-			var currentBestRect = currentBest?.ConvertRectToView(currentBest.Bounds, null);
-			var newViewRect = newView.ConvertRectToView(newView.Bounds, null);
-
-			var cbrValue = currentBestRect.GetValueOrDefault();
-			newBest = newView;
-
-			if (originalRect.Top < newViewRect.Top &&
-				(currentBestRect is null || newViewRect.Top < cbrValue.Top))
-			{
-				return true;
-			}
-
-			else if (IsRtl)
-			{
-				if (originalRect.Top == newViewRect.Top &&
-					 originalRect.Right > newViewRect.Right &&
-					 (currentBestRect is null || newViewRect.Right > cbrValue.Right))
-				{
-					return true;
-				}
-			}
-
-			else if (originalRect.Top == newViewRect.Top &&
-					 originalRect.Left < newViewRect.Left &&
-					 (currentBestRect is null || newViewRect.Left < cbrValue.Left))
-			{
-				return true;
-			}
-
-			return false;
+			return null;
 		}
 
 		internal static void ChangeFocusedView(this UIView view, UIView? newView)
@@ -796,26 +758,6 @@ namespace Microsoft.Maui.Platform
 
 			else
 				newView.BecomeFirstResponder();
-		}
-
-		static bool CanBecomeFirstResponder(this UIView view)
-		{
-			var isFirstResponder = false;
-
-			switch (view)
-			{
-				case UITextView tview:
-					isFirstResponder = tview.Editable;
-					break;
-				case UITextField field:
-					isFirstResponder = field.Enabled;
-					break;
-				// add in other control enabled properties here as necessary
-				default:
-					break;
-			}
-
-			return isFirstResponder && !view.Hidden && view.Alpha != 0f;
 		}
 	}
 }

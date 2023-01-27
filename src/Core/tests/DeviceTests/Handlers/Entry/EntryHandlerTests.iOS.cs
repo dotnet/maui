@@ -211,6 +211,241 @@ namespace Microsoft.Maui.DeviceTests
 			}, entry, searchBar);
 		}
 
+		[Fact]
+		public async Task NextMovesRightToLeftEntry()
+		{
+			var hsl = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			hsl.Add(entry1);
+			hsl.Add(entry2);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: hsl.ToPlatform().Superview);
+				var entry1Rect = entry1.ToPlatform().ConvertRectToView(entry1.ToPlatform().Bounds, hsl.ToPlatform());
+				var entry2Rect = entry2.ToPlatform().ConvertRectToView(entry2.ToPlatform().Bounds, hsl.ToPlatform());
+				Assert.True(entry1Rect.Right > entry2Rect.Right);
+				Assert.True(entry2.IsFocused);
+			}, hsl);
+		}
+
+		[Fact]
+		public async Task NextMovesRightToLeftMultilineEntry()
+		{
+			var hsl1 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var hsl2 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry4 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			hsl1.Add(entry1);
+			hsl1.Add(entry2);
+			hsl2.Add(entry3);
+			hsl2.Add(entry4);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry2.ToPlatform(), customSuperView: hsl1.ToPlatform().Superview);
+				var entry2Rect = entry2.ToPlatform().ConvertRectToView(entry2.ToPlatform().Bounds, hsl1.ToPlatform());
+				var entry3Rect = entry3.ToPlatform().ConvertRectToView(entry3.ToPlatform().Bounds, hsl2.ToPlatform());
+				Assert.True(entry2Rect.Right < entry3Rect.Right);
+				Assert.True(entry3.IsFocused);
+			}, hsl1, hsl2);
+		}
+
+		[Fact]
+		public async Task NextMovesLtrToRtlMultilineEntry()
+		{
+			var hsl1 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.LeftToRight
+			};
+
+			var hsl2 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry4 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			hsl1.Add(entry1);
+			hsl1.Add(entry2);
+			hsl2.Add(entry3);
+			hsl2.Add(entry4);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry2.ToPlatform(), customSuperView: hsl1.ToPlatform().Superview);
+				var entry2Rect = entry2.ToPlatform().ConvertRectToView(entry2.ToPlatform().Bounds, hsl1.ToPlatform());
+				var entry3Rect = entry3.ToPlatform().ConvertRectToView(entry3.ToPlatform().Bounds, hsl2.ToPlatform());
+				Assert.True(entry2Rect.Right < entry3Rect.Right);
+				Assert.True(entry3.IsFocused);
+			}, hsl1, hsl2);
+		}
+
+		[Fact]
+		public async Task NextMovesRtlToLtrMultilineEntry()
+		{
+			var hsl1 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var hsl2 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.LeftToRight
+			};
+
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry4 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			hsl1.Add(entry1);
+			hsl1.Add(entry2);
+			hsl2.Add(entry3);
+			hsl2.Add(entry4);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry2.ToPlatform(), customSuperView: hsl1.ToPlatform().Superview);
+				var entry2Rect = entry2.ToPlatform().ConvertRectToView(entry2.ToPlatform().Bounds, hsl1.ToPlatform());
+				var entry3Rect = entry3.ToPlatform().ConvertRectToView(entry3.ToPlatform().Bounds, hsl2.ToPlatform());
+				Assert.True(entry2Rect.Right > entry3Rect.Right);
+				Assert.True(entry3.IsFocused);
+			}, hsl1, hsl2);
+		}
+
+		[Fact]
+		public async Task NextMovesBackToTop()
+		{
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry2.ToPlatform(), customSuperView: entry1.ToPlatform().Superview);
+				Assert.True(entry1.IsFocused);
+			}, entry1, entry2);
+		}
+
+		[Fact]
+		public async Task NextMovesBackToTopIgnoringNotEnabled()
+		{
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				IsEnabled = false
+			};
+
+			var editor = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				IsEnabled = false
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry3.ToPlatform(), customSuperView: entry1.ToPlatform().Superview);
+				Assert.True(entry2.IsFocused);
+			}, entry1, editor, entry2, entry3);
+		}
+
 		async Task NextMovesHelper(Action action = null, params StubBase[] views)
 		{
 			EnsureHandlerCreated(builder =>
@@ -218,6 +453,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handler =>
 				{
 					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<HorizontalStackLayoutStub, LayoutHandler>();
 					handler.AddHandler<EntryStub, EntryHandler>();
 					handler.AddHandler<EditorStub, EditorHandler>();
 					handler.AddHandler<SearchBarStub, SearchBarHandler>();
@@ -231,7 +467,7 @@ namespace Microsoft.Maui.DeviceTests
 				layout.Add(view);
 			}
 
-			layout.Width = 100;
+			layout.Width = 300;
 			layout.Height = 150;
 
 			await InvokeOnMainThreadAsync(async () =>

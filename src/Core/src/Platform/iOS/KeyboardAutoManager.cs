@@ -27,7 +27,14 @@ internal static class KeyboardAutoManager
 			return;
 		}
 
-		var nextField = view.FindNextView(superview, view => { return view is UITextView || view is UITextField; });
+		var nextField = view.FindNextView(superview, view =>
+		{
+			var isValidTextView = view is UITextView textView && textView.Editable;
+			var isValidTextField = view is UITextField textField && textField.Enabled;
+
+			return (isValidTextView || isValidTextField) && !view.Hidden && view.Alpha != 0f;
+		});
+
 		view.ChangeFocusedView(nextField);
 	}
 
