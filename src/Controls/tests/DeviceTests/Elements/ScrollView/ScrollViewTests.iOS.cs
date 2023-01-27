@@ -27,8 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 				return CreateHandlerAsync<ScrollViewHandler>(scrollView);
 			});
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
+			await InvokeOnMainThreadAsync(async () => {
 				await scrollViewHandler.PlatformView.AttachAndRun(() =>
 				{
 					Assert.Equal(10000, scrollViewHandler.PlatformView.ContentSize.Height);
