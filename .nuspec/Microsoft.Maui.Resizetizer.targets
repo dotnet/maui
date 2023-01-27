@@ -11,6 +11,7 @@
 
     <PropertyGroup>
         <_ResizetizerTaskAssemblyName>$(MSBuildThisFileDirectory)\Microsoft.Maui.Resizetizer.dll</_ResizetizerTaskAssemblyName>
+        <_ResizetizerDisableParallelGeneration>true</_ResizetizerDisableParallelGeneration>
     </PropertyGroup>
 
     <UsingTask
