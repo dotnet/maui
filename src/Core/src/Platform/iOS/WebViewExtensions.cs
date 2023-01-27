@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Platform
 			if (webView.UserAgent != null)
 				platformWebView.CustomUserAgent = webView.UserAgent;
 			else
-				webView.UserAgent = 
-					platformWebView.CustomUserAgent ?? 
+				webView.UserAgent =
+					platformWebView.CustomUserAgent ??
 					platformWebView.ValueForKey(new Foundation.NSString("userAgent"))?.ToString();
 		}
 
