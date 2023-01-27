@@ -15,6 +15,14 @@ namespace Microsoft.Maui.Platform
 				webView.Source?.Load(webViewDelegate);
 		}
 
+		public static void UpdateUserAgent(this MauiWebView platformWebView, IWebView webView)
+		{
+			if (webView.UserAgent != null)
+				platformWebView.UserAgent = webView.UserAgent;
+			else
+				webView.UserAgent = platformWebView.UserAgent;
+		}
+
 		public static void UpdateGoBack(this MauiWebView platformWebView, IWebView webView)
 		{
 			if (platformWebView.CanGoBack())
