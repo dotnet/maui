@@ -1,6 +1,4 @@
 ﻿using Microsoft.UI.Xaml.Controls;
-using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
-using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Platform
 {
