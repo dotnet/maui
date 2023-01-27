@@ -73,22 +73,22 @@ Task("uitest")
 
 	CleanDirectories(TEST_RESULTS);
 
-	// Information("Build UITests project {0}",PROJECT.FullPath);
-	// var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	// var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
-	// DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
-	// 		Configuration = CONFIGURATION,
-	// 		ArgumentCustomization = args => args
-	// 			.Append("/p:ExtraDefineConstants=WINTEST")
-	// 			.Append("/bl:" + binlog),
-	// 	//	ToolPath = DOTNET_PATH,
-	// });
+	Information("Build UITests project {0}",PROJECT.FullPath);
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
+	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append("/p:ExtraDefineConstants=WINTEST")
+				.Append("/bl:" + binlog),
+		//	ToolPath = DOTNET_PATH,
+	});
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_windows.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: false);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
 });
 
 RunTarget(TARGET);
