@@ -6,6 +6,8 @@ string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
+string nugetSource = Argument("nugetsource", "");
+
 string TestTFM = Argument("testtfm", "");
 if (TestTFM == "default")
     TestTFM = "";
@@ -253,6 +255,15 @@ Task("dotnet-pack-maui")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
+        //We are passing a nuget folder with nuget locations
+        if(!string.IsNullOrEmpty(nugetSource))
+        {
+            var originalNuget = File("./NuGet.config");
+            ReplaceTextInFiles(
+                originalNuget,
+                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
+                $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
+        }
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
         {
             DiagnosticOutput = true,
