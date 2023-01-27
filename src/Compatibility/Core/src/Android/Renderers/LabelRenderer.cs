@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 
 					case TextType.Html:
-						if (Forms.IsNougatOrNewer)
+						if (OperatingSystem.IsAndroidVersionAtLeast(24))
 							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty, FromHtmlOptions.ModeCompact), TextView.BufferType.Spannable);
 						else
 #pragma warning disable CS0618 // Type or member is obsolete

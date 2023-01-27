@@ -19,6 +19,7 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Graphics.*.nupkg",
     "Microsoft.Maui.Controls.Maps.*.nupkg",
     "Microsoft.Maui.Maps.*.nupkg",
+    "Microsoft.AspNetCore.Components.WebView.*.nupkg",
 };
 
 ProcessTFMSwitches();
@@ -352,11 +353,22 @@ Task("dotnet-pack-docs")
         {
             foreach (var nupkg in GetFiles($"./artifacts/{pattern}"))
             {
-                var d = $"{tempDir}/{nupkg.GetFilename()}";
+                var filename = nupkg.GetFilename().ToString();
+                var d = $"{tempDir}/{filename}";
                 Unzip(nupkg, d);
                 DeleteFiles($"{d}/**/*.pri");
                 DeleteFiles($"{d}/**/*.aar");
                 DeleteFiles($"{d}/**/*.pdb");
+
+                if (filename.StartsWith("Microsoft.AspNetCore.Components.WebView.Wpf")
+                    || filename.StartsWith("Microsoft.AspNetCore.Components.WebView.WindowsForms"))
+                {
+                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.dll", $"{destDir}");
+                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.xml", $"{destDir}");    
+
+                    continue;
+                }
+
                 CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.dll", $"{destDir}");
                 CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.xml", $"{destDir}");
             }

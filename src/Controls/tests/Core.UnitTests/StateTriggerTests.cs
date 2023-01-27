@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
 
-			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var groups = VisualStateManager.GetVisualStateGroups(grid);
 
-			Assert.Equal(groups[0].CurrentState.Name, RedStateName);
+			Assert.Equal(RedStateName, groups[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var groups = VisualStateManager.GetVisualStateGroups(grid);
 
-			Assert.Equal(groups[0].CurrentState.Name, GreenStateName);
+			Assert.Equal(GreenStateName, groups[0].CurrentState.Name);
 		}
 	}
 }

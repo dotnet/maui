@@ -10,6 +10,28 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
 		[Fact]
+		public async Task UpdatingSourceWorks()
+		{
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				Source = new FileImageSourceStub("red.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+				await image.Wait();
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
+
+				image.Source = new FileImageSourceStub("blue.png");
+				handler.UpdateValue(nameof(IImage.Source));
+				await image.Wait();
+				await handler.PlatformView.AssertContainsColor(Colors.Blue);
+			});
+		}
+
+		[Fact]
 		public async Task LoadDrawableAsyncReturnsWithSameImageAndDoesNotHang()
 		{
 			var service = new FileImageSourceService();
@@ -64,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var result = await service.LoadDrawableAsync(imageSource, handler.PlatformView);
 
-					await handler.PlatformView.AssertColorAtCenter(expectedColor.ToPlatform());
+					await handler.PlatformView.AssertColorAtCenterAsync(expectedColor.ToPlatform());
 				});
 			});
 		}

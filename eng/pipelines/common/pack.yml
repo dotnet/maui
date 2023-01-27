@@ -18,7 +18,7 @@ parameters:
 - name: nugetFolder
   type: string
   default: ''
-  
+
 - name: prepareSteps
   type: stepList
   default: []
@@ -32,7 +32,13 @@ steps:
     parameters:
       platform: ${{ parameters.platform }}
       poolName: ${{ parameters.poolName }}
-      
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      gitHubToken: ${{ parameters.gitHubToken }}
+
+  - ${{ each step in parameters.prepareSteps }}:
+    - ${{ each pair in step }}:
+        ${{ pair.key }}: ${{ pair.value }}
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3

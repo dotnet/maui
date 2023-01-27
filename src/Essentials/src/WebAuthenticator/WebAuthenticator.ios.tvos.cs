@@ -95,6 +95,7 @@ namespace Microsoft.Maui.Authentication
 			if (prefersEphemeralWebBrowserSession)
 				ClearCookies();
 
+#pragma warning disable CA1422 // 'SFAuthenticationSession' is obsoleted on: 'ios' 12.0 and later
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
@@ -104,6 +105,7 @@ namespace Microsoft.Maui.Authentication
 					return await tcsResponse.Task;
 				}
 			}
+#pragma warning restore CA1422
 
 			// This is only on iOS9+ but we only support 10+ in Essentials anyway
 			var controller = new SFSafariViewController(WebUtils.GetNativeUrl(url), false)

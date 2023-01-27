@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Hosting;
@@ -5,7 +6,7 @@ using Microsoft.Maui.Controls.Hosting;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs/*" />
-	public partial class Element : Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement
+	public partial class Element : Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement, IControlsElement
 	{
 		IElementHandler _handler;
 		EffectsFactory _effectsFactory;
