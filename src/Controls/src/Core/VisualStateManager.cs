@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls
 			public const string Focused = "Focused";
 			public const string Selected = "Selected";
 			public const string PointerOver = "PointerOver";
+			internal const string Unfocused = "Unfocused";
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='VisualStateGroupsProperty']/Docs/*" />

@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.Maui.Platform.MauiToolbar.SearchBar.get -> Tizen.NUI.BaseComponents.View?
+Microsoft.Maui.Platform.MauiToolbar.SearchBar.set -> void
+readonly Microsoft.Maui.Platform.MauiSearchBar.DefaultBackgroundColor -> Tizen.NUI.Color!
+readonly Microsoft.Maui.Platform.MauiSearchBar.Radius -> double
+static Microsoft.Maui.Platform.ColorExtensions.GetAccentColor(this Microsoft.Maui.Graphics.Color! color) -> Microsoft.Maui.Graphics.Color!

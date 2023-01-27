@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
 
-//using NativeTextAlignment = Microsoft.UI.Xaml.TextAlignment;
+using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -54,6 +54,21 @@ namespace Microsoft.Maui.DeviceTests
 
 		//NativeTextAlignment GetNativeHorizontalTextAlignment(EditorHandler editorHandler) =>
 		//	GetNativeEditor(editorHandler).TextAlignment;
+
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(EditorHandler editorHandler)
+		{
+			var textBox = GetNativeEditor(editorHandler);
+
+			var sv = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+			var placeholder = textBox.GetDescendantByName<TextBlock>("PlaceholderTextContentPresenter");
+
+			Assert.Equal(sv.VerticalAlignment, placeholder.VerticalAlignment);
+
+			return sv.VerticalAlignment;
+		}
+
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToPlatformVerticalAlignment();
 
 		bool IsInputScopeEquals(InputScope inputScope, InputScopeNameValue nameValue)
 		{

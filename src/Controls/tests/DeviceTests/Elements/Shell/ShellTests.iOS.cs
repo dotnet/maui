@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
@@ -10,6 +12,7 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Platform;
+using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -32,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
 				var modalPage = new ContentPage();
-				modalPage.On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.FormSheet);
+				modalPage.On<iOS>().SetModalPresentationStyle(Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FormSheet);
 				var platformWindow = MauiContext.GetPlatformWindow().RootViewController;
 
 				await shell.Navigation.PushModalAsync(modalPage);
@@ -73,7 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
 				var modalPage = new Controls.NavigationPage(new ContentPage());
-				modalPage.On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.FormSheet);
+				modalPage.On<iOS>().SetModalPresentationStyle(Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FormSheet);
 				var platformWindow = MauiContext.GetPlatformWindow().RootViewController;
 
 				await shell.Navigation.PushModalAsync(modalPage);
@@ -195,6 +198,43 @@ namespace Microsoft.Maui.DeviceTests
 					e.Cancel();
 				}
 			});
+		}
+
+		async Task TapToSelect(ContentPage page)
+		{
+			var shellContent = page.Parent as ShellContent;
+			var shellSection = shellContent.Parent as ShellSection;
+			var shellItem = shellSection.Parent as ShellItem;
+			var shell = shellItem.Parent as Shell;
+			await OnNavigatedToAsync(shell.CurrentPage);
+
+			if (shellItem != shell.CurrentItem)
+				throw new NotImplementedException();
+
+			if (shellSection != shell.CurrentItem.CurrentItem)
+				throw new NotImplementedException();
+
+			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
+				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
+
+			var tabController = pagerParent.NextResponder as ShellItemRenderer;
+
+			var section = tabController.SelectedViewController as ShellSectionRenderer;
+
+			var rootCV = section.ViewControllers[0] as
+				ShellSectionRootRenderer;
+
+			var rootHeader = rootCV.ChildViewControllers
+				.OfType<ShellSectionRootHeader>()
+				.First();
+
+			var newIndex = shellSection.Items.IndexOf(shellContent);
+
+			await Task.Delay(100);
+
+			rootHeader.ItemSelected(rootHeader.CollectionView, NSIndexPath.FromItemSection((int)newIndex, 0));
+
+			await OnNavigatedToAsync(page);
 		}
 
 		class ModalShellPage : ContentPage

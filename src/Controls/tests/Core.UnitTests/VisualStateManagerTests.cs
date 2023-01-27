@@ -6,50 +6,12 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Xunit;
+using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-
 	public class VisualStateManagerTests : IDisposable
 	{
-		const string NormalStateName = "Normal";
-		const string InvalidStateName = "Invalid";
-		const string FocusedStateName = "Focused";
-		const string DisabledStateName = "Disabled";
-		const string CommonStatesName = "CommonStates";
-
-		static VisualStateGroupList CreateTestStateGroups()
-		{
-			var stateGroups = new VisualStateGroupList();
-			var visualStateGroup = new VisualStateGroup { Name = CommonStatesName };
-			var normalState = new VisualState { Name = NormalStateName };
-			var invalidState = new VisualState { Name = InvalidStateName };
-			var focusedState = new VisualState { Name = FocusedStateName };
-			var disabledState = new VisualState { Name = DisabledStateName };
-
-			visualStateGroup.States.Add(normalState);
-			visualStateGroup.States.Add(invalidState);
-			visualStateGroup.States.Add(focusedState);
-			visualStateGroup.States.Add(disabledState);
-
-			stateGroups.Add(visualStateGroup);
-
-			return stateGroups;
-		}
-
-		static VisualStateGroupList CreateStateGroupsWithoutNormalState()
-		{
-			var stateGroups = new VisualStateGroupList();
-			var visualStateGroup = new VisualStateGroup { Name = CommonStatesName };
-			var invalidState = new VisualState { Name = InvalidStateName };
-
-			visualStateGroup.States.Add(invalidState);
-
-			stateGroups.Add(visualStateGroup);
-
-			return stateGroups;
-		}
-
 		[Fact]
 		public void InitialStateIsNormalIfAvailable()
 		{
@@ -182,7 +144,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GroupNamesMustBeUniqueWithinGroupList()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
-			var secondGroup = new VisualStateGroup { Name = CommonStatesName };
+			var secondGroup = new VisualStateGroup { Name = CommonStatesGroupName };
 
 			Assert.Throws<InvalidOperationException>(() => vsgs.Add(secondGroup));
 		}
@@ -234,7 +196,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label1.SetValue(VisualElement.IsFocusedPropertyKey, false);
 			groups1 = VisualStateManager.GetVisualStateGroups(label1);
 			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
-
 		}
 
 		[Fact]
@@ -334,7 +295,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void CanRemoveAStateAndAddANewStateWithTheSameName()
 		{
 			var stateGroups = new VisualStateGroupList();
-			var visualStateGroup = new VisualStateGroup { Name = CommonStatesName };
+			var visualStateGroup = new VisualStateGroup { Name = CommonStatesGroupName };
 			var normalState = new VisualState { Name = NormalStateName };
 			var invalidState = new VisualState { Name = InvalidStateName };
 
@@ -353,7 +314,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void CanRemoveAGroupAndAddANewGroupWithTheSameName()
 		{
 			var stateGroups = new VisualStateGroupList();
-			var visualStateGroup = new VisualStateGroup { Name = CommonStatesName };
+			var visualStateGroup = new VisualStateGroup { Name = CommonStatesGroupName };
 			var secondVisualStateGroup = new VisualStateGroup { Name = "Whatevs" };
 			var normalState = new VisualState { Name = NormalStateName };
 			var invalidState = new VisualState { Name = InvalidStateName };

@@ -245,6 +245,9 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyBackgroundChanges()
 		{
+			if (Background is ImmutableBrush)
+				return;
+
 			if (Background != null)
 			{
 				Background.Parent = this;
@@ -257,6 +260,9 @@ namespace Microsoft.Maui.Controls
 
 		void StopNotifyingBackgroundChanges()
 		{
+			if (Background is ImmutableBrush)
+				return;
+
 			if (Background != null)
 			{
 				Background.Parent = null;
@@ -1098,13 +1104,26 @@ namespace Microsoft.Maui.Controls
 		protected internal virtual void ChangeVisualState()
 		{
 			if (!IsEnabled)
+			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+			}
 			else if (IsPointerOver)
+			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-			else if (IsFocused)
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Focused);
+			}
 			else
+			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+			}
+
+			if (IsEnabled)
+			{
+				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+				// exits and the control still has focus.
+				VisualStateManager.GoToState(this,
+					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+			}
 		}
 
 		static void OnVisualChanged(BindableObject bindable, object oldValue, object newValue)
