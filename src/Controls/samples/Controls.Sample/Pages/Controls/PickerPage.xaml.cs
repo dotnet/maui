@@ -11,6 +11,8 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
+			UpdatePickerBackground();
+
 			this.BindingContext = this;
 
 			UpdatePickerBackground();
@@ -29,8 +31,8 @@ namespace Maui.Controls.Sample.Pages
 			"Item 3"
 		};
 
-		public string[] MorePickerItems { get; } = Enumerable.Range(1, 20).Select(i => $"Item {i}").ToArray(); 
-		
+		public string[] MorePickerItems { get; } = Enumerable.Range(1, 20).Select(i => $"Item {i}").ToArray();
+
 		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
 		{
 			UpdatePickerBackground();
@@ -51,10 +53,10 @@ namespace Maui.Controls.Sample.Pages
 			{
 				EndPoint = new Point(1, 0),
 				GradientStops = new GradientStopCollection
-				{
-					new GradientStop { Color = startColor },
-					new GradientStop { Color = endColor, Offset = 1 }
-				}
+ 				{
+ 					new GradientStop { Color = startColor },
+ 					new GradientStop { Color = endColor, Offset = 1 }
+ 				}
 			};
 		}
 	}
