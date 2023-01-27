@@ -1,7 +1,7 @@
 using System;
-using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {

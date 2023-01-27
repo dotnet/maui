@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			get
 			{
 				var height = Height;
-				
+
 				// If the shape has never been laid out, then Height won't actually have a value;
 				// use the fallback value instead.
 				return height == -1 ? _fallbackHeight : height;

@@ -1,10 +1,10 @@
-using Microsoft.Maui.Graphics.Platform.Text;
-using Microsoft.Maui.Graphics.Text;
+using System;
+using System.Numerics;
 using Android.Content;
 using Android.Graphics;
 using Android.Text;
-using System;
-using System.Numerics;
+using Microsoft.Maui.Graphics.Platform.Text;
+using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Platform
 {

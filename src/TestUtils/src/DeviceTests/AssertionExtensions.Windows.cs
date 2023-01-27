@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public static Task<string> CreateColorAtPointErrorAsync(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
-			
+
 		public static Task WaitForKeyboardToShow(this FrameworkElement view, int timeout = 1000)
 		{
 			throw new NotImplementedException();
