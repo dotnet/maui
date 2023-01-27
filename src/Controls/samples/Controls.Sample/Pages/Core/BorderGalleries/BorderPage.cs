@@ -29,6 +29,8 @@ namespace Maui.Controls.Sample.Pages
 							new BorderStyles(), Navigation),
 						GalleryBuilder.NavButton("Border using Content Layout", () =>
 							new BorderLayout(), Navigation),
+						GalleryBuilder.NavButton("Border Stroke options", () =>
+							new BorderLayout(), Navigation),
 					}
 				}
 			};
