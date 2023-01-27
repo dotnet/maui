@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			if (DisableParallelGeneration)
 			{
-				foreach(var img in images)
+				foreach (var img in images)
 				{
 					ProcessImageInfo(img, dpis, originalScaleDpi, resizedImages);
 				}

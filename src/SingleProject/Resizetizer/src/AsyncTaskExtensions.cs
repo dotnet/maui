@@ -23,7 +23,8 @@ namespace Microsoft.Maui.Resizetizer
 			var tasks = new List<Task>();
 			foreach (var s in source)
 			{
-				tasks.Add(Task.Factory.StartNew(() => {
+				tasks.Add(Task.Factory.StartNew(() =>
+				{
 					try
 					{
 						body(s);
@@ -55,7 +56,8 @@ namespace Microsoft.Maui.Resizetizer
 			var tasks = new List<Task>();
 			foreach (var s in source)
 			{
-				tasks.Add(Task.Factory.StartNew(() => {
+				tasks.Add(Task.Factory.StartNew(() =>
+				{
 					try
 					{
 						body(s, lockObject);
@@ -81,7 +83,8 @@ namespace Microsoft.Maui.Resizetizer
 		public static ParallelLoopResult ParallelForEach<TSource>(this AsyncTask asyncTask, IEnumerable<TSource> source, Action<TSource> body, int maxConcurrencyLevel)
 		{
 			var options = ParallelOptions(asyncTask, maxConcurrencyLevel);
-			return Parallel.ForEach(source, options, s => {
+			return Parallel.ForEach(source, options, s =>
+			{
 				try
 				{
 					body(s);
@@ -108,7 +111,8 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var options = ParallelOptions(asyncTask, maxConcurrencyLevel);
 			var lockObject = new object();
-			return Parallel.ForEach(source, options, s => {
+			return Parallel.ForEach(source, options, s =>
+			{
 				try
 				{
 					body(s, lockObject);

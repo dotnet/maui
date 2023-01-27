@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		Task ValidateColor(ICheckBox checkBoxStub, Color color, Action action = null) =>
 			ValidateHasColor(checkBoxStub, color, action);
 
-		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>	
+		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;
 
 		Task PerformClick(IButton button)

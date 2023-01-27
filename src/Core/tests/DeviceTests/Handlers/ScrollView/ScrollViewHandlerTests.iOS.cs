@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task ScrollViewContentSizeSet() 
+		public async Task ScrollViewContentSizeSet()
 		{
 			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<EntryStub, EntryHandler>(); }); });
 
@@ -64,14 +64,15 @@ namespace Microsoft.Maui.DeviceTests
 			var scrollViewHandler = await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler(scrollView);
-				
+
 				// Setting an arbitrary value so we can verify that the handler is setting
 				// the UIScrollView's ContentSize property during AttachAndRun
 				handler.PlatformView.ContentSize = new CoreGraphics.CGSize(100, 100);
 				return handler;
 			});
 
-			await InvokeOnMainThreadAsync(async () => {
+			await InvokeOnMainThreadAsync(async () =>
+			{
 				await scrollViewHandler.PlatformView.AttachAndRun(() =>
 				{
 					// Verify that the ContentSize values have been modified
