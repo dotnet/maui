@@ -8,9 +8,11 @@ using System.Windows.Input;
 namespace Microsoft.Maui.Controls.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	interface IButtonElement : ICommandElement
+	interface IButtonElement
 	{
 		//note to implementor: implement this property publicly
+		object CommandParameter { get; set; }
+		ICommand Command { get; set; }
 		bool IsPressed { get; }
 
 
@@ -19,5 +21,7 @@ namespace Microsoft.Maui.Controls.Internals
 		void PropagateUpPressed();
 		void PropagateUpReleased();
 		void SetIsPressed(bool isPressed);
+		void OnCommandCanExecuteChanged(object sender, EventArgs e);
+		bool IsEnabledCore { set; }
 	}
 }

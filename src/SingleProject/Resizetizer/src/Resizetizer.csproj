@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Resources\MauiSplash.storyboard" LogicalName="MauiSplash.storyboard" />
   </ItemGroup>
 
   <Import Project="ResizetizerPackages.projitems" />

@@ -71,6 +71,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var appIconInfo = AppIcon?.Length > 0 ? ResizeImageInfo.Parse(AppIcon[0]) : null;
 			var splashInfo = SplashScreen?.Length > 0 ? ResizeImageInfo.Parse(SplashScreen[0]) : null;
+			var imageExtension = ".png";
 
 			var xmlns = appx.Root!.GetDefaultNamespace();
 
@@ -153,7 +154,7 @@ namespace Microsoft.Maui.Resizetizer
 					if (xelem == null || string.IsNullOrEmpty(xelem.Value) || xelem.Value == PngPlaceholder)
 					{
 						var dpi = DpiPath.Windows.StoreLogo[0];
-						var path = Resizer.GetRasterFileDestination(appIconInfo, dpi, includeScale: false);
+						var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
 						properties.SetElementValue(xname, path);
 					}
 				}
@@ -236,7 +237,7 @@ namespace Microsoft.Maui.Resizetizer
 						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.MediumTile[0];
-							var path = Resizer.GetRasterFileDestination(appIconInfo, dpi, includeScale: false);
+							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
 							visual.SetAttributeValue(xname, path);
 						}
 					}
@@ -248,7 +249,7 @@ namespace Microsoft.Maui.Resizetizer
 						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.Logo[0];
-							var path = Resizer.GetRasterFileDestination(appIconInfo, dpi, includeScale: false);
+							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
 							visual.SetAttributeValue(xname, path);
 						}
 					}
@@ -272,7 +273,7 @@ namespace Microsoft.Maui.Resizetizer
 						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.WideTile[0];
-							var path = Resizer.GetRasterFileDestination(appIconInfo, dpi, includeScale: false);
+							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
 							tile.SetAttributeValue(xname, path);
 						}
 					}
@@ -284,7 +285,7 @@ namespace Microsoft.Maui.Resizetizer
 						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.SmallTile[0];
-							var path = Resizer.GetRasterFileDestination(appIconInfo, dpi, includeScale: false);
+							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
 							tile.SetAttributeValue(xname, path);
 						}
 					}
@@ -296,7 +297,7 @@ namespace Microsoft.Maui.Resizetizer
 						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.LargeTile[0];
-							var path = Resizer.GetRasterFileDestination(appIconInfo, dpi, includeScale: false);
+							var path = Path.Combine(dpi.Path, appIconInfo.OutputName + dpi.NameSuffix + imageExtension);
 							tile.SetAttributeValue(xname, path);
 						}
 					}
@@ -346,7 +347,7 @@ namespace Microsoft.Maui.Resizetizer
 						if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PngPlaceholder)
 						{
 							var dpi = DpiPath.Windows.SplashScreen[0];
-							var path = Resizer.GetRasterFileDestination(splashInfo, dpi, includeScale: false);
+							var path = Path.Combine(dpi.Path, splashInfo.OutputName + dpi.NameSuffix + imageExtension);
 							splash.SetAttributeValue(xname, path);
 						}
 					}
