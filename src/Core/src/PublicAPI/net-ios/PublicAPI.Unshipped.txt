@@ -5,3 +5,7 @@ override Microsoft.Maui.Platform.MauiTextField.WillMoveToWindow(UIKit.UIWindow? 
 override Microsoft.Maui.Platform.MauiTextView.WillMoveToWindow(UIKit.UIWindow? window) -> void
 *REMOVED*override Microsoft.Maui.Handlers.PageHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
 *REMOVED*override Microsoft.Maui.Handlers.PageHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
+Microsoft.Maui.IWebView.UserAgent.get -> string?
+Microsoft.Maui.IWebView.UserAgent.set -> void
+static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this WebKit.WKWebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
