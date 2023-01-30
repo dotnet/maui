@@ -49,6 +49,9 @@ namespace Microsoft.Maui.Authentication
 
 		static IWebAuthenticator? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IWebAuthenticator Default =>
 			defaultImplementation ??= new WebAuthenticatorImplementation();
 

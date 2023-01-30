@@ -7,22 +7,39 @@ using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.ApplicationModel
 {
+	/// <summary>
+	/// A static class that contains platform-specific helper methods.
+	/// </summary>
 	public static class Platform
 	{
 #if ANDROID
-
+		/// <summary>
+		/// A static class that contains Android specific information about <see cref="Intent"/>.
+		/// </summary>
 		public static class Intent
 		{
+			/// <summary>
+			/// The identifier for the <see cref="Intent"/> used by <see cref="IAppActions"/>.
+			/// </summary>
 			public const string ActionAppAction = AppActionsImplementation.IntentAction;
 		}
 
+		/// <summary>
+		/// Gets the <see cref="Android.Content.Context"/> object that represents the current application context.
+		/// </summary>
 		public static Android.Content.Context AppContext => Android.App.Application.Context;
 
 		// ActivityStateManager
 
+		/// <summary>
+		/// Gets the <see cref="Android.App.Activity"/> object that represents the application's current activity.
+		/// </summary>
 		public static Android.App.Activity? CurrentActivity =>
 			ActivityStateManager.Default.GetCurrentActivity();
 
+		/// <summary>
+		/// Occurs when the state of an activity of this application changes.
+		/// </summary>
 		public static event EventHandler<ActivityStateChangedEventArgs>? ActivityStateChanged
 		{
 			add => ActivityStateManager.Default.ActivityStateChanged += value;
@@ -69,7 +86,9 @@ namespace Microsoft.Maui.ApplicationModel
 			WindowStateManager.Default.GetCurrentUIViewController(true);
 
 #elif WINDOWS
-
+		/// <summary>
+		/// Gets or sets the map service API key for this platform.
+		/// </summary>
 		public static string? MapServiceToken
 		{
 			get => Geocoding.Default.GetMapServiceToken();
@@ -83,6 +102,9 @@ namespace Microsoft.Maui.ApplicationModel
 			WindowStateManager.Default.OnActivated(window, args);
 
 #elif TIZEN
+		/// <summary>
+		/// Gets a <see cref="Tizen.Applications.Package"/> object with information about the current application package.
+		/// </summary>
 		public static Tizen.Applications.Package CurrentPackage
 		{
 			get
@@ -92,12 +114,14 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the map service API key for this platform.
+		/// </summary>
 		public static string? MapServiceToken
 		{
 			get => Geocoding.Default.GetMapServiceToken();
 			set => Geocoding.Default.SetMapServiceToken(value);
 		}
-
 #endif
 
 	}
