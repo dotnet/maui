@@ -154,7 +154,6 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
-                  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -201,7 +200,6 @@ stages:
                 poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
-                gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
   - stage: samples_net
     displayName: Build .NET MAUI Samples

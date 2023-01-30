@@ -14,11 +14,9 @@ namespace Microsoft.Maui.ApplicationModel
 		[SupportedOSPlatform("ios14.0")]
 		public partial class Photos : BasePlatformPermission
 		{
-			/// <inheritdoc/>
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
 				() => new string[] { "NSPhotoLibraryUsageDescription" };
 
-			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -26,7 +24,6 @@ namespace Microsoft.Maui.ApplicationModel
 				return Task.FromResult(GetPhotoPermissionStatus(PHAccessLevel.ReadWrite));
 			}
 
-			/// <inheritdoc/>
 			public override async Task<PermissionStatus> RequestAsync()
 			{
 				EnsureDeclared();
@@ -55,11 +52,9 @@ namespace Microsoft.Maui.ApplicationModel
 		[SupportedOSPlatform("ios14.0")] // The enum PHAccessLevel has these attributes
 		public partial class PhotosAddOnly : BasePlatformPermission
 		{
-			/// <inheritdoc/>
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
 				() => new string[] { "NSPhotoLibraryAddUsageDescription" };
 
-			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -67,7 +62,6 @@ namespace Microsoft.Maui.ApplicationModel
 				return Task.FromResult(GetPhotoPermissionStatus(PHAccessLevel.AddOnly));
 			}
 
-			/// <inheritdoc/>
 			public override async Task<PermissionStatus> RequestAsync()
 			{
 				EnsureDeclared();

@@ -7,7 +7,7 @@ using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class ImageButtonTests : VisualElementCommandSourceTests<ImageButton>
+	public class ImageButtonTests : CommandSourceTests<ImageButton>
 	{
 		[Fact]
 		public void TestSizing()
@@ -377,6 +377,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			source.File = "foo.png";
 			Assert.NotNull(source.File);
 			Assert.True(fired);
+		}
+
+
+		[Fact]
+		public void CommandCanExecuteUpdatesEnabled()
+		{
+			var button = new ImageButton();
+
+			bool result = false;
+
+			var bindingContext = new
+			{
+				Command = new Command(() => { }, () => result)
+			};
+
+			button.SetBinding(ImageButton.CommandProperty, "Command");
+			button.BindingContext = bindingContext;
+
+			Assert.False(button.IsEnabled);
+
+			result = true;
+
+			bindingContext.Command.ChangeCanExecute();
+
+			Assert.True(button.IsEnabled);
 		}
 
 		[Fact]

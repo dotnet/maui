@@ -5,7 +5,8 @@ using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
-	public class ButtonUnitTest : VisualElementCommandSourceTests<Button>
+	public class ButtonUnitTest
+		: CommandSourceTests<Button>
 	{
 		[Fact]
 		public void MeasureInvalidatedOnTextChange()
@@ -157,6 +158,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			button.FontAttributes = FontAttributes.Italic | FontAttributes.Bold;
 			Assert.Equal((button as ITextStyle).Font, Font.SystemFontOfSize(button.FontSize, FontWeight.Bold, FontSlant.Italic));
+		}
+
+		[Fact]
+		public void CommandCanExecuteUpdatesEnabled()
+		{
+			var button = new Button();
+
+			bool result = false;
+
+			var bindingContext = new
+			{
+				Command = new Command(() => { }, () => result)
+			};
+
+			button.SetBinding(Button.CommandProperty, "Command");
+			button.BindingContext = bindingContext;
+
+			Assert.False(button.IsEnabled);
+
+			result = true;
+
+			bindingContext.Command.ChangeCanExecute();
+
+			Assert.True(button.IsEnabled);
 		}
 
 		[Fact]

@@ -67,9 +67,6 @@ namespace Microsoft.Maui.ApplicationModel
 				throw new PermissionException($"{typeof(TPermission).Name} permission was not granted or restricted: {status}");
 		}
 
-		/// <summary>
-		/// Represents the abstract base class for all permissions. 
-		/// </summary>
 		public abstract partial class BasePermission
 		{
 			/// <summary>
