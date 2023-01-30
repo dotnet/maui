@@ -14,6 +14,13 @@ namespace Maui.Controls.Sample.Pages
 			UpdatePickerBackground();
 
 			this.BindingContext = this;
+
+			Loaded += (s, e) =>
+			{
+				DynamicItemsPicker.Items.Add("Item 1");
+				DynamicItemsPicker.Items.Add("Item 2");
+				DynamicItemsPicker.Items.Add("Item 3");
+			};
 		}
 
 		void OnSelectedIndexChanged(object sender, EventArgs e)
@@ -56,6 +63,27 @@ namespace Maui.Controls.Sample.Pages
  					new GradientStop { Color = endColor, Offset = 1 }
  				}
 			};
+		}
+
+		void OnClearItemsButtonClicked(object sender, EventArgs e)
+		{
+			DynamicItemsPicker.Items.Clear();
+		}
+
+		void OnAddItemsButtonClicked(object sender, EventArgs e)
+		{
+			DynamicItemsPicker.Items.Add("New Item 1");
+			DynamicItemsPicker.Items.Add("New Item 2");
+			DynamicItemsPicker.Items.Add("New Item 3");
+		}
+				
+		void OnReplaceItemsButtonClicked(object sender, EventArgs e)
+		{
+			DynamicItemsPicker.Items.Clear();
+
+			DynamicItemsPicker.Items.Add("Item One");
+			DynamicItemsPicker.Items.Add("Item Two");
+			DynamicItemsPicker.Items.Add("Item Three");
 		}
 	}
 }

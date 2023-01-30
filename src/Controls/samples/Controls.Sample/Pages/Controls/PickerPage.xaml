@@ -43,7 +43,26 @@
                  x:Name="ClearBackgroundButton"
                  Text="Clear Background"
                  Clicked="OnClearBackgroundButtonClicked"/>
-           
+
+            <Label
+                 Text="Dynamic add items to the Picker"
+                 Style="{StaticResource Headline}" />
+            <Picker 
+                x:Name="DynamicItemsPicker"
+                Title="The picker should have 3 items." />
+            <Button 
+                x:Name="ClearItemsButton"
+                Text="Clear Items"
+                Clicked="OnClearItemsButtonClicked"/>
+            <Button 
+                x:Name="AddItemsButton"
+                Text="Add Items"
+                Clicked="OnAddItemsButtonClicked"/>
+            <Button 
+                x:Name="ReplaceItemsButton"
+                Text="Replace Items"
+                Clicked="OnReplaceItemsButtonClicked"/>
+
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
