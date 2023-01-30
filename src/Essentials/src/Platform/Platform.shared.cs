@@ -31,40 +31,54 @@ namespace Microsoft.Maui.ApplicationModel
 
 		// ActivityStateManager
 
-		/// <summary>
-		/// Gets the <see cref="Android.App.Activity"/> object that represents the application's current activity.
-		/// </summary>
+		/// <inheritdoc cref="IActivityStateManager.GetCurrentActivity"/>
 		public static Android.App.Activity? CurrentActivity =>
 			ActivityStateManager.Default.GetCurrentActivity();
 
-		/// <summary>
-		/// Occurs when the state of an activity of this application changes.
-		/// </summary>
+
+		/// <inheritdoc cref="IActivityStateManager.ActivityStateChanged"/>
 		public static event EventHandler<ActivityStateChangedEventArgs>? ActivityStateChanged
 		{
 			add => ActivityStateManager.Default.ActivityStateChanged += value;
 			remove => ActivityStateManager.Default.ActivityStateChanged -= value;
 		}
 
+		/// <inheritdoc cref="IActivityStateManager.WaitForActivityAsync(CancellationToken)"/>
 		public static Task<Android.App.Activity> WaitForActivityAsync(CancellationToken cancelToken = default) =>
 			ActivityStateManager.Default.WaitForActivityAsync(cancelToken);
 
+		/// <inheritdoc cref="IActivityStateManager.Init(Android.App.Application)"/>
 		public static void Init(Android.App.Application application) =>
 			ActivityStateManager.Default.Init(application);
 
+		/// <inheritdoc cref="IActivityStateManager.Init(Android.App.Activity, Android.OS.Bundle?)"/>
 		public static void Init(Android.App.Activity activity, Android.OS.Bundle? bundle) =>
 			ActivityStateManager.Default.Init(activity, bundle);
 
 		// Permissions
 
+		/// <summary>
+		/// Pass permission request results from an activity's overridden method to the library for handling internal permission requests.
+		/// </summary>
+		/// <param name="requestCode">The requestCode from the corresponding overridden method in an activity.</param>
+		/// <param name="permissions">The permissions from the corresponding overridden method in an activity.</param>
+		/// <param name="grantResults">The grantResults from the corresponding overridden method in an activity.</param>
 		public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Android.Content.PM.Permission[] grantResults) =>
 			Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
 		// AppActions
 
+		/// <summary>
+		/// Called when a new <see cref="Android.Content.Intent"/> was created as part of invoking an app action.
+		/// </summary>
+		/// <param name="intent">The <see cref="Android.Content.Intent"/> that is created.</param>
 		public static void OnNewIntent(Android.Content.Intent? intent) =>
 			AppActions.Current.OnNewIntent(intent);
 
+		/// <summary>
+		/// Called when a <see cref="Android.App.Activity"/> is resumed as part of invoking an app action.
+		/// </summary>
+		/// <param name="activity">The <see cref="Android.App.Activity"/> that is resumed.</param>
 		public static void OnResume(Android.App.Activity? activity = null) =>
 			AppActions.Current.OnResume(activity?.Intent);
 
@@ -79,15 +93,37 @@ namespace Microsoft.Maui.ApplicationModel
 		public static bool OpenUrl(UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options) =>
 			WebAuthenticator.Default.OpenUrl(app, url, options);
 
+		/// <summary>
+		/// Informs the app that there is data associated with continuing a task specified as a <see cref="Foundation.NSUserActivity"/> object, and then returns whether the app continued the activity.
+		/// </summary>
+		/// <param name="application">The application this action is invoked on.</param>
+		/// <param name="userActivity">The user activity identifier.</param>
+		/// <param name="completionHandler">The action that is invoked when the operation is completed.</param>
+		/// <returns><see langword="true"/> if the app handled the user activity, otherwise <see langword="false"/>.</returns>
 		public static bool ContinueUserActivity(UIKit.UIApplication application, Foundation.NSUserActivity userActivity, UIKit.UIApplicationRestorationHandler completionHandler) =>
 			WebAuthenticator.Default.ContinueUserActivity(application, userActivity, completionHandler);
 
+		/// <summary>
+		/// Invokes the action that corresponds to the chosen <see cref="AppAction"/> by the user.
+		/// </summary>
+		/// <param name="application">The application this action is invoked on.</param>
+		/// <param name="shortcutItem">The shortcut item that was chosen by the user.</param>
+		/// <param name="completionHandler">The action that is invoked when the operation is completed.</param>
 		public static void PerformActionForShortcutItem(UIKit.UIApplication application, UIKit.UIApplicationShortcutItem shortcutItem, UIKit.UIOperationHandler completionHandler) =>
 			AppActions.Current.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
 
+		/// <summary>
+		/// Initializes the <see cref="WindowStateManager"/> for the given <see cref="UIKit.UIViewController"/>.
+		/// </summary>
+		/// <param name="getCurrentUIViewController">The <see cref="UIKit.UIViewController"/> to use for initialization.</param>
 		public static void Init(Func<UIKit.UIViewController>? getCurrentUIViewController) =>
 			WindowStateManager.Default.Init(getCurrentUIViewController);
 
+		/// <summary>
+		/// Gets the current view controller through the <see cref="WindowStateManager"/>.
+		/// </summary>
+		/// <returns>The <see cref="UIKit.UIViewController"/> object that is currently presented.</returns>
+		/// <exception cref="NullReferenceException">Thrown if no current <see cref="UIKit.UIViewController"/> can be found.</exception>
 		public static UIKit.UIViewController? GetCurrentUIViewController() =>
 			WindowStateManager.Default.GetCurrentUIViewController(true);
 
@@ -101,9 +137,11 @@ namespace Microsoft.Maui.ApplicationModel
 			set => Geocoding.Default.SetMapServiceToken(value);
 		}
 
+		/// <inheritdoc cref="IPlatformAppActions.OnLaunched(UI.Xaml.LaunchActivatedEventArgs)"/>
 		public static void OnLaunched(UI.Xaml.LaunchActivatedEventArgs e) =>
 			AppActions.Current.OnLaunched(e);
 
+		/// <inheritdoc cref="IWindowStateManager.OnActivated(UI.Xaml.Window, UI.Xaml.WindowActivatedEventArgs)"/>
 		public static void OnActivated(UI.Xaml.Window window, UI.Xaml.WindowActivatedEventArgs args) =>
 			WindowStateManager.Default.OnActivated(window, args);
 
