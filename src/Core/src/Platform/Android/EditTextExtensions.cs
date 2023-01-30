@@ -353,16 +353,16 @@ namespace Microsoft.Maui.Platform
 			if (motionEvent is null)
 				return false;
 
+			if (motionEvent.Action != MotionEventActions.Up)
+				return false;
+
 			var rBounds = getClearButtonDrawable?.Invoke()?.Bounds;
 			var buttonWidth = rBounds?.Width();
 
 			if (buttonWidth <= 0)
 				return false;
-
-			if (motionEvent.Action != MotionEventActions.Up)
-				return false;
-
-			var x = motionEvent.RawX;
+			
+			var x = motionEvent.GetX();
 			var y = motionEvent.GetY();
 
 			var flowDirection = platformView.LayoutDirection;
