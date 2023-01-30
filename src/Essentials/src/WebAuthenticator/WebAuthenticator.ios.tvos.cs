@@ -97,12 +97,14 @@ namespace Microsoft.Maui.Authentication
 
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
+#pragma warning disable CA1422
 				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 				using (sf)
 				{
 					sf.Start();
 					return await tcsResponse.Task;
 				}
+#pragma warning restore CA1422
 			}
 
 			// This is only on iOS9+ but we only support 10+ in Essentials anyway

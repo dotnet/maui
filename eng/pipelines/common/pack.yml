@@ -15,6 +15,11 @@ parameters:
   type: string
   default: 'nuget'
 
+- name: nugetFolder
+  type: string
+  default: 'artifacts'
+  
+
 - name: prepareSteps
   type: stepList
   default: []
@@ -41,7 +46,7 @@ steps:
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
-  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
+  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Pack .NET Maui'
     name: PackMaui
     env:
