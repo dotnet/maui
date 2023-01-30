@@ -1,40 +1,14 @@
 parameters:
-- name: platform
-  type: string
-  default: ''
-
-- name: poolName
-  type: string
-  default: ''
-
-- name: provisionatorChannel
-  type: string
-  default: 'latest'
-
-- name: artifact
-  type: string
-  default: 'nuget'
-
-- name: prepareSteps
-  type: stepList
-  default: []
-
-- name: gitHubToken
-  type: string
-  default: $(github--pat--vs-mobiletools-engineering-service2)
-
+  platform: ''
+  poolName: ''
+  artifact: 'nuget'
+  
 steps:
   - template: provision.yml
     parameters:
       platform: ${{ parameters.platform }}
       poolName: ${{ parameters.poolName }}
-      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      gitHubToken: ${{ parameters.gitHubToken }}
-
-  - ${{ each step in parameters.prepareSteps }}:
-    - ${{ each pair in step }}:
-        ${{ pair.key }}: ${{ pair.value }}
-
+      
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3

@@ -6,7 +6,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -84,7 +83,6 @@ namespace Microsoft.Maui.Controls
 
 		protected internal View()
 		{
-			_gestureManager = new GestureManager(this);
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
 			{
 				void AddItems(IEnumerable<IElementDefinition> elements)

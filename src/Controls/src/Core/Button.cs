@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// A button <see cref="View" /> that reacts to touch events.
 	/// </summary>
-	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, ICommandElement, IImageElement
+	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, IImageElement
 	{
 		const double DefaultSpacing = 10;
 
@@ -241,6 +241,11 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
+		bool IButtonElement.IsEnabledCore
+		{
+			set { SetValueCore(IsEnabledProperty, value); }
+		}
+
 		/// <summary>
 		/// Internal method to trigger the <see cref="Clicked"/> event.
 		/// Should not be called manually outside of .NET MAUI.
@@ -435,6 +440,9 @@ namespace Microsoft.Maui.Controls
 		void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
 			ImageElement.ImageSourceSourceChanged(this, e);
 
+		void IButtonElement.OnCommandCanExecuteChanged(object sender, EventArgs e) =>
+			ButtonElement.CommandCanExecuteChanged(this, EventArgs.Empty);
+
 		void IImageController.SetIsLoading(bool isLoading)
 		{
 		}
@@ -457,12 +465,6 @@ namespace Microsoft.Maui.Controls
 		/// <returns>The transformed text.</returns>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
-
-		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
-			RefreshIsEnabledProperty();
-
-		protected override bool IsEnabledCore =>
-			base.IsEnabledCore && CommandElement.GetCanExecute(this);
 
 		/// <summary>
 		/// Represents the layout of the button content whenever an image is shown.
