@@ -19,10 +19,6 @@ using Xunit;
 using UIModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 
-#if ANDROID || IOS || MACCATALYST
-using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-#endif
-
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
