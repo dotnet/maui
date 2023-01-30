@@ -11,7 +11,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	public interface ISms
 	{
 		/// <summary>
-		/// Gets if composing SMS messages is supported on this device.
+		/// Gets a value indicating whether composing of SMS messages is supported on this device.
 		/// </summary>
 		bool IsComposeSupported { get; }
 
