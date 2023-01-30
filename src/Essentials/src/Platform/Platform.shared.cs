@@ -69,7 +69,13 @@ namespace Microsoft.Maui.ApplicationModel
 			AppActions.Current.OnResume(activity?.Intent);
 
 #elif IOS || MACCATALYST
-
+		/// <summary>
+		/// Opens the specified URI to start a authentication flow.
+		/// </summary>
+		/// <param name="app">This parameters is not used.</param>
+		/// <param name="url">The URL to open that will start the authentication flow.</param>
+		/// <param name="options">This parameters is not used.</param>
+		/// <returns><see langword="true"/> when the URI has been opened, otherwise <see langword="false"/>.</returns>
 		public static bool OpenUrl(UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options) =>
 			WebAuthenticator.Default.OpenUrl(app, url, options);
 

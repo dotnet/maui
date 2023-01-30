@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Authentication
 			defaultImplementation = implementation;
 
 		/// <summary>
-		/// Options for Apple Sign In.
+		/// Represents additional options for Apple Sign In.
 		/// </summary>
 		public class Options
 		{
