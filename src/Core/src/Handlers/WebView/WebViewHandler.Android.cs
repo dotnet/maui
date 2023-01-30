@@ -71,6 +71,11 @@ namespace Microsoft.Maui.Handlers
 			ProcessSourceWhenReady(handler, webView);
 		}
 
+		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView.UpdateUserAgent(webView);
+		}
+
 		public static void MapWebViewClient(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)

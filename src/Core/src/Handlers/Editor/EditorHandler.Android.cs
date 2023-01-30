@@ -118,8 +118,15 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
+		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e)
+		{
+			// Let the mapping know that the update is coming from changes to the platform control
+			DataFlowDirection = DataFlowDirection.FromPlatform;
 			VirtualView?.UpdateText(e);
+
+			// Reset to the default direction
+			DataFlowDirection = DataFlowDirection.ToPlatform;
+		}
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{

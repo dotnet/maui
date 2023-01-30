@@ -83,6 +83,12 @@ namespace Maui.Controls.Sample.Pages
 			await LoadMauiAsset();
 		}
 
+		async void OnSetUserAgentClicked(object sender, EventArgs e)
+		{
+			input.Text = "useragent.html";
+			await LoadMauiAsset();
+		}
+
 		async Task LoadMauiAsset()
 		{
 			using var stream = await FileSystem.OpenAppPackageFileAsync(input.Text.Trim());
@@ -100,6 +106,11 @@ namespace Maui.Controls.Sample.Pages
 		void OnEnableZoomControlsClicked(object sender, EventArgs e)
 		{
 			MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().EnableZoomControls(true);
+		}
+
+		void OnLoadHtml5VideoClicked(object sender, EventArgs e)
+		{
+			MauiWebView.Source = new UrlWebViewSource { Url = "video.html" };
 		}
 	}
 }
