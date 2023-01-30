@@ -5,10 +5,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	// TODO: Make this public on .NET 8
-	internal class SwipeItemButton : UIButton
+	public class SwipeItemButton : UIButton
 	{
-		internal event EventHandler? FrameChanged;
+		public event EventHandler? FrameChanged;
 
 		public override CGRect Frame
 		{
