@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Devices
 		/// <summary>
 		/// Returns a string representation of the current values of this display info instance.
 		/// </summary>
-		/// <returns>A string representation of this instance in the format of <c>Height: {height}, Width: {width}, Density: {density}, Orientation: {orientation}, Rotation: {rotation}</c>.</returns>
+		/// <returns>A string representation of this instance in the format of <c>Height: {value}, Width: {value}, Density: {value}, Orientation: {value}, Rotation: {value}</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(Height)}: {Height}, {nameof(Width)}: {Width}, " +
 			$"{nameof(Density)}: {Density}, {nameof(Orientation)}: {Orientation}, " +
