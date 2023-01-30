@@ -27,6 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				GestureRecognizers = { new TapGestureRecognizer() }
 			};
+			(view as IWindowController).Window = new Window();
 
 			var handler = await CreateHandlerAsync<LabelHandler>(view);
 
@@ -53,6 +54,8 @@ namespace Microsoft.Maui.DeviceTests
 				Shadow = new Shadow(), // this results in a container view
 				GestureRecognizers = { new TapGestureRecognizer() }
 			};
+
+			(view as IWindowController).Window = new Window();
 
 			var handler = await CreateHandlerAsync<LabelHandler>(view);
 
