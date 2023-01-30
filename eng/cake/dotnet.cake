@@ -36,6 +36,7 @@ Task("dotnet")
         //We are passing a nuget folder with nuget locations
         if(!string.IsNullOrEmpty(nugetSource))
         {
+            EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
             ReplaceTextInFiles(
                 originalNuget,
@@ -269,6 +270,7 @@ Task("dotnet-pack-maui")
         //We are passing a nuget folder with nuget locations
         if(!string.IsNullOrEmpty(nugetSource))
         {
+            EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
             ReplaceTextInFiles(
                 originalNuget,
