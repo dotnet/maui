@@ -52,11 +52,6 @@
       "extends": [ 
         "maui-blazor",
         "android"
-      ],
-      "packs": [
-          "Microsoft.Maui.Core",
-          "Microsoft.Maui.Controls",
-          "Microsoft.Maui.Essentials"
       ]
     },
     "maui-maccatalyst": {
@@ -64,11 +59,6 @@
       "extends": [ 
         "maui-blazor",
         "maccatalyst"
-      ],
-      "packs": [
-          "Microsoft.Maui.Core",
-          "Microsoft.Maui.Controls",
-          "Microsoft.Maui.Essentials"
       ]
     },
     "maui-ios": {
@@ -76,20 +66,12 @@
       "extends": [ 
         "maui-blazor",
         "ios"
-      ],
-      "packs": [
-          "Microsoft.Maui.Core",
-          "Microsoft.Maui.Controls",
-          "Microsoft.Maui.Essentials"
       ]
     },
     "maui-windows": {
       "description": ".NET MAUI SDK for Windows",
       "extends": [ "maui-blazor" ],
       "packs": [
-          "Microsoft.Maui.Core",
-          "Microsoft.Maui.Controls",
-          "Microsoft.Maui.Essentials",
           "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
       ]
     },
@@ -97,11 +79,6 @@
       "description": ".NET MAUI SDK for Tizen",
       "extends": [
         "maui-blazor"
-      ],
-      "packs": [
-          "Microsoft.Maui.Core",
-          "Microsoft.Maui.Controls",
-          "Microsoft.Maui.Essentials"
       ]
     }
   },
