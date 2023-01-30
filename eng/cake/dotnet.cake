@@ -33,6 +33,16 @@ Task("dotnet")
         if (!localDotnet) 
             return;
 
+        //We are passing a nuget folder with nuget locations
+        if(!string.IsNullOrEmpty(nugetSource))
+        {
+            var originalNuget = File("./NuGet.config");
+            ReplaceTextInFiles(
+                originalNuget,
+                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
+                $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
+        }
+
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()

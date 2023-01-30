@@ -39,7 +39,7 @@ steps:
     - ${{ each pair in step }}:
         ${{ pair.key }}: ${{ pair.value }}
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
     env:
