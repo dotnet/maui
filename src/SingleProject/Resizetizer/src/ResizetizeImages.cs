@@ -168,12 +168,12 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				LogDebugMessage($"App Icon: " + dpi);
 
-				var destination = Resizer.GetRasterFileDestination(img, dpi, IntermediateOutputPath)
+				var destination = Resizer.GetFileDestination(img, dpi, IntermediateOutputPath)
 					.Replace("{name}", appIconName);
 
 				LogDebugMessage($"App Icon Destination: " + destination);
 
-				appTool.Resize(dpi, destination);
+				appTool.Resize(dpi, Path.ChangeExtension(destination, ".png"));
 			}
 		}
 

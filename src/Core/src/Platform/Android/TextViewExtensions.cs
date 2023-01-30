@@ -104,11 +104,15 @@ namespace Microsoft.Maui.Platform
 					break;
 				case FlowDirection.RightToLeft:
 					platformView.LayoutDirection = ALayoutDirection.Rtl;
+#pragma warning disable CA1416 // Introduced in API 23: https://developer.android.com/reference/android/view/View#TEXT_DIRECTION_FIRST_STRONG_RTL
 					platformView.TextDirection = ATextDirection.FirstStrongRtl;
+#pragma warning restore CA1416
 					break;
 				case FlowDirection.LeftToRight:
 					platformView.LayoutDirection = ALayoutDirection.Ltr;
+#pragma warning disable CA1416 // Introduced in API 23: https://developer.android.com/reference/android/view/View#TEXT_DIRECTION_FIRST_STRONG_LTR
 					platformView.TextDirection = ATextDirection.FirstStrongLtr;
+#pragma warning restore CA1416
 					break;
 			}
 		}

@@ -1060,6 +1060,17 @@ namespace Microsoft.Maui.Layouts
 				// Avoiding Enum.HasFlag here for performance reasons; we don't need the type check
 				return (a & b) == b;
 			}
+
+			public double LastMeasureWidth { get; private set; } = -1;
+			public double LastMeasureHeight { get; private set; } = -1;
+			public Size LastMeasureResult { get; private set; }
+
+			public void CacheMeasure(double width, double height, Size result) 
+			{
+				LastMeasureHeight = height;
+				LastMeasureWidth = width;
+				LastMeasureResult = result;
+			}
 		}
 
 		[Flags]

@@ -32,11 +32,11 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				Log.LogMessage(MessageImportance.Low, $"Splash Screen: " + dpi);
 
-				var destination = Resizer.GetRasterFileDestination(img, dpi, IntermediateOutputPath);
+				var destination = Resizer.GetFileDestination(img, dpi, IntermediateOutputPath);
 
 				Log.LogMessage(MessageImportance.Low, $"Splash Screen Destination: " + destination);
 
-				appTool.Resize(dpi, destination);
+				appTool.Resize(dpi, Path.ChangeExtension(destination, ".png"));
 			}
 
 			return !Log.HasLoggedErrors;

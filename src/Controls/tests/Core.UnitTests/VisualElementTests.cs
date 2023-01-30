@@ -82,18 +82,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
 			Assert.Equal(FocusedStateName, stateGroup.CurrentState.Name);
 		}
-
-		[Fact]
-		public void ContainerChangedFiresWhenMapContainerIsCalled()
-		{
-			var handlerStub = new HandlerStub((PropertyMapper)VisualElement.ControlsVisualElementMapper);
-			var button = new Button();
-			button.Handler = handlerStub;
-
-			bool fired = false;
-			(button as IControlsView).PlatformContainerViewChanged += (_, _) => fired = true;
-			handlerStub.UpdateValue(nameof(IViewHandler.ContainerView));
-			Assert.True(fired);
-		}
 	}
 }
