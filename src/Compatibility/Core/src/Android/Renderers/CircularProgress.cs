@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			l += (width - squareSize) / 2;
 			t += (height - squareSize) / 2;
 			int strokeWidth;
-			if (!Forms.IsNougatOrNewer)
+			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
 				strokeWidth = squareSize / _paddingRatio23;
 			else
 				strokeWidth = squareSize / _paddingRatio;
