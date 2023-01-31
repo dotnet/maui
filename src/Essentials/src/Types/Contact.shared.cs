@@ -3,32 +3,17 @@ using System.Linq;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
-	/// <summary>
-	/// Represents a contact on the user's device.
-	/// </summary>
+	/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="Type[@FullName='Microsoft.Maui.ApplicationModel.Communication.Contact']/Docs/*" />
 	public class Contact
 	{
 		string displayName;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Contact"/> class.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Contact()
 		{
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Contact"/> class with the given data.
-		/// </summary>
-		/// <param name="id">The identifier of the contact.</param>
-		/// <param name="namePrefix">The prefix of the contact.</param>
-		/// <param name="givenName">The given name (or first name) of the contact.</param>
-		/// <param name="middleName">The middle name(s) of the contact.</param>
-		/// <param name="familyName">The family name (or last name) of the contact.</param>
-		/// <param name="nameSuffix">The suffix of the contact.</param>
-		/// <param name="phones">A collection of phone numbers for the contact.</param>
-		/// <param name="email">A collection of email addresses for the contact.</param>
-		/// <param name="displayName">The display name of the contact.</param>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Contact(
 			string id,
 			string namePrefix,
@@ -51,60 +36,38 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			DisplayName = displayName;
 		}
 
-		/// <summary>
-		/// Gets or sets the identifier of the contact.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='Id']/Docs/*" />
 		public string Id { get; set; }
 
-		/// <summary>
-		/// Gets or sets the display name of the contact.
-		/// </summary>
-		/// <remarks>If no display name is set, a display name is inferred from <see cref="GivenName"/> and <see cref="FamilyName"/>.</remarks>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='DisplayName']/Docs/*" />
 		public string DisplayName
 		{
 			get => !string.IsNullOrWhiteSpace(displayName) ? displayName : BuildDisplayName();
 			private set => displayName = value;
 		}
 
-		/// <summary>
-		/// Gets or sets the name prefix of the contact.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='NamePrefix']/Docs/*" />
 		public string NamePrefix { get; set; }
 
-		/// <summary>
-		/// Gets or sets the given name (or first name) of the contact.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='GivenName']/Docs/*" />
 		public string GivenName { get; set; }
 
-		/// <summary>
-		/// Gets or sets the middle name(s) of the contact.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='MiddleName']/Docs/*" />
 		public string MiddleName { get; set; }
 
-		/// <summary>
-		/// Gets or sets the family name (or last name) of the contact.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='FamilyName']/Docs/*" />
 		public string FamilyName { get; set; }
 
-		/// <summary>
-		/// Gets or sets the name suffix of the contact.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='NameSuffix']/Docs/*" />
 		public string NameSuffix { get; set; }
 
-		/// <summary>
-		/// Gets or sets a collection of phone numbers of the contact.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='Phones']/Docs/*" />
 		public List<ContactPhone> Phones { get; set; } = new List<ContactPhone>();
 
-		/// <summary>
-		/// Gets or sets a collection of email addresses of the contact.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='Emails']/Docs/*" />
 		public List<ContactEmail> Emails { get; set; } = new List<ContactEmail>();
 
-		/// <summary>
-		/// Returns a string representation of the current values of <see cref="Contact"/>.
-		/// </summary>
-		/// <returns>A string representation of this instance. The return value is the current value of <see cref="DisplayName"/>.</returns>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/Contact.xml" path="//Member[@MemberName='ToString']/Docs/*" />
 		public override string ToString() => DisplayName;
 
 		string BuildDisplayName()
@@ -118,69 +81,43 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		}
 	}
 
-	/// <summary>
-	/// Represents an email address that is associated with a <see cref="Contact"/>.
-	/// </summary>
 	public class ContactEmail
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ContactEmail"/> class.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactEmail.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public ContactEmail()
 		{
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ContactEmail"/> class with the given data.
-		/// </summary>
-		/// <param name="emailAddress">The email address.</param>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactEmail.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public ContactEmail(string emailAddress)
 		{
 			EmailAddress = emailAddress;
 		}
 
-		/// <summary>
-		/// Gets or sets the email address.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactEmail.xml" path="//Member[@MemberName='EmailAddress']/Docs/*" />
 		public string EmailAddress { get; set; }
 
-		/// <summary>
-		/// Returns a string representation of the current values of <see cref="Contact"/>.
-		/// </summary>
-		/// <returns>A string representation of this instance. The return value is the current value of <see cref="EmailAddress"/>.</returns>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactEmail.xml" path="//Member[@MemberName='ToString']/Docs/*" />
 		public override string ToString() => EmailAddress;
 	}
 
-	/// <summary>
-	/// Represents a phone number that is associated with a <see cref="Contact"/>.
-	/// </summary>
 	public class ContactPhone
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ContactPhone"/> class.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactPhone.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public ContactPhone()
 		{
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ContactPhone"/> class with the given data.
-		/// </summary>
-		/// <param name="phoneNumber">The phone number.</param>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactPhone.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public ContactPhone(string phoneNumber)
 		{
 			PhoneNumber = phoneNumber;
 		}
 
-		/// <summary>
-		/// Gets or sets the phone number.
-		/// </summary>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactPhone.xml" path="//Member[@MemberName='PhoneNumber']/Docs/*" />
 		public string PhoneNumber { get; set; }
 
-		/// <summary>
-		/// Returns a string representation of the current values of <see cref="Contact"/>.
-		/// </summary>
-		/// <returns>A string representation of this instance. The return value is the current value of <see cref="PhoneNumber"/>.</returns>
+		/// <include file="../../docs/Microsoft.Maui.Essentials/ContactPhone.xml" path="//Member[@MemberName='ToString']/Docs/*" />
 		public override string ToString() => PhoneNumber;
 	}
 }
