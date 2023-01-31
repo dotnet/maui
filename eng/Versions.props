@@ -12,6 +12,7 @@
     <SystemCodeDomPackageVersion>7.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.1.129</MicrosoftAndroidSdkWindowsPackageVersion>
+    <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdkPackageVersion>16.2.196-net8-p1</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>13.1.196-net8-p1</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>16.2.196-net8-p1</MicrosoftiOSSdkPackageVersion>
@@ -22,7 +23,7 @@
     <MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion>8.0.0-alpha.1.22620.1</MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
-    <MicrosoftWindowsAppSDKPackageVersion>1.2.221209.1</MicrosoftWindowsAppSDKPackageVersion>
+    <MicrosoftWindowsAppSDKPackageVersion>1.2.230118.102</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.755</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.0.4</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
@@ -42,12 +43,12 @@
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
-    <_MicrosoftWebWebView2Version>1.0.1462.37</_MicrosoftWebWebView2Version>
+    <_MicrosoftWebWebView2Version>1.0.1518.46</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
     <_XamarinAndroidGlideVersion>4.13.2.2</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.7.0.1</_XamarinGoogleCryptoTinkAndroidVersion>
+    <_XamarinGoogleCryptoTinkAndroidVersion>1.7.0.2</_XamarinGoogleCryptoTinkAndroidVersion>
     <!-- Android Maps -->
     <XamarinGooglePlayServicesMaps>118.1.0</XamarinGooglePlayServicesMaps>
     <!--

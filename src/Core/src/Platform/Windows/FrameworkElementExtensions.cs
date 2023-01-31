@@ -155,6 +155,8 @@ namespace Microsoft.Maui.Platform
 				if (rd?.ContainsKey(key) ?? false)
 					rd[key] = newValue;
 			}
+
+			element?.RefreshThemeResources();
 		}
 
 		static DependencyProperty? GetForegroundProperty(FrameworkElement element)
