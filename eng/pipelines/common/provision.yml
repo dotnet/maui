@@ -28,7 +28,7 @@ steps:
         inputs:
           provisioning_script: ${{ parameters.provisionatorXCodePath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-           github_token: ${{ parameters.gitHubToken }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
     # Provision Additional Software
