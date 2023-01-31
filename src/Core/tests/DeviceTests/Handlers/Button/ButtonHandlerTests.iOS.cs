@@ -57,6 +57,42 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(UIAccessibilityTrait.Button, trait);
 		}
 
+		[Theory]
+		[InlineData(null)]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#0000FF")]
+		[InlineData("#000000")]
+		public async Task BackgroundWithShadowRenderCorrectly(string colorHex)
+		{
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var button = new ButtonStub
+			{
+				Text = "Test",
+				Background = new SolidPaintStub(expectedColor),
+				Shadow = new ShadowStub
+				{
+					Paint = new SolidPaintStub(Colors.Black),
+					Offset = new Point(10, 10),
+					Opacity = 1.0f,
+					Radius = 2.0f
+				}
+			};
+
+			var handler = await CreateHandlerAsync(button);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					handler.UpdateValue(nameof(IButton.Background));
+
+					await handler.PlatformView.AssertContainsColor(expectedColor);
+				});
+			});
+		}
+
 		bool ImageSourceLoaded(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView.ImageView.Image != null;
 
