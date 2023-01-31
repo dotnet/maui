@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -50,6 +52,50 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(platformControl.IsReadOnly);
 				entry.IsReadOnly = true;
 				Assert.True(platformControl.IsReadOnly);
+			});
+		}
+
+		
+		[Fact(DisplayName = "Unfocus will work when page is shown a 2nd time")]
+		public async Task UnFocusOnEntryAfterPagePop()
+		{
+			int unfocused = 0;
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler(typeof(Window), typeof(WindowHandlerStub));
+					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
+
+				});
+			});
+
+			var entry = new Entry();
+			entry.Unfocused += (s, e) =>
+			{
+				if(!e.IsFocused)
+				{
+					unfocused++;
+				}
+
+			};
+			var navPage = new NavigationPage(new ContentPage { Content  = entry });
+			var window = new Window(navPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				entry.Focus();
+				await Task.Delay(500);
+				entry.Unfocus();
+				await navPage.PushAsync(new ContentPage());
+				await navPage.PopAsync();
+				entry.Focus();
+				await Task.Delay(500);
+				entry.Unfocus();
+				Assert.True(unfocused == 2);
 			});
 		}
 #endif

@@ -19,8 +19,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		internal static Page? ContainingPage; // Cache of containing page used for unfocusing
-
 		public static void TryMoveFocus(this FrameworkElement platformView, FocusNavigationDirection direction)
 		{
 			if (platformView?.XamlRoot?.Content is UIElement elem)
@@ -368,33 +366,32 @@ namespace Microsoft.Maui.Platform
 			// hack. What we *can* do is set the focus to the Page which contains Control;
 			// this will cause Control to lose focus without shifting focus to, say, the next Entry 
 
-			if (ContainingPage == null)
+			// Work our way up the tree to find the containing Page
+			// We can't cache this parent because this Page can be disposed
+			// or the Control can belong to another page
+			DependencyObject parent = control;
+
+			while (parent != null && parent is not Page)
 			{
-				// Work our way up the tree to find the containing Page
-				DependencyObject parent = control;
-
-				while (parent != null && parent is not Page)
-				{
-					parent = VisualTreeHelper.GetParent(parent);
-				}
-
-				ContainingPage = parent as Page;
+				parent = VisualTreeHelper.GetParent(parent);
 			}
 
-			if (ContainingPage != null)
-			{
-				// Cache the tabstop setting
-				var wasTabStop = ContainingPage.IsTabStop;
+			if (parent is not Page containingPage)
+				return;
 
-				// Controls can only get focus if they're a tabstop
-				ContainingPage.IsTabStop = true;
-				ContainingPage.Focus(FocusState.Programmatic);
+			// Cache the tabstop setting
+			var wasTabStop = containingPage.IsTabStop;
 
-				// Restore the tabstop setting; that may cause the Page to lose focus,
-				// but it won't restore the focus to Control
-				ContainingPage.IsTabStop = wasTabStop;
-			}
+			// Controls can only get focus if they're a tabstop
+			containingPage.IsTabStop = true;
+			containingPage.Focus(FocusState.Programmatic);
+
+			// Restore the tabstop setting; that may cause the Page to lose focus,
+			// but it won't restore the focus to Control
+			containingPage.IsTabStop = wasTabStop;
 		}
+
+
 
 		internal static IWindow? GetHostedWindow(this IView? view)
 			=> GetHostedWindow(view?.Handler?.PlatformView as FrameworkElement);
