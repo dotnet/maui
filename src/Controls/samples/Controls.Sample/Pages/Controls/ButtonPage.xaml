@@ -58,6 +58,26 @@
                     </Button.Background>
                 </Button>
                 <Label
+                    Text="Shadow"
+                    Style="{StaticResource Headline}" />
+                <Button 
+                    x:Name="ShadowButton"
+                    Text="Shadow"
+                    HorizontalOptions="Center">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"
+                                          Offset="0.1" />
+                            <GradientStop Color="Green"
+                                          Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Button.Background>
+                    <Button.Shadow>
+                        <Shadow
+                            Brush="Green" />
+                    </Button.Shadow>
+                </Button>
+                <Label
                     Text="TextColor"
                     Style="{StaticResource Headline}"/>
                 <Button

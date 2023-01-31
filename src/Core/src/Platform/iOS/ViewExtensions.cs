@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Devices;
@@ -270,12 +271,39 @@ namespace Microsoft.Maui.Platform
 			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
 
-			foreach (var sublayer in layer.Sublayers)
+			var bounds = layer.Bounds;
+
+			IEnumerable<CALayer> subLayers;
+
+			if (view is WrapperView)
+				subLayers = layer.GetLayers();
+			else
+				subLayers = layer.Sublayers;
+
+			foreach (var sublayer in subLayers)
 			{
-				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
+				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != bounds)
 				{
-					sublayer.Frame = view.Bounds;
+					sublayer.Frame = bounds;
 					break;
+				}
+			}
+		}
+
+		static IEnumerable<CALayer> GetLayers(this CALayer root)
+		{
+			var stack = new Stack<CALayer>();
+			stack.Push(root);
+
+			while (stack.Count > 0)
+			{
+				var current = stack.Pop();
+				yield return current;
+
+				if (current.Sublayers != null)
+				{
+					foreach (var child in current.Sublayers)
+						stack.Push(child);
 				}
 			}
 		}
