@@ -40,7 +40,6 @@ parameters:
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
         artifact: nuget
-        libraryPacksArtifact: library-packs
 
 resources:
   repositories:
@@ -83,7 +82,6 @@ stages:
                 poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
-                libraryPacksArtifact:  ${{ PackPlatform.libraryPacksArtifact }}
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/sign.yml                                     # Sign only using the private server

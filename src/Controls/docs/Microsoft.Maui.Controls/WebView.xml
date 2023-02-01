@@ -763,6 +763,46 @@ namespace FormsGallery
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="UserAgent">
+      <MemberSignature Language="C#" Value="public string UserAgent { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string UserAgent" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.WebView.UserAgent" />
+      <MemberSignature Language="F#" Value="member this.UserAgent : string with get, set" Usage="Microsoft.Maui.Controls.WebView.UserAgent" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the user agent string that this <see cref="T:Microsoft.Maui.Controls.WebView" /> object uses.</summary>
+        <value>To be added.</value>
+        <remarks>
+          The default value is the default User Agent of the underlying platform browser, or <see langword="null" /> if it cannot be determined.
+          If the parameter is <see langword="null" /> the User Agent will not be updated and the current User Agent will remain.
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="UserAgentProperty">
+      <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.BindableProperty UserAgentProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.BindableProperty UserAgentProperty" />
+      <MemberSignature Language="DocId" Value="F:Microsoft.Maui.Controls.WebView.UserAgentProperty" />
+      <MemberSignature Language="F#" Value=" staticval mutable UserAgentProperty : Microsoft.Maui.Controls.BindableProperty" Usage="Microsoft.Maui.Controls.WebView.UserAgentProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.WebView.UserAgent" /> property.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Microsoft.Maui.Controls.IWebViewController.CanGoBack">
       <MemberSignature Language="C#" Value="bool Microsoft.Maui.Controls.IWebViewController.CanGoBack { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance bool Microsoft.Maui.Controls.IWebViewController.CanGoBack" />

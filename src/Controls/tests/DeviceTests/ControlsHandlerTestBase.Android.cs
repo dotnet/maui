@@ -11,6 +11,7 @@ using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -117,16 +118,24 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var shell = handler.VirtualView as Shell;
 				var currentPage = shell.CurrentPage;
-				var pagePlatformView = currentPage.Handler.PlatformView as AView;
-				var parentContainer = pagePlatformView.GetParentOfType<CoordinatorLayout>();
-				var toolbar = parentContainer.GetFirstChildOfType<MaterialToolbar>();
-				return toolbar;
+
+				if (currentPage?.Handler?.PlatformView is AView pagePlatformView)
+				{
+					var parentContainer = pagePlatformView.GetParentOfType<CoordinatorLayout>();
+					var toolbar = parentContainer?.GetFirstChildOfType<MaterialToolbar>();
+					return toolbar;
+				}
+
+				return null;
 			}
 			else
 			{
 				return GetPlatformToolbar(handler.MauiContext);
 			}
 		}
+
+		protected string GetToolbarTitle(IElementHandler handler) =>
+			GetPlatformToolbar(handler).Title;
 
 		protected MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
@@ -148,6 +157,13 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return toolBar;
+		}
+
+		protected Size GetTitleViewExpectedSize(IElementHandler handler)
+		{
+			var context = handler.MauiContext.Context;
+			var toolbar = GetPlatformToolbar(handler.MauiContext).GetFirstChildOfType<Microsoft.Maui.Controls.Toolbar.Container>();
+			return new Size(context.FromPixels(toolbar.MeasuredWidth), context.FromPixels(toolbar.MeasuredHeight));
 		}
 
 		public bool IsNavigationBarVisible(IElementHandler handler) =>

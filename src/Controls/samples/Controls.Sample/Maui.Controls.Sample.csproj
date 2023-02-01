@@ -37,6 +37,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <!--<PackageReference Include="Microsoft.Maui.Graphics.Skia" />-->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -72,7 +73,7 @@
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiIcon Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" />
     <MauiFont Include="Resources\Fonts\*" />
-    <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
+    <MauiSplashScreen Include="Resources\Splash\dotnet_splash.svg" Color="#FFFFFF" />
   </ItemGroup>
 
   <ItemGroup>
