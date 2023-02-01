@@ -1,10 +1,10 @@
 #nullable enable
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
-using Microsoft.UI.Xaml;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
+using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 
 namespace Microsoft.Maui.Controls.Platform
 {

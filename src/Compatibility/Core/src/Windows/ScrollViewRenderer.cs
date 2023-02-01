@@ -1,12 +1,12 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WRect = Windows.Foundation.Rect;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
+using WRect = Windows.Foundation.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			element.SendPressed();
 			Assert.Equal(stateGroup.CurrentState.Name, PressedStateName);
-			
+
 			element.SendReleased();
 			Assert.NotEqual(stateGroup.CurrentState.Name, PressedStateName);
 		}

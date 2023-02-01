@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return -1;
 			if (_itemsSource is null)
 				return -1;
-			
+
 			var currentCarouselPosition = carouselPosition;
 			var itemSourceCount = _itemsSource.Count;
 

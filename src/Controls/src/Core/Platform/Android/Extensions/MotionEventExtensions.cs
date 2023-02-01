@@ -8,15 +8,15 @@ namespace Microsoft.Maui.Controls.Platform;
 
 internal static class MotionEventExtensions
 {
-  public static bool IsSecondary(this MotionEvent me)
-  {
-    var buttonState = me?.ButtonState ?? MotionEventButtonState.Primary;
+	public static bool IsSecondary(this MotionEvent me)
+	{
+		var buttonState = me?.ButtonState ?? MotionEventButtonState.Primary;
 
-    return
-      buttonState == MotionEventButtonState.Secondary ||
-      buttonState == MotionEventButtonState.StylusSecondary;
-  }
-    
+		return
+		  buttonState == MotionEventButtonState.Secondary ||
+		  buttonState == MotionEventButtonState.StylusSecondary;
+	}
+
 	internal static Point? CalculatePosition(this MotionEvent? e, IElement? sourceElement, IElement? relativeElement)
 	{
 		var context = sourceElement?.Handler?.MauiContext?.Context;

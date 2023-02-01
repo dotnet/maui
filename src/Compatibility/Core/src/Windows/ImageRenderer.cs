@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Extensions.Logging;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
