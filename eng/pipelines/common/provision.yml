@@ -42,7 +42,6 @@ steps:
           github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
     # Setup SDK Paths
     - bash: |
@@ -99,9 +98,9 @@ steps:
     - ${{ if ne(parameters.skipVS, 'true') }}:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Visual Studio'
-        condition: eq(variables['provisioningVS'], 'true')
         inputs:
           provisioning_script: ${{ parameters.provisionatorVSPath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
           github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}

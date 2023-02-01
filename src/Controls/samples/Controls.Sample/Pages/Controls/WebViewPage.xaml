@@ -1,4 +1,4 @@
-<views:BasePage
+﻿<views:BasePage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.WebViewPage"
@@ -67,6 +67,20 @@
                         HeightRequest="48" 
                         WidthRequest="150" />
                 </StackLayout>
+                <StackLayout
+                    Orientation="Horizontal">
+                    <Entry 
+                        x:Name="userAgent"
+                        Text="{Binding UserAgent, Source={x:Reference FileWebView}}"
+                        WidthRequest="250" 
+                        Margin="12" />
+                    <Button
+                        Margin="12" 
+                        Text="Set User Agent"
+                        Clicked="OnSetUserAgentClicked"
+                        HeightRequest="48" 
+                        WidthRequest="150" />
+                </StackLayout>
                 <Label
                     Text="UrlWebViewSource"
                     Style="{StaticResource Headline}"/>
@@ -109,6 +123,9 @@
 					x:Name="EvalResultLabel"
                     Text="..."
                     Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Load HTML5 Video"
+                    Clicked="OnLoadHtml5VideoClicked" />
                 <StackLayout
                     IsVisible="{OnPlatform Android=True, Default=False}">
                     <Label
