@@ -1,5 +1,13 @@
 <Project>
 
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <ProjectCapability Include="Maui" />
+    <ProjectCapability Include="MauiAssets" />
+    <ProjectCapability Include="MauiBlazor" />
+    <ProjectCapability Include="MauiCore" />
+    <ProjectCapability Include="MauiEssentials" />
+  </ItemGroup>
+
   <Import Project="$(MauiSrcDirectory)Workload\Microsoft.Maui.Sdk\Sdk\Microsoft.Maui.Sdk.targets" />
 
   <ImportGroup Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">
