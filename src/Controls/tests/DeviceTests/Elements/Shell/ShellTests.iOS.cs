@@ -265,7 +265,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
-				shell.CurrentItem = new ContentPage() { Title = "Page 1"  };
+				shell.CurrentItem = new ContentPage() { Title = "Page 1" };
 			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
