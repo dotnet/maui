@@ -3,15 +3,15 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>6.0.547</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-alpha.1.23070.23</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-alpha.1.23063.11</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>8.0.0-alpha.1.23070.1</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>8.0.0-alpha.1.23058.2</MicrosoftNETCoreAppRefPackageVersion>
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
     <MicrosoftExtensionsPackageVersion>7.0.0</MicrosoftExtensionsPackageVersion>
     <MicrosoftExtensionsServicingPackageVersion>7.0.0</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>7.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.1.143</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.1.129</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdkPackageVersion>16.2.223-net8-p1</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>13.1.223-net8-p1</MicrosoftmacOSSdkPackageVersion>
@@ -20,10 +20,10 @@
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>7.0.104</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion>8.0.0-alpha.1.23066.1</MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion>
+    <MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion>8.0.0-alpha.1.22620.1</MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptennet7Manifest80100PackageVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
-    <MicrosoftWindowsAppSDKPackageVersion>1.2.221209.1</MicrosoftWindowsAppSDKPackageVersion>
+    <MicrosoftWindowsAppSDKPackageVersion>1.2.230118.102</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.755</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.0.4</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
@@ -43,12 +43,12 @@
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
     <SystemNumericsVectorsVersion>4.5.0</SystemNumericsVectorsVersion>
-    <_MicrosoftWebWebView2Version>1.0.1462.37</_MicrosoftWebWebView2Version>
+    <_MicrosoftWebWebView2Version>1.0.1518.46</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
     <_XamarinAndroidGlideVersion>4.13.2.2</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha03</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.7.0.1</_XamarinGoogleCryptoTinkAndroidVersion>
+    <_XamarinGoogleCryptoTinkAndroidVersion>1.7.0.2</_XamarinGoogleCryptoTinkAndroidVersion>
     <!-- Android Maps -->
     <XamarinGooglePlayServicesMaps>118.1.0</XamarinGooglePlayServicesMaps>
     <!--
