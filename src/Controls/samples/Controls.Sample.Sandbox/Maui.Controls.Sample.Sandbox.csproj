@@ -10,7 +10,6 @@
   <PropertyGroup>
     <ApplicationTitle>.NET MAUI Controls Sandbox</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sandbox</ApplicationId>
-    <ApplicationIdGuid>5ee3361c-1cf9-443e-87f1-a7667fba9caa</ApplicationIdGuid>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
