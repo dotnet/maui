@@ -117,7 +117,7 @@ namespace Maui.Controls.Sample.Pages
 	public class PickerData
 	{
 		public string Name { get; set; }
-	
+
 		public ObservableCollection<PickerData> PickerItems { get; set; }
 	}
 }
