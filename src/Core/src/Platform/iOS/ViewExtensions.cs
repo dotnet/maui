@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Devices;
@@ -267,16 +268,23 @@ namespace Microsoft.Maui.Platform
 
 			var layer = view.Layer;
 
+			UpdateBackgroundLayerFrame(layer, view.Bounds);
+		}
+
+		static void UpdateBackgroundLayerFrame(CALayer layer, CGRect bounds)
+		{
 			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
-
+						
 			foreach (var sublayer in layer.Sublayers)
 			{
-				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
+				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != bounds)
 				{
-					sublayer.Frame = view.Bounds;
+					sublayer.Frame = bounds;
 					break;
 				}
+
+				UpdateBackgroundLayerFrame(sublayer, bounds);
 			}
 		}
 
