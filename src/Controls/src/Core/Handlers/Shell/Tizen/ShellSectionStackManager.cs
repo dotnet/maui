@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GColor = Microsoft.Maui.Graphics.Color;

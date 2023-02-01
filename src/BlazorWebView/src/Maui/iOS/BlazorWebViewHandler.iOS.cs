@@ -5,6 +5,8 @@ using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using UIKit;
@@ -47,11 +49,30 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			})();
 		";
 
+		private ILogger? _logger;
+		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
+
 		/// <inheritdoc />
 		[SupportedOSPlatform("ios11.0")]
 		protected override WKWebView CreatePlatformView()
 		{
+			Logger.CreatingWebKitWKWebView();
+
 			var config = new WKWebViewConfiguration();
+
+			// By default, setting inline media playback to allowed, including autoplay
+			// and picture in picture, since these things MUST be set during the webview
+			// creation, and have no effect if set afterwards.
+			// A custom handler factory delegate could be set to disable these defaults
+			// but if we do not set them here, they cannot be changed once the
+			// handler's platform view is created, so erring on the side of wanting this
+			// capability by default.
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(10) || OperatingSystem.IsIOSVersionAtLeast(10))
+			{
+				config.AllowsPictureInPictureMediaPlayback = true;
+				config.AllowsInlineMediaPlayback = true;
+				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
+			}
 
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs()
 			{
@@ -77,6 +98,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				WebView = webview
 			});
+
+			Logger.CreatedWebKitWKWebView();
 
 			return webview;
 		}
@@ -127,6 +150,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
+			Logger.CreatingFileProvider(contentRootDir, hostPageRelativePath);
+
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
 			_webviewManager = new IOSWebViewManager(
@@ -137,7 +162,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				fileProvider,
 				VirtualView.JSComponents,
 				contentRootDir,
-				hostPageRelativePath);
+				hostPageRelativePath,
+				Logger);
 
 			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
@@ -145,11 +171,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				foreach (var rootComponent in RootComponents)
 				{
+					Logger.AddingRootComponent(rootComponent.ComponentType?.FullName ?? string.Empty, rootComponent.Selector ?? string.Empty, rootComponent.Parameters?.Count ?? 0);
+
 					// Since the page isn't loaded yet, this will always complete synchronously
 					_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 				}
 			}
 
+			Logger.StartingInitialNavigation(VirtualView.StartPath);
 			_webviewManager.Navigate(VirtualView.StartPath);
 		}
 
@@ -215,6 +244,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(url);
 				url = QueryStringHelper.RemovePossibleQueryString(url);
+
+				_webViewHandler.Logger.HandlingWebRequest(url);
+
 				if (_webViewHandler._webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out statusCode, out var statusMessage, out var content, out var headers))
 				{
 					statusCode = 200;
@@ -225,10 +257,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 					contentType = headers["Content-Type"];
 
+					_webViewHandler?.Logger.ResponseContentBeingSent(url, statusCode);
+
 					return ms.ToArray();
 				}
 				else
 				{
+					_webViewHandler?.Logger.ReponseContentNotFound(url);
+
 					statusCode = 404;
 					contentType = string.Empty;
 					return Array.Empty<byte>();
