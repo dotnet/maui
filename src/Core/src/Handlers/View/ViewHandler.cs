@@ -71,6 +71,8 @@ namespace Microsoft.Maui.Handlers
 
 		bool _hasContainer;
 
+		internal DataFlowDirection DataFlowDirection { get; set; }
+
 		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 			: base(mapper, commandMapper ?? ViewCommandMapper)
 		{

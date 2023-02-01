@@ -247,6 +247,8 @@ namespace Microsoft.Maui.Controls
 			// If the index has not changed, still need to change the selected item
 			if (newIndex == oldIndex)
 				UpdateSelectedItem(newIndex);
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
 		static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
