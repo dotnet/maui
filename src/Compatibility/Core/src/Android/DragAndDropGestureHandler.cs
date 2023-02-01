@@ -322,9 +322,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					v.StartDragAndDrop(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
 				else
-#pragma warning disable CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
+#pragma warning disable CS0618, CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
 					v.StartDrag(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
-#pragma warning restore CA1416
+#pragma warning restore CS0618, CA1416
 			});
 		}
 
