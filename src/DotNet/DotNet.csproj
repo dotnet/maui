@@ -159,15 +159,6 @@
         Files="@(_WorkloadFiles)"
         WorkloadDirectory="$(DotNetSdkManifestsDirectory)"
     />
-    <!-- HACK: workaround https://github.com/dotnet/maui/pull/12520#issuecomment-1376158978 -->
-    <ItemGroup>
-      <_WorkloadFilesToFixup Include="$(_WorkloadManifestDir)microsoft.net.workload.mono.toolchain.manifest-$(DotNetMonoManifestVersionBand)/*/data/WorkloadManifest.*" />
-    </ItemGroup>
-    <CopyWorkloadFiles
-        Name="microsoft.net.workload.mono.toolchain.net8"
-        Files="@(_WorkloadFilesToFixup)"
-        WorkloadDirectory="$(DotNetSdkManifestsDirectory)"
-    />
 
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
   </Target>
