@@ -22,7 +22,7 @@ var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?
 // other
 string PLATFORM = "mac";
 string DOTNET_PLATFORM = "maccatalyst-x64";
-string CONFIGURATION = "Release";
+string CONFIGURATION = Argument("configuration", "Release");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 
 Information("Project File: {0}", PROJECT);
@@ -55,6 +55,7 @@ Task("uitest")
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
 		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath;
+		Information("BinDir: {0}", binDir);
 		var apps = GetDirectories(binDir + "/*.app");
 		TEST_APP = apps.First().FullPath;
 	}
@@ -78,6 +79,8 @@ Task("uitest")
 				.Append("/bl:" + binlog),
 		//	ToolPath = DOTNET_PATH,
 	});
+
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_mac.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
