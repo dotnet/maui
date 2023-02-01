@@ -448,10 +448,11 @@ namespace Microsoft.Maui.DeviceTests
 			var mainPage = new ContentPage();
 			var shell = new Shell() { CurrentItem = mainPage };
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				var position = mainPage.ToPlatform().GetLocationOnScreen();
+				Assert.True(await AssertionExtensions.Wait(() => mainPage.ToPlatform().GetLocationOnScreen().Value.Y > 0));
 				var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
+				var position = mainPage.ToPlatform().GetLocationOnScreen();
 
 				Assert.True(Math.Abs(position.Value.Y - appTitleBarHeight) < 1);
 			});
@@ -555,7 +556,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutBehavior = FlyoutBehavior.Locked;
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				var flyoutItems = shell.FlyoutItems.Cast<IReadOnlyList<Element>>().ToList();
 				var rootView = handler.PlatformView as MauiNavigationView;
@@ -572,9 +573,62 @@ namespace Microsoft.Maui.DeviceTests
 
 				tabbedView.SelectedItem = platformTabItems[1].MenuItemsSource[1];
 
+				// Wait for the selected item to propagate to the rootview
+				await AssertionExtensions.Wait(() => (rootView.SelectedItem as NavigationViewItemViewModel).Data == flyoutItems[0][1]);
+
 				// Verify that the flyout item updates
 				Assert.Equal((rootView.SelectedItem as NavigationViewItemViewModel).Data, flyoutItems[0][1]);
 			});
+		}
+
+		async Task TapToSelect(ContentPage page)
+		{
+			var shellContent = page.Parent as ShellContent;
+			var shellSection = shellContent.Parent as ShellSection;
+			var shellItem = shellSection.Parent as ShellItem;
+			var shell = shellItem.Parent as Shell;
+
+			await OnNavigatedToAsync(shell.CurrentPage);
+
+			if (shellItem != shell.CurrentItem)
+				throw new NotImplementedException();
+
+			if (shellSection != shell.CurrentItem.CurrentItem)
+				throw new NotImplementedException();
+
+			var mauiNavigationView = shellItem.Handler.PlatformView as MauiNavigationView;
+			var navSource = mauiNavigationView.MenuItemsSource as IEnumerable;
+
+			bool found = false;
+			foreach (NavigationViewItemViewModel item in navSource)
+			{
+				if (item.Data == shellContent)
+				{
+					mauiNavigationView.SelectedItem = item;
+					found = true;
+					break;
+				}
+				else if (item.MenuItemsSource is IEnumerable children)
+				{
+					foreach (NavigationViewItemViewModel childContent in children)
+					{
+						if (childContent.Data == shellContent)
+						{
+							mauiNavigationView.SelectedItem = childContent;
+							found = true;
+							break;
+						}
+					}
+				}
+
+				if (found)
+					break;
+			}
+
+			if (!found)
+				throw new InvalidOperationException("Unable to locate page inside platform shell components");
+
+			await OnNavigatedToAsync(page);
 		}
 	}
 }

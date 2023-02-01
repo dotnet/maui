@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Platform
 			var insets = ViewCompat.GetRootWindowInsets(view);
 			if (insets == null)
 				return false;
-									
+
 			var result = insets.IsVisible(WindowInsetsCompat.Type.Ime());
 			return result;
 		}

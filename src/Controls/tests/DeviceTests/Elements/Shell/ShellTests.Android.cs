@@ -5,20 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
-using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.Controls.Platform;
-using Xunit;
-using AView = Android.Views.View;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.View;
-using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
+using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
+using Xunit;
+using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -360,6 +361,27 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return flyoutContainer ?? throw new Exception("RecyclerView not found");
+		}
+
+		async Task TapToSelect(ContentPage page)
+		{
+			var shellContent = page.Parent as ShellContent;
+			var shellSection = shellContent.Parent as ShellSection;
+			var shellItem = shellSection.Parent as ShellItem;
+			var shell = shellItem.Parent as Shell;
+			await OnNavigatedToAsync(shell.CurrentPage);
+
+			if (shellItem != shell.CurrentItem)
+				throw new NotImplementedException();
+
+			if (shellSection != shell.CurrentItem.CurrentItem)
+				throw new NotImplementedException();
+
+			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
+				.PlatformView.GetParentOfType<ViewPager2>();
+
+			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
+			await OnNavigatedToAsync(page);
 		}
 	}
 }

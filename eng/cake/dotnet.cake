@@ -6,6 +6,8 @@ string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
+string nugetSource = Argument("nugetsource", "");
+
 string TestTFM = Argument("testtfm", "");
 if (TestTFM == "default")
     TestTFM = "";
@@ -17,6 +19,7 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Graphics.*.nupkg",
     "Microsoft.Maui.Controls.Maps.*.nupkg",
     "Microsoft.Maui.Maps.*.nupkg",
+    "Microsoft.AspNetCore.Components.WebView.*.nupkg",
 };
 
 ProcessTFMSwitches();
@@ -29,6 +32,17 @@ Task("dotnet")
     {
         if (!localDotnet) 
             return;
+
+        //We are passing a nuget folder with nuget locations
+        if(!string.IsNullOrEmpty(nugetSource))
+        {
+            EnsureDirectoryExists(nugetSource);
+            var originalNuget = File("./NuGet.config");
+            ReplaceTextInFiles(
+                originalNuget,
+                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
+                $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
+        }
 
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
@@ -253,6 +267,16 @@ Task("dotnet-pack-maui")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
+        //We are passing a nuget folder with nuget locations
+        if(!string.IsNullOrEmpty(nugetSource))
+        {
+            EnsureDirectoryExists(nugetSource);
+            var originalNuget = File("./NuGet.config");
+            ReplaceTextInFiles(
+                originalNuget,
+                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
+                $"<add key=\"local\" value=\"{nugetSource}\" />");
+        }
         DotNetCoreTool("pwsh", new DotNetCoreToolSettings
         {
             DiagnosticOutput = true,
@@ -324,13 +348,16 @@ Task("dotnet-pack-docs")
         CleanDirectories(destDir);
 
         // Get the docs for .NET MAUI
-        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.*.nupkg"))
+        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.any.*.nupkg"))
         {
             var d = $"{tempDir}/{nupkg.GetFilename()}";
+
             Unzip(nupkg, d);
             DeleteFiles($"{d}/**/*.pri");
             DeleteFiles($"{d}/**/*.aar");
-            CopyDirectory($"{d}/ref", $"{destDir}");
+            DeleteFiles($"{d}/**/*.DesignTools.*");
+            CopyFiles($"{d}/ref/**/net?.?/**/*.dll", $"{destDir}");
+            CopyFiles($"{d}/ref/**/net?.?/**/*.xml", $"{destDir}");
         }
 
         // Get the docs for libraries separately distributed as NuGets
@@ -338,12 +365,24 @@ Task("dotnet-pack-docs")
         {
             foreach (var nupkg in GetFiles($"./artifacts/{pattern}"))
             {
-                var d = $"{tempDir}/{nupkg.GetFilename()}";
+                var filename = nupkg.GetFilename().ToString();
+                var d = $"{tempDir}/{filename}";
                 Unzip(nupkg, d);
                 DeleteFiles($"{d}/**/*.pri");
                 DeleteFiles($"{d}/**/*.aar");
                 DeleteFiles($"{d}/**/*.pdb");
-                CopyDirectory($"{d}/lib", $"{destDir}");
+
+                if (filename.StartsWith("Microsoft.AspNetCore.Components.WebView.Wpf")
+                    || filename.StartsWith("Microsoft.AspNetCore.Components.WebView.WindowsForms"))
+                {
+                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.dll", $"{destDir}");
+                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.xml", $"{destDir}");    
+
+                    continue;
+                }
+
+                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.dll", $"{destDir}");
+                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.xml", $"{destDir}");
             }
         }
 

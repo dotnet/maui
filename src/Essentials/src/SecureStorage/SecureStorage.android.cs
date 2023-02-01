@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Storage
 				}
 				catch (AEADBadTagException)
 				{
+					// TODO: Use Logger here?
 					System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to an app uninstall. Removing old key and returning null.");
 					Remove(key);
 
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.Storage
 				}
 				catch (Java.Lang.SecurityException)
 				{
+					// TODO: Use Logger here?
 					System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to key corruption. Removing old key and returning null.");
 					Remove(key);
 

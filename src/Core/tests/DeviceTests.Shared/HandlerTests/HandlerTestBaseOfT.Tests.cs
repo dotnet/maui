@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Media;
 using Xunit;
 
@@ -83,8 +84,11 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task SettingSemanticDescriptionMakesElementAccessible()
 		{
 			var view = new TStub();
+			MockAccessibilityExpectations(view);
+
 			view.Semantics.Description = "Test";
-			var important = await GetValueAsync(view, handler => GetIsAccessibilityElement(handler));
+			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
+
 			Assert.True(important);
 		}
 
@@ -92,13 +96,16 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task SettingSemanticHintMakesElementAccessible()
 		{
 			var view = new TStub();
+			MockAccessibilityExpectations(view);
+
 			view.Semantics.Hint = "Test";
-			var important = await GetValueAsync(view, handler => GetIsAccessibilityElement(handler));
+			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
+
 			Assert.True(important);
 		}
 
 		[Fact(DisplayName = "Semantic Description is set correctly"
-#if __ANDROID__
+#if ANDROID
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
@@ -111,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Semantic Hint is set correctly"
-#if __ANDROID__
+#if ANDROID
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
@@ -145,7 +152,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Clip Initializes ContainerView Correctly")]
-		public async Task ContainerViewInitializesCorrectly()
+		public async virtual Task ContainerViewInitializesCorrectly()
 		{
 			var view = new TStub
 			{
@@ -155,9 +162,66 @@ namespace Microsoft.Maui.DeviceTests
 				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
 			};
 
-			var handler = await CreateHandlerAsync(view);
+			await CreateHandlerAsync(view);
+			await view.AssertHasContainer(true);
+		}
 
-			Assert.NotNull(handler.ContainerView);
+		[Fact(DisplayName = "ContainerView Remains If Shadow Mapper Runs Again")]
+		public virtual async Task ContainerViewRemainsIfShadowMapperRunsAgain()
+		{
+			var view = new TStub
+			{
+				Height = 100,
+				Width = 100,
+				Background = new SolidPaintStub(Colors.Red),
+				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
+			};
+
+			var handler = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(view);
+				handler.UpdateValue(nameof(IView.Shadow));
+				return handler;
+			});
+
+			await view.AssertHasContainer(true);
+		}
+
+		[Fact(DisplayName = "ContainerView Adds And Removes")]
+		public virtual async Task ContainerViewAddsAndRemoves()
+		{
+			var view = new TStub
+			{
+				Height = 100,
+				Width = 100
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(view);
+
+
+				// This is a view that always has a container
+				// so there's nothing to test here
+				if (handler.HasContainer)
+					return;
+				await AssertionExtensions.AttachAndRun((handler as IPlatformViewHandler).PlatformView,
+					async () =>
+					{
+						await view.AssertHasContainer(false);
+						view.Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50);
+						handler.UpdateValue(nameof(IView.Clip));
+						await Task.Delay(10);
+						await view.AssertHasContainer(true);
+						view.Clip = null;
+						handler.UpdateValue(nameof(IView.Clip));
+						await Task.Delay(10);
+						await view.AssertHasContainer(false);
+
+					});
+
+				return;
+			});
 		}
 
 		[Theory(DisplayName = "Native View Bounds are not empty"
@@ -243,7 +307,7 @@ namespace Microsoft.Maui.DeviceTests
 
 
 		[Theory(DisplayName = "Native View Transforms are not empty"
-#if __IOS__
+#if IOS
 					, Skip = "https://github.com/dotnet/maui/issues/3600"
 #endif
 			)]
@@ -265,7 +329,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "View Renders To Image"
-#if !__ANDROID__
+#if !ANDROID
 			, Skip = "iOS and Windows can't render elements to images from test runner. It's missing the required root windows."
 #endif
 			)]

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -87,17 +88,9 @@ namespace Microsoft.Maui.Controls
 
 		Size IContentView.CrossPlatformArrange(Rect bounds)
 		{
-			if ((this as IContentView).PresentedContent is IView presentedContent)
+			if (this is IScrollView scrollView)
 			{
-				var padding = Padding;
-
-				// Normally we'd just want the content to be arranged within the ContentView's Frame,
-				// but ScrollView content might be larger than the ScrollView itself (for obvious reasons)
-				// So in each dimension, we assume the larger of the two values.
-				bounds.Width = Math.Max(bounds.Width, presentedContent.DesiredSize.Width + padding.HorizontalThickness);
-				bounds.Height = Math.Max(bounds.Height, presentedContent.DesiredSize.Height + padding.VerticalThickness);
-
-				this.ArrangeContent(bounds);
+				return scrollView.ArrangeContentUnbounded(bounds);
 			}
 
 			return bounds.Size;

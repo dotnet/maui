@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,7 +20,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
 			propertyChanging: OnPageChanging,
-			propertyChanged: OnPageChanged);
+			propertyChanged: (b, o, n) => ((Window)b).OnPageChanged(o as Page, n as Page));
 
 		public static readonly BindableProperty FlowDirectionProperty =
 			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
@@ -586,31 +585,26 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static void OnPageChanged(BindableObject bindable, object oldValue, object newValue)
+		void OnPageChanged(Page? oldPage, Page? newPage)
 		{
-			if (bindable is not Window window)
-				return;
-
-			var oldPage = oldValue as Page;
 			if (oldPage != null)
 			{
-				window.InternalChildren.Remove(oldPage);
+				InternalChildren.Remove(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
 
 			if (oldPage is Shell shell)
-				shell.PropertyChanged += ShellPropertyChanged;
+				shell.PropertyChanged -= ShellPropertyChanged;
 
-			var newPage = newValue as Page;
 			if (newPage != null)
 			{
-				window.InternalChildren.Add(newPage);
-				newPage.NavigationProxy.Inner = window.NavigationProxy;
-				window._menuBarTracker.Target = newPage;
+				InternalChildren.Add(newPage);
+				newPage.NavigationProxy.Inner = NavigationProxy;
+				_menuBarTracker.Target = newPage;
 			}
 
-			window.ModalNavigationManager.SettingNewPage();
+			ModalNavigationManager.SettingNewPage();
 
 			if (newPage != null)
 			{
@@ -624,24 +618,24 @@ namespace Microsoft.Maui.Controls
 			if (newPage is Shell newShell)
 				newShell.PropertyChanged += ShellPropertyChanged;
 
-			window?.Handler?.UpdateValue(nameof(IWindow.FlowDirection));
+			Handler?.UpdateValue(nameof(IWindow.FlowDirection));
+		}
 
-			void OnPageHandlerChanged(object? sender, EventArgs e)
-			{
-				window.ModalNavigationManager.PageAttachedHandler();
-				window.AlertManager.Subscribe();
-			}
+		void OnPageHandlerChanged(object? sender, EventArgs e)
+		{
+			ModalNavigationManager.PageAttachedHandler();
+			AlertManager.Subscribe();
+		}
 
-			void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
-			{
-				window.AlertManager.Unsubscribe();
-			}
+		void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
+		{
+			AlertManager.Unsubscribe();
+		}
 
-			void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-			{
-				if (e.PropertyName == nameof(Shell.Title))
-					window?.Handler?.UpdateValue(nameof(ITitledElement.Title));
-			}
+		void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(Shell.Title))
+				Handler?.UpdateValue(nameof(ITitledElement.Title));
 		}
 
 		bool IWindow.BackButtonClicked()

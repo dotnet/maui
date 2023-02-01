@@ -22,6 +22,7 @@
     <MauiFont Include="Resources\Fonts\*" />
     <EmbeddedResource Include="Resources\Fonts\dokdo_regular.ttf" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,7 +46,6 @@
     <Compile Remove="Handlers\Fonts\*.cs" />
     <Compile Remove="Handlers\Image\*.cs" />
     <Compile Remove="Handlers\ImageButton\*.cs" />
-    <Compile Remove="Handlers\RefreshView\*.cs" />
     <Compile Remove="Handlers\ShapeView\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">

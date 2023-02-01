@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateCharacterSpacing(editor);
 
-		public static void MapMaxLength(IEditorHandler handler, IEditor editor)	=>
+		public static void MapMaxLength(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateMaxLength(editor);
 
 		public static void MapIsReadOnly(IEditorHandler handler, IEditor editor) =>
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFont(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
 
-		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) => 
+		public static void MapHorizontalTextAlignment(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 
 		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) =>
@@ -118,8 +118,15 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
+		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e)
+		{
+			// Let the mapping know that the update is coming from changes to the platform control
+			DataFlowDirection = DataFlowDirection.FromPlatform;
 			VirtualView?.UpdateText(e);
+
+			// Reset to the default direction
+			DataFlowDirection = DataFlowDirection.ToPlatform;
+		}
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{

@@ -59,7 +59,32 @@ namespace Microsoft.Maui.DeviceTests
 
 				void OnFocused(object? sender, AView.FocusChangeEventArgs e)
 				{
+					if (!e.HasFocus)
+						return;
+
 					view.FocusChange -= OnFocused;
+					focusSource.SetResult();
+				}
+			}
+		}
+
+		public static async Task WaitForUnFocused(this AView view, int timeout = 1000)
+		{
+			if (view.IsFocused)
+			{
+				TaskCompletionSource focusSource = new TaskCompletionSource();
+				view.FocusChange += OnUnFocused;
+				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+				// Even though the event fires unfocus hasn't fully been achieved
+				await Task.Delay(10);
+
+				void OnUnFocused(object? sender, AView.FocusChangeEventArgs e)
+				{
+					if (e.HasFocus)
+						return;
+
+					view.FocusChange -= OnUnFocused;
 					focusSource.SetResult();
 				}
 			}
@@ -289,11 +314,19 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor)
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
+
+		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 		{
-			for (int x = 0; x < bitmap.Width; x++)
+			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 			{
-				for (int y = 0; y < bitmap.Height; y++)
+				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 				{
 					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(expectedColor))
 					{
@@ -315,13 +348,13 @@ namespace Microsoft.Maui.DeviceTests
 			return AssertContainsColor(bitmap, expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtPoint(this AView view, AColor expectedColor, int x, int y)
+		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<Bitmap> AssertColorAtCenter(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertColorAtCenter(expectedColor);
@@ -351,7 +384,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static Task AssertEqual(this Bitmap bitmap, Bitmap other)
+		public static Task AssertEqualAsync(this Bitmap bitmap, Bitmap other)
 		{
 			Assert.NotNull(bitmap);
 			Assert.NotNull(other);
@@ -395,5 +428,12 @@ namespace Microsoft.Maui.DeviceTests
 			OperatingSystem.IsAndroidVersionAtLeast(28)
 				? (FontWeight)typeface.Weight
 				: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
+
+		public static bool IsAccessibilityElement(this AView view) =>
+			view.GetSemanticPlatformElement().IsImportantForAccessibility;
+
+
+		public static bool IsExcludedWithChildren(this AView view) =>
+			view.GetSemanticPlatformElement().ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
 	}
 }

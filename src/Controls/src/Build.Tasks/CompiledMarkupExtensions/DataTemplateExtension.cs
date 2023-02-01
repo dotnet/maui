@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 	{
 		public IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, ILContext context, out TypeReference typeRef)
 		{
-			typeRef = module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "DataTemplate"));
+			typeRef = module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "DataTemplate"));
 			var name = new XmlName("", "TypeName");
 
 			if (!node.Properties.TryGetValue(name, out INode typeNameNode) && node.CollectionItems.Any())
@@ -22,13 +22,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!(typeNameNode is ValueNode valueNode))
 				throw new BuildException(BuildExceptionCode.PropertyMissing, node as IXmlLineInfo, null, "TypeName", typeof(Microsoft.Maui.Controls.Xaml.DataTemplateExtension));
 
-			var contentTypeRef = module.ImportReference(XmlTypeExtensions.GetTypeReference(valueNode.Value as string, module, node as BaseNode))
+			var contentTypeRef = module.ImportReference(XmlTypeExtensions.GetTypeReference(context.Cache, valueNode.Value as string, module, node as BaseNode))
 				?? throw new BuildException(BuildExceptionCode.TypeResolution, node as IXmlLineInfo, null, valueNode.Value);
 
-			var dataTemplateCtor = module.ImportCtorReference(typeRef, new[] { module.ImportReference(("mscorlib", "System", "Type")) });
+			var dataTemplateCtor = module.ImportCtorReference(context.Cache, typeRef, new[] { module.ImportReference(context.Cache, ("mscorlib", "System", "Type")) });
 			return new List<Instruction> {
 				Create(Ldtoken, module.ImportReference(contentTypeRef)),
-				Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true)),
+				Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true)),
 				Create(Newobj, dataTemplateCtor),
 			};
 		}

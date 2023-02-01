@@ -16,10 +16,10 @@ namespace Microsoft.Maui
 			var font = fontManager.GetFont(imageSource.Font);
 			var color = (imageSource.Color ?? Colors.White).ToPlatform();
 			var glyph = (NSString)imageSource.Glyph;
-
+#pragma warning disable CS8604
 			var attString = new NSAttributedString(glyph, font, color);
-			var imagesize = glyph.GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _));
-
+			var imagesize = glyph.GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _)!);
+#pragma warning restore CS8604
 			UIGraphics.BeginImageContextWithOptions(imagesize, false, scale);
 			var ctx = new NSStringDrawingContext();
 

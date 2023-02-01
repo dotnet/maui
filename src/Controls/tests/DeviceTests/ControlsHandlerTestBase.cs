@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Threading;
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
-			mauiAppBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
+			mauiAppBuilder.Services.AddSingleton<IApplication>((_) => new ApplicationStub());
 			return mauiAppBuilder.ConfigureTestBuilder();
 		}
 
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 			return CreateHandler<THandler>(view, MauiContext);
 		}
 
-		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view) 
+		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view)
 			where THandler : IElementHandler, new() =>
 			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
 
@@ -78,6 +79,23 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<THandler>(view);
 				return func(handler);
+			});
+		}
+
+		protected Task<TValue> GetValueAsync<TValue>(IElement view, Func<IPlatformViewHandler, TValue> func)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = (IPlatformViewHandler)view.ToHandler(MauiContext);
+				return func(handler);
+			});
+		}
+		protected Task<TValue> GetValueAsync<TValue>(IElement view, Func<IPlatformViewHandler, Task<TValue>> func)
+		{
+			return InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = (IPlatformViewHandler)view.ToHandler(MauiContext);
+				return await func(handler);
 			});
 		}
 
@@ -350,8 +368,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			// Wait for the layout to propagate to the platform
 			await AssertionExtensions.Wait(
-				() => !frameworkElement.GetBoundingBox().Size.Equals(Size.Zero)
-			);
+				() =>
+				{
+					var size = frameworkElement.GetBoundingBox().Size;
+					return size.Height > 0 && size.Width > 0;
+				});
 
 			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
 			{
@@ -375,6 +396,32 @@ namespace Microsoft.Maui.DeviceTests
 						.OfType<IToolbarElement>()
 						.SingleOrDefault(x => x.Toolbar != null)
 						?.Toolbar;
+		}
+
+		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action);
+
+		protected static void MockAccessibilityExpectations(View view)
+		{
+#if IOS || MACCATALYST
+			if (UIKit.UIAccessibility.IsVoiceOverRunning)
+				return;
+
+			var mapperOverride = view.GetRendererOverrides<IView>();
+
+			mapperOverride.ModifyMapping(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, (handler, virtualView, action) =>
+			{
+				if (virtualView is ILabel)
+				{
+					// accessibility for UILabel depends on if the text is set or not
+					// so we want to make sure text has propagated to the platform view
+					// before mocking accessibility expectations
+					handler.UpdateValue(nameof(ILabel.Text));
+				}
+				(handler.PlatformView as UIKit.UIView)?.SetupAccessibilityExpectationIfVoiceOverIsOff();
+				(mapperOverride as PropertyMapper).Chained[0]!.UpdateProperty(handler, view, nameof(AutomationProperties.IsInAccessibleTreeProperty));
+			});
+#endif
 		}
 	}
 }

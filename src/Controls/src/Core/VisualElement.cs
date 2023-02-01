@@ -1,7 +1,9 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 //using Microsoft.Maui.Controls.Shapes;
@@ -23,9 +25,11 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InputTransparentProperty']/Docs/*" />
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
 
+		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool),
-			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged);
+			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly("X", typeof(double), typeof(VisualElement), default(double));
 
@@ -245,6 +249,9 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyBackgroundChanges()
 		{
+			if (Background is ImmutableBrush)
+				return;
+
 			if (Background != null)
 			{
 				Background.Parent = this;
@@ -257,6 +264,9 @@ namespace Microsoft.Maui.Controls
 
 		void StopNotifyingBackgroundChanges()
 		{
+			if (Background is ImmutableBrush)
+				return;
+
 			if (Background != null)
 			{
 				Background.Parent = null;
@@ -472,6 +482,30 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
 			set { SetValue(IsEnabledProperty, value); }
+		}
+
+		/// <summary>
+		/// This value represents the cumulative IsEnabled value.
+		/// All types that override this property need to also invoke
+		/// the RefreshIsEnabledProperty() method if the value will change.
+		/// </summary>
+		protected virtual bool IsEnabledCore
+		{
+			get
+			{
+				if (_isEnabledExplicit == false)
+				{
+					// If the explicitly set value is false, then nothing else matters
+					// And we can save the effort of a Parent check
+					return false;
+				}
+
+				var parent = Parent as VisualElement;
+				if (parent is not null && !parent.IsEnabled)
+					return false;
+
+				return _isEnabledExplicit;
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsFocused']/Docs/*" />
@@ -1083,26 +1117,41 @@ namespace Microsoft.Maui.Controls
 		internal bool IsPointerOver
 		{
 			get { return _isPointerOver; }
-			private protected set
-			{
-				if (value == _isPointerOver)
-					return;
+		}
 
-				_isPointerOver = value;
+		private protected void SetPointerOver(bool value, bool callChangeVisualState = true)
+		{
+			if (_isPointerOver == value)
+				return;
+
+			_isPointerOver = value;
+			if (callChangeVisualState)
 				ChangeVisualState();
-			}
 		}
 
 		protected internal virtual void ChangeVisualState()
 		{
 			if (!IsEnabled)
+			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+			}
 			else if (IsPointerOver)
+			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-			else if (IsFocused)
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Focused);
+			}
 			else
+			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+			}
+
+			if (IsEnabled)
+			{
+				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+				// exits and the control still has focus.
+				VisualStateManager.GoToState(this,
+					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+			}
 		}
 
 		static void OnVisualChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1138,6 +1187,16 @@ namespace Microsoft.Maui.Controls
 			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.FlowDirectionProperty.PropertyName);
 		}
 
+		static object CoerceIsEnabledProperty(BindableObject bindable, object value)
+		{
+			if (bindable is VisualElement visualElement)
+			{
+				visualElement._isEnabledExplicit = (bool)value;
+				return visualElement.IsEnabledCore;
+			}
+
+			return false;
+		}
 
 		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -1147,6 +1206,8 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			element.ChangeVisualState();
+
+			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
 		}
 
 		static void OnIsFocusedPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
@@ -1205,8 +1266,18 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
+			if (propertyName == null || propertyName == IsEnabledProperty.PropertyName)
+				this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
+
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
+
+		/// <summary>
+		/// This method must always be called if some event occurs and the value of
+		/// the IsEnabledCore property will change.
+		/// </summary>
+		protected void RefreshIsEnabledProperty() =>
+			this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
 
 		void UpdateBoundsComponents(Rect bounds)
 		{

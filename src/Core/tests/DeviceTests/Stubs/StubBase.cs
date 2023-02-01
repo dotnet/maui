@@ -135,7 +135,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			if (Handler != null)
 			{
-				return Handler.GetDesiredSize(widthConstraint, heightConstraint);
+				DesiredSize = Handler.GetDesiredSize(widthConstraint, heightConstraint);
+				return DesiredSize;
 			}
 
 			return new Size(widthConstraint, heightConstraint);
@@ -145,6 +146,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent as IVisualTreeElement;
 
+		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() =>
+			PropertyMapperOverrides;
+
+		public PropertyMapper PropertyMapperOverrides
+		{
+			get;
+			set;
+		}
 
 		public bool IsLoaded
 		{
