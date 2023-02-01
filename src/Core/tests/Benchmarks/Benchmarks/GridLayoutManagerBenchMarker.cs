@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	{
 		IGridLayout _gridLayout;
 		GridLayoutManager _manager;
-				
+
 		void BasicSetup()
 		{
 			_gridLayout = Substitute.For<IGridLayout>();
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		}
 
 		[GlobalSetup(Target = nameof(AllAbsolute))]
-		public void AbsoluteSetup() 
+		public void AbsoluteSetup()
 		{
 			BasicSetup();
 
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			SubColDefs(_gridLayout, CreateTestColumns("auto, auto"));
 		}
 
-		static IView CreateTestView() 
+		static IView CreateTestView()
 		{
 			var viewSize = new Size(100, 100);
 
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			return colDefs;
 		}
 
-		static List<IGridRowDefinition> CreateTestRows(string rows) 
+		static List<IGridRowDefinition> CreateTestRows(string rows)
 		{
 			return CreateTestRowsFromStrings(rows.Split(","));
 		}
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		}
 
 		[Benchmark]
-		public void AllAbsolute() 
+		public void AllAbsolute()
 		{
 			var result = _manager.Measure(500, 500);
 			_manager.ArrangeChildren(new Rect(Point.Zero, result));
