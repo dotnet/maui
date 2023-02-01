@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>6.0.547</MicrosoftMauiPreviousDotNetReleasedVersion>
-    <!-- dotnet/installer -->04
+    <!-- dotnet/installer -->
     <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-alpha.1.23080.11</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>8.0.0-alpha.1.23080.2</MicrosoftNETCoreAppRefPackageVersion>
