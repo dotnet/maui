@@ -187,6 +187,7 @@ Task("uitest")
 		var binDir = USE_DOTNET
 			? TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
 			: TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(PLATFORM).Combine(CONFIGURATION).FullPath;
+		Information("BinDir: {0}", binDir);
 		var apps = GetDirectories(binDir + "/*.app");
 		TEST_APP = apps.First().FullPath;
 	}

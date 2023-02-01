@@ -194,6 +194,7 @@ Task("Test")
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
 		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).FullPath;
+		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;
