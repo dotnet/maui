@@ -146,6 +146,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			void HandleError(GeolocationError error)
 			{
+				StopListeningForeground();
 				OnLocationError(error);
 			}
 		}
