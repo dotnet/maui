@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Storage
 		/// <summary>
 		/// Determines whether or not a file exists in the app package.
 		/// </summary>
-		/// <param name="filename">The name of the file (excluding the path) to check for existence</param>
+		/// <param name="filename">The path of the file (relative to the app package) to check the existence of.</param>
 		/// <returns><see langword="true"/> when the specified file exists in the app package, otherwise <see langword="false"/>.</returns>
 		public static Task<bool> AppPackageFileExistsAsync(string filename)
 			=> Current.AppPackageFileExistsAsync(filename);
