@@ -222,6 +222,7 @@ namespace Microsoft.Maui.DeviceTests
 			public override void OnResume()
 			{
 				base.OnResume();
+				_window.Created();
 				_window.Activated();
 				_taskCompletionSource.SetResult(true);
 			}

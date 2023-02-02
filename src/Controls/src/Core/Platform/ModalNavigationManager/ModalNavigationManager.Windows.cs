@@ -68,11 +68,6 @@ namespace Microsoft.Maui.Controls.Platform
 					?.Disconnect();
 
 				page.Handler?.DisconnectHandler();
-				//page.Handler = null;
-
-				// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the
-				// page will leak
-				//page.Parent = null;
 			}
 		}
 

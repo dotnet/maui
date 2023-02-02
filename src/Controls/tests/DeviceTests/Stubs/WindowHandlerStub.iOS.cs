@@ -34,11 +34,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 					vc.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
 
-					PlatformView.RootViewController.PresentViewController(vc, false, null);
+					VirtualView.Created();
+					PlatformView.RootViewController.PresentViewController(vc, false, () => VirtualView.Activated());
 				}
 				else
 				{
+					VirtualView.Created();
 					AssertionExtensions.FindContentView().AddSubview(view);
+					VirtualView.Activated();
 				}
 			});
 		}
@@ -52,6 +55,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			}
 
 			var vc = (view.Handler as IPlatformViewHandler).ViewController;
+			var virtualView = VirtualView;
 
 			if (view is IFlyoutView)
 			{
@@ -63,10 +67,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					return;
 				}
 
+				virtualView.Deactivated();
 				pvc.DismissViewController(false,
 					() =>
 					{
 						finishedClosing.Invoke();
+						virtualView.Destroying();
 					});
 			}
 			else
@@ -76,6 +82,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					.RemoveFromSuperview();
 
 				finishedClosing.Invoke();
+
+				virtualView.Deactivated();
+				virtualView.Destroying();
 			}
 
 		}
