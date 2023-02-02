@@ -36,10 +36,10 @@ public class MainInstrumentation : Instrumentation
 		bool success = false;
 		try
 		{
-            var config = ManualConfig.CreateMinimumViable()
-                .AddJob(Job.Default.WithToolchain(new InProcessEmitToolchain(TimeSpan.FromMinutes(10), logOutput: true)))
-                .AddDiagnoser(MemoryDiagnoser.Default)
-                .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical));
+			var config = ManualConfig.CreateMinimumViable()
+				.AddJob(Job.Default.WithToolchain(new InProcessEmitToolchain(TimeSpan.FromMinutes(10), logOutput: true)))
+				.AddDiagnoser(MemoryDiagnoser.Default)
+				.WithOrderer(new DefaultOrderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical));
 
 			// ImageBenchmark class is hardcoded here for now
 			BenchmarkRunner.Run<ImageBenchmark>(config);
