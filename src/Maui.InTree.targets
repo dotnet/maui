@@ -8,8 +8,6 @@
     <ProjectCapability Include="MauiEssentials" />
   </ItemGroup>
 
-  <Import Project="$(MauiSrcDirectory)Workload\Microsoft.Maui.Sdk\Sdk\Microsoft.Maui.Sdk.targets" />
-
   <ImportGroup Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">
 
     <!-- Microsoft.Maui.Core.targets -->
