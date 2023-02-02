@@ -76,19 +76,28 @@ Task("uitest")
 	Information("Build UITests project {0}",PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
+
+	var dd = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("DOTNET_PATH: {0}", dd);
+
+	var toolPath = $"{dd}/dotnet.exe";
+
+	Information("toolPath: {0}", toolPath);
+
 	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
-				.Append("/bl:" + binlog),
-		//	ToolPath = DOTNET_PATH,
+				.Append("/bl:" + binlog)
+				.Append("/maxcpucount:1"),
+				ToolPath = toolPath,
 	});
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_windows.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, toolPath, noBuild: true);
 });
 
 RunTarget(TARGET);

@@ -150,6 +150,11 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
                 return args;
             }
         };
+    
+    if(!string.IsNullOrEmpty(dotnetPath))
+    {
+        settings.ToolPath = dotnetPath;
+    }
 
     DotNetCoreTest(csproj, settings);
 }

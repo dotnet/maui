@@ -622,7 +622,7 @@ void RunMSBuildWithDotNet(
     bool restore = true,
     string targetFramework = null,
     bool forceDotNetBuild = false,
-    int maxCpuCount = 0)
+    int maxCpuCount = 1)
 {
     var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
 
