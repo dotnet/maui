@@ -84,6 +84,8 @@ Task("uitest")
 
 	Information("toolPath: {0}", toolPath);
 
+	SetDotNetEnvironmentVariables(dd.FullPath);
+
 	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
