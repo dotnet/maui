@@ -39,3 +39,5 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.set -> void
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.OpenGLView() -> void
+*REMOVED*Microsoft.Maui.Controls.Application.SavePropertiesAsync() -> System.Threading.Tasks.Task!
+*REMOVED*Microsoft.Maui.Controls.Application.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!
