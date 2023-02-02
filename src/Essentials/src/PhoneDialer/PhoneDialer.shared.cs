@@ -50,15 +50,10 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		public static void Open(string number)
 			=> Current.Open(number);
 
-		public static IPhoneDialer Current => ApplicationModel.Communication.PhoneDialer.Default;
+		public static IPhoneDialer Current =>
+			defaultImplementation ??= new PhoneDialerImplementation();
 
 		static IPhoneDialer? defaultImplementation;
-
-		/// <summary>
-		/// Provides the default implementation for static usage of this API.
-		/// </summary>
-		public static IPhoneDialer Default =>
-			defaultImplementation ??= new PhoneDialerImplementation();
 
 		internal static void SetDefault(IPhoneDialer? implementation) =>
 			defaultImplementation = implementation;
