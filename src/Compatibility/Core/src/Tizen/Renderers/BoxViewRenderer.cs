@@ -1,6 +1,6 @@
-using NView = Tizen.NUI.BaseComponents.View;
-using Tizen.UIExtensions.NUI;
 using Microsoft.Maui.Controls.Platform;
+using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
