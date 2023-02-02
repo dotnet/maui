@@ -46,3 +46,4 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 *REMOVED*Microsoft.Maui.Controls.TargetIdiom.TV = 4 -> Microsoft.Maui.Controls.TargetIdiom
 *REMOVED*Microsoft.Maui.Controls.TargetIdiom.Unsupported = 0 -> Microsoft.Maui.Controls.TargetIdiom
 *REMOVED*Microsoft.Maui.Controls.TargetIdiom.Watch = 5 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*static Microsoft.Maui.Controls.Device.Idiom.get -> Microsoft.Maui.Controls.TargetIdiom
