@@ -49,20 +49,18 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Starts listening to location updates using the <see cref="LocationChanged"/> event. Events
 		/// may only sent when the app is in the foreground. Requests
-		///  <see cref="Permissions.LocationWhenInUse"/> from the user.
+		/// <see cref="Permissions.LocationWhenInUse"/> from the user.
 		/// </summary>
-		/// <remarks>
-		/// Will throw <see cref="ArgumentNullException"/> if request is null.
-		/// Will throw <see cref="FeatureNotSupportedException"/> if listening is not supported on this platform.
-		/// Will throw <see cref="InvalidOperationException"/> if already listening; check
-		/// <see cref="IsListeningForeground"/> to see if already listening.
-		/// </remarks>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
+		/// <exception cref="FeatureNotSupportedException">Thrown if listening is not supported on this platform.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if already listening and <see cref="IsListeningForeground"/> returns <see langword="true"/>.</exception>
 		/// <param name="request">The listening request parameters to use.</param>
 		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request);
 
 		/// <summary>
 		/// Stop listening for location updates when the app is in the foreground.
+		/// Has no effect when <see cref="IsListeningForeground"/> is currently <see langword="false"/>.
 		/// </summary>
 		void StopListeningForeground();
 	}
@@ -125,7 +123,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <summary>
-		/// Occurs when an error during listening for location updates arises.
+		/// Occurs when an error during listening for location updates arises. When the event is
+		/// fired, listening to locations is stopped and no further <see cref="LocationChanged"/>
+		/// events are sent.
 		/// </summary>
 		public static event EventHandler<GeolocationErrorEventArgs> LocationError
 		{
@@ -134,15 +134,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <summary>
-		/// Starts listening to location updates using the <see cref="LocationChanged"/> event. Events
-		/// may only be sent when the app is in the foreground. Requests
-		///  <see cref="Permissions.LocationWhenInUse"/> from the user.
+		/// Starts listening to location updates using the <see cref="Geolocation.LocationChanged"/>
+		/// event or the <see cref="Geolocation.LocationError"/> event. Events may only sent when
+		/// the app is in the foreground. Requests <see cref="Permissions.LocationWhenInUse"/>
+		/// from the user.
 		/// </summary>
-		/// <remarks>
-		/// Will throw <see cref="FeatureNotSupportedException"/> if listening is not supported on this platform.
-		/// Will throw <see cref="InvalidOperationException"/> if already listening; check
-		/// <see cref="IsListeningForeground"/> to see if already listening.
-		/// </remarks>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
+		/// <exception cref="FeatureNotSupportedException">Thrown if listening is not supported on this platform.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if already listening and <see cref="IsListeningForeground"/> returns <see langword="true"/>.</exception>
 		/// <param name="request">The listening request parameters to use.</param>
 		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		public static Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request) =>
@@ -150,6 +149,8 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		/// <summary>
 		/// Stop listening for location updates when the app is in the foreground.
+		/// Has no effect when not listening and <see cref="Geolocation.IsListeningForeground"/>
+		/// is currently <see langword="false"/>.
 		/// </summary>
 		public static void StopListeningForeground() =>
 			Current.StopListeningForeground();

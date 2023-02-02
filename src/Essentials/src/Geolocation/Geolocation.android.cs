@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		static LocationManager LocationManager =>
 			locationManager ??= Application.Context.GetSystemService(Context.LocationService) as LocationManager;
 
+		/// <summary>
+		/// Indicates if currently listening to location updates while the app is in foreground.
+		/// </summary>
 		public bool IsListeningForeground { get => continuousListener != null; }
 
 		public async Task<Location> GetLastKnownLocationAsync()
@@ -117,6 +120,17 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
+		/// <summary>
+		/// Starts listening to location updates using the <see cref="Geolocation.LocationChanged"/>
+		/// event or the <see cref="Geolocation.LocationError"/> event. Events may only sent when
+		/// the app is in the foreground. Requests <see cref="Permissions.LocationWhenInUse"/>
+		/// from the user.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
+		/// <exception cref="FeatureNotSupportedException">Thrown if listening is not supported on this platform.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if already listening and <see cref="IsListeningForeground"/> returns <see langword="true"/>.</exception>
+		/// <param name="request">The listening request parameters to use.</param>
+		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		public async Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request)
 		{
 			ArgumentNullException.ThrowIfNull(request);
@@ -177,6 +191,11 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
+		/// <summary>
+		/// Stop listening for location updates when the app is in the foreground.
+		/// Has no effect when not listening and <see cref="Geolocation.IsListeningForeground"/>
+		/// is currently <see langword="false"/>.
+		/// </summary>
 		public void StopListeningForeground()
 		{
 			if (continuousListener == null)
