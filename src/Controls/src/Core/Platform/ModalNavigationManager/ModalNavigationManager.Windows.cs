@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 
@@ -10,27 +11,45 @@ namespace Microsoft.Maui.Controls.Platform
 			_window.NativeWindow.Content as WindowRootViewContainer ??
 			throw new InvalidOperationException("Root container Panel not found");
 
-		public Task<Page> PopModalAsync(bool animated)
+		Task WindowReadyForModal()
+		{
+			if (CurrentPlatformPage.Handler is IPlatformViewHandler pvh &&
+				pvh.PlatformView != null)
+			{
+				return pvh.PlatformView.OnLoadedAsync();
+			}
+
+			throw new InvalidOperationException("Page not initialized");
+		}
+
+		Task RemoveModalPage(Page page)
+		{
+			_platformModalPages.Remove(page);
+			RemovePage(page, true);
+			return Task.CompletedTask;
+		}
+
+		Task<Page> PopModalPlatformAsync(bool animated)
 		{
 			var tcs = new TaskCompletionSource<Page>();
-			var currentPage = _navModel.CurrentPage;
-			Page result = _navModel.PopModal();
-			SetCurrent(_navModel.CurrentPage, currentPage, true, () => tcs.SetResult(result));
+			var poppedPage = CurrentPlatformModalPage;
+			_platformModalPages.Remove(poppedPage);
+			SetCurrent(CurrentPlatformPage, poppedPage, true, () => tcs.SetResult(poppedPage));
 			return tcs.Task;
 		}
 
-		public Task PushModalAsync(Page modal, bool animated)
+		Task PushModalPlatformAsync(Page modal, bool animated)
 		{
 			_ = modal ?? throw new ArgumentNullException(nameof(modal));
 
 			var tcs = new TaskCompletionSource<bool>();
-			var currentPage = _navModel.CurrentPage;
-			_navModel.PushModal(modal);
+			var currentPage = CurrentPlatformPage;
+			_platformModalPages.Add(modal);
 			SetCurrent(modal, currentPage, false, () => tcs.SetResult(true));
 			return tcs.Task;
 		}
 
-		void RemovePage(Page page)
+		void RemovePage(Page page, bool popping)
 		{
 			if (page == null)
 				return;
@@ -40,33 +59,38 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var windowManager = mauiContext.GetNavigationRootManager();
 			Container.RemovePage(windowManager.RootView);
+
+			if (popping)
+			{
+				page
+					.FindMauiContext()
+					?.GetNavigationRootManager()
+					?.Disconnect();
+
+				page.Handler?.DisconnectHandler();
+				//page.Handler = null;
+
+				// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the
+				// page will leak
+				//page.Parent = null;
+			}
 		}
 
-		void SetCurrent(Page newPage, Page previousPage, bool popping, Action? completedCallback = null)
+		void SetCurrent(
+			Page newPage,
+			Page previousPage,
+			bool popping,
+			Action? completedCallback = null)
 		{
 			try
 			{
 				if (popping)
 				{
-					RemovePage(previousPage);
+					RemovePage(previousPage, popping);
 				}
 				else if (newPage.BackgroundColor.IsDefault() && newPage.Background.IsEmpty)
 				{
-					RemovePage(previousPage);
-				}
-
-				if (popping)
-				{
-					previousPage
-						.FindMauiContext()
-						?.GetNavigationRootManager()
-						?.Disconnect();
-
-					previousPage.Handler = null;
-
-					// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the
-					// page will leak
-					previousPage.Parent = null;
+					RemovePage(previousPage, popping);
 				}
 
 				if (Container == null || newPage == null)

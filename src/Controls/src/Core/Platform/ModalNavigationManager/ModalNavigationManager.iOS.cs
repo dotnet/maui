@@ -28,18 +28,12 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		// do I really need this anymore?
-		static void HandleChildRemoved(object? sender, ElementEventArgs e)
-		{
-			var view = e.Element;
-			// TODO MAUI
-			//view?.DisposeModalAndChildRenderers();
-		}
+		Task WindowReadyForModal() => Task.CompletedTask;
 
-		public async Task<Page> PopModalAsync(bool animated)
+		async Task<Page> PopModalPlatformAsync(bool animated)
 		{
-			var modal = _navModel.PopModal();
-			modal.DescendantRemoved -= HandleChildRemoved;
+			var modal = CurrentPlatformModalPage;
+			_platformModalPages.Remove(modal);
 
 			var controller = (modal.Handler as IPlatformViewHandler)?.ViewController;
 
@@ -48,13 +42,10 @@ namespace Microsoft.Maui.Controls.Platform
 			else if (WindowViewController != null)
 				await WindowViewController.DismissViewControllerAsync(animated);
 
-			// TODO MAUI
-			//modal.DisposeModalAndChildRenderers();
-
 			return modal;
 		}
 
-		public Task PushModalAsync(Page modal, bool animated)
+		Task PushModalPlatformAsync(Page modal, bool animated)
 		{
 			EndEditing();
 
@@ -66,9 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 					.ModalPresentationStyle()
 					.ToPlatformModalPresentationStyle();
 
-			_navModel.PushModal(modal);
-
-			modal.DescendantRemoved += HandleChildRemoved;
+			_platformModalPages.Add(modal);
 
 			if (_window?.Page?.Handler != null)
 				return PresentModal(modal, animated && animated);

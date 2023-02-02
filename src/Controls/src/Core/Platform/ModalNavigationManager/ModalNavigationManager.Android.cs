@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls.Platform
 	internal partial class ModalNavigationManager
 	{
 		ViewGroup? _modalParentView;
+		bool _navAnimationInProgress;
+		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
+
 
 		// This is only here for the device tests to use.
 		// With the device tests we have a `FakeActivityRootView` and a `WindowTestFragment`
@@ -38,8 +41,16 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Root View Needs to be set");
 		}
 
-		bool _navAnimationInProgress;
-		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
+		Task WindowReadyForModal()
+		{
+			if (CurrentPlatformPage.Handler is IPlatformViewHandler pvh &&
+				pvh.PlatformView != null)
+			{
+				return pvh.PlatformView.OnLoadedAsync();
+			}
+
+			throw new InvalidOperationException("Page not initialized");
+		}
 
 		// AFAICT this is specific to ListView and Context Items
 		internal bool NavAnimationInProgress
@@ -58,17 +69,40 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public Task<Page> PopModalAsync(bool animated)
+		Task RemoveModalPage(Page page)
 		{
-			Page modal = _navModel.PopModal();
+			_platformModalPages.Remove(page);
+
+			var modalHandler = page.Handler as IPlatformViewHandler;
+			if (modalHandler != null)
+			{
+				ModalContainer? modalContainer = null;
+				for (int i = 0; i <= GetModalParentView().ChildCount; i++)
+				{
+					if (GetModalParentView().GetChildAt(i) is ModalContainer mc &&
+						mc.Modal == page)
+					{
+						modalContainer = mc;
+					}
+				}
+
+				modalContainer?.Destroy();
+			}
+
+			return Task.CompletedTask;
+		}
+
+		Task<Page> PopModalPlatformAsync(bool animated)
+		{
+			Page modal = CurrentPlatformModalPage;
+			_platformModalPages.Remove(modal);
+
 			var source = new TaskCompletionSource<Page>();
 
 			var modalHandler = modal.Handler as IPlatformViewHandler;
 			if (modalHandler != null)
 			{
 				ModalContainer? modalContainer = null;
-
-
 				for (int i = 0; i <= GetModalParentView().ChildCount; i++)
 				{
 					if (GetModalParentView().GetChildAt(i) is ModalContainer mc &&
@@ -116,20 +150,24 @@ namespace Microsoft.Maui.Controls.Platform
 					throw new InvalidOperationException("Current Root View cannot be null");
 		}
 
-		public async Task PushModalAsync(Page modal, bool animated)
+		async Task PushModalPlatformAsync(Page modal, bool animated)
 		{
 			var viewToHide = GetCurrentRootView();
 
 			RemoveFocusability(viewToHide);
 
-			_navModel.PushModal(modal);
+			_platformModalPages.Add(modal);
 
 			Task presentModal = PresentModal(modal, animated);
 
 			await presentModal;
 
-			GetCurrentRootView()
-				.SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
+			// The state of things might have changed after the modal view was pushed
+			if (IsModalReady)
+			{
+				GetCurrentRootView()
+					.SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
+			}
 		}
 
 		Task PresentModal(Page modal, bool animated)
@@ -192,7 +230,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (NavAnimationInProgress)
 				return true;
 
-			Page root = _navModel.LastRoot;
+			// TODO this is probably wrong
+			Page root = _platformModalPages[_platformModalPages.Count - 1]; //_navModel[_platformModalPages].LastRoot;
 			bool handled = root?.SendBackButtonPressed() ?? false;
 
 			return handled;
@@ -405,7 +444,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Destroy()
 			{
-				if (Modal == null || _windowMauiContext == null || _fragmentManager == null)
+				if (Modal == null || _windowMauiContext == null || _fragmentManager == null || !_fragmentManager.IsAlive() || _fragmentManager.IsDestroyed)
 					return;
 
 				if (Modal.Toolbar?.Handler != null)

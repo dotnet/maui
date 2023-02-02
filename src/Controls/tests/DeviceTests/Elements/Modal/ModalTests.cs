@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
@@ -54,6 +55,81 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 				});
 			});
+		}
+
+		[Fact]
+		public async Task LoadModalPagesBeforeWindowHasLoaded()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var modalPage = new ContentPage()
+			{
+				Content = new Label()
+			};
+
+			var window = new Window(page);
+			await page.Navigation.PushModalAsync(modalPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (_) =>
+				{
+					await OnNavigatedToAsync(modalPage);
+					await OnLoadedAsync(modalPage.Content);
+				});
+		}
+
+		[Fact]
+		public async Task ChangePageOnWindowRemovesModalStack()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var modalPage = new ContentPage()
+			{
+				Content = new Label()
+			};
+
+			var window = new Window(page);
+			await page.Navigation.PushModalAsync(modalPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (_) =>
+				{
+					await OnLoadedAsync(modalPage.Content);
+					var nextPage = new ContentPage();
+					window.Page = nextPage;
+					await OnUnloadedAsync(modalPage.Content);
+					Assert.Equal(0, window.Navigation.ModalStack.Count);
+				});
+		}
+
+		[Fact]
+		public async Task RecreatingStackCorrectlyRecreatesModalStack()
+		{
+			SetupBuilder();
+
+			var page = new ContentPage();
+			var modalPage = new ContentPage()
+			{
+				Content = new Label()
+			};
+
+			var window = new Window(page);
+			await page.Navigation.PushModalAsync(modalPage);
+
+			var mauiContextStub1 = ContextStub.CreateNew(MauiContext);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				await OnNavigatedToAsync(modalPage);
+				await OnLoadedAsync(modalPage.Content);
+			}, mauiContextStub1);
+
+			var mauiContextStub2 = ContextStub.CreateNew(MauiContext);
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				await OnNavigatedToAsync(modalPage);
+				await OnLoadedAsync(modalPage.Content);
+			}, mauiContextStub2);
 		}
 
 		[Theory]
