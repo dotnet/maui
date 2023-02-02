@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
-			_ = request ?? throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public async Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request)
 		{
-			_ = request ?? throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			if (IsListeningForeground)
 				throw new InvalidOperationException("Already listening to location changes.");
