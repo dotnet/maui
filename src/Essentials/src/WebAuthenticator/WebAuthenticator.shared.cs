@@ -25,7 +25,11 @@ namespace Microsoft.Maui.Authentication
 		IDictionary<string, string>? DecodeResponse(Uri uri);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs/*" />
+	/// <summary>A web navigation API intended to be used for Authentication with external web services such as OAuth.</summary>
+    /// <remarks>
+	/// This API helps with navigating to a start URL and waiting for a callback URL to the app.  Your app must 
+	/// be registered to handle the callback scheme you provide in the call to authenticate.
+	/// </remarks>
 	public static class WebAuthenticator
 	{
 		/// <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.</summary>
