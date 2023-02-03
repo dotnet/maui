@@ -228,11 +228,18 @@ namespace Microsoft.Maui.Handlers
 		public static void MapVisibility(IViewHandler handler, IView view)
 		{
 			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Visibility));
+#if WINDOWS
+			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Opacity));
+#endif
 
 			if (handler.HasContainer)
 			{
 				((PlatformView?)handler.ContainerView)?.UpdateVisibility(view);
+#if WINDOWS
+				((PlatformView?)handler.PlatformView)?.UpdateVisibility(Visibility.Visible, view.Opacity);
+#else
 				((PlatformView?)handler.PlatformView)?.UpdateVisibility(Visibility.Visible);
+#endif
 			}
 			else
 			{
@@ -266,7 +273,23 @@ namespace Microsoft.Maui.Handlers
 		public static void MapOpacity(IViewHandler handler, IView view)
 		{
 			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Opacity));
-			handler.ToPlatform()?.UpdateOpacity(view);
+#if WINDOWS
+			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Visibility));
+#endif
+
+			if (handler.HasContainer)
+			{
+				((PlatformView?)handler.ContainerView)?.UpdateOpacity(view);
+#if WINDOWS
+				((PlatformView?)handler.PlatformView)?.UpdateOpacity(1.0, view.Visibility);
+#else
+				((PlatformView?)handler.PlatformView)?.UpdateOpacity(1.0);
+#endif
+			}
+			else
+			{
+				((PlatformView?)handler.PlatformView)?.UpdateOpacity(view);
+			}
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)

@@ -30,7 +30,10 @@ namespace Microsoft.Maui.Platform
 				Tizen.NUI.FocusManager.Instance.ClearFocus();
 		}
 
-		public static void UpdateVisibility(this NView platformView, IView view)
+		public static void UpdateVisibility(this NView platformView, IView view) =>
+			ViewExtensions.UpdateVisibility(platformView, view.Visibility);
+
+		public static void UpdateVisibility(this NView platformView, Visibility visibility)
 		{
 			if (view.Visibility.ToPlatformVisibility())
 			{
@@ -134,9 +137,12 @@ namespace Microsoft.Maui.Platform
 				wrapperView.Border = border.Border;
 		}
 
-		public static void UpdateOpacity(this NView platformView, IView view)
+		public static void UpdateOpacity(this NView platformView, IView view) =>
+			ViewExtensions.UpdateOpacity(platformView, view.Opacity);
+
+		public static void UpdateOpacity(this NView platformView, double opacity)
 		{
-			platformView.Opacity = (float)view.Opacity;
+			platformView.Opacity = (float)opacity;
 		}
 
 		public static void UpdateClip(this NView platformView, IView view)
