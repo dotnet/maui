@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IImageHandler handler, IImage image)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Background));
 			handler.ToPlatform()?.UpdateBackground(image);
 		}
 

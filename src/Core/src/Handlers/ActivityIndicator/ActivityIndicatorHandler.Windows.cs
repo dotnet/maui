@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Background));
 			handler.ToPlatform().UpdateBackground(activityIndicator);
 		}
 

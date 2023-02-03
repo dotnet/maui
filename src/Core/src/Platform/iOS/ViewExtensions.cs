@@ -523,7 +523,10 @@ namespace Microsoft.Maui.Platform
 			return size;
 		}
 
-		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view)
+		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view) =>
+			UpdateInputTransparent(platformView, view);
+
+		public static void UpdateInputTransparent(this UIView platformView, IView view)
 		{
 			if (view is ITextInput textInput)
 			{

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
@@ -13,5 +14,12 @@ namespace Microsoft.Maui
 		Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
 		void PlatformArrange(Rect frame);
+	}
+
+	public interface INeedsContainerViewHandler : IViewHandler
+	{
+		bool NeedsContainer { get; }
+
+		ICollection<string> ChangesContainer { get; }
 	}
 }

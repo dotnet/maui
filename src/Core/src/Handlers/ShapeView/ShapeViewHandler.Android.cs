@@ -11,7 +11,7 @@
 
 		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Background));
 			handler.ToPlatform().UpdateBackground(shapeView);
 
 			handler.PlatformView?.InvalidateShape(shapeView);

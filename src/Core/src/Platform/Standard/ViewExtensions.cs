@@ -78,5 +78,7 @@ namespace Microsoft.Maui.Platform
 			=> null;
 
 		public static void UpdateInputTransparent(this object nativeView, IViewHandler handler, IView view) { }
+
+		public static void UpdateInputTransparent(this object nativeView, IView view) { }
 	}
 }

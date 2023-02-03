@@ -36,14 +36,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ILabelHandler handler, ILabel label)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Background));
 
 			handler.ToPlatform().UpdateBackground(label);
 		}
 
 		public static void MapOpacity(ILabelHandler handler, ILabel label)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Opacity));
 			handler.PlatformView.UpdateOpacity(label);
 			handler.ToPlatform().UpdateOpacity(label);
 		}
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVerticalTextAlignment(ILabelHandler handler, ILabel label)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(ILabel.VerticalTextAlignment));
 
 			handler.PlatformView?.UpdateVerticalTextAlignment(label);
 		}

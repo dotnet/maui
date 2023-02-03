@@ -91,9 +91,12 @@ namespace Microsoft.Maui.Platform
 			platformView.ClearFocus();
 		}
 
-		public static void UpdateVisibility(this AView platformView, IView view)
+		public static void UpdateVisibility(this AView platformView, IView view) =>
+			ViewExtensions.UpdateVisibility(platformView, view.Visibility);
+
+		public static void UpdateVisibility(this AView platformView, Visibility visibility)
 		{
-			platformView.Visibility = view.Visibility.ToPlatformVisibility();
+			platformView.Visibility = visibility.ToPlatformVisibility();
 		}
 
 		public static void UpdateClip(this AView platformView, IView view)
@@ -107,6 +110,13 @@ namespace Microsoft.Maui.Platform
 			if (platformView is WrapperView wrapper)
 				wrapper.Shadow = view.Shadow;
 		}
+
+		public static void UpdateInputTransparent(this AView platformView, IView view)
+		{
+			if (platformView is WrapperView wrapper)
+				wrapper.InputTransparent = view.InputTransparent;
+		}
+
 		public static void UpdateBorder(this AView platformView, IView view)
 		{
 			if (platformView is WrapperView wrapper)

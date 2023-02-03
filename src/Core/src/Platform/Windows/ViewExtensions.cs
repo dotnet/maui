@@ -41,12 +41,14 @@ namespace Microsoft.Maui.Platform
 				UnfocusControl(control);
 		}
 
-		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
+		public static void UpdateVisibility(this FrameworkElement platformView, IView view) =>
+			ViewExtensions.UpdateVisibility(platformView, view.Visibility, view.Opacity);
+
+		public static void UpdateVisibility(this FrameworkElement platformView, Visibility visibility, double opacity)
 		{
-			double opacity = view.Opacity;
 			var wasCollapsed = platformView.Visibility == UI.Xaml.Visibility.Collapsed;
 
-			switch (view.Visibility)
+			switch (visibility)
 			{
 				case Visibility.Visible:
 					platformView.Opacity = opacity;
@@ -62,7 +64,7 @@ namespace Microsoft.Maui.Platform
 					break;
 			}
 
-			if (view.Visibility != Visibility.Collapsed && wasCollapsed)
+			if (visibility != Visibility.Collapsed && wasCollapsed)
 			{
 				// We may need to force the parent layout (if any) to re-layout to accomodate the new size
 				(platformView.Parent as FrameworkElement)?.InvalidateMeasure();
@@ -420,7 +422,10 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view)
+		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view) =>
+			UpdateInputTransparent(nativeView, view);
+
+		public static void UpdateInputTransparent(this FrameworkElement nativeView, IView view)
 		{
 			if (nativeView is UIElement element)
 			{

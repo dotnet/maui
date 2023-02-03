@@ -215,7 +215,10 @@ namespace Microsoft.Maui.Platform
 			// NUI MaximumSize is not working properly
 		}
 
-		public static void UpdateInputTransparent(this NView platformView, IViewHandler handler, IView view)
+		public static void UpdateInputTransparent(this NView platformView, IViewHandler handler, IView view) =>
+			UpdateInputTransparent(platformView, view);
+
+		public static void UpdateInputTransparent(this NView platformView, IView view)
 		{
 			platformView.Sensitive = !view.InputTransparent;
 		}
@@ -332,14 +335,6 @@ namespace Microsoft.Maui.Platform
 
 			view.RemovedFromWindow += routedEventHandler;
 			return disposable;
-		}
-
-		internal static bool NeedsContainer(this IView? view)
-		{
-			if (view is IBorderView border)
-				return border?.Shape != null || border?.Stroke != null;
-
-			return false;
 		}
 	}
 }
