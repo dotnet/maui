@@ -333,5 +333,13 @@ namespace Microsoft.Maui.Platform
 			view.RemovedFromWindow += routedEventHandler;
 			return disposable;
 		}
+
+		internal static bool NeedsContainer(this IView? view)
+		{
+			if (view is IBorderView border)
+				return border?.Shape != null || border?.Stroke != null;
+
+			return false;
+		}
 	}
 }

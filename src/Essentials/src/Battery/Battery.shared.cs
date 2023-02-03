@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Devices
 
 		/// <summary>Power source is the battery and is currently not being charged.</summary>
 		Battery = 1,
-		
+
 		/// <summary>Power source is an AC Charger.</summary>
 		AC = 2,
 

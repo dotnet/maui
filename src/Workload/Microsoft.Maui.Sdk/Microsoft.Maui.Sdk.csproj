@@ -87,8 +87,8 @@
     </XmlPeek>
     <XmlPeek
         XmlInputPath="$(MauiRootDirectory)eng\AndroidX.targets"
-        Query="/Project/ItemGroup/PackageReference[@Update='Xamarin.AndroidX.Legacy.Support.V4']/@Version">
-      <Output TaskParameter="Result" PropertyName="_XamarinAndroidXLegacySupportV4Version" />
+        Query="/Project/ItemGroup/PackageReference[@Update='Xamarin.AndroidX.SwipeRefreshLayout']/@Version">
+      <Output TaskParameter="Result" PropertyName="_XamarinAndroidXSwipeRefreshLayoutVersion" />
     </XmlPeek>
     <XmlPeek
         XmlInputPath="$(MauiRootDirectory)eng\AndroidX.targets"
@@ -107,7 +107,7 @@
     </XmlPeek>
     <ItemGroup>
       <_ValuesToReplace Include="_XamarinAndroidXBrowserVersion"              PropertyName="_XamarinAndroidXBrowserVersion" />
-      <_ValuesToReplace Include="_XamarinAndroidXLegacySupportV4Version"      PropertyName="_XamarinAndroidXLegacySupportV4Version" />
+      <_ValuesToReplace Include="_XamarinAndroidXSwipeRefreshLayoutVersion"   PropertyName="_XamarinAndroidXSwipeRefreshLayoutVersion" />
       <_ValuesToReplace Include="_XamarinAndroidXLifecycleLiveDataVersion"    PropertyName="_XamarinAndroidXLifecycleLiveDataVersion" />
       <_ValuesToReplace Include="_XamarinAndroidXNavigationVersion"           PropertyName="_XamarinAndroidXNavigationVersion" />
       <_ValuesToReplace Include="_XamarinGoogleAndroidMaterialVersion"        PropertyName="_XamarinGoogleAndroidMaterialVersion" />

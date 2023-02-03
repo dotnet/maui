@@ -72,15 +72,12 @@ namespace Microsoft.Maui.ApplicationModel
 			Java.Util.Locale.Default = locale;
 			var resources = Application.Context.Resources;
 			var config = resources.Configuration;
-
-#if __ANDROID_24__
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				config.SetLocale(locale);
-			else
-#endif
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CA1422 // Validate platform compatibility
 #pragma warning disable CA1416 // Validate platform compatibility
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+				config.SetLocale(locale);
+			else
 				config.Locale = locale;
 			resources.UpdateConfiguration(config, resources.DisplayMetrics);
 #pragma warning restore CA1422 // Validate platform compatibility

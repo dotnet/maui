@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Xunit;
+using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -43,6 +44,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(fired);
 		}
-	}
 
+		[Fact]
+		public void CheckedVisualStates()
+		{
+			var vsgList = CreateTestStateGroups();
+			string checkedStateName = CheckBox.IsCheckedVisualState;
+			var checkedState = new VisualState() { Name = checkedStateName };
+			var stateGroup = vsgList[0];
+			stateGroup.States.Add(checkedState);
+
+			var element = new CheckBox();
+			VisualStateManager.SetVisualStateGroups(element, vsgList);
+
+			element.IsChecked = true;
+			Assert.Equal(checkedStateName, stateGroup.CurrentState.Name);
+
+			element.IsChecked = false;
+			Assert.NotEqual(checkedStateName, stateGroup.CurrentState.Name);
+		}
+	}
 }

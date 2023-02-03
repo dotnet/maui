@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿#nullable disable
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -15,13 +16,16 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public override PathF GetPath()
 		{
+			var width = WidthForPathComputation;
+			var height = HeightForPathComputation;
+
 			var path = new PathF();
 
 			float x = (float)StrokeThickness / 2;
 			float y = (float)StrokeThickness / 2;
 
-			float w = (float)(Width - StrokeThickness);
-			float h = (float)(Height - StrokeThickness);
+			float w = (float)(width - StrokeThickness);
+			float h = (float)(height - StrokeThickness);
 
 			float topLeftCornerRadius = (float)CornerRadius.TopLeft;
 			float topRightCornerRadius = (float)CornerRadius.TopRight;

@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				namescopeVarDef = Context.Scopes[parentNode].Item1;
 				namesInNamescope = Context.Scopes[parentNode].Item2;
 			}
-			if (setNameScope && Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))))
+			if (setNameScope && Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Cache, Context.Body.Method.Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))))
 				SetNameScope(node, namescopeVarDef);
 			Context.Scopes[node] = new Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
 		}
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			var namescopeVarDef = GetOrCreateNameScope(node);
 			IList<string> namesInNamescope = new List<string>();
-			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))))
+			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Cache, Context.Body.Method.Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))))
 				SetNameScope(node, namescopeVarDef);
 			Context.Scopes[node] = new System.Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
 		}
@@ -89,15 +89,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		VariableDefinition GetOrCreateNameScope(ElementNode node)
 		{
 			var module = Context.Body.Method.Module;
-			var vardef = new VariableDefinition(module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
+			var vardef = new VariableDefinition(module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
 			Context.Body.Variables.Add(vardef);
 			var stloc = Instruction.Create(OpCodes.Stloc, vardef);
 
-			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))))
+			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Cache, Context.Body.Method.Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))))
 			{
 				var namescoperef = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject");
-				Context.IL.Append(Context.Variables[node].LoadAs(module.GetTypeDefinition(namescoperef), module));
-				Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope"),
+				Context.IL.Append(Context.Variables[node].LoadAs(Context.Cache, module.GetTypeDefinition(Context.Cache, namescoperef), module));
+				Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope"),
 																		   methodName: "GetNameScope",
 																		   parameterTypes: new[] { namescoperef },
 																		   isStatic: true));
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				Context.IL.Emit(OpCodes.Pop);
 			}
-			Context.IL.Emit(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope"), parameterTypes: null));
+			Context.IL.Emit(OpCodes.Newobj, module.ImportCtorReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope"), parameterTypes: null));
 
 			Context.IL.Append(stloc);
 			return vardef;
@@ -115,9 +115,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		VariableDefinition CreateNamescope()
 		{
 			var module = Context.Body.Method.Module;
-			var vardef = new VariableDefinition(module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
+			var vardef = new VariableDefinition(module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
 			Context.Body.Variables.Add(vardef);
-			Context.IL.Emit(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope"), parameterTypes: null));
+			Context.IL.Emit(OpCodes.Newobj, module.ImportCtorReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope"), parameterTypes: null));
 			Context.IL.Emit(OpCodes.Stloc, vardef);
 			return vardef;
 		}
@@ -129,9 +129,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"),
 				("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "INameScope"),
 			};
-			Context.IL.Append(Context.Variables[node].LoadAs(module.GetTypeDefinition(parameterTypes[0]), module));
-			Context.IL.Append(ns.LoadAs(module.GetTypeDefinition(parameterTypes[1]), module));
-			Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope"),
+			Context.IL.Append(Context.Variables[node].LoadAs(Context.Cache, module.GetTypeDefinition(Context.Cache, parameterTypes[0]), module));
+			Context.IL.Append(ns.LoadAs(Context.Cache, module.GetTypeDefinition(Context.Cache, parameterTypes[1]), module));
+			Context.IL.Emit(OpCodes.Call, module.ImportMethodReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope"),
 																	   methodName: "SetNameScope",
 																	   parameterTypes: parameterTypes,
 																	   isStatic: true));
@@ -145,10 +145,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			var module = Context.Body.Method.Module;
 			var namescopeType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "INameScope");
-			Context.IL.Append(namescopeVarDef.LoadAs(module.GetTypeDefinition(namescopeType), module));
+			Context.IL.Append(namescopeVarDef.LoadAs(Context.Cache, module.GetTypeDefinition(Context.Cache, namescopeType), module));
 			Context.IL.Emit(OpCodes.Ldstr, str);
-			Context.IL.Append(element.LoadAs(module.TypeSystem.Object, module));
-			Context.IL.Emit(OpCodes.Callvirt, module.ImportMethodReference(namescopeType,
+			Context.IL.Append(element.LoadAs(Context.Cache, module.TypeSystem.Object, module));
+			Context.IL.Emit(OpCodes.Callvirt, module.ImportMethodReference(Context.Cache,
+																		   namescopeType,
 																		   methodName: "RegisterName",
 																		   parameterTypes: new[] {
 																			   ("mscorlib", "System", "String"),
@@ -158,20 +159,20 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		void SetStyleId(string str, VariableDefinition element)
 		{
-			if (!element.VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Element"))))
+			if (!element.VariableType.InheritsFromOrImplements(Context.Cache, Context.Body.Method.Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Element"))))
 				return;
 
 			var module = Context.Body.Method.Module;
 			var elementType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Element");
-			var elementTypeRef = module.GetTypeDefinition(elementType);
+			var elementTypeRef = module.GetTypeDefinition(Context.Cache, elementType);
 
 			var nop = Instruction.Create(OpCodes.Nop);
-			Context.IL.Append(element.LoadAs(elementTypeRef, module));
-			Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertyGetterReference(elementType, propertyName: "StyleId"));
+			Context.IL.Append(element.LoadAs(Context.Cache, elementTypeRef, module));
+			Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertyGetterReference(Context.Cache, elementType, propertyName: "StyleId"));
 			Context.IL.Emit(OpCodes.Brtrue, nop);
-			Context.IL.Append(element.LoadAs(elementTypeRef, module));
+			Context.IL.Append(element.LoadAs(Context.Cache, elementTypeRef, module));
 			Context.IL.Emit(OpCodes.Ldstr, str);
-			Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertySetterReference(elementType, propertyName: "StyleId"));
+			Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertySetterReference(Context.Cache, elementType, propertyName: "StyleId"));
 			Context.IL.Append(nop);
 		}
 	}

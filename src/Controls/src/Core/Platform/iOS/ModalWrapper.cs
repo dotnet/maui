@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -104,7 +105,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return base.PreferredInterfaceOrientationForPresentation();
 		}
 
-// TODO: [UnsupportedOSPlatform("ios6.0")]
+		// TODO: [UnsupportedOSPlatform("ios6.0")]
 #pragma warning disable CA1416, CA1422
 		public override bool ShouldAutorotate()
 		{
