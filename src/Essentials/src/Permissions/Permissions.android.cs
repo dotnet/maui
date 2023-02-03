@@ -16,9 +16,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public static bool IsDeclaredInManifest(string permission)
 		{
 			var context = Application.Context;
-#pragma warning disable 618
+#pragma warning disable CS0618, CA1416, CA1422 // Deprecated in API 33: https://developer.android.com/reference/android/content/pm/PackageManager#getPackageInfo(java.lang.String,%20int)
 			var packageInfo = context.PackageManager.GetPackageInfo(context.PackageName, PackageInfoFlags.Permissions);
-#pragma warning restore 618
+#pragma warning restore CS0618, CA1416, CA1422
 			var requestedPermissions = packageInfo?.RequestedPermissions;
 
 			return requestedPermissions?.Any(r => r.Equals(permission, StringComparison.OrdinalIgnoreCase)) ?? false;

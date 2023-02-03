@@ -621,7 +621,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Ldc_I4_0); //don't ask
 				yield return Create(Newobj, module.ImportCtorReference(context.Cache,
 					("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 4));
-					
+
 				//store the provider so we can register it again with a different key
 				yield return Create(Dup);
 				var refProvider = new VariableDefinition(module.ImportReference(context.Cache, ("mscorlib", "System", "Object")));
