@@ -28,11 +28,16 @@ namespace Microsoft.Maui.Authentication
 	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs/*" />
 	public static class WebAuthenticator
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][1]/Docs/*" />
+		/// <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.</summary>
+		/// <param name="url" > Url to navigate to, beginning the authentication flow.</param>
+		/// <param name="callbackUrl" > Expected callback url that the navigation flow will eventually redirect to.</param>
+		/// <returns>Returns a result parsed out from the callback url.</returns>		
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
 			=> Current.AuthenticateAsync(url, callbackUrl);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][2]/Docs/*" />
+		/// <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.The start url and callbackUrl are specified in the webAuthenticatorOptions.</summary>
+		/// <param name="webAuthenticatorOptions">Options to configure the authentication request.</param>
+		/// <returns>Returns a result parsed out from the callback url.</returns>
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 			=> Current.AuthenticateAsync(webAuthenticatorOptions);
 
@@ -58,8 +63,8 @@ namespace Microsoft.Maui.Authentication
 
 		/// <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.</summary>
 		/// <param name="webAuthenticator">The <see cref="IWebAuthenticator"/> to use for the authentication flow.</param>
-		/// <param name = "url" > Url to navigate to, beginning the authentication flow.</param>
-		/// <param name = "callbackUrl" > Expected callback url that the navigation flow will eventually redirect to.</param>
+		/// <param name="url"> Url to navigate to, beginning the authentication flow.</param>
+		/// <param name="callbackUrl"> Expected callback url that the navigation flow will eventually redirect to.</param>
 		/// <returns>Returns a result parsed out from the callback url.</returns>
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(this IWebAuthenticator webAuthenticator, Uri url, Uri callbackUrl) =>
 			webAuthenticator.AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });

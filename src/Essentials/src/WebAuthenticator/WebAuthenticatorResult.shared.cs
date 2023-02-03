@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Authentication
 		/// <summary>
 		/// The uri that was used to call back with the access token.
 		/// </summary>
-        /// <value>
+		/// <value>
 		/// The value of the callback URI, including the fragment or query string bearing 
 		/// the access token and associated information.
 		/// </value>
@@ -89,18 +89,18 @@ namespace Microsoft.Maui.Authentication
 		}
 
 		/// <summary>The value for the `access_token` key.</summary>
-        /// <value>Access Token parsed from the callback URI access_token parameter.</value>
+		/// <value>Access Token parsed from the callback URI access_token parameter.</value>
 		public string AccessToken
 			=> Get("access_token");
 
 		/// <summary>The value for the `refresh_token` key.</summary>
-        /// <value>Refresh Token parsed from the callback URI refresh_token parameter.</value>
+		/// <value>Refresh Token parsed from the callback URI refresh_token parameter.</value>
 		public string RefreshToken
 			=> Get("refresh_token");
 
 		/// <summary>The value for the `id_token` key.</summary>
-        /// <value>The value for the `id_token` key.</value>
-        /// <remarks>Apple doesn't return an access token on iOS native sign in, but it does return id_token as a JWT.</remarks>
+		/// <value>The value for the `id_token` key.</value>
+		/// <remarks>Apple doesn't return an access token on iOS native sign in, but it does return id_token as a JWT.</remarks>
 		public string IdToken
 			=> Get("id_token");
 
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Authentication
 		/// The refresh token expiry date as calculated by the timestamp of when the result was created plus 
 		/// the value in seconds for the refresh_token_expires_in key.
 		/// </summary>
-        /// <value>Timestamp of the creation of the object instance plus the expires_in seconds parsed from the callback URI.</value>
+		/// <value>Timestamp of the creation of the object instance plus the expires_in seconds parsed from the callback URI.</value>
 		public DateTimeOffset? RefreshTokenExpiresIn
 		{
 			get
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Authentication
 		/// The expiry date as calculated by the timestamp of when the result was created plus 
 		/// the value in seconds for the `expires_in` key.
 		/// </summary>
-        /// <value>Timestamp of the creation of the object instance plus the expires_in seconds parsed from the callback URI.</value>
+		/// <value>Timestamp of the creation of the object instance plus the expires_in seconds parsed from the callback URI.</value>
 		public DateTimeOffset? ExpiresIn
 		{
 			get
