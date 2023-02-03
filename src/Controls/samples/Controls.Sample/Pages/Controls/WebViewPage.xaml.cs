@@ -83,6 +83,12 @@ namespace Maui.Controls.Sample.Pages
 			await LoadMauiAsset();
 		}
 
+		async void OnSetUserAgentClicked(object sender, EventArgs e)
+		{
+			input.Text = "useragent.html";
+			await LoadMauiAsset();
+		}
+
 		async Task LoadMauiAsset()
 		{
 			using var stream = await FileSystem.OpenAppPackageFileAsync(input.Text.Trim());

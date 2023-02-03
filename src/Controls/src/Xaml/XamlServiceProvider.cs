@@ -139,8 +139,8 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public object FindByName(string name)
 		{
 			object value;
-			if (scopes!=null)
-				foreach(var scope in scopes)
+			if (scopes != null)
+				foreach (var scope in scopes)
 					if ((value = scope?.FindByName(name)) != null)
 						return value;
 

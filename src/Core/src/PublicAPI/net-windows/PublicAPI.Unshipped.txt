@@ -1,2 +1,8 @@
 #nullable enable
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.IWebView.UserAgent.get -> string?
+Microsoft.Maui.IWebView.UserAgent.set -> void
+static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Microsoft.UI.Xaml.Controls.WebView2! platformWebView, Microsoft.Maui.IWebView! webView) -> void
+*REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
+Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void

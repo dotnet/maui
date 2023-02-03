@@ -179,6 +179,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (_sideBySideView.Parent != PlatformView)
 				DrawerLayout.AddView(_sideBySideView);
+			else
+				UpdateDetailsFragmentView();
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(null);

@@ -22,6 +22,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public CookieContainer Cookies { get; }
 		public bool CanGoBack { get; set; }
 		public bool CanGoForward { get; set; }
+		public string UserAgent { get; set; }
 
 		public void GoBack() { }
 		public void GoForward() { }
@@ -50,8 +51,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			var v = Handler.PlatformView as MauiWKWebView;
 			var i = await v.TakeSnapshotAsync(new WebKit.WKSnapshotConfiguration
 			{
-				 Rect = v.Frame,
-				 AfterScreenUpdates = false
+				Rect = v.Frame,
+				AfterScreenUpdates = false
 			});
 			return i;
 #elif WINDOWS

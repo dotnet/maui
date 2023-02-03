@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Samples.ViewModel;
-using CommunityToolkit.Mvvm.Messaging;
 
 namespace Samples.Model
 {
