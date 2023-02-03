@@ -35,7 +35,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// Gets a value indicating whether using the phone dialer is supported on this device.
 		/// </summary>
 		public static bool IsSupported =>
-			Current.IsSupported;
+			Default.IsSupported;
 
 		/// <summary>
 		/// Open the phone dialer to a specific phone number.
@@ -48,12 +48,15 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// <exception cref="FeatureNotSupportedException">Thrown if making phone calls is not supported on the device.</exception>
 		/// <param name="number">Phone number to initialize the dialer with.</param>
 		public static void Open(string number)
-			=> Current.Open(number);
-
-		public static IPhoneDialer Current =>
-			defaultImplementation ??= new PhoneDialerImplementation();
+			=> Default.Open(number);
 
 		static IPhoneDialer? defaultImplementation;
+
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
+		public static IPhoneDialer Default =>
+			defaultImplementation ??= new PhoneDialerImplementation();
 
 		internal static void SetDefault(IPhoneDialer? implementation) =>
 			defaultImplementation = implementation;
