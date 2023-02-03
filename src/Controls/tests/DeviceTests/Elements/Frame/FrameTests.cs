@@ -22,6 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<StackLayout, LayoutHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Frame, FrameRenderer>();
 					handlers.AddHandler<Frame, FrameRenderer>();

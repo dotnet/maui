@@ -1,6 +1,6 @@
-using Microsoft.Maui.Graphics;
 using AppKit;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 
 namespace GraphicsTester.Mac

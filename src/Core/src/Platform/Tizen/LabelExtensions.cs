@@ -1,10 +1,10 @@
-﻿using Tizen.UIExtensions.Common;
+﻿using Microsoft.Maui.Graphics;
+using Tizen.NUI;
+using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
+using NColor = Tizen.UIExtensions.Common.Color;
 using TLineBreakMode = Tizen.UIExtensions.Common.LineBreakMode;
 using TTextDecorationse = Tizen.UIExtensions.Common.TextDecorations;
-using Microsoft.Maui.Graphics;
-using Tizen.NUI;
-using NColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Platform
 {

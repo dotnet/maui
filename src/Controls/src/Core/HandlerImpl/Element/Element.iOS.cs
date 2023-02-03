@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UIKit;
@@ -38,6 +39,18 @@ namespace Microsoft.Maui.Controls
 
 			var _defaultAccessibilityElementsHidden = Control.AccessibilityElementsHidden || Control is UIControl;
 			Control.AccessibilityElementsHidden = (bool)((bool?)view.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
+		}
+
+		static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, IElement element)
+		{
+			if (element is Element e)
+				MapAutomationPropertiesIsInAccessibleTree(handler, e);
+		}
+
+		static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, IElement element)
+		{
+			if (element is Element e)
+				MapAutomationPropertiesExcludedWithChildren(handler, e);
 		}
 	}
 }

@@ -22,7 +22,7 @@ class XamlCache
 
 	static TValue GetOrAdd<TKey, TValue>(Dictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> valueFactory)
 	{
-		if (!dictionary.TryGetValue (key, out TValue value))
+		if (!dictionary.TryGetValue(key, out TValue value))
 		{
 			value = dictionary[key] = valueFactory(key);
 		}

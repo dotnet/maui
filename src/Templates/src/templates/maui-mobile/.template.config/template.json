@@ -26,7 +26,7 @@
     "postActions": [
         {
             "id": "openInEditor",
-            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\")",
             "description": "Opens MainPage.xaml in the editor.",
             "manualInstructions": [],
             "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
@@ -53,8 +53,7 @@
     ],
     "preferNameDirectory": true,
     "guids": [
-      "07CD65EF-6238-4365-AF5D-F6D433967F48",
-      "919dc1f9-17a9-48b3-81f8-0b8016bdfbf7"
+      "07CD65EF-6238-4365-AF5D-F6D433967F48"
     ],
     "symbols": {
       "applicationId": {
