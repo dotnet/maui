@@ -2,8 +2,8 @@
 using Microsoft.Maui.Graphics;
 using Tizen.UIExtensions.NUI;
 using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;
-using NMeasuredSize = Tizen.NUI.MeasuredSize;
 using NLayoutLength = Tizen.NUI.LayoutLength;
+using NMeasuredSize = Tizen.NUI.MeasuredSize;
 
 namespace Microsoft.Maui
 {

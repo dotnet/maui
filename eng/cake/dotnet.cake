@@ -33,6 +33,17 @@ Task("dotnet")
         if (!localDotnet) 
             return;
 
+        //We are passing a nuget folder with nuget locations
+        if(!string.IsNullOrEmpty(nugetSource))
+        {
+            EnsureDirectoryExists(nugetSource);
+            var originalNuget = File("./NuGet.config");
+            ReplaceTextInFiles(
+                originalNuget,
+                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
+                $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
+        }
+
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
@@ -259,6 +270,7 @@ Task("dotnet-pack-maui")
         //We are passing a nuget folder with nuget locations
         if(!string.IsNullOrEmpty(nugetSource))
         {
+            EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
             ReplaceTextInFiles(
                 originalNuget,
@@ -303,24 +315,6 @@ Task("dotnet-pack-library-packs")
         var destDir = $"./artifacts/library-packs";
         EnsureDirectoryExists(destDir);
         CleanDirectories(destDir);
-
-        void Download(string id, string version, params string[] sources)
-        {
-            version = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/" + version);
-
-            NuGetInstall(id, new NuGetInstallSettings
-            {
-                Version = version,
-                ExcludeVersion = false,
-                OutputDirectory = tempDir,
-                Source = sources,
-            });
-
-            CopyFiles($"{tempDir}/**/" + id + "." + version + ".nupkg", destDir, false);
-            CleanDirectories(tempDir);
-        }
-
-        // Download("PACKAGE_ID", "VERSION_VARIABLE", "SOURCE_URL");
     });
 
 Task("dotnet-pack-docs")
@@ -695,7 +689,9 @@ void RunTestWithLocalDotNet(string csproj)
             Configuration = configuration,
             ToolPath = dotnetPath,
             NoBuild = true,
-            Logger = $"trx;LogFileName={results}",
+            Loggers = {
+                $"trx;LogFileName={results}"
+            },
             ResultsDirectory = GetTestResultsDirectory(),
             ArgumentCustomization = args => args.Append($"-bl:{binlog}")
         });

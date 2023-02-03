@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Layouts
 					ResolveStarRows(_gridHeightConstraint);
 				}
 			}
-			
+
 			public Rect GetCellBoundsFor(IView view, double xOffset, double yOffset)
 			{
 				var firstColumn = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
@@ -623,7 +623,7 @@ namespace Microsoft.Maui.Layouts
 				if (decompressing)
 				{
 					// This pass is for arrangement, we don't need to update the measure values
-					return;				
+					return;
 				}
 
 				foreach (var cell in _cells)
@@ -933,7 +933,7 @@ namespace Microsoft.Maui.Layouts
 				return !AnyAuto(_rows);
 			}
 
-			void UpdateKnownMeasureWidth(Cell cell) 
+			void UpdateKnownMeasureWidth(Cell cell)
 			{
 				double measureWidth = 0;
 				for (int column = cell.Column; column < cell.Column + cell.ColumnSpan; column++)

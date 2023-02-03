@@ -268,6 +268,11 @@ namespace Microsoft.Maui.Platform
 
 			var layer = view.Layer;
 
+			UpdateBackgroundLayerFrame(layer, view.Bounds);
+		}
+
+		static void UpdateBackgroundLayerFrame(CALayer layer, CGRect bounds)
+		{
 			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
 
@@ -287,6 +292,8 @@ namespace Microsoft.Maui.Platform
 					sublayer.Frame = bounds;
 					break;
 				}
+
+				UpdateBackgroundLayerFrame(sublayer, bounds);
 			}
 		}
 
