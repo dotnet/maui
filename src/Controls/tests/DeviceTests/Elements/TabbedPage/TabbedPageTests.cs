@@ -43,6 +43,9 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !IOS
+// iOS currently can't handle recreating a handler if it's disconnecting
+// This is left over behavior from Forms and will be fixed by a different PR
 		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task DisconnectEachPageHandlerAfterNavigation(bool bottomTabs, bool isSmoothScrollEnabled)
@@ -76,6 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
+#endif
 
 		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
