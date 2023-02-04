@@ -31,6 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
 
 #if IOS || MACCATALYST
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
@@ -44,8 +45,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if !IOS
-// iOS currently can't handle recreating a handler if it's disconnecting
-// This is left over behavior from Forms and will be fixed by a different PR
+		// iOS currently can't handle recreating a handler if it's disconnecting
+		// This is left over behavior from Forms and will be fixed by a different PR
 		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task DisconnectEachPageHandlerAfterNavigation(bool bottomTabs, bool isSmoothScrollEnabled)
@@ -55,7 +56,13 @@ namespace Microsoft.Maui.DeviceTests
 			List<Page> navPages = new List<Page>();
 			var pageCount = 5;
 			for (int i = 0; i < pageCount; i++)
-				navPages.Add(new NavigationPage(new ContentPage()) { Title = $"App Page {i}" });
+			{
+				navPages.Add(new NavigationPage(new ContentPage()
+				{
+					Content = new Label() { Text = $"Page {i}" }
+				})
+				{ Title = $"App Page {i}" });
+			}
 
 			var tabbedPage =
 				CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled, navPages);

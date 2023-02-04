@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class MultiPageFragmentStateAdapter<T> : FragmentStateAdapter where T : Page
+	internal class MultiPageFragmentStateAdapter<T> : FragmentStateAdapter where T : Page
 	{
 		MultiPage<T> _page;
 		readonly IMauiContext _context;
@@ -47,14 +46,14 @@ namespace Microsoft.Maui.Controls.Platform
 			var page = _page.Children[position];
 			for (var i = 0; i < keys.Count; i++)
 			{
-				AdapterItemKey item = keys[i];
+				var item = keys[i];
 				if (item.Page == page)
 				{
 					return item;
 				}
 			}
 
-			AdapterItemKey itemKey = new AdapterItemKey(page, (ik) => keys.Remove(ik));
+			var itemKey = new AdapterItemKey(page, (ik) => keys.Remove(ik));
 			keys.Add(itemKey);
 
 			return itemKey;
@@ -65,7 +64,7 @@ namespace Microsoft.Maui.Controls.Platform
 			CheckItemKeys();
 			for (var i = 0; i < keys.Count; i++)
 			{
-				AdapterItemKey item = keys[i];
+				var item = keys[i];
 				if (item.ItemId == itemId)
 				{
 					return item;
@@ -79,7 +78,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			for (var i = keys.Count - 1; i >= 0; i--)
 			{
-				AdapterItemKey item = keys[i];
+				var item = keys[i];
 
 				if (!_page.Children.Contains(item.Page))
 				{

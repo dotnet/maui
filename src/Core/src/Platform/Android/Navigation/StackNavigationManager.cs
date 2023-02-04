@@ -286,6 +286,9 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			if (IsNavigating)
+				NavigationFinished(NavigationView);
+
 			_fragmentLifecycleCallbacks?.Disconnect();
 			_fragmentLifecycleCallbacks = null;
 
@@ -389,10 +392,6 @@ namespace Microsoft.Maui.Platform
 			if (IsNavigating)
 			{
 				NavigationFinished(NavigationView);
-			}
-			else
-			{
-				var gm = MauiContext.GetFragmentManager();
 			}
 		}
 

@@ -349,12 +349,15 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 				return;
 			}
-			
+
 			if (page.HasNavigatedTo)
 			{
 				// TabbedPage fires OnNavigated earlier than it should
 				if (page.Parent is TabbedPage)
-					await Task.Delay(50);
+					await Task.Delay(10);
+
+				if (page is IPageContainer<Page> pc)
+					await OnNavigatedToAsync(pc.CurrentPage);
 
 				return;
 			}
@@ -368,7 +371,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// TabbedPage fires OnNavigated earlier than it should
 			if (page.Parent is TabbedPage)
-				await Task.Delay(50);
+				await Task.Delay(10);
 
 			void NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
