@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVisibility(this NView platformView, Visibility visibility)
 		{
-			if (view.Visibility.ToPlatformVisibility())
+			if (visibility.ToPlatformVisibility())
 			{
 				platformView.Show();
 				platformView.Layout?.RequestLayout();

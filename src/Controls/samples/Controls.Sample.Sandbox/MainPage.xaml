@@ -4,4 +4,23 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+    <ContentPage.Resources>
+        <local:CrossDrawable x:Key="CrossDrawable" />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="*,Auto">
+        <GraphicsView x:Name="Cross"
+                      IsVisible="False"
+                      InputTransparent="True"
+                      HorizontalOptions="Center"
+                      VerticalOptions="Center"
+                      HeightRequest="50"
+                      WidthRequest="50"
+                      Drawable="{StaticResource CrossDrawable}" />
+
+        <Button Grid.Row="1"
+                Text="Toggle"
+                Clicked="Button_Clicked" />
+    </Grid>
+
 </ContentPage>

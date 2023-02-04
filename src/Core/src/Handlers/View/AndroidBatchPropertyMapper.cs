@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Handlers
 		// During mass property updates, this list of properties will be skipped
 		public static HashSet<string> SkipList = new(StringComparer.Ordinal)
 		{ 
-			nameof(IView.Visibility),
 			nameof(IView.MinimumHeight),
 			nameof(IView.MinimumWidth),
 			nameof(IView.IsEnabled),

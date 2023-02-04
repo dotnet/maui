@@ -26,20 +26,10 @@ namespace Microsoft.Maui.Platform
 		{
 			var pivotX = (float)(view.AnchorX * platformView.ToPixels(view.Frame.Width));
 			var pivotY = (float)(view.AnchorY * platformView.ToPixels(view.Frame.Height));
-			int visibility;
-
-			if (view is IActivityIndicator a)
-			{
-				visibility = (int)a.GetActivityIndicatorVisibility();
-			}
-			else
-			{
-				visibility = (int)view.Visibility.ToPlatformVisibility();
-			}
 
 			// NOTE: use named arguments for clarity
 			PlatformInterop.Set(platformView,
-				visibility: visibility,
+				visibility: 0,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
 				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
