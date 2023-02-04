@@ -1,35 +1,32 @@
-#nullable disable
 using System;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal class FragmentContainer : Fragment
 	{
-		readonly WeakReference _pageRenderer;
+		AView? _pageContainer;
 		readonly IMauiContext _mauiContext;
-		Action<AView> _onCreateCallback;
-		AView _pageContainer;
-		ViewGroup _parent;
+		Action<AView>? _onCreateCallback;
+		ViewGroup? _parent;
+		AdapterItemKey _adapterItemKey;
 
-		public FragmentContainer(Page page, IMauiContext mauiContext)
+		public FragmentContainer(AdapterItemKey adapterItemKey, IMauiContext mauiContext)
 		{
-			_pageRenderer = new WeakReference(page);
 			_mauiContext = mauiContext;
+			_adapterItemKey = adapterItemKey;
 		}
 
-		public virtual Page Page => (Page)_pageRenderer?.Target;
+		public Page Page => _adapterItemKey.Page;
 
-		public static FragmentContainer CreateInstance(Page page, IMauiContext mauiContext)
+		public static FragmentContainer CreateInstance(AdapterItemKey adapterItemKey, IMauiContext mauiContext)
 		{
-			return new FragmentContainer(page, mauiContext) { Arguments = new Bundle() };
+			return new FragmentContainer(adapterItemKey, mauiContext) { Arguments = new Bundle() };
 		}
 
 		public void SetOnCreateCallback(Action<AView> callback)
@@ -37,20 +34,16 @@ namespace Microsoft.Maui.Controls.Platform
 			_onCreateCallback = callback;
 		}
 
-		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+		public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
 			_parent = container ?? _parent;
 
-			if (Page != null)
-			{
-				_pageContainer = Page.ToPlatform(_mauiContext, RequireContext(), inflater, ChildFragmentManager);
-				_parent = _parent ?? (_pageContainer.Parent as ViewGroup);
-				_onCreateCallback?.Invoke(_pageContainer);
+			_pageContainer = Page.ToPlatform(_mauiContext, RequireContext(), inflater, ChildFragmentManager);
+			_adapterItemKey.SetToStableView();
+			_parent = _parent ?? (_pageContainer.Parent as ViewGroup);
+			_onCreateCallback?.Invoke(_pageContainer);
 
-				return _pageContainer;
-			}
-
-			return null;
+			return _pageContainer;
 		}
 
 		public override void OnDestroy()

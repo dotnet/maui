@@ -45,6 +45,40 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
+		public async Task DisconnectEachPageHandlerAfterNavigation(bool bottomTabs, bool isSmoothScrollEnabled)
+		{
+			SetupBuilder();
+
+			List<Page> navPages = new List<Page>();
+			var pageCount = 5;
+			for (int i = 0; i < pageCount; i++)
+				navPages.Add(new NavigationPage(new ContentPage()) { Title = $"App Page {i}" });
+
+			var tabbedPage =
+				CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled, navPages);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
+			{
+				for (int i = 0; i < pageCount * 2; i++)
+				{
+					var currentPage = tabbedPage.CurrentPage;
+					var previousPage = currentPage;
+
+					await OnNavigatedToAsync(currentPage);
+					int pageIndex = tabbedPage.Children.IndexOf(currentPage) + 1;
+					if (pageIndex >= pageCount)
+						pageIndex = 0;
+
+					var nextPage = tabbedPage.Children[pageIndex];
+					tabbedPage.CurrentPage = nextPage;
+					await OnNavigatedToAsync(nextPage);
+					previousPage.Handler.DisconnectHandler();
+				}
+			});
+		}
+
+		[Theory]
+		[ClassData(typeof(TabbedPagePivots))]
 		public async Task PoppingTabbedPageDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
 			SetupBuilder();
@@ -202,7 +236,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
-			
+
 		[Theory]
 #if ANDROID
 		[InlineData(true)]
