@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Event args for the geolocation listening error event.
 	/// </summary>
-	public class GeolocationErrorEventArgs : EventArgs
+	public class GeolocationListeningFailedEventArgs : EventArgs
 	{
 		/// <summary>
 		/// The geolocation error that describes the error that occurred.
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Creates a new geolocation error event args object
 		/// </summary>
 		/// <param name="geolocationError">gelocation error to use for this object</param>
-		public GeolocationErrorEventArgs(GeolocationError geolocationError)
+		public GeolocationListeningFailedEventArgs(GeolocationError geolocationError)
 		{
 			Error = geolocationError;
 		}

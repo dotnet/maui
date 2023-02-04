@@ -41,10 +41,11 @@ namespace Microsoft.Maui.Devices.Sensors
 		event EventHandler<LocationEventArgs>? LocationChanged;
 
 		/// <summary>
-		/// Occurs when an error during listening for location updates arises. When getting the event,
-		/// listening for further updates may have been stopped.
+		/// Occurs when an error during listening for location updates arises. When the event is
+		/// fired, listening for further location updates has been stopped and no further
+		/// <see cref="LocationChanged"/> events are sent.
 		/// </summary>
-		event EventHandler<GeolocationErrorEventArgs>? LocationError;
+		event EventHandler<GeolocationListeningFailedEventArgs>? ListeningFailed;
 
 		/// <summary>
 		/// Starts listening to location updates using the <see cref="LocationChanged"/> event. Events
@@ -124,18 +125,18 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		/// <summary>
 		/// Occurs when an error during listening for location updates arises. When the event is
-		/// fired, listening to locations is stopped and no further <see cref="LocationChanged"/>
-		/// events are sent.
+		/// fired, listening for further location updates has been stopped and no further
+		/// <see cref="LocationChanged"/> events are sent.
 		/// </summary>
-		public static event EventHandler<GeolocationErrorEventArgs> LocationError
+		public static event EventHandler<GeolocationListeningFailedEventArgs> ListeningFailed
 		{
-			add => Current.LocationError += value;
-			remove => Current.LocationError -= value;
+			add => Current.ListeningFailed += value;
+			remove => Current.ListeningFailed -= value;
 		}
 
 		/// <summary>
 		/// Starts listening to location updates using the <see cref="Geolocation.LocationChanged"/>
-		/// event or the <see cref="Geolocation.LocationError"/> event. Events may only sent when
+		/// event or the <see cref="Geolocation.ListeningFailed"/> event. Events may only sent when
 		/// the app is in the foreground. Requests <see cref="Permissions.LocationWhenInUse"/>
 		/// from the user.
 		/// </summary>
@@ -173,7 +174,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		public event EventHandler<LocationEventArgs>? LocationChanged;
 
-		public event EventHandler<GeolocationErrorEventArgs>? LocationError;
+		public event EventHandler<GeolocationListeningFailedEventArgs>? ListeningFailed;
 
 		internal void OnLocationChanged(Location location) =>
 			OnLocationChanged(new LocationEventArgs(location));
@@ -182,7 +183,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			LocationChanged?.Invoke(null, e);
 
 		internal void OnLocationError(GeolocationError geolocationError) =>
-			LocationError?.Invoke(null, new GeolocationErrorEventArgs(geolocationError));
+			ListeningFailed?.Invoke(null, new GeolocationListeningFailedEventArgs(geolocationError));
 	}
 
 	/// <summary>

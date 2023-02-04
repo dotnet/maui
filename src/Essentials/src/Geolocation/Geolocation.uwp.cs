@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		/// <summary>
 		/// Starts listening to location updates using the <see cref="Geolocation.LocationChanged"/>
-		/// event or the <see cref="Geolocation.LocationError"/> event. Events may only sent when
+		/// event or the <see cref="Geolocation.ListeningFailed"/> event. Events may only sent when
 		/// the app is in the foreground. Requests <see cref="Permissions.LocationWhenInUse"/>
 		/// from the user.
 		/// </summary>
