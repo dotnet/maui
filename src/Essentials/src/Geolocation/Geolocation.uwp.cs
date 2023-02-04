@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Indicates if currently listening to location updates while the app is in foreground.
 		/// </summary>
-		public bool IsListeningForeground { get => false; }
+		public bool IsListeningForeground { get => listeningGeolocator != null; }
 
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
