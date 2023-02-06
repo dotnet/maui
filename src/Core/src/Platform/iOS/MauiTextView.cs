@@ -97,6 +97,15 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal double PlaceholderFontSize
+		{
+			get => _placeholderLabel.Font.PointSize;
+			set
+			{
+				_placeholderLabel.Font = _placeholderLabel.Font.WithSize((nfloat)value);
+			}
+		}
+
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
