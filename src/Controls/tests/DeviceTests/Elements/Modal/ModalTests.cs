@@ -170,6 +170,40 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, windowDisappearing);
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task LifeCycleEventsFireOnModalPagesPushedBeforeWindowHasLoaded(bool useShell)
+		{
+			SetupBuilder();
+			var windowPage = new LifeCycleTrackingPage();
+			var modalPage = new LifeCycleTrackingPage()
+			{
+				Content = new Label()
+			};
+
+			Window window;
+
+			if (useShell)
+				window = new Window(new Shell() { CurrentItem = windowPage });
+			else
+				window = new Window(windowPage);
+
+			await windowPage.Navigation.PushModalAsync(modalPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (_) =>
+				{
+					await OnNavigatedToAsync(modalPage);
+					await OnLoadedAsync(modalPage.Content);
+
+					Assert.Equal(0, windowPage.AppearingCount);
+
+					Assert.Equal(1, modalPage.AppearingCount);
+					Assert.Equal(1, modalPage.OnNavigatedToCount);
+				});
+		}
+
 		[Fact]
 		public async Task LoadModalPagesBeforeWindowHasLoaded()
 		{
@@ -190,7 +224,6 @@ namespace Microsoft.Maui.DeviceTests
 					await OnLoadedAsync(modalPage.Content);
 				});
 		}
-
 
 		[Fact]
 		public async Task SwapWindowPageDuringModalAppearing()

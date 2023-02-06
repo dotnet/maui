@@ -84,6 +84,15 @@ namespace Microsoft.Maui.Controls.Platform
 			SyncPlatformModalStackAsync().FireAndForget(logger, callerName);
 		}
 
+		// This code only processes a single sync action per call.
+		// It recursively calls itself until no more sync actions are left to perform.
+		//
+		// A lot can change during the process of pushing/popping a page
+		// i.e. Users might change the root page during an appearing event.
+		// So, instead of just bull dozing through the whole sync we perform one
+		// sync step then recalculate the state of affairs and then perform another
+		// until no more sync operations are left.
+		// Typically it's always a good idea to re-evaluate after any async operation has completed
 		async Task SyncPlatformModalStackAsync()
 		{
 			if (!IsModalReady || syncing)
@@ -94,6 +103,9 @@ namespace Microsoft.Maui.Controls.Platform
 			try
 			{
 				syncing = true;
+
+				await WindowReadyForModal();
+
 				int popTo = 0;
 
 				for (var i = 0; i < _platformModalPages.Count && i < _modalPages.Count; i++)
@@ -110,7 +122,9 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_platformModalPages.Count == _modalPages.Count && popTo == _platformModalPages.Count)
 					return;
 
-				await WindowReadyForModal();
+				// This ensures that appearing has fired on the final page that will be visible after 
+				// the sync has finished
+				CurrentPage?.SendAppearing();
 
 				// Pop platform modal pages until we get to the point where the xplat expectation
 				// matches the platform modals

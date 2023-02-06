@@ -231,18 +231,6 @@ namespace Microsoft.Maui.Controls.Platform
 				vg.DescendantFocusability = DescendantFocusability.BlockDescendants;
 		}
 
-		internal bool HandleBackPressed()
-		{
-			if (NavAnimationInProgress)
-				return true;
-
-			// TODO this is probably wrong
-			Page root = _platformModalPages[_platformModalPages.Count - 1]; //_navModel[_platformModalPages].LastRoot;
-			bool handled = root?.SendBackButtonPressed() ?? false;
-
-			return handled;
-		}
-
 		sealed class ModalContainer : ViewGroup
 		{
 			AView _backgroundView;

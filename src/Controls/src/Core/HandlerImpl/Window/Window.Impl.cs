@@ -413,12 +413,15 @@ namespace Microsoft.Maui.Controls
 
 		void SendWindowAppearing()
 		{
-			Page?.SendAppearing();
+			if (Navigation.ModalStack.Count == 0)
+				Page?.SendAppearing();
 		}
 
 		void SendWindowDisppearing()
 		{
-			Page?.SendDisappearing();
+			if (Navigation.ModalStack.Count == 0)
+				Page?.SendDisappearing();
+
 			IsActivated = false;
 		}
 
