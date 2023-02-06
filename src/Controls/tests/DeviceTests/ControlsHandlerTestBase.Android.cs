@@ -211,6 +211,11 @@ namespace Microsoft.Maui.DeviceTests
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
 				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 
+				if (_window is Window window)
+				{
+					window.ModalNavigationManager.SetModalParentView(FakeActivityRootView);
+				}
+
 				return FakeActivityRootView;
 			}
 
