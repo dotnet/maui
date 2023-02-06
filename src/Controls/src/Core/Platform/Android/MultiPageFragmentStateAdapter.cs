@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class MultiPageFragmentStateAdapter<T> : FragmentStateAdapter where T : Page
+	internal class MultiPageFragmentStateAdapter<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] T> : FragmentStateAdapter where T : Page
 	{
 		MultiPage<T> _page;
 		readonly IMauiContext _context;
