@@ -16,10 +16,10 @@ namespace Microsoft.Maui
 		void PlatformArrange(Rect frame);
 	}
 
-	public interface INeedsContainerViewHandler : IViewHandler
+	public interface IDynamicContainerViewHandler : IViewHandler
 	{
 		bool NeedsContainer { get; }
 
-		ICollection<string> ChangesContainer { get; }
+		ICollection<string> ContainerAffectingProperties { get; }
 	}
 }

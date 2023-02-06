@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ILabelHandler handler, ILabel label)
 		{
-			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Background));
+			(handler as IDynamicContainerViewHandler)?.ContainerAffectingProperties?.Add(nameof(IView.Background));
 
 			handler.ToPlatform().UpdateBackground(label);
 		}

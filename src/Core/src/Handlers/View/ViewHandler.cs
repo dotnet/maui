@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
@@ -14,7 +16,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler : ElementHandler, IViewHandler, INeedsContainerViewHandler
+	public abstract partial class ViewHandler : ElementHandler, IViewHandler, IDynamicContainerViewHandler
 	{
 		public static IPropertyMapper<IView, IViewHandler> ViewMapper =
 #if ANDROID
@@ -49,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.RotationY)] = MapRotationY,
 				[nameof(IView.AnchorX)] = MapAnchorX,
 				[nameof(IView.AnchorY)] = MapAnchorY,
-				[nameof(INeedsContainerViewHandler.NeedsContainer)] = MapNeedsContainer,
+				[nameof(IDynamicContainerViewHandler.NeedsContainer)] = MapNeedsContainer,
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IBorder.Border)] = MapBorderView,
 #if ANDROID || WINDOWS || TIZEN
@@ -69,19 +71,20 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.ZIndex)] = MapZIndex,
 			[nameof(IView.Focus)] = MapFocus,
 			[nameof(IView.Unfocus)] = MapUnfocus,
-			[nameof(INeedsContainerViewHandler.NeedsContainer)] = MapNeedsContainer,
 		};
 
 		bool _hasContainer;
+		readonly CollectionWithEvents _changesContainer = new();
 
 		internal DataFlowDirection DataFlowDirection { get; set; }
 
 		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 			: base(mapper, commandMapper ?? ViewCommandMapper)
 		{
+			_changesContainer.Changed += OnChangedContainerCollectionChanged;
 		}
 
-		public ICollection<string> ChangesContainer { get; } = new HashSet<string>();
+		ICollection<string> IDynamicContainerViewHandler.ContainerAffectingProperties => _changesContainer;
 
 		public bool HasContainer
 		{
@@ -227,9 +230,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(IViewHandler handler, IView view)
 		{
-			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Visibility));
+			(handler as IDynamicContainerViewHandler)?.ContainerAffectingProperties?.Add(nameof(IView.Visibility));
 #if WINDOWS
-			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Opacity));
+			(handler as IDynamicContainerViewHandler)?.ContainerAffectingProperties?.Add(nameof(IView.Opacity));
 #endif
 
 			if (handler.HasContainer)
@@ -272,9 +275,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOpacity(IViewHandler handler, IView view)
 		{
-			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Opacity));
+			(handler as IDynamicContainerViewHandler)?.ContainerAffectingProperties?.Add(nameof(IView.Opacity));
 #if WINDOWS
-			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Visibility));
+			(handler as IDynamicContainerViewHandler)?.ContainerAffectingProperties?.Add(nameof(IView.Visibility));
 #endif
 
 			if (handler.HasContainer)
@@ -299,14 +302,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClip(IViewHandler handler, IView view)
 		{
-			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Clip));
+			(handler as IDynamicContainerViewHandler)?.ContainerAffectingProperties?.Add(nameof(IView.Clip));
 
 			((PlatformView?)handler.ContainerView)?.UpdateClip(view);
 		}
 
 		public static void MapShadow(IViewHandler handler, IView view)
 		{
-			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.Shadow));
+			(handler as IDynamicContainerViewHandler)?.ContainerAffectingProperties?.Add(nameof(IView.Shadow));
 
 			((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
 		}
@@ -324,32 +327,24 @@ namespace Microsoft.Maui.Handlers
 			(handler.PlatformView as PlatformView)?.InvalidateMeasure(view);
 		}
 
-		public static void MapNeedsContainer(IViewHandler handler, IView view, object? args)
-		{
-			if (handler is ViewHandler viewHandler && args is string mapper)
-				viewHandler.ChangesContainer.Add(mapper);
-
-			handler.UpdateValue(nameof(INeedsContainerViewHandler.NeedsContainer));
-		}
-
 		public static void MapNeedsContainer(IViewHandler handler, IView view)
 		{
-			if (handler is INeedsContainerViewHandler ncvh)
-				handler.HasContainer = ncvh.NeedsContainer;
+			if (handler is IDynamicContainerViewHandler dyn && dyn.HasContainer != dyn.NeedsContainer)
+				dyn.HasContainer = dyn.NeedsContainer;
 		}
 
 		public static void MapContainerView(IViewHandler handler, IView view)
 		{
-			if (handler is INeedsContainerViewHandler ncvh)
+			if (handler is IDynamicContainerViewHandler dyn)
 			{
-				foreach (var map in ncvh.ChangesContainer)
+				foreach (var map in dyn.ContainerAffectingProperties)
 					handler.UpdateValue(map);
 			}
 		}
 
 		public static void MapBorderView(IViewHandler handler, IView view)
 		{
-			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IBorder.Border));
+			(handler as IDynamicContainerViewHandler)?.ContainerAffectingProperties?.Add(nameof(IBorder.Border));
 
 			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
 		}
@@ -385,7 +380,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapInputTransparent(IViewHandler handler, IView view)
 		{
 #if ANDROID
-			handler.Invoke(nameof(INeedsContainerViewHandler.NeedsContainer), nameof(IView.InputTransparent));
+			(handler as IDynamicContainerViewHandler)?.ContainerAffectingProperties?.Add(nameof(IView.InputTransparent));
 			((PlatformView?)handler.ContainerView)?.UpdateInputTransparent(view);
 #else
 			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(view);
@@ -403,6 +398,50 @@ namespace Microsoft.Maui.Handlers
 			if (view is IToolTipElement tooltipContainer)
 				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
 #endif
+		}
+
+		void OnChangedContainerCollectionChanged(object? sender, EventArgs e) =>
+			UpdateValue(nameof(IDynamicContainerViewHandler.NeedsContainer));
+
+		class CollectionWithEvents : ICollection<string>
+		{
+			HashSet<string> properties = new();
+
+			public event EventHandler? Changed;
+
+			public int Count => properties.Count;
+
+			public bool IsReadOnly => false;
+
+			public void Add(string item)
+			{
+				if (properties.Add(item))
+					Changed?.Invoke(this, EventArgs.Empty);
+			}
+
+			public void Clear()
+			{
+				properties.Clear();
+				Changed?.Invoke(this, EventArgs.Empty);
+			}
+
+			public bool Contains(string item) => properties.Contains(item);
+
+			public void CopyTo(string[] array, int arrayIndex) => properties.CopyTo(array, arrayIndex);
+
+			public IEnumerator<string> GetEnumerator() => properties.GetEnumerator();
+
+			public bool Remove(string item)
+			{
+				if (properties.Remove(item))
+				{
+					Changed?.Invoke(this, EventArgs.Empty);
+					return true;
+				}
+				return false;
+			}
+
+			IEnumerator IEnumerable.GetEnumerator() => properties.GetEnumerator();
 		}
 	}
 }
