@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 			return result;
 		}
 
-		public static UIView FindContentView()
+		public static UIViewController FindContentViewController()
 		{
 			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 			{
@@ -159,7 +159,12 @@ namespace Microsoft.Maui.DeviceTests
 				viewController = nav.VisibleViewController;
 			}
 
-			var currentView = viewController.View;
+			return viewController;
+		}
+
+		public static UIView FindContentView()
+		{
+			var currentView = FindContentViewController().View;
 
 			if (currentView == null)
 			{

@@ -16,24 +16,32 @@ namespace Microsoft.Maui.Controls.Platform
 		List<Page> _modalPages = new List<Page>();
 		List<Page> _platformModalPages = new List<Page>();
 		Page? _currentPage;
+
 		Page CurrentPlatformPage =>
 			_platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : (_window.Page ?? throw new InvalidOperationException("Current Window isn't loaded"));
 
 		Page CurrentPlatformModalPage =>
 			_platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : throw new InvalidOperationException("Modal Stack is Empty");
 
+		Page? CurrentPage =>
+			_modalPages.Count > 0 ? _modalPages[_modalPages.Count - 1] : _window.Page;
+
+		// Shell takes care of firing its own Modal life cycle events
+		// With shell you cam remove / add multiple modals at once
+		bool FireLifeCycleEvents => _window?.Page is not Shell;
+
+		partial void InitializePlatform();
+
 		public ModalNavigationManager(Window window)
 		{
 			_window = window;
+			InitializePlatform();
 
-#if WINDOWS
-			_window.Created += (_, _) => SyncPlatformModalStack();
-#else
-			_window.Activated += (_, _) => SyncPlatformModalStack();
-			_window.Resumed += (_, _) => SyncPlatformModalStack();
-#endif
 			_window.HandlerChanging += OnWindowHandlerChanging;
-			_window.Destroying += (_, _) => _platformModalPages.Clear();
+			_window.Destroying += (_, _) =>
+			{
+				_platformModalPages.Clear();
+			};
 		}
 
 		void OnWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
@@ -46,7 +54,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public Task<Page> PopModalAsync()
+		public Task<Page?> PopModalAsync()
 		{
 			return PopModalAsync(true);
 		}
@@ -81,6 +89,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!IsModalReady || syncing)
 				return;
 
+			bool changed = false;
+
 			try
 			{
 				syncing = true;
@@ -104,50 +114,113 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// Pop platform modal pages until we get to the point where the xplat expectation
 				// matches the platform modals
-				while (_platformModalPages.Count > popTo && IsModalReady)
+				if (_platformModalPages.Count > popTo && IsModalReady)
 				{
-					await PopModalPlatformAsync(false);
+					var page = await PopModalPlatformAsync(false);
+					page.Parent = null;
+					changed = true;
 				}
 
-				//push any modals that need to be synced
-				for (var i = _platformModalPages.Count; i < _modalPages.Count && IsModalReady; i++)
+				if (!changed)
 				{
-					await PushModalPlatformAsync(_modalPages[i], false);
+					//push any modals that need to be synced
+					var i = _platformModalPages.Count;
+					if (i < _modalPages.Count && IsModalReady)
+					{
+						await PushModalPlatformAsync(_modalPages[i], false);
+						changed = true;
+					}
 				}
 			}
 			finally
 			{
 				syncing = false;
 			}
+
+			if (changed)
+			{
+				await SyncPlatformModalStackAsync();
+			}
 		}
 
-		public Task<Page> PopModalAsync(bool animated)
+		public async Task<Page?> PopModalAsync(bool animated)
 		{
 			Page modal = _modalPages[_modalPages.Count - 1];
+
+			if (_window.OnModalPopping(modal))
+			{
+				_window.OnPopCanceled();
+				return null;
+			}
+
 			_modalPages.Remove(modal);
 
-			if (!IsModalReady)
+			if (FireLifeCycleEvents)
 			{
-				return Task.FromResult(modal);
+				modal.SendNavigatingFrom(new NavigatingFromEventArgs());
+				modal.SendDisappearing();
+				CurrentPage?.SendAppearing();
+			}
+
+			Task popTask;
+			if (IsModalReady)
+			{
+				popTask = PopModalPlatformAsync(animated);
 			}
 			else
 			{
-				return PopModalPlatformAsync(animated);
+				popTask = Task.CompletedTask;
 			}
+
+			await popTask;
+			modal.Parent = null;
+			_window.OnModalPopped(modal);
+
+			if (FireLifeCycleEvents)
+			{
+				modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(modal));
+			}
+
+			return modal;
 		}
 
-		public Task PushModalAsync(Page modal, bool animated)
+		public async Task PushModalAsync(Page modal, bool animated)
 		{
+			_window.OnModalPushing(modal);
+			modal.Parent = _window;
+
+			var previousPage = CurrentPage;
 			_modalPages.Add(modal);
 
-			if (!IsModalReady)
+			if (FireLifeCycleEvents)
 			{
-				return Task.CompletedTask;
+				previousPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+				previousPage?.SendDisappearing();
+				CurrentPage?.SendAppearing();
 			}
-			else
+
+			if (IsModalReady)
 			{
-				return PushModalPlatformAsync(modal, animated);
+				if (ModalStack.Count == 0)
+				{
+					modal.NavigationProxy.Inner = _window.Navigation;
+					await PushModalPlatformAsync(modal, animated);
+				}
+				else
+				{
+					await PushModalPlatformAsync(modal, animated);
+					modal.NavigationProxy.Inner = _window.Navigation;
+				}
 			}
+
+			if (FireLifeCycleEvents)
+			{
+				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
+			}
+
+			_window.OnModalPushed(modal);
 		}
 
 		internal void SettingNewPage()

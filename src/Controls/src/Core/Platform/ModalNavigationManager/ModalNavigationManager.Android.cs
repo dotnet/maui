@@ -18,6 +18,12 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
+		partial void InitializePlatform()
+		{
+			_window.Activated += (_, _) => SyncPlatformModalStack();
+			_window.Resumed += (_, _) => SyncPlatformModalStack();
+		}
+
 		ViewGroup? _modalParentView;
 		bool _navAnimationInProgress;
 		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";

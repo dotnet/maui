@@ -12,12 +12,46 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
+		// We need to wait for the window to be activated the first time before
+		// we push any modal views.
+		// After it's been activated we can push modals if the app has been sent to
+		// the background so we don't care if it becomes inactive
+		TaskCompletionSource? _platformActivated;
+
+		partial void InitializePlatform()
+		{
+			_window.Activated += OnWindowActivated;
+			_window.Resumed += (_, _) => SyncPlatformModalStack();
+			_window.HandlerChanging += OnPlatformWindowHandlerChanging;
+
+			if (!_window.IsActivated)
+				_platformActivated = new TaskCompletionSource();
+		}
+
+		private void OnPlatformWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
+		{
+			if (!_window.IsActivated && _platformActivated == null)
+				_platformActivated = new TaskCompletionSource();
+		}
+
+		void OnWindowActivated(object? sender, EventArgs e)
+		{
+			if (_platformActivated != null)
+			{
+				var source = _platformActivated;
+				_platformActivated = null;
+				source?.SetResult();
+			}
+
+			SyncPlatformModalStack();
+		}
+
 		UIViewController? WindowViewController
 		{
 			get
 			{
 				if (_window?.Page?.Handler is IPlatformViewHandler pvh &&
-					pvh.ViewController != null)
+					pvh.ViewController?.ViewIfLoaded?.Window != null)
 				{
 					return pvh.ViewController;
 				}
@@ -28,7 +62,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		Task WindowReadyForModal() => Task.CompletedTask;
+		Task WindowReadyForModal() => _platformActivated?.Task ?? Task.CompletedTask;
 
 		async Task<Page> PopModalPlatformAsync(bool animated)
 		{
@@ -37,11 +71,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var controller = (modal.Handler as IPlatformViewHandler)?.ViewController;
 
-			if (ModalStack.Count >= 1 && controller != null)
-				await controller.DismissViewControllerAsync(animated);
-			else if (WindowViewController != null)
-				await WindowViewController.DismissViewControllerAsync(animated);
+			if (controller?.ParentViewController is ModalWrapper modalWrapper &&
+				modalWrapper.PresentingViewController != null)
+			{
+				await modalWrapper.PresentingViewController.DismissViewControllerAsync(animated);
+				return modal;
+			}
 
+			// if the presnting VC is null that means the modal window was already dismissed
+			// this will usually happen as a result of swapping out the content on the window
+			// which is what was acting as the PresentingViewController
 			return modal;
 		}
 
@@ -49,18 +88,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			EndEditing();
 
-			var elementConfiguration = modal as IElementConfiguration<Page>;
-
-			var presentationStyle =
-				elementConfiguration?
-					.On<PlatformConfiguration.iOS>()?
-					.ModalPresentationStyle()
-					.ToPlatformModalPresentationStyle();
-
 			_platformModalPages.Add(modal);
 
 			if (_window?.Page?.Handler != null)
-				return PresentModal(modal, animated && animated);
+				return PresentModal(modal, animated && _window.IsActivated);
 
 			return Task.CompletedTask;
 		}
@@ -70,9 +101,9 @@ namespace Microsoft.Maui.Controls.Platform
 			modal.ToPlatform(WindowMauiContext);
 			var wrapper = new ModalWrapper(modal.Handler as IPlatformViewHandler);
 
-			if (ModalStack.Count > 1)
+			if (_platformModalPages.Count > 1)
 			{
-				var topPage = ModalStack[ModalStack.Count - 2];
+				var topPage = _platformModalPages[_platformModalPages.Count - 2];
 				var controller = (topPage?.Handler as IPlatformViewHandler)?.ViewController;
 				if (controller != null)
 				{
@@ -101,9 +132,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// The topmost modal on the stack will have the Window; we can use that to end any current
 			// editing that's going on 
-			if (ModalStack.Count > 0)
+			if (_platformModalPages.Count > 0)
 			{
-				var uiViewController = (ModalStack[ModalStack.Count - 1].Handler as IPlatformViewHandler)?.ViewController;
+				var uiViewController = (_platformModalPages[_platformModalPages.Count - 1].Handler as IPlatformViewHandler)?.ViewController;
 				uiViewController?.View?.Window?.EndEditing(true);
 				return;
 			}

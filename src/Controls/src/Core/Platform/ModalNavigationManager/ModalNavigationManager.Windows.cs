@@ -11,6 +11,11 @@ namespace Microsoft.Maui.Controls.Platform
 			_window.NativeWindow.Content as WindowRootViewContainer ??
 			throw new InvalidOperationException("Root container Panel not found");
 
+		partial void InitializePlatform()
+		{
+			_window.Created += (_, _) => SyncPlatformModalStack();
+		}
+
 		Task WindowReadyForModal()
 		{
 			if (CurrentPlatformPage.Handler is IPlatformViewHandler pvh &&

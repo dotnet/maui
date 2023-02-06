@@ -31,10 +31,16 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						if (window is Controls.Window controlsWindow && controlsWindow.Navigation.ModalStack.Count > 0)
 						{
-							var modalCount = controlsWindow.Navigation.ModalStack.Count;
-
-							for (int i = 0; i < modalCount; i++)
-								await controlsWindow.Navigation.PopModalAsync();
+							for (int i = 0; i <  controlsWindow.Navigation.ModalStack.Count; i++)
+							{
+								var page = controlsWindow.Navigation.ModalStack[i];
+								if (page.Handler is IPlatformViewHandler pvh &&
+									pvh.ViewController?.ParentViewController is ModalWrapper modal &&
+									modal.PresentingViewController != null)
+								{
+									await modal.PresentingViewController.DismissViewControllerAsync(false);
+								}
+							}
 						}
 
 						if (window.Handler is WindowHandlerStub whs)
@@ -44,6 +50,13 @@ namespace Microsoft.Maui.DeviceTests
 						}
 						else
 							window.Handler.DisconnectHandler();
+
+						var vc =
+							(window.Content?.Handler as IPlatformViewHandler)?
+								.ViewController;
+
+						vc?.RemoveFromParentViewController();
+						vc?.View?.RemoveFromSuperview();
 
 					}
 				}
