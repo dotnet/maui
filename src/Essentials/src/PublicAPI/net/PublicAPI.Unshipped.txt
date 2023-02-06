@@ -9,3 +9,4 @@ Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> voi
 *REMOVED*static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
 Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
 static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
+*REMOVED*static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.Current.get -> Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer!
