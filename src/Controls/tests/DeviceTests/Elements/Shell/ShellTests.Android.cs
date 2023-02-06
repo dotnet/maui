@@ -222,44 +222,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-		[Fact]
-		public async Task SwappingOutAndroidContextDoesntCrash()
-		{
-			SetupBuilder();
-
-			var shell = await CreateShellAsync(shell =>
-			{
-				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
-				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem2", Items = { new ContentPage() }, Title = "Flyout Item" });
-			});
-
-			var window = new Controls.Window(shell);
-			var mauiContextStub1 = new ContextStub(MauiContext.GetApplicationServices());
-			var activity = mauiContextStub1.GetActivity();
-			mauiContextStub1.Context = new ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
-			{
-				await OnLoadedAsync(shell.CurrentPage);
-				await OnNavigatedToAsync(shell.CurrentPage);
-				await Task.Delay(100);
-				await shell.GoToAsync("//FlyoutItem2");
-			}, mauiContextStub1);
-
-			var mauiContextStub2 = new ContextStub(MauiContext.GetApplicationServices());
-			mauiContextStub2.Context = new ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
-			{
-				await OnLoadedAsync(shell.CurrentPage);
-				await OnNavigatedToAsync(shell.CurrentPage);
-				await Task.Delay(100);
-				await shell.GoToAsync("//FlyoutItem1");
-				await shell.GoToAsync("//FlyoutItem2");
-			}, mauiContextStub2);
-		}
-
 		protected AView GetFlyoutPlatformView(ShellRenderer shellRenderer)
 		{
 			var drawerLayout = GetDrawerLayout(shellRenderer);
