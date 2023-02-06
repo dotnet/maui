@@ -1,9 +1,11 @@
 ﻿#nullable disable
 using System;
+using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WASDKApp = Microsoft.UI.Xaml.Application;
+using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSetter = Microsoft.UI.Xaml.Setter;
 using WStyle = Microsoft.UI.Xaml.Style;
@@ -16,6 +18,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		View _currentFooter;
 
 		protected override IItemsLayout Layout { get => ItemsView?.ItemsLayout; }
+
+		protected override void ConnectHandler(ListViewBase platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			if (Layout != null)
+				Layout.PropertyChanged += LayoutPropertyChanged;
+		}
+
+		protected override void DisconnectHandler(ListViewBase platformView)
+		{
+			base.DisconnectHandler(platformView);
+
+			if (Layout != null)
+				Layout.PropertyChanged -= LayoutPropertyChanged;
+		}
+
+		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
+				UpdateItemsLayoutSpan();
+			else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
+				UpdateItemsLayoutItemSpacing();
+			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
+				UpdateItemsLayoutItemSpacing();
+		}
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
@@ -228,6 +256,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			style.Setters.Add(new WSetter(Control.VerticalContentAlignmentProperty, VerticalAlignment.Stretch));
 
 			return style;
+		}
+
+		void UpdateItemsLayoutSpan()
+		{
+			if (ListViewBase is FormsGridView formsGridView)
+			{
+				formsGridView.Span = ((GridItemsLayout)Layout).Span;
+			}
+		}
+
+		void UpdateItemsLayoutItemSpacing()
+		{
+			if (ListViewBase is FormsGridView formsGridView)
+			{
+				formsGridView.ItemContainerStyle = GetItemContainerStyle((GridItemsLayout)Layout);
+			}
+			else
+			{
+				switch (ListViewBase)
+				{
+					case FormsListView formsListView:
+						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle((LinearItemsLayout)Layout);
+						break;
+					case WListView listView:
+						listView.ItemContainerStyle = GetHorizontalItemContainerStyle((LinearItemsLayout)Layout);
+						break;
+				}
+			}
 		}
 	}
 }
