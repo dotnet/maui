@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiTextView : UITextView
 	{
 		readonly UILabel _placeholderLabel;
+		nfloat _defaultPlaceholderSize = -1;
 
 		public MauiTextView()
 		{
@@ -80,6 +81,17 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public override UIFont? Font
+		{
+			get => base.Font;
+			set
+			{
+				base.Font = value;
+				UpdatePlaceholderFontSize(value);
+
+			}
+		}
+
 		public override NSAttributedString AttributedText
 		{
 			get => base.AttributedText;
@@ -94,15 +106,6 @@ namespace Microsoft.Maui.Platform
 					HidePlaceholderIfTextIsPresent(value?.Value);
 					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 				}
-			}
-		}
-
-		internal double PlaceholderFontSize
-		{
-			get => _placeholderLabel.Font.PointSize;
-			set
-			{
-				_placeholderLabel.Font = _placeholderLabel.Font.WithSize((nfloat)value);
 			}
 		}
 
@@ -169,6 +172,19 @@ namespace Microsoft.Maui.Platform
 				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
 				_ => new CGPoint(0, 0),
 			};
+		}
+
+		void UpdatePlaceholderFontSize(UIFont? value)
+		{
+			if (value != null)
+			{
+				_defaultPlaceholderSize = _placeholderLabel.Font.PointSize;
+				_placeholderLabel.Font = _placeholderLabel.Font.WithSize(value.PointSize);
+			}
+			else if (_defaultPlaceholderSize != -1)
+			{
+				_placeholderLabel.Font = _placeholderLabel.Font.WithSize(_defaultPlaceholderSize);
+			}
 		}
 	}
 }

@@ -58,8 +58,6 @@ namespace Microsoft.Maui.Platform
 			var font = textStyle.Font;
 			var uiFont = fontManager.GetFont(font, UIFont.LabelFontSize);
 			textView.Font = uiFont;
-
-			UpdatePlaceHolderFont(textView, textStyle);
 		}
 
 		public static void UpdateIsReadOnly(this UITextView textView, IEditor editor)
@@ -117,14 +115,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePlaceholderColor(this MauiTextView textView, IEditor editor) =>
 			textView.PlaceholderTextColor = editor.PlaceholderColor?.ToPlatform() ?? ColorExtensions.PlaceholderColor;
-
-		internal static void UpdatePlaceHolderFont(UITextView textView, ITextStyle textStyle)
-		{
-			if (textView is MauiTextView mauiTextView)
-			{
-				mauiTextView.PlaceholderFontSize = textStyle.Font.Size;
-			}
-		}
 
 		static void UpdateCursorSelection(this UITextView textView, IEditor editor)
 		{
