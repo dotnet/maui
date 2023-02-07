@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.DisconnectHandler(platformView);
 
-			if (Layout != null)
+			if (Layout is not null)
 				Layout.PropertyChanged -= LayoutPropertyChanged;
 		}
 
@@ -268,19 +268,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateItemsLayoutItemSpacing()
 		{
-			if (ListViewBase is FormsGridView formsGridView)
+			if (ListViewBase is FormsGridView formsGridView && Layout is GridItemsLayout gridLayout)
 			{
-				formsGridView.ItemContainerStyle = GetItemContainerStyle((GridItemsLayout)Layout);
+				formsGridView.ItemContainerStyle = GetItemContainerStyle(gridLayout);
 			}
-			else
+
+			if (Layout is LinearItemsLayout linearItemsLayout)
 			{
 				switch (ListViewBase)
 				{
 					case FormsListView formsListView:
-						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle((LinearItemsLayout)Layout);
+						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
 						break;
 					case WListView listView:
-						listView.ItemContainerStyle = GetHorizontalItemContainerStyle((LinearItemsLayout)Layout);
+						listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
 						break;
 				}
 			}
