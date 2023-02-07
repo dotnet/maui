@@ -8,6 +8,10 @@
     <ProjectCapability Include="MauiEssentials" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectCapability Include="MauiRepository" />
+  </ItemGroup>
+
   <ImportGroup Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">
 
     <!-- Microsoft.Maui.Core.targets -->
