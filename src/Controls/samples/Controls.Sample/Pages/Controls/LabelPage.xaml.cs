@@ -1,3 +1,4 @@
+﻿using Maui.Controls.Sample.ViewModels;
 ﻿using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -13,6 +14,8 @@ namespace Maui.Controls.Sample.Pages
 		public LabelPage()
 		{
 			InitializeComponent();
+
+			BindingContext = new LabelViewModel();
 		}
 
 		void ClickGestureRecognizer_Clicked(System.Object sender, System.EventArgs e)
@@ -24,6 +27,9 @@ namespace Maui.Controls.Sample.Pages
 
 			var rnd = new System.Random();
 			GestureSpan.TextColor = Color.FromRgb((byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254));
+			
+			if (sender is Span span)
+				span.TextColor = Color.FromRgb((byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254), (byte)rnd.Next(0, 254));
 		}
 
 		void ChangeFormattedString_Clicked(object sender, System.EventArgs e)

@@ -12,8 +12,6 @@
 		<Compile Include="AttributeTableBuilder.cs" />
 		<Compile Include="Properties\AssemblyInfo.cs" />
 		<Compile Include="RegisterMetadata.cs" />
-    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
-      <Version>17.4.33103.184</Version>
-    </PackageReference>
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.4.33103.184" />
 	</ItemGroup>
 </Project>

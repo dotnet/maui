@@ -50,10 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					if (window.Handler != null)
-					{
-						window.Handler.DisconnectHandler();
-					}
+					window.Handler?.DisconnectHandler();
 
 					fragmentManager
 						.BeginTransaction()
@@ -213,6 +210,11 @@ namespace Microsoft.Maui.DeviceTests
 				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
 				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
+
+				if (_window is Window window)
+				{
+					window.ModalNavigationManager.SetModalParentView(FakeActivityRootView);
+				}
 
 				return FakeActivityRootView;
 			}
