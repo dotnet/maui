@@ -73,20 +73,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set;
 		}
 
-		internal bool MeasureIfNeeded()
-		{
-			if (!IsPlatformViewValid())
-				return false;
-
-			if (double.IsNaN(MeasuredHeight) || Frame.Width != View.Width)
-			{
-				ReMeasure();
-				return true;
-			}
-
-			return false;
-		}
-
 		public virtual Thickness Margin
 		{
 			get;
@@ -95,26 +81,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		private protected void OnHeaderSizeChanged()
 		{
 			HeaderSizeChanged?.Invoke(this, EventArgs.Empty);
-		}
-
-		void OnMeasureInvalidated(object sender, System.EventArgs e)
-		{
-			if (!IsPlatformViewValid())
-				return;
-		}
-
-		public override void WillRemoveSubview(UIView uiview)
-		{
-			Disconnect();
-			base.WillRemoveSubview(uiview);
-		}
-
-		public override void AddSubview(UIView view)
-		{
-			if (view == _platformView)
-				_view.MeasureInvalidated += OnMeasureInvalidated;
-
-			base.AddSubview(view);
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
@@ -141,9 +107,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void AddSubview(UIView view)
 		{
-			if (view == _platformView)
-				_view.MeasureInvalidated += OnMeasureInvalidated;
-
 			base.AddSubview(view);
 
 		}
@@ -172,8 +135,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
-			if (_view != null)
-				_view.MeasureInvalidated -= OnMeasureInvalidated;
 		}
 
 		protected override void Dispose(bool disposing)
