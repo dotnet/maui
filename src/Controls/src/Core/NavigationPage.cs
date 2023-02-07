@@ -377,13 +377,6 @@ namespace Microsoft.Maui.Controls
 			return base.OnBackButtonPressed();
 		}
 
-		internal void InitialNativeNavigationStackLoaded()
-		{
-			SendNavigated(null);
-		}
-
-
-
 		void SendNavigated(Page previousPage)
 		{
 			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));

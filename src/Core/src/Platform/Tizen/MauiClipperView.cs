@@ -1,7 +1,7 @@
-﻿using Tizen.UIExtensions.NUI;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Skia;
 using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.NUI;
 using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -12,8 +13,16 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 
 			UpdatePickerBackground();
+			UpdatePickerBindingContext();
 
 			this.BindingContext = this;
+
+			Loaded += (s, e) =>
+			{
+				DynamicItemsPicker.Items.Add("Item 1");
+				DynamicItemsPicker.Items.Add("Item 2");
+				DynamicItemsPicker.Items.Add("Item 3");
+			};
 		}
 
 		void OnSelectedIndexChanged(object sender, EventArgs e)
@@ -57,5 +66,58 @@ namespace Maui.Controls.Sample.Pages
  				}
 			};
 		}
+
+		void OnClearItemsButtonClicked(object sender, EventArgs e)
+		{
+			DynamicItemsPicker.Items.Clear();
+		}
+
+		void OnAddItemsButtonClicked(object sender, EventArgs e)
+		{
+			DynamicItemsPicker.Items.Add("New Item 1");
+			DynamicItemsPicker.Items.Add("New Item 2");
+			DynamicItemsPicker.Items.Add("New Item 3");
+		}
+
+		void OnReplaceItemsButtonClicked(object sender, EventArgs e)
+		{
+			DynamicItemsPicker.Items.Clear();
+
+			DynamicItemsPicker.Items.Add("Item One");
+			DynamicItemsPicker.Items.Add("Item Two");
+			DynamicItemsPicker.Items.Add("Item Three");
+		}
+
+		void OnSetBindingContextClicked(object sender, EventArgs e)
+		{
+			UpdatePickerBindingContext();
+		}
+
+		void OnRemoveBindingContextClicked(object sender, EventArgs e)
+		{
+			BindingContextLayout.BindingContext = null;
+		}
+
+		void UpdatePickerBindingContext()
+		{
+			var random = new Random();
+
+			BindingContextLayout.BindingContext = new PickerData
+			{
+				Name = $"Item {random.Next(0, 100)}",
+				PickerItems = new ObservableCollection<PickerData>
+				{
+					new PickerData { Name = $"Item {random.Next(0, 100)}" },
+					new PickerData { Name = $"Item {random.Next(0, 100)}" },
+				}
+			};
+		}
+	}
+
+	public class PickerData
+	{
+		public string Name { get; set; }
+
+		public ObservableCollection<PickerData> PickerItems { get; set; }
 	}
 }

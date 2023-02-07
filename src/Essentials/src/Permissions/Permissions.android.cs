@@ -16,9 +16,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public static bool IsDeclaredInManifest(string permission)
 		{
 			var context = Application.Context;
-#pragma warning disable 618
+#pragma warning disable CS0618, CA1416, CA1422 // Deprecated in API 33: https://developer.android.com/reference/android/content/pm/PackageManager#getPackageInfo(java.lang.String,%20int)
 			var packageInfo = context.PackageManager.GetPackageInfo(context.PackageName, PackageInfoFlags.Permissions);
-#pragma warning restore 618
+#pragma warning restore CS0618, CA1416, CA1422
 			var requestedPermissions = packageInfo?.RequestedPermissions;
 
 			return requestedPermissions?.Any(r => r.Equals(permission, StringComparison.OrdinalIgnoreCase)) ?? false;
@@ -193,6 +193,37 @@ namespace Microsoft.Maui.ApplicationModel
 
 			public override Task<PermissionStatus> CheckStatusAsync() =>
 				Task.FromResult(IsDeclaredInManifest(Manifest.Permission.BatteryStats) ? PermissionStatus.Granted : PermissionStatus.Denied);
+		}
+
+		public partial class Bluetooth : BasePlatformPermission
+		{
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+			{
+				get
+				{
+					var permissions = new List<(string, bool)>();
+
+					// When targeting Android 11 or lower, AccessFineLocation is required for Bluetooth.
+					// For Android 12 and above, it is optional.
+					if (Application.Context.ApplicationInfo.TargetSdkVersion <= BuildVersionCodes.R || IsDeclaredInManifest(Manifest.Permission.AccessFineLocation))
+						permissions.Add((Manifest.Permission.AccessFineLocation, true));
+
+#if __ANDROID_31__
+					if (OperatingSystem.IsAndroidVersionAtLeast(31) && Application.Context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.S)
+					{
+						// new runtime permissions on Android 12
+						if (IsDeclaredInManifest(Manifest.Permission.BluetoothScan))
+							permissions.Add((Manifest.Permission.BluetoothScan, true));
+						if (IsDeclaredInManifest(Manifest.Permission.BluetoothConnect))
+							permissions.Add((Manifest.Permission.BluetoothConnect, true));
+						if (IsDeclaredInManifest(Manifest.Permission.BluetoothAdvertise))
+							permissions.Add((Manifest.Permission.BluetoothAdvertise, true));
+					}
+#endif
+
+					return permissions.ToArray();
+				}
+			}
 		}
 
 		public partial class CalendarRead : BasePlatformPermission
