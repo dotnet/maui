@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_defaultPlaceholderSize is null)
 			{
-				_defaultPlaceholderSize = _placeholderLabel.Font.PointSize;
+				_defaultPlaceholderSize ??= _placeholderLabel.Font.PointSize;
 			}
 
 			_placeholderLabel.Font = _placeholderLabel.Font.WithSize (
