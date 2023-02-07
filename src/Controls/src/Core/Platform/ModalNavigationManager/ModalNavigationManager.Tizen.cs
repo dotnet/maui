@@ -46,6 +46,8 @@ namespace Microsoft.Maui.Controls.Platform
 				((IPageController)modal).SendAppearing();
 		}
 
+		Task WindowReadyForModal() => Task.CompletedTask;
+				
 		bool OnBackButtonPressed()
 		{
 			bool handled = CurrentPage?.SendBackButtonPressed() ?? false;
