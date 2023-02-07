@@ -534,11 +534,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public TItem ActivateContent(int index, object item)
 		{
-			if (ItemTemplate?.CreateContent(item, _itemsView) is TItem content)
-			{
-				// content is valid
-			}
-			else
+			if (ItemTemplate?.CreateContent(item, _itemsView) is not TItem content)
 			{
 				content = _itemsView.CreateDefault(item);
 			}
