@@ -54,6 +54,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				aView.Measure(widthMeasureSpec, heightMeasureSpec);
 				SetMeasuredDimension(aView.MeasuredWidth, aView.MeasuredHeight);
 			}
+			else
+				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 	}
 }
