@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Task WindowReadyForModal()
 		{
 			if (CurrentPlatformPage.Handler is IPlatformViewHandler pvh &&
-				pvh.PlatformView != null)
+				pvh.PlatformView is not null)
 			{
 				return pvh.PlatformView.OnLoadedAsync();
 			}
@@ -105,8 +105,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var source = new TaskCompletionSource<Page>();
 
-			var modalHandler = modal.Handler as IPlatformViewHandler;
-			if (modalHandler != null)
+			if (modal.Handler is IPlatformViewHandler modalHandler)
 			{
 				ModalContainer? modalContainer = null;
 				for (int i = 0; i <= GetModalParentView().ChildCount; i++)

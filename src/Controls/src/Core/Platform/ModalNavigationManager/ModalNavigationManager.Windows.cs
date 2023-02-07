@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Task WindowReadyForModal()
 		{
 			if (CurrentPlatformPage.Handler is IPlatformViewHandler pvh &&
-				pvh.PlatformView != null)
+				pvh.PlatformView is not null)
 			{
 				return pvh.PlatformView.OnLoadedAsync();
 			}

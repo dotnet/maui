@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 			WindowMauiContext.GetPlatformWindow().SetBackButtonPressedHandler(OnBackButtonPressed);
 		}
 
-		public async Task<Page> PopModalAsync(bool animated)
+		async Task<Page> PopModalPlatformAsync(bool animated)
 		{
 			Page modal = _navModel.PopModal();
 			((IPageController)modal).SendDisappearing();
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return modal;
 		}
 
-		public async Task PushModalAsync(Page modal, bool animated)
+		async Task PushModalPlatformAsync(Page modal, bool animated)
 		{
 			CurrentPageController?.SendDisappearing();
 			_navModel.PushModal(modal);

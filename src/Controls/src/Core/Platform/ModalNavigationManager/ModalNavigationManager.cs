@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			// If the window handler is changing the activity is being recreated
 			// the window activated/resumed event will take care of syncing the platform modals
-			if (e.OldHandler != null)
+			if (e.OldHandler is not null)
 			{
 				_platformModalPages.Clear();
 			}
@@ -106,16 +106,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 				await WindowReadyForModal();
 
-				int popTo = 0;
+				int popTo;
 
-				for (var i = 0; i < _platformModalPages.Count && i < _modalPages.Count; i++)
+				for (popTo = 0; popTo < _platformModalPages.Count && popTo < _modalPages.Count; popTo++)
 				{
-					if (_platformModalPages[i] != _modalPages[i])
+					if (_platformModalPages[popTo] != _modalPages[popTo])
 					{
 						break;
 					}
-
-					popTo = i + 1;
 				}
 
 				// This means the modal stacks are already synced so we don't have to do anything
@@ -176,15 +174,8 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentPage?.SendAppearing();
 			}
 
-			Task popTask;
-			if (IsModalReady)
-			{
-				popTask = PopModalPlatformAsync(animated);
-			}
-			else
-			{
-				popTask = Task.CompletedTask;
-			}
+			Task popTask = 
+				IsModalReady ? PopModalPlatformAsync(animated) : Task.CompletedTask;
 
 			await popTask;
 			modal.Parent = null;
@@ -239,7 +230,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void SettingNewPage()
 		{
-			if (_window.Page == null)
+			if (_window.Page is null)
 			{
 				_currentPage = null;
 				return;
@@ -250,12 +241,12 @@ namespace Microsoft.Maui.Controls.Platform
 				var previousPage = _currentPage;
 				_currentPage = _window.Page;
 
-				if (previousPage != null)
+				if (previousPage is not null)
 					_modalPages.Clear();
 
-				if (_currentPage != null)
+				if (_currentPage is not null)
 				{
-					if (_currentPage.Handler == null)
+					if (_currentPage.Handler is null)
 					{
 						_currentPage.HandlerChanged += OnCurrentPageHandlerChanged;
 					}
@@ -269,7 +260,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnCurrentPageHandlerChanged(object? sender, EventArgs e)
 		{
-			if (_currentPage != null)
+			if (_currentPage is not null)
 			{
 				_currentPage.HandlerChanged -= OnCurrentPageHandlerChanged;
 				SyncPlatformModalStack();
