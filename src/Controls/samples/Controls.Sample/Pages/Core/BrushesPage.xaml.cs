@@ -49,15 +49,15 @@ namespace Maui.Controls.Sample.Pages
 			var gradientStop = GetRandomGradientStop();
 			var color = GetRandomColor();
 
-			if (LinearBrushBorder.Background is LinearGradientBrush linearBrushBorder)
-				UpdateGradientStopColor(linearBrushBorder, gradientStop, color);
-
-			if (LinearBrushPolygon.Fill is LinearGradientBrush linearBrushPolygon)
-				UpdateGradientStopColor(linearBrushPolygon, gradientStop, color);
+			UpdateGradientStopColor(LinearBrushBorder.Background as LinearGradientBrush, gradientStop, color);
+			UpdateGradientStopColor(LinearBrushPolygon.Fill as LinearGradientBrush, gradientStop, color);
 		}
 
 		void UpdateGradientStopColor(GradientBrush gradientBrush, int index, Color color)
 		{
+			if (gradientBrush is null)
+				return;
+
 			GradientStop randomStop = gradientBrush.GradientStops[index];
 			randomStop.Color = color;
 		}
@@ -72,11 +72,8 @@ namespace Maui.Controls.Sample.Pages
 			var gradientStop = GetRandomGradientStop();
 			var color = GetRandomColor();
 
-			if (RadialBrushBorder.Background is RadialGradientBrush radialGradientBrush)
-				UpdateGradientStopColor(radialGradientBrush, gradientStop, color);
-
-			if (RadialBrushPolygon.Fill is RadialGradientBrush radialBrushPolygon)
-				UpdateGradientStopColor(radialBrushPolygon, gradientStop, color);
+			UpdateGradientStopColor(RadialBrushBorder.Background as RadialGradientBrush, gradientStop, color);
+			UpdateGradientStopColor(RadialBrushPolygon.Fill as RadialGradientBrush, gradientStop, color);
 		}
 
 		void OnRemovePolygonRadialColorsClicked(object sender, EventArgs e)
