@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Platform
 	internal partial class ModalNavigationManager
 	{
 		NavigationStack _modalStack => WindowMauiContext.GetModalStack();
-		IPageController CurrentPageController => _navModel.CurrentPage;
+		IPageController CurrentPageController => CurrentPage!;
 
 		partial void OnPageAttachedHandler()
 		{
@@ -42,14 +42,13 @@ namespace Microsoft.Maui.Controls.Platform
 			await _modalStack.Push(nativeView, animated);
 
 			// Verify that the modal is still on the stack
-			if (_navModel.CurrentPage == modal)
+			if (CurrentPage == modal)
 				((IPageController)modal).SendAppearing();
 		}
 
 		bool OnBackButtonPressed()
 		{
-			Page root = _navModel.LastRoot;
-			bool handled = root?.SendBackButtonPressed() ?? false;
+			bool handled = CurrentPage?.SendBackButtonPressed() ?? false;
 
 			return handled;
 		}
