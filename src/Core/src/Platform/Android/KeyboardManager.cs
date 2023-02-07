@@ -5,8 +5,10 @@ using Android.OS;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AView = Android.Views.View;
+using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Platform
 {
@@ -58,20 +60,17 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			var textView = searchView.FindViewById(searchViewTextViewId);
+			var queryEditor = searchView.GetFirstChildOfType<EditText>();
 
-			if (textView == null)
-			{
-				// Cannot find the TextView; nothing else to do
+			if (queryEditor == null)
 				return;
-			}
 
 			using (var inputMethodManager = (InputMethodManager)searchView.Context.GetSystemService(Context.InputMethodService)!)
 			{
 				// The zero value for the second parameter comes from 
 				// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
 				// Apparently there's no named value for zero in this case
-				inputMethodManager?.ShowSoftInput(textView, 0);
+				inputMethodManager?.ShowSoftInput(queryEditor, 0);
 			}
 		}
 
