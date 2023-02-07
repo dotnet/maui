@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var bindingContext = new object();
-			
+
 			var child = new Label { Text = "Content 1" };
 
 			var contentView = new Microsoft.Maui.Controls.ContentView
