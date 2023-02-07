@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		
+
 		[Fact(DisplayName = "Unfocus will work when page is shown a 2nd time")]
 		public async Task UnFocusOnEntryAfterPagePop()
 		{
@@ -72,30 +73,47 @@ namespace Microsoft.Maui.DeviceTests
 
 				});
 			});
-
+			AutoResetEvent _focused = new AutoResetEvent(false);
+			AutoResetEvent _unFocused = new AutoResetEvent(false);
 			var entry = new Entry();
 			entry.Unfocused += (s, e) =>
 			{
-				if(!e.IsFocused)
+				if (!e.IsFocused)
 				{
 					unfocused++;
 				}
-
+				_unFocused.Set();
 			};
-			var navPage = new NavigationPage(new ContentPage { Content  = entry });
+			var navPage = new NavigationPage(new ContentPage { Content = entry });
 			var window = new Window(navPage);
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
 			{
-				entry.Focus();
-				await Task.Delay(500);
-				entry.Unfocus();
-				await navPage.PushAsync(new ContentPage());
-				await navPage.PopAsync();
-				entry.Focus();
-				await Task.Delay(500);
-				entry.Unfocus();
-				Assert.True(unfocused == 2);
+				await Task.Run(() =>
+				{
+					InvokeOnMainThreadAsync(() =>
+					{
+						entry.Focused += (s, e) => _focused.Set();
+						entry.Focus();
+					});
+					_focused.WaitOne();
+					_focused.Reset();
+					InvokeOnMainThreadAsync(async () =>
+					{
+						entry.Unfocus();
+						await navPage.PushAsync(new ContentPage());
+						await navPage.PopAsync();
+						entry.Focus();
+					});
+					_focused.WaitOne();
+					_unFocused.Reset();
+					InvokeOnMainThreadAsync(() =>
+					{
+						entry.Unfocus();
+					});
+					_unFocused.WaitOne();
+					Assert.True(unfocused == 2);
+				});
 			});
 		}
 #endif
