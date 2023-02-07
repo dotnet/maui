@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateFocus(this EditText editText, ITextInput textInput)
 		{
-			if (textInput == null)
+			if (textInput is null)
 				return;
 
 			if (editText.ShowSoftInputOnFocus)
