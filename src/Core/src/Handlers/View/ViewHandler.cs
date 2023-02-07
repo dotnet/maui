@@ -421,8 +421,11 @@ namespace Microsoft.Maui.Handlers
 
 			public void Clear()
 			{
-				properties.Clear();
-				Changed?.Invoke(this, EventArgs.Empty);
+				if (properties.Count > 0)
+				{
+					properties.Clear();
+					Changed?.Invoke(this, EventArgs.Empty);
+				}
 			}
 
 			public bool Contains(string item) => properties.Contains(item);
