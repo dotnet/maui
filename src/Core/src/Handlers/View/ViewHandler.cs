@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Handlers
 			get
 			{
 #if !TIZEN
-				if (VirtualView?.Clip != null || VirtualView?.Shadow != null)
+				if (VirtualView?.Clip is not null || VirtualView?.Shadow is not null)
 					return true;
 #endif
 #if ANDROID
@@ -119,11 +119,11 @@ namespace Microsoft.Maui.Handlers
 #endif
 #if ANDROID || IOS
 				if (VirtualView is IBorder border)
-					return border.Border != null;
+					return border.Border is not null;
 #endif
 #if WINDOWS || TIZEN
 				if (VirtualView is IBorderView border)
-					return border?.Shape != null || border?.Stroke != null;
+					return border?.Shape is not null || border?.Stroke is not null;
 #endif
 				return false;
 			}
