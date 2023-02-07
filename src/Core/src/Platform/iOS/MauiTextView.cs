@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_placeholderLabel.Font = _placeholderLabel.Font.WithSize (
-					value is null? _defaultPlaceholderSize.Value : value.PointSize);
+				value?.PointSize ?? _defaultPlaceholderSize.Value);
 		}
 	}
 }
