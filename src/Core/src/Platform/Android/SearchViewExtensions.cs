@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var queryEditor = searchView.GetFirstChildOfType<EditText>();
 
-			if (queryEditor == null)
+			if (queryEditor is null)
 				return;
 
 			if (queryEditor.ShowSoftInputOnFocus)
