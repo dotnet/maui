@@ -548,7 +548,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			_newTabTextColors = GetColorStateList(defaultColor, checkedColor);
-
 			return _newTabTextColors;
 		}
 
