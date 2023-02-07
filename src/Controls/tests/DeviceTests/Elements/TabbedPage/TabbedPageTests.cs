@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		// iOS currently can't handle recreating a handler if it's disconnecting
 		// This is left over behavior from Forms and will be fixed by a different PR
 		[Theory]
