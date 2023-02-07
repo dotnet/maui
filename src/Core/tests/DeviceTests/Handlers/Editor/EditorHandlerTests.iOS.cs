@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Text",
 				Font = Font.SystemFontOfSize(sizeFont)
 			};
-			
+
 			var nativePlaceholderSize = await GetValueAsync(editor, handler =>
 			{
 				return GetNativePlaceholder(handler).Font.PointSize;
