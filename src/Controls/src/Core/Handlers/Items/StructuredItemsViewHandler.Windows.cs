@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ConnectHandler(platformView);
 
-			if (Layout != null)
+			if (Layout is not null)
 				Layout.PropertyChanged += LayoutPropertyChanged;
 		}
 
