@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (handler != null)
 					handler(realCell, EventArgs.Empty);
 
-				view.ResignFirstResponder();
+				KeyboardAutoManager.GoToNextResponderOrResign(view);
 				return true;
 			}
 

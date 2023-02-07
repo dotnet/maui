@@ -73,6 +73,45 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(handler.PlatformView);
 			});
 		}
+
+		[Fact]
+		public async Task HiddenCarouselViewNoCrash()
+		{
+			SetupBuilder();
+
+			ObservableCollection<int> data = new ObservableCollection<int>()
+			{
+				1,
+				2,
+			};
+
+			var template = new DataTemplate(() =>
+			{
+				return new Grid()
+				{
+					new Label()
+				};
+			});
+
+			var carouselView = new CarouselView()
+			{
+				ItemTemplate = template,
+				ItemsSource = data
+			};
+
+			var layout = new Grid()
+			{
+				carouselView,
+			};
+
+			layout.IsVisible = false;
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
+			{
+				await Task.Delay(100);
+				Assert.NotNull(handler.PlatformView);
+			});
+		}
 	}
 
 	internal class CustomDataTemplateSelectorSelector : DataTemplateSelector

@@ -8,7 +8,7 @@
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>Windows\</WindowsRoot>
     <TizenRoot>Tizen\</TizenRoot>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <IsTrimmable Condition=" !$(TargetFramework.StartsWith('netstandard')) ">true</IsTrimmable>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -20,7 +20,7 @@
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
     <Compile Remove="GTK\**" />
@@ -57,4 +57,6 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
   </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 </Project>
