@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectCapability Include="MauiRepository" />
+    <ProjectCapability Include="MauiRepositorySampleProject" Contition="'$(SampleProject)' == 'true'" />
   </ItemGroup>
 
   <ImportGroup Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">
