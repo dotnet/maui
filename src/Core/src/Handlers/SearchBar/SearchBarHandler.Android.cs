@@ -114,6 +114,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
+		private static void MapFocus(ISearchBarHandler handler, ISearchBar searchBar, object? args)
+		{
+			ViewHandler.MapFocus(handler, searchBar, args);
+			handler.PlatformView?.UpdateFocus();
+		}
+
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
 			VirtualView.SearchButtonPressed();
@@ -140,7 +146,6 @@ namespace Microsoft.Maui.Handlers
 				if (virtualView != null)
 				{
 					virtualView.IsFocused = hasFocus;
-					KeyboardManager.ShowKeyboard(Handler.PlatformView);
 				}
 			}
 		}

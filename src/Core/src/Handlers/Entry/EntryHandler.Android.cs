@@ -128,6 +128,12 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateClearButtonVisibility(entry, platformHandler.GetClearButtonDrawable);
 		}
 
+		static void MapFocus(IEntryHandler handler, IEntry entry, object? args)
+		{
+			ViewHandler.MapFocus(handler, entry, args);
+			handler.PlatformView?.UpdateFocus(entry);
+		}
+
 		void OnTextChanged(object? sender, TextChangedEventArgs e)
 		{
 			if (VirtualView == null)
@@ -153,8 +159,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			MapClearButtonVisibility(this, VirtualView);
-
-			KeyboardManager.ShowKeyboard(PlatformView);
 		}
 
 		// Check whether the touched position inbounds with clear button.
