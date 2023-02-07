@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task<Page> PopModalPlatformAsync(bool animated)
 		{
-			Page modal = _navModel.PopModal();
+			Page modal = CurrentPlatformModalPage;
+			_platformModalPages.Remove(modal);
+
 			((IPageController)modal).SendDisappearing();
 
 			var modalRenderer = modal.Handler as IPlatformViewHandler;
@@ -33,7 +35,7 @@ namespace Microsoft.Maui.Controls.Platform
 		async Task PushModalPlatformAsync(Page modal, bool animated)
 		{
 			CurrentPageController?.SendDisappearing();
-			_navModel.PushModal(modal);
+			_platformModalPages.Add(modal);
 
 			var nativeView = modal.ToPlatform(WindowMauiContext);
 
