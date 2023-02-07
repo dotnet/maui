@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			internal int CallCount = 0;
 
-			public IDictionary<string, string> DecodeResponse(Uri uri) 
+			public IDictionary<string, string> DecodeResponse(Uri uri)
 			{
 				CallCount++;
 				return WebUtils.ParseQueryString(uri.ToString());

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Authentication
 	}
 
 	/// <summary>A web navigation API intended to be used for Authentication with external web services such as OAuth.</summary>
-    /// <remarks>
+	/// <remarks>
 	/// This API helps with navigating to a start URL and waiting for a callback URL to the app.  Your app must 
 	/// be registered to handle the callback scheme you provide in the call to authenticate.
 	/// </remarks>

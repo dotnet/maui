@@ -1,5 +1,4 @@
-﻿<!-- NOTE: This project is temporarily replacing part of Microsoft.Maui.Sdk -->
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
@@ -7,16 +6,21 @@
 		<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
 		<Description>.NET MAUI MSBuild tasks. Enabled via &lt;UseMaui&gt;true&lt;/UseMaui&gt;.</Description>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<IsPackable>true</IsPackable>
+		<!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
+		<NoPackageAnalysis>true</NoPackageAnalysis>
+		<!-- Change the default location where NuGet will put the build output -->
+		<BuildOutputTargetFolder>buildTransitive</BuildOutputTargetFolder>
+		<!-- Make sure to copy all the NuGet files into the build output -->
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Mono.Cecil" Version="0.11.4" />
-		<PackageReference Include="Microsoft.Build" Version="15.9.20" />
-		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" />
-		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" />
-		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" />
+		<PackageReference Include="Mono.Cecil" Version="0.11.4" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build" Version="15.9.20" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -24,32 +28,60 @@
 		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj" />
 		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
-	
+
+	<ItemGroup>
+		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<Compile Update="ErrorMessages.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
 			<DependentUpon>ErrorMessages.resx</DependentUpon>
 		</Compile>
-	</ItemGroup>
-
-	<ItemGroup>
 		<EmbeddedResource Update="ErrorMessages.resx">
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 	</ItemGroup>
 
-	<Target Name="_CopyToNuspecDir" AfterTargets="Build">
+	<Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
 		<ItemGroup>
-			<_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll" />
+			<_CopyItems Include="nuget\buildTransitive\**" Exclude="nuget\buildTransitive\*;nuget\buildTransitive\netstandard2.0\**" />
+			<_CopyItems Include="nuget\buildTransitive\netstandard2.0\**" />
+			<_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll;$(TargetDir)Microsoft.Build.*" />
+			<_CopyItems Include="$(TargetDir)*.pdb" Exclude="$(TargetDir)System.*.pdb;$(TargetDir)Microsoft.Build.*" />
 		</ItemGroup>
-		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(MauiNuSpecDirectory)" ContinueOnError="true" Retries="0" />
+		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
 	</Target>
 
-	<ItemGroup>
-		<!-- Ensure all references are PrivateAssets=all, so they are not transitive to end-user projects. -->
-		<PackageReference Update="@(PackageReference)" PrivateAssets="all" />
-		<ProjectReference Update="@(ProjectReference)" PrivateAssets="all" />
-	</ItemGroup>
+	<!-- Add additional packages to the NuGet -->
+	<PropertyGroup>
+		<TargetsForTfmSpecificBuildOutput>
+			$(TargetsForTfmSpecificBuildOutput);
+			_MauiPackAdditionalAssemblies
+		</TargetsForTfmSpecificBuildOutput>
+	</PropertyGroup>
+	<Target Name="_MauiPackAdditionalAssemblies">
+		<ItemGroup>
+			<BuildOutputInPackage Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll" />
+			<BuildOutputInPackage Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" />
+			<BuildOutputInPackage Include="$(OutputPath)Microsoft.Maui.*" />
+			<BuildOutputInPackage Include="$(OutputPath)Mono.Cecil.*" />
+			<BuildOutputInPackage Include="$(OutputPath)System.CodeDom.*" />
+			<BuildOutputInPackage Remove="$(OutputPath)$(AssemblyName).*" />
+			<BuildOutputInPackage Remove="$(OutputPath)*.xml" />
+		</ItemGroup>
+	</Target>
+
+	<!-- Workaround for https://github.com/dotnet/sdk/issues/1458 -->
+	<Target Name="AddReferenceRelatedPathsToCopyLocal" AfterTargets="ResolveAssemblyReferences">
+		<ItemGroup>
+			<ReferenceCopyLocalPaths Include="@(_ReferenceRelatedPaths)" />
+			<ReferenceCopyLocalPaths Include="@(_DebugSymbolsFiles)" />
+		</ItemGroup>
+	</Target>
+
+	<Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
 </Project>
