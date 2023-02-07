@@ -25,9 +25,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
-					var shape = (Shape)bindable;
+					var shape = bindable as Shape;
 
-					if (shape == null)
+					if (shape is null)
 						return;
 
 					shape.OnBrushPropertyChanged(oldvalue, newvalue);
@@ -38,9 +38,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null,
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
-					var shape = (Shape)bindable;
+					var shape = bindable as Shape;
 
-					if (shape == null)
+					if (shape is null)
 						return;
 
 					shape.OnBrushPropertyChanged(oldvalue, newvalue);
@@ -188,10 +188,10 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void PropagateBindingContextToBrush()
 		{
-			if (Fill != null)
+			if (Fill is not null)
 				SetInheritedBindingContext(Fill, BindingContext);
 
-			if (Stroke != null)
+			if (Stroke is not null)
 				SetInheritedBindingContext(Stroke, BindingContext);
 		}
 
