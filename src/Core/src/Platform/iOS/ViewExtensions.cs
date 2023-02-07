@@ -261,6 +261,7 @@ namespace Microsoft.Maui.Platform
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView =>
 			FindDescendantView<T>(view, (_) => true);
 
+
 		public static void UpdateBackgroundLayerFrame(this UIView view)
 		{
 			if (view == null || view.Frame.IsEmpty)
@@ -268,19 +269,17 @@ namespace Microsoft.Maui.Platform
 
 			var layer = view.Layer;
 
-			UpdateBackgroundLayerFrame(layer, view.Bounds);
+			UpdateBackgroundLayerFrame(layer, view.Bounds, view is WrapperView);
 		}
 
-		static void UpdateBackgroundLayerFrame(CALayer layer, CGRect bounds)
+		static void UpdateBackgroundLayerFrame(CALayer layer, CGRect bounds, bool getAllSubLayers)
 		{
 			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
 
-			var bounds = layer.Bounds;
-
 			IEnumerable<CALayer> subLayers;
 
-			if (view is WrapperView)
+			if (getAllSubLayers)
 				subLayers = layer.GetLayers();
 			else
 				subLayers = layer.Sublayers;
@@ -293,10 +292,10 @@ namespace Microsoft.Maui.Platform
 					break;
 				}
 
-				UpdateBackgroundLayerFrame(sublayer, bounds);
+				UpdateBackgroundLayerFrame(sublayer, bounds, getAllSubLayers);
 			}
 		}
-
+		
 		static IEnumerable<CALayer> GetLayers(this CALayer root)
 		{
 			var stack = new Stack<CALayer>();
