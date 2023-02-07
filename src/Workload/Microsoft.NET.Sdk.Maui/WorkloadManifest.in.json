@@ -36,6 +36,9 @@
           "Microsoft.Maui.Templates.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@",
           "Microsoft.Maui.Core",
           "Microsoft.Maui.Controls",
+          "Microsoft.Maui.Controls.Build.Tasks",
+          "Microsoft.Maui.Controls.Core",
+          "Microsoft.Maui.Controls.Xaml",
           "Microsoft.Maui.Essentials"
       ]
     },
@@ -104,6 +107,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Controls.Xaml": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials": {
       "kind": "library",
       "version": "@VERSION@"
     },
