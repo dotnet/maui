@@ -159,8 +159,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			MapClearButtonVisibility(this, VirtualView);
-
-			KeyboardManager.ShowKeyboard(PlatformView);
 		}
 
 		// Check whether the touched position inbounds with clear button.
