@@ -321,6 +321,8 @@ namespace Microsoft.Maui.Controls
 			// Pop the stack down to where it no longer matches 
 			if (request.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 			{
+				var currentPage = Shell?.CurrentPage;
+
 				// If there's a visible Modal Stack then let's remove the pages under it that
 				// are going to be popped so they never become visible and never fire OnAppearing
 				if (Navigation.ModalStack.Count > 0)
@@ -407,6 +409,11 @@ namespace Microsoft.Maui.Controls
 							if (!isLast)
 								continue;
 						}
+
+						// This is the page that we will eventually get to once we've finished
+						// modifying the existing navigation stack
+						// So we want to fire appearing on it						
+						navPage.SendAppearing();
 
 						IsPoppingModalStack = true;
 
