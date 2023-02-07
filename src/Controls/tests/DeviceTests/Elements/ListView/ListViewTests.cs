@@ -20,6 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<ViewCell, ViewCellRenderer>();
+					handlers.AddHandler<TextCell, TextCellRenderer>();
 					handlers.AddHandler<ListView, ListViewRenderer>();
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
@@ -150,6 +151,62 @@ namespace Microsoft.Maui.DeviceTests
 				ValidatePlatformCells(listView);
 				data.Clear();
 				await Task.Delay(100);
+			});
+		}
+
+		[Fact]
+		public async Task NullTemplateDoesntCrash()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"cat",
+				"dog",
+				"catdog"
+			};
+
+			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					return new ViewCell
+					{
+						View = new VerticalStackLayout
+						{
+							new Label()
+						}
+					};
+				}),
+				ItemsSource = data
+			};
+
+			var layout = new VerticalStackLayout
+			{
+				listView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+			});
+
+			// Default ctor
+			listView.ItemTemplate = new DataTemplate();
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+			});
+
+			// Return null
+			listView.ItemTemplate = new DataTemplate(() => null);
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
 			});
 		}
 	}
