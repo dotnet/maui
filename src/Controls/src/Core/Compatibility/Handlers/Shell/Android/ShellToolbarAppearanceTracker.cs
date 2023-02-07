@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			Toolbar shellToolbar = _shellContext.Shell.Toolbar;
 
-			if (shellToolbar == null)
+			if (shellToolbar is null)
 				return;
 
 			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
