@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Platform
 			// or the Control can belong to another page
 			DependencyObject parent = control;
 
-			while (parent != null && parent is not Page)
+			while (parent is not Page)
 			{
 				parent = VisualTreeHelper.GetParent(parent);
 			}
