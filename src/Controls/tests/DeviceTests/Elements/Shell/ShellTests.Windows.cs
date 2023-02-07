@@ -47,12 +47,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
 			{
-				var rootNavView = (handler.PlatformView);
+				var rootNavView = handler.PlatformView;
 				var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
 				var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Left;
 				var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 
 				Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
+				Assert.NotNull(shellItemView);
 				Assert.Equal(expectedShellItems, shellItemView.PaneDisplayMode);
 
 				return Task.CompletedTask;
