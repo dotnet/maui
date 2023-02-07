@@ -11,7 +11,7 @@
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
   </PropertyGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
@@ -29,4 +29,7 @@
   </ItemGroup>
   
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
 </Project>

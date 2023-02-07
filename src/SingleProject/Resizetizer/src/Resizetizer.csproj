@@ -5,10 +5,13 @@
     <RootNamespace>Microsoft.Maui.Resizetizer</RootNamespace>
     <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
-    <PackageId>Microsoft.Maui.Resizetizer.Sdk</PackageId>
+    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
     <Description>.NET MAUI SDK support for images, fonts, etc. Enabled via &lt;UseMauiAssets&gt;true&lt;/UseMauiAssets&gt;.</Description>
-    <IsPackable>false</IsPackable>
-    <_SkiaPackagePath>build\</_SkiaPackagePath>
+    <IsPackable>true</IsPackable>
+    <!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <!-- Do not include any assemblies from this project as we will do it manually -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,19 +21,22 @@
   <Import Project="ResizetizerPackages.projitems" />
 
   <ItemGroup>
-    <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="build/%(Arch)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="build" />
-    <None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="build" />
-    <None Include="$(MauiNuSpecDirectory)Microsoft.Maui.Resizetizer.targets" Visible="false" Pack="true" PackagePath="build/$(PackageId).targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="buildTransitive/%(Arch)" />
+    <None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="buildTransitive" />
+    <None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="buildTransitive" />
+    <None Include="nuget\**" Pack="true" PackagePath="" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="_CopyToNuspecDir" AfterTargets="Build">
+  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
-      <_CopyItems Include="$(TargetDir)**\*.dll" Exclude="$(TargetDir)System.*.dll" />
-      <_CopyItems Include="$(TargetDir)**\*.so" />
-      <_CopyItems Include="$(TargetDir)**\*.dylib" />
+      <_CopyItems Include="$(TargetDir)$(AssemblyName).dll" />
+      <_CopyItems Include="$(TargetDir)$(AssemblyName).pdb" />
+      <_CopyItems Include="nuget\buildTransitive\**" />
+      <_CopyItems Include="@(_ResizetizerFiles)" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(MauiNuSpecDirectory)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)%(_CopyItems.Arch)" ContinueOnError="true" Retries="0" />
   </Target>
+
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 
 </Project>
