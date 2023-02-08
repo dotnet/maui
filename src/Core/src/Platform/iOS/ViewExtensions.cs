@@ -735,42 +735,49 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		internal static UIView? FindNextView(this UIView view, UIView containerView, Func<UIView, bool> isValidType)
+		internal static UIView? FindNextView(this UIView? view, UIView containerView, Func<UIView, bool> isValidType)
 		{
 			UIView? nextView = null;
 
-			while (view != containerView && view is not null)
+			while (view is not null && view != containerView && nextView is null)
 			{
-				var siblings = view.Superview.Subviews;
-				nextView = view.FindNextView(siblings.IndexOf(view) + 1, isValidType);
+				var siblings = view.Superview?.Subviews;
 
-				if (nextView is not null)
+				if (siblings is null)
 					break;
+
+				nextView = view.FindNextView(siblings.IndexOf(view) + 1, isValidType);
 
 				view = view.Superview;
 			}
 
 			// if we did not find the next view, try to find the first one
-			nextView ??= containerView.Subviews[0].FindNextView(0, isValidType);
+			nextView ??= containerView.Subviews?[0]?.FindNextView(0, isValidType);
 
 			return nextView;
 		}
 
-		static UIView? FindNextView(this UIView view, int index, Func<UIView, bool> isValidType)
+		static UIView? FindNextView(this UIView? view, int index, Func<UIView, bool> isValidType)
 		{
 			// search through the view's siblings and traverse down their branches
-			var siblings = view.Superview.Subviews;
+			var siblings = view?.Superview?.Subviews;
+
+			if (siblings is null)
+				return null;
+
 			for (int i = index; i < siblings.Length; i++)
 			{
-				if (siblings[i].Subviews.Length > 0)
+				var sibling = siblings[i];
+
+				if (sibling.Subviews is not null && sibling.Subviews.Length > 0)
 				{
-					var childVal = siblings[i].Subviews[0].FindNextView(0, isValidType);
+					var childVal = sibling.Subviews[0].FindNextView(0, isValidType);
 					if (childVal is not null)
 						return childVal;
 				}
 
-				if (isValidType(siblings[i]))
-					return siblings[i];
+				if (isValidType(sibling))
+					return sibling;
 			}
 
 			return null;
