@@ -195,6 +195,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Colors.Pink, shell.FlyoutBackgroundColor);
 		}
 
+		void validateRadioButtonColors(RadioButton button, SolidColorBrush desiredBrush)
+		{
+			if (button.Children[0] is Frame frame)
+			{
+				if (frame.Children[0] is Grid grid)
+				{
+					if (grid.Children[0] is Shapes.Ellipse outerEllipse)
+					{
+						Assert.Equal(desiredBrush, outerEllipse.Stroke);
+					}
+					if (grid.Children[1] is Shapes.Ellipse innerEllipse)
+					{
+						Assert.Equal(desiredBrush, innerEllipse.Fill);
+					}
+				}
+			}
+		}
+
+		[Fact]
+		public void CorrectDefaultRadioButtonThemeColorsInLightAndDarkModes()
+		{
+			validateRadioButtonColors(
+				new RadioButton() { ControlTemplate = RadioButton.DefaultTemplate },
+				Brush.Black);
+			SetAppTheme(AppTheme.Dark);
+			validateRadioButtonColors(
+				new RadioButton() { ControlTemplate = RadioButton.DefaultTemplate },
+				Brush.White);
+		}
+
 		[Fact]
 		public void NullApplicationCurrentFallsBackToEssentials()
 		{
