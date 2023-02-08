@@ -574,15 +574,15 @@ namespace Microsoft.Maui.DeviceTests
 		public static void TapBackButton(this UINavigationBar uINavigationBar)
 		{
 			var item = uINavigationBar.GetBackButton();
-						
-			if (item.GestureRecognizers is null && item is UIControl control)
+
+			var recognizer = item?.GestureRecognizers?.OfType<UITapGestureRecognizer>()?.FirstOrDefault();
+			if (recognizer is null && item is UIControl control)
 			{
 				control.SendActionForControlEvents(UIControlEvent.TouchUpInside);
 			}
 			else
 			{
-				var recognizer = item?.GestureRecognizers?.OfType<UITapGestureRecognizer>()?.FirstOrDefault();
-				_ = recognizer ?? throw new Exception("Unable to Back Button TapGestureRecognizer");
+				_ = recognizer ?? throw new Exception("Unable to figure out how to tap back button");
 				recognizer.State = UIGestureRecognizerState.Ended;
 			}
 		}
