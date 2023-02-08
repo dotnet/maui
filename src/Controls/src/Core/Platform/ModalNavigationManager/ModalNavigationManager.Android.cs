@@ -257,13 +257,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void UpdateRootView(AView? rootView)
 			{
-				if (_rootView.IsAlive() && _rootView != null)
+				if (_rootView.IsAlive())
 				{
 					_rootView.LayoutChange -= OnRootViewLayoutChanged;
 					_rootView = null;
 				}
 
-				if (rootView.IsAlive() && rootView != null)
+				if (rootView.IsAlive())
 				{
 					rootView.LayoutChange += OnRootViewLayoutChanged;
 					_rootView = rootView;
