@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanging(propertyName);
 
-			if (propertyName == nameof(Window) && Window is not null)
+			if (Window is not null && propertyName == nameof(Window))
 				Window.Destroying -= OnWindowDestroying;
 		}
 
