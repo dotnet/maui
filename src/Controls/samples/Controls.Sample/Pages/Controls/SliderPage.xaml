@@ -44,7 +44,7 @@
             <Slider ThumbColor="Orange"/>
 
             <Label Text="ThumbImageSource=coffee.png" Style="{StaticResource Headline}"/>
-            <Slider x:Name="ImageSlider" ThumbImageSource="coffee.png" />
+            <Slider x:Name="ImageSlider" ThumbImageSource="thumb_image.png" />
             <Button Text="Toggle Image" Clicked="ToggleImageSource" />
 
             <Label Text="Custom Slider (Red MinimumTrackColor, Green MaximumTrackColor, Blue ThumbColor)" Style="{StaticResource Headline}"/>
