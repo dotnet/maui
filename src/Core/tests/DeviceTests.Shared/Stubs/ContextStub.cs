@@ -38,12 +38,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			if (serviceType == typeof(NavigationRootManager))
 				return _windowManager ??= new NavigationRootManager(this);
-
-			if (serviceType == typeof(IFontManager))
-			{
-				var registrar = new FontRegistrar(new EmbeddedFontLoader());
-				return new FontManager(registrar);
-			}
 #elif IOS || MACCATALYST
 			if (serviceType == typeof(UIKit.UIWindow))
 				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
