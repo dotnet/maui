@@ -300,7 +300,7 @@ namespace Microsoft.Maui.Platform
 				var current = stack.Pop();
 				yield return current;
 
-				if (current.Sublayers != null)
+				if (current.Sublayers is not null)
 				{
 					foreach (var child in current.Sublayers)
 						stack.Push(child);
