@@ -261,7 +261,6 @@ namespace Microsoft.Maui.Platform
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView =>
 			FindDescendantView<T>(view, (_) => true);
 
-
 		public static void UpdateBackgroundLayerFrame(this UIView view)
 		{
 			if (view == null || view.Frame.IsEmpty)
