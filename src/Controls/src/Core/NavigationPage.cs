@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -375,13 +376,6 @@ namespace Microsoft.Maui.Controls
 
 			return base.OnBackButtonPressed();
 		}
-
-		internal void InitialNativeNavigationStackLoaded()
-		{
-			SendNavigated(null);
-		}
-
-
 
 		void SendNavigated(Page previousPage)
 		{

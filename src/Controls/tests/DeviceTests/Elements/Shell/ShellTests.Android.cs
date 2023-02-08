@@ -8,6 +8,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -221,44 +222,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-		[Fact]
-		public async Task SwappingOutAndroidContextDoesntCrash()
-		{
-			SetupBuilder();
-
-			var shell = await CreateShellAsync(shell =>
-			{
-				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
-				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem2", Items = { new ContentPage() }, Title = "Flyout Item" });
-			});
-
-			var window = new Controls.Window(shell);
-			var mauiContextStub1 = new ContextStub(MauiContext.GetApplicationServices());
-			var activity = mauiContextStub1.GetActivity();
-			mauiContextStub1.Context = new ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
-			{
-				await OnLoadedAsync(shell.CurrentPage);
-				await OnNavigatedToAsync(shell.CurrentPage);
-				await Task.Delay(100);
-				await shell.GoToAsync("//FlyoutItem2");
-			}, mauiContextStub1);
-
-			var mauiContextStub2 = new ContextStub(MauiContext.GetApplicationServices());
-			mauiContextStub2.Context = new ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
-			{
-				await OnLoadedAsync(shell.CurrentPage);
-				await OnNavigatedToAsync(shell.CurrentPage);
-				await Task.Delay(100);
-				await shell.GoToAsync("//FlyoutItem1");
-				await shell.GoToAsync("//FlyoutItem2");
-			}, mauiContextStub2);
-		}
-
 		protected AView GetFlyoutPlatformView(ShellRenderer shellRenderer)
 		{
 			var drawerLayout = GetDrawerLayout(shellRenderer);
@@ -360,6 +323,27 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return flyoutContainer ?? throw new Exception("RecyclerView not found");
+		}
+
+		async Task TapToSelect(ContentPage page)
+		{
+			var shellContent = page.Parent as ShellContent;
+			var shellSection = shellContent.Parent as ShellSection;
+			var shellItem = shellSection.Parent as ShellItem;
+			var shell = shellItem.Parent as Shell;
+			await OnNavigatedToAsync(shell.CurrentPage);
+
+			if (shellItem != shell.CurrentItem)
+				throw new NotImplementedException();
+
+			if (shellSection != shell.CurrentItem.CurrentItem)
+				throw new NotImplementedException();
+
+			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
+				.PlatformView.GetParentOfType<ViewPager2>();
+
+			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
+			await OnNavigatedToAsync(page);
 		}
 	}
 }

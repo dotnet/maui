@@ -1,3 +1,4 @@
+#nullable disable
 #if __MOBILE__
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_viewHandler = viewHandler;
 		}
 
-#region UIDragInteractionDelegate
+		#region UIDragInteractionDelegate
 		[Export("dragInteraction:session:willEndWithOperation:")]
 		[Preserve(Conditional = true)]
 		public void SessionWillEnd(UIDragInteraction interaction, IUIDragSession session, UIDropOperation operation)
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler);
 		}
-#endregion
+		#endregion
 
 		[Export("dropInteraction:canHandleSession:")]
 		[Preserve(Conditional = true)]

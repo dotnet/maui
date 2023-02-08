@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -13,10 +14,9 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
 	public partial class NavigationPage : INavigationPageController
 	{
-		internal async Task<Page> PopAsyncInner(
+		async Task<Page> PopAsyncInner(
 			bool animated,
-			bool fast,
-			bool requestedFromHandler)
+			bool fast)
 		{
 			if (NavigationPageController.StackDepth == 1)
 			{
@@ -26,16 +26,15 @@ namespace Microsoft.Maui.Controls
 			var page = (Page)InternalChildren.Last();
 			var previousPage = CurrentPage;
 			SendNavigating();
-			var removedPage = await RemoveAsyncInner(page, animated, fast, requestedFromHandler);
+			var removedPage = await RemoveAsyncInner(page, animated, fast);
 			SendNavigated(previousPage);
 			return removedPage;
 		}
 
-		internal async Task<Page> RemoveAsyncInner(
+		async Task<Page> RemoveAsyncInner(
 			Page page,
 			bool animated,
-			bool fast,
-			bool requestedFromHandler)
+			bool fast)
 		{
 			if (NavigationPageController.StackDepth == 1)
 			{
@@ -52,7 +51,7 @@ namespace Microsoft.Maui.Controls
 			var removed = true;
 
 			EventHandler<NavigationRequestedEventArgs> requestPop = _popRequested;
-			if (requestPop != null && !requestedFromHandler)
+			if (requestPop != null)
 			{
 				requestPop(this, args);
 
@@ -73,15 +72,14 @@ namespace Microsoft.Maui.Controls
 			return page;
 		}
 
-
 		Task<Page> INavigationPageController.PopAsyncInner(bool animated, bool fast)
 		{
-			return PopAsyncInner(animated, fast, false);
+			return PopAsyncInner(animated, fast);
 		}
 
 		Task<Page> INavigationPageController.RemoveAsyncInner(Page page, bool animated, bool fast)
 		{
-			return RemoveAsyncInner(page, animated, fast, false);
+			return RemoveAsyncInner(page, animated, fast);
 		}
 
 		EventHandler<NavigationRequestedEventArgs> _popRequested;
@@ -205,6 +203,20 @@ namespace Microsoft.Maui.Controls
 			SendNavigated(previousPage);
 			Pushed?.Invoke(this, args);
 		}
+
+#if IOS
+		// Because iOS currently doesn't use our `IStackNavigationView` structures
+		// there are scenarios where the legacy handler needs to alert the xplat
+		// code of when a navigation has occurred.
+		// For example, initial load and when the user taps the back button
+		internal void SendNavigatedFromHandler(Page previousPage)
+		{
+			if (CurrentPage.HasNavigatedTo)
+				return;
+
+			SendNavigated(previousPage);
+		}
+#endif
 
 		void PushPage(Page page)
 		{

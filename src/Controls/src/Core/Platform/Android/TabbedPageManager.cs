@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -58,6 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		Color _currentBarSelectedItemColor;
 		ColorStateList _currentBarTextColorStateList;
 		bool _tabItemStyleLoaded;
+		TabLayoutMediator _tabLayoutMediator;
 
 		NavigationRootManager NavigationRootManager { get; }
 
@@ -182,7 +184,7 @@ namespace Microsoft.Maui.Controls.Handlers
 						.GetNavigationRootManager()
 						.FragmentManager;
 
-				if (fragmentManager.IsAlive() && !fragmentManager.IsDestroyed)
+				if (!fragmentManager.IsDestroyed(_context?.Context))
 				{
 					SetContentBottomMargin(0);
 
@@ -209,21 +211,25 @@ namespace Microsoft.Maui.Controls.Handlers
 			SetTabLayout();
 		}
 
+		void RootViewChanged(object sender, EventArgs e)
+		{
+			if (sender is NavigationRootManager rootManager)
+			{
+				rootManager.RootViewChanged -= RootViewChanged;
+				SetTabLayout();
+			}
+		}
+
 		internal void SetTabLayout()
 		{
 			int id;
 			var rootManager =
 				_context.GetNavigationRootManager();
+
 			_tabItemStyleLoaded = false;
 			if (rootManager.RootView == null)
 			{
 				rootManager.RootViewChanged += RootViewChanged;
-
-				void RootViewChanged(object sender, EventArgs e)
-				{
-					rootManager.RootViewChanged -= RootViewChanged;
-					SetTabLayout();
-				}
 
 				return;
 			}
@@ -277,7 +283,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				BottomNavigationView bottomNavigationView = _bottomNavigationView;
 
-				adapter.NotifyDataSetChanged();
+				NotifyDataSetChanged();
 
 				if (Element.Children.Count == 0)
 				{
@@ -285,7 +291,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 				else
 				{
-					SetupBottomNavigationView(e);
+					SetupBottomNavigationView();
 					bottomNavigationView.SetOnItemSelectedListener(_listeners);
 				}
 
@@ -295,16 +301,21 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				TabLayout tabs = _tabLayout;
 
-				adapter.NotifyDataSetChanged();
+				NotifyDataSetChanged();
 				if (Element.Children.Count == 0)
 				{
 					tabs.RemoveAllTabs();
 					tabs.SetupWithViewPager(null);
+					_tabLayoutMediator?.Detach();
+					_tabLayoutMediator = null;
 				}
 				else
 				{
-					new TabLayoutMediator(tabs, _viewPager, _listeners)
-						.Attach();
+					if (_tabLayoutMediator == null)
+					{
+						_tabLayoutMediator = new TabLayoutMediator(tabs, _viewPager, _listeners);
+						_tabLayoutMediator.Attach();
+					}
 
 					UpdateTabIcons();
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -314,6 +325,33 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				UpdateIgnoreContainerAreas();
 			}
+		}
+
+		void NotifyDataSetChanged()
+		{
+			if (_viewPager?.Adapter is MultiPageFragmentStateAdapter<Page> adapter)
+			{
+				var currentIndex = Element.Children.IndexOf(Element.CurrentPage);
+
+				// If the modification to the backing collection has changed the position of the current item
+				// then we need to update the viewpager so it remains selected
+				if (_viewPager.CurrentItem != currentIndex && currentIndex < Element.Children.Count && currentIndex >= 0)
+					_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), false);
+
+				adapter.NotifyDataSetChanged();
+			}
+		}
+
+		void TabSelected(TabLayout.Tab tab)
+		{
+			if (Element == null)
+				return;
+
+			int selectedIndex = tab.Position;
+			if (Element.Children.Count > selectedIndex && selectedIndex >= 0)
+				Element.CurrentPage = Element.Children[selectedIndex];
+
+			SetIconColorFilter(tab, true);
 		}
 
 		void TeardownPage(Page page)
@@ -420,7 +458,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			return items;
 		}
 
-		void SetupBottomNavigationView(NotifyCollectionChangedEventArgs e)
+		void SetupBottomNavigationView()
 		{
 			var currentIndex = Element.Children.IndexOf(Element.CurrentPage);
 			var items = CreateTabList();
@@ -793,8 +831,13 @@ namespace Microsoft.Maui.Controls.Handlers
 					_previousPage = Element.CurrentPage;
 					_tabbedPageManager._previousPage = Element.CurrentPage;
 				}
-				Element.CurrentPage = Element.Children[position];
-				Element.CurrentPage.SendAppearing();
+
+				// This only happens if all the pages have been removed
+				if (Element.Children.Count > 0)
+				{
+					Element.CurrentPage = Element.Children[position];
+					Element.CurrentPage.SendAppearing();
+				}
 
 				if (IsBottomTabPlacement)
 					_bottomNavigationView.SelectedItemId = position;
@@ -834,14 +877,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			void TabLayout.IOnTabSelectedListener.OnTabSelected(TabLayout.Tab tab)
 			{
-				if (_tabbedPageManager.Element == null)
-					return;
-
-				int selectedIndex = tab.Position;
-				if (_tabbedPageManager.Element.Children.Count > selectedIndex && selectedIndex >= 0)
-					_tabbedPageManager.Element.CurrentPage = _tabbedPageManager.Element.Children[selectedIndex];
-
-				_tabbedPageManager.SetIconColorFilter(tab, true);
+				_tabbedPageManager.TabSelected(tab);
 			}
 
 			void TabLayout.IOnTabSelectedListener.OnTabUnselected(TabLayout.Tab tab)

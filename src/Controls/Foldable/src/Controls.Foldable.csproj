@@ -17,7 +17,7 @@
     <Description>.NET MAUI Foldable provides additional APIs to better support foldable mobile devices.</Description>
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" PrivateAssets="all" />
@@ -41,4 +41,6 @@
   <ItemGroup>
     <None Include="..\..\..\..\Assets\icon.png" PackagePath="icon.png" Pack="true" />
   </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 </Project>

@@ -59,6 +59,15 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		protected IServiceProvider ApplicationServices
+		{
+			get
+			{
+				EnsureHandlerCreated();
+				return _servicesProvider;
+			}
+		}
+
 		protected Task SetValueAsync<TValue, THandler>(IView view, TValue value, Action<THandler, TValue> func)
 			where THandler : IElementHandler, new()
 		{
@@ -78,8 +87,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			mauiContext ??= MauiContext;
 			handler.SetMauiContext(mauiContext);
-			handler.SetVirtualView(element);
 			element.Handler = handler;
+			handler.SetVirtualView(element);
 
 			if (element is IView view && handler is IViewHandler viewHandler)
 			{

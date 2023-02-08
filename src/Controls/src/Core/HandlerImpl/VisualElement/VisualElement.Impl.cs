@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
@@ -7,15 +6,16 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
-	public partial class VisualElement : IView
+	public partial class VisualElement : IView, IControlsVisualElement
 	{
 		Semantics? _semantics;
 		bool _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
-
 		Rect _frame = new Rect(0, 0, -1, -1);
+		event EventHandler? _windowChanged;
+		event EventHandler? _platformContainerViewChanged;
 
 		public Rect Frame
 		{
@@ -395,6 +395,18 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		event EventHandler? IControlsVisualElement.WindowChanged
+		{
+			add => _windowChanged += value;
+			remove => _windowChanged -= value;
+		}
+
+		event EventHandler? IControlsVisualElement.PlatformContainerViewChanged
+		{
+			add => _platformContainerViewChanged += value;
+			remove => _platformContainerViewChanged -= value;
+		}
+
 		void OnLoadedCore()
 		{
 			if (_isLoadedFired)
@@ -423,6 +435,7 @@ namespace Microsoft.Maui.Controls
 
 			visualElement.UpdatePlatformUnloadedLoadedWiring(newValue as Window);
 			visualElement.InvalidateStateTriggers(newValue != null);
+			visualElement._windowChanged?.Invoke(visualElement, EventArgs.Empty);
 		}
 
 		void OnWindowHandlerChanged(object? sender, EventArgs e)

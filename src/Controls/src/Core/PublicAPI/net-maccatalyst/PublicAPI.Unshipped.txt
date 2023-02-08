@@ -1,5 +1,46 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.LayoutSubviews() -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.AddSubview(UIKit.UIView view) -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.WillRemoveSubview(UIKit.UIView uiview) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender>(TSender sender, string message) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Instance.get -> Microsoft.Maui.Controls.IMessagingCenter
+*REMOVED*Microsoft.Maui.Controls.IMessagingCenter
+virtual Microsoft.Maui.Controls.VisualElement.IsEnabledCore.get -> bool
+Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
+override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
+~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
+~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
+~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
+*REMOVED*Microsoft.Maui.Controls.MessagingCenter
+*REMOVED*Microsoft.Maui.Controls.MessagingCenter.MessagingCenter() -> void
+*REMOVED*~Microsoft.Maui.Controls.OpenGLView.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.OpenGLView>
+*REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.get -> System.Action<Microsoft.Maui.Graphics.Rect>
+*REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.set -> void
+*REMOVED*~static readonly Microsoft.Maui.Controls.OpenGLView.HasRenderLoopProperty -> Microsoft.Maui.Controls.BindableProperty
+*REMOVED*Microsoft.Maui.Controls.IOpenGlViewController
+*REMOVED*Microsoft.Maui.Controls.IOpenGlViewController.DisplayRequested -> System.EventHandler
+*REMOVED*Microsoft.Maui.Controls.OpenGLView
+*REMOVED*Microsoft.Maui.Controls.OpenGLView.Display() -> void
+*REMOVED*Microsoft.Maui.Controls.OpenGLView.DisplayRequested -> System.EventHandler
+*REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.get -> bool
+*REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.set -> void
+*REMOVED*Microsoft.Maui.Controls.OpenGLView.OpenGLView() -> void
+*REMOVED*Microsoft.Maui.Controls.Application.SavePropertiesAsync() -> System.Threading.Tasks.Task!
+*REMOVED*Microsoft.Maui.Controls.Application.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!

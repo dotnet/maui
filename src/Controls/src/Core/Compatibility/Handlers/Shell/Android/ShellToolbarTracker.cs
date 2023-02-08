@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -76,8 +77,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_drawerLayout = drawerLayout ?? throw new ArgumentNullException(nameof(drawerLayout));
 			_appBar = _platformToolbar.Parent.GetParentOfType<AppBarLayout>();
 
-			_globalLayoutListener = new GenericGlobalLayoutListener(() => UpdateNavBarHasShadow(Page));
-			_appBar.ViewTreeObserver.AddOnGlobalLayoutListener(_globalLayoutListener);
+			_globalLayoutListener = new GenericGlobalLayoutListener((_, _) => UpdateNavBarHasShadow(Page), _appBar);
 			_platformToolbar.SetNavigationOnClickListener(this);
 			((IShellController)ShellContext.Shell).AddFlyoutBehaviorObserver(this);
 			ShellContext.Shell.Toolbar.PropertyChanged += OnToolbarPropertyChanged;
@@ -174,9 +174,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				if (_appBar.IsAlive() && _appBar.ViewTreeObserver.IsAlive())
-					_appBar.ViewTreeObserver.RemoveOnGlobalLayoutListener(_globalLayoutListener);
-
 				_globalLayoutListener.Invalidate();
 
 				if (_backButtonBehavior != null)
@@ -263,7 +260,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateTitleView();
 
 				if (ShellContext.Shell.Toolbar is ShellToolbar shellToolbar &&
-					newPage == ShellContext.Shell.CurrentPage)
+					newPage == ShellContext.Shell.GetCurrentShellPage())
 				{
 					shellToolbar.ApplyChanges();
 				}
@@ -275,8 +272,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_disposed || Page == null)
 				return;
 
-			if (ShellContext?.Shell?.Toolbar is ShellToolbar shellToolbar &&
-					Page == ShellContext?.Shell?.CurrentPage)
+			if (ShellContext?.Shell?.Toolbar is ShellToolbar &&
+				Page == ShellContext?.Shell?.GetCurrentShellPage())
 			{
 				UpdateLeftBarButtonItem();
 			}
@@ -578,7 +575,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (_toolbar != null && ShellContext?.Shell?.CurrentPage == Page)
+			if (_toolbar != null && ShellContext?.Shell?.GetCurrentShellPage() == Page)
 			{
 				ApplyToolbarChanges((Toolbar)sender, (Toolbar)_toolbar);
 				UpdateToolbarIconAccessibilityText(_platformToolbar, ShellContext.Shell);
