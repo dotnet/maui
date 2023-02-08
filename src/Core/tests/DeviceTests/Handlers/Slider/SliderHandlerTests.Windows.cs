@@ -128,10 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool ImageSourceLoaded(SliderHandler sliderHandler)
 		{
-			if (sliderHandler.PlatformView is MauiSlider mauiSlider)
-				return mauiSlider.ThumbImageSource != null;
-
-			return false;
+           return (sliderHandler.PlatformView as MauiSlider)?.ThumbImageSource != null;
 		}
 	}
 }
