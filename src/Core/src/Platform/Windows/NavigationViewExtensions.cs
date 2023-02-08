@@ -119,12 +119,12 @@ namespace Microsoft.Maui.Platform
 		{
 			var paneContentGrid = navigationView.PaneContentGrid;
 
-			if (paneContentGrid == null)
+			if (paneContentGrid is null)
 				return;
 
 			var brush = paint?.ToPlatform();
 
-			if (brush == null)
+			if (brush is null)
 			{
 				object? color;
 				if (navigationView.IsPaneOpen)
