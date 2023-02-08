@@ -512,17 +512,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected virtual ColorStateList GetItemTextColorStates()
 		{
-			if (_originalTabTextColors == null)
+			if (_originalTabTextColors is null)
 				_originalTabTextColors = IsBottomTabPlacement ? _bottomNavigationView.ItemTextColor : _tabLayout.TabTextColors;
 
 			Color barItemColor = BarItemColor;
 			Color barTextColor = Element.BarTextColor;
 			Color barSelectedItemColor = BarSelectedItemColor;
 
-			if (barItemColor == null && barTextColor == null && barSelectedItemColor == null)
+			if (barItemColor is null && barTextColor is null && barSelectedItemColor is null)
 				return _originalTabTextColors;
 
-			if (_newTabTextColors != null)
+			if (_newTabTextColors is not null)
 				return _newTabTextColors;
 
 			int checkedColor;
@@ -532,17 +532,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			// original colors is used.
 			int? defaultColor = null;
 
-			if (barTextColor != null)
+			if (barTextColor is not null)
 			{
 				checkedColor = barTextColor.ToPlatform().ToArgb();
 				defaultColor = checkedColor;
 			}
 			else
 			{
-				if (barItemColor != null)
+				if (barItemColor is not null)
 					defaultColor = barItemColor.ToPlatform().ToArgb();
 
-				if (barItemColor == null && _originalTabTextColors != null)
+				if (barItemColor is null && _originalTabTextColors is not null)
 					defaultColor = _originalTabTextColors.DefaultColor;
 
 				if (!defaultColor.HasValue)
@@ -550,7 +550,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				else
 					checkedColor = defaultColor.Value;
 
-				if (barSelectedItemColor != null)
+				if (barSelectedItemColor is not null)
 					checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
 			}
 
