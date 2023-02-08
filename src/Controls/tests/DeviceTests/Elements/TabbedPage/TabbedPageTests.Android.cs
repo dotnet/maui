@@ -12,11 +12,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Using SelectedTab Color doesnt crash")]
 		public async Task SelectedTabColorNoDoesntCrash()
 		{
-			var expected = Colors.Red;
-
 			SetupBuilder();
+
 			var tabbedPage = CreateBasicTabbedPage();
-			tabbedPage.SelectedTabColor = expected;
+			tabbedPage.SelectedTabColor = Colors.Red;
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), (handler) =>
 			{
