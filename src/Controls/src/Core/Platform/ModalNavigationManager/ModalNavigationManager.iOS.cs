@@ -30,13 +30,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		private void OnPlatformWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
-			if (!_window.IsActivated && _platformActivated == null)
+			if (!_window.IsActivated && _platformActivated is null)
 				_platformActivated = new TaskCompletionSource();
 		}
 
 		void OnWindowActivated(object? sender, EventArgs e)
 		{
-			if (_platformActivated != null)
+			if (_platformActivated is not null)
 			{
 				var source = _platformActivated;
 				_platformActivated = null;
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Platform
 			get
 			{
 				if (_window?.Page?.Handler is IPlatformViewHandler pvh &&
-					pvh.ViewController?.ViewIfLoaded?.Window != null)
+					pvh.ViewController?.ViewIfLoaded?.Window is not null)
 				{
 					return pvh.ViewController;
 				}
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var controller = (modal.Handler as IPlatformViewHandler)?.ViewController;
 
 			if (controller?.ParentViewController is ModalWrapper modalWrapper &&
-				modalWrapper.PresentingViewController != null)
+				modalWrapper.PresentingViewController is not null)
 			{
 				await modalWrapper.PresentingViewController.DismissViewControllerAsync(animated);
 				return modal;
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_platformModalPages.Add(modal);
 
-			if (_window?.Page?.Handler != null)
+			if (_window?.Page?.Handler is not null)
 				return PresentModal(modal, animated && _window.IsActivated);
 
 			return Task.CompletedTask;
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var topPage = _platformModalPages[_platformModalPages.Count - 2];
 				var controller = (topPage?.Handler as IPlatformViewHandler)?.ViewController;
-				if (controller != null)
+				if (controller is not null)
 				{
 					await controller.PresentViewControllerAsync(wrapper, animated);
 					await Task.Delay(5);
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// presentation is complete before it really is. It does not however inform you when it is really done (and thus 
 			// would be safe to dismiss the VC). Fortunately this is almost never an issue
 
-			if (WindowViewController != null)
+			if (WindowViewController is not null)
 			{
 				await WindowViewController.PresentViewControllerAsync(wrapper, animated);
 				await Task.Delay(5);

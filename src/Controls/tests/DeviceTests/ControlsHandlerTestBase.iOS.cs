@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					if (window.Handler != null)
+					if (window.Handler is not null)
 					{
 						if (window is Controls.Window controlsWindow && controlsWindow.Navigation.ModalStack.Count > 0)
 						{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 								var page = controlsWindow.Navigation.ModalStack[i];
 								if (page.Handler is IPlatformViewHandler pvh &&
 									pvh.ViewController?.ParentViewController is ModalWrapper modal &&
-									modal.PresentingViewController != null)
+									modal.PresentingViewController is not null)
 								{
 									await modal.PresentingViewController.DismissViewControllerAsync(false);
 								}
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected bool IsNavigationBarVisible(IElementHandler handler)
 		{
 			var platformToolbar = GetPlatformToolbar(handler);
-			return platformToolbar?.Window != null;
+			return platformToolbar?.Window is not null;
 		}
 
 		protected object GetTitleView(IElementHandler handler)
@@ -115,13 +115,13 @@ namespace Microsoft.Maui.DeviceTests
 			var containerVC = (handler as IPlatformViewHandler).ViewController;
 			var view = handler.VirtualView.Parent;
 
-			while (containerVC == null && view != null)
+			while (containerVC is null && view is not null)
 			{
 				containerVC = (view?.Handler as IPlatformViewHandler).ViewController;
 				view = view?.Parent;
 			}
 
-			if (containerVC == null)
+			if (containerVC is null)
 				return new UIViewController[0];
 
 			return new[] { containerVC };

@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_platformModalPages.Remove(page);
 
 			var modalHandler = page.Handler as IPlatformViewHandler;
-			if (modalHandler != null)
+			if (modalHandler is not null)
 			{
 				ModalContainer? modalContainer = null;
 				for (int i = 0; i <= GetModalParentView().ChildCount; i++)
@@ -309,11 +309,11 @@ namespace Microsoft.Maui.Controls.Platform
 			// which sometimes causes the available window size to change
 			void OnRootViewLayoutChanged(object? sender, LayoutChangeEventArgs e)
 			{
-				if (Modal == null || sender is not AView view)
+				if (Modal is null || sender is not AView view)
 					return;
 
 				var modalStack = Modal?.Navigation?.ModalStack;
-				if (modalStack == null ||
+				if (modalStack is null ||
 					modalStack.Count == 0 ||
 					modalStack[modalStack.Count - 1] != Modal)
 				{
@@ -321,7 +321,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				if ((_currentRootViewHeight != view.MeasuredHeight || _currentRootViewWidth != view.MeasuredWidth)
-					&& this.ViewTreeObserver != null)
+					&& this.ViewTreeObserver is not null)
 				{
 					// When the keyboard closes Android calls layout but doesn't call remeasure.
 					// MY guess is that this is due to the modal not being part of the FitSystemWindowView
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					_rootViewLayoutListener ??= new GenericGlobalLayoutListener((listener, view) =>
 					{
-						if (view != null && !this.IsInLayout)
+						if (view is not null && !this.IsInLayout)
 						{
 							listener.Invalidate();
 							_rootViewLayoutListener = null;
@@ -357,10 +357,10 @@ namespace Microsoft.Maui.Controls.Platform
 				// ModalContainer takes into account the StatusBar or lack thereof
 				var decorView = Context?.GetActivity()?.Window?.DecorView;
 
-				if (decorView != null && this.LayoutParameters is ViewGroup.MarginLayoutParams mlp)
+				if (decorView is not null && this.LayoutParameters is ViewGroup.MarginLayoutParams mlp)
 				{
 					var windowInsets = ViewCompat.GetRootWindowInsets(decorView);
-					if (windowInsets != null)
+					if (windowInsets is not null)
 					{
 						var barInsets = windowInsets.GetInsetsIgnoringVisibility(WindowInsetsCompat.Type.SystemBars());
 
@@ -387,7 +387,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				if (Context == null || NavigationRootManager?.RootView == null)
+				if (Context is null || NavigationRootManager?.RootView is null)
 				{
 					SetMeasuredDimension(0, 0);
 					return;
@@ -407,7 +407,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				if (Context == null || NavigationRootManager?.RootView == null)
+				if (Context is null || NavigationRootManager?.RootView is null)
 					return;
 
 				NavigationRootManager
@@ -425,11 +425,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void UpdateBackgroundColor()
 			{
-				if (Modal == null)
+				if (Modal is null)
 					return;
 
 				Color modalBkgndColor = Modal.BackgroundColor;
-				if (modalBkgndColor == null)
+				if (modalBkgndColor is null)
 					_backgroundView.SetWindowBackground();
 				else
 					_backgroundView.SetBackgroundColor(modalBkgndColor.ToPlatform());
@@ -437,10 +437,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Destroy()
 			{
-				if (Modal == null || _windowMauiContext == null || _fragmentManager == null || !_fragmentManager.IsAlive() || _fragmentManager.IsDestroyed)
+				if (Modal is null || _windowMauiContext is null || _fragmentManager is null || !_fragmentManager.IsAlive() || _fragmentManager.IsDestroyed)
 					return;
 
-				if (Modal.Toolbar?.Handler != null)
+				if (Modal.Toolbar?.Handler is not null)
 					Modal.Toolbar.Handler = null;
 
 				Modal.Handler = null;

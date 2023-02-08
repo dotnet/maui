@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Platform
 #if ANDROID
 					_window.IsActivated &&
 #endif
-					_window?.Page?.Handler != null && _window.Handler != null;
+					_window?.Page?.Handler is not null && _window.Handler is not null;
 			}
 		}
 

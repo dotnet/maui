@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void RemovePage(Page page, bool popping)
 		{
-			if (page == null)
+			if (page is null)
 				return;
 
 			var mauiContext = page.FindMauiContext() ??
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Platform
 					RemovePage(previousPage, popping);
 				}
 
-				if (Container == null || newPage == null)
+				if (Container is null || newPage is null)
 					return;
 
 				// pushing modal

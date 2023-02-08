@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 			((IPageController)modal).SendDisappearing();
 
 			var modalRenderer = modal.Handler as IPlatformViewHandler;
-			if (modalRenderer != null)
+			if (modalRenderer is not null)
 			{
 				await _modalStack.Pop(animated);
 				CurrentPageController?.SendAppearing();
