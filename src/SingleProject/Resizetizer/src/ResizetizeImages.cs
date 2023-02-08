@@ -26,10 +26,17 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string IsMacEnabled { get; set; }
 
+		public bool DisableParallelGeneration { get; set; }
+
+		public int ParallelGenerationMaxConcurrency { get; set; }
+
 		public ILogger Logger => this;
 
 		public override System.Threading.Tasks.Task ExecuteAsync()
 		{
+			if (ParallelGenerationMaxConcurrency <= 0)
+				ParallelGenerationMaxConcurrency = AsyncTaskExtensions.DefaultMaxConcurrencyLevel;
+
 			var images = ResizeImageInfo.Parse(Images);
 
 			var dpis = DpiPath.GetDpis(PlatformType);
@@ -41,51 +48,20 @@ namespace Microsoft.Maui.Resizetizer
 
 			var resizedImages = new ConcurrentBag<ResizedImageInfo>();
 
-			this.ParallelForEach(images, img =>
+			if (DisableParallelGeneration)
 			{
-				try
+				foreach(var img in images)
 				{
-					var opStopwatch = new Stopwatch();
-					opStopwatch.Start();
-
-					string op;
-
-					if (img.IsAppIcon)
-					{
-						// App icons are special
-						ProcessAppIcon(img, resizedImages);
-
-						op = "App Icon";
-					}
-					else
-					{
-						// By default we resize, but let's make sure
-						if (img.Resize)
-						{
-							ProcessImageResize(img, dpis, resizedImages);
-
-							op = "Resize";
-						}
-						else
-						{
-							// Otherwise just copy the thing over to the 1.0 scale
-							ProcessImageCopy(img, originalScaleDpi, resizedImages);
-
-							op = "Copy";
-						}
-					}
-
-					opStopwatch.Stop();
-
-					LogDebugMessage($"{op} took {opStopwatch.ElapsedMilliseconds}ms");
+					ProcessImageInfo(img, dpis, originalScaleDpi, resizedImages);
 				}
-				catch (Exception ex)
+			}
+			else
+			{
+				this.ParallelForEach(images, img =>
 				{
-					LogWarning("MAUI0000", ex.ToString());
-
-					throw;
-				}
-			});
+					ProcessImageInfo(img, dpis, originalScaleDpi, resizedImages);
+				}, ParallelGenerationMaxConcurrency);
+			}
 
 			if (PlatformType == "tizen")
 			{
@@ -114,6 +90,52 @@ namespace Microsoft.Maui.Resizetizer
 			CopiedResources = copiedResources.ToArray();
 
 			return System.Threading.Tasks.Task.CompletedTask;
+		}
+
+		private void ProcessImageInfo(ResizeImageInfo img, DpiPath[] dpis, DpiPath originalScaleDpi, ConcurrentBag<ResizedImageInfo> resizedImages)
+		{
+			try
+			{
+				var opStopwatch = new Stopwatch();
+				opStopwatch.Start();
+
+				string op;
+
+				if (img.IsAppIcon)
+				{
+					// App icons are special
+					ProcessAppIcon(img, resizedImages);
+
+					op = "App Icon";
+				}
+				else
+				{
+					// By default we resize, but let's make sure
+					if (img.Resize)
+					{
+						ProcessImageResize(img, dpis, resizedImages);
+
+						op = "Resize";
+					}
+					else
+					{
+						// Otherwise just copy the thing over to the 1.0 scale
+						ProcessImageCopy(img, originalScaleDpi, resizedImages);
+
+						op = "Copy";
+					}
+				}
+
+				opStopwatch.Stop();
+
+				LogDebugMessage($"{op} took {opStopwatch.ElapsedMilliseconds}ms");
+			}
+			catch (Exception ex)
+			{
+				LogWarning("MAUI0000", ex.ToString());
+
+				throw;
+			}
 		}
 
 		void ProcessAppIcon(ResizeImageInfo img, ConcurrentBag<ResizedImageInfo> resizedImages)

@@ -578,7 +578,9 @@
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
-            Images="@(MauiImage->Distinct())">
+            Images="@(MauiImage->Distinct())"
+            DisableParallelGeneration="$(_ResizetizerDisableParallelGeneration)"
+            ParallelGenerationMaxConcurrency="$(_ResizetizerParallelGenerationMaxConcurrency)">
         </ResizetizeImages>
 
         <ItemGroup>
