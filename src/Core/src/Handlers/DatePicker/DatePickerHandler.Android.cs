@@ -64,7 +64,6 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
-
 			OnViewDetachedFromWindow();
 
 			_defaultBackground = null;
