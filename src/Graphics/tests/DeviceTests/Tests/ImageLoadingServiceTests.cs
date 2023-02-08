@@ -87,9 +87,9 @@ public class ImageLoadingServiceTests
 		using var stream = await FileSystem.OpenAppPackageFileAsync("dotnet_bot.png");
 		using var image = service.FromStream(stream);
 
-		var stream = image.AsStream(format, quality);
+		var newStream = image.AsStream(format, quality);
 
-		Assert.NotNull(stream);
-		Assert.True(stream.Length > 0);
+		Assert.NotNull(newStream);
+		Assert.True(newStream.Length > 0);
 	}
 }
