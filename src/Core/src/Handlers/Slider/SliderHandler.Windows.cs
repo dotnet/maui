@@ -95,13 +95,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			var platformView = sender as Slider;
 
-			if (platformView != null)
+			if (platformView is not null)
 			{
-				if (platformView.GetFirstDescendant<Thumb>() is Thumb thumb)
+				var thumb = platformView.GetFirstDescendant<Thumb>();
+
+				if (thumb is not null)
 					_thumbSize = new Size(thumb.Width, thumb.Height);
 
-				if (platformView is not null)
-					platformView.ValueChanged += OnPlatformValueChanged;
+				platformView.ValueChanged += OnPlatformValueChanged;
 			}
 		}
 

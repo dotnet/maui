@@ -111,7 +111,9 @@ namespace Microsoft.Maui.Platform
 			{
 				nativeSlider.ThumbImageSource = null;
 
-				if (defaultThumbSize.HasValue && nativeSlider.GetFirstDescendant<Thumb>() is Thumb thumb)
+				var thumb = nativeSlider.GetFirstDescendant<Thumb>();
+
+				if (defaultThumbSize.HasValue && thumb is not null)
 				{
 					thumb.Height = defaultThumbSize.Value.Height;
 					thumb.Width = defaultThumbSize.Value.Width;
