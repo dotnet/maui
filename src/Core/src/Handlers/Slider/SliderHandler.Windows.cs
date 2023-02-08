@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Handlers
 				if (platformView.GetFirstDescendant<Thumb>() is Thumb thumb)
 					_thumbSize = new Size(thumb.Width, thumb.Height);
 
-				if (platformView != null)
+				if (platformView is not null)
 					platformView.ValueChanged += OnPlatformValueChanged;
 			}
 		}
