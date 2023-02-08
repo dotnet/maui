@@ -139,19 +139,23 @@ namespace Microsoft.Maui.Controls.Platform
 					var i = _platformModalPages.Count;
 					if (i < _modalPages.Count && IsModalReady)
 					{
-						await PushModalPlatformAsync(_modalPages[i], false);
+						await PushModalPlatformAsync(_modalPages[i], false).ConfigureAwait(false);
 						changed = true;
 					}
 				}
 			}
 			finally
 			{
+				// Code has multiple exit points during the sync operation.
+				// So we're using a try/finally to ensure that syncing always 
+				// gets transitioned to false. If more exit points are added at a later point  
+				// we don't have to always worry about the exit point setting syncing to false.
 				syncing = false;
 			}
 
 			if (changed)
 			{
-				await SyncPlatformModalStackAsync();
+				await SyncPlatformModalStackAsync().ConfigureAwait(false);
 			}
 		}
 
@@ -174,7 +178,7 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentPage?.SendAppearing();
 			}
 
-			Task popTask = 
+			Task popTask =
 				IsModalReady ? PopModalPlatformAsync(animated) : Task.CompletedTask;
 
 			await popTask;
