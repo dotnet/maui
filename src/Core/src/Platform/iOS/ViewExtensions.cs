@@ -277,12 +277,7 @@ namespace Microsoft.Maui.Platform
 			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
 
-			IEnumerable<CALayer> subLayers;
-
-			if (getAllSubLayers)
-				subLayers = layer.GetLayers();
-			else
-				subLayers = layer.Sublayers;
+			IEnumerable<CALayer> subLayers = getAllSubLayers ? layer.GetLayers() : layer.Sublayers;
 
 			foreach (var sublayer in subLayers)
 			{

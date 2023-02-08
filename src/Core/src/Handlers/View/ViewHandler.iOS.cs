@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			UpdateTransformation(handler, view);
 
-			if (view.Background != null)
+			if (view.Background is not null)
 				handler.ToPlatform().UpdateBackgroundLayerFrame();
 		}
 
