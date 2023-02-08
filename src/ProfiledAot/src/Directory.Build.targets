@@ -21,7 +21,7 @@
     </RecordDependsOn>
   </PropertyGroup>
   <Target Name="Record" DependsOnTargets="$(RecordDependsOn)">
-    <Message Importance="High" Text="Success! See changes in: $(MauiNuSpecDirectory)$(App).aotprofile" />
+    <Message Importance="High" Text="Success! See changes in: $(_MauiAOTProfileLocation)$(App).aotprofile" />
   </Target>
   <Target Name="_ClearSystemProperties" DependsOnTargets="_ResolveMonoAndroidSdks">
     <!-- Clear debug.mono.log in case it was set -->
@@ -47,10 +47,10 @@
   </UsingTask>
   <Target Name="_StripAppMethods">
     <!-- This removes ProfiledAotMaui.dll from the profile, as user's apps will have a different name -->
-    <Exec Command="&quot;$(DotNetToolPath)&quot; &quot;$(AotProfileToolPath)&quot; -sd --filter-module=&quot;^(?!$(App)).+&quot; &quot;$(MSBuildProjectDirectory)/custom.aprof&quot; -o &quot;$(MauiNuSpecDirectory)$(App).aotprofile&quot;" />
+    <Exec Command="&quot;$(DotNetToolPath)&quot; &quot;$(AotProfileToolPath)&quot; -sd --filter-module=&quot;^(?!$(App)).+&quot; &quot;$(MSBuildProjectDirectory)/custom.aprof&quot; -o &quot;$(_MauiAOTProfileLocation)$(App).aotprofile&quot;" />
   </Target>
   <Target Name="_SaveMethodNames">
     <!-- This saves all the method names to a text file, so we can see a diff over time -->
-    <Exec Command="&quot;$(DotNetToolPath)&quot; &quot;$(AotProfileToolPath)&quot; -m &quot;$(MauiNuSpecDirectory)$(App).aotprofile&quot; > &quot;$(MauiNuSpecDirectory)$(App).aotprofile.txt&quot;" />
+    <Exec Command="&quot;$(DotNetToolPath)&quot; &quot;$(AotProfileToolPath)&quot; -m &quot;$(_MauiAOTProfileLocation)$(App).aotprofile&quot; > &quot;$(_MauiAOTProfileLocation)$(App).aotprofile.txt&quot;" />
   </Target>
 </Project>

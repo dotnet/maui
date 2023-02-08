@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Authentication
 		TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
 		UIViewController currentViewController;
 		Uri redirectUri;
+		WebAuthenticatorOptions currentOptions;
 
 #if __IOS__
 		ASWebAuthenticationSession was;
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Authentication
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			currentOptions = webAuthenticatorOptions;
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
 			var prefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
@@ -167,7 +169,7 @@ namespace Microsoft.Maui.Authentication
 				currentViewController?.DismissViewControllerAsync(true);
 				currentViewController = null;
 
-				tcsResponse.TrySetResult(new WebAuthenticatorResult(uri));
+				tcsResponse.TrySetResult(new WebAuthenticatorResult(uri, currentOptions?.ResponseDecoder));
 				return true;
 			}
 			catch (Exception ex)

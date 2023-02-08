@@ -117,7 +117,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Map, bool> ("IsShowingUser", v => v.IsShowingUser, (v, o) => v.IsShowingUser = o, () => false, true),
 			new PropertyTestCase<Map, bool> ("IsScrollEnabled", v => v.IsScrollEnabled, (v, o) => v.IsScrollEnabled = o, () => true, false),
 			new PropertyTestCase<Map, bool> ("IsZoomEnabled", v => v.IsZoomEnabled, (v, o) => v.IsZoomEnabled = o, () => true, false),
-			new PropertyTestCase<OpenGLView, bool> ("HasRenderLoop", v => v.HasRenderLoop, (v, o) => v.HasRenderLoop = o, () => false, true),
 			new PropertyTestCase<Page, ImageSource> ("BackgroundImageSource", v => v.BackgroundImageSource, (v, o) => v.BackgroundImageSource = o, () => null, "Foo"),
 			new PropertyTestCase<Page, Color> ("BackgroundColor", v => v.BackgroundColor, (v, o) => v.BackgroundColor = o, () => default(Color), new Color (0, 1, 0)),
 			new PropertyTestCase<Page, string> ("Title", v => v.Title, (v, o) => v.Title = o, () => null, "Foo"),
