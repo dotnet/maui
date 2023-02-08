@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -131,6 +132,12 @@ namespace Microsoft.Maui.Platform
 					return target;
 			}
 			return null;
+		}
+
+		internal static bool TryGetFirstDescendant<T>(this DependencyObject element, [NotNullWhen(true)]out T? result) where T : FrameworkElement
+		{
+			result = element.GetFirstDescendant<T> ();
+			return result is not null;
 		}
 
 		internal static ResourceDictionary CloneResources(this FrameworkElement element)
