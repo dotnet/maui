@@ -1,7 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Extensions.DependencyInjection;
 using TDeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
 namespace Microsoft.Maui.Controls.Compatibility.Hosting

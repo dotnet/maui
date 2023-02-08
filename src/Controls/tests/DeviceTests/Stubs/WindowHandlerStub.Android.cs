@@ -44,8 +44,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		protected override void DisconnectHandler(AActivity platformView)
 		{
 			base.DisconnectHandler(platformView);
-			var windowManager = MauiContext.GetNavigationRootManager();
-			windowManager.Disconnect();
+			WindowHandler.DisconnectHandler(MauiContext.GetNavigationRootManager());
 		}
 
 		public WindowHandlerStub()
