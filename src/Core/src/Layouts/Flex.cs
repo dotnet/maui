@@ -530,7 +530,7 @@ namespace Microsoft.Maui.Layouts.Flex
 					for (int j = 0; j < 2; j++)
 					{
 						int size_off = j + 2;
-						if (size_off == layout.frame_size2_i && child_align(child, item) == AlignItems.Stretch)
+						if (size_off == layout.frame_size2_i && child_align(child, item) == AlignItems.Stretch && layout.align_dim > 0)
 							continue;
 						float val = size[j];
 						if (!float.IsNaN(val))
