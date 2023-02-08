@@ -2,6 +2,7 @@
 <Project>
 
   <ItemGroup>
+    <!-- skiasharp and skia-related -->
     <PackageReference Include="HarfBuzzSharp" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
@@ -18,14 +19,17 @@
     <PackageReference Include="Svg.Model" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ShimSkiaSharp" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Fizzler" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Memory" Version="4.5.5" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Buffers" Version="4.5.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Text.Json" Version="6.0.5" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.IO.UnmanagedMemoryStream" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.ObjectModel" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
+    <!-- build task dependencies -->
+    <PackageReference Include="System.Memory" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Buffers" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Encodings.Web" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.IO.UnmanagedMemoryStream" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Numerics.Vectors" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.ObjectModel" GeneratePathProperty="true" PrivateAssets="all" />
+    <!-- "temporary" build hacks -->
     <PackageReference Include="Mono.ApiTools.MSBuildTasks" Version="0.1.0" PrivateAssets="all" />
   </ItemGroup>
 
@@ -33,6 +37,7 @@
     <_ResizetizerFiles Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Buffers)\lib\netstandard2.0\System.Buffers.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" />
+    <_ResizetizerFiles Include="$(PkgSystem_Text_Encodings_Web)\lib\netstandard2.0\System.Text.Encodings.Web.dll" />
     <_ResizetizerFiles Include="$(PkgMicrosoft_Bcl_AsyncInterfaces)\lib\netstandard2.0\Microsoft.Bcl.AsyncInterfaces.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />

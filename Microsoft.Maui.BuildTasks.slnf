@@ -4,7 +4,10 @@
     "projects": [
       "src\\Graphics\\src\\Graphics\\Graphics.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",
+      "src\\Controls\\src\\Core.Design\\Controls.Core.Design.csproj",
       "src\\Controls\\src\\Core\\Controls.Core.csproj",
+      "src\\Controls\\src\\NuGet\\Controls.NuGet.csproj",
+      "src\\Controls\\src\\Xaml.Design\\Controls.Xaml.Design.csproj",
       "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",
       "src\\Core\\src\\Core.csproj",
       "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj"

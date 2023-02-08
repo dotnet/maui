@@ -77,8 +77,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_drawerLayout = drawerLayout ?? throw new ArgumentNullException(nameof(drawerLayout));
 			_appBar = _platformToolbar.Parent.GetParentOfType<AppBarLayout>();
 
-			_globalLayoutListener = new GenericGlobalLayoutListener(() => UpdateNavBarHasShadow(Page));
-			_appBar.ViewTreeObserver.AddOnGlobalLayoutListener(_globalLayoutListener);
+			_globalLayoutListener = new GenericGlobalLayoutListener((_, _) => UpdateNavBarHasShadow(Page), _appBar);
 			_platformToolbar.SetNavigationOnClickListener(this);
 			((IShellController)ShellContext.Shell).AddFlyoutBehaviorObserver(this);
 			ShellContext.Shell.Toolbar.PropertyChanged += OnToolbarPropertyChanged;
@@ -175,9 +174,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				if (_appBar.IsAlive() && _appBar.ViewTreeObserver.IsAlive())
-					_appBar.ViewTreeObserver.RemoveOnGlobalLayoutListener(_globalLayoutListener);
-
 				_globalLayoutListener.Invalidate();
 
 				if (_backButtonBehavior != null)
