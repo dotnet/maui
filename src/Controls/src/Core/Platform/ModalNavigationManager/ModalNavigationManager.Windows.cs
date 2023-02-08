@@ -65,15 +65,15 @@ namespace Microsoft.Maui.Controls.Platform
 			var windowManager = mauiContext.GetNavigationRootManager();
 			Container.RemovePage(windowManager.RootView);
 
-			if (popping)
-			{
-				page
-					.FindMauiContext()
-					?.GetNavigationRootManager()
-					?.Disconnect();
+			if (!popping)
+				return;
 
-				page.Handler?.DisconnectHandler();
-			}
+			page
+				.FindMauiContext()
+				?.GetNavigationRootManager()
+				?.Disconnect();
+
+			page.Handler?.DisconnectHandler();
 		}
 
 		void SetCurrent(
