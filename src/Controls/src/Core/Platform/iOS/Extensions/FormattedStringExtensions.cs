@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var inline = control.AttributedText;
 
-			if (inline == null)
+			if (inline is null)
 				return;
 
 			var range = new NSRange(0, inline.Length);
@@ -233,10 +233,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var textStorage = new NSTextStorage();
 #if __MOBILE__
-			if (control.AttributedText != null)
+			if (control.AttributedText is not null)
 				textStorage.SetString(control.AttributedText.Substring(start, length));
 #else
-			if(control.AttributedStringValue != null)
+			if(control.AttributedStringValue is not null)
 				textStorage.SetString(control.AttributedStringValue.Substring(start, length));
 #endif
 			var layoutManager = new NSLayoutManager();
