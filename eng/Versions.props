@@ -3,15 +3,15 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>6.0.547</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-preview.1.23102.1</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-preview.1.23107.4</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>8.0.0-preview.1.23081.6</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>8.0.0-preview.1.23104.3</MicrosoftNETCoreAppRefPackageVersion>
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
     <MicrosoftExtensionsPackageVersion>7.0.0</MicrosoftExtensionsPackageVersion>
     <MicrosoftExtensionsServicingPackageVersion>7.0.0</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>7.0.0</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.1.148</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.1.149</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdkPackageVersion>16.2.223-net8-p1</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>13.1.223-net8-p1</MicrosoftmacOSSdkPackageVersion>
@@ -20,7 +20,7 @@
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>7.0.104</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100preview1Version>8.0.0-preview.1.23081.2</MicrosoftNETWorkloadEmscriptenCurrentManifest80100preview1Version>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100preview1Version>8.0.0-preview.1.23101.1</MicrosoftNETWorkloadEmscriptenCurrentManifest80100preview1Version>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest80100preview1Version)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsAppSDKPackageVersion>1.2.230118.102</MicrosoftWindowsAppSDKPackageVersion>
