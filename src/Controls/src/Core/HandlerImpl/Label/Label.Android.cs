@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler != null)
+			if (Handler is not null)
 			{
 				if (Handler is LabelHandler labelHandler && labelHandler.PlatformView is MauiTextView mauiTextView)
 				{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if (_mauiTextView != null)
+				if (_mauiTextView is not null)
 				{
 					_mauiTextView.LayoutChanged -= OnLayoutChanged;
 					_mauiTextView = null;
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 				var platformView = labelHandler.PlatformView;
 				var virtualView = labelHandler.VirtualView as Label;
 
-				if (platformView == null || virtualView == null)
+				if (platformView is null || virtualView is null)
 					return;
 
 				FormattedString formattedText = virtualView.FormattedText ?? virtualView.Text;

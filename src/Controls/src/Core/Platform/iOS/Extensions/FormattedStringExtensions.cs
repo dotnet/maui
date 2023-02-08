@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (element.TextType == TextType.Html)
 				return;
 
-			if (element?.FormattedText?.Spans == null
+			if (element?.FormattedText?.Spans is null
 				|| element.FormattedText.Spans.Count == 0)
 				return;
 

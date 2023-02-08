@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler != null)
+			if (Handler is not null)
 			{
 				if (Handler is LabelHandler labelHandler && labelHandler.PlatformView is MauiLabel mauiLabel)
 				{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if (_mauiLabel != null)
+				if (_mauiLabel is not null)
 				{
 					_mauiLabel.LayoutSubviewsChanged -= OnLayoutSubviewsChanged;
 					_mauiLabel = null;
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls
 				var platformView = labelHandler.PlatformView as UILabel;
 				var virtualView = labelHandler.VirtualView as Label;
 
-				if (platformView == null || virtualView == null)
+				if (platformView is null || virtualView is null)
 					return;
 
 				platformView.RecalculateSpanPositions(virtualView);

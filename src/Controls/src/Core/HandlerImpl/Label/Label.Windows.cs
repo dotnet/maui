@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler != null)
+			if (Handler is not null)
 			{
 				if (Handler is LabelHandler labelHandler && labelHandler.PlatformView is TextBlock textBlock)
 				{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if (_textBlock != null)
+				if (_textBlock is not null)
 				{
 					_textBlock.SizeChanged -= OnSizeChanged;
 					_textBlock = null;
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 				var platformView = labelHandler.PlatformView;
 				var virtualView = labelHandler.VirtualView as Label;
 
-				if (platformView == null || virtualView == null)
+				if (platformView is null || virtualView is null)
 					return;
 
 				IList<double> inlineHeights = GetInlineHeights();
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 
 				FormattedString formatted = virtualView.FormattedText;
 
-				if (formatted != null)
+				if (formatted is not null)
 				{
 					var fontManager = virtualView.RequireFontManager();
 					platformView.Inlines.Clear();

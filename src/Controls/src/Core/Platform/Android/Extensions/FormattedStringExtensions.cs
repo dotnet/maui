@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize)
 		{
-			if (element?.FormattedText?.Spans == null || element.FormattedText.Spans.Count == 0)
+			if (element?.FormattedText?.Spans is null || element.FormattedText.Spans.Count == 0)
 				return;
 
 			var labelWidth = finalSize.Request.Width;
@@ -198,7 +198,6 @@ namespace Microsoft.Maui.Controls.Platform
 					var spanStartX = (int)layout.GetPrimaryHorizontal(startOffset);
 
 					var endOffset = (curLine == spanEndLine) ? spanEndOffset : lineVisibleEndOffset;
-					;
 					var spanEndX = (int)layout.GetSecondaryHorizontal(endOffset);
 
 					var spanWidth = spanEndX - spanStartX;
