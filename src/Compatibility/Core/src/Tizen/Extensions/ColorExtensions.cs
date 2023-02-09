@@ -1,6 +1,6 @@
 using Microsoft.Maui.Graphics;
-using TColor = Tizen.UIExtensions.Common.Color;
 using NColor = Tizen.NUI.Color;
+using TColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

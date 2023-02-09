@@ -120,12 +120,16 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			if (cursor?.MoveToFirst() != true)
 				return (null, null, null, null, null);
 
-			return (
+			var result = (
 				GetString(cursor, StructuredName.Prefix),
 				GetString(cursor, StructuredName.GivenName),
 				GetString(cursor, StructuredName.MiddleName),
 				GetString(cursor, StructuredName.FamilyName),
 				GetString(cursor, StructuredName.Suffix));
+
+			cursor?.Close();
+
+			return result;
 		}
 
 		static string GetString(ICursor cursor, string column) =>

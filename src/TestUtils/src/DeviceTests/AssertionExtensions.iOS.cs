@@ -66,6 +66,11 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
+		public static Task HideKeyboardForView(this UIView view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static string CreateColorAtPointError(this UIImage bitmap, UIColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 
@@ -317,11 +322,19 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToPlatform());
 
-		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor)
+		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+			=> Task.FromResult(image.AssertContainsColor(expectedColor.ToPlatform(), withinRectModifier));
+
+		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 		{
-			for (int x = 0; x < bitmap.Size.Width; x++)
+			var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 			{
-				for (int y = 0; y < bitmap.Size.Height; y++)
+				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 				{
 					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), expectedColor))
 					{
@@ -548,19 +561,30 @@ namespace Microsoft.Maui.DeviceTests
 			return platformView;
 		}
 
-		public static void TapBackButton(this UINavigationBar uINavigationBar)
+		static UIView GetBackButton(this UINavigationBar uINavigationBar)
 		{
 			var item = uINavigationBar.FindDescendantView<UIView>(result =>
 			{
 				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
 			});
 
-			_ = item ?? throw new Exception("Unable to locate back button view");
+			return item ?? throw new Exception("Unable to locate back button view");
+		}
 
-			var recognizer = item!.GestureRecognizers!.OfType<UITapGestureRecognizer>().FirstOrDefault();
-			_ = recognizer ?? throw new Exception("Unable to Back Button TapGestureRecognizer");
+		public static void TapBackButton(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.GetBackButton();
 
-			recognizer.State = UIGestureRecognizerState.Ended;
+			var recognizer = item?.GestureRecognizers?.OfType<UITapGestureRecognizer>()?.FirstOrDefault();
+			if (recognizer is null && item is UIControl control)
+			{
+				control.SendActionForControlEvents(UIControlEvent.TouchUpInside);
+			}
+			else
+			{
+				_ = recognizer ?? throw new Exception("Unable to figure out how to tap back button");
+				recognizer.State = UIGestureRecognizerState.Ended;
+			}
 		}
 
 		public static string? GetToolbarTitle(this UINavigationBar uINavigationBar)
@@ -568,6 +592,12 @@ namespace Microsoft.Maui.DeviceTests
 			var item = uINavigationBar.FindDescendantView<UIView>(result =>
 			{
 				return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			//Pre iOS 15
+			item = item ?? uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UINavigationBarContentView", StringComparison.OrdinalIgnoreCase) == true;
 			});
 
 			_ = item ?? throw new Exception("Unable to locate TitleBar Control");
@@ -580,16 +610,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static string? GetBackButtonText(this UINavigationBar uINavigationBar)
 		{
-			var item = uINavigationBar.FindDescendantView<UIView>(result =>
-			{
-				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
-			});
-
-			_ = item ?? throw new Exception("Unable to locate TitleBar Control");
+			var item = uINavigationBar.GetBackButton();
 
 			var titleLabel = item.FindDescendantView<UILabel>();
 
-			_ = item ?? throw new Exception("Unable to locate UILabel Inside UINavigationBar");
+			_ = item ?? throw new Exception("Unable to locate BackButton UILabel Inside UINavigationBar");
 			return titleLabel?.Text;
 		}
 	}

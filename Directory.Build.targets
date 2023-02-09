@@ -76,7 +76,7 @@
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
   -->
-  <Import Project="src\Workload\Microsoft.Maui.Sdk\Sdk\WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
+  <Import Project="src\Core\src\nuget\buildTransitive\WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
 
     <!-- Packaging -->
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
