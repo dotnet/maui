@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Resizetizer
 <adaptive-icon xmlns:android=""http://schemas.android.com/apk/res/android"">
 	<background android:drawable=""@mipmap/{name}_background""/>
 	<foreground android:drawable=""@mipmap/{name}_foreground""/>
+	<monochrome android:drawable=""@mipmap/{name}_foreground"" />
 </adaptive-icon>";
 
 		public IEnumerable<ResizedImageInfo> Generate()

@@ -4,9 +4,9 @@ using System.IO;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using UIKit;
 using WebKit;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Platform
 {
@@ -130,8 +130,20 @@ namespace Microsoft.Maui.Platform
 		// It also has to be shared at the point you call init
 		public static WKWebViewConfiguration CreateConfiguration()
 		{
+			// By default, setting inline media playback to allowed, including autoplay
+			// and picture in picture, since these things MUST be set during the webview
+			// creation, and have no effect if set afterwards.
+			// A custom handler factory delegate could be set to disable these defaults
+			// but if we do not set them here, they cannot be changed once the
+			// handler's platform view is created, so erring on the side of wanting this
+			// capability by default.
 			var config = new WKWebViewConfiguration();
-
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(10) || OperatingSystem.IsIOSVersionAtLeast(10))
+			{
+				config.AllowsPictureInPictureMediaPlayback = true;
+				config.AllowsInlineMediaPlayback = true;
+				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
+			}
 			if (SharedPool == null)
 				SharedPool = config.ProcessPool;
 			else

@@ -53,6 +53,12 @@
                     </x:String>
                 </Label>
                 <Label
+                    Text="Html text from BindingContext"
+                    Style="{StaticResource Headline}"/>
+                <Label
+                    Text="{Binding HtmlString}"
+                    TextType="Html" />
+                <Label
                     Text="HorizontalTextAlignment"
                     Style="{StaticResource Headline}" />
                 <Label 

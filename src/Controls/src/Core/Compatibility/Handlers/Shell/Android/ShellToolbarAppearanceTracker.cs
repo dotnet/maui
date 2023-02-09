@@ -1,3 +1,4 @@
+#nullable disable
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Handlers.Compatibility;

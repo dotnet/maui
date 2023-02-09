@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
@@ -44,12 +45,22 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
+		public static Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static Task FocusView(this FrameworkElement view, int timeout = 1000)
 		{
 			throw new NotImplementedException();
 		}
 
 		public static Task ShowKeyboardForView(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task HideKeyboardForView(this FrameworkElement view, int timeout = 1000)
 		{
 			throw new NotImplementedException();
 		}
@@ -82,49 +93,73 @@ namespace Microsoft.Maui.DeviceTests
 				: WColor.FromArgb(255, pixel.R, pixel.G, pixel.B);
 		}
 
-		public static Task AttachAndRun(this FrameworkElement view, Action action) =>
-			view.AttachAndRun(() =>
-			{
-				action();
-				return Task.FromResult(true);
-			});
+		public static Task AttachAndRun(this FrameworkElement view, Action action, IMauiContext? mauiContext = null) =>
+			view.AttachAndRun(window => action(), mauiContext);
 
-		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action) =>
-			view.AttachAndRun(() =>
+		public static Task AttachAndRun(this FrameworkElement view, Action<Window> action, IMauiContext? mauiContext = null) =>
+			view.AttachAndRun((window) =>
 			{
-				var result = action();
+				action(window);
+				return Task.FromResult(true);
+			}, mauiContext);
+
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action, IMauiContext? mauiContext = null) =>
+			view.AttachAndRun(window => action(), mauiContext);
+
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action, IMauiContext? mauiContext = null) =>
+			view.AttachAndRun((window) =>
+			{
+				var result = action(window);
 				return Task.FromResult(result);
-			});
+			}, mauiContext);
 
 		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
-			view.AttachAndRun(async () =>
+			view.AttachAndRun(window => action());
+
+		public static Task AttachAndRun(this FrameworkElement view, Func<Window, Task> action) =>
+			view.AttachAndRun(async (window) =>
 			{
-				await action();
+				await action(window);
 				return true;
 			});
 
-		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action)
+		// Windows does ok running these tests in parallel but there's definitely
+		// a limit where it'll eventually be too many windows.
+		// So, for now we're limiting this to 10 parallel windows which seems 
+		// to work fine.
+		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(10);
+
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action) =>
+			view.AttachAndRun(window => action());
+
+		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action, IMauiContext? mauiContext = null)
 		{
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
 			TaskCompletionSource? tcs = null;
 			TaskCompletionSource? unloadedTcs = null;
-			Window? window = null;
 
 			if (view.Parent == null)
 			{
-				// prepare to wait for element to be in the UI
-				tcs = new TaskCompletionSource();
-				unloadedTcs = new TaskCompletionSource();
+				T result;
 
-				view.Loaded += OnViewLoaded;
-
-				// attach to the UI
-				Grid grid;
-				window = new Window
+				try
 				{
-					Content = new Grid
+					await _attachAndRunSemaphore.WaitAsync();
+
+					// prepare to wait for element to be in the UI
+					tcs = new TaskCompletionSource();
+					unloadedTcs = new TaskCompletionSource();
+
+					view.Loaded += OnViewLoaded;
+
+					// attach to the UI
+					Grid grid;
+					var window = (mauiContext?.Services != null) ?
+						Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance<Window>(mauiContext.Services) : new Window();
+
+					window.Content = new Grid
 					{
 						HorizontalAlignment = HorizontalAlignment.Center,
 						VerticalAlignment = VerticalAlignment.Center,
@@ -140,32 +175,37 @@ namespace Microsoft.Maui.DeviceTests
 								}
 							})
 						}
+					};
+
+					window.Activate();
+
+					// wait for element to be loaded
+					await tcs.Task;
+					view.Unloaded += OnViewUnloaded;
+
+					try
+					{
+						result = await Run(() => action(window));
 					}
-				};
-				window.Activate();
-
-				// wait for element to be loaded
-				await tcs.Task;
-				view.Unloaded += OnViewUnloaded;
-
-				T result;
-				try
-				{
-					result = await Run(action);
+					finally
+					{
+						grid.Children.Clear();
+						await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+						await Task.Delay(10);
+						window.Close();
+					}
 				}
 				finally
 				{
-					grid.Children.Clear();
-					await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-					await Task.Delay(10);
-					window.Close();
+					_attachAndRunSemaphore.Release();
 				}
 
 				return result;
 			}
 			else
 			{
-				return await Run(action);
+				var window = view.GetParentOfType<Window>() ?? throw new InvalidOperationException("View was attached to a window but there was no window.");
+				return await Run(() => action(window));
 			}
 
 			static async Task<T> Run(Func<Task<T>> action)
@@ -187,18 +227,25 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task<CanvasBitmap> ToBitmap(this FrameworkElement view) =>
-			view.AttachAndRun(async () =>
+			view.AttachAndRun(async (window) =>
 			{
 				if (view.Parent is Border wrapper)
 					view = wrapper;
+
+				var device = CanvasDevice.GetSharedDevice();
+
+				// HELP?
+				// The simple act of doing a window capture results in the next render method
+				// working on DirectX controls (such as Win2D).
+				// We could use this window bitmap directly, but that is extra effort to crop
+				// to the view bounds... so until this breaks...
+				using var windowBitmap = await CaptureHelper.RenderAsync(window, device);
 
 				var bmp = new RenderTargetBitmap();
 				await bmp.RenderAsync(view);
 				var pixels = await bmp.GetPixelsAsync();
 				var width = bmp.PixelWidth;
 				var height = bmp.PixelHeight;
-
-				var device = CanvasDevice.GetSharedDevice();
 
 				return CanvasBitmap.CreateFromBytes(device, pixels, width, height, DirectXPixelFormat.B8G8R8A8UIntNormalized);
 			});
@@ -231,9 +278,17 @@ namespace Microsoft.Maui.DeviceTests
 		public static CanvasBitmap AssertColorAtTopRight(this CanvasBitmap bitmap, WColor expectedColor)
 			=> bitmap.AssertColorAtPoint(expectedColor, bitmap.SizeInPixels.Width - 1, bitmap.SizeInPixels.Height - 1);
 
-		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor)
+		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor());
+
+		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 		{
-			var colors = bitmap.GetPixelColors();
+			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			var colors = bitmap.GetPixelColors((int)imageRect.X, (int)imageRect.Y, (int)imageRect.Width, (int)imageRect.Height);
 
 			foreach (var c in colors)
 			{

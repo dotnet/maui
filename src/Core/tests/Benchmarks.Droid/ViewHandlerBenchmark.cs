@@ -6,8 +6,6 @@ using Microsoft.Maui.Hosting;
 
 namespace Benchmarks.Droid;
 
-[MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class ViewHandlerBenchmark
 {
 	readonly MauiContext _context = new();

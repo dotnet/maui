@@ -31,4 +31,7 @@
   <ItemGroup>
     <None Include="..\..\..\..\Assets\icon.png" PackagePath="icon.png" Pack="true" />
   </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
 </Project>

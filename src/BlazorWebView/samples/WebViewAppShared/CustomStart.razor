@@ -1,0 +1,8 @@
+﻿@page "/CustomStart/{ExtraData}"
+
+<div id="controlDiv">Found the start path with: '@ExtraData'</div>
+
+@code
+{
+    [Parameter] public string ExtraData { get; set; }
+}
