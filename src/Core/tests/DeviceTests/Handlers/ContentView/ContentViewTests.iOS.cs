@@ -1,15 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
-using ObjCRuntime;
 using UIKit;
-using UserNotificationsUI;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
@@ -17,6 +9,23 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 	[Category(TestCategory.ContentView)]
 	public partial class ContentViewTests
 	{
+		[Theory(DisplayName = "Background Updates Correctly")]
+		[InlineData(0xFF0000)]
+		[InlineData(0x00FF00)]
+		[InlineData(0x0000FF)]
+		public async Task BackgroundUpdatesCorrectly(uint color)
+		{
+			var expected = Color.FromUint(color);
+
+			var contentView = new ContentViewStub()
+			{
+				Content = new LabelStub { Text = "Background", TextColor = Colors.White },
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+			};
+
+			await ValidateHasColor(contentView, expected);
+		}
+
 		[Fact, Category(TestCategory.FlowDirection)]
 		public async Task FlowDirectionPropagatesToContent()
 		{
@@ -113,6 +122,19 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			});
 
 			Assert.Equal(UIUserInterfaceLayoutDirection.LeftToRight, labelFlowDirection);
+		}
+
+		Platform.ContentView GetNativeContentView(ContentViewHandler contentViewHandler) =>
+			contentViewHandler.PlatformView;
+
+		Task ValidateHasColor(IContentView contentView, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeContentView = GetNativeContentView(CreateHandler(contentView));
+				action?.Invoke();
+				nativeContentView.AssertContainsColor(color);
+			});
 		}
 	}
 }

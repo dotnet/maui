@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +10,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageButton']/Docs/*" />
-	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, IImageElement
+	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, ICommandElement, IImageElement
 	{
 		const int DefaultCornerRadius = -1;
 
@@ -125,11 +126,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SourceProperty, value); }
 		}
 
-		bool IButtonElement.IsEnabledCore
-		{
-			set { SetValueCore(IsEnabledProperty, value); }
-		}
-
 		protected override void OnBindingContextChanged()
 		{
 			ImageElement.OnBindingContextChanged(this, this);
@@ -227,9 +223,6 @@ namespace Microsoft.Maui.Controls
 		void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
 			ImageElement.ImageSourceSourceChanged(this, e);
 
-		void IButtonElement.OnCommandCanExecuteChanged(object sender, EventArgs e) =>
-			ButtonElement.CommandCanExecuteChanged(this, EventArgs.Empty);
-
 		bool IImageElement.IsAnimationPlaying
 		{
 			get => false;
@@ -242,5 +235,11 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBorderWidthSet() => IsSet(BorderWidthProperty);
 
 		bool IImageController.GetLoadAsAnimation() => false;
+
+		protected override bool IsEnabledCore =>
+			base.IsEnabledCore && CommandElement.GetCanExecute(this);
+
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
+			RefreshIsEnabledProperty();
 	}
 }

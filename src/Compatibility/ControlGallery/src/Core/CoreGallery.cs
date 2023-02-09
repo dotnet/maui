@@ -360,7 +360,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new GalleryPageFactory(() => new KeyboardCoreGallery(), "Keyboard Gallery"),
 				new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 				new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
-				new GalleryPageFactory(() => new OpenGLViewCoreGalleryPage(), "OpenGLView Gallery"),
 				new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
 				new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "ProgressBar Gallery"),
 				new GalleryPageFactory(() => new MaterialProgressBarGallery(), "ProgressBar & Slider Gallery (Material)"),
@@ -422,10 +421,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new GalleryPageFactory(() => new MinimumSizeGallery(), "MinimumSize Gallery - Legacy"),
 				new GalleryPageFactory(() => new MultiGallery(), "Multi Gallery - Legacy"),
 				new GalleryPageFactory(() => new NavigationPropertiesGallery(), "Navigation Properties"),
-#if HAVE_OPENTK
-				new GalleryPageFactory(() => new BasicOpenGLGallery(), "Basic OpenGL Gallery - Legacy"),
-				new GalleryPageFactory(() => new AdvancedOpenGLGallery(), "Advanced OpenGL Gallery - Legacy"),
-#endif
 				new GalleryPageFactory(() => new PickerGallery(), "Picker Gallery - Legacy"),
 				new GalleryPageFactory(() => new ProgressBarGallery(), "ProgressBar Gallery - Legacy"),
 				new GalleryPageFactory(() => new RelativeLayoutGallery(), "RelativeLayout Gallery - Legacy"),

@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -22,7 +20,7 @@ namespace Microsoft.Maui.Controls
 		bool _drawerToggleVisible;
 
 		public override bool DrawerToggleVisible { get => _drawerToggleVisible; set => SetProperty(ref _drawerToggleVisible, value); }
-
+		public Page? CurrentPage => _currentPage;
 		public ShellToolbar(Shell shell) : base(shell)
 		{
 			_drawerToggleVisible = true;
@@ -55,9 +53,9 @@ namespace Microsoft.Maui.Controls
 
 		internal void ApplyChanges()
 		{
-			var currentPage = _shell.CurrentPage;
+			var currentPage = _shell.GetCurrentShellPage();
 
-			if (_currentPage != _shell.CurrentPage)
+			if (_currentPage != currentPage)
 			{
 				if (_currentPage != null)
 					_currentPage.PropertyChanged -= OnCurrentPagePropertyChanged;
@@ -173,7 +171,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			Page? currentPage = _shell.GetCurrentShellPage() as Page;
+			Page? currentPage = _shell.GetCurrentShellPage();
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
 			{
 				Title = currentPage.Title ?? String.Empty;

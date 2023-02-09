@@ -46,36 +46,64 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task PoppingFlyoutPageDoesntCrash()
+		[Theory]
+		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
+		public async Task PoppingFlyoutPageDoesntCrash(Type flyoutPageType)
 		{
 			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				var flyoutPage = new FlyoutPage()
-				{
-					Detail = new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
-					Flyout = new ContentPage() { Title = "Flyout" }
-				};
+				var flyoutPage = CreateFlyoutPage(
+					flyoutPageType,
+					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
+					new ContentPage() { Title = "Flyout" });
+
 				await navPage.PushAsync(flyoutPage);
 				await navPage.PopAsync();
 			});
 		}
 
-
 #if !IOS && !MACCATALYST
-
-		[Fact(DisplayName = "FlyoutPage With Toolbar")]
-		public async Task FlyoutPageWithToolbar()
+		[Theory]
+		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
+		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior(Type flyoutPageType)
 		{
 			SetupBuilder();
-			var flyoutPage = new FlyoutPage()
+
+			var flyoutPage = CreateFlyoutPage(
+					flyoutPageType,
+					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
+					new ContentPage() { Title = "Flyout" });
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
 			{
-				Detail = new NavigationPage(new ContentPage() { Title = "Detail" }),
-				Flyout = new ContentPage() { Title = "Flyout" }
-			};
+				var currentDetailPage = flyoutPage.Detail;
+
+				// Set with new page
+				var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+				flyoutPage.Detail = navPage;
+				await OnNavigatedToAsync(navPage);
+
+				// Set back to previous page
+				flyoutPage.Detail = currentDetailPage;
+				await OnNavigatedToAsync(currentDetailPage);
+			});
+		}
+
+
+		[Theory(DisplayName = "FlyoutPage With Toolbar")]
+		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
+		public async Task FlyoutPageWithToolbar(Type flyoutPageType)
+		{
+			SetupBuilder();
+
+			var flyoutPage =
+				CreateFlyoutPage(
+					flyoutPageType,
+					new NavigationPage(new ContentPage() { Title = "Detail" }),
+					new ContentPage() { Title = "Flyout" });
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
 			{
@@ -85,15 +113,17 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Details View Updates w/NavigationPage")]
-		public async Task DetailsViewUpdatesWithNavigationPage()
+		[Theory(DisplayName = "Details View Updates w/NavigationPage")]
+		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
+		public async Task DetailsViewUpdatesWithNavigationPage(Type flyoutPageType)
 		{
 			SetupBuilder();
-			var flyoutPage = new FlyoutPage()
-			{
-				Detail = new NavigationPage(new ContentPage() { Title = "Detail" }),
-				Flyout = new ContentPage() { Title = "Flyout" }
-			};
+
+			var flyoutPage =
+				CreateFlyoutPage(
+					flyoutPageType,
+					new NavigationPage(new ContentPage() { Title = "Detail" }),
+					new ContentPage() { Title = "Flyout" });
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
 			{
@@ -106,15 +136,16 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Details View Updates")]
-		public async Task DetailsViewUpdates()
+		[Theory(DisplayName = "Details View Updates")]
+		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
+		public async Task DetailsViewUpdates(Type flyoutPageType)
 		{
 			SetupBuilder();
-			var flyoutPage = new FlyoutPage()
-			{
-				Detail = new ContentPage() { Title = "Detail" },
-				Flyout = new ContentPage() { Title = "Flyout" }
-			};
+			var flyoutPage =
+				CreateFlyoutPage(
+					flyoutPageType,
+					new ContentPage() { Title = "Detail" },
+					new ContentPage() { Title = "Flyout" });
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
 			{
@@ -134,5 +165,13 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		FlyoutPage CreateFlyoutPage(Type type, Page detail, Page flyout)
+		{
+			var flyoutPage = (FlyoutPage)Activator.CreateInstance(type);
+			flyoutPage.Detail = detail;
+			flyoutPage.Flyout = flyout;
+			return flyoutPage;
+		}
 	}
 }

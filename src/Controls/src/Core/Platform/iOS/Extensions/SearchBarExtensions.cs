@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using UIKit;
 

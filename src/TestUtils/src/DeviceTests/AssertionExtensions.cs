@@ -1,6 +1,6 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
@@ -54,6 +54,40 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if !TIZEN && PLATFORM
+		public static Task AssertHasContainer(this IView view, bool expectation)
+		{
+			// On Windows the `Parent` of an element only initializes when the view is added
+			// to the Visual Tree
+			var platformViewHandler = (IPlatformViewHandler)view.Handler!;
+			var platformView = platformViewHandler.PlatformView!;
+
+#if WINDOWS
+			var dispatcher = platformViewHandler.MauiContext!.GetDispatcher();
+			return dispatcher.DispatchAsync(async () =>
+			{
+				if (platformView.XamlRoot == null)
+				{
+					if (!expectation)
+						await AttachAndRun(platformView, RunAssertions);
+					else
+						await AttachAndRun(platformViewHandler.ContainerView!, RunAssertions);
+				}
+				else
+					RunAssertions();
+			});
+
+#else
+			RunAssertions();
+			return Task.CompletedTask;
+#endif
+			void RunAssertions()
+			{
+				Assert.Equal(expectation, view.Handler?.HasContainer ?? false);
+				Assert.Equal(expectation, view.Handler?.ContainerView != null);
+				var parentView = platformView?.GetParent();
+				Assert.Equal(expectation, parentView is WrapperView);
+			}
+		}
 
 		public static Task WaitForKeyboardToShow(this IView view, int timeout = 1000)
 		{
@@ -75,12 +109,16 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task SendValueToKeyboard(this IView view, char value, int timeout = 1000) =>
 			view.ToPlatform().SendValueToKeyboard(value, timeout);
 
-
 		public static Task SendKeyboardReturnType(this IView view, ReturnType returnType, int timeout = 1000) =>
 			view.ToPlatform().SendKeyboardReturnType(returnType, timeout);
 
 		public static Task ShowKeyboardForView(this IView view, int timeout = 1000) =>
 			view.ToPlatform().ShowKeyboardForView(timeout);
+		public static Task HideKeyboardForView(this IView view, int timeout = 1000) =>
+			view.ToPlatform().HideKeyboardForView(timeout);
+
+		public static Task WaitForUnFocused(this IView view, int timeout = 1000) =>
+			view.ToPlatform().WaitForUnFocused(timeout);
 
 		public static Task WaitForFocused(this IView view, int timeout = 1000) =>
 			view.ToPlatform().WaitForFocused(timeout);
@@ -90,7 +128,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static bool IsAccessibilityElement(this IView view) =>
 			view.ToPlatform().IsAccessibilityElement();
-
 
 		public static bool IsExcludedWithChildren(this IView view) =>
 			view.ToPlatform().IsExcludedWithChildren();

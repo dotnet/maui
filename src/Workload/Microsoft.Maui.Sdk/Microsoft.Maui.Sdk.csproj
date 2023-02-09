@@ -9,50 +9,7 @@
 
   <ItemGroup>
     <None Remove="**/*.in.*" />
-    <None Update="@(None)" PackagePath="" />
-    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
-    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Core.targets" />
-    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
-    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" />
-    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.props" />
-    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.SingleProject.targets" />
-    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.targets" />
-    <_Files Include="$(MauiNuSpecDirectory)maui.aotprofile" />
-    <_Files Include="$(MauiNuSpecDirectory)maui-blazor.aotprofile" />
-    <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.dll" />
-    <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.pdb" />
-    <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Mdb.dll" />
-    <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Mdb.pdb" />
-    <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Pdb.dll" />
-    <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Pdb.pdb" />
-    <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.dll" />
-    <_Files Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.pdb" />
-    <_Files Include="$(PkgSystem_CodeDom)\lib\netstandard2.0\System.CodeDom.dll" />
-    <_Files Include="$(MauiRootDirectory)src\Graphics\src\Graphics\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Graphics.dll" />
-    <_Files Include="$(MauiRootDirectory)src\Graphics\src\Graphics\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Graphics.pdb" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Build.Tasks.dll" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Build.Tasks.pdb" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\Build.Tasks\bin\$(Configuration)\netstandard2.0\*\Microsoft.Maui.Controls.Build.Tasks.resources.dll" />
-    <_Files Include="$(MauiRootDirectory)src\Essentials\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Essentials.dll" />
-    <_Files Include="$(MauiRootDirectory)src\Essentials\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Essentials.pdb" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.dll" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.pdb" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.pdb" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.pdb" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll" />
-    <_Files Include="$(MauiRootDirectory)src\Controls\src\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" />
-    <None Include="@(_Files)" PackagePath="Sdk" Link="Sdk/%(FileName)%(Extension)" Visible="false" />
-    <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Pack="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Mono.Cecil" Version="0.11.4" GeneratePathProperty="true" />
-    <PackageReference Include="System.CodeDom" GeneratePathProperty="true" />
-    <ProjectReference Include="$(MauiRootDirectory)src/Graphics/src/Graphics/Graphics.csproj" />
-    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Build.Tasks/Controls.Build.Tasks.csproj" />
-    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/SourceGen/Controls.SourceGen.csproj" />
+    <None Update="@(None)" PackagePath="" CopyToOutputDirectory="PreserveNewest" Pack="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -132,30 +89,6 @@
           Visible="false"
       />
       <FileWrites Include="$(IntermediateOutputPath)BundledVersions.targets" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_GenerateAutoImport"
-      BeforeTargets="Build;AssignTargetPaths"
-      DependsOnTargets="SetVersions"
-      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;Sdk/AutoImport.in.props"
-      Outputs="$(IntermediateOutputPath)AutoImport.props">
-    <ReplaceText
-        Input="Sdk/AutoImport.in.props"
-        Output="$(IntermediateOutputPath)AutoImport.props"
-        OldValue="@MAUI_DOTNET_VERSION@"
-        NewValue="$(_MauiDotNetVersion)"
-    />
-    <ItemGroup>
-      <None
-          Include="$(IntermediateOutputPath)AutoImport.props"
-          Link="Sdk/AutoImport.props"
-          CopyToOutputDirectory="PreserveNewest"
-          Pack="true"
-          PackagePath="Sdk"
-          Visible="false"
-      />
-      <FileWrites Include="$(IntermediateOutputPath)AutoImport.props" />
     </ItemGroup>
   </Target>
 

@@ -20,8 +20,8 @@
 		<Compile Include="KeyboardDesignTypeConverter.cs" />
 		<Compile Include="EasingDesignTypeConverter.cs" />
 		<Compile Include="FlowDirectionDesignTypeConverter.cs" />
-	  <Compile Include="GridLengthCollectionDesignTypeConverter.cs" />
-	  <Compile Include="GridLengthDesignTypeConverter.cs" />
+		<Compile Include="GridLengthCollectionDesignTypeConverter.cs" />
+		<Compile Include="GridLengthDesignTypeConverter.cs" />
 		<Compile Include="KnownValuesDesignTypeConverter.cs" />
 		<Compile Include="LayoutOptionsDesignTypeConverter.cs" />
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />

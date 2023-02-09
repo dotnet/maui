@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
@@ -10,16 +12,20 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Platform;
+using UIKit;
 using Xunit;
+using UIModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
+using CoreGraphics;
+
+#if ANDROID || IOS || MACCATALYST
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-		protected Task CheckFlyoutState(ShellRenderer renderer, bool result) =>
-			throw new NotImplementedException();
-
 		[Fact(DisplayName = "Swiping Away Modal Propagates to Shell")]
 		public async Task SwipingAwayModalPropagatesToShell()
 		{
@@ -32,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
 				var modalPage = new ContentPage();
-				modalPage.On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.FormSheet);
+				modalPage.On<iOS>().SetModalPresentationStyle(Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FormSheet);
 				var platformWindow = MauiContext.GetPlatformWindow().RootViewController;
 
 				await shell.Navigation.PushModalAsync(modalPage);
@@ -73,7 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
 				var modalPage = new Controls.NavigationPage(new ContentPage());
-				modalPage.On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.FormSheet);
+				modalPage.On<iOS>().SetModalPresentationStyle(Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FormSheet);
 				var platformWindow = MauiContext.GetPlatformWindow().RootViewController;
 
 				await shell.Navigation.PushModalAsync(modalPage);
@@ -195,6 +201,146 @@ namespace Microsoft.Maui.DeviceTests
 					e.Cancel();
 				}
 			});
+		}
+
+		protected async Task OpenFlyout(ShellRenderer shellRenderer, TimeSpan? timeOut = null)
+		{
+			var flyoutView = GetFlyoutPlatformView(shellRenderer);
+			shellRenderer.Shell.FlyoutIsPresented = true;
+
+			await AssertionExtensions.Wait(() =>
+			{
+				return flyoutView.Frame.X == 0;
+			}, timeOut?.Milliseconds ?? 1000);
+
+			return;
+		}
+
+		internal Graphics.Rect GetFrameRelativeToFlyout(ShellRenderer shellRenderer, IView view)
+		{
+			var platformView = (view.Handler as IPlatformViewHandler).PlatformView;
+			return platformView.GetFrameRelativeTo(GetFlyoutPlatformView(shellRenderer));
+		}
+
+		protected Task CheckFlyoutState(ShellRenderer renderer, bool result)
+		{
+			var platformView = GetFlyoutPlatformView(renderer);
+			Assert.Equal(result, platformView.Frame.X == 0);
+			return Task.CompletedTask;
+		}
+
+		protected UIView GetFlyoutPlatformView(ShellRenderer shellRenderer)
+		{
+			var vcs = shellRenderer.ViewController;
+			var flyoutContent = vcs.ChildViewControllers.OfType<ShellFlyoutContentRenderer>().First();
+			return flyoutContent.View;
+		}
+
+		internal Graphics.Rect GetFlyoutFrame(ShellRenderer shellRenderer)
+		{
+			var boundingbox = GetFlyoutPlatformView(shellRenderer).GetBoundingBox();
+
+			return new Graphics.Rect(
+				0,
+				0,
+				boundingbox.Width,
+				boundingbox.Height);
+		}
+
+
+		protected async Task ScrollFlyoutToBottom(ShellRenderer shellRenderer)
+		{
+			var platformView = GetFlyoutPlatformView(shellRenderer);
+			var tableView = platformView.FindDescendantView<UITableView>();
+			var bottomOffset = new CGPoint(0, tableView.ContentSize.Height - tableView.Bounds.Height + tableView.ContentInset.Bottom);
+			tableView.SetContentOffset(bottomOffset, false);
+			await Task.Delay(1);
+
+			return;
+		}
+#if IOS
+		[Fact(DisplayName = "Back Button Text Has Correct Default")]
+		public async Task BackButtonTextHasCorrectDefault()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage() { Title = "Page 1" };
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await shell.Navigation.PushAsync(new ContentPage() { Title = "Page 2" });
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				Assert.True(await AssertionExtensions.Wait(() => GetBackButtonText(handler) == "Page 1"));
+			});
+		}
+
+
+		[Fact(DisplayName = "Back Button Behavior Text")]
+		public async Task BackButtonBehaviorText()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage() { Title = "Page 1" };
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+
+				var page2 = new ContentPage() { Title = "Page 2" };
+				var page3 = new ContentPage() { Title = "Page 3" };
+
+				Shell.SetBackButtonBehavior(page3, new BackButtonBehavior() { TextOverride = "Text Override" });
+				await shell.Navigation.PushAsync(page2);
+				await shell.Navigation.PushAsync(page3);
+
+				Assert.True(await AssertionExtensions.Wait(() => GetBackButtonText(handler) == "Text Override"));
+				await shell.Navigation.PopAsync();
+				Assert.True(await AssertionExtensions.Wait(() => GetBackButtonText(handler) == "Page 1"));
+			});
+		}
+#endif
+
+		async Task TapToSelect(ContentPage page)
+		{
+			var shellContent = page.Parent as ShellContent;
+			var shellSection = shellContent.Parent as ShellSection;
+			var shellItem = shellSection.Parent as ShellItem;
+			var shell = shellItem.Parent as Shell;
+			await OnNavigatedToAsync(shell.CurrentPage);
+
+			if (shellItem != shell.CurrentItem)
+				throw new NotImplementedException();
+
+			if (shellSection != shell.CurrentItem.CurrentItem)
+				throw new NotImplementedException();
+
+			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
+				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
+
+			var tabController = pagerParent.NextResponder as ShellItemRenderer;
+
+			var section = tabController.SelectedViewController as ShellSectionRenderer;
+
+			var rootCV = section.ViewControllers[0] as
+				ShellSectionRootRenderer;
+
+			var rootHeader = rootCV.ChildViewControllers
+				.OfType<ShellSectionRootHeader>()
+				.First();
+
+			var newIndex = shellSection.Items.IndexOf(shellContent);
+
+			await Task.Delay(100);
+
+			rootHeader.ItemSelected(rootHeader.CollectionView, NSIndexPath.FromItemSection((int)newIndex, 0));
+
+			await OnNavigatedToAsync(page);
 		}
 
 		class ModalShellPage : ContentPage

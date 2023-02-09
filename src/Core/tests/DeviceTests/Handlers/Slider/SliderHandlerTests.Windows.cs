@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var expected = await GetValueAsync(slider, GetSmallChange);
-		
+
 			Assert.True(expected != 0);
 		}
 

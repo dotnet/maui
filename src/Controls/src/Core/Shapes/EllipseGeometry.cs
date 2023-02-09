@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 

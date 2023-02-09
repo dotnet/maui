@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -363,7 +364,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		class ClipDrawableWrapper : ASupportDrawable.DrawableWrapper
+		class ClipDrawableWrapper : ASupportDrawable.DrawableWrapperCompat
 		{
 			public ClipDrawableWrapper(Drawable dr) : base(dr)
 			{

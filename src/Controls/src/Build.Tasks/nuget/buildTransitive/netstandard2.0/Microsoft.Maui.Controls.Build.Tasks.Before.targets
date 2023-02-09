@@ -1,0 +1,6 @@
+<Project>
+
+  <Import Project="Microsoft.Maui.Controls.Common.targets" />
+  <Import Project="$(_MicrosoftMauiControlsPlatformTargets)" Condition="'$(_MicrosoftMauiControlsPlatformTargets)' != '' and Exists('$(_MicrosoftMauiControlsPlatformTargets)')" />
+
+</Project>

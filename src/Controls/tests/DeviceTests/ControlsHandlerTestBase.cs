@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Threading;
@@ -168,6 +169,8 @@ namespace Microsoft.Maui.DeviceTests
 						}
 
 						await OnLoadedAsync(content as VisualElement);
+
+						window.Activated();
 #if WINDOWS
 						await Task.Delay(10);
 #endif
@@ -179,6 +182,10 @@ namespace Microsoft.Maui.DeviceTests
 							await action((THandler)cp.Content.Handler);
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
+
+						window.Deactivated();
+						window.Destroying();
+
 					}, mauiContext);
 				}
 				finally
@@ -336,7 +343,16 @@ namespace Microsoft.Maui.DeviceTests
 			await OnLoadedAsync(page, timeOut);
 
 			if (page.HasNavigatedTo)
+			{
+				// TabbedPage fires OnNavigated earlier than it should
+				if (page.Parent is TabbedPage)
+					await Task.Delay(10);
+
+				if (page is IPageContainer<Page> pc)
+					await OnNavigatedToAsync(pc.CurrentPage);
+
 				return;
+			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
@@ -344,6 +360,11 @@ namespace Microsoft.Maui.DeviceTests
 			page.NavigatedTo += NavigatedTo;
 
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// TabbedPage fires OnNavigated earlier than it should
+			if (page.Parent is TabbedPage)
+				await Task.Delay(10);
+
 			void NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
 				taskCompletionSource.SetResult(true);
@@ -399,5 +420,28 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
 			ValidateHasColor(view, color, typeof(THandler), action);
+
+		protected static void MockAccessibilityExpectations(View view)
+		{
+#if IOS || MACCATALYST
+			if (UIKit.UIAccessibility.IsVoiceOverRunning)
+				return;
+
+			var mapperOverride = view.GetRendererOverrides<IView>();
+
+			mapperOverride.ModifyMapping(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, (handler, virtualView, action) =>
+			{
+				if (virtualView is ILabel)
+				{
+					// accessibility for UILabel depends on if the text is set or not
+					// so we want to make sure text has propagated to the platform view
+					// before mocking accessibility expectations
+					handler.UpdateValue(nameof(ILabel.Text));
+				}
+				(handler.PlatformView as UIKit.UIView)?.SetupAccessibilityExpectationIfVoiceOverIsOff();
+				(mapperOverride as PropertyMapper).Chained[0]!.UpdateProperty(handler, view, nameof(AutomationProperties.IsInAccessibleTreeProperty));
+			});
+#endif
+		}
 	}
 }

@@ -9,5 +9,17 @@ namespace Microsoft.Maui.DeviceTests
 			// https://github.com/dotnet/maui/pull/12218
 			return Task.CompletedTask;
 		}
+
+		public override Task ContainerViewAddsAndRemoves()
+		{
+			// https://github.com/dotnet/maui/pull/12218
+			return Task.CompletedTask;
+		}
+
+		public override Task ContainerViewRemainsIfShadowMapperRunsAgain()
+		{
+			// https://github.com/dotnet/maui/pull/12218
+			return Task.CompletedTask;
+		}
 	}
 }

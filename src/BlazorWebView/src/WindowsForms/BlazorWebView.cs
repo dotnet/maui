@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
@@ -162,6 +164,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				return;
 			}
 
+			var logger = Services.GetService<ILogger<BlazorWebView>>() ?? NullLogger<BlazorWebView>.Instance;
+
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
 			string appRootDir;
@@ -179,6 +183,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			var contentRootRelativePath = Path.GetRelativePath(appRootDir, contentRootDirFullPath);
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
 
+			logger.CreatingFileProvider(contentRootDirFullPath, hostPageRelativePath);
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
 			_webviewManager = new WebView2WebViewManager(
@@ -191,15 +196,20 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				hostPageRelativePath,
 				(args) => UrlLoading?.Invoke(this, args),
 				(args) => BlazorWebViewInitializing?.Invoke(this, args),
-				(args) => BlazorWebViewInitialized?.Invoke(this, args));
+				(args) => BlazorWebViewInitialized?.Invoke(this, args),
+				logger);
 
 			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			foreach (var rootComponent in RootComponents)
 			{
+				logger.AddingRootComponent(rootComponent.ComponentType.FullName ?? string.Empty, rootComponent.Selector, rootComponent.Parameters?.Count ?? 0);
+
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
+
+			logger.StartingInitialNavigation(StartPath);
 			_webviewManager.Navigate(StartPath);
 		}
 
@@ -253,18 +263,21 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		/// <inheritdoc cref="Control.Dispose(bool)" />
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing)
+			if (disposing && _webviewManager is not null)
 			{
-				// Dispose this component's contents and block on completion so that user-written disposal logic and
+				// Await disposal of this component's contents so that user-written disposal logic and
 				// Razor component disposal logic will complete first. Then call base.Dispose(), which will dispose
 				// the WebView2 control. This order is critical because once the WebView2 is disposed it will prevent
 				// Razor component code from working because it requires the WebView to exist.
-				_webviewManager?
-					.DisposeAsync()
-					.AsTask()
-					.GetAwaiter()
-					.GetResult();
+				// Dispatch because this is going to be async, and we want to catch any errors.
+				_ = ComponentsDispatcher.InvokeAsync(async () =>
+				{
+					await _webviewManager.DisposeAsync();
+					base.Dispose(disposing);
+				});
+				return;
 			}
+
 			base.Dispose(disposing);
 		}
 

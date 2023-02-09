@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -122,21 +123,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// so we want to delay loading to the latest possible point in time so
 				// it doesn't delay initial startup.
 				GenericGlobalLayoutListener ggll = null;
-				ggll = new GenericGlobalLayoutListener(InitialLoad);
-				sfl.ViewTreeObserver.AddOnGlobalLayoutListener(ggll);
+				ggll = new GenericGlobalLayoutListener(InitialLoad, sfl);
 
-				void InitialLoad()
+				void InitialLoad(GenericGlobalLayoutListener listener, AView view)
 				{
 					OnFlyoutViewLayoutChanging();
 
 					if (_flyoutContentView == null || ggll == null)
 						return;
 
-					var listener = ggll;
 					ggll = null;
-
-					// Once initial load has finished let's just attach to Layout Changing
-					sfl.ViewTreeObserver.RemoveOnGlobalLayoutListener(listener);
+					listener.Invalidate();
 					sfl.LayoutChanging += OnFlyoutViewLayoutChanging;
 				}
 			}

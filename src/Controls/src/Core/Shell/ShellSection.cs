@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -406,6 +407,11 @@ namespace Microsoft.Maui.Controls
 							if (!isLast)
 								continue;
 						}
+
+						// This is the page that we will eventually get to once we've finished
+						// modifying the existing navigation stack
+						// So we want to fire appearing on it						
+						navPage.SendAppearing();
 
 						IsPoppingModalStack = true;
 
@@ -961,7 +967,8 @@ namespace Microsoft.Maui.Controls
 					}
 					else
 					{
-						presentedPage.SendAppearing();
+
+						this.FindParentOfType<Shell>().SendPageAppearing(presentedPage);
 					}
 				}
 			}
