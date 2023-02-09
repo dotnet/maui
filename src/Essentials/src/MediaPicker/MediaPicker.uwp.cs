@@ -102,7 +102,8 @@ namespace Microsoft.Maui.Media
 					: VideoSettings.GetFormatExtension();
 
 				var tempLocation = await StorageFolder.GetFolderFromPathAsync(FileSystem.CacheDirectory);
-				var tempFile = await tempLocation.CreateFileAsync($"capture{extension}", CreationCollisionOption.GenerateUniqueName);
+				var tempFolder = await tempLocation.CreateFolderAsync(".Microsoft.Maui.Media.MediaPicker", CreationCollisionOption.OpenIfExists);
+				var tempFile = await tempFolder.CreateFileAsync($"capture{extension}", CreationCollisionOption.GenerateUniqueName);
 				var token = global::Windows.ApplicationModel.DataTransfer.SharedStorageAccessManager.AddFile(tempFile);
 
 				var set = new ValueSet();
@@ -119,8 +120,11 @@ namespace Microsoft.Maui.Media
 
 				var uri = new Uri("microsoft.windows.camera.picker:");
 				var result = await WinLauncher.LaunchUriForResultsAsync(uri, options, set);
+
+				global::Windows.ApplicationModel.DataTransfer.SharedStorageAccessManager.RemoveFile(token);
+
 				if (result.Status == LaunchUriStatus.Success && result.Result != null)
-					return await StorageFile.GetFileFromPathAsync(tempFile.Path);
+					return tempFile;
 
 				return null;
 			}
