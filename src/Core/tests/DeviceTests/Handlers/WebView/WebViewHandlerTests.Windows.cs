@@ -54,6 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 					// If the new source is loaded without exceptions, the test has passed
 					Assert.True(await tcsLoaded.Task);
 				});
+			});
 		}
     
 		[Fact(DisplayName = "Closing Window With WebView Doesnt Crash")]
