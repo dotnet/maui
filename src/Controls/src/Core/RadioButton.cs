@@ -543,12 +543,22 @@ namespace Microsoft.Maui.Controls
 
 			VisualState checkedVisualState = new VisualState() { Name = CheckedVisualState };
 			checkedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 1 });
-			checkedVisualState.Setters.Add(new Setter() { Property = Shape.StrokeProperty, TargetName = UncheckedButton, Value = radioButtonCheckMarkThemeColor });
+			checkedVisualState.Setters.Add(
+				new Setter() {
+					Property = Shape.StrokeProperty,
+					TargetName = UncheckedButton,
+					Value = new AppThemeBinding() { Light = Colors.Black.MultiplyAlpha(0.1f), Dark = Colors.White.MultiplyAlpha(0.1f) }
+				});
 			checkedStates.States.Add(checkedVisualState);
 
 			VisualState uncheckedVisualState = new VisualState() { Name = UncheckedVisualState };
 			uncheckedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 0 });
-			uncheckedVisualState.Setters.Add(new Setter() { Property = Shape.StrokeProperty, TargetName = UncheckedButton, Value = radioButtonThemeColor });
+			uncheckedVisualState.Setters.Add(
+				new Setter() {
+					Property = Shape.StrokeProperty,
+					TargetName = UncheckedButton,
+					Value = new AppThemeBinding() { Light = Colors.Black, Dark = Colors.White }
+				});
 			checkedStates.States.Add(uncheckedVisualState);
 
 			visualStateGroups.Add(checkedStates);
