@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_disposed)
 				return;
 
-			Toolbar shellToolbar = _shellContext.Shell.Toolbar;
+			Toolbar shellToolbar = _shellContext?.Shell?.Toolbar;
 
 			if (shellToolbar is null)
 				return;
