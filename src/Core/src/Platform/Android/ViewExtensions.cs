@@ -64,6 +64,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this AView platformView, FocusRequest request)
 		{
+			platformView?.Focus(request, null);
+		}
+
+		internal static void Focus(this AView platformView, FocusRequest request, Action? focusRequested)
+		{
 			request.IsFocused = true;
 
 			// Android does the actual focus/unfocus work on the main looper
@@ -83,7 +88,20 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				platformView?.RequestFocus();
+				focusRequested?.Invoke();
 			}
+		}
+
+		internal static void Focus(this EditText editText, FocusRequest request)
+		{
+			if (editText is null)
+				return;
+
+			editText.Focus(request, () =>
+			{
+				if (editText.ShowSoftInputOnFocus)
+					KeyboardManager.PostShowKeyboard(editText);
+			});
 		}
 
 		public static void Unfocus(this AView platformView, IView view)

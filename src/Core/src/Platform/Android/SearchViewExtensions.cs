@@ -143,16 +143,5 @@ namespace Microsoft.Maui.Platform
 				editText.Enabled = searchBar.IsEnabled;
 			}
 		}
-
-		internal static void UpdateFocus(this SearchView searchView)
-		{
-			var queryEditor = searchView.GetFirstChildOfType<EditText>();
-
-			if (queryEditor is null)
-				return;
-
-			if (queryEditor.ShowSoftInputOnFocus)
-				KeyboardManager.PostShowKeyboard(searchView);
-		}
 	}
 }

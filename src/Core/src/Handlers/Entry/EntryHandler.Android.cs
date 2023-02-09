@@ -130,8 +130,8 @@ namespace Microsoft.Maui.Handlers
 
 		static void MapFocus(IEntryHandler handler, IEntry entry, object? args)
 		{
-			ViewHandler.MapFocus(handler, entry, args);
-			handler.PlatformView?.UpdateFocus(entry);
+			if (args is FocusRequest request)
+				handler.PlatformView?.Focus(request);
 		}
 
 		void OnTextChanged(object? sender, TextChangedEventArgs e)

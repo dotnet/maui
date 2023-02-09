@@ -110,8 +110,8 @@ namespace Microsoft.Maui.Handlers
 
 		static void MapFocus(IEditorHandler handler, IEditor editor, object? args)
 		{
-			ViewHandler.MapFocus(handler, editor, args);
-			handler.PlatformView?.UpdateFocus(editor);
+			if (args is FocusRequest request)
+				handler.PlatformView?.Focus(request);
 		}
 
 		void OnPlatformViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
