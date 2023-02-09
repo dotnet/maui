@@ -473,6 +473,7 @@ namespace Microsoft.Maui.Controls
 			var grid = new Grid
 			{
 				RowSpacing = 0,
+				ColumnSpacing = 6,
 				ColumnDefinitions = new ColumnDefinitionCollection {
 					new ColumnDefinition { Width = GridLength.Auto },
 					new ColumnDefinition { Width = GridLength.Star }
