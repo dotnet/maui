@@ -225,15 +225,6 @@ namespace Microsoft.Maui.Platform
 				UpdateCursorSelection(editText, entry);
 		}
 
-		internal static void UpdateFocus(this EditText editText, ITextInput textInput)
-		{
-			if (textInput is null)
-				return;
-
-			if (editText.ShowSoftInputOnFocus)
-				KeyboardManager.PostShowKeyboard(editText);
-		}
-
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		static void UpdateCursorSelection(EditText editText, ITextInput entry)
 		{
