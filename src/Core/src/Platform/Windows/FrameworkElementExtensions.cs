@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -134,9 +134,9 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		internal static bool TryGetFirstDescendant<T>(this DependencyObject element, [NotNullWhen(true)]out T? result) where T : FrameworkElement
+		internal static bool TryGetFirstDescendant<T>(this DependencyObject element, [NotNullWhen(true)] out T? result) where T : FrameworkElement
 		{
-			result = element.GetFirstDescendant<T> ();
+			result = element.GetFirstDescendant<T>();
 			return result is not null;
 		}
 
