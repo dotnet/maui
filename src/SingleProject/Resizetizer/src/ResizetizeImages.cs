@@ -170,8 +170,17 @@ namespace Microsoft.Maui.Resizetizer
 
 				var destination = Resizer.GetRasterFileDestination(img, dpi, IntermediateOutputPath)
 					.Replace("{name}", appIconName);
+				var destinationExists = File.Exists (destination);
+				var sourceExists = File.Exists (img.Filename);
 
 				LogDebugMessage($"App Icon Destination: " + destination);
+				var sourceModifiedDateTime = sourceExists ? File.GetLastWriteTimeUtc(img.Filename) : System.DateTime.MinValue;
+				var destinationModifiedDateTime = destinationExists ? File.GetLastWriteTimeUtc(destination) : System.DateTime.MinValue;
+
+				if (destinationModifiedDateTime > sourceModifiedDateTime) {
+					Logger.Log ($"Skipping `{img.Filename}` => `{destination}` file it up to date.");
+					continue;
+				}
 
 				appTool.Resize(dpi, destination);
 			}

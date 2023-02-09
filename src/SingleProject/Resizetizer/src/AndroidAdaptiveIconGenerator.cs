@@ -64,8 +64,17 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, backgroundDestFilename);
+				var destinationExists = File.Exists(destination);
 				Directory.CreateDirectory(dir);
 
+				var sourceModifiedDateTime = backgroundExists ? File.GetLastWriteTimeUtc(backgroundFile) : System.DateTime.MinValue;
+				var destinationModifiedDateTime = destinationExists ? File.GetLastWriteTimeUtc(destination) : System.DateTime.MinValue;
+
+				if (destinationModifiedDateTime > sourceModifiedDateTime) {
+					Logger.Log($"Skipping `{backgroundFile}` => `{destination}` file it up to date.");
+					continue;
+				}
+	
 				Logger.Log($"App Icon Background Part: " + destination);
 
 				if (backgroundExists)
@@ -100,7 +109,16 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, foregroundDestFilename);
+				var destinationExists = File.Exists(destination);
 				Directory.CreateDirectory(dir);
+
+				var sourceModifiedDateTime = foregroundExists ? File.GetLastWriteTimeUtc(foregroundFile) : System.DateTime.MinValue;
+				var destinationModifiedDateTime = destinationExists ? File.GetLastWriteTimeUtc(destination) : System.DateTime.MinValue;
+
+				if (destinationModifiedDateTime > sourceModifiedDateTime) {
+					Logger.Log($"Skipping `{foregroundFile}` => `{destination}` file it up to date.");
+					continue;
+				}
 
 				Logger.Log($"App Icon Foreground Part: " + destination);
 
@@ -132,8 +150,10 @@ namespace Microsoft.Maui.Resizetizer
 			Directory.CreateDirectory(dir);
 
 			// Write out the adaptive icon xml drawables
-			File.WriteAllText(adaptiveIconDestination, adaptiveIconXmlStr);
-			File.WriteAllText(adaptiveIconRoundDestination, adaptiveIconXmlStr);
+			if (!File.Exists(adaptiveIconDestination))
+				File.WriteAllText(adaptiveIconDestination, adaptiveIconXmlStr);
+			if (!File.Exists(adaptiveIconRoundDestination))
+				File.WriteAllText(adaptiveIconRoundDestination, adaptiveIconXmlStr);
 
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1), Filename = adaptiveIconDestination });
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1, "_round"), Filename = adaptiveIconRoundDestination });
