@@ -575,10 +575,16 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var item = uINavigationBar.GetBackButton();
 
-			var recognizer = item!.GestureRecognizers!.OfType<UITapGestureRecognizer>().FirstOrDefault();
-			_ = recognizer ?? throw new Exception("Unable to Back Button TapGestureRecognizer");
-
-			recognizer.State = UIGestureRecognizerState.Ended;
+			var recognizer = item?.GestureRecognizers?.OfType<UITapGestureRecognizer>()?.FirstOrDefault();
+			if (recognizer is null && item is UIControl control)
+			{
+				control.SendActionForControlEvents(UIControlEvent.TouchUpInside);
+			}
+			else
+			{
+				_ = recognizer ?? throw new Exception("Unable to figure out how to tap back button");
+				recognizer.State = UIGestureRecognizerState.Ended;
+			}
 		}
 
 		public static string? GetToolbarTitle(this UINavigationBar uINavigationBar)
