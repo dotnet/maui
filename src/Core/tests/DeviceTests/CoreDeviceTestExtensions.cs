@@ -29,5 +29,10 @@ namespace Microsoft.Maui.DeviceTests
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 		}
+
+		public static void AssertContainsColor(this IView view, Color color)
+		{
+			view.ToPlatform().AssertContainsColor(color);
+		}
 	}
 }

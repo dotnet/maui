@@ -9,6 +9,7 @@
     <NoWarn>$(NoWarn),CA1416</NoWarn>
   </PropertyGroup>
 
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.4.2" />
@@ -28,6 +29,5 @@
 
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
 
 </Project>

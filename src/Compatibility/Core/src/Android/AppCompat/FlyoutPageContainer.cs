@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (disposing)
 			{
-				if (_currentFragment != null && !FragmentManager.IsDestroyed)
+				if (_currentFragment != null && !FragmentManager.IsDestroyed(Context))
 				{
 					FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
 					transaction.RemoveEx(_currentFragment);

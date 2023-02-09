@@ -137,6 +137,16 @@ namespace Microsoft.Maui.DeviceTests
 				return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
 			});
 
+			if (!OperatingSystem.IsIOSVersionAtLeast(16))
+			{
+				titleContainer = titleContainer ?? GetPlatformToolbar(handler).FindDescendantView<UIView>(result =>
+				{
+					return result.Class.Name?.Contains("TitleViewContainer", StringComparison.OrdinalIgnoreCase) == true;
+				});
+			}
+
+			_ = titleContainer ?? throw new Exception("Unable to Locate TitleView Container");
+
 			return new Size(titleContainer.Frame.Width, titleContainer.Frame.Height);
 		}
 

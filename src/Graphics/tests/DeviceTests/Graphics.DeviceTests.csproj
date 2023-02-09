@@ -11,7 +11,6 @@
   <PropertyGroup>
     <ApplicationTitle>Graphics Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.graphics.devicetests</ApplicationId>
-    <ApplicationIdGuid>CD693923-4043-B044-B3C2-F070046D2DAF</ApplicationIdGuid>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
   </PropertyGroup>

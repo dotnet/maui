@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='HandleEvent']/Docs/*" />
-		public void HandleEvent(object sender, object args, string eventName)
+		public void HandleEvent(object? sender, object? args, string eventName)
 		{
 			var toRaise = new List<(object? subscriber, MethodInfo handler)>();
 			var toRemove = new List<Subscription>();

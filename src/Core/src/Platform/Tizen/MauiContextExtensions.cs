@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Tizen.UIExtensions.NUI;
 using Tizen.NUI;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Platform
 {

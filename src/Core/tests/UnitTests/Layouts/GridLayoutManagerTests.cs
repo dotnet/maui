@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Primitives;
@@ -88,15 +87,37 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 		}
 
+		static GridLength GridLengthFromString(string gridLength)
+		{
+			gridLength = gridLength.Trim();
+
+			if (gridLength.EndsWith("*"))
+			{
+				gridLength = gridLength.Substring(0, gridLength.Length - 1);
+
+				if (gridLength.Length == 0)
+				{
+					return GridLength.Star;
+				}
+
+				return new GridLength(double.Parse(gridLength), GridUnitType.Star);
+			}
+
+			if (gridLength.ToLower() == "auto")
+			{
+				return GridLength.Auto;
+			}
+
+			return new GridLength(double.Parse(gridLength));
+		}
+
 		List<IGridColumnDefinition> CreateTestColumns(params string[] columnWidths)
 		{
-			var converter = new GridLengthTypeConverter();
-
 			var colDefs = new List<IGridColumnDefinition>();
 
 			foreach (var width in columnWidths)
 			{
-				var gridLength = converter.ConvertFromInvariantString(width);
+				var gridLength = GridLengthFromString(width);
 				var colDef = Substitute.For<IGridColumnDefinition>();
 				colDef.Width.Returns(gridLength);
 				colDefs.Add(colDef);
@@ -107,13 +128,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		List<IGridRowDefinition> CreateTestRows(params string[] rowHeights)
 		{
-			var converter = new GridLengthTypeConverter();
-
 			var rowDefs = new List<IGridRowDefinition>();
 
 			foreach (var height in rowHeights)
 			{
-				var gridLength = converter.ConvertFromInvariantString(height);
+				var gridLength = GridLengthFromString(height);
 				var rowDef = Substitute.For<IGridRowDefinition>();
 				rowDef.Height.Returns(gridLength);
 				rowDefs.Add(rowDef);

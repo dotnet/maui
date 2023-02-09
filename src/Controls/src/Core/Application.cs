@@ -110,10 +110,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Properties']/Docs/*" />
-		[Obsolete("Properties API is obsolete, use Microsoft.Maui.Storage.Preferences instead.", error: true)]
-		public IDictionary<string, object> Properties => throw new NotSupportedException("Properties API is obsolete, use Microsoft.Maui.Storage.Preferences instead.");
-
 		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
@@ -272,10 +268,6 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<Page>? PageAppearing;
 
 		public event EventHandler<Page>? PageDisappearing;
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SavePropertiesAsync']/Docs/*" />
-		[Obsolete("Properties API is obsolete, use Microsoft.Maui.Storage.Preferences instead.", error: true)]
-		public Task SavePropertiesAsync() => throw new NotSupportedException("Properties API is obsolete, use Microsoft.Maui.Storage.Preferences instead.");
 
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Application> On<T>() where T : IConfigPlatform

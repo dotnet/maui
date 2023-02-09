@@ -14,13 +14,21 @@
     <_MauiPreviousDotNetTfm Condition="'$(_MauiPreviousDotNetTfm)' == ''">net$(_MauiPreviousDotNetVersion)</_MauiPreviousDotNetTfm>
     
     <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
+    <_MauiNoTargetPlatform>false</_MauiNoTargetPlatform>
     <_MauiNoTargetPlatform Condition="'$(_MauiTargetPlatformIdentifier)' == ''">True</_MauiNoTargetPlatform>
+    <_MauiTargetPlatformIsAndroid>false</_MauiTargetPlatformIsAndroid>
     <_MauiTargetPlatformIsAndroid Condition="'$(_MauiTargetPlatformIdentifier)' == 'android'">True</_MauiTargetPlatformIsAndroid>
+    <_MauiTargetPlatformIsiOS>false</_MauiTargetPlatformIsiOS>
     <_MauiTargetPlatformIsiOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'ios'">True</_MauiTargetPlatformIsiOS>
+    <_MauiTargetPlatformIsMacCatalyst>false</_MauiTargetPlatformIsMacCatalyst>
     <_MauiTargetPlatformIsMacCatalyst Condition="'$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">True</_MauiTargetPlatformIsMacCatalyst>
+    <_MauiTargetPlatformIsmacOS>false</_MauiTargetPlatformIsmacOS>
     <_MauiTargetPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_MauiTargetPlatformIsmacOS>
+    <_MauiTargetPlatformIstvOS>false</_MauiTargetPlatformIstvOS>
     <_MauiTargetPlatformIstvOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'tvos'">True</_MauiTargetPlatformIstvOS>
+    <_MauiTargetPlatformIsWindows>false</_MauiTargetPlatformIsWindows>
     <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
+    <_MauiTargetPlatformIsTizen>false</_MauiTargetPlatformIsTizen>
     <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
   </PropertyGroup>
 
@@ -109,7 +117,6 @@
   <PropertyGroup>
     <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
     <MauiSrcDirectory>$(MSBuildThisFileDirectory)src/</MauiSrcDirectory>
-    <MauiNuSpecDirectory>$(MSBuildThisFileDirectory).nuspec/</MauiNuSpecDirectory>
     <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
     <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
     <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
@@ -119,7 +126,8 @@
     <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetSdkManifestsFolder)/</DotNetSdkManifestsDirectory>
     <DotNetTemplatePacksDirectory>$(DotNetDirectory)template-packs/</DotNetTemplatePacksDirectory>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
-    <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
+    <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).buildtasks\</_MauiBuildTasksLocation>
+    <_MauiAOTProfileLocation>$(MauiSrcDirectory)Controls\src\Build.Tasks\nuget\buildTransitive\netstandard2.0\</_MauiAOTProfileLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

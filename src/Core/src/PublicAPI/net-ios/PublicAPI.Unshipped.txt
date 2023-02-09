@@ -1,5 +1,14 @@
 #nullable enable
+Microsoft.Maui.Handlers.SwipeItemButton
+Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
+Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
+override Microsoft.Maui.Handlers.SwipeItemButton.Frame.get -> CoreGraphics.CGRect
+override Microsoft.Maui.Handlers.SwipeItemButton.Frame.set -> void
+override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.ConnectHandler(UIKit.UIButton! platformView) -> void
+override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.DisconnectHandler(UIKit.UIButton! platformView) -> void
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
+override Microsoft.Maui.Platform.MauiTextView.Font.get -> UIKit.UIFont?
+override Microsoft.Maui.Platform.MauiTextView.Font.set -> void
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsTextPredictionEnabled(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar, UIKit.UITextField? textField = null) -> void
@@ -8,3 +17,9 @@ override Microsoft.Maui.Platform.MauiTextField.WillMoveToWindow(UIKit.UIWindow? 
 override Microsoft.Maui.Platform.MauiTextView.WillMoveToWindow(UIKit.UIWindow? window) -> void
 *REMOVED*override Microsoft.Maui.Handlers.PageHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
 *REMOVED*override Microsoft.Maui.Handlers.PageHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! nativeView) -> void
+Microsoft.Maui.IWebView.UserAgent.get -> string?
+Microsoft.Maui.IWebView.UserAgent.set -> void
+static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this WebKit.WKWebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
+*REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
+Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void

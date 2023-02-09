@@ -470,7 +470,7 @@ namespace Microsoft.Maui.Controls
 			// Visual Hierarchy
 			// The window/application will take care of re-firing this appearing 
 			// if it needs to
-			var window = this.FindParentOfType<Window>();
+			var window = this.FindParentOfType<IWindow>();
 			if (window?.Parent == null)
 			{
 				return;

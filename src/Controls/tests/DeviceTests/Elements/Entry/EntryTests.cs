@@ -146,7 +146,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
-			await SetValueAsync<string, EntryHandler>(entry, text, SetPlatformText);
+			await SetValueAsync<string, EntryHandler>(entry, text, (h, s) => h.VirtualView.Text = s);
 
 			Assert.Equal(text.Length, entry.CursorPosition);
 		}
@@ -243,7 +243,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
-			await SetValueAsync<string, EntryHandler>(entry, text, SetPlatformText);
+			await SetValueAsync<string, EntryHandler>(entry, text, (h, s) => h.VirtualView.Text = s);
 
 			Assert.Equal(0, entry.SelectionLength);
 		}

@@ -10,6 +10,7 @@
 		public const string Button = "Button";
 		public const string CarouselView = "CarouselView";
 		public const string CheckBox = "CheckBox";
+		public const string CollectionView = "CollectionView";
 		public const string Compatibility = "Compatibility";
 		public const string ContentView = "ContentView";
 		public const string Dispatcher = "Dispatcher";
