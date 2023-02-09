@@ -197,20 +197,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		void validateRadioButtonColors(RadioButton button, SolidColorBrush desiredBrush)
 		{
-			if (button.Children[0] is Frame frame)
-			{
-				if (frame.Children[0] is Grid grid)
-				{
-					if (grid.Children[0] is Shapes.Ellipse outerEllipse)
-					{
-						Assert.Equal(desiredBrush, outerEllipse.Stroke);
-					}
-					if (grid.Children[1] is Shapes.Ellipse innerEllipse)
-					{
-						Assert.Equal(desiredBrush, innerEllipse.Fill);
-					}
-				}
-			}
+			var frame = (Frame)button.Children[0];
+			var grid = (Grid)frame.Children[0];
+			var outerEllipse = (Shapes.Ellipse)grid.Children[0];
+			var innerEllipse = (Shapes.Ellipse)grid.Children[1];
+
+			Assert.Equal(desiredBrush, outerEllipse.Stroke);
+			Assert.Equal(desiredBrush, innerEllipse.Fill);
 		}
 
 		[Fact]
