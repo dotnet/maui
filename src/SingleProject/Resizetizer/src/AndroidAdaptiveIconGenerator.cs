@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				if (destinationModifiedDateTime > sourceModifiedDateTime) {
 					Logger.Log($"Skipping `{backgroundFile}` => `{destination}` file it up to date.");
+					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}
 	
@@ -117,6 +118,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				if (destinationModifiedDateTime > sourceModifiedDateTime) {
 					Logger.Log($"Skipping `{foregroundFile}` => `{destination}` file it up to date.");
+					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}
 

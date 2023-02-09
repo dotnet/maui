@@ -41,6 +41,19 @@ namespace Microsoft.Maui.Resizetizer
 			var assetContentsFile = Path.Combine(outputAssetsDir, "Contents.json");
 			var appIconSetContentsFile = Path.Combine(outputAppIconSetDir, "Contents.json");
 
+			var sourceExists = File.Exists(Info.Filename);
+			var destinationExists = File.Exists(appIconSetContentsFile);
+
+			var sourceModifiedDateTime = sourceExists ? File.GetLastWriteTimeUtc(Info.Filename) : System.DateTime.MinValue;
+			var destinationModifiedDateTime = destinationExists ? File.GetLastWriteTimeUtc(appIconSetContentsFile) : System.DateTime.MinValue;
+
+			if (destinationModifiedDateTime > sourceModifiedDateTime) {
+				Logger.Log($"Skipping `{Info.Filename}` => `{appIconSetContentsFile}` file it up to date.");
+				return new List<ResizedImageInfo> {
+					new ResizedImageInfo { Dpi = new DpiPath("", 1), Filename = appIconSetContentsFile }
+				};
+			}
+
 			var infoJsonProp = new JsonObject
 			{
 				["info"] = new JsonObject

@@ -27,10 +27,21 @@ namespace Microsoft.Maui.Resizetizer
 			string destination = Path.Combine(destinationFolder, $"{fileName}.ico");
 			Directory.CreateDirectory(destinationFolder);
 
-			Logger.Log($"Generating ICO: {destination}");
+			var sourceExists = File.Exists(Info.Filename);
+			var destinationExists = File.Exists(destination);
 
+			Logger.Log($"Generating ICO: {destination}");
+			
 			var tools = new SkiaSharpAppIconTools(Info, Logger);
 			var dpi = new DpiPath(fileName, 1.0m, size: new SKSize(64, 64));
+
+			var sourceModifiedDateTime = sourceExists ? File.GetLastWriteTimeUtc(Info.Filename) : System.DateTime.MinValue;
+			var destinationModifiedDateTime = destinationExists ? File.GetLastWriteTimeUtc(destination) : System.DateTime.MinValue;
+
+			if (destinationModifiedDateTime > sourceModifiedDateTime) {
+				Logger.Log($"Skipping `{Info.Filename}` => `{destination}` file it up to date.");
+				return new ResizedImageInfo { Dpi = dpi, Filename = destination };
+			}
 
 			MemoryStream memoryStream = new MemoryStream();
 			tools.Resize(dpi, destination, () => memoryStream);
