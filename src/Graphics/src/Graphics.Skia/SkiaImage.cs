@@ -119,6 +119,9 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		private Stream GetSkStream(ImageFormat format, float quality)
 		{
+			if (quality < 0 || quality > 1)
+				throw new ArgumentOutOfRangeException(nameof(quality), "quality must be in the range of 0..1");
+
 			// Skia quality range from 0-100, this is supported by jpeg and webp. Higher values correspond to improved visual quality, but less compression.
 			const int MaxSKQuality = 100;
 			var skQuality = (int)(MaxSKQuality * quality);

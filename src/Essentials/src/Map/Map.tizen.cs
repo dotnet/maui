@@ -2,8 +2,8 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Tizen.Applications;
 using Microsoft.Maui.Devices.Sensors;
+using Tizen.Applications;
 
 namespace Microsoft.Maui.ApplicationModel
 {

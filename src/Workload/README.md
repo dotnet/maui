@@ -7,7 +7,7 @@ The idea, is a project to be able to set `$(UseMaui)`:
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(_MauiDotNetTfm)-android;$(_MauiDotNetTfm)-ios</TargetFrameworks>
+    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <UseMaui>true</UseMaui>
   </PropertyGroup>
@@ -16,18 +16,13 @@ The idea, is a project to be able to set `$(UseMaui)`:
 
 `$(UseMaui)` automatically brings in the following workload packs:
 
-* `Microsoft.NET.Sdk.Maui`
-* `Microsoft.Maui.Sdk`
-* `Microsoft.Maui.Resizetizer.Sdk`
-* `Microsoft.Maui.Core.Ref.[platform]`
-* `Microsoft.Maui.Core.Runtime.[platform]`
-* `Microsoft.Maui.Controls.Ref.[platform]`
-* `Microsoft.Maui.Controls.Runtime.[platform]`
-* `Microsoft.Maui.Essentials.Ref.[platform]`
-* `Microsoft.Maui.Essentials.Runtime.[platform]`
-* `Microsoft.Maui.Templates`
+* `Microsoft.NET.Sdk.Maui` - workload manifest
+* `Microsoft.Maui.Sdk` - worklaod SDK
+* `Microsoft.Maui.Controls` - nuget
+* `Microsoft.Maui.Controls.Compatibility` - nuget
+* `Microsoft.Maui.Templates` - nuget
 
-BlazorWebView is an addition to MAUI, project can currently opt into
+`BlazorWebView` is an addition to MAUI, project can currently opt into
 it by adding `.Razor` to the `Sdk` attribute.
 
 `<Project Sdk="Microsoft.NET.Sdk.Razor">` sets
@@ -48,17 +43,17 @@ This will automatically add these dependencies:
 If you are a .NET 6 project, but don't want to use
 Microsoft.Maui.Controls you could bring in partial parts of MAUI.
 
-`$(UseMauiAssets)` brings in `Microsoft.Maui.Resizetizer.Sdk`.
+`$(UseMauiAssets)` brings in:
+
+* `Microsoft.Maui.Resizetizer`
 
 `$(UseMauiCore)` brings in:
 
-* `Microsoft.Maui.Core.Ref.[platform]`
-* `Microsoft.Maui.Core.Runtime.[platform]`
+* `Microsoft.Maui.Core`
 
 `$(UseMauiEssentials)` brings in:
 
-* `Microsoft.Maui.Essentials.Ref.[platform]`
-* `Microsoft.Maui.Essentials.Runtime.[platform]`
+* `Microsoft.Maui.Essentials`
 
 Special files:
 
@@ -69,6 +64,8 @@ Special files:
 * `WorkloadManifest.targets` - imports `Microsoft.Maui.Sdk` when
   `$(UseMaui)` is `true`. Note that this is imported by *all* .NET 6
   project types -- *even non-mobile ones*.
+
+More detailed docs on how the workload and NuGet packages are constructed, see the [NuGet docs](/docs/design/NuGets.md).
 
 For further details about .NET Workloads, see these .NET design docs:
 
@@ -113,23 +110,12 @@ SDK band such as:
 To give greater flexibility, you can specify in your `.csproj`:
 
 ```xml
-<MauiVersion>6.0.100-rc.2.2000</MauiVersion>
+<MauiVersion>8.0.100-preview.1.2345</MauiVersion>
 ```
 
-Even if you have `6.0.100-rc.2.1000` installed system-wide, placing
-this in your `.csproj` enables it to build against newer MAUI
-assemblies at build & runtime. Things might break if the version is
-much different that what MAUI source generators or MSBuild tasks
-expect. We have a `$(_MinimumMauiWorkloadVersion)` property to fall
-back on if there is a breaking change that requires a newer .NET MAUI
-system-wide install.
-
-    error MAUI004: At least version '6.0.200' of the .NET MAUI workload is required to use <MauiVersion>6.0.200-preview.13</MauiVersion>.
-
-One issue is that any MSBuild tasks no longer update via `$(MauiVersion)`:
-
-* `Microsoft.Maui.Sdk`: source generators and XamlC
-* `Microsoft.Maui.Resizetizer.Sdk`: MSBuild tasks
+Even if you do not have `8.0.100-preview.1.2345` installed system-wide, placing
+this in your `.csproj` enables it to build against newer .NET MAUI
+assemblies at build & runtime.
 
 ## Using the .NET MAUI Workload
 

@@ -4,7 +4,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Fragment.App;
-using AndroidX.Navigation;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
@@ -13,14 +12,19 @@ namespace Microsoft.Maui.Platform
 	{
 		AView? _currentView;
 		FragmentContainerView? _fragmentContainerView;
+		StackNavigationManager? _navigationManager;
 
 		FragmentContainerView FragmentContainerView =>
 			_fragmentContainerView ?? throw new InvalidOperationException($"FragmentContainerView cannot be null here");
 
-		StackNavigationManager? _navigationManager;
+		MauiNavHostFragment? NavHostFragment =>
+			this.ParentFragment as MauiNavHostFragment;
 
-		StackNavigationManager NavigationManager => _navigationManager
-			?? throw new InvalidOperationException($"Graph cannot be null here");
+		internal StackNavigationManager NavigationManager
+		{
+			get => _navigationManager ?? NavHostFragment?.StackNavigationManager ?? throw new InvalidOperationException($"NavigationManager cannot be null here");
+			set => _navigationManager = value;
+		}
 
 		protected NavigationViewFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
@@ -32,12 +36,6 @@ namespace Microsoft.Maui.Platform
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
-			var context =
-				(container?.Context as StackNavigationManager.StackContext) ??
-				(container?.Parent as AView)?.Context as StackNavigationManager.StackContext
-				 ?? throw new InvalidOperationException($"StackNavigationManager.StackContext not found");
-
-			_navigationManager = context.StackNavigationManager;
 			_fragmentContainerView ??= container as FragmentContainerView;
 
 			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.
@@ -56,14 +54,9 @@ namespace Microsoft.Maui.Platform
 			// Even if there's only one page on the stack
 
 			_currentView =
-				NavigationManager.CurrentPage.Handler?.PlatformView as AView;
-
-			if (_currentView == null)
-			{
-				var scopedContext = NavigationManager.MauiContext.MakeScoped(inflater, ChildFragmentManager);
-
-				_currentView = NavigationManager.CurrentPage.ToPlatform(scopedContext);
-			}
+				NavigationManager
+					.CurrentPage
+					.ToPlatform(NavigationManager.MauiContext, RequireContext(), inflater, ChildFragmentManager);
 
 			_currentView.RemoveFromParent();
 

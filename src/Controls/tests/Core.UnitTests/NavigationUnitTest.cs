@@ -21,6 +21,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = new TestNavigationHandler();
 			(nav as IView).Handler = handler;
 
+			Assert.Null(nav.CurrentNavigationTask);
+			Assert.Null(handler.CurrentNavigationRequest);
+		}
+
+		[Fact]
+		public async Task NavigationInLimboCompletesWhenHandlerIsRemoved()
+		{
+			TestNavigationPage nav =
+				new TestNavigationPage(true);
+
+			var task = nav.PushAsync(new ContentPage());
+			(nav as IView).Handler = null;
+			await task.WaitAsync(TimeSpan.FromMilliseconds(100));
+
+			var handler = new TestNavigationHandler();
+			(nav as IView).Handler = handler;
+
+			await nav.PushAsync(new ContentPage());
 
 			Assert.Null(nav.CurrentNavigationTask);
 			Assert.Null(handler.CurrentNavigationRequest);
