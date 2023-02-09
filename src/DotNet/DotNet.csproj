@@ -11,8 +11,6 @@
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
-    <DotNetXARuntimeInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(VersionFromAndroid) -InstallDir '$(DotNetDirectory)' -Verbose -Runtime dotnet</DotNetXARuntimeInstallCommand>
-    <DotNetXMRuntimeInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(VersionFromMacios) -InstallDir '$(DotNetDirectory)' -Verbose -Runtime dotnet</DotNetXMRuntimeInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'false' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
@@ -22,8 +20,6 @@
     <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
-    <DotNetXARuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromAndroid) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXARuntimeInstallCommand>
-    <DotNetXMRuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromMacios) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXMRuntimeInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
   </PropertyGroup>
@@ -31,6 +27,7 @@
   <PropertyGroup>
     <_ProvisionDependsOn>
       _DownloadDotNetInstallScript;
+      _GetExternalDotNetSdkVersions;
       _InstallDotNet;
       _AcquireWorkloadManifests;
       _InstallWorkloadPacks;
@@ -101,24 +98,33 @@
     />
   </Target>
 
-  <!-- if we are building in the unified pipeline we want to install the runtimesfrom the props of the sdks -->
+  <!-- if we are building in the unified pipeline we want to install the runtimes from the props of the sdks -->
   <Target Name="_GetExternalDotNetSdkVersions">
     <XmlPeek
         Condition="Exists('$(AndroidSrcPath)\eng\Versions.props')"
         XmlInputPath="$(AndroidSrcPath)\eng\Versions.props"
-        Query="/Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion/text()">
+        Query="/Project/PropertyGroup/MicrosoftNETCoreAppRefPackageVersion/text()">
       <Output TaskParameter="Result" PropertyName="VersionFromAndroid" />
     </XmlPeek>
     <XmlPeek
         Condition="Exists('$(MaciosSrcPath)\eng\Versions.props')"
         XmlInputPath="$(MaciosSrcPath)\eng\Versions.props"
-        Query="/Project/PropertyGroup/MicrosoftDotnetSdkInternalPackageVersion/text()">
+        Query="/Project/PropertyGroup/MicrosoftNETCoreAppRefPackageVersion/text()">
       <Output TaskParameter="Result" PropertyName="VersionFromMacios" />
     </XmlPeek>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+      <DotNetXARuntimeInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(VersionFromAndroid) -InstallDir '$(DotNetDirectory)' -Verbose -Runtime dotnet</DotNetXARuntimeInstallCommand>
+      <DotNetXMRuntimeInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(VersionFromMacios) -InstallDir '$(DotNetDirectory)' -Verbose -Runtime dotnet</DotNetXMRuntimeInstallCommand>
+      <DotNetXARuntimeInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetXARuntimeInstallCommand)&quot;</DotNetXARuntimeInstallCommand>
+      <DotNetXMRuntimeInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetXMRuntimeInstallCommand)&quot;</DotNetXMRuntimeInstallCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
+      <DotNetXARuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromAndroid) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXARuntimeInstallCommand>
+      <DotNetXMRuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromMacios) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXMRuntimeInstallCommand>
+    </PropertyGroup>
   </Target>
 
   <Target Name="_InstallDotNet"
-      DependsOnTargets="_GetExternalDotNetSdkVersions"
       Inputs="$(_Inputs)"
       Outputs="$(DotNetDirectory).stamp">
     <RemoveDir Directories="$(DotNetDirectory)" />
