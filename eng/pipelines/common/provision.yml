@@ -4,6 +4,7 @@ parameters:
   skipXcode: false
   skipVS: true
   skipProvisioning: $(skipProvisionator)
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
   provisionatorVSPath: $(provisionator.vs)
@@ -26,7 +27,7 @@ steps:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Xcode'
         inputs:
-          provisioning_script: ${{ parameters.provisionatorXCodePath }}
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
           github_token: ${{ parameters.gitHubToken }}
         env:
@@ -37,7 +38,7 @@ steps:
         displayName: 'Provision Additional Software'
         continueOnError: true 
         inputs:
-          provisioning_script: ${{ parameters.provisionatorPath }}
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
           github_token: ${{ parameters.gitHubToken }}
         env:
@@ -99,7 +100,7 @@ steps:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Visual Studio'
         inputs:
-          provisioning_script: ${{ parameters.provisionatorVSPath }}
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorVSPath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
           github_token: ${{ parameters.gitHubToken }}
         env:
@@ -114,7 +115,7 @@ steps:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Additional Software'
         inputs:
-          provisioning_script: ${{ parameters.provisionatorPath }}
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
           github_token: ${{ parameters.gitHubToken }}
         env:
