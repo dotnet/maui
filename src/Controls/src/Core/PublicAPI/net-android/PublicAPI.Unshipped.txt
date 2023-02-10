@@ -70,3 +70,5 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 *REMOVED*static Microsoft.Maui.Controls.Device.Idiom.get -> Microsoft.Maui.Controls.TargetIdiom
 *REMOVED*Microsoft.Maui.Controls.Application.SavePropertiesAsync() -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.Maui.Controls.Application.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!
+Microsoft.Maui.Controls.IValueConverter.Convert(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?
+Microsoft.Maui.Controls.IValueConverter.ConvertBack(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?
