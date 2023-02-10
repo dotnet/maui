@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Platform
 					{
 						bitmapImage.ImageOpened -= OnImageOpened;
 
-						if (nativeSlider.GetFirstDescendant<Thumb>() is Thumb thumb)
+						if (nativeSlider.TryGetFirstDescendant<Thumb>(out var thumb))
 						{
 							thumb.Height = bitmapImage.PixelHeight;
 							thumb.Width = bitmapImage.PixelWidth;
