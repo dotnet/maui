@@ -607,8 +607,6 @@ namespace Microsoft.Maui.Controls
 				_menuBarTracker.Target = newPage;
 			}
 
-			ModalNavigationManager.SettingNewPage();
-
 			if (newPage != null)
 			{
 				newPage.HandlerChanged += OnPageHandlerChanged;

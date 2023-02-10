@@ -281,7 +281,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected void OnLoaded(VisualElement frameworkElement, Action action)
 		{
-			if (frameworkElement.IsLoaded)
+			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
 				action();
 				return;
@@ -303,9 +303,18 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected void OnUnloaded(VisualElement frameworkElement, Action action)
 		{
-			if (!frameworkElement.IsLoaded)
+			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
 				action();
+				return;
+			}
+
+			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
+			// This will happen before the the control has been unloaded at the platform level.
+			// This is most likely a bug.
+			if (frameworkElement.IsLoadedOnPlatform())
+			{
+				frameworkElement.OnLoaded(action);
 				return;
 			}
 

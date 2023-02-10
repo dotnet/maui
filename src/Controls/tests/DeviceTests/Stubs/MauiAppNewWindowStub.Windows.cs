@@ -40,7 +40,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			set
 			{
 				_handler = value;
-				_window.Created();
+
+				if (value != null)
+					_window.Created();
 			}
 		}
 

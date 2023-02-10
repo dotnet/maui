@@ -204,6 +204,36 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task PushModalModalWithoutAwaiting(bool useShell)
+		{
+			SetupBuilder();
+			var windowPage = new LifeCycleTrackingPage();
+			var modalPage = new LifeCycleTrackingPage()
+			{
+				Content = new Label()
+			};
+
+			Window window;
+
+			if (useShell)
+				window = new Window(new Shell() { CurrentItem = windowPage });
+			else
+				window = new Window(windowPage);
+
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					_ = windowPage.Navigation.PushModalAsync(new ContentPage());
+					_ = windowPage.Navigation.PushModalAsync(new ContentPage());
+					_ = windowPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+				});
+		}
+
 		[Fact]
 		public async Task LoadModalPagesBeforeWindowHasLoaded()
 		{
@@ -282,6 +312,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					window.Page = nextPage;
 					await OnUnloadedAsync(modalPage.Content);
+					await OnLoadedAsync(nextPage.Content);
 					Assert.Equal(0, window.Navigation.ModalStack.Count);
 				});
 		}

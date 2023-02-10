@@ -35,6 +35,12 @@ namespace Microsoft.Maui.Controls.Platform
 		public ModalNavigationManager(Window window)
 		{
 			_window = window;
+			_window.PropertyChanged += (_, args) =>
+			{
+				if (args.Is(Window.PageProperty))
+					SettingNewPage();
+			};
+
 			InitializePlatform();
 
 			_window.HandlerChanging += OnWindowHandlerChanging;
@@ -71,10 +77,9 @@ namespace Microsoft.Maui.Controls.Platform
 			get
 			{
 				return
-#if ANDROID
-					_window.IsActivated &&
-#endif
-					_window?.Page?.Handler is not null && _window.Handler is not null;
+					_window?.Page?.Handler is not null &&
+					_window.Handler is not null
+					&& IsModalPlatformReady;
 			}
 		}
 
@@ -83,6 +88,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var logger = _window.FindMauiContext(true)?.Services?.CreateLogger<ModalNavigationManager>();
 			SyncPlatformModalStackAsync().FireAndForget(logger, callerName);
 		}
+
+		void SyncModalStackWhenPlatformIsReady([CallerMemberName] string? callerName = null)
+		{
+			var logger = _window.FindMauiContext(true)?.Services?.CreateLogger<ModalNavigationManager>();
+			SyncModalStackWhenPlatformIsReadyAsync().FireAndForget(logger, callerName);
+		}
+
 
 		// This code only processes a single sync action per call.
 		// It recursively calls itself until no more sync actions are left to perform.
@@ -103,8 +115,6 @@ namespace Microsoft.Maui.Controls.Platform
 			try
 			{
 				syncing = true;
-
-				await WindowReadyForModal();
 
 				int popTo;
 
@@ -139,7 +149,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var i = _platformModalPages.Count;
 					if (i < _modalPages.Count && IsModalReady)
 					{
-						await PushModalPlatformAsync(_modalPages[i], false).ConfigureAwait(false);
+						await PushModalPlatformAsync(_modalPages[i], false);
 						changed = true;
 					}
 				}
@@ -155,7 +165,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (changed)
 			{
-				await SyncPlatformModalStackAsync().ConfigureAwait(false);
+				await SyncModalStackWhenPlatformIsReadyAsync().ConfigureAwait(false);
 			}
 		}
 
@@ -178,8 +188,9 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentPage?.SendAppearing();
 			}
 
+			bool isPlatformReady = IsModalReady;
 			Task popTask =
-				IsModalReady ? PopModalPlatformAsync(animated) : Task.CompletedTask;
+				(isPlatformReady && !syncing) ? PopModalPlatformAsync(animated) : Task.CompletedTask;
 
 			await popTask;
 			modal.Parent = null;
@@ -190,6 +201,9 @@ namespace Microsoft.Maui.Controls.Platform
 				modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
 				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(modal));
 			}
+
+			if (!isPlatformReady)
+				SyncModalStackWhenPlatformIsReady();
 
 			return modal;
 		}
@@ -209,7 +223,8 @@ namespace Microsoft.Maui.Controls.Platform
 				CurrentPage?.SendAppearing();
 			}
 
-			if (IsModalReady)
+			bool isPlatformReady = IsModalReady;
+			if (isPlatformReady && !syncing)
 			{
 				if (ModalStack.Count == 0)
 				{
@@ -230,9 +245,12 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_window.OnModalPushed(modal);
+
+			if (!isPlatformReady)
+				SyncModalStackWhenPlatformIsReady();
 		}
 
-		internal void SettingNewPage()
+		void SettingNewPage()
 		{
 			if (_window.Page is null)
 			{
@@ -246,7 +264,10 @@ namespace Microsoft.Maui.Controls.Platform
 				_currentPage = _window.Page;
 
 				if (previousPage is not null)
+				{
+					previousPage.HandlerChanged -= OnCurrentPageHandlerChanged;
 					_modalPages.Clear();
+				}
 
 				if (_currentPage is not null)
 				{
@@ -256,7 +277,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					else
 					{
-						SyncPlatformModalStack();
+						SyncModalStackWhenPlatformIsReady();
 					}
 				}
 			}
@@ -267,12 +288,84 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_currentPage is not null)
 			{
 				_currentPage.HandlerChanged -= OnCurrentPageHandlerChanged;
-				SyncPlatformModalStack();
+				SyncModalStackWhenPlatformIsReady();
 			}
 		}
 
 		partial void OnPageAttachedHandler();
 
 		public void PageAttachedHandler() => OnPageAttachedHandler();
+
+
+		// Windows and Android have basically the same requirement that
+		// we need to wait for the current page to finish loading before
+		// satsifying Modal requests.
+		// This will most likely change once we switch Android to using dialog fragments		
+#if WINDOWS || ANDROID
+		IDisposable? _platformPageWatchingForLoaded;
+
+		async Task SyncModalStackWhenPlatformIsReadyAsync()
+		{
+			DisconnectPlatformPageWatchingForLoaded();
+
+			if (IsModalPlatformReady)
+			{
+				await SyncPlatformModalStackAsync();
+			}
+			else if (_window.IsActivated &&
+				_window?.Page?.Handler is not null)
+			{
+				if (CurrentPlatformPage.Handler is null)
+				{
+					CurrentPlatformPage.HandlerChanged += OnCurrentPlatformPageHandlerChanged;
+					;
+					_platformPageWatchingForLoaded = new ActionDisposable(() =>
+					{
+						CurrentPlatformPage.HandlerChanged -= OnCurrentPlatformPageHandlerChanged;
+					});
+				}
+				else if (!CurrentPlatformPage.IsLoadedOnPlatform() &&
+					CurrentPlatformPage.Handler is not null)
+				{
+					_platformPageWatchingForLoaded =
+						CurrentPlatformPage.OnLoaded(() => OnCurrentPlatformPageLoaded(_platformPageWatchingForLoaded, EventArgs.Empty));
+				}
+			}
+		}
+
+		void OnCurrentPlatformPageHandlerChanged(object? sender, EventArgs e)
+		{
+			DisconnectPlatformPageWatchingForLoaded();
+			SyncModalStackWhenPlatformIsReady();
+		}
+
+		void DisconnectPlatformPageWatchingForLoaded()
+		{
+			_platformPageWatchingForLoaded?.Dispose();
+		}
+
+		void OnCurrentPlatformPageLoaded(object? sender, EventArgs e)
+		{
+			DisconnectPlatformPageWatchingForLoaded();
+			SyncPlatformModalStack();
+		}
+
+		bool IsModalPlatformReady
+		{
+			get
+			{
+				bool result =
+					_window?.Page?.Handler is not null &&
+					_window.IsActivated
+					&& CurrentPlatformPage?.Handler is not null
+					&& CurrentPlatformPage.IsLoadedOnPlatform();
+
+				if (result)
+					DisconnectPlatformPageWatchingForLoaded();
+
+				return result;
+			}
+		}
+#endif
 	}
 }

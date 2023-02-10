@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// we push any modal views.
 		// After it's been activated we can push modals if the app has been sent to
 		// the background so we don't care if it becomes inactive
-		TaskCompletionSource? _platformActivated;
+		bool _platformActivated;
 
 		partial void InitializePlatform()
 		{
@@ -24,26 +24,26 @@ namespace Microsoft.Maui.Controls.Platform
 			_window.Resumed += (_, _) => SyncPlatformModalStack();
 			_window.HandlerChanging += OnPlatformWindowHandlerChanging;
 
-			if (!_window.IsActivated)
-				_platformActivated = new TaskCompletionSource();
+			_platformActivated = _window.IsActivated;
 		}
 
-		private void OnPlatformWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
+		Task SyncModalStackWhenPlatformIsReadyAsync() =>
+			SyncPlatformModalStackAsync();
+
+		bool IsModalPlatformReady => true;
+
+		void OnPlatformWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
-			if (!_window.IsActivated && _platformActivated is null)
-				_platformActivated = new TaskCompletionSource();
+			_platformActivated = _window.IsActivated;
 		}
 
 		void OnWindowActivated(object? sender, EventArgs e)
 		{
-			if (_platformActivated is not null)
+			if (!_platformActivated)
 			{
-				var source = _platformActivated;
-				_platformActivated = null;
-				source?.SetResult();
+				_platformActivated = true;
+				SyncPlatformModalStack();
 			}
-
-			SyncPlatformModalStack();
 		}
 
 		UIViewController? WindowViewController
@@ -61,8 +61,6 @@ namespace Microsoft.Maui.Controls.Platform
 						.RootViewController;
 			}
 		}
-
-		Task WindowReadyForModal() => _platformActivated?.Task ?? Task.CompletedTask;
 
 		async Task<Page> PopModalPlatformAsync(bool animated)
 		{

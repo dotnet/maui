@@ -20,6 +20,10 @@ namespace Microsoft.Maui.Controls.Platform
 			_platformModalPages.Add(modal);
 			return Task.CompletedTask;
 		}
-		Task WindowReadyForModal() => Task.CompletedTask;
+
+		Task SyncModalStackWhenPlatformIsReadyAsync() =>
+			SyncPlatformModalStackAsync();
+
+		bool IsModalPlatformReady => true;
 	}
 }

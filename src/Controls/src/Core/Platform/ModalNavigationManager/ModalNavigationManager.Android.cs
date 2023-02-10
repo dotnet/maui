@@ -18,16 +18,15 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationManager
 	{
-		partial void InitializePlatform()
-		{
-			_window.Activated += (_, _) => SyncPlatformModalStack();
-			_window.Resumed += (_, _) => SyncPlatformModalStack();
-		}
-
 		ViewGroup? _modalParentView;
 		bool _navAnimationInProgress;
 		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
 
+		partial void InitializePlatform()
+		{
+			_window.Activated += (_, _) => SyncModalStackWhenPlatformIsReady();
+			_window.Resumed += (_, _) => SyncModalStackWhenPlatformIsReady();
+		}
 
 		// This is only here for the device tests to use.
 		// With the device tests we have a `FakeActivityRootView` and a `WindowTestFragment`
@@ -47,17 +46,6 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Root View Needs to be set");
 		}
 
-		Task WindowReadyForModal()
-		{
-			if (CurrentPlatformPage.Handler is IPlatformViewHandler pvh &&
-				pvh.PlatformView is not null)
-			{
-				return pvh.PlatformView.OnLoadedAsync();
-			}
-
-			throw new InvalidOperationException("Page not initialized");
-		}
-
 		// AFAICT this is specific to ListView and Context Items
 		internal bool NavAnimationInProgress
 		{
@@ -73,29 +61,6 @@ namespace Microsoft.Maui.Controls.Platform
 					MessagingCenter.Send(this, CloseContextActionsSignalName);
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
-		}
-
-		Task RemoveModalPage(Page page)
-		{
-			_platformModalPages.Remove(page);
-
-			var modalHandler = page.Handler as IPlatformViewHandler;
-			if (modalHandler is not null)
-			{
-				ModalContainer? modalContainer = null;
-				for (int i = 0; i <= GetModalParentView().ChildCount; i++)
-				{
-					if (GetModalParentView().GetChildAt(i) is ModalContainer mc &&
-						mc.Modal == page)
-					{
-						modalContainer = mc;
-					}
-				}
-
-				modalContainer?.Destroy();
-			}
-
-			return Task.CompletedTask;
 		}
 
 		Task<Page> PopModalPlatformAsync(bool animated)

@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Controls.Platform
 		NavigationStack _modalStack => WindowMauiContext.GetModalStack();
 		IPageController CurrentPageController => CurrentPage!;
 
+		Task SyncModalStackWhenPlatformIsReadyAsync() =>
+			SyncPlatformModalStackAsync();
+
+		bool IsModalPlatformReady => true;
+
 		partial void OnPageAttachedHandler()
 		{
 			WindowMauiContext.GetPlatformWindow().SetBackButtonPressedHandler(OnBackButtonPressed);
@@ -46,8 +51,6 @@ namespace Microsoft.Maui.Controls.Platform
 				((IPageController)modal).SendAppearing();
 		}
 
-		Task WindowReadyForModal() => Task.CompletedTask;
-				
 		bool OnBackButtonPressed()
 		{
 			bool handled = CurrentPage?.SendBackButtonPressed() ?? false;
