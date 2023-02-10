@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -52,10 +53,10 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessBackground(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var backgroundFile = Info.Filename;
-			var backgroundExists = File.Exists(backgroundFile);
+			(bool Exists, DateTime Modified) backgroundExists = Utils.FileExists(backgroundFile);
 			var backgroundDestFilename = AppIconName + "_background.png";
 
-			if (backgroundExists)
+			if (backgroundExists.Exists)
 				Logger.Log("Converting Background SVG to PNG: " + backgroundFile);
 			else
 				Logger.Log("Background was not found (will manufacture): " + backgroundFile);
@@ -64,21 +65,18 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, backgroundDestFilename);
-				var destinationExists = File.Exists(destination);
+				(bool Exists, DateTime Modified) destinationExists = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				var sourceModifiedDateTime = backgroundExists ? File.GetLastWriteTimeUtc(backgroundFile) : System.DateTime.MinValue;
-				var destinationModifiedDateTime = destinationExists ? File.GetLastWriteTimeUtc(destination) : System.DateTime.MinValue;
-
-				if (destinationModifiedDateTime > sourceModifiedDateTime) {
-					Logger.Log($"Skipping `{backgroundFile}` => `{destination}` file it up to date.");
+				if (destinationExists.Modified > backgroundExists.Modified) {
+					Logger.Log($"Skipping `{backgroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}
 	
 				Logger.Log($"App Icon Background Part: " + destination);
 
-				if (backgroundExists)
+				if (backgroundExists.Exists)
 				{
 					// resize the background
 					var tools = SkiaSharpTools.Create(Info.IsVector, Info.Filename, dpi.Size, Info.Color, null, Logger);
@@ -98,10 +96,10 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessForeground(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var foregroundFile = Info.ForegroundFilename;
-			var foregroundExists = File.Exists(foregroundFile);
+			(bool Exists, DateTime Modified) foregroundExists = Utils.FileExists(foregroundFile);
 			var foregroundDestFilename = AppIconName + "_foreground.png";
 
-			if (foregroundExists)
+			if (foregroundExists.Exists)
 				Logger.Log("Converting Foreground SVG to PNG: " + foregroundFile);
 			else
 				Logger.Log("Foreground was not found (will manufacture): " + foregroundFile);
@@ -110,21 +108,18 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, foregroundDestFilename);
-				var destinationExists = File.Exists(destination);
+				(bool Exists, DateTime Modified) destinationExists = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				var sourceModifiedDateTime = foregroundExists ? File.GetLastWriteTimeUtc(foregroundFile) : System.DateTime.MinValue;
-				var destinationModifiedDateTime = destinationExists ? File.GetLastWriteTimeUtc(destination) : System.DateTime.MinValue;
-
-				if (destinationModifiedDateTime > sourceModifiedDateTime) {
-					Logger.Log($"Skipping `{foregroundFile}` => `{destination}` file it up to date.");
+				if (destinationExists.Modified > foregroundExists.Modified) {
+					Logger.Log($"Skipping `{foregroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}
 
 				Logger.Log($"App Icon Foreground Part: " + destination);
 
-				if (foregroundExists)
+				if (foregroundExists.Exists)
 				{
 					// resize the forground
 					var tools = SkiaSharpTools.Create(Info.ForegroundIsVector, Info.ForegroundFilename, dpi.Size, null, Info.TintColor, Logger);

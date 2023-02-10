@@ -1390,7 +1390,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				success = task.Execute ();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				Assert.True (LogMessageEvents.Any (x=> x.Message.Contains("Skipping ", StringComparison.OrdinalIgnoreCase)), $"Image Generation should have been skipped.");
+				Assert.True (LogMessageEvents.Any (x=> x.Message.Contains("Skipping ", StringComparison.OrdinalIgnoreCase)), $"Image generation should have been skipped.");
 			}
 		}
 	}
