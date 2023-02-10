@@ -570,13 +570,18 @@ void SetDotNetEnvironmentVariables()
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 
-void UseLocalNuGetCacheFolder()
+void UseLocalNuGetCacheFolder(bool reset = false)
 {
     var temp = Context.Environment.GetSpecialPath(SpecialPath.LocalTemp);
     var packages = temp.Combine("Microsoft.Maui.Cache/NuGet/packages");
 
+    EnsureDirectoryExists(packages);
+
     CleanDirectories(packages.FullPath + "/microsoft.maui.*");
     CleanDirectories(packages.FullPath + "/microsoft.aspnetcore.*");
+
+    if (reset)
+        CleanDirectories(packages.FullPath);
 
     SetEnvironmentVariable("RestorePackagesPath", packages.FullPath);
     SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
