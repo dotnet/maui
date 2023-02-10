@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Xunit;
+using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch1.IsEnabled = false;
 			VisualStateManager.SetVisualStateGroups(switch1, CreateTestStateGroups());
 			var groups1 = VisualStateManager.GetVisualStateGroups(switch1);
-			Assert.Equal(groups1[0].CurrentState.Name, DisabledStateName);
+			Assert.Equal(DisabledStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch1.IsToggled = true;
 			VisualStateManager.SetVisualStateGroups(switch1, CreateTestStateGroups());
 			var groups1 = VisualStateManager.GetVisualStateGroups(switch1);
-			Assert.Equal(groups1[0].CurrentState.Name, OnStateName);
+			Assert.Equal(OnStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			switch1.IsToggled = false;
 			VisualStateManager.SetVisualStateGroups(switch1, CreateTestStateGroups());
 			var groups1 = VisualStateManager.GetVisualStateGroups(switch1);
-			Assert.Equal(groups1[0].CurrentState.Name, OffStateName);
+			Assert.Equal(OffStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var switch1 = new Switch();
 			VisualStateManager.SetVisualStateGroups(switch1, CreateTestStateGroupsWithoutOnOffStates());
 			var groups1 = VisualStateManager.GetVisualStateGroups(switch1);
-			Assert.Equal(groups1[0].CurrentState.Name, NormalStateName);
+			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
 		}
 
 		[Fact]
@@ -150,6 +150,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			VisualStateManager.SetVisualStateGroups(switch1, CreateTestStateGroupsWithoutNormalState());
 			var groups1 = VisualStateManager.GetVisualStateGroups(switch1);
 			Assert.Null(groups1[0].CurrentState);
+		}
+
+		[Fact]
+		public void OnOffVisualStates()
+		{
+			var vsgList = VisualStateTestHelpers.CreateTestStateGroups();
+			var stateGroup = vsgList[0];
+			var element = new Switch();
+			VisualStateManager.SetVisualStateGroups(element, vsgList);
+
+			string onStateName = Switch.SwitchOnVisualState;
+			string offStateName = Switch.SwitchOffVisualState;
+			var onState = new VisualState() { Name = onStateName };
+			var offState = new VisualState() { Name = offStateName };
+
+			stateGroup.States.Add(onState);
+			stateGroup.States.Add(offState);
+
+			element.IsToggled = true;
+			Assert.Equal(stateGroup.CurrentState.Name, onStateName);
+
+			element.IsToggled = false;
+			Assert.Equal(stateGroup.CurrentState.Name, offStateName);
 		}
 	}
 

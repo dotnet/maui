@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls.Handlers.Items
+﻿#nullable disable
+namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler
 	{

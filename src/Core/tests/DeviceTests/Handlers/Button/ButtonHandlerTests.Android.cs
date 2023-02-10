@@ -124,6 +124,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
+		[Theory]
+		[InlineData("red.png", "#FF0000")]
+		[InlineData("green.png", "#00FF00")]
+		public async Task ImageSourceUpdatesCorrectly(string filename, string colorHex)
+		{
+			var image = new ButtonStub
+			{
+				ImageSource = new FileImageSourceStub("black.png"),
+			};
+
+			// Update the Button Icon
+			image.ImageSource = new FileImageSourceStub(filename);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(image);
+
+				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
+
+				Assert.True(imageLoaded);
+				var expectedColor = Color.FromArgb(colorHex);
+				await handler.PlatformView.AssertContainsColor(expectedColor);
+			});
+		}
+
 		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;
 
@@ -179,15 +204,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		TextUtils.TruncateAt GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Ellipsize;
-
-		Task ValidateHasColor(IButton button, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformButton = GetNativeButton(CreateHandler(button));
-				action?.Invoke();
-				platformButton.AssertContainsColor(color);
-			});
-		}
 	}
 }

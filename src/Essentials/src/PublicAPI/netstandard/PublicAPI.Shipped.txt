@@ -1,4 +1,111 @@
-﻿#nullable enable
+#nullable enable
+~abstract Microsoft.Maui.ApplicationModel.Permissions.BasePermission.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~abstract Microsoft.Maui.ApplicationModel.Permissions.BasePermission.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~Microsoft.Maui.ApplicationModel.Communication.Contact.Contact(string id, string namePrefix, string givenName, string middleName, string familyName, string nameSuffix, System.Collections.Generic.IEnumerable<Microsoft.Maui.ApplicationModel.Communication.ContactPhone> phones, System.Collections.Generic.IEnumerable<Microsoft.Maui.ApplicationModel.Communication.ContactEmail> email, string displayName = null) -> void
+~Microsoft.Maui.ApplicationModel.Communication.Contact.DisplayName.get -> string
+~Microsoft.Maui.ApplicationModel.Communication.Contact.Emails.get -> System.Collections.Generic.List<Microsoft.Maui.ApplicationModel.Communication.ContactEmail>
+~Microsoft.Maui.ApplicationModel.Communication.Contact.Emails.set -> void
+~Microsoft.Maui.ApplicationModel.Communication.Contact.FamilyName.get -> string
+~Microsoft.Maui.ApplicationModel.Communication.Contact.FamilyName.set -> void
+~Microsoft.Maui.ApplicationModel.Communication.Contact.GivenName.get -> string
+~Microsoft.Maui.ApplicationModel.Communication.Contact.GivenName.set -> void
+~Microsoft.Maui.ApplicationModel.Communication.Contact.Id.get -> string
+~Microsoft.Maui.ApplicationModel.Communication.Contact.Id.set -> void
+~Microsoft.Maui.ApplicationModel.Communication.Contact.MiddleName.get -> string
+~Microsoft.Maui.ApplicationModel.Communication.Contact.MiddleName.set -> void
+~Microsoft.Maui.ApplicationModel.Communication.Contact.NamePrefix.get -> string
+~Microsoft.Maui.ApplicationModel.Communication.Contact.NamePrefix.set -> void
+~Microsoft.Maui.ApplicationModel.Communication.Contact.NameSuffix.get -> string
+~Microsoft.Maui.ApplicationModel.Communication.Contact.NameSuffix.set -> void
+~Microsoft.Maui.ApplicationModel.Communication.Contact.Phones.get -> System.Collections.Generic.List<Microsoft.Maui.ApplicationModel.Communication.ContactPhone>
+~Microsoft.Maui.ApplicationModel.Communication.Contact.Phones.set -> void
+~Microsoft.Maui.ApplicationModel.Communication.ContactEmail.ContactEmail(string emailAddress) -> void
+~Microsoft.Maui.ApplicationModel.Communication.ContactEmail.EmailAddress.get -> string
+~Microsoft.Maui.ApplicationModel.Communication.ContactEmail.EmailAddress.set -> void
+~Microsoft.Maui.ApplicationModel.Communication.ContactPhone.ContactPhone(string phoneNumber) -> void
+~Microsoft.Maui.ApplicationModel.Communication.ContactPhone.PhoneNumber.get -> string
+~Microsoft.Maui.ApplicationModel.Communication.ContactPhone.PhoneNumber.set -> void
+~Microsoft.Maui.ApplicationModel.FeatureNotEnabledException.FeatureNotEnabledException(string message, System.Exception innerException) -> void
+~Microsoft.Maui.ApplicationModel.FeatureNotEnabledException.FeatureNotEnabledException(string message) -> void
+~Microsoft.Maui.ApplicationModel.FeatureNotSupportedException.FeatureNotSupportedException(string message, System.Exception innerException) -> void
+~Microsoft.Maui.ApplicationModel.FeatureNotSupportedException.FeatureNotSupportedException(string message) -> void
+~Microsoft.Maui.ApplicationModel.MapLaunchOptions.Name.get -> string
+~Microsoft.Maui.ApplicationModel.MapLaunchOptions.Name.set -> void
+~Microsoft.Maui.ApplicationModel.PermissionException.PermissionException(string message) -> void
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.AccessToken.get -> string
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.Get(string key) -> string
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.IdToken.get -> string
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.Properties.get -> System.Collections.Generic.Dictionary<string, string>
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.Properties.set -> void
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.Put(string key, string value) -> void
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.RefreshToken.get -> string
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Collections.Generic.IDictionary<string, string> properties) -> void
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri) -> void
+~Microsoft.Maui.Devices.Sensors.Location.Location(Microsoft.Maui.Devices.Sensors.Location point) -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.AdminArea.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.AdminArea.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.CountryCode.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.CountryCode.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.CountryName.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.CountryName.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.FeatureName.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.FeatureName.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.Locality.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.Locality.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.Location.get -> Microsoft.Maui.Devices.Sensors.Location
+~Microsoft.Maui.Devices.Sensors.Placemark.Location.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.Placemark(Microsoft.Maui.Devices.Sensors.Placemark placemark) -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.PostalCode.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.PostalCode.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.SubAdminArea.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.SubAdminArea.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.SubLocality.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.SubLocality.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.SubThoroughfare.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.SubThoroughfare.set -> void
+~Microsoft.Maui.Devices.Sensors.Placemark.Thoroughfare.get -> string
+~Microsoft.Maui.Devices.Sensors.Placemark.Thoroughfare.set -> void
+~Microsoft.Maui.Networking.ConnectivityChangedEventArgs.ConnectionProfiles.get -> System.Collections.Generic.IEnumerable<Microsoft.Maui.Networking.ConnectionProfile>
+~Microsoft.Maui.Networking.ConnectivityChangedEventArgs.ConnectivityChangedEventArgs(Microsoft.Maui.Networking.NetworkAccess access, System.Collections.Generic.IEnumerable<Microsoft.Maui.Networking.ConnectionProfile> connectionProfiles) -> void
+~Microsoft.Maui.Networking.IConnectivity.ConnectionProfiles.get -> System.Collections.Generic.IEnumerable<Microsoft.Maui.Networking.ConnectionProfile>
+~override Microsoft.Maui.ApplicationModel.Communication.Contact.ToString() -> string
+~override Microsoft.Maui.ApplicationModel.Communication.ContactEmail.ToString() -> string
+~override Microsoft.Maui.ApplicationModel.Communication.ContactPhone.ToString() -> string
+~override Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~override Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~override Microsoft.Maui.Devices.DeviceIdiom.Equals(object obj) -> bool
+~override Microsoft.Maui.Devices.DeviceIdiom.ToString() -> string
+~override Microsoft.Maui.Devices.DevicePlatform.Equals(object obj) -> bool
+~override Microsoft.Maui.Devices.DevicePlatform.ToString() -> string
+~override Microsoft.Maui.Devices.DisplayInfo.Equals(object obj) -> bool
+~override Microsoft.Maui.Devices.DisplayInfo.ToString() -> string
+~override Microsoft.Maui.Devices.Sensors.GeolocationRequest.ToString() -> string
+~override Microsoft.Maui.Devices.Sensors.Location.Equals(object obj) -> bool
+~override Microsoft.Maui.Devices.Sensors.Location.ToString() -> string
+~override Microsoft.Maui.Devices.Sensors.Placemark.ToString() -> string
+~override Microsoft.Maui.Networking.ConnectivityChangedEventArgs.ToString() -> string
+~static Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(System.Action action) -> void
+~static Microsoft.Maui.ApplicationModel.MainThread.GetMainThreadSynchronizationContextAsync() -> System.Threading.Tasks.Task<System.Threading.SynchronizationContext>
+~static Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(System.Action action) -> System.Threading.Tasks.Task
+~static Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(System.Func<System.Threading.Tasks.Task> funcTask) -> System.Threading.Tasks.Task
+~static Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync<T>(System.Func<System.Threading.Tasks.Task<T>> funcTask) -> System.Threading.Tasks.Task<T>
+~static Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync<T>(System.Func<T> func) -> System.Threading.Tasks.Task<T>
+~static Microsoft.Maui.ApplicationModel.Permissions.CheckStatusAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~static Microsoft.Maui.ApplicationModel.Permissions.RequestAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+~static Microsoft.Maui.ApplicationModel.Permissions.ShouldShowRationale<TPermission>() -> bool
+~static Microsoft.Maui.Devices.DeviceIdiom.Create(string deviceIdiom) -> Microsoft.Maui.Devices.DeviceIdiom
+~static Microsoft.Maui.Devices.DevicePlatform.Create(string devicePlatform) -> Microsoft.Maui.Devices.DevicePlatform
+~static Microsoft.Maui.Devices.Sensors.Location.CalculateDistance(double latitudeStart, double longitudeStart, Microsoft.Maui.Devices.Sensors.Location locationEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
+~static Microsoft.Maui.Devices.Sensors.Location.CalculateDistance(Microsoft.Maui.Devices.Sensors.Location locationStart, double latitudeEnd, double longitudeEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
+~static Microsoft.Maui.Devices.Sensors.Location.CalculateDistance(Microsoft.Maui.Devices.Sensors.Location locationStart, Microsoft.Maui.Devices.Sensors.Location locationEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
+~static Microsoft.Maui.Devices.Sensors.Location.operator !=(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
+~static Microsoft.Maui.Devices.Sensors.Location.operator ==(Microsoft.Maui.Devices.Sensors.Location left, Microsoft.Maui.Devices.Sensors.Location right) -> bool
+~static Microsoft.Maui.Devices.Sensors.LocationExtensions.CalculateDistance(this Microsoft.Maui.Devices.Sensors.Location locationStart, double latitudeEnd, double longitudeEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
+~static Microsoft.Maui.Devices.Sensors.LocationExtensions.CalculateDistance(this Microsoft.Maui.Devices.Sensors.Location locationStart, Microsoft.Maui.Devices.Sensors.Location locationEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
+~static Microsoft.Maui.Devices.Sensors.LocationExtensions.OpenMapsAsync(this Microsoft.Maui.Devices.Sensors.Location location, Microsoft.Maui.ApplicationModel.MapLaunchOptions options) -> System.Threading.Tasks.Task
+~static Microsoft.Maui.Devices.Sensors.LocationExtensions.OpenMapsAsync(this Microsoft.Maui.Devices.Sensors.Location location) -> System.Threading.Tasks.Task
+~static Microsoft.Maui.Devices.Sensors.PlacemarkExtensions.OpenMapsAsync(this Microsoft.Maui.Devices.Sensors.Placemark placemark, Microsoft.Maui.ApplicationModel.MapLaunchOptions options) -> System.Threading.Tasks.Task
+~static Microsoft.Maui.Devices.Sensors.PlacemarkExtensions.OpenMapsAsync(this Microsoft.Maui.Devices.Sensors.Placemark placemark) -> System.Threading.Tasks.Task
 abstract Microsoft.Maui.ApplicationModel.Permissions.BasePermission.EnsureDeclared() -> void
 abstract Microsoft.Maui.ApplicationModel.Permissions.BasePermission.ShouldShowRationale() -> bool
 Microsoft.Maui.Accessibility.ISemanticScreenReader
@@ -61,8 +168,8 @@ Microsoft.Maui.ApplicationModel.Communication.Contacts
 Microsoft.Maui.ApplicationModel.Communication.Email
 Microsoft.Maui.ApplicationModel.Communication.EmailAttachment
 Microsoft.Maui.ApplicationModel.Communication.EmailAttachment.EmailAttachment(Microsoft.Maui.Storage.FileBase! file) -> void
-Microsoft.Maui.ApplicationModel.Communication.EmailAttachment.EmailAttachment(string! fullPath) -> void
 Microsoft.Maui.ApplicationModel.Communication.EmailAttachment.EmailAttachment(string! fullPath, string! contentType) -> void
+Microsoft.Maui.ApplicationModel.Communication.EmailAttachment.EmailAttachment(string! fullPath) -> void
 Microsoft.Maui.ApplicationModel.Communication.EmailBodyFormat
 Microsoft.Maui.ApplicationModel.Communication.EmailBodyFormat.Html = 1 -> Microsoft.Maui.ApplicationModel.Communication.EmailBodyFormat
 Microsoft.Maui.ApplicationModel.Communication.EmailBodyFormat.PlainText = 0 -> Microsoft.Maui.ApplicationModel.Communication.EmailBodyFormat
@@ -120,8 +227,8 @@ Microsoft.Maui.ApplicationModel.DataTransfer.Share
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareExtensions
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareFile
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareFile.ShareFile(Microsoft.Maui.Storage.FileBase! file) -> void
-Microsoft.Maui.ApplicationModel.DataTransfer.ShareFile.ShareFile(string! fullPath) -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareFile.ShareFile(string! fullPath, string! contentType) -> void
+Microsoft.Maui.ApplicationModel.DataTransfer.ShareFile.ShareFile(string! fullPath) -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareFileRequest
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareFileRequest.File.get -> Microsoft.Maui.ApplicationModel.DataTransfer.ShareFile?
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareFileRequest.File.set -> void
@@ -146,8 +253,8 @@ Microsoft.Maui.ApplicationModel.DataTransfer.ShareRequestBase.Title.get -> strin
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareRequestBase.Title.set -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.ShareTextRequest() -> void
-Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.ShareTextRequest(string! text) -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.ShareTextRequest(string! text, string! title) -> void
+Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.ShareTextRequest(string! text) -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.Subject.get -> string?
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.Subject.set -> void
 Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest.Text.get -> string?
@@ -239,6 +346,8 @@ Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission
 Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.BasePlatformPermission() -> void
 Microsoft.Maui.ApplicationModel.Permissions.Battery
 Microsoft.Maui.ApplicationModel.Permissions.Battery.Battery() -> void
+Microsoft.Maui.ApplicationModel.Permissions.Bluetooth
+Microsoft.Maui.ApplicationModel.Permissions.Bluetooth.Bluetooth() -> void
 Microsoft.Maui.ApplicationModel.Permissions.CalendarRead
 Microsoft.Maui.ApplicationModel.Permissions.CalendarRead.CalendarRead() -> void
 Microsoft.Maui.ApplicationModel.Permissions.CalendarWrite
@@ -356,8 +465,8 @@ Microsoft.Maui.Devices.DeviceType.Virtual = 2 -> Microsoft.Maui.Devices.DeviceTy
 Microsoft.Maui.Devices.DisplayInfo
 Microsoft.Maui.Devices.DisplayInfo.Density.get -> double
 Microsoft.Maui.Devices.DisplayInfo.DisplayInfo() -> void
-Microsoft.Maui.Devices.DisplayInfo.DisplayInfo(double width, double height, double density, Microsoft.Maui.Devices.DisplayOrientation orientation, Microsoft.Maui.Devices.DisplayRotation rotation) -> void
 Microsoft.Maui.Devices.DisplayInfo.DisplayInfo(double width, double height, double density, Microsoft.Maui.Devices.DisplayOrientation orientation, Microsoft.Maui.Devices.DisplayRotation rotation, float rate) -> void
+Microsoft.Maui.Devices.DisplayInfo.DisplayInfo(double width, double height, double density, Microsoft.Maui.Devices.DisplayOrientation orientation, Microsoft.Maui.Devices.DisplayRotation rotation) -> void
 Microsoft.Maui.Devices.DisplayInfo.Equals(Microsoft.Maui.Devices.DisplayInfo other) -> bool
 Microsoft.Maui.Devices.DisplayInfo.Height.get -> double
 Microsoft.Maui.Devices.DisplayInfo.Orientation.get -> Microsoft.Maui.Devices.DisplayOrientation
@@ -474,8 +583,8 @@ Microsoft.Maui.Devices.Sensors.GeolocationRequest
 Microsoft.Maui.Devices.Sensors.GeolocationRequest.DesiredAccuracy.get -> Microsoft.Maui.Devices.Sensors.GeolocationAccuracy
 Microsoft.Maui.Devices.Sensors.GeolocationRequest.DesiredAccuracy.set -> void
 Microsoft.Maui.Devices.Sensors.GeolocationRequest.GeolocationRequest() -> void
-Microsoft.Maui.Devices.Sensors.GeolocationRequest.GeolocationRequest(Microsoft.Maui.Devices.Sensors.GeolocationAccuracy accuracy) -> void
 Microsoft.Maui.Devices.Sensors.GeolocationRequest.GeolocationRequest(Microsoft.Maui.Devices.Sensors.GeolocationAccuracy accuracy, System.TimeSpan timeout) -> void
+Microsoft.Maui.Devices.Sensors.GeolocationRequest.GeolocationRequest(Microsoft.Maui.Devices.Sensors.GeolocationAccuracy accuracy) -> void
 Microsoft.Maui.Devices.Sensors.GeolocationRequest.RequestFullAccuracy.get -> bool
 Microsoft.Maui.Devices.Sensors.GeolocationRequest.RequestFullAccuracy.set -> void
 Microsoft.Maui.Devices.Sensors.GeolocationRequest.Timeout.get -> System.TimeSpan
@@ -507,8 +616,8 @@ Microsoft.Maui.Devices.Sensors.ICompass
 Microsoft.Maui.Devices.Sensors.ICompass.IsMonitoring.get -> bool
 Microsoft.Maui.Devices.Sensors.ICompass.IsSupported.get -> bool
 Microsoft.Maui.Devices.Sensors.ICompass.ReadingChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.CompassChangedEventArgs!>!
-Microsoft.Maui.Devices.Sensors.ICompass.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
 Microsoft.Maui.Devices.Sensors.ICompass.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed, bool applyLowPassFilter) -> void
+Microsoft.Maui.Devices.Sensors.ICompass.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
 Microsoft.Maui.Devices.Sensors.ICompass.Stop() -> void
 Microsoft.Maui.Devices.Sensors.IGeocoding
 Microsoft.Maui.Devices.Sensors.IGeocoding.GetLocationsAsync(string! address) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Devices.Sensors.Location!>!>!
@@ -550,9 +659,9 @@ Microsoft.Maui.Devices.Sensors.Location.IsFromMockProvider.set -> void
 Microsoft.Maui.Devices.Sensors.Location.Latitude.get -> double
 Microsoft.Maui.Devices.Sensors.Location.Latitude.set -> void
 Microsoft.Maui.Devices.Sensors.Location.Location() -> void
-Microsoft.Maui.Devices.Sensors.Location.Location(double latitude, double longitude) -> void
 Microsoft.Maui.Devices.Sensors.Location.Location(double latitude, double longitude, double altitude) -> void
 Microsoft.Maui.Devices.Sensors.Location.Location(double latitude, double longitude, System.DateTimeOffset timestamp) -> void
+Microsoft.Maui.Devices.Sensors.Location.Location(double latitude, double longitude) -> void
 Microsoft.Maui.Devices.Sensors.Location.Longitude.get -> double
 Microsoft.Maui.Devices.Sensors.Location.Longitude.set -> void
 Microsoft.Maui.Devices.Sensors.Location.ReducedAccuracy.get -> bool
@@ -677,8 +786,8 @@ Microsoft.Maui.Storage.FilePickerFileType.FilePickerFileType(System.Collections.
 Microsoft.Maui.Storage.FilePickerFileType.Value.get -> System.Collections.Generic.IEnumerable<string!>!
 Microsoft.Maui.Storage.FileResult
 Microsoft.Maui.Storage.FileResult.FileResult(Microsoft.Maui.Storage.FileBase! file) -> void
-Microsoft.Maui.Storage.FileResult.FileResult(string! fullPath) -> void
 Microsoft.Maui.Storage.FileResult.FileResult(string! fullPath, string! contentType) -> void
+Microsoft.Maui.Storage.FileResult.FileResult(string! fullPath) -> void
 Microsoft.Maui.Storage.FileSystem
 Microsoft.Maui.Storage.FileSystemImplementation
 Microsoft.Maui.Storage.FileSystemImplementation.AppDataDirectory.get -> string!
@@ -715,8 +824,8 @@ Microsoft.Maui.Storage.PickOptions.PickOptions() -> void
 Microsoft.Maui.Storage.Preferences
 Microsoft.Maui.Storage.ReadOnlyFile
 Microsoft.Maui.Storage.ReadOnlyFile.ReadOnlyFile(Microsoft.Maui.Storage.FileBase! file) -> void
-Microsoft.Maui.Storage.ReadOnlyFile.ReadOnlyFile(string! fullPath) -> void
 Microsoft.Maui.Storage.ReadOnlyFile.ReadOnlyFile(string! fullPath, string! contentType) -> void
+Microsoft.Maui.Storage.ReadOnlyFile.ReadOnlyFile(string! fullPath) -> void
 Microsoft.Maui.Storage.SecureStorage
 Microsoft.Maui.Storage.SecureStorageExtensions
 override Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.EnsureDeclared() -> void
@@ -738,6 +847,7 @@ override Microsoft.Maui.Devices.Sensors.CompassData.ToString() -> string!
 override Microsoft.Maui.Devices.Sensors.GyroscopeData.Equals(object? obj) -> bool
 override Microsoft.Maui.Devices.Sensors.GyroscopeData.GetHashCode() -> int
 override Microsoft.Maui.Devices.Sensors.GyroscopeData.ToString() -> string!
+override Microsoft.Maui.Devices.Sensors.Location.GetHashCode() -> int
 override Microsoft.Maui.Devices.Sensors.MagnetometerData.Equals(object? obj) -> bool
 override Microsoft.Maui.Devices.Sensors.MagnetometerData.GetHashCode() -> int
 override Microsoft.Maui.Devices.Sensors.MagnetometerData.ToString() -> string!
@@ -763,17 +873,17 @@ static Microsoft.Maui.ApplicationModel.AppInfo.ShowSettingsUI() -> void
 static Microsoft.Maui.ApplicationModel.AppInfo.Version.get -> System.Version!
 static Microsoft.Maui.ApplicationModel.AppInfo.VersionString.get -> string!
 static Microsoft.Maui.ApplicationModel.Browser.Default.get -> Microsoft.Maui.ApplicationModel.IBrowser!
-static Microsoft.Maui.ApplicationModel.Browser.OpenAsync(string! uri) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.Browser.OpenAsync(string! uri, Microsoft.Maui.ApplicationModel.BrowserLaunchMode launchMode) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.Browser.OpenAsync(string! uri, Microsoft.Maui.ApplicationModel.BrowserLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.ApplicationModel.Browser.OpenAsync(System.Uri! uri) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.Browser.OpenAsync(string! uri) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.Browser.OpenAsync(System.Uri! uri, Microsoft.Maui.ApplicationModel.BrowserLaunchMode launchMode) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.Browser.OpenAsync(System.Uri! uri, Microsoft.Maui.ApplicationModel.BrowserLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.ApplicationModel.BrowserExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IBrowser! browser, string! uri) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.Browser.OpenAsync(System.Uri! uri) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.BrowserExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IBrowser! browser, string! uri, Microsoft.Maui.ApplicationModel.BrowserLaunchMode launchMode) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.BrowserExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IBrowser! browser, string! uri, Microsoft.Maui.ApplicationModel.BrowserLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.ApplicationModel.BrowserExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IBrowser! browser, System.Uri! uri) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.BrowserExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IBrowser! browser, string! uri) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.BrowserExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IBrowser! browser, System.Uri! uri, Microsoft.Maui.ApplicationModel.BrowserLaunchMode launchMode) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.BrowserExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IBrowser! browser, System.Uri! uri) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.Communication.Contacts.Default.get -> Microsoft.Maui.ApplicationModel.Communication.IContacts!
 static Microsoft.Maui.ApplicationModel.Communication.Contacts.GetAllAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.ApplicationModel.Communication.Contact!>!>!
 static Microsoft.Maui.ApplicationModel.Communication.Contacts.PickContactAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.Communication.Contact?>!
@@ -781,8 +891,8 @@ static Microsoft.Maui.ApplicationModel.Communication.Email.ComposeAsync() -> Sys
 static Microsoft.Maui.ApplicationModel.Communication.Email.ComposeAsync(Microsoft.Maui.ApplicationModel.Communication.EmailMessage! message) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.Communication.Email.ComposeAsync(string! subject, string! body, params string![]! to) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.Communication.Email.Default.get -> Microsoft.Maui.ApplicationModel.Communication.IEmail!
-static Microsoft.Maui.ApplicationModel.Communication.EmailExtensions.ComposeAsync(this Microsoft.Maui.ApplicationModel.Communication.IEmail! email) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.Communication.EmailExtensions.ComposeAsync(this Microsoft.Maui.ApplicationModel.Communication.IEmail! email, string! subject, string! body, params string![]! to) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.ApplicationModel.Communication.EmailExtensions.ComposeAsync(this Microsoft.Maui.ApplicationModel.Communication.IEmail! email) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.Current.get -> Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer!
 static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.Default.get -> Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer!
 static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.IsSupported.get -> bool
@@ -799,10 +909,10 @@ static Microsoft.Maui.ApplicationModel.DataTransfer.Share.Default.get -> Microso
 static Microsoft.Maui.ApplicationModel.DataTransfer.Share.RequestAsync(Microsoft.Maui.ApplicationModel.DataTransfer.ShareFileRequest! request) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.DataTransfer.Share.RequestAsync(Microsoft.Maui.ApplicationModel.DataTransfer.ShareMultipleFilesRequest! request) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.DataTransfer.Share.RequestAsync(Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest! request) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.ApplicationModel.DataTransfer.Share.RequestAsync(string! text) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.DataTransfer.Share.RequestAsync(string! text, string! title) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.ApplicationModel.DataTransfer.ShareExtensions.RequestAsync(this Microsoft.Maui.ApplicationModel.DataTransfer.IShare! share, string! text) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.ApplicationModel.DataTransfer.Share.RequestAsync(string! text) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.DataTransfer.ShareExtensions.RequestAsync(this Microsoft.Maui.ApplicationModel.DataTransfer.IShare! share, string! text, string! title) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.ApplicationModel.DataTransfer.ShareExtensions.RequestAsync(this Microsoft.Maui.ApplicationModel.DataTransfer.IShare! share, string! text) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.DataTransfer.ShareMultipleFilesRequest.explicit operator Microsoft.Maui.ApplicationModel.DataTransfer.ShareMultipleFilesRequest!(Microsoft.Maui.ApplicationModel.DataTransfer.ShareFileRequest! request) -> Microsoft.Maui.ApplicationModel.DataTransfer.ShareMultipleFilesRequest!
 static Microsoft.Maui.ApplicationModel.Launcher.CanOpenAsync(string! uri) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.Launcher.CanOpenAsync(System.Uri! uri) -> System.Threading.Tasks.Task<bool>!
@@ -817,25 +927,25 @@ static Microsoft.Maui.ApplicationModel.LauncherExtensions.OpenAsync(this Microso
 static Microsoft.Maui.ApplicationModel.LauncherExtensions.TryOpenAsync(this Microsoft.Maui.ApplicationModel.ILauncher! launcher, string! uri) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.MainThread.IsMainThread.get -> bool
 static Microsoft.Maui.ApplicationModel.Map.Default.get -> Microsoft.Maui.ApplicationModel.IMap!
-static Microsoft.Maui.ApplicationModel.Map.OpenAsync(double latitude, double longitude) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.Map.OpenAsync(double latitude, double longitude, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.ApplicationModel.Map.OpenAsync(Microsoft.Maui.Devices.Sensors.Location! location) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.ApplicationModel.Map.OpenAsync(double latitude, double longitude) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.Map.OpenAsync(Microsoft.Maui.Devices.Sensors.Location! location, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.ApplicationModel.Map.OpenAsync(Microsoft.Maui.Devices.Sensors.Placemark! placemark) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.ApplicationModel.Map.OpenAsync(Microsoft.Maui.Devices.Sensors.Location! location) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.Map.OpenAsync(Microsoft.Maui.Devices.Sensors.Placemark! placemark, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.ApplicationModel.Map.TryOpenAsync(double latitude, double longitude) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.Map.OpenAsync(Microsoft.Maui.Devices.Sensors.Placemark! placemark) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.Map.TryOpenAsync(double latitude, double longitude, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.ApplicationModel.Map.TryOpenAsync(Microsoft.Maui.Devices.Sensors.Location! location) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.Map.TryOpenAsync(double latitude, double longitude) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.Map.TryOpenAsync(Microsoft.Maui.Devices.Sensors.Location! location, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.ApplicationModel.Map.TryOpenAsync(Microsoft.Maui.Devices.Sensors.Placemark! placemark) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.Map.TryOpenAsync(Microsoft.Maui.Devices.Sensors.Location! location) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.Map.TryOpenAsync(Microsoft.Maui.Devices.Sensors.Placemark! placemark, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.Map.TryOpenAsync(Microsoft.Maui.Devices.Sensors.Placemark! placemark) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.MapExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, double latitude, double longitude) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.ApplicationModel.MapExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Location! location) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.MapExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Location! location, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.ApplicationModel.MapExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Location! location) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.MapExtensions.OpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Placemark! placemark) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.MapExtensions.TryOpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, double latitude, double longitude) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.ApplicationModel.MapExtensions.TryOpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Location! location) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.MapExtensions.TryOpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Location! location, Microsoft.Maui.ApplicationModel.MapLaunchOptions! options) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ApplicationModel.MapExtensions.TryOpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Location! location) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.MapExtensions.TryOpenAsync(this Microsoft.Maui.ApplicationModel.IMap! map, Microsoft.Maui.Devices.Sensors.Placemark! placemark) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.ApplicationModel.VersionTracking.BuildHistory.get -> System.Collections.Generic.IEnumerable<string!>!
 static Microsoft.Maui.ApplicationModel.VersionTracking.CurrentBuild.get -> string!
@@ -927,8 +1037,8 @@ static Microsoft.Maui.Devices.Sensors.Compass.Default.get -> Microsoft.Maui.Devi
 static Microsoft.Maui.Devices.Sensors.Compass.IsMonitoring.get -> bool
 static Microsoft.Maui.Devices.Sensors.Compass.IsSupported.get -> bool
 static Microsoft.Maui.Devices.Sensors.Compass.ReadingChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.CompassChangedEventArgs!>!
-static Microsoft.Maui.Devices.Sensors.Compass.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
 static Microsoft.Maui.Devices.Sensors.Compass.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed, bool applyLowPassFilter) -> void
+static Microsoft.Maui.Devices.Sensors.Compass.Start(Microsoft.Maui.Devices.Sensors.SensorSpeed sensorSpeed) -> void
 static Microsoft.Maui.Devices.Sensors.Compass.Stop() -> void
 static Microsoft.Maui.Devices.Sensors.CompassData.operator !=(Microsoft.Maui.Devices.Sensors.CompassData left, Microsoft.Maui.Devices.Sensors.CompassData right) -> bool
 static Microsoft.Maui.Devices.Sensors.CompassData.operator ==(Microsoft.Maui.Devices.Sensors.CompassData left, Microsoft.Maui.Devices.Sensors.CompassData right) -> bool
@@ -940,10 +1050,10 @@ static Microsoft.Maui.Devices.Sensors.GeocodingExtensions.GetPlacemarksAsync(thi
 static Microsoft.Maui.Devices.Sensors.Geolocation.Default.get -> Microsoft.Maui.Devices.Sensors.IGeolocation!
 static Microsoft.Maui.Devices.Sensors.Geolocation.GetLastKnownLocationAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
-static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync(Microsoft.Maui.Devices.Sensors.GeolocationRequest! request) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync(Microsoft.Maui.Devices.Sensors.GeolocationRequest! request, System.Threading.CancellationToken cancelToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
-static Microsoft.Maui.Devices.Sensors.GeolocationExtensions.GetLocationAsync(this Microsoft.Maui.Devices.Sensors.IGeolocation! geolocation) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync(Microsoft.Maui.Devices.Sensors.GeolocationRequest! request) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.GeolocationExtensions.GetLocationAsync(this Microsoft.Maui.Devices.Sensors.IGeolocation! geolocation, Microsoft.Maui.Devices.Sensors.GeolocationRequest! request) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
+static Microsoft.Maui.Devices.Sensors.GeolocationExtensions.GetLocationAsync(this Microsoft.Maui.Devices.Sensors.IGeolocation! geolocation) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.Gyroscope.Default.get -> Microsoft.Maui.Devices.Sensors.IGyroscope!
 static Microsoft.Maui.Devices.Sensors.Gyroscope.IsMonitoring.get -> bool
 static Microsoft.Maui.Devices.Sensors.Gyroscope.IsSupported.get -> bool
@@ -1035,39 +1145,39 @@ static Microsoft.Maui.Storage.PickOptions.Default.get -> Microsoft.Maui.Storage.
 static Microsoft.Maui.Storage.PickOptions.Images.get -> Microsoft.Maui.Storage.PickOptions!
 static Microsoft.Maui.Storage.Preferences.Clear() -> void
 static Microsoft.Maui.Storage.Preferences.Clear(string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.ContainsKey(string! key) -> bool
 static Microsoft.Maui.Storage.Preferences.ContainsKey(string! key, string? sharedName) -> bool
+static Microsoft.Maui.Storage.Preferences.ContainsKey(string! key) -> bool
 static Microsoft.Maui.Storage.Preferences.Default.get -> Microsoft.Maui.Storage.IPreferences!
-static Microsoft.Maui.Storage.Preferences.Get(string! key, bool defaultValue) -> bool
 static Microsoft.Maui.Storage.Preferences.Get(string! key, bool defaultValue, string? sharedName) -> bool
-static Microsoft.Maui.Storage.Preferences.Get(string! key, double defaultValue) -> double
+static Microsoft.Maui.Storage.Preferences.Get(string! key, bool defaultValue) -> bool
 static Microsoft.Maui.Storage.Preferences.Get(string! key, double defaultValue, string? sharedName) -> double
-static Microsoft.Maui.Storage.Preferences.Get(string! key, float defaultValue) -> float
+static Microsoft.Maui.Storage.Preferences.Get(string! key, double defaultValue) -> double
 static Microsoft.Maui.Storage.Preferences.Get(string! key, float defaultValue, string? sharedName) -> float
-static Microsoft.Maui.Storage.Preferences.Get(string! key, int defaultValue) -> int
+static Microsoft.Maui.Storage.Preferences.Get(string! key, float defaultValue) -> float
 static Microsoft.Maui.Storage.Preferences.Get(string! key, int defaultValue, string? sharedName) -> int
-static Microsoft.Maui.Storage.Preferences.Get(string! key, long defaultValue) -> long
+static Microsoft.Maui.Storage.Preferences.Get(string! key, int defaultValue) -> int
 static Microsoft.Maui.Storage.Preferences.Get(string! key, long defaultValue, string? sharedName) -> long
-static Microsoft.Maui.Storage.Preferences.Get(string! key, string? defaultValue) -> string?
+static Microsoft.Maui.Storage.Preferences.Get(string! key, long defaultValue) -> long
 static Microsoft.Maui.Storage.Preferences.Get(string! key, string? defaultValue, string? sharedName) -> string?
-static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTime defaultValue) -> System.DateTime
+static Microsoft.Maui.Storage.Preferences.Get(string! key, string? defaultValue) -> string?
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTime defaultValue, string? sharedName) -> System.DateTime
-static Microsoft.Maui.Storage.Preferences.Remove(string! key) -> void
+static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTime defaultValue) -> System.DateTime
 static Microsoft.Maui.Storage.Preferences.Remove(string! key, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, bool value) -> void
+static Microsoft.Maui.Storage.Preferences.Remove(string! key) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, bool value, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, double value) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, bool value) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, double value, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, float value) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, double value) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, float value, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, int value) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, float value) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, int value, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, long value) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, int value) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, long value, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, long value) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value, string? sharedName) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value) -> void
 static Microsoft.Maui.Storage.SecureStorage.Default.get -> Microsoft.Maui.Storage.ISecureStorage!
 static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
 static Microsoft.Maui.Storage.SecureStorage.Remove(string! key) -> bool
@@ -1079,107 +1189,3 @@ static readonly Microsoft.Maui.Storage.FilePickerFileType.Pdf -> Microsoft.Maui.
 static readonly Microsoft.Maui.Storage.FilePickerFileType.Png -> Microsoft.Maui.Storage.FilePickerFileType!
 static readonly Microsoft.Maui.Storage.FilePickerFileType.Videos -> Microsoft.Maui.Storage.FilePickerFileType!
 virtual Microsoft.Maui.Storage.FilePickerFileType.GetPlatformFileType(Microsoft.Maui.Devices.DevicePlatform platform) -> System.Collections.Generic.IEnumerable<string!>!
-~abstract Microsoft.Maui.ApplicationModel.Permissions.BasePermission.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
-~abstract Microsoft.Maui.ApplicationModel.Permissions.BasePermission.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
-~Microsoft.Maui.ApplicationModel.Communication.Contact.Contact(string id, string namePrefix, string givenName, string middleName, string familyName, string nameSuffix, System.Collections.Generic.IEnumerable<Microsoft.Maui.ApplicationModel.Communication.ContactPhone> phones, System.Collections.Generic.IEnumerable<Microsoft.Maui.ApplicationModel.Communication.ContactEmail> email, string displayName = null) -> void
-~Microsoft.Maui.ApplicationModel.Communication.Contact.DisplayName.get -> string
-~Microsoft.Maui.ApplicationModel.Communication.Contact.Emails.get -> System.Collections.Generic.List<Microsoft.Maui.ApplicationModel.Communication.ContactEmail>
-~Microsoft.Maui.ApplicationModel.Communication.Contact.Emails.set -> void
-~Microsoft.Maui.ApplicationModel.Communication.Contact.FamilyName.get -> string
-~Microsoft.Maui.ApplicationModel.Communication.Contact.FamilyName.set -> void
-~Microsoft.Maui.ApplicationModel.Communication.Contact.GivenName.get -> string
-~Microsoft.Maui.ApplicationModel.Communication.Contact.GivenName.set -> void
-~Microsoft.Maui.ApplicationModel.Communication.Contact.Id.get -> string
-~Microsoft.Maui.ApplicationModel.Communication.Contact.Id.set -> void
-~Microsoft.Maui.ApplicationModel.Communication.Contact.MiddleName.get -> string
-~Microsoft.Maui.ApplicationModel.Communication.Contact.MiddleName.set -> void
-~Microsoft.Maui.ApplicationModel.Communication.Contact.NamePrefix.get -> string
-~Microsoft.Maui.ApplicationModel.Communication.Contact.NamePrefix.set -> void
-~Microsoft.Maui.ApplicationModel.Communication.Contact.NameSuffix.get -> string
-~Microsoft.Maui.ApplicationModel.Communication.Contact.NameSuffix.set -> void
-~Microsoft.Maui.ApplicationModel.Communication.Contact.Phones.get -> System.Collections.Generic.List<Microsoft.Maui.ApplicationModel.Communication.ContactPhone>
-~Microsoft.Maui.ApplicationModel.Communication.Contact.Phones.set -> void
-~Microsoft.Maui.ApplicationModel.Communication.ContactEmail.ContactEmail(string emailAddress) -> void
-~Microsoft.Maui.ApplicationModel.Communication.ContactEmail.EmailAddress.get -> string
-~Microsoft.Maui.ApplicationModel.Communication.ContactEmail.EmailAddress.set -> void
-~Microsoft.Maui.ApplicationModel.Communication.ContactPhone.ContactPhone(string phoneNumber) -> void
-~Microsoft.Maui.ApplicationModel.Communication.ContactPhone.PhoneNumber.get -> string
-~Microsoft.Maui.ApplicationModel.Communication.ContactPhone.PhoneNumber.set -> void
-~Microsoft.Maui.ApplicationModel.FeatureNotEnabledException.FeatureNotEnabledException(string message) -> void
-~Microsoft.Maui.ApplicationModel.FeatureNotEnabledException.FeatureNotEnabledException(string message, System.Exception innerException) -> void
-~Microsoft.Maui.ApplicationModel.FeatureNotSupportedException.FeatureNotSupportedException(string message) -> void
-~Microsoft.Maui.ApplicationModel.FeatureNotSupportedException.FeatureNotSupportedException(string message, System.Exception innerException) -> void
-~Microsoft.Maui.ApplicationModel.MapLaunchOptions.Name.get -> string
-~Microsoft.Maui.ApplicationModel.MapLaunchOptions.Name.set -> void
-~Microsoft.Maui.ApplicationModel.PermissionException.PermissionException(string message) -> void
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.AccessToken.get -> string
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.Get(string key) -> string
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.IdToken.get -> string
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.Properties.get -> System.Collections.Generic.Dictionary<string, string>
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.Properties.set -> void
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.Put(string key, string value) -> void
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.RefreshToken.get -> string
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Collections.Generic.IDictionary<string, string> properties) -> void
-~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri) -> void
-~Microsoft.Maui.Devices.Sensors.Location.Location(Microsoft.Maui.Devices.Sensors.Location point) -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.AdminArea.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.AdminArea.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.CountryCode.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.CountryCode.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.CountryName.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.CountryName.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.FeatureName.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.FeatureName.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.Locality.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.Locality.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.Location.get -> Microsoft.Maui.Devices.Sensors.Location
-~Microsoft.Maui.Devices.Sensors.Placemark.Location.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.Placemark(Microsoft.Maui.Devices.Sensors.Placemark placemark) -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.PostalCode.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.PostalCode.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.SubAdminArea.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.SubAdminArea.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.SubLocality.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.SubLocality.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.SubThoroughfare.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.SubThoroughfare.set -> void
-~Microsoft.Maui.Devices.Sensors.Placemark.Thoroughfare.get -> string
-~Microsoft.Maui.Devices.Sensors.Placemark.Thoroughfare.set -> void
-~Microsoft.Maui.Networking.ConnectivityChangedEventArgs.ConnectionProfiles.get -> System.Collections.Generic.IEnumerable<Microsoft.Maui.Networking.ConnectionProfile>
-~Microsoft.Maui.Networking.ConnectivityChangedEventArgs.ConnectivityChangedEventArgs(Microsoft.Maui.Networking.NetworkAccess access, System.Collections.Generic.IEnumerable<Microsoft.Maui.Networking.ConnectionProfile> connectionProfiles) -> void
-~Microsoft.Maui.Networking.IConnectivity.ConnectionProfiles.get -> System.Collections.Generic.IEnumerable<Microsoft.Maui.Networking.ConnectionProfile>
-~override Microsoft.Maui.ApplicationModel.Communication.Contact.ToString() -> string
-~override Microsoft.Maui.ApplicationModel.Communication.ContactEmail.ToString() -> string
-~override Microsoft.Maui.ApplicationModel.Communication.ContactPhone.ToString() -> string
-~override Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
-~override Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
-~override Microsoft.Maui.Devices.DeviceIdiom.Equals(object obj) -> bool
-~override Microsoft.Maui.Devices.DeviceIdiom.ToString() -> string
-~override Microsoft.Maui.Devices.DevicePlatform.Equals(object obj) -> bool
-~override Microsoft.Maui.Devices.DevicePlatform.ToString() -> string
-~override Microsoft.Maui.Devices.DisplayInfo.Equals(object obj) -> bool
-~override Microsoft.Maui.Devices.DisplayInfo.ToString() -> string
-~override Microsoft.Maui.Devices.Sensors.GeolocationRequest.ToString() -> string
-~override Microsoft.Maui.Devices.Sensors.Location.ToString() -> string
-~override Microsoft.Maui.Devices.Sensors.Placemark.ToString() -> string
-~override Microsoft.Maui.Networking.ConnectivityChangedEventArgs.ToString() -> string
-~static Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(System.Action action) -> void
-~static Microsoft.Maui.ApplicationModel.MainThread.GetMainThreadSynchronizationContextAsync() -> System.Threading.Tasks.Task<System.Threading.SynchronizationContext>
-~static Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(System.Action action) -> System.Threading.Tasks.Task
-~static Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(System.Func<System.Threading.Tasks.Task> funcTask) -> System.Threading.Tasks.Task
-~static Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync<T>(System.Func<System.Threading.Tasks.Task<T>> funcTask) -> System.Threading.Tasks.Task<T>
-~static Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync<T>(System.Func<T> func) -> System.Threading.Tasks.Task<T>
-~static Microsoft.Maui.ApplicationModel.Permissions.CheckStatusAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
-~static Microsoft.Maui.ApplicationModel.Permissions.RequestAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
-~static Microsoft.Maui.ApplicationModel.Permissions.ShouldShowRationale<TPermission>() -> bool
-~static Microsoft.Maui.Devices.DeviceIdiom.Create(string deviceIdiom) -> Microsoft.Maui.Devices.DeviceIdiom
-~static Microsoft.Maui.Devices.DevicePlatform.Create(string devicePlatform) -> Microsoft.Maui.Devices.DevicePlatform
-~static Microsoft.Maui.Devices.Sensors.Location.CalculateDistance(double latitudeStart, double longitudeStart, Microsoft.Maui.Devices.Sensors.Location locationEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
-~static Microsoft.Maui.Devices.Sensors.Location.CalculateDistance(Microsoft.Maui.Devices.Sensors.Location locationStart, double latitudeEnd, double longitudeEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
-~static Microsoft.Maui.Devices.Sensors.Location.CalculateDistance(Microsoft.Maui.Devices.Sensors.Location locationStart, Microsoft.Maui.Devices.Sensors.Location locationEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
-~static Microsoft.Maui.Devices.Sensors.LocationExtensions.CalculateDistance(this Microsoft.Maui.Devices.Sensors.Location locationStart, double latitudeEnd, double longitudeEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
-~static Microsoft.Maui.Devices.Sensors.LocationExtensions.CalculateDistance(this Microsoft.Maui.Devices.Sensors.Location locationStart, Microsoft.Maui.Devices.Sensors.Location locationEnd, Microsoft.Maui.Devices.Sensors.DistanceUnits units) -> double
-~static Microsoft.Maui.Devices.Sensors.LocationExtensions.OpenMapsAsync(this Microsoft.Maui.Devices.Sensors.Location location) -> System.Threading.Tasks.Task
-~static Microsoft.Maui.Devices.Sensors.LocationExtensions.OpenMapsAsync(this Microsoft.Maui.Devices.Sensors.Location location, Microsoft.Maui.ApplicationModel.MapLaunchOptions options) -> System.Threading.Tasks.Task
-~static Microsoft.Maui.Devices.Sensors.PlacemarkExtensions.OpenMapsAsync(this Microsoft.Maui.Devices.Sensors.Placemark placemark) -> System.Threading.Tasks.Task
-~static Microsoft.Maui.Devices.Sensors.PlacemarkExtensions.OpenMapsAsync(this Microsoft.Maui.Devices.Sensors.Placemark placemark, Microsoft.Maui.ApplicationModel.MapLaunchOptions options) -> System.Threading.Tasks.Task

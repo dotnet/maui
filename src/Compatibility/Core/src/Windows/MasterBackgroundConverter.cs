@@ -1,9 +1,9 @@
 using System;
-using Windows.UI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP

@@ -43,6 +43,40 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, actual);
 		}
 
+		[Fact(DisplayName = "Items Updates Correctly")]
+		public async Task ItemsUpdatesCorrectly()
+		{
+			int selectedIndex = 0;
+
+			var oldItems = new List<string>
+			{
+				"Old Item 1",
+				"Old Item 2",
+				"Old Item 3"
+			};
+
+			var newItems = new List<string>
+			{
+				"New Item 1",
+				"New Item 2",
+				"New Item 3"
+			};
+
+			var picker = new PickerStub()
+			{
+				Title = "Select an Item",
+				Items = oldItems,
+				SelectedIndex = 1
+			};
+
+			picker.Items = newItems;
+			picker.SelectedIndex = selectedIndex;
+
+			string expected = picker.Items[selectedIndex].ToString();
+			var actual = await GetValueAsync(picker, handler => GetNativeText(handler));
+
+			Assert.Equal(expected, actual);
+		}
 
 		ComboBox GetNativePicker(PickerHandler pickerHandler) =>
 			pickerHandler.PlatformView;

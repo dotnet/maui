@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -180,32 +181,36 @@ namespace Microsoft.Maui.Controls
 				// Wait for pending navigation tasks to finish
 				await SemaphoreSlim.WaitAsync();
 
-				var currentNavRequestTaskSource = new TaskCompletionSource<object>();
-				_allPendingNavigationCompletionSource ??= new TaskCompletionSource<object>();
-
-				if (CurrentNavigationTask == null)
+				// If our handler was removed while waiting then don't do anything
+				if (Handler != null)
 				{
-					CurrentNavigationTask = _allPendingNavigationCompletionSource.Task;
+					var currentNavRequestTaskSource = new TaskCompletionSource<object>();
+					_allPendingNavigationCompletionSource ??= new TaskCompletionSource<object>();
+
+					if (CurrentNavigationTask == null)
+					{
+						CurrentNavigationTask = _allPendingNavigationCompletionSource.Task;
+					}
+					else if (CurrentNavigationTask != _allPendingNavigationCompletionSource.Task)
+					{
+						throw new InvalidOperationException("Pending Navigations still processing");
+					}
+
+					_currentNavigationCompletionSource = currentNavRequestTaskSource;
+
+					// We create a new list to send to the handler because the structure backing 
+					// The Navigation stack isn't immutable
+					var immutableNavigationStack = new List<IView>(NavigationStack);
+					firePostNavigatingEvents?.Invoke();
+
+					// Create the request for the handler
+					var request = new NavigationRequest(immutableNavigationStack, animated);
+					((IStackNavigation)this).RequestNavigation(request);
+
+					// Wait for the handler to finish processing the navigation
+					// This task completes once the handler calls INavigationView.Finished
+					await currentNavRequestTaskSource.Task;
 				}
-				else if (CurrentNavigationTask != _allPendingNavigationCompletionSource.Task)
-				{
-					throw new InvalidOperationException("Pending Navigations still processing");
-				}
-
-				_currentNavigationCompletionSource = currentNavRequestTaskSource;
-
-				// We create a new list to send to the handler because the structure backing 
-				// The Navigation stack isn't immutable
-				var immutableNavigationStack = new List<IView>(NavigationStack);
-				firePostNavigatingEvents?.Invoke();
-
-				// Create the request for the handler
-				var request = new NavigationRequest(immutableNavigationStack, animated);
-				((IStackNavigation)this).RequestNavigation(request);
-
-				// Wait for the handler to finish processing the navigation
-				// This task completes once the handler calls INavigationView.Finished
-				await currentNavRequestTaskSource.Task;
 			}
 			finally
 			{
@@ -243,6 +248,13 @@ namespace Microsoft.Maui.Controls
 					SendNavigated(null);
 				})
 				.FireAndForget(Handler);
+			}
+
+			// If the handler is disconnected and we're still waiting for updates from the handler
+			// Just complete any waits
+			if (Handler == null && _waitingCount > 0)
+			{
+				((IStackNavigation)this).NavigationFinished(this.NavigationStack);
 			}
 		}
 

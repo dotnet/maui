@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -48,7 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
-			if(OperatingSystem.IsIOSVersionAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(14))
 			{
 				var content = tvc.DefaultContentConfiguration;
 				content.Text = item.ToString();

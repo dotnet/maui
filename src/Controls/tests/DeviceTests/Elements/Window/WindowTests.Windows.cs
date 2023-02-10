@@ -1,13 +1,13 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Platform;
-using Microsoft.Maui.Handlers;
-using WPanel = Microsoft.UI.Xaml.Controls.Panel;
-using Xunit;
+﻿using System;
 using System.Linq;
-using Microsoft.Maui.Graphics.Win2D;
-using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
+using Xunit;
+using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
 namespace Microsoft.Maui.DeviceTests
 {

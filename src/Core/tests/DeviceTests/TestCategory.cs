@@ -18,10 +18,12 @@
 		public const string FlowDirection = "FlowDirection";
 		public const string FlyoutView = "FlyoutView";
 		public const string Fonts = "Fonts";
+		public const string Graphics = "Graphics";
 		public const string GraphicsView = "GraphicsView";
 		public const string Image = "Image";
 		public const string ImageButton = "ImageButton";
 		public const string ImageSource = "ImageSource";
+		public const string IndicatorView = "IndicatorView";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
 		public const string NavigationView = "NavigationView";

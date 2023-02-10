@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Resizetizer
 						["idiom"] = idiom,
 						["size"] = $"{w}x{h}",
 						["scale"] = $"{s}x",
-						["filename"] = AppIconName + dpi.FileSuffix + ".png",
+						["filename"] = AppIconName + dpi.FileSuffix + Resizer.RasterFileExtension,
 					};
 
 					appIconImagesJson.Add(imageIcon);
