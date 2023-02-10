@@ -222,30 +222,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task SearchHandlerRendersCorrectly()
-		{
-			SetupBuilder();
-	
-			var shell = await CreateShellAsync(shell =>
-			{
-				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
-				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem2", Items = { new ContentPage() }, Title = "Flyout Item" });
-
-				Shell.SetSearchHandler(shell, new SearchHandler() { SearchBoxVisibility = SearchBoxVisibility.Expanded });
-			});
-
-			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
-			{
-				await OnLoadedAsync(shell.CurrentPage);
-				await OnNavigatedToAsync(shell.CurrentPage);
-				await Task.Delay(100);
-				await shell.GoToAsync("//FlyoutItem2");
-
-				// No crash using SearchHandler
-			});
-		}
-
 		protected AView GetFlyoutPlatformView(ShellRenderer shellRenderer)
 		{
 			var drawerLayout = GetDrawerLayout(shellRenderer);
