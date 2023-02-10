@@ -67,7 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 				Shape = new RectangleShapeStub(),
 				Background = new SolidPaintStub(Colors.White),
 				Stroke = new SolidPaintStub(expected),
-				StrokeDashPattern = new float[2] { 1, 1 }, 
+				StrokeDashPattern = new float[2] { 1, 1 },
 				StrokeThickness = 6,
 				Height = 100,
 				Width = 300
