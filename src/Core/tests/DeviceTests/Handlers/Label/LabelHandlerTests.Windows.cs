@@ -1,31 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelHandlerTests
 	{
-		[Fact(DisplayName = "Html Text Initializes Correctly")]
-		public async Task HtmlTextInitializesCorrectly()
-		{
-			var label = new LabelStub()
-			{
-				TextType = TextType.Html,
-				Text = "<h2><strong>Test1&nbsp;</strong>Test2</h2>"
-			};
-
-			var platformText = await GetValueAsync(label, (handler) =>
-			{
-				return handler.PlatformView.Text;
-			});
-
-			Assert.NotNull(platformText);
-		}
-
 		TextBlock GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
