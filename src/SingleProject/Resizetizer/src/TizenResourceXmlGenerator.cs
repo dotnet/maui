@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			doc.Save(destination);
 			Logger.Log($"res.xml file has been saved in {outputResourceDir}");
-			return new ResizedImageInfo () { Filename = destination };
+			return new ResizedImageInfo () { Dpi = DpiPath.Tizen.Original,  Filename = destination };
 		}
 	}
 }
