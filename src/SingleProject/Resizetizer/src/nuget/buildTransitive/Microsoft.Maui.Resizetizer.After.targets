@@ -386,10 +386,25 @@
             MauiSplashScreen="@(MauiSplashScreen)"
             InputsFile="$(_MauiSplashInputsFile)"
         />
+
+        <!-- delete the res.zip cache file as things have changed. -->
+        <Delete
+            Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and Exists ('$(_MauiIntermediateSplashScreen)..\sp.zip')"
+            Files="$(_MauiIntermediateSplashScreen)..\sp.zip"
+        />
+
+        <ZipDirectory
+            Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and Exists ('$(_MauiIntermediateSplashScreen)')"
+            SourceDirectory="$(_MauiIntermediateSplashScreen)"
+            DestinationFile="$(_MauiIntermediateSplashScreen)..\sp.zip"
+        />
+
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
                 <StampFile>$(_ResizetizerStampFile)</StampFile>
+                <AndroidSkipResourceProcessing>true</AndroidSkipResourceProcessing>
+                <ResourceDirectoryArchive>$(_MauiIntermediateSplashScreen)..\sp.zip</ResourceDirectoryArchive>
             </LibraryResourceDirectories>
         </ItemGroup>
 
@@ -579,14 +594,24 @@
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
             Images="@(MauiImage->Distinct())">
+              <Output TaskParameter="CopiedResources" ItemName="_CopiedResources" />
         </ResizetizeImages>
 
         <ItemGroup>
             <!-- Get Images that were generated -->
             <!-- Either from the task, or if the task was skipped (up to date), use the wildcard lookup -->
-            <_ResizetizerCollectedImages Condition="'@(CopiedResources)' != ''" Include="@(CopiedResources)" />
-            <_ResizetizerCollectedImages Condition="'@(CopiedResources)' == ''" Include="$(_MauiIntermediateImages)**\*" />
+            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' != ''" Include="@(_CopiedResources)" />
+            <_ResizetizerExistingImages Include="$(_MauiIntermediateImages)\**\*" />
+            <_ResizetizerImagesToDelete Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
+            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == ''" Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
+            <_ResizetizerImagesToDelete Remove="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
+
+        <!-- Remove files which are no longer needed -->
+        <Delete
+            Condition="'@(_ResizetizerImagesToDelete)' != ''"
+            Files="@(_ResizetizerImagesToDelete)"
+        />
 
         <!-- iOS -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
