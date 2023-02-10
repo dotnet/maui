@@ -1,15 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
-using ASoftInput = Android.Views.SoftInput;
-using AApplication = Android.App.Application;
 using AActivity = Android.App.Activity;
+using AApplication = Android.App.Application;
+using ASoftInput = Android.Views.SoftInput;
 
 namespace Microsoft.Maui.DeviceTests
 {

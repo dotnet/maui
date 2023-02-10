@@ -38,6 +38,22 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor<LabelHandler>(formattedLabel, expected);
 		}
 
+		[Fact(DisplayName = "Html Text Initializes Correctly")]
+		public async Task HtmlTextInitializesCorrectly()
+		{
+			var expected = "Html";
+
+			var label = new Label()
+			{
+				Text = $"&lt;b&gt;{expected}&lt;/b&gt;",
+				TextType = TextType.Html
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformText = await InvokeOnMainThreadAsync(() => TextForHandler(handler));
+			Assert.Equal(expected, platformText);
+		}
+
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 

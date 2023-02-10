@@ -1,7 +1,7 @@
 <Project>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.targets" Condition=" '$(UseMaui)' != 'true' " />
-  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
+  <Import Project="$(MauiSrcDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
   <Import Project="$(MauiRootDirectory)Directory.Build.targets" />
 
 </Project>

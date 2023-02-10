@@ -49,6 +49,10 @@ param
     [string] $macCatalystVersion,
     [string] $macVersion
 )
+
+#Update git config
+Write-Output git config –global core.autocrlf false
+
 # Read the existing file
 [xml]$xmlDoc = Get-Content $xmlFileName
 
