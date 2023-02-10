@@ -39,5 +39,13 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.set -> void
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.OpenGLView() -> void
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Desktop = 3 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Phone = 1 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Tablet = 2 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.TV = 4 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Unsupported = 0 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Watch = 5 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*static Microsoft.Maui.Controls.Device.Idiom.get -> Microsoft.Maui.Controls.TargetIdiom
 *REMOVED*Microsoft.Maui.Controls.Application.SavePropertiesAsync() -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.Maui.Controls.Application.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!
