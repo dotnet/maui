@@ -81,6 +81,8 @@ namespace Microsoft.Maui.Media
 		class WinUICameraCaptureUI
 		{
 			const string WindowsCameraAppPackageName = "Microsoft.WindowsCamera_8wekyb3d8bbwe";
+			private const string CacheFolderName = ".Microsoft.Maui.Media.MediaPicker";
+			private const string CacheFileName = "capture";
 
 			public WinUICameraCaptureUIPhotoCaptureSettings PhotoSettings { get; } = new();
 
@@ -102,8 +104,8 @@ namespace Microsoft.Maui.Media
 					: VideoSettings.GetFormatExtension();
 
 				var tempLocation = await StorageFolder.GetFolderFromPathAsync(FileSystem.CacheDirectory);
-				var tempFolder = await tempLocation.CreateFolderAsync(".Microsoft.Maui.Media.MediaPicker", CreationCollisionOption.OpenIfExists);
-				var tempFile = await tempFolder.CreateFileAsync($"capture{extension}", CreationCollisionOption.GenerateUniqueName);
+				var tempFolder = await tempLocation.CreateFolderAsync(CacheFolderName, CreationCollisionOption.OpenIfExists);
+				var tempFile = await tempFolder.CreateFileAsync($"{CacheFileName}{extension}", CreationCollisionOption.GenerateUniqueName);
 				var token = global::Windows.ApplicationModel.DataTransfer.SharedStorageAccessManager.AddFile(tempFile);
 
 				var set = new ValueSet();
