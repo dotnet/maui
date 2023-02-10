@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Android.OS;
 using Android.Runtime;

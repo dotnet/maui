@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.ComponentModel;
 using Android.Content;
@@ -28,7 +26,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				[Frame.CornerRadiusProperty.PropertyName] = (h, _) => h.UpdateCornerRadius(),
 				[Frame.BorderColorProperty.PropertyName] = (h, _) => h.UpdateBorderColor(),
 				[Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty.PropertyName] = (h, _) => h.UpdateClippedToBounds(),
-				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent()
+				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent(),
+
+				// TODO NET8. These are all needed because the AndroidBatchMapper doesn't run via the mapper it's a manual call on ViewHandler
+				// With NET8 we can move the BatchMapper call to the actual ViewHandler.Mapper. 
+				// Because we most likely want to backport these fixes to NET7, I've just opted to add these manually for now on Frame
+				[nameof(IView.AutomationId)] = (h, v) => ViewHandler.MapAutomationId(h, v),
+				[nameof(IView.IsEnabled)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.IsEnabled)),
+				[nameof(IView.Visibility)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.Visibility)),
+				[nameof(IView.MinimumHeight)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.MinimumHeight)),
+				[nameof(IView.MinimumWidth)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.MinimumWidth)),
+				[nameof(IView.Opacity)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.Opacity)),
+				[nameof(IView.TranslationX)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.TranslationX)),
+				[nameof(IView.TranslationY)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.TranslationY)),
+				[nameof(IView.Scale)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.Scale)),
+				[nameof(IView.ScaleX)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.ScaleX)),
+				[nameof(IView.ScaleY)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.ScaleY)),
+				[nameof(IView.Rotation)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.Rotation)),
+				[nameof(IView.RotationX)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.RotationX)),
+				[nameof(IView.RotationY)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.RotationY)),
+				[nameof(IView.AnchorX)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.AnchorX)),
+				[nameof(IView.AnchorY)] = (h, v) => ViewRenderer.VisualElementRendererMapper.UpdateProperty(h, v, nameof(IView.AnchorY)),
 			};
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
@@ -50,9 +68,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
-		public FrameRenderer(Context context) : base(context)
+		public FrameRenderer(Context context) : this(context, Mapper)
 		{
-			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(Mapper, CommandMapper, this);
+		}
+
+		public FrameRenderer(Context context, IPropertyMapper mapper)
+			: this(context, mapper, CommandMapper)
+		{
+		}
+
+		public FrameRenderer(Context context, IPropertyMapper mapper, CommandMapper commandMapper) : base(context)
+		{
+			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(mapper, commandMapper, this);
 		}
 
 		protected CardView Control => this;
@@ -71,8 +98,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		Size IViewHandler.GetDesiredSize(double widthMeasureSpec, double heightMeasureSpec)
 		{
+			double minWidth = 20;
+			if (Primitives.Dimension.IsExplicitSet(widthMeasureSpec) && !double.IsInfinity(widthMeasureSpec))
+				minWidth = widthMeasureSpec;
+
+			double minHeight = 20;
+			if (Primitives.Dimension.IsExplicitSet(widthMeasureSpec) && !double.IsInfinity(heightMeasureSpec))
+				minHeight = heightMeasureSpec;
+
 			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthMeasureSpec, heightMeasureSpec,
-				new Size(20, 20));
+				new Size(minWidth, minHeight));
 		}
 
 		protected override void Dispose(bool disposing)
@@ -302,15 +337,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateContent()
 		{
+			if (ChildCount == 1)
+				RemoveViewAt(0);
+
 			var content = Element?.Content;
 
 			if (content == null || _mauiContext == null)
-			{
-				if (ChildCount == 1)
-					RemoveViewAt(0);
-
 				return;
-			}
 
 			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);

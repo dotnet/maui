@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;

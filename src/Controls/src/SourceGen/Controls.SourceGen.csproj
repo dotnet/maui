@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Microsoft.Maui.Controls.SourceGen</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.SourceGen</RootNamespace>
+    <PackageId>Microsoft.Maui.Controls.SourceGen</PackageId>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
   </PropertyGroup>
@@ -32,10 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" PrivateAssets="All" />
   </ItemGroup>
 
@@ -45,9 +42,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>MauiGResources.resx</DependentUpon>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Update="MauiGResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>MauiGResources.Designer.cs</LastGenOutput>
@@ -58,8 +52,13 @@
     <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
     <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
   </ItemGroup>
-  <Target Name="_CopyToNuspecDir" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MauiNuSpecDirectory)" ContinueOnError="true" Retries="0" />
+
+  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
+    <ItemGroup>
+      <_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll" />
+      <_CopyItems Include="$(TargetDir)*.pdb" Exclude="$(TargetDir)System.*.pdb" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)" ContinueOnError="true" Retries="0" />
   </Target>
 
 </Project>

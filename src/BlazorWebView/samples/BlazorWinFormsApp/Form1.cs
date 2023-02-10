@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using WebViewAppShared;
 
 namespace BlazorWinFormsApp
@@ -17,6 +18,12 @@ namespace BlazorWinFormsApp
 		public Form1()
 		{
 			var services1 = new ServiceCollection();
+			services1.AddLogging(c =>
+			{
+				c.AddDebug();
+				// Enable maximum logging for BlazorWebView
+				c.AddFilter("Microsoft.AspNetCore.Components.WebView", LogLevel.Trace);
+			});
 			services1.AddWindowsFormsBlazorWebView();
 #if DEBUG
 			services1.AddBlazorWebViewDeveloperTools();

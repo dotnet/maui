@@ -1,3 +1,4 @@
+#nullable disable
 
 using System;
 using System.Collections;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
-		public Page CurrentPage => (CurrentSection as IShellSectionController)?.PresentedPage;
+		public Page CurrentPage => GetVisiblePage() as Page;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='BackButtonBehaviorProperty']/Docs/*" />
 		public static readonly BindableProperty BackButtonBehaviorProperty =
@@ -1363,7 +1364,7 @@ namespace Microsoft.Maui.Controls
 			Element element = null,
 			bool ignoreImplicit = false)
 		{
-			element = element ?? GetCurrentShellPage() ?? CurrentContent;
+			element = element ?? (Element)GetCurrentShellPage() ?? CurrentContent;
 			while (element != this && element != null)
 			{
 				observer?.Invoke(element);
@@ -1505,9 +1506,17 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
+		internal void SendPageAppearing(Page page)
+		{
+			if (Toolbar is ShellToolbar shellToolbar)
+				shellToolbar.ApplyChanges();
+
+			page.SendAppearing();
+		}
+
 		// This returns the current shell page that's visible
 		// without including the modal stack
-		internal Element GetCurrentShellPage()
+		internal Page GetCurrentShellPage()
 		{
 			var navStack = CurrentSection?.Navigation?.NavigationStack;
 			Page currentPage = null;
@@ -1684,7 +1693,14 @@ namespace Microsoft.Maui.Controls
 				modal.Parent = (Element)_shell.FindParentOfType<IWindow>();
 
 				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
+				{
+					if (ModalStack.Count > 0)
+					{
+						ModalStack[ModalStack.Count - 1].SendDisappearing();
+					}
+
 					modal.SendAppearing();
+				}
 
 				await base.OnPushModal(modal, animated);
 

@@ -6,8 +6,36 @@
     xmlns:pages="using:Maui.Controls.Sample.Pages"
     xmlns:shellPages="clr-namespace:Maui.Controls.Sample.Pages.ShellGalleries"
     FlyoutBackground="{AppThemeBinding Dark=Black, Light=White}"
-    Title="Welcome to Shell"
-    >
+    Title="{Binding ShellTitle}">
+    <Shell.TitleView>
+        <Grid
+            BackgroundColor="Red"
+            VerticalOptions="Center"
+            HeightRequest="44">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label 
+                FontSize="Large"
+                FontAttributes="Bold"
+                HorizontalTextAlignment="Center"
+                VerticalTextAlignment="Center"
+                Text="TitleView" />
+            <HorizontalStackLayout
+                Grid.Column="1"
+                Padding="6">
+                <Label
+                    FontSize="Small"
+                    HorizontalTextAlignment="Center"
+                    VerticalTextAlignment="Center"
+                    Text="{Binding ShellTitle}"/>
+                <Button
+                    Text="Change TabBar BackgroundColor"
+                    Clicked="OnChangeTabBarBackgroundColor" />
+            </HorizontalStackLayout>
+        </Grid>
+    </Shell.TitleView>
     <Shell.FlyoutHeader>
         <Image Source="dotnet_bot.png"></Image>
     </Shell.FlyoutHeader>
