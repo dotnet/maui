@@ -516,63 +516,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.Handler != null && shellTitleView.ToPlatform() == GetTitleView(handler)));
 			});
 		}
-
-
-		[Fact(DisplayName = "TitleView Set On Shell Works After Navigation")]
-		public async Task TitleViewSetOnShellWorksAfterNavigation()
-		{
-			SetupBuilder();
-
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
-			var page3 = new ContentPage();
-
-			var shellTitleView = new Editor();
-
-			var shell = await CreateShellAsync((shell) =>
-			{
-				Shell.SetTitleView(shell, shellTitleView);
-				shell.Items.Add(new TabBar()
-				{
-					Items =
-					{
-						new ShellContent()
-						{
-							Route = "Item1",
-							Content = page1
-						},
-						new ShellContent()
-						{
-							Route = "Item2",
-							Content = page2
-						},
-					}
-				});
-			});
-
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
-			{
-				await OnLoadedAsync(page1);
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
-
-				await shell.GoToAsync("//Item2");
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
-
-				await shell.GoToAsync("//Item1");
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
-
-				await shell.GoToAsync("//Item2");
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
-
-				await shell.Navigation.PushAsync(page3);
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
-
-				await shell.Navigation.PopAsync();
-				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.ToPlatform() == GetTitleView(handler)));
-			});
-		}
-
-#if IOS || MACCATALYST
+		
 		[Fact(DisplayName = "TitleView Set On Shell Works After Navigation")]
 		public async Task TitleViewSetOnShellWorksAfterNavigation()
 		{
@@ -639,7 +583,6 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-#endif
 
 		[Fact(DisplayName = "Handlers not recreated when changing tabs")]
 		public async Task HandlersNotRecreatedWhenChangingTabs()
