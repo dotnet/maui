@@ -1,8 +1,8 @@
-To build the FormsViewGroup.jar from the command line; no need to install Android Studio or Eclipse. It works on Windows and macOS. To build a new .jar just navigate to the AndroidNative folder and run:
+To build the maui.aar from the command line, there's no need to install Android Studio or Eclipse. It works on Windows and macOS. To build a new .aar just navigate to the AndroidNative folder and run:
  - Windows PowerShell: .\gradlew createAar --rerun-tasks
  - macOS Terminal: ./gradlew createAar --rerun-tasks
 
-The resulting formsviewgroup.jar will be put in Xamarin.Forms.Platform.Android.FormsViewGroup\Jars.
+The resulting maui.aar will be put in src/Core/src.
 
 Before the first time you run it, you'll need to create a local.properties file in the AndroidNative folder so Gradle can find your Android SDK. It needs one line to set the sdk.dir property. For example:
  - Windows: sdk.dir=C\:\\Users\\cfinley\\AppData\\Local\\Android\\Sdk

@@ -139,13 +139,13 @@ namespace Microsoft.Maui.Controls
 				page.ParentSet += OnPresentedPageParentSet;
 				void OnPresentedPageParentSet(object sender, EventArgs e)
 				{
-					page.SendAppearing();
+					this.FindParentOfType<Shell>().SendPageAppearing(page);
 					(sender as Page).ParentSet -= OnPresentedPageParentSet;
 				}
 			}
 			else if (IsVisibleContent && page.IsVisible)
 			{
-				page.SendAppearing();
+				this.FindParentOfType<Shell>().SendPageAppearing(page);
 			}
 		}
 

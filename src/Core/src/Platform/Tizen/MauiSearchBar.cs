@@ -4,9 +4,9 @@ using Microsoft.Maui.Graphics.Skia.Views;
 using Tizen.NUI;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
+using NColor = Tizen.NUI.Color;
 using TSize = Tizen.UIExtensions.Common.Size;
 using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
-using NColor = Tizen.NUI.Color;
 
 namespace Microsoft.Maui.Platform
 {

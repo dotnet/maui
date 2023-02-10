@@ -346,6 +346,8 @@ Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission
 Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.BasePlatformPermission() -> void
 Microsoft.Maui.ApplicationModel.Permissions.Battery
 Microsoft.Maui.ApplicationModel.Permissions.Battery.Battery() -> void
+Microsoft.Maui.ApplicationModel.Permissions.Bluetooth
+Microsoft.Maui.ApplicationModel.Permissions.Bluetooth.Bluetooth() -> void
 Microsoft.Maui.ApplicationModel.Permissions.CalendarRead
 Microsoft.Maui.ApplicationModel.Permissions.CalendarRead.CalendarRead() -> void
 Microsoft.Maui.ApplicationModel.Permissions.CalendarWrite

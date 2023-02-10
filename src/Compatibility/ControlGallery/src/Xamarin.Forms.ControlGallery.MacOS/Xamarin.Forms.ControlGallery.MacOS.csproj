@@ -104,12 +104,6 @@
     <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="SampleNativeControl.cs" />
     <Compile Include="SeparatorMenuItem.cs" />
-    <Compile Include="..\Xamarin.Forms.Controls\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
-      <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Controls\GalleryPages\OpenGLGalleries\BasicOpenGLGallery.cs">
-      <Link>GalleryPages\BasicOpenGLGallery.cs</Link>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">
