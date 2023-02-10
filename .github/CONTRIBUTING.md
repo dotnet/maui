@@ -18,7 +18,7 @@ Have a look at our [Development Guide](DEVELOPMENT.md) to learn about setting up
 
 ### What to work on
 
-If you're looking for something to work on, please browse our [Handler Property Backlog](https://github.com/dotnet/maui/projects/4). Any issue that is not already assigned is up for grabs. Make sure to read over the [Handler Property PR Guidelines](https://github.com/dotnet/maui/wiki/Handler-Property-PR-Guidelines) to acquaint yourself on how you can get started in contributing to our handler conversion efforts. Included is also a sample PR you can model after.
+If you're looking for something to work on, please browse our [backlog](https://github.com/dotnet/maui/issues?q=is%3Aopen+is%3Aissue+milestone%3ABacklog). Any issue that is not already assigned is up for grabs. 
 
 Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md), with two primary exceptions:
 
@@ -29,7 +29,7 @@ Read and follow our [Pull Request template](PULL_REQUEST_TEMPLATE.md).
 
 ### Pull Request Requirements
 
-Please refer to our [Handler Property PR Guidelines](https://github.com/dotnet/maui/wiki/Handler-Property-PR-Guidelines) and [Pull Request template](PULL_REQUEST_TEMPLATE.md).
+Please refer to our [Pull Request template](PULL_REQUEST_TEMPLATE.md).
 
 Please check the "Allow edits from maintainers" checkbox on your pull request. This allows us to quickly make minor fixes and resolve conflicts for you.
 

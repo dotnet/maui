@@ -1,12 +1,28 @@
 <Project>
 
-  <!-- @(ProjectCapability) used to identify parts of Maui -->
+  <!--
+    The IDE uses the @(ProjectCapability) items to activate various features.
+  -->
+
+  <!-- .NET MAUI features -->
   <ItemGroup>
     <ProjectCapability Include="Maui"           Condition=" '$(UseMaui)' == 'true' " />
     <ProjectCapability Include="MauiAssets"     Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' " />
     <ProjectCapability Include="MauiBlazor"     Condition=" '$(UsingMicrosoftNETSdkRazor)' == 'true' " />
     <ProjectCapability Include="MauiCore"       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
     <ProjectCapability Include="MauiEssentials" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
+  </ItemGroup>
+
+  <!-- SingleProject-specific features -->
+  <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
+    <ProjectCapability Include="Msix" />
+    <ProjectCapability Include="MauiSingleProject" />
+    <ProjectCapability Include="LaunchProfiles" />
+    <!-- If VS is older than Dev17 -->
+    <ProjectCapability Include="XamarinStaticLaunchProfiles" Condition=" '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' &lt; '17.0' " />
+    <!-- Otherwise define LaunchProfilesGroupByPlatformFilters by default -->
+    <ProjectCapability Include="LaunchProfilesGroupByPlatformFilters" Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &gt;= '17.0' " />
+    <ProjectCapability Include="SingleTargetBuildForStartupProjects" Condition=" '$(EnableSingleTargetBuildForStartupProjects)' != 'false' " />
   </ItemGroup>
 
 </Project>
