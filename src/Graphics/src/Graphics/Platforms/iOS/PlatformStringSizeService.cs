@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 			else
 			{
+#pragma warning disable CA1422 // Validate platform compatibility
 				size = nsString.StringSize(uiFont, CGSize.Empty);
+#pragma warning restore CA1422 // Validate platform compatibility
 			}
 
 			uiFont.Dispose();

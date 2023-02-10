@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+#nullable disable
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -19,15 +20,17 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Ellipse.xml" path="//Member[@MemberName='GetPath']/Docs/*" />
 		public override PathF GetPath()
 		{
+			var width = WidthForPathComputation;
+			var height = HeightForPathComputation;
+
 			var path = new PathF();
 
 			float x = (float)StrokeThickness / 2;
 			float y = (float)StrokeThickness / 2;
-			float w = (float)(Width - StrokeThickness);
-			float h = (float)(Height - StrokeThickness);
+			float w = (float)(width - StrokeThickness);
+			float h = (float)(height - StrokeThickness);
 
 			path.AppendEllipse(x, y, w, h);
 

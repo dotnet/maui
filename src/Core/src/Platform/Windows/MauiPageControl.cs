@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WEllipse = Microsoft.UI.Xaml.Shapes.Ellipse;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WShape = Microsoft.UI.Xaml.Shapes.Shape;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using Microsoft.Maui.Graphics;
-using System;
 
 namespace Microsoft.Maui.Platform
 {

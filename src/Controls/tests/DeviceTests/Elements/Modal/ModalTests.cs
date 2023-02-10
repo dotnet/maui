@@ -24,9 +24,9 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Modal)]
 #if ANDROID || IOS || MACCATALYST
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
-	public partial class ModalTests : HandlerTestBase
+	public partial class ModalTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
@@ -43,6 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
 					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Image, ImageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();

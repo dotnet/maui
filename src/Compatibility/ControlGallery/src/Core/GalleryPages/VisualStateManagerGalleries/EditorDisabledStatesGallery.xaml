@@ -72,7 +72,7 @@
 				<Button Text="Toggle IsEnabled" x:Name="Button2" Clicked="Button2_OnClicked" />
 
 				<!-- This section verifies that the default colors for a searchbar's text and placeholder are cached and can be reverted to -->
-				<Label Text="This Editor uses null for the intial text/background, and colors from the VSM when disabled."/>
+				<Label Text="This Editor uses null for the initial text/background, and colors from the VSM when disabled."/>
 				<Editor x:Name="Editor3" Style="{StaticResource DefaultInInitialState}" TextColor="Default" 
 						BackgroundColor="Default" Text="Kwyjibo" />
 				<Button Text="Toggle IsEnabled" x:Name="Button3" Clicked="Button3_OnClicked" />

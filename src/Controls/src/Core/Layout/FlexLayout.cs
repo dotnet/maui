@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -264,7 +265,6 @@ namespace Microsoft.Maui.Controls
 			public Flex.Item FlexItem { get; set; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetOrder'][2]/Docs/*" />
 		public int GetOrder(IView view)
 		{
 			return view switch
@@ -274,7 +274,6 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetOrder'][2]/Docs/*" />
 		public void SetOrder(IView view, int order)
 		{
 			switch (view)
@@ -288,7 +287,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetGrow'][2]/Docs/*" />
 		public float GetGrow(IView view)
 		{
 			return view switch
@@ -298,7 +296,6 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetGrow'][2]/Docs/*" />
 		public void SetGrow(IView view, float grow)
 		{
 			switch (view)
@@ -312,7 +309,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetShrink'][2]/Docs/*" />
 		public float GetShrink(IView view)
 		{
 			return view switch
@@ -322,7 +318,6 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetShrink'][2]/Docs/*" />
 		public void SetShrink(IView view, float shrink)
 		{
 			switch (view)
@@ -336,7 +331,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetAlignSelf'][2]/Docs/*" />
 		public FlexAlignSelf GetAlignSelf(IView view)
 		{
 			return view switch
@@ -346,7 +340,6 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetAlignSelf'][2]/Docs/*" />
 		public void SetAlignSelf(IView view, FlexAlignSelf alignSelf)
 		{
 			switch (view)
@@ -360,7 +353,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetBasis'][2]/Docs/*" />
 		public FlexBasis GetBasis(IView view)
 		{
 			return view switch
@@ -370,7 +362,6 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetBasis'][2]/Docs/*" />
 		public void SetBasis(IView view, FlexBasis basis)
 		{
 			switch (view)
@@ -547,7 +538,6 @@ namespace Microsoft.Maui.Controls
 			return new FlexLayoutManager(this);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetFlexFrame']/Docs/*" />
 		public Graphics.Rect GetFlexFrame(IView view)
 		{
 			return view switch
@@ -568,7 +558,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='Layout']/Docs/*" />
 		public void Layout(double width, double height)
 		{
 			if (_root.Parent != null)   //Layout is only computed at root level

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Graphics;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using WPoint = Windows.Foundation.Point;
 namespace Microsoft.Maui.Platform
 {

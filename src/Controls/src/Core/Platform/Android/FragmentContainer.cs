@@ -1,40 +1,32 @@
 using System;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal class FragmentContainer : Fragment
 	{
-		readonly WeakReference _pageRenderer;
+		AView? _pageContainer;
 		readonly IMauiContext _mauiContext;
-		Action<AView> _onCreateCallback;
-		AView _pageContainer;
-		IPlatformViewHandler _viewhandler;
-		AView PlatformView => _viewhandler?.PlatformView as AView;
+		Action<AView>? _onCreateCallback;
+		ViewGroup? _parent;
+		AdapterItemKey _adapterItemKey;
 
-		public FragmentContainer(IMauiContext mauiContext)
+		public FragmentContainer(AdapterItemKey adapterItemKey, IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
+			_adapterItemKey = adapterItemKey;
 		}
 
-		public FragmentContainer(Page page, IMauiContext mauiContext) : this(mauiContext)
-		{
-			_pageRenderer = new WeakReference(page);
-			_mauiContext = mauiContext;
-		}
+		public Page Page => _adapterItemKey.Page;
 
-		public virtual Page Page => (Page)_pageRenderer?.Target;
-
-		public static FragmentContainer CreateInstance(Page page, IMauiContext mauiContext)
+		public static FragmentContainer CreateInstance(AdapterItemKey adapterItemKey, IMauiContext mauiContext)
 		{
-			return new FragmentContainer(page, mauiContext) { Arguments = new Bundle() };
+			return new FragmentContainer(adapterItemKey, mauiContext) { Arguments = new Bundle() };
 		}
 
 		public void SetOnCreateCallback(Action<AView> callback)
@@ -42,35 +34,23 @@ namespace Microsoft.Maui.Controls.Platform
 			_onCreateCallback = callback;
 		}
 
-		ViewGroup _parent;
-
-		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+		public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
 			_parent = container ?? _parent;
 
-			if (Page != null)
-			{
-				_pageContainer = Page?.Handler?.PlatformView as AView;
+			_pageContainer = Page.ToPlatform(_mauiContext, RequireContext(), inflater, ChildFragmentManager);
+			_adapterItemKey.SetToStableView();
+			_parent = _parent ?? (_pageContainer.Parent as ViewGroup);
+			_onCreateCallback?.Invoke(_pageContainer);
 
-				if (_pageContainer == null)
-				{
-					var scopedContext =
-						_mauiContext.MakeScoped(inflater, ChildFragmentManager);
+			return _pageContainer;
+		}
 
-					_pageContainer = Page.ToPlatform(scopedContext);
-					_viewhandler = (IPlatformViewHandler)Page.Handler;
-				}
-				else
-				{
-					_parent = _parent ?? (_pageContainer.Parent as ViewGroup);
-				}
-
-				_onCreateCallback?.Invoke(_pageContainer);
-
-				return _pageContainer;
-			}
-
-			return null;
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			if (Context.IsDestroyed())
+				Page?.Handler?.DisconnectHandler();
 		}
 
 		public override void OnResume()

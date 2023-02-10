@@ -12,6 +12,26 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
+#if IOS
+		[Fact(DisplayName = "Placeholder Size is the same as control")]
+		public async Task PlaceholderFontHasTheSameSize()
+		{
+			var sizeFont = 22;
+			var editor = new EditorStub()
+			{
+				Text = "Text",
+				Font = Font.SystemFontOfSize(sizeFont)
+			};
+
+			var nativePlaceholderSize = await GetValueAsync(editor, handler =>
+			{
+				return GetNativePlaceholder(handler).Font.PointSize;
+			});
+
+			Assert.True(nativePlaceholderSize == sizeFont);
+		}
+#endif
+
 		[Fact(DisplayName = "Placeholder Toggles Correctly When Text Changes")]
 		public async Task PlaceholderTogglesCorrectlyWhenTextChanges()
 		{
@@ -269,5 +289,32 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		TextAlignment GetNativeVerticalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).VerticalTextAlignment;
+
+		TextAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment;
+
+#if !MACCATALYST
+		[Fact(DisplayName = "Completed Event Fires")]
+		public async Task CompletedEventFiresFromTappingDone()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Test"
+			};
+
+			int completedCount = 0;
+			editor.Completed += (_, _) => completedCount++;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(editor);
+				TapDoneOnInputAccessoryView(handler.PlatformView);
+			});
+
+			Assert.Equal(1, completedCount);
+		}
+#endif
 	}
 }

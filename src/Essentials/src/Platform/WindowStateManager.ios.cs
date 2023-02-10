@@ -59,17 +59,14 @@ namespace Microsoft.Maui.ApplicationModel
 			if (viewController != null)
 				return viewController;
 
-#pragma warning disable CA1416 // TODO: 'UIApplication.KeyWindow' is unsupported on: 'ios' 13.0 and later.
-			var window = UIApplication.SharedApplication.KeyWindow;
+			var window = GetKeyWindow();
 
 			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
 				viewController = window.RootViewController;
 
 			if (viewController == null)
 			{
-				// This call site is reachable on: 'iOS' 10.0 and later. 'UIApplication.Windows.get' is unsupported on: 'ios' 15.0 and later.
-				window = UIApplication.SharedApplication
-					.Windows
+				window = GetWindows()?
 					.OrderByDescending(w => w.WindowLevel)
 					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
 
@@ -84,23 +81,65 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public UIWindow? GetCurrentUIWindow()
 		{
-			// This call site is reachable on: 'iOS' 10.0 and later.0 'UIApplication.KeyWindow.get' is unsupported on: 'ios' 13.0 and later.
-			var window = UIApplication.SharedApplication.KeyWindow;
+			var window = GetKeyWindow();
 
 			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
 				return window;
 
 			if (window == null)
 			{
-				// This call site is reachable on: 'iOS' 10.0 and later. 'UIApplication.Windows.get' is unsupported on: 'ios' 15.0 and later.
-				window = UIApplication.SharedApplication
-					.Windows
+				window = GetWindows()?
 					.OrderByDescending(w => w.WindowLevel)
 					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
 			}
-#pragma warning restore CA1416
 
 			return window;
+		}
+
+		static UIWindow? GetKeyWindow()
+		{
+			// if we have scene support, use that
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+			{
+				try
+				{
+					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+					var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
+					return windowScene?.Windows.FirstOrDefault();
+				}
+				catch (InvalidCastException)
+				{
+					// HACK: Workaround for https://github.com/xamarin/xamarin-macios/issues/13704
+					//       This only throws if the collection is empty.
+					return null;
+				}
+			}
+
+			// use the windows property (up to 13.0)
+			return UIApplication.SharedApplication.KeyWindow;
+		}
+
+		static UIWindow[]? GetWindows()
+		{
+			// if we have scene support, use that
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+			{
+				try
+				{
+					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+					var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
+					return windowScene?.Windows;
+				}
+				catch (InvalidCastException)
+				{
+					// HACK: Workaround for https://github.com/xamarin/xamarin-macios/issues/13704
+					//       This only throws if the collection is empty.
+					return null;
+				}
+			}
+
+			// use the windows property (up to 15.0)
+			return UIApplication.SharedApplication.Windows;
 		}
 	}
 }

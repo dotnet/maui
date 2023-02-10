@@ -19,6 +19,13 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public string? LoadFont(EmbeddedFont font)
 		{
+			var fontResourcePath = IOPath.Combine(TApplication.Current.DirectoryInfo.Resource, _fontCacheFolderName);
+			var fontResourceFilePath = IOPath.Combine(fontResourcePath, font.FontName!);
+			if (File.Exists(fontResourceFilePath))
+			{
+				return IOPath.GetFileNameWithoutExtension(fontResourceFilePath);
+			}
+
 			if (FontCacheDirectory == null)
 			{
 				FontCacheDirectory = Directory.CreateDirectory(IOPath.Combine(TApplication.Current.DirectoryInfo.Data, _fontCacheFolderName));
@@ -28,7 +35,10 @@ namespace Microsoft.Maui
 			var filePath = IOPath.Combine(FontCacheDirectory.FullName, font.FontName!);
 			var name = IOPath.GetFileNameWithoutExtension(filePath);
 			if (File.Exists(filePath))
+			{
 				return name;
+			}
+
 			try
 			{
 				using (var fileStream = File.Create(filePath))
@@ -38,6 +48,8 @@ namespace Microsoft.Maui
 
 					font.ResourceStream.CopyTo(fileStream);
 				}
+				Tizen.NUI.FontClient.Instance.AddCustomFontDirectory(FontCacheDirectory.FullName);
+
 				return name;
 			}
 			catch (Exception ex)

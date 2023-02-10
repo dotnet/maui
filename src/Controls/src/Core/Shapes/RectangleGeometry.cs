@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Devices;
 using Rect = Microsoft.Maui.Graphics.Rect;
 
@@ -29,7 +30,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Rect)GetValue(RectProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RectangleGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs/*" />
 		public override void AppendPath(Graphics.PathF path)
 		{
 			float x = (float)Rect.X;

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -104,7 +105,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			InvalidateGeometryRequested?.Invoke(this, EventArgs.Empty);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='AppendPath']/Docs/*" />
 		public override void AppendPath(Graphics.PathF path)
 		{
 			foreach (var c in Children)

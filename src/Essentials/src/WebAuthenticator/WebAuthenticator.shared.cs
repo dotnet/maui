@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Authentication
@@ -18,14 +20,28 @@ namespace Microsoft.Maui.Authentication
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="Type[@FullName='Microsoft.Maui.Essentials.WebAuthenticator']/Docs/*" />
+	public interface IWebAuthenticatorResponseDecoder
+	{
+		IDictionary<string, string>? DecodeResponse(Uri uri);
+	}
+
+	/// <summary>A web navigation API intended to be used for Authentication with external web services such as OAuth.</summary>
+	/// <remarks>
+	/// This API helps with navigating to a start URL and waiting for a callback URL to the app.  Your app must 
+	/// be registered to handle the callback scheme you provide in the call to authenticate.
+	/// </remarks>
 	public static class WebAuthenticator
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][1]/Docs/*" />
+		/// <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.</summary>
+		/// <param name="url" > Url to navigate to, beginning the authentication flow.</param>
+		/// <param name="callbackUrl" > Expected callback url that the navigation flow will eventually redirect to.</param>
+		/// <returns>Returns a result parsed out from the callback url.</returns>		
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
 			=> Current.AuthenticateAsync(url, callbackUrl);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/WebAuthenticator.xml" path="//Member[@MemberName='AuthenticateAsync'][2]/Docs/*" />
+		/// <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.The start url and callbackUrl are specified in the webAuthenticatorOptions.</summary>
+		/// <param name="webAuthenticatorOptions">Options to configure the authentication request.</param>
+		/// <returns>Returns a result parsed out from the callback url.</returns>
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 			=> Current.AuthenticateAsync(webAuthenticatorOptions);
 
@@ -49,6 +65,11 @@ namespace Microsoft.Maui.Authentication
 			return platform;
 		}
 
+		/// <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.</summary>
+		/// <param name="webAuthenticator">The <see cref="IWebAuthenticator"/> to use for the authentication flow.</param>
+		/// <param name="url"> Url to navigate to, beginning the authentication flow.</param>
+		/// <param name="callbackUrl"> Expected callback url that the navigation flow will eventually redirect to.</param>
+		/// <returns>Returns a result parsed out from the callback url.</returns>
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(this IWebAuthenticator webAuthenticator, Uri url, Uri callbackUrl) =>
 			webAuthenticator.AuthenticateAsync(new WebAuthenticatorOptions { Url = url, CallbackUrl = callbackUrl });
 
@@ -57,11 +78,12 @@ namespace Microsoft.Maui.Authentication
 		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, Uri uri) =>
 			webAuthenticator.AsPlatformCallback().OpenUrlCallback(uri);
 
-		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options)
+		public static bool OpenUrl(this IWebAuthenticator webAuthenticator, UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options) 
 		{
-			var absUri = url?.AbsoluteString;
-			if (!string.IsNullOrEmpty(absUri))
-				return webAuthenticator.OpenUrl(new Uri(absUri));
+			if(url?.AbsoluteString != null)
+			{
+				return webAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+			}
 			return false;
 		}
 
@@ -89,5 +111,7 @@ namespace Microsoft.Maui.Authentication
 		public Uri? CallbackUrl { get; set; }
 
 		public bool PrefersEphemeralWebBrowserSession { get; set; }
+
+		public IWebAuthenticatorResponseDecoder? ResponseDecoder { get; set; }
 	}
 }

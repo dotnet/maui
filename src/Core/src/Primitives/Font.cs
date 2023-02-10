@@ -12,7 +12,6 @@ namespace Microsoft.Maui
 		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Size']/Docs/*" />
 		public double Size { get; }
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Slant']/Docs/*" />
 		public FontSlant Slant { get; }
 
 		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='IsDefault']/Docs/*" />
@@ -24,7 +23,6 @@ namespace Microsoft.Maui
 
 		readonly FontWeight _weight;
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Weight']/Docs/*" />
 		public FontWeight Weight
 		{
 			get => _weight <= 0 ? FontWeight.Regular : _weight;
@@ -41,13 +39,11 @@ namespace Microsoft.Maui
 
 
 		readonly bool _disableScaling;
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='AutoScalingEnabled']/Docs/*" />
 		public bool AutoScalingEnabled
 		{
 			get => !_disableScaling;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithAutoScaling']/Docs/*" />
 		public Font WithAutoScaling(bool enabled)
 		{
 			return new Font(Family, Size, Slant, Weight, enabled);
@@ -59,19 +55,16 @@ namespace Microsoft.Maui
 			return new Font(Family, size, Slant, Weight, AutoScalingEnabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithSlant']/Docs/*" />
 		public Font WithSlant(FontSlant fontSlant)
 		{
 			return new Font(Family, Size, fontSlant, Weight, AutoScalingEnabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight'][1]/Docs/*" />
 		public Font WithWeight(FontWeight weight)
 		{
 			return new Font(Family, Size, Slant, weight, AutoScalingEnabled);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='WithWeight'][2]/Docs/*" />
 		public Font WithWeight(FontWeight weight, FontSlant fontSlant)
 		{
 			return new Font(Family, Size, fontSlant, weight, AutoScalingEnabled);
@@ -89,7 +82,6 @@ namespace Microsoft.Maui
 #pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 			new(null, size, fontSlant, weight, enableScaling);
 
-		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='SystemFontOfWeight']/Docs/*" />
 		public static Font SystemFontOfWeight(FontWeight weight, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
 			new(null, default(double), fontSlant, weight, enableScaling);
 

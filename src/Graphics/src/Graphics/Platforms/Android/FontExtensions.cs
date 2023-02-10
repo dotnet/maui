@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Android.Graphics;
-using Android.Text;
 using Android.Content;
-
-using AApplication = Android.App.Application;
+using Android.Graphics;
 using Android.Runtime;
+using Android.Text;
+using AApplication = Android.App.Application;
 //using System.Reflection.Metadata.Ecma335;
 
 namespace Microsoft.Maui.Graphics.Platform

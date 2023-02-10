@@ -3,6 +3,8 @@ trigger:
     include:
     - main
     - release/*
+    - net7.0
+    - net8.0
     - loc
   tags:
     include:
@@ -26,6 +28,8 @@ pr:
     include:
     - main
     - release/*
+    - net7.0
+    - net8.0
   paths:
     include:
     - '*'
@@ -104,10 +108,12 @@ parameters:
         tfm: default
       - name: net6
         tfm: net6.0
+      - name: net7
+        tfm: net7.0
 
 resources:
   repositories:
-    - repository: xamarin-templates
+    - repository: yaml-templates
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
@@ -120,17 +126,17 @@ resources:
 
 stages:
 
-  - stage: build_net6
+  - stage: build_net
     displayName: Build .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+          - job: build_net_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 120
+            timeoutInMinutes: 240
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
@@ -144,17 +150,11 @@ stages:
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
-                  parameters:
-                    UninstallMono: false
-                    UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -176,16 +176,16 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - stage: pack_net6
+  - stage: pack_net
     displayName: Pack .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each PackPlatform in parameters.PackPlatforms }}:
-        - job: pack_net6_${{ PackPlatform.name }}
+        - job: pack_net_${{ PackPlatform.name }}
           workspace:
             clean: all
           displayName: ${{ PackPlatform.name }}
-          timeoutInMinutes: 120
+          timeoutInMinutes: 240
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
@@ -201,18 +201,19 @@ stages:
                 poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
+                gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
-  - stage: samples_net6
+  - stage: samples_net
     displayName: Build .NET MAUI Samples
-    dependsOn: pack_net6
+    dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+          - job: build_net_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 120
+            timeoutInMinutes: 240
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
@@ -226,17 +227,11 @@ stages:
                 - Agent.HasDevices -equals False
                 - Agent.IsPaired -equals False
             steps:
-              - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                - template: agent-cleanser/v1.yml@xamarin-templates
-                  parameters:
-                    UninstallMono: false
-                    UninstallXamarinMac: false
-                    CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
@@ -259,9 +254,9 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - stage: templates_net6
+  - stage: templates_net
     displayName: Build .NET MAUI Templates
-    dependsOn: pack_net6
+    dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
@@ -270,7 +265,7 @@ stages:
               workspace:
                 clean: all
               displayName: ${{ BuildPlatform.name }} ${{ TestTFM.tfm }} (${{ BuildConfiguration }})
-              timeoutInMinutes: 120
+              timeoutInMinutes: 240
               condition: or(
                 ${{ parameters.BuildEverything }},
                 ne(variables['Build.Reason'], 'PullRequest'),
@@ -284,17 +279,11 @@ stages:
                   - Agent.HasDevices -equals False
                   - Agent.IsPaired -equals False
               steps:
-                - ${{ if eq(BuildPlatform.name, 'macOS') }}:
-                  - template: agent-cleanser/v1.yml@xamarin-templates
-                    parameters:
-                      UninstallMono: false
-                      UninstallXamarinMac: false
-                      CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
                 - template: common/provision.yml
                   parameters:
                     platform: ${{ BuildPlatform.name }}
                     poolName: ${{ BuildPlatform.poolName }}
-                    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                    
                 - task: DownloadBuildArtifacts@0
                   displayName: 'Download Packages'
                   inputs:

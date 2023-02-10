@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -61,7 +62,6 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		internal event EventHandler InvalidatePathGeometryRequested;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='AppendPath']/Docs/*" />
 		public override void AppendPath(PathF path)
 		{
 			foreach (var figure in Figures)

@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateBackground(this TextView platformView, IView view) =>
 			UpdateBackground(platformView, view, true);
 
-		// TODO: NET7 make this public for net7.0
+		// TODO: NET8 make this public for NET8.0
 		internal static void UpdateBackground(this EditText platformView, IView view)
 		{
 			var paint = view.Background;

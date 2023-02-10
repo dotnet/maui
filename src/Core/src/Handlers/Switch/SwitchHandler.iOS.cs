@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -7,6 +8,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, UISwitch>
 	{
+		// the UISwitch control becomes inaccessible if it grows to a width > 101
+		// An issue has been logged with Apple
+		// This ensures that the UISwitch remains the natural size that iOS expects
+		// But the container can be used for setting BGColors and other features.
+		public override bool NeedsContainer => true;
+
 		protected override UISwitch CreatePlatformView()
 		{
 			return new UISwitch(RectangleF.Empty);

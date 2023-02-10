@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polyline']/Docs/*" />
@@ -8,7 +9,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
 		public Polyline(PointCollection points) : this()
 		{
 			Points = points;

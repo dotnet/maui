@@ -1,11 +1,12 @@
-﻿using System;
+﻿#nullable disable
+using System;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WASDKApp = Microsoft.UI.Xaml.Application;
+using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSetter = Microsoft.UI.Xaml.Setter;
 using WStyle = Microsoft.UI.Xaml.Style;
-using Microsoft.Maui.Controls.Platform;
-using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using WASDKApp = Microsoft.UI.Xaml.Application;
-using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -193,8 +194,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var style = new WStyle(typeof(GridViewItem));
 
-			style.Setters.Add(new WSetter(GridViewItem.MarginProperty, margin));
-			style.Setters.Add(new WSetter(GridViewItem.PaddingProperty, WinUIHelpers.CreateThickness(0)));
+			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
+			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
 			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
 
 			return style;
@@ -207,8 +208,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var style = new WStyle(typeof(ListViewItem));
 
-			style.Setters.Add(new WSetter(ListViewItem.MarginProperty, margin));
-			style.Setters.Add(new WSetter(GridViewItem.PaddingProperty, WinUIHelpers.CreateThickness(0)));
+			style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0));
+			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
+			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
 			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
 
 			return style;
@@ -221,7 +223,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var style = new WStyle(typeof(ListViewItem));
 
-			style.Setters.Add(new WSetter(ListViewItem.PaddingProperty, padding));
+			style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0));
+			style.Setters.Add(new WSetter(Control.PaddingProperty, padding));
 			style.Setters.Add(new WSetter(Control.VerticalContentAlignmentProperty, VerticalAlignment.Stretch));
 
 			return style;

@@ -47,5 +47,28 @@ namespace Microsoft.Maui
 		async static Task<IScreenshotResult?> CaptureAsync(PlatformView window) =>
 			await Screenshot.Default.CaptureAsync(window);
 #endif
+
+#if !TIZEN
+		internal static bool NeedsContainer(this IView? view)
+		{
+			if (view?.Clip != null || view?.Shadow != null)
+				return true;
+
+#if ANDROID
+			if (view?.InputTransparent == true)
+				return true;
+#endif
+
+#if ANDROID || IOS
+			if (view is IBorder border && border.Border != null)
+				return true;
+#elif WINDOWS
+			if (view is IBorderView border)
+				return border?.Shape != null || border?.Stroke != null;
+#endif
+			return false;
+		}
+#endif
+
 	}
 }

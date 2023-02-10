@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {

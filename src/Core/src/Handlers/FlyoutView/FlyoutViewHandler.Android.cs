@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (flyoutView.Parent != _sideBySideView)
 			{
-				// When the Flyout is acting as a flyout Android will set the Visibilty to GONE when it's off screen
+				// When the Flyout is acting as a flyout Android will set the Visibility to GONE when it's off screen
 				// This makes sure it's visible
 				flyoutView.Visibility = ViewStates.Visible;
 				flyoutView.RemoveFromParent();
@@ -179,6 +179,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (_sideBySideView.Parent != PlatformView)
 				DrawerLayout.AddView(_sideBySideView);
+			else
+				UpdateDetailsFragmentView();
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(null);

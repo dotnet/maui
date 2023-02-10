@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
 
-					if (modalBkgndColor?.Alpha > 0)
+					if (modalBkgndColor?.Alpha > 0 || modalBkgndColor == Colors.Transparent)
 						result = UIKit.UIModalPresentationStyle.OverFullScreen;
 				}
 
@@ -104,6 +105,8 @@ namespace Microsoft.Maui.Controls.Platform
 			return base.PreferredInterfaceOrientationForPresentation();
 		}
 
+		// TODO: [UnsupportedOSPlatform("ios6.0")]
+#pragma warning disable CA1416, CA1422
 		public override bool ShouldAutorotate()
 		{
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
@@ -115,14 +118,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 		{
-#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios6.0")]
+
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
 			{
 				return ChildViewControllers[0].ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 			}
 			return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
-#pragma warning restore CA1416
 		}
+#pragma warning restore CA1416, CA1422
 
 		public override bool ShouldAutomaticallyForwardRotationMethods => true;
 

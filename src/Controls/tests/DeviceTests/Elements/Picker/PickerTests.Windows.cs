@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Xunit;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Controls;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class PickerTests : HandlerTestBase
+	public partial class PickerTests : ControlsHandlerTestBase
 	{
 		protected Task<string> GetPlatformControlText(ComboBox platformView)
 		{

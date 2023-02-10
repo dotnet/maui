@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -346,7 +347,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// This mainly happens if all of the items that are part of this shell section 
 			// vanish. Android calls `OnPageSelected` with position zero even though the view pager is
 			// empty
-			if (visibleItems.Count >= position)
+			if (position >= visibleItems.Count)
 				return;
 
 			var shellContent = visibleItems[position];

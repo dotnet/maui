@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -15,9 +16,9 @@ using Google.Android.Material.AppBar;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Layouts;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
-using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -122,21 +123,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// so we want to delay loading to the latest possible point in time so
 				// it doesn't delay initial startup.
 				GenericGlobalLayoutListener ggll = null;
-				ggll = new GenericGlobalLayoutListener(InitialLoad);
-				sfl.ViewTreeObserver.AddOnGlobalLayoutListener(ggll);
+				ggll = new GenericGlobalLayoutListener(InitialLoad, sfl);
 
-				void InitialLoad()
+				void InitialLoad(GenericGlobalLayoutListener listener, AView view)
 				{
 					OnFlyoutViewLayoutChanging();
 
 					if (_flyoutContentView == null || ggll == null)
 						return;
 
-					var listener = ggll;
 					ggll = null;
-
-					// Once initial load has finished let's just attach to Layout Changing
-					sfl.ViewTreeObserver.RemoveOnGlobalLayoutListener(listener);
+					listener.Invalidate();
 					sfl.LayoutChanging += OnFlyoutViewLayoutChanging;
 				}
 			}

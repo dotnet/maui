@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -284,6 +285,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void AddingTabSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var window = new Window(new TabbedPage() { Children = { cp } });
+
+			Assert.Equal(window, btn.Window);
+		}
+
+		[Fact]
+		public void RemovingTabUnSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var tabbedPage = new TabbedPage() { Children = { cp, new ContentPage() } };
+			var window = new Window(tabbedPage);
+
+			Assert.Equal(window, btn.Window);
+			tabbedPage.Children.RemoveAt(0);
+			Assert.Null(btn.Window);
+		}
+
+		[Fact]
+		public async Task PushingPageSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var secondPage = new ContentPage { Content = grid };
+			var np = new NavigationPage(new ContentPage());
+			var window = new Window(np);
+			await np.PushAsync(secondPage);
+
+			Assert.Equal(window, btn.Window);
+		}
+
+		[Fact]
+		public async Task PoppingPageUnsetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var secondPage = new ContentPage { Content = grid };
+			var np = new NavigationPage(new ContentPage());
+			var window = new Window(np);
+			await np.PushAsync(secondPage);
+			await np.PopAsync();
+
+			Assert.Null(btn.Window);
+		}
+
+		[Fact]
+		public void PoppingPageUnSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var tabbedPage = new TabbedPage() { Children = { cp, new ContentPage() } };
+			var window = new Window(tabbedPage);
+
+			Assert.Equal(window, btn.Window);
+			tabbedPage.Children.RemoveAt(0);
+			Assert.Null(btn.Window);
+		}
+
+		[Fact]
 		void DestroyedFiresDisappearingEvent()
 		{
 			int disappear = 0;
@@ -445,6 +512,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(double.NaN, coreWindow.MaximumWidth);
 			Assert.Equal(double.NaN, coreWindow.MaximumHeight);
+		}
+
+		[Fact]
+		public void ShellTitleChangePropagatesToWindow()
+		{
+			var app = new TestApp();
+			var shell = new ShellTestBase.TestShell() { Title = "test" };
+			var window = app.CreateWindow();
+			bool fired = false;
+			window.Page = shell;
+			window.Handler = new WindowHandlerStub(new PropertyMapper<IWindow, WindowHandlerStub>()
+			{
+				[nameof(IWindow.Title)] = (_, _) => fired = true
+			});
+
+			// reset after setting handler
+			fired = false;
+			shell.Title = "new title";
+
+
+			Assert.Equal(shell.Title, (window as IWindow).Title);
+			Assert.True(fired);
+		}
+
+		[Fact]
+		public void PreviousShellDisconnectsFromWindowPropertyChanged()
+		{
+			var app = new TestApp();
+			var oldShell = new Shell() { Title = "Old Shell" };
+			var window = app.CreateWindow(oldShell);
+			bool fired = false;
+
+			window.Handler = new WindowHandlerStub(new PropertyMapper<IWindow, WindowHandlerStub>()
+			{
+				[nameof(IWindow.Title)] = (_, _) =>
+				{
+					fired = true;
+				}
+			});
+
+			window.Page = new Shell() { Title = "test" };
+
+			// reset after setting handler
+			fired = false;
+
+			oldShell.Title = "new title";
+			Assert.Equal("test", (window as IWindow).Title);
+			Assert.False(fired);
 		}
 
 		[Theory]

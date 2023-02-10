@@ -10,7 +10,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.View)]
-	public partial class ViewHandlerTests : HandlerTestBase<StubBaseHandler, StubBase>
+	public partial class ViewHandlerTests : CoreHandlerTestBase<StubBaseHandler, StubBase>
 	{
 		[Fact(DisplayName = "PlatformArrange triggers MapFrame")]
 		public async Task PlatformArrangeTriggersMapFrame()

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Concurrent;
+using System.IO;
 
 namespace Microsoft.Maui
 {
@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public string GetFontFamily(string? fontFamliy)
+		public string GetFontFamily(string? fontFamliy) //TODO: this is a misspelling in public ABI; consider changing in NET8
 		{
 			if (string.IsNullOrEmpty(fontFamliy))
 				return "";
@@ -51,8 +51,7 @@ namespace Microsoft.Maui
 			if (index != -1)
 			{
 				string font = cleansedFont.Substring(0, index);
-				string style = cleansedFont.Substring(index + 1);
-				return $"{font}:style={style}";
+				return $"{font}";
 			}
 			else
 			{
@@ -79,8 +78,7 @@ namespace Microsoft.Maui
 			if (index != -1)
 			{
 				string font = cleansedFont.Substring(0, index);
-				string style = cleansedFont.Substring(index + 1);
-				return $"{font}:style={style}";
+				return $"{font}";
 			}
 			else
 			{

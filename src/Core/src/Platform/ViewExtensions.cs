@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Microsoft.Maui.Graphics;
 using System.Threading.Tasks;
@@ -38,7 +38,6 @@ namespace Microsoft.Maui.Platform
 
 		internal static double ExtractAngleInDegrees(this Matrix4x4 matrix) => ExtractAngleInRadians(matrix) * 180 / Math.PI;
 
-		/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="//Member[@MemberName='ToHandler']/Docs/*" />
 
 		public static IPlatformViewHandler ToHandler(this IView view, IMauiContext context) =>
 			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);

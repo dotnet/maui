@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			get => (UIViewController)Platform.GetRenderer(Platform.Page);
 		}
-
+#pragma warning disable CA1416, CA1422  // TODO: The API has [UnsupportedOSPlatform("ios6.0")]
 		public override bool ShouldAutorotate()
 		{
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
@@ -62,13 +62,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 		{
-#pragma warning disable CA1416 // TODO: The API has [UnsupportedOSPlatform("ios6.0")]
+
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
 			{
 				return ChildViewControllers[0].ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 			}
 			return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 		}
 
 		public override bool ShouldAutomaticallyForwardRotationMethods => true;

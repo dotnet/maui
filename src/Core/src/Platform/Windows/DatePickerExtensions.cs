@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Platform
 			"CalendarDatePickerTextForegroundSelected"
 		};
 
-		// TODO NET7 add to public API
+		// TODO NET8 add to public API
 		internal static void UpdateBackground(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			var brush = datePicker?.Background?.ToPlatform();

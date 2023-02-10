@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml;
 using WinRT;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

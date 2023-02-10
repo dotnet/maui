@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{45
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E1082E26-D700-4127-9329-66D673FD2D55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maui.Controls.Sample", "src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj", "{B8DC1324-977C-46F1-B697-9064ADE6099A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample", "src\Controls\samples\Controls.Sample\Maui.Controls.Sample.csproj", "{B8DC1324-977C-46F1-B697-9064ADE6099A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compatibility", "Compatibility", "{123AA89E-1638-4E0E-B828-B8F9F9F906A2}"
 EndProject
@@ -90,9 +90,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests.Runne
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests", "src\Core\tests\DeviceTests\Core.DeviceTests.csproj", "{50BCB5CD-DC2A-42AA-B921-D99B19625CE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Foldable", "src\Controls\Foldable\src\Controls.Foldable.csproj", "{F0A48792-ACD7-4B72-83EB-C56A70FA5A3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Foldable", "src\Controls\Foldable\src\Controls.Foldable.csproj", "{F0A48792-ACD7-4B72-83EB-C56A70FA5A3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maps", "src\Core\maps\src\Maps.csproj", "{1C9F9D5A-2CF7-4ADB-A9F5-672ACC05B035}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maps", "src\Core\maps\src\Maps.csproj", "{1C9F9D5A-2CF7-4ADB-A9F5-672ACC05B035}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Graphics", "Graphics", "{E4884871-4A1B-43BC-814F-E3D6E52B1673}"
 EndProject
@@ -103,6 +103,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics", "src\Graphics\src\Graphics\Graphics.csproj", "{CF056C95-51C4-4366-9D06-41D2B15EFEE4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Tests", "src\Graphics\tests\Graphics.Tests\Graphics.Tests.csproj", "{56BBFDBD-254F-42B6-9984-46E19C53FB00}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests.Shared", "src\Core\tests\DeviceTests.Shared\Core.DeviceTests.Shared.csproj", "{B000E53D-AB58-42E3-8964-2B3F30ECC886}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -229,6 +231,10 @@ Global
 		{56BBFDBD-254F-42B6-9984-46E19C53FB00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56BBFDBD-254F-42B6-9984-46E19C53FB00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56BBFDBD-254F-42B6-9984-46E19C53FB00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B000E53D-AB58-42E3-8964-2B3F30ECC886}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B000E53D-AB58-42E3-8964-2B3F30ECC886}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B000E53D-AB58-42E3-8964-2B3F30ECC886}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B000E53D-AB58-42E3-8964-2B3F30ECC886}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -276,6 +282,7 @@ Global
 		{936C47A9-A7EA-4FBD-8733-CED1D4100E69} = {E4884871-4A1B-43BC-814F-E3D6E52B1673}
 		{CF056C95-51C4-4366-9D06-41D2B15EFEE4} = {42AB9AE1-631D-4AD4-85B7-910FF0940BDB}
 		{56BBFDBD-254F-42B6-9984-46E19C53FB00} = {936C47A9-A7EA-4FBD-8733-CED1D4100E69}
+		{B000E53D-AB58-42E3-8964-2B3F30ECC886} = {C564DDD6-DE79-45CD-88EA-3F690481572A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

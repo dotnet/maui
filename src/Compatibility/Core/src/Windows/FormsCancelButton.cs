@@ -1,7 +1,7 @@
 using System;
 using Microsoft.UI.Xaml.Controls;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

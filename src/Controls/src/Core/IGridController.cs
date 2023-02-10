@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls

@@ -1020,8 +1020,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			_context.SetTextDrawingMode(CGTextDrawingMode.Fill);
 			_context.TextMatrix = FlipTransform;
 #pragma warning disable BI1234 // Type or member is obsolete
+#pragma warning disable CA1422, CA1416 // Validate platform compatibility
 			_context.ShowTextAtPoint(x, y, value);
-#pragma warning restore BI1234 // Type or member is obsolete
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore BI1234, CA1416 // Type or member is obsolete
 		}
 
 		public override void DrawString(

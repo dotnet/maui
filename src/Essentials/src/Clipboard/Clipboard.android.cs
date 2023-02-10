@@ -45,6 +45,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 	{
 		ClipboardImplementation clipboard;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ClipboardChangeListener"/> class.
+		/// </summary>
+		/// <param name="clipboard">An instance of <see cref="ClipboardImplementation"/> that will be used to listen for changes.</param>
 		public ClipboardChangeListener(ClipboardImplementation clipboard)
 		{
 			this.clipboard = clipboard;

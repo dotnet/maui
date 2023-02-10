@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Primitives;
@@ -88,15 +87,37 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 		}
 
+		static GridLength GridLengthFromString(string gridLength)
+		{
+			gridLength = gridLength.Trim();
+
+			if (gridLength.EndsWith("*"))
+			{
+				gridLength = gridLength.Substring(0, gridLength.Length - 1);
+
+				if (gridLength.Length == 0)
+				{
+					return GridLength.Star;
+				}
+
+				return new GridLength(double.Parse(gridLength), GridUnitType.Star);
+			}
+
+			if (gridLength.ToLower() == "auto")
+			{
+				return GridLength.Auto;
+			}
+
+			return new GridLength(double.Parse(gridLength));
+		}
+
 		List<IGridColumnDefinition> CreateTestColumns(params string[] columnWidths)
 		{
-			var converter = new GridLengthTypeConverter();
-
 			var colDefs = new List<IGridColumnDefinition>();
 
 			foreach (var width in columnWidths)
 			{
-				var gridLength = converter.ConvertFromInvariantString(width);
+				var gridLength = GridLengthFromString(width);
 				var colDef = Substitute.For<IGridColumnDefinition>();
 				colDef.Width.Returns(gridLength);
 				colDefs.Add(colDef);
@@ -107,13 +128,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		List<IGridRowDefinition> CreateTestRows(params string[] rowHeights)
 		{
-			var converter = new GridLengthTypeConverter();
-
 			var rowDefs = new List<IGridRowDefinition>();
 
 			foreach (var height in rowHeights)
 			{
-				var gridLength = converter.ConvertFromInvariantString(height);
+				var gridLength = GridLengthFromString(height);
 				var rowDef = Substitute.For<IGridRowDefinition>();
 				rowDef.Height.Returns(gridLength);
 				rowDefs.Add(rowDef);
@@ -1436,6 +1455,26 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(expectedHeight, measure.Height);
 		}
 
+		[Theory]
+		[InlineData("*", "*")]
+		[InlineData("auto", "auto")]
+		public void MeasureRespectsLargestChildMinimumSize(string columns, string rows)
+		{
+			var grid = CreateGridLayout(columns: columns, rows: rows);
+			var view0 = CreateTestView(new Size(100, 100));
+			var view1 = CreateTestView(new Size(200, 200));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0);
+			SetLocation(grid, view1);
+
+			var layoutManager = new GridLayoutManager(grid);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(200, measure.Height);
+			Assert.Equal(200, measure.Width);
+		}
+
 		[Category(GridAbsoluteSizing)]
 		[Theory]
 		[InlineData(50, 10, 50)]
@@ -2315,6 +2354,29 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			_ = MeasureAndArrange(grid, 200, screenHeight);
 
 			AssertArranged(view1, new Rect(20, 0, 20, 500));
+		}
+
+		[Fact]
+		[Category(GridStarSizing)]
+		public void StarsExpandToFixedSizes()
+		{
+			var grid = CreateGridLayout();
+			grid.DesiredSize.Returns(new Size(100, 120));
+			grid.Width.Returns(100);
+			grid.Height.Returns(120);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			view0.Width.Returns(20);
+			view0.Height.Returns(20);
+			view0.HorizontalLayoutAlignment.Returns(LayoutAlignment.End);
+			view0.VerticalLayoutAlignment.Returns(LayoutAlignment.Start);
+
+			SetLocation(grid, view0);
+			SubstituteChildren(grid, view0);
+
+			_ = MeasureAndArrange(grid);
+
+			AssertArranged(view0, new Rect(0, 0, 100, 120));
 		}
 	}
 }

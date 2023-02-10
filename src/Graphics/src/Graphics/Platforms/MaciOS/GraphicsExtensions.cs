@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
-using ObjCRuntime;
 using CoreGraphics;
+using ObjCRuntime;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
