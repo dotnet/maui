@@ -44,7 +44,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)
 		{
-			platformButton.TitleLabel.UpdateCharacterSpacing(textStyle);
+			var attributedText = platformButton?.TitleLabel.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
+			platformButton?.SetAttributedTitle(attributedText, UIControlState.Normal);
 		}
 
 		public static void UpdateFont(this UIButton platformButton, ITextStyle textStyle, IFontManager fontManager)
