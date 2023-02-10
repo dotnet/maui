@@ -17,7 +17,7 @@
     <ProjectReference Include="..\Graphics\Graphics.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\..\Workload\Shared\LibraryPacks.targets" />
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 

@@ -291,8 +291,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			lbl3.HorizontalTextAlignment = TextAlignment.Center;
 			lbl3.Text = "Center text";
 
-			//var ogv = AddView<OpenGLView>(grid, ref col, ref row, hOptions, vOptions, margin);
-
 			var pkr = AddView<Picker>(grid, ref col, ref row);
 			pkr.ItemsSource = Enumerable.Range(0, 10).ToList();
 
