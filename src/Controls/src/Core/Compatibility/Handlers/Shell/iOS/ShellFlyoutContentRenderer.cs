@@ -89,14 +89,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			int previousIndex = GetPreviousIndex(_headerView);
-			if (_headerView != null)
+			if (_headerView is not null)
 			{
 				_tableViewController.HeaderView = null;
 				_headerView.RemoveFromSuperview();
 				_headerView.Dispose();
 			}
 
-			if (header != null)
+			if (header is not null)
 				_headerView = new ShellFlyoutHeaderContainer(((IShellController)_shellContext.Shell).FlyoutHeader);
 			else
 				_headerView = null;
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			int previousIndex = GetPreviousIndex(_footerView);
-			if (_footer != null)
+			if (_footer is not null)
 			{
 				var oldRenderer = (IPlatformViewHandler)_footer.Handler;
 				var oldFooterView = _footerView;
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_footer = view;
 
-			if (_footer != null)
+			if (_footer is not null)
 			{
 				_footerView = new UIContainerView(_footer);
 				_uIViews[FooterIndex] = _footerView;
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		int GetPreviousIndex(UIView oldView)
 		{
-			if (oldView == null)
+			if (oldView is null)
 				return -1;
 
 			return Array.IndexOf(View.Subviews, oldView);
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void AddViewInCorrectOrder(UIView newView, int previousIndex)
 		{
-			if (newView == null)
+			if (newView is null)
 				return;
 
 			if (Array.IndexOf(View.Subviews, newView) >= 0)
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			for (int i = startingIndex - 1; i >= 0; i--)
 			{
 				var topView = _uIViews[i];
-				if (topView == null)
+				if (topView is null)
 					continue;
 
 				if (Array.IndexOf(View.Subviews, topView) >= 0)
@@ -194,13 +194,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void ReMeasureFooter()
 		{
 			var size = _footerView?.SizeThatFits(new CGSize(View.Frame.Width, double.PositiveInfinity));
-			if (size != null)
+			if (size is not null)
 				UpdateFooterPosition(size.Value.Height);
 		}
 
 		void UpdateFooterPosition()
 		{
-			if (_footerView == null)
+			if (_footerView is null)
 				return;
 
 			if (double.IsNaN(_footerView.MeasuredHeight))
@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFooterPosition(nfloat footerHeight)
 		{
-			if (_footerView == null && !nfloat.IsNaN(footerHeight))
+			if (_footerView is null && !nfloat.IsNaN(footerHeight))
 				return;
 
 			var footerWidth = View.Frame.Width;
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var brush = _shellContext.Shell.FlyoutBackground;
 			int previousIndex = GetPreviousIndex(_blurView);
 			var backgroundImage = View.GetBackgroundImage(brush);
-			View.BackgroundColor = backgroundImage != null ? UIColor.FromPatternImage(backgroundImage) : color?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
+			View.BackgroundColor = backgroundImage is not null ? UIColor.FromPatternImage(backgroundImage) : color?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 
 			if (View.BackgroundColor.CGColor.Alpha < 1)
 			{
@@ -242,7 +242,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
-				if (_blurView.Superview != null)
+				if (_blurView.Superview is not null)
 					_blurView.RemoveFromSuperview();
 			}
 
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			// Image
 			var imageSource = _shellContext.Shell.FlyoutBackgroundImage;
-			if (imageSource == null || !_shellContext.Shell.IsSet(Shell.FlyoutBackgroundImageProperty))
+			if (imageSource is null || !_shellContext.Shell.IsSet(Shell.FlyoutBackgroundImageProperty))
 			{
 				_bgImage.RemoveFromSuperview();
 				_bgImage.Image?.Dispose();
@@ -262,18 +262,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var mauiContext = _shellContext.Shell.FindMauiContext();
-			if (mauiContext == null)
+			if (mauiContext is null)
 				return;
 
 			imageSource.LoadImage(mauiContext, result =>
 			{
 				var nativeImage = result?.Value;
 
-				if (View == null || nativeImage == null)
+				if (View is null || nativeImage is null)
 					return;
 
 				int previousIndex = GetPreviousIndex(_bgImage);
-				if (nativeImage == null ||
+				if (nativeImage is null ||
 					_shellContext.Shell.FlyoutBackgroundImage != imageSource)
 				{
 					_bgImage?.RemoveFromSuperview();
@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var view = (_shellContext.Shell as IShellController).FlyoutContent;
 
 			var previousIndex = GetPreviousIndex(_shellFlyoutContentManager.ContentView);
-			if (view != null)
+			if (view is not null)
 			{
 				_shellFlyoutContentManager.SetCustomContent(view);
 			}

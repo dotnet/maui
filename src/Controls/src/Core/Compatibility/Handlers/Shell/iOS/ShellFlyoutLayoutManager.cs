@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			removeScolledEvent?.Invoke();
 			removeScolledEvent = null;
 
-			if (Content != null)
+			if (Content is not null)
 			{
 				var oldRenderer = (IPlatformViewHandler)Content.Handler;
 				var oldContentView = ContentView;
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				oldRenderer?.DisconnectHandler();
 			}
 			// If the user hasn't defined custom content then only the ContentView is set
-			else if (ContentView != null)
+			else if (ContentView is not null)
 			{
 				var oldContentView = ContentView;
 				ContentView = null;
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			Content = content;
-			if (Content != null)
+			if (Content is not null)
 			{
 				var renderer = Content.ToHandler(_context.Shell.FindMauiContext());
 				ContentView = renderer.PlatformView;
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else if (ContentView is IPlatformViewHandler ver && ver.PlatformView is UIScrollView uIScroll)
 					ScrollView = uIScroll;
 
-				if (ScrollView != null && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+				if (ScrollView is not null && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
 #if TVOS
 					|| OperatingSystem.IsTvOSVersionAtLeast(11)
 #endif
@@ -150,12 +150,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_headerView == value)
 					return;
 
-				if (_headerView != null)
+				if (_headerView is not null)
 					_headerView.HeaderSizeChanged -= OnHeaderViewMeasureChanged;
 				
 				_headerView = value;
 
-				if (_headerView != null)
+				if (_headerView is not null)
 					_headerView.HeaderSizeChanged += OnHeaderViewMeasureChanged;
 
 				UpdateHeaderSize();
@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnHeaderViewMeasureChanged(object sender, EventArgs e)
 		{
-			if (HeaderView == null || ContentView?.Superview == null)
+			if (HeaderView is null || ContentView?.Superview is null)
 				return;
 
 			HeaderView.SizeThatFits(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void UpdateHeaderSize()
 		{
-			if (HeaderView == null || ContentView?.Superview == null)
+			if (HeaderView is null || ContentView?.Superview is null)
 				return;
 
 			// If the HeaderView hasn't been measured we need to measure it
@@ -203,12 +203,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void SetHeaderContentInset()
 		{
-			if (ScrollView == null)
+			if (ScrollView is null)
 				return;
 
 			var offset = ScrollView.ContentInset.Top;
 
-			if (HeaderView != null)
+			if (HeaderView is not null)
 			{
 				if (double.IsNaN(MeasuredHeaderViewHeightWithNoMargin))
 				{
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public void UpdateVerticalScrollMode()
 		{
-			if (ScrollView == null)
+			if (ScrollView is null)
 				return;
 
 			switch (_context.Shell.FlyoutVerticalScrollMode)
@@ -256,19 +256,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public void LayoutParallax()
 		{
 			var parent = ContentView?.Superview;
-			if (parent == null)
+			if (parent is null)
 				return;
 
 			nfloat footerHeight = 0;
 
-			if (FooterView != null)
+			if (FooterView is not null)
 				footerHeight = FooterView.Frame.Height;
 
 			var contentViewYOffset = HeaderView?.Frame.Height ?? 0;
 
-			if (ScrollView != null)
+			if (ScrollView is not null)
 			{
-				if (Content == null)
+				if (Content is null)
 				{
 					ContentView.Frame =
 							new CGRect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				float topMargin = 0;
 				if (!Content.IsSet(View.MarginProperty))
 				{
-					if (HeaderView == null)
+					if (HeaderView is null)
 						topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
 				else
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				(Content as IView)?.Arrange(contentFrame);
 			}
 
-			if (HeaderView != null && !double.IsNaN(ArrangedHeaderViewHeightWithNoMargin))
+			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithNoMargin))
 			{
 				HeaderView.Frame = new CGRect(0, _headerOffset + HeaderTopMargin, parent.Frame.Width, ArrangedHeaderViewHeightWithNoMargin + HeaderTopMargin);
 
@@ -308,7 +308,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					HeaderView.Layer.Mask = shapeLayer;
 
 				}
-				else if (HeaderView.Layer.Mask != null)
+				else if (HeaderView.Layer.Mask is not null)
 					HeaderView.Layer.Mask = null;
 			}
 		}
@@ -359,9 +359,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateHeaderMaximumSize(nfloat? contentOffsetY)
 		{
-			if (HeaderView != null)
+			if (HeaderView is not null)
 			{
-				if (ScrollView != null && contentOffsetY != null && _context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
+				if (ScrollView is not null && contentOffsetY is not null && _context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
 					ArrangedHeaderViewHeightWithNoMargin = Math.Max(HeaderMinimumHeight, -contentOffsetY.Value);
 				else
 					ArrangedHeaderViewHeightWithNoMargin = MeasuredHeaderViewHeightWithNoMargin;
@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get => _headerSize;
 			set
 			{
-				if (HeaderView != null &&
+				if (HeaderView is not null &&
 					HeaderView.Height != (value))
 				{
 					HeaderView.Height = value;
@@ -387,7 +387,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			get
 			{
-				if (HeaderView != null)
+				if (HeaderView is not null)
 					return HeaderView.MeasuredHeight;
 
 				return HeaderView?.MeasuredHeight ?? 0;
@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			get
 			{
-				if (HeaderView == null ||
+				if (HeaderView is null ||
 					HeaderView.View.MinimumHeightRequest == -1 ||
 					HeaderView.View.MinimumHeightRequest == Dimension.Unset)
 				{
@@ -412,7 +412,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		double HeaderTopMargin => (HeaderView != null) ?
+		double HeaderTopMargin => (HeaderView is not null) ?
 			HeaderView.Margin.Top - HeaderView.Margin.Bottom : 0;
 
 		public void TearDown()
