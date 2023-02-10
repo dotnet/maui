@@ -1,0 +1,13 @@
+<Project>
+
+  <PropertyGroup>
+    <UsingMicrosoftMauiCoreSdk>true</UsingMicrosoftMauiCoreSdk>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.Before.targets" />
+
+  <PropertyGroup>
+    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Core.After.targets</AfterMicrosoftNETSdkTargets>
+  </PropertyGroup>
+
+</Project>

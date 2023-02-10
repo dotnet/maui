@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using SkiaSharp;
 using Microsoft.Maui.Controls.Shapes;
-using Rect = Microsoft.Maui.Graphics.Rect;
+using SkiaSharp;
 using Point = Microsoft.Maui.Graphics.Point;
+using Rect = Microsoft.Maui.Graphics.Rect;
 
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

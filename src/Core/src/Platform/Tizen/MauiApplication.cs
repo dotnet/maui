@@ -5,8 +5,8 @@ using Microsoft.Maui.LifecycleEvents;
 using Tizen.Applications;
 using Tizen.NUI;
 using IOPath = System.IO.Path;
-using TApplication = Tizen.Applications.Application;
 using NView = Tizen.NUI.BaseComponents.View;
+using TApplication = Tizen.Applications.Application;
 
 namespace Microsoft.Maui
 {

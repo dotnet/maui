@@ -10,6 +10,9 @@
         <ScrollView>
             <StackLayout
                 Padding="12">
+                <Label
+                    Text="Default"
+                    Style="{StaticResource Headline}"/>
                 <controls:CardView 
                     BorderColor="DarkGray"
                     CardTitle="Slavko Vlasic"
@@ -34,6 +37,27 @@
                     CardDescription="In pellentesque odio eget augue elementum lobortis. Sed augue massa, rhoncus eu nisi vitae, egestas."
                     IconBackgroundColor="SlateGray"
                     IconImageSource="dotnet_bot.png" />
+                <Label
+                    Text="BindingContext"
+                    Style="{StaticResource Headline}"/>
+                <Label 
+                    Text="Content" />
+                <ContentView>
+                    <ContentView.Content>
+                        <Label 
+                            Text="{Binding Text}" />
+                    </ContentView.Content>
+                </ContentView>
+                <Label 
+                    Text="ControlTemplate" />
+                <ContentView>
+                    <ContentView.ControlTemplate>
+                        <ControlTemplate>
+                            <Label 
+                                Text="{Binding Text}" />
+                        </ControlTemplate>
+                    </ContentView.ControlTemplate>
+                </ContentView>
             </StackLayout>
         </ScrollView>
     </views:BasePage.Content>
