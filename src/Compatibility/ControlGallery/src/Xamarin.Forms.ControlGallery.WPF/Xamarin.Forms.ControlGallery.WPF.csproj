@@ -42,12 +42,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Remove="**\*.xaml" />
-    <Compile Include="..\Xamarin.Forms.Controls\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs">
-      <Link>GalleryPages\AdvancedOpenGLGallery.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Controls\GalleryPages\OpenGLGalleries\BasicOpenGLGallery.cs">
-      <Link>GalleryPages\BasicOpenGLGallery.cs</Link>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\*.ttf" />
