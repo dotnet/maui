@@ -361,7 +361,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 		public override int GetHashCode()
 		{
-			return Query.GetHashCode(StringComparison.InvariantCulture) ^ State.GetHashCode();
+			return System.HashCode.Combine(Query.GetHashCode(StringComparison.InvariantCulture), State.GetHashCode());
 		}
 	}
 }
