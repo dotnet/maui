@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Platform
 		{
 			try
 			{
-				return webView != null && webView.CoreWebView2 != null;
+				return webView is not null && webView.CoreWebView2 is not null;
 			}
 			catch (Exception ex) when (ex is ObjectDisposedException || ex is InvalidOperationException)
 			{
