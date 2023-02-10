@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.ComponentModel;
 using Android.Content;
@@ -339,15 +337,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateContent()
 		{
+			if (ChildCount == 1)
+				RemoveViewAt(0);
+
 			var content = Element?.Content;
 
 			if (content == null || _mauiContext == null)
-			{
-				if (ChildCount == 1)
-					RemoveViewAt(0);
-
 				return;
-			}
 
 			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);

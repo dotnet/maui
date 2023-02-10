@@ -4,14 +4,12 @@
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
-    <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'false' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
@@ -21,7 +19,6 @@
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -75,7 +72,7 @@
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(PackageOutputPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
-    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install tizen maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
+    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install tizen maui --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
 
   </Target>
 
@@ -168,7 +165,7 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
     />

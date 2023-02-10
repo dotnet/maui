@@ -59,7 +59,32 @@ namespace Microsoft.Maui.DeviceTests
 
 				void OnFocused(object? sender, AView.FocusChangeEventArgs e)
 				{
+					if (!e.HasFocus)
+						return;
+
 					view.FocusChange -= OnFocused;
+					focusSource.SetResult();
+				}
+			}
+		}
+
+		public static async Task WaitForUnFocused(this AView view, int timeout = 1000)
+		{
+			if (view.IsFocused)
+			{
+				TaskCompletionSource focusSource = new TaskCompletionSource();
+				view.FocusChange += OnUnFocused;
+				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+				// Even though the event fires unfocus hasn't fully been achieved
+				await Task.Delay(10);
+
+				void OnUnFocused(object? sender, AView.FocusChangeEventArgs e)
+				{
+					if (e.HasFocus)
+						return;
+
+					view.FocusChange -= OnUnFocused;
 					focusSource.SetResult();
 				}
 			}
@@ -81,6 +106,13 @@ namespace Microsoft.Maui.DeviceTests
 			await view.FocusView(timeout);
 			KeyboardManager.ShowKeyboard(view);
 			await view.WaitForKeyboardToShow(timeout);
+		}
+
+		public static async Task HideKeyboardForView(this AView view, int timeout = 1000)
+		{
+			await view.FocusView(timeout);
+			KeyboardManager.HideKeyboard(view);
+			await view.WaitForKeyboardToHide(timeout);
 		}
 
 		public static async Task WaitForKeyboardToShow(this AView view, int timeout = 1000)
@@ -289,11 +321,19 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor)
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
+
+		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 		{
-			for (int x = 0; x < bitmap.Width; x++)
+			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 			{
-				for (int y = 0; y < bitmap.Height; y++)
+				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 				{
 					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(expectedColor))
 					{

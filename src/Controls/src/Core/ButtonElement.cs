@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
@@ -7,33 +8,18 @@ namespace Microsoft.Maui.Controls
 	static class ButtonElement
 	{
 		/// <summary>
-		/// The backing store for the <see cref="IButtonElement.Command" /> bindable property.
+		/// The backing store for the <see cref="ICommandElement.Command" /> bindable property.
 		/// </summary>
-		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(IButtonElement.Command), typeof(ICommand), typeof(IButtonElement), null, propertyChanging: OnCommandChanging, propertyChanged: OnCommandChanged);
+		public static readonly BindableProperty CommandProperty = BindableProperty.Create(
+			nameof(IButtonElement.Command), typeof(ICommand), typeof(IButtonElement), null,
+			propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
 
 		/// <summary>
-		/// The backing store for the <see cref="IButtonElement.CommandParameter" /> bindable property.
+		/// The backing store for the <see cref="ICommandElement.CommandParameter" /> bindable property.
 		/// </summary>
-		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(IButtonElement.CommandParameter), typeof(object), typeof(IButtonElement), null,
-			propertyChanged: (bindable, oldvalue, newvalue) => CommandCanExecuteChanged(bindable, EventArgs.Empty));
-
-		static void OnCommandChanged(BindableObject bo, object o, object n)
-		{
-			IButtonElement button = (IButtonElement)bo;
-			if (n is ICommand newCommand)
-				newCommand.CanExecuteChanged += button.OnCommandCanExecuteChanged;
-
-			CommandChanged(button);
-		}
-
-		static void OnCommandChanging(BindableObject bo, object o, object n)
-		{
-			IButtonElement button = (IButtonElement)bo;
-			if (o != null)
-			{
-				(o as ICommand).CanExecuteChanged -= button.OnCommandCanExecuteChanged;
-			}
-		}
+		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(
+			nameof(IButtonElement.CommandParameter), typeof(object), typeof(IButtonElement), null,
+			propertyChanged: CommandElement.OnCommandParameterChanged);
 
 		/// <summary>
 		/// The string identifier for the pressed visual state of this control.
@@ -41,39 +27,8 @@ namespace Microsoft.Maui.Controls
 		public const string PressedVisualState = "Pressed";
 
 		/// <summary>
-		/// A method to signal that the <see cref="IButtonElement.Command"/> property has been changed.
-		/// </summary>
-		/// <param name="sender">The object initiating this event.</param>
-		public static void CommandChanged(IButtonElement sender)
-		{
-			if (sender.Command != null)
-			{
-				CommandCanExecuteChanged(sender, EventArgs.Empty);
-			}
-			else
-			{
-				sender.IsEnabledCore = true;
-			}
-		}
-
-		/// <summary>
-		/// A method to signal that the <see cref="Command.CanExecute(object)"/> might have changed and needs to be reevaluated.
-		/// </summary>
-		/// <param name="sender">The object initiating this event.</param>
-		/// <param name="e">Arguments associated with this event.</param>
-		public static void CommandCanExecuteChanged(object sender, EventArgs e)
-		{
-			IButtonElement ButtonElementManager = (IButtonElement)sender;
-			ICommand cmd = ButtonElementManager.Command;
-			if (cmd != null)
-			{
-				ButtonElementManager.IsEnabledCore = cmd.CanExecute(ButtonElementManager.CommandParameter);
-			}
-		}
-
-		/// <summary>
 		/// A method to signal that this element was clicked/tapped.
-		/// By calling this, the <see cref="IButtonElement.Command"/> and clicked events are triggered.
+		/// By calling this, the <see cref="ICommandElement.Command"/> and clicked events are triggered.
 		/// </summary>
 		/// <param name="visualElement">The element that was interacted with.</param>
 		/// <param name="ButtonElementManager">The button element implementation to trigger the commands and events on.</param>

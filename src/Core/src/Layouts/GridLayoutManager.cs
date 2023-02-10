@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
@@ -51,9 +52,6 @@ namespace Microsoft.Maui.Layouts
 
 		class GridStructure
 		{
-			public double HeightConstraint => _gridHeightConstraint;
-			public double WidthConstraint => _gridWidthConstraint;
-
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
 			readonly double _gridHeightConstraint;
@@ -65,6 +63,9 @@ namespace Microsoft.Maui.Layouts
 			readonly double _gridMaxWidth;
 			readonly double _gridMinWidth;
 
+			readonly bool _isStarWidthPrecomputable;
+			readonly bool _isStarHeightPrecomputable;
+
 			Definition[] _rows { get; }
 			Definition[] _columns { get; }
 
@@ -74,8 +75,6 @@ namespace Microsoft.Maui.Layouts
 			readonly Thickness _padding;
 			readonly double _rowSpacing;
 			readonly double _columnSpacing;
-			readonly IReadOnlyList<IGridRowDefinition> _rowDefinitions;
-			readonly IReadOnlyList<IGridColumnDefinition> _columnDefinitions;
 
 			readonly Dictionary<SpanKey, Span> _spans = new();
 
@@ -99,11 +98,15 @@ namespace Microsoft.Maui.Layouts
 				_padding = grid.Padding;
 				_columnSpacing = grid.ColumnSpacing;
 				_rowSpacing = grid.RowSpacing;
-				_rowDefinitions = grid.RowDefinitions;
-				_columnDefinitions = grid.ColumnDefinitions;
 
-				_rows = InitializeRows();
-				_columns = InitializeColumns();
+				_rows = InitializeRows(grid.RowDefinitions);
+				_columns = InitializeColumns(grid.ColumnDefinitions);
+
+				// Determine whether we can figure out the * values before doing any measurements
+				// i.e., are there any Auto values in the relevant dimensions, and are we working 
+				// with fixed constraints on the Grid itself
+				_isStarHeightPrecomputable = IsStarHeightPrecomputable();
+				_isStarWidthPrecomputable = IsStarWidthPrecomputable();
 
 				// We could work out the _childrenToLayOut array (with the Collapsed items filtered out) with a Linq 1-liner
 				// but doing it the hard way means we don't allocate extra enumerators, especially if we're in the 
@@ -142,9 +145,9 @@ namespace Microsoft.Maui.Layouts
 				};
 			}
 
-			Definition[] InitializeRows()
+			Definition[] InitializeRows(IReadOnlyList<IGridRowDefinition> rowDefinitions)
 			{
-				int count = _rowDefinitions.Count;
+				int count = rowDefinitions.Count;
 
 				if (count == 0)
 				{
@@ -156,16 +159,16 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = 0; n < count; n++)
 				{
-					var definition = _rowDefinitions[n];
+					var definition = rowDefinitions[n];
 					rows[n] = new Definition(definition.Height);
 				}
 
 				return rows;
 			}
 
-			Definition[] InitializeColumns()
+			Definition[] InitializeColumns(IReadOnlyList<IGridColumnDefinition> columnDefinitions)
 			{
-				int count = _columnDefinitions.Count;
+				int count = columnDefinitions.Count;
 
 				if (count == 0)
 				{
@@ -177,7 +180,7 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = 0; n < count; n++)
 				{
-					var definition = _columnDefinitions[n];
+					var definition = columnDefinitions[n];
 					definitions[n] = new Definition(definition.Width);
 				}
 
@@ -215,7 +218,25 @@ namespace Microsoft.Maui.Layouts
 						rowGridLengthType |= ToGridLengthType(_rows[rowIndex].GridLength.GridUnitType);
 					}
 
-					_cells[n] = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType);
+					var cell = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType);
+
+					// We may have enough info at this point to determine some of the measurement constraints for cells
+					DetermineCellMeasureWidth(cell);
+					DetermineCellMeasureHeight(cell);
+
+					_cells[n] = cell;
+				}
+
+				if (_isStarWidthPrecomputable)
+				{
+					// We have enough information to go ahead and work out the sizes of the * columns
+					ResolveStarColumns(_gridWidthConstraint);
+				}
+
+				if (_isStarHeightPrecomputable)
+				{
+					// We have enough information to go ahead and work out the sizes of the * rows
+					ResolveStarRows(_gridHeightConstraint);
 				}
 			}
 
@@ -315,14 +336,23 @@ namespace Microsoft.Maui.Layouts
 
 			void MeasureCells()
 			{
-				// Do the initial pass for all the auto/star stuff
-				MeasureCellsWithUnknowns();
+				AutoMeasurePass();
 
-				ResolveStarColumns(_gridWidthConstraint);
-				ResolveStarRows(_gridHeightConstraint);
+				if (!_isStarWidthPrecomputable)
+				{
+					// We didn't have enough info to work out the * column sizes earlier, but now that
+					// we've measured the Auto dimensions, we can finalize those values
+					ResolveStarColumns(_gridWidthConstraint);
+				}
 
-				// Measure the content for cells where we know the dimensions
-				MeasureKnownCells();
+				if (!_isStarHeightPrecomputable)
+				{
+					// We didn't have enough info to work out the * row sizes earlier, but now that
+					// we've measured the Auto dimensions, we can finalize those values
+					ResolveStarRows(_gridHeightConstraint);
+				}
+
+				SecondMeasurePass();
 
 				ResolveSpans();
 
@@ -330,23 +360,28 @@ namespace Microsoft.Maui.Layouts
 				CompressStarMeasurements();
 			}
 
-			void MeasureCellsWithUnknowns()
+			Size MeasureCell(Cell cell, double width, double height)
+			{
+				var child = _childrenToLayOut[cell.ViewIndex];
+				var result = child.Measure(width, height);
+				return result;
+			}
+
+			void AutoMeasurePass()
 			{
 				for (int n = 0; n < _cells.Length; n++)
 				{
 					var cell = _cells[n];
 
-					if (cell.IsAbsolute)
+					if (double.IsNaN(cell.MeasureHeight) || double.IsNaN(cell.MeasureWidth))
 					{
-						// This cell is entirely within rows/columns with absolute sizes; we don't need to measure
-						// it to figure out those sizes
-						continue;
+						cell.NeedsSecondPass = true;
 					}
 
-					var availableWidth = cell.IsColumnSpanAuto ? double.PositiveInfinity : AvailableWidth(cell);
-					var availableHeight = cell.IsRowSpanAuto ? double.PositiveInfinity : AvailableHeight(cell);
+					var measureWidth = double.IsNaN(cell.MeasureWidth) ? double.PositiveInfinity : cell.MeasureWidth;
+					var measureHeight = double.IsNaN(cell.MeasureHeight) ? double.PositiveInfinity : cell.MeasureHeight;
 
-					var measure = _childrenToLayOut[cell.ViewIndex].Measure(availableWidth, availableHeight);
+					var measure = MeasureCell(cell, measureWidth, measureHeight);
 
 					if (cell.IsColumnSpanAuto)
 					{
@@ -356,8 +391,7 @@ namespace Microsoft.Maui.Layouts
 						}
 						else
 						{
-							var span = new Span(cell.Column, cell.ColumnSpan, true, measure.Width);
-							TrackSpan(span);
+							TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
 						}
 					}
 
@@ -369,9 +403,49 @@ namespace Microsoft.Maui.Layouts
 						}
 						else
 						{
-							var span = new Span(cell.Row, cell.RowSpan, false, measure.Height);
-							TrackSpan(span);
+							TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
 						}
+					}
+				}
+			}
+
+			void SecondMeasurePass()
+			{
+				foreach (var cell in _cells)
+				{
+					if (!cell.NeedsSecondPass)
+					{
+						continue;
+					}
+
+					double width = 0;
+					double height = 0;
+
+					for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
+					{
+						height += _rows[n].Size;
+					}
+
+					for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
+					{
+						width += _columns[n].Size;
+					}
+
+					if (width == 0 || height == 0)
+					{
+						continue;
+					}
+
+					var measure = MeasureCell(cell, width, height);
+
+					if (cell.IsColumnSpanStar && cell.ColumnSpan > 1)
+					{
+						TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
+					}
+
+					if (cell.IsRowSpanStar && cell.RowSpan > 1)
+					{
+						TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
 					}
 				}
 			}
@@ -517,7 +591,7 @@ namespace Microsoft.Maui.Layouts
 					{
 						if (cellCheck(cell)) // Check whether this cell should count toward the type of star value we're measuring
 						{
-							// Update the star width if the view in this cell is bigger
+							// Update the star size if the view in this cell is bigger
 							starSize = Math.Max(starSize, dimension(_childrenToLayOut[cell.ViewIndex].DesiredSize));
 						}
 					}
@@ -538,63 +612,48 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			void ResolveStarColumns(double widthConstraint)
+			void ResolveStarColumns(double widthConstraint, bool decompressing = false)
 			{
 				var availableSpace = widthConstraint - GridWidth();
 				static bool cellCheck(Cell cell) => cell.IsColumnSpanStar;
 				static double getDimension(Size size) => size.Width;
 
 				ResolveStars(_columns, availableSpace, cellCheck, getDimension);
+
+				if (decompressing)
+				{
+					// This pass is for arrangement, we don't need to update the measure values
+					return;
+				}
+
+				foreach (var cell in _cells)
+				{
+					if (double.IsNaN(cell.MeasureWidth))
+					{
+						UpdateKnownMeasureWidth(cell);
+					}
+				}
 			}
 
-			void ResolveStarRows(double heightConstraint)
+			void ResolveStarRows(double heightConstraint, bool decompressing = false)
 			{
 				var availableSpace = heightConstraint - GridHeight();
 				static bool cellCheck(Cell cell) => cell.IsRowSpanStar;
 				static double getDimension(Size size) => size.Height;
 
 				ResolveStars(_rows, availableSpace, cellCheck, getDimension);
-			}
 
-			void MeasureKnownCells()
-			{
+				if (decompressing)
+				{
+					// This pass is for arrangement, we don't need to update the measure values
+					return;
+				}
+
 				foreach (var cell in _cells)
 				{
-					if (!cell.NeedsKnownMeasurePass)
+					if (double.IsNaN(cell.MeasureHeight))
 					{
-						continue;
-					}
-
-					double width = 0;
-					double height = 0;
-
-					for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
-					{
-						height += _rows[n].Size;
-					}
-
-					for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
-					{
-						width += _columns[n].Size;
-					}
-
-					if (width == 0 || height == 0)
-					{
-						continue;
-					}
-
-					var measure = _childrenToLayOut[cell.ViewIndex].Measure(width, height);
-
-					if (cell.IsColumnSpanStar && cell.ColumnSpan > 1)
-					{
-						var span = new Span(cell.Column, cell.ColumnSpan, true, measure.Width);
-						TrackSpan(span);
-					}
-
-					if (cell.IsRowSpanStar && cell.RowSpan > 1)
-					{
-						var span = new Span(cell.Row, cell.RowSpan, false, measure.Height);
-						TrackSpan(span);
+						UpdateKnownMeasureHeight(cell);
 					}
 				}
 			}
@@ -683,7 +742,7 @@ namespace Microsoft.Maui.Layouts
 					ZeroOutStarSizes(_rows);
 
 					// And compute them for the actual arrangement height
-					ResolveStarRows(targetSize.Height);
+					ResolveStarRows(targetSize.Height, true);
 				}
 
 				if (_grid.HorizontalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridWidth))
@@ -692,7 +751,7 @@ namespace Microsoft.Maui.Layouts
 					ZeroOutStarSizes(_columns);
 
 					// And compute them for the actual arrangement width
-					ResolveStarColumns(targetSize.Width);
+					ResolveStarColumns(targetSize.Width, true);
 				}
 			}
 
@@ -840,6 +899,99 @@ namespace Microsoft.Maui.Layouts
 					original[n].Size = updated[n].Size;
 				}
 			}
+
+			static bool AnyAuto(Definition[] definitions)
+			{
+				foreach (var definition in definitions)
+				{
+					if (definition.IsAuto)
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			bool IsStarWidthPrecomputable()
+			{
+				if (double.IsInfinity(_gridWidthConstraint))
+				{
+					return false;
+				}
+
+				return !AnyAuto(_columns);
+			}
+
+			bool IsStarHeightPrecomputable()
+			{
+				if (double.IsInfinity(_gridHeightConstraint))
+				{
+					return false;
+				}
+
+				return !AnyAuto(_rows);
+			}
+
+			void UpdateKnownMeasureWidth(Cell cell)
+			{
+				double measureWidth = 0;
+				for (int column = cell.Column; column < cell.Column + cell.ColumnSpan; column++)
+				{
+					measureWidth += _columns[column].Size;
+				}
+
+				cell.MeasureWidth = measureWidth;
+			}
+
+			void UpdateKnownMeasureHeight(Cell cell)
+			{
+				double measureHeight = 0;
+				for (int row = cell.Row; row < cell.Row + cell.RowSpan; row++)
+				{
+					measureHeight += _rows[row].Size;
+				}
+
+				cell.MeasureHeight = measureHeight;
+			}
+
+			void DetermineCellMeasureWidth(Cell cell)
+			{
+				if (cell.ColumnGridLengthType == GridLengthType.Absolute)
+				{
+					UpdateKnownMeasureWidth(cell);
+				}
+				else if (cell.IsColumnSpanAuto)
+				{
+					cell.MeasureWidth = double.PositiveInfinity;
+				}
+				else if (cell.IsColumnSpanStar && double.IsInfinity(_gridWidthConstraint))
+				{
+					// Because the Grid isn't horizontally constrained, we treat * columns as Auto 
+					cell.MeasureWidth = double.PositiveInfinity;
+				}
+
+				// For all other situations, we'll have to wait until we've measured the Auto columns
+			}
+
+			void DetermineCellMeasureHeight(Cell cell)
+			{
+				if (cell.RowGridLengthType == GridLengthType.Absolute)
+				{
+					UpdateKnownMeasureHeight(cell);
+				}
+				else if (cell.IsRowSpanAuto)
+				{
+					cell.MeasureHeight = double.PositiveInfinity;
+				}
+				else if (cell.IsRowSpanStar && double.IsInfinity(_gridHeightConstraint))
+				{
+					// Because the Grid isn't vertically constrained, we treat * rows as Auto 
+					cell.MeasureHeight = double.PositiveInfinity;
+				}
+
+				// For all other situations, we'll have to wait until we've measured the Auto rows
+			}
 		}
 
 		// Dictionary key for tracking a Span
@@ -872,6 +1024,9 @@ namespace Microsoft.Maui.Layouts
 			public int Column { get; }
 			public int RowSpan { get; }
 			public int ColumnSpan { get; }
+			public double MeasureWidth { get; set; } = double.NaN;
+			public double MeasureHeight { get; set; } = double.NaN;
+			public bool NeedsSecondPass { get; set; }
 
 			/// <summary>
 			/// A combination of all the measurement types in the columns this cell spans
@@ -899,12 +1054,6 @@ namespace Microsoft.Maui.Layouts
 			public bool IsRowSpanAuto => HasFlag(RowGridLengthType, GridLengthType.Auto);
 			public bool IsColumnSpanStar => HasFlag(ColumnGridLengthType, GridLengthType.Star);
 			public bool IsRowSpanStar => HasFlag(RowGridLengthType, GridLengthType.Star);
-			public bool IsAbsolute => ColumnGridLengthType == GridLengthType.Absolute
-						&& RowGridLengthType == GridLengthType.Absolute;
-
-			// If any part of the Cell's spans are Absolute or Star, then the Cell will need a measure pass at the known
-			// size once that's been determined (i.e., when the Auto stuff has been worked out)
-			public bool NeedsKnownMeasurePass => ((ColumnGridLengthType | RowGridLengthType) ^ GridLengthType.Auto) > 0;
 
 			static bool HasFlag(GridLengthType a, GridLengthType b)
 			{

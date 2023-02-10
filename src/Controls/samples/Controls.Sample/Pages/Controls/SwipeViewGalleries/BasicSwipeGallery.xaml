@@ -47,6 +47,7 @@
                         <SwipeItem
                             Text="Test (Ajg)"
                             IconImageSource="calculator.png"
+                            IconImageSource="ic_flag.png"
                             BackgroundColor="Orange"/>
                         <SwipeItem
                             Text="Delete"
@@ -145,7 +146,7 @@
                         Mode="Reveal">
                         <SwipeItem
                             Text="TopItem"
-                            IconImageSource="coffee.png"
+                            IconImageSource="ic_flag.png"
                             BackgroundColor="Red"
                             Invoked="OnInvoked"/>
                     </SwipeItems>
