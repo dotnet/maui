@@ -1,4 +1,5 @@
 using System;
+using System.Web;
 using Android.Graphics;
 using Android.Text;
 using Android.Widget;
@@ -17,13 +18,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextHtml(this TextView textView, ILabel label)
 		{
-			var newText = label.Text ?? string.Empty;
+			var text = label.Text ?? string.Empty;
+			var htmlText = HttpUtility.HtmlDecode(text);
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				textView.SetText(Html.FromHtml(newText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
+				textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
 			else
 #pragma warning disable CS0618 // Type or member is obsolete
-				textView.SetText(Html.FromHtml(newText), BufferType.Spannable);
+				textView.SetText(Html.FromHtml(htmlText), BufferType.Spannable);
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 

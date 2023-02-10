@@ -1693,7 +1693,14 @@ namespace Microsoft.Maui.Controls
 				modal.Parent = (Element)_shell.FindParentOfType<IWindow>();
 
 				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
+				{
+					if (ModalStack.Count > 0)
+					{
+						ModalStack[ModalStack.Count - 1].SendDisappearing();
+					}
+
 					modal.SendAppearing();
+				}
 
 				await base.OnPushModal(modal, animated);
 

@@ -15,9 +15,10 @@ if (TestTFM == "default")
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new string[] {
-    "Microsoft.Maui.Controls.Foldable.*.nupkg",
+    "Microsoft.Maui.Controls.*.nupkg",
+    "Microsoft.Maui.Core.*.nupkg",
+    "Microsoft.Maui.Essentials.*.nupkg",
     "Microsoft.Maui.Graphics.*.nupkg",
-    "Microsoft.Maui.Controls.Maps.*.nupkg",
     "Microsoft.Maui.Maps.*.nupkg",
     "Microsoft.AspNetCore.Components.WebView.*.nupkg",
 };
@@ -101,9 +102,14 @@ Task("dotnet-build")
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
+        {
             RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
+        }
         else
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", maxCpuCount: 1);
+        {
+            // NOTE: intentionally omit maxCpuCount, to avoid an issue with the 7.0.100 .NET SDK
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+        }
     });
 
 Task("dotnet-samples")
@@ -115,7 +121,7 @@ Task("dotnet-samples")
             ["UseWorkload"] = "true",
             // ["GenerateAppxPackageOnBuild"] = "true",
             ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        }, maxCpuCount: 1);
+        }, maxCpuCount: 1, binlogPrefix: "sample-");
     });
 
 Task("dotnet-templates")
@@ -205,13 +211,13 @@ Task("dotnet-templates")
                     "</TargetFrameworks>");
 
                 // Build
-                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild);
+                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, binlogPrefix: "template-");
 
                 // Pack
                 if (alsoPack.Contains(templateName)) {
                     var packProperties = new Dictionary<string, string>(properties);
                     packProperties["PackageVersion"] = FileReadText("GitInfo.txt").Trim();
-                    RunMSBuildWithDotNet(projectName, packProperties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, target: "Pack");
+                    RunMSBuildWithDotNet(projectName, packProperties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, target: "Pack", binlogPrefix: "template-");
                 }
             }
         }
@@ -592,7 +598,6 @@ void StartVisualStudioForDotNet6()
     if(localDotnet)
     {
         SetDotNetEnvironmentVariables();
-        SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true");
     }
 
     if (IsRunningOnWindows())
@@ -620,15 +625,16 @@ void RunMSBuildWithDotNet(
     bool restore = true,
     string targetFramework = null,
     bool forceDotNetBuild = false,
-    int maxCpuCount = 0)
+    int maxCpuCount = 0,
+    string binlogPrefix = null)
 {
     var useDotNetBuild = forceDotNetBuild || !IsRunningOnWindows() || target == "Run";
 
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var type = useDotNetBuild ? "dotnet" : "msbuild";
     var binlog = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{type}.binlog\"" :
-        $"\"{GetLogDirectory()}/{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
+        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{type}.binlog\"" :
+        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();

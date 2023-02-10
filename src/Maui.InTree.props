@@ -1,5 +1,26 @@
 <Project>
-  <Import Project="$(_MauiBuildTasksLocation)AutoImport.InTree.props"/>
-  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props"/>
-  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.props"/>
+
+  <ImportGroup Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">
+
+    <!-- Microsoft.Maui.Core.props -->
+    <Import Project="$(_MauiBuildTasksLocation)net6.0-windows10.0.17763.0\Microsoft.Maui.Core.props" Condition="'$(_MauiTargetPlatformIsWindows)' == 'true'" />
+    <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props" Condition="'$(_MauiTargetPlatformIsWindows)' != 'true'" />
+
+    <!-- Microsoft.Maui.Controls.Build.Tasks.props -->
+    <Import Project="$(_MauiBuildTasksLocation)net6.0-ios10.0\Microsoft.Maui.Controls.Build.Tasks.props" Condition="'$(_MauiTargetPlatformIsiOS)' == 'true'" />
+    <Import Project="$(_MauiBuildTasksLocation)net6.0-maccatalyst13.1\Microsoft.Maui.Controls.Build.Tasks.props" Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'true'" />
+    <Import Project="$(_MauiBuildTasksLocation)net6.0-windows10.0.17763.0\Microsoft.Maui.Controls.Build.Tasks.props" Condition="'$(_MauiTargetPlatformIsWindows)' == 'true'" />
+    <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.props" Condition="'$(_MauiTargetPlatformIsiOS)' != 'true' and '$(_MauiTargetPlatformIsMacCatalyst)' != 'true' and '$(_MauiTargetPlatformIsWindows)' != 'true'" />
+
+    <!-- Microsoft.Maui.Resizetizer.props -->
+    <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.props" />
+
+  </ImportGroup>
+
+  <!--
+    This is a targets file, but needs to go here as it must come after the csproj but before the NuGet packages.
+    In the release .NET MAUI SDK, this is imported by the workloads which puts it in the middle as well.
+  -->
+  <Import Project="$(MauiSrcDirectory)Workload\Microsoft.Maui.Sdk\Sdk\Microsoft.Maui.Sdk.targets" />
+
 </Project>

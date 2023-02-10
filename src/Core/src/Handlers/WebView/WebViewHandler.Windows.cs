@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Web.Http;
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		WebNavigationEvent _eventState;
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
+		Window? _window;
 
 		protected override WebView2 CreatePlatformView() => new MauiWebView();
 
@@ -24,21 +26,54 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(WebView2 platformView)
 		{
 			platformView.CoreWebView2Initialized += OnCoreWebView2Initialized;
-
 			base.ConnectHandler(platformView);
+
+			if (platformView.IsLoaded)
+				OnLoaded();
+			else
+				platformView.Loaded += OnWebViewLoaded;
 		}
 
-		protected override void DisconnectHandler(WebView2 platformView)
+		void OnWebViewLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			if (platformView.CoreWebView2 != null)
+			OnLoaded();
+		}
+
+		void OnLoaded()
+		{
+			_window = MauiContext!.GetPlatformWindow();
+			_window.Closed += OnWindowClosed;
+		}
+
+		private void OnWindowClosed(object sender, UI.Xaml.WindowEventArgs args)
+		{
+			Disconnect(PlatformView);
+		}
+
+		void Disconnect(WebView2 platformView)
+		{
+			if (_window is not null)
+			{
+				_window.Closed -= OnWindowClosed;
+				_window = null;
+			}
+
+			if (platformView.CoreWebView2 is not null)
 			{
 				platformView.CoreWebView2.HistoryChanged -= OnHistoryChanged;
 				platformView.CoreWebView2.NavigationStarting -= OnNavigationStarting;
 				platformView.CoreWebView2.NavigationCompleted -= OnNavigationCompleted;
+				platformView.CoreWebView2.Stop();
 			}
 
+			platformView.Loaded -= OnWebViewLoaded;
 			platformView.CoreWebView2Initialized -= OnCoreWebView2Initialized;
+			platformView.Close();
+		}
 
+		protected override void DisconnectHandler(WebView2 platformView)
+		{
+			DisconnectHandler(platformView);
 			base.DisconnectHandler(platformView);
 		}
 
@@ -66,7 +101,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
 		{
-			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri != null)
+			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
 			{
 				bool cancel = VirtualView.Navigating(CurrentNavigationEvent, uri.AbsoluteUri);
 
@@ -126,7 +161,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var uri = sender.Source;
 
-			if (uri != null)
+			if (uri is not null)
 				SendNavigated(uri, CurrentNavigationEvent, WebNavigationResult.Success);
 
 			if (VirtualView is null)
@@ -145,12 +180,11 @@ namespace Microsoft.Maui.Handlers
 
 		void SendNavigated(string url, WebNavigationEvent evnt, WebNavigationResult result)
 		{
-			if (VirtualView != null)
+			if (VirtualView is not null)
 			{
 				SyncPlatformCookiesToVirtualView(url);
 
 				VirtualView.Navigated(evnt, url, result);
-
 				PlatformView?.UpdateCanGoBackForward(VirtualView);
 			}
 
@@ -161,12 +195,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			var myCookieJar = VirtualView.Cookies;
 
-			if (myCookieJar == null)
+			if (myCookieJar is null)
 				return;
 
 			var uri = CreateUriForCookies(url);
 
-			if (uri == null)
+			if (uri is null)
 				return;
 
 			var cookies = myCookieJar.GetCookies(uri);
@@ -180,7 +214,7 @@ namespace Microsoft.Maui.Handlers
 				var httpCookie = platformCookies
 					.FirstOrDefault(x => x.Name == cookie.Name);
 
-				if (httpCookie == null)
+				if (httpCookie is null)
 					cookie.Expired = true;
 				else
 					cookie.Value = httpCookie.Value;
@@ -193,18 +227,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			var uri = CreateUriForCookies(url);
 
-			if (uri == null)
+			if (uri is null)
 				return;
 
 			var myCookieJar = VirtualView.Cookies;
 
-			if (myCookieJar == null)
+			if (myCookieJar is null)
 				return;
 
 			InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
 
-			if (cookies == null)
+			if (cookies is null)
 				return;
 
 			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
@@ -222,7 +256,7 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (HttpCookie cookie in retrieveCurrentWebCookies)
 			{
-				if (cookies[cookie.Name] != null)
+				if (cookies[cookie.Name] is not null)
 					continue;
 
 				filter.CookieManager.DeleteCookie(cookie);
@@ -233,7 +267,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var myCookieJar = VirtualView.Cookies;
 
-			if (myCookieJar == null)
+			if (myCookieJar is null)
 				return;
 
 			var uri = new Uri(url);
@@ -243,12 +277,12 @@ namespace Microsoft.Maui.Handlers
 
 			var cookies = myCookieJar.GetCookies(uri);
 
-			if (cookies != null)
+			if (cookies is not null)
 			{
 				var existingCookies = GetCookiesFromPlatformStore(url);
 				foreach (HttpCookie cookie in existingCookies)
 				{
-					if (cookies[cookie.Name] == null)
+					if (cookies[cookie.Name] is null)
 						myCookieJar.SetCookies(uri, cookie.ToString());
 				}
 			}
@@ -265,7 +299,7 @@ namespace Microsoft.Maui.Handlers
 
 		Uri? CreateUriForCookies(string url)
 		{
-			if (url == null)
+			if (url is null)
 				return null;
 
 			Uri? uri;
@@ -290,7 +324,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
-				if (handler.PlatformView == null)
+				if (handler.PlatformView is null)
 				{
 					request.SetCanceled();
 					return;
