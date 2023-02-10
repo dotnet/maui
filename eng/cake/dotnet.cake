@@ -490,6 +490,8 @@ Task("VS")
             Error("!!!!BUILD TASKS FAILED: !!!!!");
         }
 
+        UseLocalNuGetCacheFolder();
+
         StartVisualStudioForDotNet6();
     }); 
 
@@ -566,6 +568,18 @@ void SetDotNetEnvironmentVariables()
     // Get "full" .binlog in Project System Tools
     if (HasArgument("dbg"))
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
+}
+
+void UseLocalNuGetCacheFolder()
+{
+    var temp = Context.Environment.GetSpecialPath(SpecialPath.LocalTemp);
+    var packages = temp.Combine("Microsoft.Maui.Cache/NuGet/packages");
+
+    CleanDirectories(packages.FullPath + "/microsoft.maui.*");
+    CleanDirectories(packages.FullPath + "/microsoft.aspnetcore.*");
+
+    SetEnvironmentVariable("RestorePackagesPath", packages.FullPath);
+    SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
 }
 
 void StartVisualStudioForDotNet6()
