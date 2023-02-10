@@ -81,8 +81,10 @@ namespace Microsoft.Maui.Media
 		class WinUICameraCaptureUI
 		{
 			const string WindowsCameraAppPackageName = "Microsoft.WindowsCamera_8wekyb3d8bbwe";
-			private const string CacheFolderName = ".Microsoft.Maui.Media.MediaPicker";
-			private const string CacheFileName = "capture";
+			const string WindowsCameraAppUri = "microsoft.windows.camera.picker:";
+
+			const string CacheFolderName = ".Microsoft.Maui.Media.MediaPicker";
+			const string CacheFileName = "capture";
 
 			public WinUICameraCaptureUIPhotoCaptureSettings PhotoSettings { get; } = new();
 
@@ -120,7 +122,7 @@ namespace Microsoft.Maui.Media
 					set.Add("VideoFileToken", token);
 				}
 
-				var uri = new Uri("microsoft.windows.camera.picker:");
+				var uri = new Uri(WindowsCameraAppUri);
 				var result = await WinLauncher.LaunchUriForResultsAsync(uri, options, set);
 
 				global::Windows.ApplicationModel.DataTransfer.SharedStorageAccessManager.RemoveFile(token);
