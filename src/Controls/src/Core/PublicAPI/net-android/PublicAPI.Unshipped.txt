@@ -2,6 +2,8 @@
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper) -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper! commandMapper) -> void
+override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 virtual Microsoft.Maui.Controls.VisualElement.IsEnabledCore.get -> bool
 Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
