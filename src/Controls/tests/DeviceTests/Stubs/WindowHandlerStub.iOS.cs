@@ -51,8 +51,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					if (fireEvents)
 						VirtualView.Created();
 
-					//AssertionExtensions.FindContentViewController().AddChildViewController(vc);
-
 					var contentView = AssertionExtensions.FindContentView();
 					contentView.AddSubview(view);
 

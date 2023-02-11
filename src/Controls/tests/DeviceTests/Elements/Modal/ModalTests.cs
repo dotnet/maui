@@ -242,6 +242,9 @@ namespace Microsoft.Maui.DeviceTests
 			var modalPage = new ContentPage()
 			{
 				Content = new Label()
+				{
+					Text = "Modal Page"
+				}
 			};
 
 			var window = new Window(page);

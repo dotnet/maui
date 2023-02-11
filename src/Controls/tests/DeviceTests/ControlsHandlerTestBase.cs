@@ -150,6 +150,9 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						IView content = window.Content;
 
+						if (window is Window w && w.Navigation.ModalStack.Count > 0)
+							content = w.Navigation.ModalStack.LastOrDefault();
+
 						if (content is IPageContainer<Page> pc)
 						{
 							content = pc.CurrentPage;
@@ -170,7 +173,15 @@ namespace Microsoft.Maui.DeviceTests
 
 						await OnLoadedAsync(content as VisualElement);
 
-						window.Activated();
+						if (window is Window controlsWindow)
+						{
+							if (!controlsWindow.IsActivated)
+								window.Activated();
+						}
+						else
+						{
+							window.Activated();
+						}
 #if WINDOWS
 						await Task.Delay(10);
 #endif

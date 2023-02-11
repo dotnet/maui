@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_window.Activated += OnWindowActivated;
 			_window.Resumed += (_, _) => SyncPlatformModalStack();
 			_window.HandlerChanging += OnPlatformWindowHandlerChanging;
+			_window.Destroying += (_, _) => _platformActivated = false;
 
 			_platformActivated = _window.IsActivated;
 		}
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Task SyncModalStackWhenPlatformIsReadyAsync() =>
 			SyncPlatformModalStackAsync();
 
-		bool IsModalPlatformReady => true;
+		bool IsModalPlatformReady => _platformActivated;
 
 		void OnPlatformWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!_platformActivated)
 			{
 				_platformActivated = true;
-				SyncPlatformModalStack();
+				SyncModalStackWhenPlatformIsReady();
 			}
 		}
 
