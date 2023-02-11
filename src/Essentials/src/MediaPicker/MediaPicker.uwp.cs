@@ -1,3 +1,4 @@
+#nullable enable
 // Using code based on https://github.com/richardrigutins/maui-sample-windows-camera-workaround/blob/4e8ab1eb2fe36e9d8253773705df508b7979a968/src/MauiSampleCamera/Platforms/Windows/CustomMediaPicker.uwp.cs
 // Authors:
 //  - https://github.com/GiampaoloGabba
