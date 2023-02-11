@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Layouts
 
 			void MeasureCells()
 			{
-                KnownMeasurePass();
+				KnownMeasurePass();
 
 				if (!_isStarWidthPrecomputable)
 				{
@@ -367,59 +367,59 @@ namespace Microsoft.Maui.Layouts
 				return result;
 			}
 
-            void KnownMeasurePass()
-            {
-                for (int n = 0; n < _cells.Length; n++)
-                {
-                    var cell = _cells[n];
+			void KnownMeasurePass()
+			{
+				for (int n = 0; n < _cells.Length; n++)
+				{
+					var cell = _cells[n];
 
-                    if (double.IsNaN(cell.MeasureHeight) || double.IsNaN(cell.MeasureWidth))
-                    {
-                        // We still have some unknown measure constraints (* rows/columns that need to have
-                        // the Auto measurements settled before we can measure them). So mark this cell for the 
-                        // second pass, once we know the constraints.
-                        cell.NeedsSecondPass = true;
+					if (double.IsNaN(cell.MeasureHeight) || double.IsNaN(cell.MeasureWidth))
+					{
+						// We still have some unknown measure constraints (* rows/columns that need to have
+						// the Auto measurements settled before we can measure them). So mark this cell for the 
+						// second pass, once we know the constraints.
+						cell.NeedsSecondPass = true;
 
-                        if (!cell.IsColumnSpanAuto && !cell.IsRowSpanAuto)
-                        {
-                            // If neither span of this cell includes _any_ Auto values, then there's no reason
-                            // to measure it at all during this pass; we can skip it for now
-                            continue;
-                        }
-                    }
+						if (!cell.IsColumnSpanAuto && !cell.IsRowSpanAuto)
+						{
+							// If neither span of this cell includes _any_ Auto values, then there's no reason
+							// to measure it at all during this pass; we can skip it for now
+							continue;
+						}
+					}
 
-                    var measureWidth = double.IsNaN(cell.MeasureWidth) ? double.PositiveInfinity : cell.MeasureWidth;
-                    var measureHeight = double.IsNaN(cell.MeasureHeight) ? double.PositiveInfinity : cell.MeasureHeight;
+					var measureWidth = double.IsNaN(cell.MeasureWidth) ? double.PositiveInfinity : cell.MeasureWidth;
+					var measureHeight = double.IsNaN(cell.MeasureHeight) ? double.PositiveInfinity : cell.MeasureHeight;
 
-                    var measure = MeasureCell(cell, measureWidth, measureHeight);
+					var measure = MeasureCell(cell, measureWidth, measureHeight);
 
-                    if (cell.IsColumnSpanAuto)
-                    {
-                        if (cell.ColumnSpan == 1)
-                        {
-                            _columns[cell.Column].Update(measure.Width);
-                        }
-                        else
-                        {
-                            TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
-                        }
-                    }
+					if (cell.IsColumnSpanAuto)
+					{
+						if (cell.ColumnSpan == 1)
+						{
+							_columns[cell.Column].Update(measure.Width);
+						}
+						else
+						{
+							TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
+						}
+					}
 
-                    if (cell.IsRowSpanAuto)
-                    {
-                        if (cell.RowSpan == 1)
-                        {
-                            _rows[cell.Row].Update(measure.Height);
-                        }
-                        else
-                        {
-                            TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
-                        }
-                    }
-                }
-            }
+					if (cell.IsRowSpanAuto)
+					{
+						if (cell.RowSpan == 1)
+						{
+							_rows[cell.Row].Update(measure.Height);
+						}
+						else
+						{
+							TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
+						}
+					}
+				}
+			}
 
-            void SecondMeasurePass()
+			void SecondMeasurePass()
 			{
 				foreach (var cell in _cells)
 				{
