@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Media
 
 				global::Windows.ApplicationModel.DataTransfer.SharedStorageAccessManager.RemoveFile(token);
 
-				if (result.Status == LaunchUriStatus.Success && result.Result != null)
+				if (result.Status == LaunchUriStatus.Success && result.Result is not null)
 					return tempFile;
 
 				return null;
