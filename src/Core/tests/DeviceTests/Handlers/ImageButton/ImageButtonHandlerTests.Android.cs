@@ -6,8 +6,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageButtonHandlerTests
 	{
-		[Fact(DisplayName = "Clip ImageButton with Background works Correctly",
-			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
+		[Fact(DisplayName = "Clip ImageButton with Background works Correctly")]
 		public async Task ClipImageButtonWithBackgroundWorks()
 		{
 			Color expected = Colors.Yellow;

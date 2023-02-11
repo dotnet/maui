@@ -29,8 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(border, expected);
 		}
 
-		[Theory(DisplayName = "Background Updates Correctly",
-			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
+		[Theory(DisplayName = "Background Updates Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
 		[InlineData(0xFF0000FF)]

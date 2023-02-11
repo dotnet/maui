@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		[Theory(DisplayName = "Background Initializes Correctly"
 #if IOS
-			, Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948"
+
 #endif
 			)]
 		[InlineData(0xFFFF0000)]
@@ -120,8 +120,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, platformText);
 		}
 
-		[Fact(DisplayName = "CancelButtonColor Initialize Correctly",
-			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
 			var searchBar = new SearchBarStub()
