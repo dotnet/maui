@@ -24,13 +24,13 @@ namespace Microsoft.Maui.Media
 		public bool IsCaptureSupported
 			=> true;
 
-		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
+		public Task<FileResult?> PickPhotoAsync(MediaPickerOptions options)
 			=> PickAsync(options, true);
 
-		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
+		public Task<FileResult?> PickVideoAsync(MediaPickerOptions options)
 			=> PickAsync(options, false);
 
-		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult?> PickAsync(MediaPickerOptions options, bool photo)
 		{
 			var picker = new FileOpenPicker();
 
@@ -49,20 +49,20 @@ namespace Microsoft.Maui.Media
 			var result = await picker.PickSingleFileAsync();
 
 			// cancelled
-			if (result == null)
+			if (result is null)
 				return null;
 
 			// picked
 			return new FileResult(result);
 		}
 
-		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
+		public Task<FileResult?> CapturePhotoAsync(MediaPickerOptions options)
 			=> CaptureAsync(options, true);
 
-		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
+		public Task<FileResult?> CaptureVideoAsync(MediaPickerOptions options)
 			=> CaptureAsync(options, false);
 
-		public async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult?> CaptureAsync(MediaPickerOptions options, bool photo)
 		{
 			var captureUi = new WinUICameraCaptureUI();
 
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Media
 
 			var file = await captureUi.CaptureFileAsync(photo ? CameraCaptureUIMode.Photo : CameraCaptureUIMode.Video);
 
-			if (file != null)
+			if (file is not null)
 				return new FileResult(file);
 
 			return null;
