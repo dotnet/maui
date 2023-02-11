@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// After it's been activated we can push modals if the app has been sent to
 		// the background so we don't care if it becomes inactive
 		bool _platformActivated;
+		bool _waitForModalToFinish;
 
 		partial void InitializePlatform()
 		{
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Task SyncModalStackWhenPlatformIsReadyAsync() =>
 			SyncPlatformModalStackAsync();
 
-		bool IsModalPlatformReady => _platformActivated;
+		bool IsModalPlatformReady => _platformActivated && !_waitForModalToFinish;
 
 		void OnPlatformWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
@@ -97,30 +98,40 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			modal.ToPlatform(WindowMauiContext);
-			var wrapper = new ModalWrapper(modal.Handler as IPlatformViewHandler);
-
-			if (_platformModalPages.Count > 1)
+			try
 			{
-				var topPage = _platformModalPages[_platformModalPages.Count - 2];
-				var controller = (topPage?.Handler as IPlatformViewHandler)?.ViewController;
-				if (controller is not null)
+				_waitForModalToFinish = true;
+				modal.ToPlatform(WindowMauiContext);
+				var wrapper = new ModalWrapper(modal.Handler as IPlatformViewHandler);
+
+				if (_platformModalPages.Count > 1)
 				{
-					await controller.PresentViewControllerAsync(wrapper, animated);
+					var topPage = _platformModalPages[_platformModalPages.Count - 2];
+					var controller = (topPage?.Handler as IPlatformViewHandler)?.ViewController;
+					if (controller is not null)
+					{
+						await controller.PresentViewControllerAsync(wrapper, animated);
+						await Task.Delay(5);
+						return;
+					}
+				}
+
+				// One might wonder why these delays are here... well thats a great question. It turns out iOS will claim the 
+				// presentation is complete before it really is. It does not however inform you when it is really done (and thus 
+				// would be safe to dismiss the VC). Fortunately this is almost never an issue
+
+				if (WindowViewController is not null)
+				{
+					await WindowViewController.PresentViewControllerAsync(wrapper, animated);
 					await Task.Delay(5);
-					return;
 				}
 			}
-
-			// One might wonder why these delays are here... well thats a great question. It turns out iOS will claim the 
-			// presentation is complete before it really is. It does not however inform you when it is really done (and thus 
-			// would be safe to dismiss the VC). Fortunately this is almost never an issue
-
-			if (WindowViewController is not null)
+			finally
 			{
-				await WindowViewController.PresentViewControllerAsync(wrapper, animated);
-				await Task.Delay(5);
+				_waitForModalToFinish = false;
 			}
+
+			SyncModalStackWhenPlatformIsReady();
 		}
 
 		void EndEditing()

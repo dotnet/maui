@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		TaskCompletionSource<bool> _finishedDisconnecting = new TaskCompletionSource<bool>();
 		public Task FinishedDisconnecting => _finishedDisconnecting.Task;
 		IView _currentView;
-
+		bool disconnected;
 		public static IPropertyMapper<IWindow, WindowHandlerStub> WindowMapper = new PropertyMapper<IWindow, WindowHandlerStub>(WindowHandler.Mapper)
 		{
 			[nameof(IWindow.Content)] = MapContent
@@ -23,16 +23,20 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			ReplaceCurrentView(_currentView, platformView, () =>
 			{
-				var view = VirtualView.Content.ToPlatform(MauiContext);
-				_currentView = VirtualView.Content;
+				if (disconnected)
+					return;
+
+				var virtualView = VirtualView;
+				var view = virtualView.Content.ToPlatform(MauiContext);
+				_currentView = virtualView.Content;
 
 				var vc =
 					(_currentView.Handler as IPlatformViewHandler)
 						.ViewController;
 
 
-				bool fireEvents = !(VirtualView as Window).IsActivated;
-				if (VirtualView.Content is IFlyoutView)
+				bool fireEvents = !(virtualView as Window).IsActivated;
+				if (virtualView.Content is IFlyoutView)
 				{
 					vc.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
 
@@ -43,19 +47,19 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 						() =>
 						{
 							if (fireEvents)
-								VirtualView.Activated();
+								virtualView.Activated();
 						});
 				}
 				else
 				{
 					if (fireEvents)
-						VirtualView.Created();
+						virtualView.Created();
 
 					var contentView = AssertionExtensions.FindContentView();
 					contentView.AddSubview(view);
 
 					if (fireEvents)
-						VirtualView.Activated();
+						virtualView.Activated();
 				}
 			}, false);
 		}
@@ -124,6 +128,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			ReplaceCurrentView(VirtualView.Content, platformView, () => _finishedDisconnecting.SetResult(true), true);
 			base.DisconnectHandler(platformView);
+			disconnected = true;
 		}
 
 		public WindowHandlerStub()

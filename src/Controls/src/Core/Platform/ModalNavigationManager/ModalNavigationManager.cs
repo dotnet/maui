@@ -13,8 +13,10 @@ namespace Microsoft.Maui.Controls.Platform
 		public IReadOnlyList<Page> ModalStack => _modalPages;
 		IMauiContext WindowMauiContext => _window.MauiContext;
 
-		List<Page> _modalPages = new List<Page>();
 		List<Page> _platformModalPages = new List<Page>();
+		List<Page> _modalPages = new List<Page>();
+		Dictionary<Page, NavigatingEventArgs> _pendingRequests = new Dictionary<Page, NavigatingEventArgs>();
+
 		Page? _currentPage;
 
 		Page CurrentPlatformPage =>
@@ -138,7 +140,14 @@ namespace Microsoft.Maui.Controls.Platform
 				// matches the platform modals
 				if (_platformModalPages.Count > popTo && IsModalReady)
 				{
-					var page = await PopModalPlatformAsync(false);
+					bool animated = false;
+					if (_pendingRequests.TryGetValue(CurrentPlatformModalPage, out var request))
+					{
+						_pendingRequests.Remove(CurrentPlatformModalPage);
+						animated = request.IsAnimated;
+					}
+
+					var page = await PopModalPlatformAsync(animated);
 					page.Parent = null;
 					changed = true;
 				}
@@ -149,7 +158,15 @@ namespace Microsoft.Maui.Controls.Platform
 					var i = _platformModalPages.Count;
 					if (i < _modalPages.Count && IsModalReady)
 					{
-						await PushModalPlatformAsync(_modalPages[i], false);
+						bool animated = false;
+						var nextPage = _modalPages[i];
+						if (_pendingRequests.TryGetValue(nextPage, out var request))
+						{
+							_pendingRequests.Remove(nextPage);
+							animated = request.IsAnimated;
+						}
+
+						await PushModalPlatformAsync(nextPage, animated);
 						changed = true;
 					}
 				}
@@ -179,6 +196,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 			}
 
+			_pendingRequests.Remove(modal);
 			_modalPages.Remove(modal);
 
 			if (FireLifeCycleEvents)
@@ -215,6 +233,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var previousPage = CurrentPage;
 			_modalPages.Add(modal);
+			_pendingRequests.Add(modal, new NavigatingEventArgs() { Page = modal, IsModal = true, IsAnimated = animated });
 
 			if (FireLifeCycleEvents)
 			{
@@ -267,6 +286,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					previousPage.HandlerChanged -= OnCurrentPageHandlerChanged;
 					_modalPages.Clear();
+					_pendingRequests.Clear();
 				}
 
 				if (_currentPage is not null)

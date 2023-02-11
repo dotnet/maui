@@ -9,13 +9,15 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ControlsHandlerTestBase
 	{
+
 		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
-			where THandler : class, IElementHandler
+		where THandler : class, IElementHandler
 		{
 			mauiContext ??= MauiContext;
 			return InvokeOnMainThreadAsync(async () =>
@@ -29,9 +31,9 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (window.Handler is not null)
 					{
-						if (window is Controls.Window controlsWindow && controlsWindow.Navigation.ModalStack.Count > 0)
+						if (window is Window controlsWindow && controlsWindow.Navigation.ModalStack.Count > 0)
 						{
-							for (int i = 0; i <  controlsWindow.Navigation.ModalStack.Count; i++)
+							for (int i = 0; i < controlsWindow.Navigation.ModalStack.Count; i++)
 							{
 								var page = controlsWindow.Navigation.ModalStack[i];
 								if (page.Handler is IPlatformViewHandler pvh &&
@@ -42,23 +44,38 @@ namespace Microsoft.Maui.DeviceTests
 								}
 							}
 						}
-
-						if (window.Handler is WindowHandlerStub whs)
-						{
-							window.Handler.DisconnectHandler();
-							await whs.FinishedDisconnecting;
-						}
-						else
-							window.Handler.DisconnectHandler();
-
-						var vc =
-							(window.Content?.Handler as IPlatformViewHandler)?
-								.ViewController;
-
-						vc?.RemoveFromParentViewController();
-						vc?.View?.RemoveFromSuperview();
-
 					}
+
+					if (window.Handler is WindowHandlerStub whs)
+					{
+						window.Handler.DisconnectHandler();
+						await whs.FinishedDisconnecting;
+					}
+					else
+						window.Handler.DisconnectHandler();
+
+					var vc =
+						(window.Content?.Handler as IPlatformViewHandler)?
+							.ViewController;
+
+					vc?.RemoveFromParentViewController();
+					vc?.View?.RemoveFromSuperview();
+
+
+					var rootView = UIApplication.SharedApplication
+									.GetKeyWindow()
+									.RootViewController;
+
+					// If this removes modals
+					bool dangling = false;
+
+					while (rootView?.PresentedViewController != null)
+					{
+						dangling = true;
+						await rootView.DismissViewControllerAsync(false);
+					}
+
+					Assert.False(dangling, "Test failed to cleanup modals");
 				}
 			});
 		}

@@ -207,13 +207,16 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
-		public async Task PushModalModalWithoutAwaiting(bool useShell)
+		public async Task PushModalFromAppearing(bool useShell)
 		{
 			SetupBuilder();
 			var windowPage = new LifeCycleTrackingPage();
 			var modalPage = new LifeCycleTrackingPage()
 			{
 				Content = new Label()
+				{
+					Text = "last page"
+				}
 			};
 
 			Window window;
@@ -227,8 +230,70 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
 				async (handler) =>
 				{
-					_ = windowPage.Navigation.PushModalAsync(new ContentPage());
-					_ = windowPage.Navigation.PushModalAsync(new ContentPage());
+					ContentPage contentPage = new ContentPage();
+					contentPage.Appearing += async (_, _) =>
+					{
+						await windowPage.Navigation.PushModalAsync(new ContentPage()
+						{
+							Content = new Label()
+							{
+								Text = "First page"
+							}
+						});
+
+						await windowPage.Navigation.PushModalAsync(modalPage);
+					};
+
+					await window.Navigation.PushAsync(contentPage);
+					await OnLoadedAsync(modalPage);
+					await window.Navigation.PopModalAsync();
+					await window.Navigation.PopModalAsync();
+					await OnLoadedAsync(contentPage);
+				});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task PushModalModalWithoutAwaiting(bool useShell)
+		{
+			SetupBuilder();
+			var windowPage = new LifeCycleTrackingPage();
+			var modalPage = new LifeCycleTrackingPage()
+			{
+				Content = new Label()
+				{
+					Text = "last page"
+				}
+			};
+
+			Window window;
+
+			if (useShell)
+				window = new Window(new Shell() { CurrentItem = windowPage });
+			else
+				window = new Window(windowPage);
+
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					_ = windowPage.Navigation.PushModalAsync(new ContentPage()
+					{
+						Content = new Label()
+						{
+							Text = "First page"
+						}
+					});
+
+					_ = windowPage.Navigation.PushModalAsync(new ContentPage()
+					{
+						Content = new Label()
+						{
+							Text = "Second page"
+						}
+					});
+
 					_ = windowPage.Navigation.PushModalAsync(modalPage);
 					await OnLoadedAsync(modalPage);
 				});

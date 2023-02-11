@@ -100,6 +100,20 @@ namespace Microsoft.Maui.Platform
 		}
 #endif
 
+		internal static IDisposable OnUnloaded(this IElement element, Action action)
+		{
+#if PLATFORM
+			if (element.Handler is IPlatformViewHandler platformViewHandler &&
+				platformViewHandler.PlatformView != null)
+			{
+				return platformViewHandler.PlatformView.OnUnloaded(action);
+			}
+
+			throw new InvalidOperationException("Handler is not set on element");
+#else
+			throw new NotImplementedException();
+#endif
+		}
 
 		internal static IDisposable OnLoaded(this IElement element, Action action)
 		{

@@ -325,7 +325,7 @@ namespace Microsoft.Maui.DeviceTests
 			// This is most likely a bug.
 			if (frameworkElement.IsLoadedOnPlatform())
 			{
-				frameworkElement.OnLoaded(action);
+				frameworkElement.OnUnloaded(action);
 				return;
 			}
 
@@ -342,12 +342,24 @@ namespace Microsoft.Maui.DeviceTests
 			frameworkElement.Unloaded += unloaded;
 		}
 
-		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			OnUnloaded(frameworkElement, () => taskCompletionSource.SetResult(true));
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			try
+			{
+				timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+				OnUnloaded(frameworkElement, () => taskCompletionSource.SetResult(true));
+				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			}
+			catch(TimeoutException)
+			{
+				if (!frameworkElement.IsLoadedOnPlatform() && !frameworkElement.IsLoaded)
+				{
+					taskCompletionSource.SetResult(true);
+				}
+				else
+					throw;
+			}
 		}
 
 		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
