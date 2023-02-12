@@ -210,7 +210,14 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task PushModalFromAppearing(bool useShell)
 		{
 			SetupBuilder();
-			var windowPage = new LifeCycleTrackingPage();
+			var windowPage = new LifeCycleTrackingPage()
+			{
+				Content = new Label()
+				{
+					Text = "Root Page"
+				}
+			};
+
 			var modalPage = new LifeCycleTrackingPage()
 			{
 				Content = new Label()
@@ -224,7 +231,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (useShell)
 				window = new Window(new Shell() { CurrentItem = windowPage });
 			else
-				window = new Window(windowPage);
+				window = new Window(new NavigationPage(windowPage));
 
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
@@ -244,7 +251,7 @@ namespace Microsoft.Maui.DeviceTests
 						await windowPage.Navigation.PushModalAsync(modalPage);
 					};
 
-					await window.Navigation.PushAsync(contentPage);
+					await window.Page.Navigation.PushAsync(contentPage);
 					await OnLoadedAsync(modalPage);
 					await window.Navigation.PopModalAsync();
 					await window.Navigation.PopModalAsync();
