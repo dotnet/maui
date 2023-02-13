@@ -387,24 +387,10 @@
             InputsFile="$(_MauiSplashInputsFile)"
         />
 
-        <!-- delete the res.zip cache file as things have changed. -->
-        <Delete
-            Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and Exists ('$(_MauiIntermediateSplashScreen)..\sp.zip')"
-            Files="$(_MauiIntermediateSplashScreen)..\sp.zip"
-        />
-
-        <ZipDirectory
-            Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and Exists ('$(_MauiIntermediateSplashScreen)')"
-            SourceDirectory="$(_MauiIntermediateSplashScreen)"
-            DestinationFile="$(_MauiIntermediateSplashScreen)..\sp.zip"
-        />
-
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
                 <StampFile>$(_ResizetizerStampFile)</StampFile>
-                <AndroidSkipResourceProcessing>true</AndroidSkipResourceProcessing>
-                <ResourceDirectoryArchive>$(_MauiIntermediateSplashScreen)..\sp.zip</ResourceDirectoryArchive>
             </LibraryResourceDirectories>
         </ItemGroup>
 
