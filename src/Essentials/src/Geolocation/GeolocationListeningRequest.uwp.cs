@@ -1,6 +1,8 @@
+#nullable enable
+
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public partial class GeolocationRequest
+	public partial class GeolocationListeningRequest
 	{
 		internal uint PlatformDesiredAccuracy
 		{
