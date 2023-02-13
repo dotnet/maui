@@ -23,6 +23,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return false;
 			}
 
+			var handler = parent as IPlatformViewHandler;
+
+			if (handler == null || ShouldPassThroughElement())
+			{
+				return false;
+			}
+
 			return true;
 		}
 
