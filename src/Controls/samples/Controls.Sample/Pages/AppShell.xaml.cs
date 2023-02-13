@@ -12,7 +12,17 @@ namespace Maui.Controls.Sample.Pages
 		public AppShell()
 		{
 			InitializeComponent();
+			BindingContext = this;
 			SetTabBarBackgroundColor(this, Color.FromRgba(3, 169, 244, 255));
+		}
+
+		public string ShellTitle { get; set; } = "Welcome to Shell";
+
+		void OnChangeTabBarBackgroundColor(object sender, EventArgs e)
+		{
+			var random = new Random();
+
+			SetTabBarBackgroundColor(this, Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)));
 		}
 	}
 

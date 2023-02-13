@@ -1,0 +1,8 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Include the pre-processed xaml files in the output folder -->
+    <GenerateLibraryLayout Condition=" '$(GenerateLibraryLayout)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe' ">true</GenerateLibraryLayout>
+  </PropertyGroup>
+
+</Project>

@@ -1,5 +1,5 @@
 <Project>
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.targets" Condition=" '$(UseMaui)' != 'true' " />
+  <Import Project="$(MauiSrcDirectory)Microsoft.Maui.Controls.Debug.targets" />
   <Import Project="$(MauiRootDirectory)Directory.Build.targets" />
-  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />
-  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
 </Project>

@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			if (Forms.IsMarshmallowOrNewer)
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
 			{
 				// We're looking for the foreground ripple effect, which is not available on older APIs
 				// Limiting this to Marshmallow and newer, because View.setForeground() is not available on lower APIs

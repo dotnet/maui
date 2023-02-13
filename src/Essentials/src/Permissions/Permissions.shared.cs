@@ -127,6 +127,13 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		/// <summary>
+		/// Represents permission to communicate via Bluetooth (scanning, connecting and/or advertising).
+		/// </summary>
+		public partial class Bluetooth
+		{
+		}
+
+		/// <summary>
 		/// Represents permission to read the device calendar information.
 		/// </summary>
 		public partial class CalendarRead

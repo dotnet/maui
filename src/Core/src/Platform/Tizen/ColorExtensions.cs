@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Graphics;
-using TLog = Tizen.UIExtensions.Common.Log;
-using TColor = Tizen.UIExtensions.Common.Color;
 using NColor = Tizen.NUI.Color;
+using TColor = Tizen.UIExtensions.Common.Color;
+using TLog = Tizen.UIExtensions.Common.Log;
 
 namespace Microsoft.Maui.Platform
 {
