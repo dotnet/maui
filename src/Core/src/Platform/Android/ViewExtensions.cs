@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Platform
 			platformView.Background = layer;
 
 			// Apply previous padding
-			platformView.SetPadding(padLeft, padTop, padRight, padBottom);		
+			platformView.SetPadding(padLeft, padTop, padRight, padBottom);
 		}
 
 		public static void UpdateBackground(this AView platformView, Paint? background) =>
