@@ -135,7 +135,7 @@ namespace Samples.ViewModel
 			OnPropertyChanged(nameof(IsNotListening));
 		}
 
-		void Geolocation_LocationChanged(object sender, LocationEventArgs e)
+		void Geolocation_LocationChanged(object sender, GeolocationLocationChangedEventArgs e)
 		{
 			ListeningLocation = FormatLocation(e.Location);
 		}
