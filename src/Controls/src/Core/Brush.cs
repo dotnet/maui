@@ -8,10 +8,7 @@ namespace Microsoft.Maui.Controls
 	public abstract partial class Brush : Element
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Default']/Docs/*" />
-		public static Brush Default
-		{
-			get { return new SolidColorBrush(null); }
-		}
+		public static Brush Default => new ImmutableBrush(null);
 
 		public static implicit operator Brush(Color color) => new SolidColorBrush(color);
 
