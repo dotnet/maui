@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ShellFlyoutBackgroundInitializesCorrectly(string colorHex)
 		{
 			SetupBuilder();
-			
+
 			var expectedColor = Color.FromArgb(colorHex);
 
 			var shell = await CreateShellAsync((shell) =>
@@ -45,21 +45,34 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(shellItem);
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				var rootNavView = handler.PlatformView;
-				var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
-				var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Left;
-				var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler)  =>
+				{
+					var rootNavView = handler.PlatformView;
+					var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
+					var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Left;
+					var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 
-				Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
-				Assert.NotNull(shellItemView);
-				Assert.Equal(expectedShellItems, shellItemView.PaneDisplayMode);
+					Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
+					Assert.NotNull(shellItemView);
+					Assert.Equal(expectedShellItems, shellItemView.PaneDisplayMode);
 
-				return Task.CompletedTask;
+					return Task.CompletedTask;
+				});
+
+				await AssertionExtensions.Wait(() =>
+				{
+					var platformView = shell.Handler.PlatformView as FrameworkElement;
+
+					if (platformView != null)
+					{
+						return platformView.Height > 0 || platformView.Width > 0;
+					}
+
+					return false;
+				});
 			});
-
-			await Task.Delay(100);
 
 			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 		}
