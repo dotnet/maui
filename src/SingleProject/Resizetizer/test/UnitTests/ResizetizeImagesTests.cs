@@ -1367,7 +1367,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData("android")]
 			[InlineData("uwp")]
 			[InlineData("ios")]
-			public void GenerationSkippedOnIncrementalBuild (string platform)
+			public void GenerationSkippedOnIncrementalBuild(string platform)
 			{
 				var items = new[]
 				{
@@ -1380,17 +1380,17 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					}),
 				};
 
-				var task = GetNewTask (platform, items);
+				var task = GetNewTask(platform, items);
 				var success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				LogErrorEvents.Clear ();
-				LogMessageEvents.Clear ();
-				task = GetNewTask (platform, items);
-				success = task.Execute ();
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+				task = GetNewTask(platform, items);
+				success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				Assert.True (LogMessageEvents.Any (x=> x.Message.Contains("Skipping ", StringComparison.OrdinalIgnoreCase)), $"Image generation should have been skipped.");
+				Assert.True(LogMessageEvents.Any(x => x.Message.Contains("Skipping ", StringComparison.OrdinalIgnoreCase)), $"Image generation should have been skipped.");
 			}
 		}
 	}

@@ -44,7 +44,8 @@ namespace Microsoft.Maui.Resizetizer
 			var (sourceExists, sourceModified) = Utils.FileExists(Info.Filename);
 			var (destinationExists, destinationModified) = Utils.FileExists(appIconSetContentsFile);
 
-			if (destinationModified > sourceModified) {
+			if (destinationModified > sourceModified)
+			{
 				Logger.Log($"Skipping `{Info.Filename}` => `{appIconSetContentsFile}` file is up to date.");
 				return new List<ResizedImageInfo> {
 					new ResizedImageInfo { Dpi = new DpiPath("", 1), Filename = appIconSetContentsFile }

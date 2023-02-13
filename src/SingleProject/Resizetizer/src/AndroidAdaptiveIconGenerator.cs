@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -68,12 +68,13 @@ namespace Microsoft.Maui.Resizetizer
 				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				if (destinationModified > backgroundModified) {
+				if (destinationModified > backgroundModified)
+				{
 					Logger.Log($"Skipping `{backgroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
 				}
-	
+
 				Logger.Log($"App Icon Background Part: " + destination);
 
 				if (backgroundExists)
@@ -111,7 +112,8 @@ namespace Microsoft.Maui.Resizetizer
 				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				if (destinationModified > foregroundModified) {
+				if (destinationModified > foregroundModified)
+				{
 					Logger.Log($"Skipping `{foregroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
