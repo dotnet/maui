@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		/// <param name="accuracy">The desired geolocation accuracy.</param>
 		public GeolocationListeningRequest(GeolocationAccuracy accuracy)
-			:this(accuracy, TimeSpan.FromSeconds(1))
+			: this(accuracy, TimeSpan.FromSeconds(1))
 		{
 		}
 
