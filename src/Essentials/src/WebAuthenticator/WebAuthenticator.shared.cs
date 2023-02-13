@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Authentication
 		/// <summary>
 		/// The event that is triggered when an authentication flow calls back into the Android application.
 		/// </summary>
-		/// <param name="intent">A <see cref="Android.Content.Intent"/> object containing additional data about this resume operation.</param>
+		/// <param name="intent">An <see cref="Android.Content.Intent"/> object containing additional data about this resume operation.</param>
 		/// <returns><see langword="true"/> when the callback can be processed, otherwise <see langword="false"/>.</returns>
 		bool OnResumeCallback(Android.Content.Intent intent);
 #endif

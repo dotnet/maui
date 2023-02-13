@@ -226,18 +226,18 @@ namespace Microsoft.Maui.Media
 			pascals / atmospherePascals;
 
 		/// <summary>
-		/// Calculates the distance between two coordinates in miles.
+		/// Calculates the distance between two coordinatesÂ in miles.
 		/// </summary>
 		/// <param name="lat1">First latitude.</param>
-        /// <param name="lon1">First longitude.</param>
-        /// <param name="lat2">Second latitude.</param>
-        /// <param name="lon2">Second longitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
 		/// <returns>The distance in miles.</returns>
 		public static double CoordinatesToMiles(double lat1, double lon1, double lat2, double lon2) =>
 			KilometersToMiles(CoordinatesToKilometers(lat1, lon1, lat2, lon2));
 
 		/// <summary>
-		/// Calculates the distance between two coordinates in kilometers.
+		/// Calculates the distance between two coordinatesÂ in kilometers.
 		/// </summary>
 		/// <param name="lat1">First latitude.</param>
 		/// <param name="lon1">First longitude.</param>
