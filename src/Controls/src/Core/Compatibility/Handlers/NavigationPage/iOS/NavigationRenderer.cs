@@ -380,7 +380,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (flyoutDetail != null && parentPages.Append((Page)Element).Contains(flyoutDetail.Detail))
 				_parentFlyoutPage = flyoutDetail;
 		}
-		
+
 		TaskCompletionSource<bool> _pendingNavigationRequest;
 		ActionDisposable _removeLifecycleEvents;
 

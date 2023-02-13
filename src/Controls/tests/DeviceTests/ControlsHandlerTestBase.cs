@@ -363,7 +363,7 @@ namespace Microsoft.Maui.DeviceTests
 				OnUnloaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
 				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 			}
-			catch(TimeoutException)
+			catch (TimeoutException)
 			{
 				if (!frameworkElement.IsLoadedOnPlatform() && !frameworkElement.IsLoaded)
 				{
@@ -383,7 +383,7 @@ namespace Microsoft.Maui.DeviceTests
 				OnLoaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
 				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 			}
-			catch(TimeoutException)
+			catch (TimeoutException)
 			{
 				if (frameworkElement.IsLoadedOnPlatform() &&
 					frameworkElement.IsLoaded)

@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 #if NETSTANDARD2_1_OR_GREATER
-		internal bool TryGetValue(Page page, [NotNullWhen(true)]out NavigatingEventArgs? request)
+		internal bool TryGetValue(Page page, [NotNullWhen(true)] out NavigatingEventArgs? request)
 #else
 		internal bool TryGetValue(Page page, out NavigatingEventArgs request)
 #endif

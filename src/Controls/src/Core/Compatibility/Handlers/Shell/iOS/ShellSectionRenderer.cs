@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// pending navigation operations
 			var sourcesToComplete = new List<TaskCompletionSource<bool>>();
 
-			foreach(var item in _completionTasks.Values)
+			foreach (var item in _completionTasks.Values)
 			{
 				sourcesToComplete.Add(item);
 			}

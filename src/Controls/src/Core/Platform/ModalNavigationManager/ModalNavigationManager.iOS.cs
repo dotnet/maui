@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				failed = true;
 				throw;
-			}			
+			}
 			finally
 			{
 				_waitForModalToFinish = false;
