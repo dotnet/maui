@@ -3,11 +3,11 @@ using System;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	public class LocationEventArgs : EventArgs
+	public class GeolocationLocationChangedEventArgs : EventArgs
 	{
 		public Location Location { get; }
 
-		public LocationEventArgs(Location location)
+		public GeolocationLocationChangedEventArgs(Location location)
 		{
 			if (location == null)
 				throw new ArgumentNullException(nameof(location));

@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Occurs while listening to location updates.
 		/// </summary>
-		event EventHandler<LocationEventArgs>? LocationChanged;
+		event EventHandler<GeolocationLocationChangedEventArgs>? LocationChanged;
 
 		/// <summary>
 		/// Occurs when an error during listening for location updates arises. When the event is
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Occurs while listening to location updates.
 		/// </summary>
-		public static event EventHandler<LocationEventArgs> LocationChanged
+		public static event EventHandler<GeolocationLocationChangedEventArgs> LocationChanged
 		{
 			add => Current.LocationChanged += value;
 			remove => Current.LocationChanged -= value;
@@ -172,14 +172,14 @@ namespace Microsoft.Maui.Devices.Sensors
 
 	partial class GeolocationImplementation : IGeolocation
 	{
-		public event EventHandler<LocationEventArgs>? LocationChanged;
+		public event EventHandler<GeolocationLocationChangedEventArgs>? LocationChanged;
 
 		public event EventHandler<GeolocationListeningFailedEventArgs>? ListeningFailed;
 
 		internal void OnLocationChanged(Location location) =>
-			OnLocationChanged(new LocationEventArgs(location));
+			OnLocationChanged(new GeolocationLocationChangedEventArgs(location));
 
-		internal void OnLocationChanged(LocationEventArgs e) =>
+		internal void OnLocationChanged(GeolocationLocationChangedEventArgs e) =>
 			LocationChanged?.Invoke(null, e);
 
 		internal void OnLocationError(GeolocationError geolocationError) =>
