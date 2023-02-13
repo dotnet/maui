@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
-		
+
 		[Fact]
 		public async Task ChangingBottomTabAttributesDoesntRecreateBottomTabs()
 		{
