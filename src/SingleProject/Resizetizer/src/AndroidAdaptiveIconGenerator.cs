@@ -138,19 +138,23 @@ namespace Microsoft.Maui.Resizetizer
 
 		void ProcessAdaptiveIcon(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
-			var adaptiveIconXmlStr = AdaptiveIconDrawableXml
-				.Replace("{name}", AppIconName);
-
 			var dir = Path.Combine(fullIntermediateOutputPath.FullName, "mipmap-anydpi-v26");
 			var adaptiveIconDestination = Path.Combine(dir, AppIconName + ".xml");
 			var adaptiveIconRoundDestination = Path.Combine(dir, AppIconName + "_round.xml");
 			Directory.CreateDirectory(dir);
 
+			if (File.Exists(adaptiveIconDestination) && File.Exists(adaptiveIconRoundDestination)) {
+				results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1), Filename = adaptiveIconDestination });
+				results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1, "_round"), Filename = adaptiveIconRoundDestination });
+				return;
+			}
+
+			var adaptiveIconXmlStr = AdaptiveIconDrawableXml
+				.Replace("{name}", AppIconName);
+
 			// Write out the adaptive icon xml drawables
-			if (!File.Exists(adaptiveIconDestination))
-				File.WriteAllText(adaptiveIconDestination, adaptiveIconXmlStr);
-			if (!File.Exists(adaptiveIconRoundDestination))
-				File.WriteAllText(adaptiveIconRoundDestination, adaptiveIconXmlStr);
+			File.WriteAllText(adaptiveIconDestination, adaptiveIconXmlStr);
+			File.WriteAllText(adaptiveIconRoundDestination, adaptiveIconXmlStr);
 
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1), Filename = adaptiveIconDestination });
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1, "_round"), Filename = adaptiveIconRoundDestination });
