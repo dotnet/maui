@@ -460,15 +460,26 @@ namespace Microsoft.Maui.Controls
 
 		static View BuildDefaultTemplate()
 		{
-			var frame = new Frame
+			Border border = new Border()
 			{
-				HasShadow = false,
 				Padding = 6
 			};
 
-			BindToTemplatedParent(frame, BackgroundColorProperty, Microsoft.Maui.Controls.Frame.BorderColorProperty, HorizontalOptionsProperty,
+			BindToTemplatedParent(border,BackgroundProperty,HorizontalOptionsProperty,
 				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
 				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
+
+			border.SetBinding(Border.StrokeProperty,
+				new Binding(BorderColorProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			border.SetBinding(Border.StrokeShapeProperty,
+				new Binding(CornerRadiusProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			border.SetBinding(Border.StrokeThicknessProperty,
+				new Binding(BorderWidthProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
 
 			var grid = new Grid
 			{
@@ -522,11 +533,11 @@ namespace Microsoft.Maui.Controls
 			grid.Add(checkMark);
 			grid.Add(contentPresenter, 1, 0);
 
-			frame.Content = grid;
+			border.Content = grid;
 
 			INameScope nameScope = new NameScope();
-			NameScope.SetNameScope(frame, nameScope);
-			nameScope.RegisterName(TemplateRootName, frame);
+			NameScope.SetNameScope(border, nameScope);
+			nameScope.RegisterName(TemplateRootName, border);
 			nameScope.RegisterName(UncheckedButton, normalEllipse);
 			nameScope.RegisterName(CheckedIndicator, checkMark);
 			nameScope.RegisterName("ContentPresenter", contentPresenter);
@@ -553,9 +564,9 @@ namespace Microsoft.Maui.Controls
 
 			visualStateGroups.Add(checkedStates);
 
-			VisualStateManager.SetVisualStateGroups(frame, visualStateGroups);
+			VisualStateManager.SetVisualStateGroups(border, visualStateGroups);
 
-			return frame;
+			return border;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='ContentAsString']/Docs/*" />
