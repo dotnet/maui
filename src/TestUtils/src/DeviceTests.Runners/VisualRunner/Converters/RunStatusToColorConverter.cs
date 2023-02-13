@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {
 	class RunStatusToColorConverter : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
 			if (value is not RunStatus status || Application.Current == null)
 				return Colors.Red;
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			};
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
 			throw new NotImplementedException();
 	}
 }
