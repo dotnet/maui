@@ -170,12 +170,12 @@ namespace Microsoft.Maui.Resizetizer
 
 				var destination = Resizer.GetRasterFileDestination(img, dpi, IntermediateOutputPath)
 					.Replace("{name}", appIconName);
-				(bool Exists, DateTime Modified) destinationExists = Utils.FileExists (destination);
-				(bool Exists, DateTime Modified) sourceExists = Utils.FileExists (img.Filename);
+				var (sourceExists, sourceModified) = Utils.FileExists (img.Filename);
+				var (destinationExists, destinationModified)= Utils.FileExists (destination);
 
 				LogDebugMessage($"App Icon Destination: " + destination);
 				
-				if (destinationExists.Modified > sourceExists.Modified) {
+				if (destinationModified > sourceModified) {
 					Logger.Log ($"Skipping `{img.Filename}` => `{destination}` file is up to date.");
 					continue;
 				}

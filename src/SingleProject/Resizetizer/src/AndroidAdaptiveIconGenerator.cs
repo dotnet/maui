@@ -53,10 +53,10 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessBackground(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var backgroundFile = Info.Filename;
-			(bool Exists, DateTime Modified) backgroundExists = Utils.FileExists(backgroundFile);
+			var (backgroundExists, backgroundModified) = Utils.FileExists(backgroundFile);
 			var backgroundDestFilename = AppIconName + "_background.png";
 
-			if (backgroundExists.Exists)
+			if (backgroundExists)
 				Logger.Log("Converting Background SVG to PNG: " + backgroundFile);
 			else
 				Logger.Log("Background was not found (will manufacture): " + backgroundFile);
@@ -65,10 +65,10 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, backgroundDestFilename);
-				(bool Exists, DateTime Modified) destinationExists = Utils.FileExists(destination);
+				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				if (destinationExists.Modified > backgroundExists.Modified) {
+				if (destinationModified > backgroundModified) {
 					Logger.Log($"Skipping `{backgroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Resizetizer
 	
 				Logger.Log($"App Icon Background Part: " + destination);
 
-				if (backgroundExists.Exists)
+				if (backgroundExists)
 				{
 					// resize the background
 					var tools = SkiaSharpTools.Create(Info.IsVector, Info.Filename, dpi.Size, Info.Color, null, Logger);
@@ -96,10 +96,10 @@ namespace Microsoft.Maui.Resizetizer
 		void ProcessForeground(List<ResizedImageInfo> results, DirectoryInfo fullIntermediateOutputPath)
 		{
 			var foregroundFile = Info.ForegroundFilename;
-			(bool Exists, DateTime Modified) foregroundExists = Utils.FileExists(foregroundFile);
+			var (foregroundExists, foregroundModified) = Utils.FileExists(foregroundFile);
 			var foregroundDestFilename = AppIconName + "_foreground.png";
 
-			if (foregroundExists.Exists)
+			if (foregroundExists)
 				Logger.Log("Converting Foreground SVG to PNG: " + foregroundFile);
 			else
 				Logger.Log("Foreground was not found (will manufacture): " + foregroundFile);
@@ -108,10 +108,10 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				var dir = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path);
 				var destination = Path.Combine(dir, foregroundDestFilename);
-				(bool Exists, DateTime Modified) destinationExists = Utils.FileExists(destination);
+				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 				Directory.CreateDirectory(dir);
 
-				if (destinationExists.Modified > foregroundExists.Modified) {
+				if (destinationModified > foregroundModified) {
 					Logger.Log($"Skipping `{foregroundFile}` => `{destination}` file is up to date.");
 					results.Add(new ResizedImageInfo { Dpi = dpi, Filename = destination });
 					continue;
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				Logger.Log($"App Icon Foreground Part: " + destination);
 
-				if (foregroundExists.Exists)
+				if (foregroundExists)
 				{
 					// resize the forground
 					var tools = SkiaSharpTools.Create(Info.ForegroundIsVector, Info.ForegroundFilename, dpi.Size, null, Info.TintColor, Logger);
