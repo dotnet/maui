@@ -12,12 +12,12 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class ModalWrapper : UIViewController, IUIAdaptivePresentationControllerDelegate
+	internal class ControlsModalWrapper : ModalWrapper, IUIAdaptivePresentationControllerDelegate
 	{
 		IPlatformViewHandler _modal;
 		bool _isDisposed;
 
-		internal ModalWrapper(IPlatformViewHandler modal)
+		internal ControlsModalWrapper(IPlatformViewHandler modal)
 		{
 			_modal = modal;
 

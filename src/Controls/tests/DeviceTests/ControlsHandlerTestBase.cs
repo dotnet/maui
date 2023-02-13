@@ -194,8 +194,20 @@ namespace Microsoft.Maui.DeviceTests
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
-						window.Deactivated();
-						window.Destroying();
+						if (window is Window cntrlsWindow)
+						{
+							if (cntrlsWindow.IsActivated)
+								window.Deactivated();
+
+							if (!cntrlsWindow.IsDestroyed)
+								window.Destroying();
+						}
+						else
+						{
+							window.Deactivated();
+							window.Destroying();
+						}
+
 
 					}, mauiContext);
 				}
@@ -348,26 +360,39 @@ namespace Microsoft.Maui.DeviceTests
 			try
 			{
 				timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-				OnUnloaded(frameworkElement, () => taskCompletionSource.SetResult(true));
+				OnUnloaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
 				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 			}
 			catch(TimeoutException)
 			{
 				if (!frameworkElement.IsLoadedOnPlatform() && !frameworkElement.IsLoaded)
 				{
-					taskCompletionSource.SetResult(true);
+					taskCompletionSource.TrySetResult(true);
 				}
 				else
 					throw;
 			}
 		}
 
-		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			OnLoaded(frameworkElement, () => taskCompletionSource.SetResult(true));
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			try
+			{
+				timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+				OnLoaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
+				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			}
+			catch(TimeoutException)
+			{
+				if (frameworkElement.IsLoadedOnPlatform() &&
+					frameworkElement.IsLoaded)
+				{
+					taskCompletionSource.TrySetResult(true);
+				}
+				else
+					throw;
+			}
 		}
 
 		protected async Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)

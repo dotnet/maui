@@ -210,7 +210,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task PushModalFromAppearing(bool useShell)
 		{
 			SetupBuilder();
-			var windowPage = new LifeCycleTrackingPage()
+			var windowPage = new ContentPage()
 			{
 				Content = new Label()
 				{
@@ -218,11 +218,11 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			var modalPage = new LifeCycleTrackingPage()
+			var modalPage = new ContentPage()
 			{
 				Content = new Label()
 				{
-					Text = "last page"
+					Text = "last modal page"
 				}
 			};
 
@@ -234,17 +234,30 @@ namespace Microsoft.Maui.DeviceTests
 				window = new Window(new NavigationPage(windowPage));
 
 
+			bool appearingFired = false;
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
 				async (handler) =>
 				{
-					ContentPage contentPage = new ContentPage();
+					ContentPage contentPage = new ContentPage()
+					{
+						Content = new Label()
+						{
+							Text = "Second Page"
+						}
+					};
+
 					contentPage.Appearing += async (_, _) =>
 					{
+						if (appearingFired)
+							return;
+
+						appearingFired = true;
+
 						await windowPage.Navigation.PushModalAsync(new ContentPage()
 						{
 							Content = new Label()
 							{
-								Text = "First page"
+								Text = "First modal page"
 							}
 						});
 
@@ -255,8 +268,11 @@ namespace Microsoft.Maui.DeviceTests
 					await OnLoadedAsync(modalPage);
 					await window.Navigation.PopModalAsync();
 					await window.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
 					await OnLoadedAsync(contentPage);
 				});
+
+			Assert.True(appearingFired);
 		}
 
 		[Theory]
@@ -365,7 +381,11 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var page = new ContentPage()
 			{
-				Content = new Label() { Text = "Initial Page" }
+				Content = new Label()
+				{
+					Background = SolidColorBrush.Purple,
+					Text = "Initial Page"
+				}
 			};
 
 			var modalPage = new ContentPage()

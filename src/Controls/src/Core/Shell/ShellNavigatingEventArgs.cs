@@ -6,13 +6,6 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Controls
 {
 
-	internal class NavigatingEventArgs
-	{
-		public bool IsModal { get; set; }
-		public bool IsAnimated { get; set; }
-		public Page Page { get; set;}
-	}
-
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigatingEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellNavigatingEventArgs']/Docs/*" />
 	public class ShellNavigatingEventArgs : EventArgs
 	{

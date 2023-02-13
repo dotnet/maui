@@ -10,12 +10,11 @@ namespace Microsoft.Maui.Controls.Platform
 	internal partial class ModalNavigationManager
 	{
 		Window _window;
-		public IReadOnlyList<Page> ModalStack => _modalPages;
+		public IReadOnlyList<Page> ModalStack => _modalPages.Pages;
 		IMauiContext WindowMauiContext => _window.MauiContext;
 
 		List<Page> _platformModalPages = new List<Page>();
-		List<Page> _modalPages = new List<Page>();
-		Dictionary<Page, NavigatingEventArgs> _pendingRequests = new Dictionary<Page, NavigatingEventArgs>();
+		NavigatingEventArgsList _modalPages = new NavigatingEventArgsList();
 
 		Page? _currentPage;
 
@@ -26,7 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : throw new InvalidOperationException("Modal Stack is Empty");
 
 		Page? CurrentPage =>
-			_modalPages.Count > 0 ? _modalPages[_modalPages.Count - 1] : _window.Page;
+			_modalPages.Count > 0 ? _modalPages[_modalPages.Count - 1].Page : _window.Page;
 
 		// Shell takes care of firing its own Modal life cycle events
 		// With shell you cam remove / add multiple modals at once
@@ -48,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_window.HandlerChanging += OnWindowHandlerChanging;
 			_window.Destroying += (_, _) =>
 			{
-				_platformModalPages.Clear();
+				ClearModalPages(platform: true);
 			};
 		}
 
@@ -58,7 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// the window activated/resumed event will take care of syncing the platform modals
 			if (e.OldHandler is not null)
 			{
-				_platformModalPages.Clear();
+				ClearModalPages(platform: true);
 			}
 		}
 
@@ -122,7 +121,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				for (popTo = 0; popTo < _platformModalPages.Count && popTo < _modalPages.Count; popTo++)
 				{
-					if (_platformModalPages[popTo] != _modalPages[popTo])
+					if (_platformModalPages[popTo] != _modalPages[popTo].Page)
 					{
 						break;
 					}
@@ -141,9 +140,9 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_platformModalPages.Count > popTo && IsModalReady)
 				{
 					bool animated = false;
-					if (_pendingRequests.TryGetValue(CurrentPlatformModalPage, out var request))
+					if (_modalPages.TryGetValue(CurrentPlatformModalPage, out var request))
 					{
-						_pendingRequests.Remove(CurrentPlatformModalPage);
+						_modalPages.Remove(CurrentPlatformModalPage);
 						animated = request.IsAnimated;
 					}
 
@@ -158,13 +157,9 @@ namespace Microsoft.Maui.Controls.Platform
 					var i = _platformModalPages.Count;
 					if (i < _modalPages.Count && IsModalReady)
 					{
-						bool animated = false;
-						var nextPage = _modalPages[i];
-						if (_pendingRequests.TryGetValue(nextPage, out var request))
-						{
-							_pendingRequests.Remove(nextPage);
-							animated = request.IsAnimated;
-						}
+						var nextRequest = _modalPages[i];
+						var nextPage = nextRequest.Page;
+						bool animated = nextRequest.IsAnimated;
 
 						await PushModalPlatformAsync(nextPage, animated);
 						changed = true;
@@ -188,7 +183,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public async Task<Page?> PopModalAsync(bool animated)
 		{
-			Page modal = _modalPages[_modalPages.Count - 1];
+			Page modal = _modalPages[_modalPages.Count - 1].Page;
 
 			if (_window.OnModalPopping(modal))
 			{
@@ -196,7 +191,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 			}
 
-			_pendingRequests.Remove(modal);
 			_modalPages.Remove(modal);
 
 			if (FireLifeCycleEvents)
@@ -232,8 +226,7 @@ namespace Microsoft.Maui.Controls.Platform
 			modal.Parent = _window;
 
 			var previousPage = CurrentPage;
-			_modalPages.Add(modal);
-			_pendingRequests.Add(modal, new NavigatingEventArgs() { Page = modal, IsModal = true, IsAnimated = animated });
+			_modalPages.Add(new NavigatingEventArgs(modal, true, animated));
 
 			if (FireLifeCycleEvents)
 			{
@@ -285,8 +278,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (previousPage is not null)
 				{
 					previousPage.HandlerChanged -= OnCurrentPageHandlerChanged;
-					_modalPages.Clear();
-					_pendingRequests.Clear();
+					ClearModalPages(xplat: true);
 				}
 
 				if (_currentPage is not null)
@@ -316,6 +308,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public void PageAttachedHandler() => OnPageAttachedHandler();
 
+		void ClearModalPages(bool xplat = false, bool platform = false)
+		{
+			if (xplat)
+				_modalPages.Clear();
+
+			if (platform)
+				_platformModalPages.Clear();
+		}
 
 		// Windows and Android have basically the same requirement that
 		// we need to wait for the current page to finish loading before
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (IsModalPlatformReady)
 			{
-				await SyncPlatformModalStackAsync();
+				await SyncPlatformModalStackAsync().ConfigureAwait(false);
 			}
 			else if (_window.IsActivated &&
 				_window?.Page?.Handler is not null)

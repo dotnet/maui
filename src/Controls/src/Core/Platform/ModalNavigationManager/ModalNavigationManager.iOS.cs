@@ -25,8 +25,25 @@ namespace Microsoft.Maui.Controls.Platform
 			_window.Resumed += (_, _) => SyncPlatformModalStack();
 			_window.HandlerChanging += OnPlatformWindowHandlerChanging;
 			_window.Destroying += (_, _) => _platformActivated = false;
-
+			_window.PropertyChanging += OnWindowPropertyChanging;
 			_platformActivated = _window.IsActivated;
+		}
+
+		void OnWindowPropertyChanging(object sender, PropertyChangingEventArgs e)
+		{
+			if (e.PropertyName != Window.PageProperty.PropertyName)
+				return;
+
+			if (_currentPage is not null &&
+				_currentPage.Handler is IPlatformViewHandler pvh &&
+				pvh.ViewController?.PresentedViewController is ModalWrapper &&
+				_window.Page != _currentPage)
+			{
+				ClearModalPages(xplat: true, platform: true);
+
+				// Dismissing the root modal will dismiss everything
+				pvh.ViewController.DismissViewController(false, null);
+			}
 		}
 
 		Task SyncModalStackWhenPlatformIsReadyAsync() =>
@@ -98,11 +115,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
+			bool failed = false;
 			try
 			{
 				_waitForModalToFinish = true;
+
 				modal.ToPlatform(WindowMauiContext);
-				var wrapper = new ModalWrapper(modal.Handler as IPlatformViewHandler);
+				var wrapper = new ControlsModalWrapper(modal.Handler as IPlatformViewHandler);
 
 				if (_platformModalPages.Count > 1)
 				{
@@ -126,12 +145,19 @@ namespace Microsoft.Maui.Controls.Platform
 					await Task.Delay(5);
 				}
 			}
+			catch
+			{
+				failed = true;
+				throw;
+			}			
 			finally
 			{
 				_waitForModalToFinish = false;
+
+				if (!failed)
+					SyncModalStackWhenPlatformIsReady();
 			}
 
-			SyncModalStackWhenPlatformIsReady();
 		}
 
 		void EndEditing()

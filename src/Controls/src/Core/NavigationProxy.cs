@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Internals
 	public class NavigationProxy : INavigation
 	{
 		INavigation _inner;
-		Lazy<List<Page>> _modalStack = new Lazy<List<Page>>(() => new List<Page>());
+		Lazy<NavigatingEventArgsList> _modalStack = new Lazy<NavigatingEventArgsList>(() => new NavigatingEventArgsList());
 
 		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Internals
 				if (ReferenceEquals(_inner, null))
 				{
 					_pushStack = new Lazy<List<Page>>(() => new List<Page>());
-					_modalStack = new Lazy<List<Page>>(() => new List<Page>());
+					_modalStack = new Lazy<NavigatingEventArgsList>(() => new NavigatingEventArgsList());
 				}
 				else
 				{
@@ -51,9 +51,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 					if (_modalStack != null && _modalStack.IsValueCreated)
 					{
-						foreach (Page page in _modalStack.Value)
+						foreach (var request in _modalStack.Value)
 						{
-							_inner.PushModalAsync(page);
+							_inner.PushModalAsync(request.Page, request.IsAnimated);
 						}
 					}
 
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Internals
 		protected virtual IReadOnlyList<Page> GetModalStack()
 		{
 			INavigation currentInner = Inner;
-			return currentInner == null ? _modalStack.Value : currentInner.ModalStack;
+			return currentInner == null ? _modalStack.Value.Pages : currentInner.ModalStack;
 		}
 
 		protected virtual IReadOnlyList<Page> GetNavigationStack()
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Internals
 			INavigation currentInner = Inner;
 			if (currentInner == null)
 			{
-				_modalStack.Value.Add(modal);
+				_modalStack.Value.Add(new NavigatingEventArgs(modal, true, animated));
 				return Task.FromResult<object>(null);
 			}
 			return currentInner.PushModalAsync(modal, animated);
@@ -254,12 +254,12 @@ namespace Microsoft.Maui.Controls.Internals
 
 		Page PopModal()
 		{
-			List<Page> list = _modalStack.Value;
+			var list = _modalStack.Value;
 			if (list.Count == 0)
 				return null;
-			Page result = list[list.Count - 1];
+			var result = list[list.Count - 1];
 			list.RemoveAt(list.Count - 1);
-			return result;
+			return result.Page;
 		}
 	}
 }
