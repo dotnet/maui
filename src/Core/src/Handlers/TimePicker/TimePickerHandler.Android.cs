@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiTimePicker platformView)
 		{
-			if (_dialog != null)
+			if (_dialog is not null)
 			{
 				_dialog.ShowEvent -= OnDialogShown;
 				_dialog.DismissEvent -= OnDialogDismissed;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
 				VirtualView.IsFocused = false;
 
-				if (_dialog != null)
+				if (_dialog is not null)
 				{
 					_dialog = null;
 				}
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Handlers
 
 		void HidePickerDialog()
 		{
-			if (_dialog != null)
+			if (_dialog is not null)
 			{
 				_dialog.ShowEvent -= OnDialogShown;
 				_dialog.DismissEvent -= OnDialogDismissed;
