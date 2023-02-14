@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			UpdateBorder();
 		}
-			
+
 		void OnCornerRadiusChanged(object sender, ValueChangedEventArgs e)
 		{
 			UpdateCornerRadius();

@@ -1,5 +1,5 @@
 ﻿#nullable disable
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
