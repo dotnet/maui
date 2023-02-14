@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (_window.Handler?.PlatformView is not MauiWinUIWindow platformWindow)
 				return;
 
-			if (_plaformWindow == null)
+			if (_plaformWindow is null)
 			{
 				_plaformWindow = platformWindow;
 				_window.Created();
@@ -41,14 +41,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			{
 				_handler = value;
 
-				if (value != null)
+				if (value is not null)
 					_window.Created();
 			}
 		}
 
 		void OnClosed(object sender, UI.Xaml.WindowEventArgs args)
 		{
-			if (_plaformWindow != null)
+			if (_plaformWindow is not null)
 			{
 				_plaformWindow.Activated -= OnActivated;
 				_plaformWindow.Closed -= OnClosed;

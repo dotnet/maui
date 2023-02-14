@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 		IMauiContext WindowMauiContext => _window.MauiContext;
 
 		List<Page> _platformModalPages = new List<Page>();
-		NavigatingEventArgsList _modalPages = new NavigatingEventArgsList();
+		NavigatingStepRequestList _modalPages = new NavigatingStepRequestList();
 
 		Page? _currentPage;
 
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Platform
 			modal.Parent = _window;
 
 			var previousPage = CurrentPage;
-			_modalPages.Add(new NavigatingEventArgs(modal, true, animated));
+			_modalPages.Add(new NavigationStepRequest(modal, true, animated));
 
 			if (FireLifeCycleEvents)
 			{

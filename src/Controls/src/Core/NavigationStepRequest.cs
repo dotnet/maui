@@ -5,10 +5,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class NavigatingEventArgs
+	internal class NavigationStepRequest
 	{
-
-		public NavigatingEventArgs(Page page, bool isModal, bool isAnimated)
+		public NavigationStepRequest(Page page, bool isModal, bool isAnimated)
 		{
 			IsModal = isModal;
 			IsAnimated = isAnimated;
@@ -20,9 +19,9 @@ namespace Microsoft.Maui.Controls
 		public Page Page { get; }
 	}
 
-	class NavigatingEventArgsList : IList<NavigatingEventArgs>
+	class NavigatingStepRequestList : IList<NavigationStepRequest>
 	{
-		List<NavigatingEventArgs> _innerList = new List<NavigatingEventArgs>();
+		List<NavigationStepRequest> _innerList = new List<NavigationStepRequest>();
 		List<Page> _pages = new List<Page>();
 
 		public IReadOnlyList<Page> Pages => _pages;
@@ -30,13 +29,13 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsReadOnly => false;
 
-		public NavigatingEventArgs this[int index]
+		public NavigationStepRequest this[int index]
 		{
 			get => _innerList[index];
 			set => _innerList.Insert(index, value);
 		}
 
-		public void Add(NavigatingEventArgs args)
+		public void Add(NavigationStepRequest args)
 		{
 			_pages.Add(args.Page);
 			_innerList.Add(args);
@@ -48,7 +47,7 @@ namespace Microsoft.Maui.Controls
 				Remove(request);
 		}
 
-		public void Remove(NavigatingEventArgs args)
+		public void Remove(NavigationStepRequest args)
 		{
 			_innerList.Remove(args);
 			_pages.Remove(args.Page);
@@ -60,12 +59,12 @@ namespace Microsoft.Maui.Controls
 			_pages.Clear();
 		}
 
-		public int IndexOf(NavigatingEventArgs item)
+		public int IndexOf(NavigationStepRequest item)
 		{
 			return _innerList.IndexOf(item);
 		}
 
-		public void Insert(int index, NavigatingEventArgs item)
+		public void Insert(int index, NavigationStepRequest item)
 		{
 			_innerList.Insert(index, item);
 			_pages.Insert(index, item.Page);
@@ -77,12 +76,12 @@ namespace Microsoft.Maui.Controls
 			_pages.RemoveAt(index);
 		}
 
-		public bool Contains(NavigatingEventArgs item)
+		public bool Contains(NavigationStepRequest item)
 		{
 			return _innerList.Contains(item);
 		}
 
-		public void CopyTo(NavigatingEventArgs[] array, int arrayIndex)
+		public void CopyTo(NavigationStepRequest[] array, int arrayIndex)
 		{
 			_innerList.CopyTo(array, arrayIndex);
 
@@ -90,14 +89,14 @@ namespace Microsoft.Maui.Controls
 
 			for (var i = 0; i < array.Length; i++)
 			{
-				NavigatingEventArgs arg = array[i];
+				NavigationStepRequest arg = array[i];
 				pages[i] = arg.Page;
 			}
 
 			_pages.CopyTo(pages, arrayIndex);
 		}
 
-		bool ICollection<NavigatingEventArgs>.Remove(NavigatingEventArgs item)
+		bool ICollection<NavigationStepRequest>.Remove(NavigationStepRequest item)
 		{
 			if (!_innerList.Contains(item))
 				return false;
@@ -106,7 +105,7 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
-		public IEnumerator<NavigatingEventArgs> GetEnumerator()
+		public IEnumerator<NavigationStepRequest> GetEnumerator()
 		{
 			return _innerList.GetEnumerator();
 		}
@@ -117,14 +116,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 #if NETSTANDARD2_1_OR_GREATER
-		internal bool TryGetValue(Page page, [NotNullWhen(true)] out NavigatingEventArgs? request)
+		internal bool TryGetValue(Page page, [NotNullWhen(true)] out NavigationStepRequest? request)
 #else
-		internal bool TryGetValue(Page page, out NavigatingEventArgs request)
+		internal bool TryGetValue(Page page, out NavigationStepRequest request)
 #endif
 		{
 			for (var i = 0; i < _innerList.Count; i++)
 			{
-				NavigatingEventArgs? item = _innerList[i];
+				NavigationStepRequest? item = _innerList[i];
 
 				if (item.Page == page)
 				{

@@ -69,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 					// If this removes modals
 					bool dangling = false;
 
-					while (rootView?.PresentedViewController != null)
+					while (rootView?.PresentedViewController is not null)
 					{
 						dangling = true;
 						await rootView.DismissViewControllerAsync(false);
