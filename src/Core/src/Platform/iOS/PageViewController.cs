@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Handlers;
-using ObjCRuntime;
+﻿using Microsoft.Maui.ApplicationModel;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -28,7 +27,13 @@ namespace Microsoft.Maui.Platform
 			if (CurrentView?.Handler is ElementHandler handler)
 			{
 				var application = handler.GetRequiredService<IApplication>();
-				application?.ThemeChanged();
+
+				if (application is not null)
+				{
+					application.UpdateUserInterfaceStyle();
+
+					application.ThemeChanged();
+				}
 			}
 
 			base.TraitCollectionDidChange(previousTraitCollection);

@@ -1,4 +1,6 @@
+using AndroidX.AppCompat.App;
 using AndroidX.Window.Layout;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Hosting;
 
@@ -76,7 +78,13 @@ namespace Microsoft.Maui.LifecycleEvents
 				{
 					if (IPlatformApplication.Current is IPlatformApplication platformApplication)
 					{
-						platformApplication.Application?.ThemeChanged();
+						var application = platformApplication.Application;
+
+						if (application is not null)
+						{
+							application.UpdateNightMode();
+							application.ThemeChanged();
+						}
 					}
 
 					var mauiWindow = activity.GetWindow();
