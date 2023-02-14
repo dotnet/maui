@@ -113,8 +113,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var id = template?.Id ?? ItemViewType.TemplatedItem;
 
 				// Cache the data template for future use
-				if (!viewTypeDataTemplates.ContainsKey(id))
-					viewTypeDataTemplates.Add(id, template);
+				if (!_viewTypeDataTemplates.ContainsKey(id))
+					_viewTypeDataTemplates.Add(id, template);
 
 				return id;
 			}
