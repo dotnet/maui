@@ -5,19 +5,40 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.ApplicationModel
 {
+	/// <summary>
+	/// Manager object that manages window states on Windows.
+	/// </summary>
 	public interface IWindowStateManager
 	{
+		/// <summary>
+		/// Occurs when the application's active window changed.
+		/// </summary>
 		event EventHandler ActiveWindowChanged;
 
+		/// <summary>
+		/// Gets the application's currently active window.
+		/// </summary>
+		/// <returns>The application's currently active <see cref="Window"/> object.</returns>
 		Window? GetActiveWindow();
 
+		/// <summary>
+		/// Sets the new active window that can be retrieved with <see cref="GetActiveWindow"/>.
+		/// </summary>
+		/// <param name="window">The <see cref="Window"/> object that is activated.</param>
+		/// <param name="args">The associated event arguments for this window activation event.</param>
 		void OnActivated(Window window, WindowActivatedEventArgs args);
 	}
 
+	/// <summary>
+	/// Manager object that manages window states on Windows.
+	/// </summary>
 	public static class WindowStateManager
 	{
 		static IWindowStateManager? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IWindowStateManager Default =>
 			defaultImplementation ??= new WindowStateManagerImplementation();
 
@@ -27,6 +48,13 @@ namespace Microsoft.Maui.ApplicationModel
 
 	static class WindowStateManagerExtensions
 	{
+		/// <summary>
+		/// Gets the application's currently active window.
+		/// </summary>
+		/// <param name="manager">The object to invoke this method on.</param>
+		/// <param name="throwOnNull">Throws an exception if no current <see cref="Window"/> can be found and this value is set to <see langword="true"/>, otherwise this method returns <see langword="null"/>.</param>
+		/// <returns>The application's currently active <see cref="Window"/> object.</returns>
+		/// <exception cref="NullReferenceException">Thrown if no current <see cref="Window"/> can be found and <paramref name="throwOnNull"/> is set to <see langword="true"/>.</exception>
 		public static Window? GetActiveWindow(this IWindowStateManager manager, bool throwOnNull)
 		{
 			var window = manager.GetActiveWindow();
@@ -36,6 +64,13 @@ namespace Microsoft.Maui.ApplicationModel
 			return window;
 		}
 
+		/// <summary>
+		/// Gets the application's currently active window's pointer.
+		/// </summary>
+		/// <param name="manager">The object to invoke this method on.</param>
+		/// <param name="throwOnNull">Throws an exception if no current <see cref="Window"/> can be found and this value is set to <see langword="true"/>, otherwise this method returns <see cref="IntPtr.Zero"/>.</param>
+		/// <returns>The application's currently active window's <see cref="IntPtr"/>.</returns>
+		/// <exception cref="NullReferenceException">Thrown if no current <see cref="Window"/> can be found and <paramref name="throwOnNull"/> is set to <see langword="true"/>.</exception>
 		public static IntPtr GetActiveWindowHandle(this IWindowStateManager manager, bool throwOnNull)
 		{
 			var window = manager.GetActiveWindow();
@@ -50,6 +85,13 @@ namespace Microsoft.Maui.ApplicationModel
 			return handle;
 		}
 
+		/// <summary>
+		/// Gets the application's currently active app window.
+		/// </summary>
+		/// <param name="manager">The object to invoke this method on.</param>
+		/// <param name="throwOnNull">Throws an exception if no current <see cref="AppWindow"/> can be found and this value is set to <see langword="true"/>, otherwise this method returns <see langword="null"/>.</param>
+		/// <returns>The application's currently active <see cref="AppWindow"/> object.</returns>
+		/// <exception cref="NullReferenceException">Thrown if no current <see cref="AppWindow"/> can be found and <paramref name="throwOnNull"/> is set to <see langword="true"/>.</exception>
 		public static AppWindow? GetActiveAppWindow(this IWindowStateManager manager, bool throwOnNull)
 		{
 			var window = manager.GetActiveWindow();

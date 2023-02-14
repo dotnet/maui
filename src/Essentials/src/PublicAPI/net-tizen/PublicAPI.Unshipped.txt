@@ -7,6 +7,33 @@ Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> voi
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri, Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder responseDecoder) -> void
 *REMOVED*Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
 *REMOVED*static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
+Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationError.PositionUnavailable = 0 -> Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationError.Unauthorized = 1 -> Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs
+Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs.Error.get -> Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs.GeolocationListeningFailedEventArgs(Microsoft.Maui.Devices.Sensors.GeolocationError geolocationError) -> void
+Microsoft.Maui.Devices.Sensors.IGeolocation.ListeningFailed -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs!>?
 Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.ListeningFailed -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs!>!
 static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
+Microsoft.Maui.Devices.Sensors.IGeolocation.IsListeningForeground.get -> bool
+Microsoft.Maui.Devices.Sensors.IGeolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs!>?
+Microsoft.Maui.Devices.Sensors.IGeolocation.StartListeningForegroundAsync(Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest! request) -> System.Threading.Tasks.Task<bool>!
+Microsoft.Maui.Devices.Sensors.IGeolocation.StopListeningForeground() -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.DesiredAccuracy.get -> Microsoft.Maui.Devices.Sensors.GeolocationAccuracy
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.DesiredAccuracy.set -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.GeolocationListeningRequest() -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.GeolocationListeningRequest(Microsoft.Maui.Devices.Sensors.GeolocationAccuracy accuracy) -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.GeolocationListeningRequest(Microsoft.Maui.Devices.Sensors.GeolocationAccuracy accuracy, System.TimeSpan minimumTime) -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumTime.get -> System.TimeSpan
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumTime.set -> void
+Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs
+Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs.GeolocationLocationChangedEventArgs(Microsoft.Maui.Devices.Sensors.Location! location) -> void
+static Microsoft.Maui.Devices.Sensors.Geolocation.IsListeningForeground.get -> bool
+static Microsoft.Maui.Devices.Sensors.Geolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs!>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.StartListeningForegroundAsync(Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest! request) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.StopListeningForeground() -> void
 *REMOVED*static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.Current.get -> Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer!

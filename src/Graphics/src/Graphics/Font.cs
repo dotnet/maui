@@ -55,5 +55,9 @@ namespace Microsoft.Maui.Graphics
 
 		public bool IsDefault
 			=> string.IsNullOrEmpty(Name);
+
+		public static bool operator ==(Font left, Font right) => left.Equals(right);
+
+		public static bool operator !=(Font left, Font right) => !(left == right);
 	}
 }
