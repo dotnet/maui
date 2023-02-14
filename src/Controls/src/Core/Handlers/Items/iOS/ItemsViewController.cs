@@ -355,7 +355,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var cellOrientation = ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical ? "v" : "h";
 				var cellType = ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical ? typeof(VerticalCell) : typeof(HorizontalCell);
 
-				var reuseId = $"_maui_{cellOrientation}_{dataTemplate.Type.GetHashCode()}";
+				var reuseId = $"_maui_{cellOrientation}_{dataTemplate.Id}";
 
 				if (!_cellReuseIds.Contains(reuseId))
 				{
