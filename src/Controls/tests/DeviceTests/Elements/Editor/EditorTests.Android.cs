@@ -57,5 +57,23 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(2, editor.CursorPosition);
 		}
+
+		[Fact]
+		public async Task ShowsKeyboardOnFocus()
+		{
+			var button = new Button();
+			var editor = new Editor();
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					button.Focus();
+					editor.Focus();
+					await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+				});
+			});
+		}
 	}
 }
