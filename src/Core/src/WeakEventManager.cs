@@ -129,11 +129,19 @@ namespace Microsoft.Maui
 			{
 				Subscription current = subscriptions[n - 1];
 
-				if (current.Subscriber?.Target != handlerTarget || current.Handler.Name != methodInfo.Name)
+				if (current.Subscriber != null && !current.Subscriber.IsAlive)
+				{
+					// If not alive, remove and continue
+					subscriptions.RemoveAt(n);
 					continue;
+				}
 
-				subscriptions.Remove(current);
-				break;
+				if (current.Subscriber?.Target == handlerTarget && current.Handler.Name == methodInfo.Name)
+				{
+					// Found the match, we can break
+					subscriptions.RemoveAt(n);
+					break;
+				}
 			}
 		}
 
