@@ -287,6 +287,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// https://github.com/dotnet/maui/issues/11020
 			}
+
+			// This type name check is gross, but this project doesn't know anything about Frame/FrameStub
+			else if(size == 1 && view.GetType().Name.EndsWith("FrameStub")) 
+			{
+				// Frames have a legacy hard-coded minimum size of 20x20
+				Assert.Equal(new Size(20, 20), nativeBoundingBox.Size);
+			}
 #endif
 			else if (view is IProgress)
 			{
