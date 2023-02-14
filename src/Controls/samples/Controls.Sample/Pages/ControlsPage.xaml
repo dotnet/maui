@@ -56,18 +56,19 @@
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border     
+                    <Border
                         Style="{StaticResource GalleryItemContainerStyle}">
                         <Border.StrokeShape>
-                            <RoundRectangle 
-                                CornerRadius="0" />
+                            <RoundRectangle CornerRadius="0" />
                         </Border.StrokeShape>
-                        <Grid>
+                        <Grid HorizontalOptions="FillAndExpand" RowDefinitions="Auto,*">
                             <StackLayout>
                                 <Label
+                                    Grid.Row="0"
                                     Text="{Binding Title}"
                                     Style="{StaticResource GalleryItemTitleStyle}"/>
                                 <Label
+                                    Grid.Row="1"
                                     Text="{Binding Description}"
                                     Style="{StaticResource GalleryItemDescriptionStyle}"/>
                             </StackLayout>

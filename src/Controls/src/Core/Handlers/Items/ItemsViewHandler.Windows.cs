@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -47,14 +48,98 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return SelectListViewBase();
 		}
 
+		Dictionary<int, Stack<SelectorItem>> recycleableContainers = new();
+
+
+		private void L_ChoosingItemContainer(ListViewBase sender, ChoosingItemContainerEventArgs args)
+		{
+			if (args.Item is ItemTemplateContext context)
+			{
+				var newDataTemplateId = context.FormsDataTemplate?.Id ?? 42;
+
+				if (args.ItemContainer != null)
+				{
+					if (args.ItemContainer.Tag is not int oldDataTemplateId)
+						oldDataTemplateId = 42;
+
+					// See if the container's MAUI DataTemplate matches the current item's DataTemplate
+					if (oldDataTemplateId == newDataTemplateId)
+					{
+						// OK, let's use this one!
+						System.Diagnostics.Debug.WriteLine($"MAUICV: Template Match");
+					}
+					else
+					{
+						// Not the same, we'll need a new / different container
+						// First let's recycle the existing one
+						var old = args.ItemContainer;
+						if (!recycleableContainers.ContainsKey(oldDataTemplateId))
+							recycleableContainers.Add(oldDataTemplateId, new Stack<SelectorItem>());
+						recycleableContainers[oldDataTemplateId].Push(old);
+
+						System.Diagnostics.Debug.WriteLine($"MAUICV: Push[{newDataTemplateId}]");
+
+						foreach (var key in recycleableContainers.Keys)
+						{
+							System.Diagnostics.Debug.WriteLine($"MAUICV: Recyclable[{key}] ~{recycleableContainers[key].Count}");
+						}
+
+						// Now set the args ItemContainer to null and we'll get one in the next bit of code
+						args.ItemContainer = null;
+					}
+				}
+
+				// Check again to see if we had not already reused a container
+				if (args.ItemContainer == null)
+				{
+					if (recycleableContainers.TryGetValue(newDataTemplateId, out var cachedContainers) && cachedContainers.Count > 0)
+					{
+						System.Diagnostics.Debug.WriteLine($"MAUICV: TryRecycling[{newDataTemplateId}]");
+						args.ItemContainer = cachedContainers.Pop() as SelectorItem;
+					}
+					
+
+					if (args.ItemContainer == null)
+					{
+						SelectorItem itemContainer;
+
+						if (Layout is GridItemsLayout)
+						{
+							itemContainer = new GridViewItem
+							{
+								ContentTemplate = ItemsViewTemplate,
+								Tag = newDataTemplateId
+							};
+						}
+						else
+						{
+							itemContainer = new ListViewItem
+							{
+								ContentTemplate = ItemsViewTemplate,
+								Tag = newDataTemplateId
+							};
+						}
+
+						args.ItemContainer = itemContainer;
+
+						System.Diagnostics.Debug.WriteLine($"MAUICV: Fresh[{newDataTemplateId}] {++totalFresh}");
+					}
+				}
+			}
+		}
+
+		int totalFresh = 0;
+
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			base.ConnectHandler(platformView);
+			platformView.ChoosingItemContainer += L_ChoosingItemContainer;
 			VirtualView.ScrollToRequested += ScrollToRequested;
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
+			platformView.ChoosingItemContainer -= L_ChoosingItemContainer;
 			VirtualView.ScrollToRequested -= ScrollToRequested;
 			base.DisconnectHandler(platformView);
 		}
@@ -119,6 +204,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					incc.CollectionChanged -= ItemsChanged;
 				}
+
+				recycleableContainers.Clear();
 
 				CollectionViewSource.Source = null;
 				CollectionViewSource = null;
