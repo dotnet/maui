@@ -21,13 +21,19 @@ namespace Microsoft.Maui.ApplicationModel
 			return true;
 		}
 
+		/// <inheritdoc/>
 		public abstract partial class BasePlatformPermission : BasePermission
 		{
+			/// <summary>
+			/// Gets the required entries that need to be present in the application's <c>tizen-manifest.xml</c> file for this permission.
+			/// </summary>
 			public virtual (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges { get; }
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 				=> CheckPrivilegeAsync(false);
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> RequestAsync()
 				=> CheckPrivilegeAsync(true);
 
@@ -104,48 +110,56 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class Camera : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/camera", false) };
 		}
 
 		public partial class ContactsRead : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/contact.read", true) };
 		}
 
 		public partial class ContactsWrite : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/contact.write", true) };
 		}
 
 		public partial class Flashlight : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/led", false) };
 		}
 
 		public partial class LaunchApp : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/appmanager.launch", false) };
 		}
 
 		public partial class LocationWhenInUse : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/location", true) };
 		}
 
 		public partial class LocationAlways : LocationWhenInUse
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/location", true) };
 		}
 
 		public partial class Maps : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[]
 				{
@@ -161,12 +175,14 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class Microphone : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/recorder", false) };
 		}
 
 		public partial class NetworkState : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[]
 				{
@@ -201,18 +217,21 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class StorageRead : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/mediastorage", true) };
 		}
 
 		public partial class StorageWrite : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/mediastorage", true) };
 		}
 
 		public partial class Vibrate : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/haptic", false) };
 		}
