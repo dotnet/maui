@@ -137,7 +137,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		struct Subscription
+		readonly struct Subscription : IEquatable<Subscription>
 		{
 			/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 			public Subscription(WeakReference? subscriber, MethodInfo handler)
@@ -148,6 +148,12 @@ namespace Microsoft.Maui
 
 			public readonly WeakReference? Subscriber;
 			public readonly MethodInfo Handler;
+
+			public bool Equals(Subscription other) => Subscriber == other.Subscriber && Handler == other.Handler;
+
+			public override bool Equals(object? obj) => obj is Subscription other && Equals(other);
+
+			public override int GetHashCode() => Subscriber?.GetHashCode() ?? 0 ^ Handler.GetHashCode();
 		}
 	}
 }
