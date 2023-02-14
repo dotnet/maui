@@ -128,13 +128,13 @@ namespace Microsoft.Maui.Handlers
 
 		void OnDialogShown(object? sender, EventArgs e)
 		{
-			if (VirtualView != null)
+			if (VirtualView is not null)
 				VirtualView.IsFocused = true;
 		}
 
 		void OnDialogDismissed(object? sender, EventArgs e)
 		{
-			if (VirtualView != null)
+			if (VirtualView is not null)
 				VirtualView.IsFocused = false;
 		}
 	}
