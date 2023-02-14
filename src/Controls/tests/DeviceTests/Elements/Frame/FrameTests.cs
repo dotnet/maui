@@ -196,7 +196,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task FrameDoesNotInterpretConstraintsAsMinimums() 
+		public async Task FrameDoesNotInterpretConstraintsAsMinimums()
 		{
 			SetupBuilder();
 
