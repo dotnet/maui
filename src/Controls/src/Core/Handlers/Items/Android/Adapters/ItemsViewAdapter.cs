@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemContentView = _createItemContentView.Invoke(ItemsView, context);
 
 			// See if our cached templates have a match
-			if (viewTypeDataTemplates.TryGetValue(viewType, out var dataTemplate))
+			if (_viewTypeDataTemplates.TryGetValue(viewType, out var dataTemplate))
 			{
 				return new TemplatedItemViewHolder(itemContentView, dataTemplate, IsSelectionEnabled(parent, viewType));
 			}
