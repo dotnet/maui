@@ -6,6 +6,11 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
+		/// <summary>
+		/// Checks if the key specified in <paramref name="tizenPrivilege"/> is declared in the application's <c>tizen-manifest.xml</c> file.
+		/// </summary>
+		/// <param name="tizenPrivilege">The key to check for declaration in the <c>tizen-manifest.xml</c> file.</param>
+		/// <returns><see langword="true"/> when the key is declared, otherwise <see langword="false"/>.</returns>
 		public static bool IsPrivilegeDeclared(string tizenPrivilege)
 		{
 			var tizenPrivileges = tizenPrivilege;
@@ -77,6 +82,7 @@ namespace Microsoft.Maui.ApplicationModel
 				return PermissionStatus.Granted;
 			}
 
+			/// <inheritdoc/>
 			public override void EnsureDeclared()
 			{
 				if (RequiredPrivileges == null)
@@ -89,6 +95,7 @@ namespace Microsoft.Maui.ApplicationModel
 				}
 			}
 
+			/// <inheritdoc/>
 			public override bool ShouldShowRationale() => false;
 		}
 
