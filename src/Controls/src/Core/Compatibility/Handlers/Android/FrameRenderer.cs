@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Views.Animations;
 using AndroidX.CardView.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Platform;
@@ -98,17 +99,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		Size IViewHandler.GetDesiredSize(double widthMeasureSpec, double heightMeasureSpec)
+		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			double minWidth = 20;
-			if (Primitives.Dimension.IsExplicitSet(widthMeasureSpec) && !double.IsInfinity(widthMeasureSpec))
-				minWidth = widthMeasureSpec;
+			var virtualView = (this as IViewHandler).VirtualView;
+			if (virtualView == null)
+			{ 
+				return Size.Zero;
+			}
 
-			double minHeight = 20;
-			if (Primitives.Dimension.IsExplicitSet(widthMeasureSpec) && !double.IsInfinity(heightMeasureSpec))
-				minHeight = heightMeasureSpec;
+		 	var minWidth = virtualView.MinimumWidth;
+			var minHeight = virtualView.MinimumHeight;
 
-			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthMeasureSpec, heightMeasureSpec,
+			if (!Primitives.Dimension.IsExplicitSet(minWidth))
+			{
+				minWidth = 20; // Legacy minimum value
+			}
+
+			if (!Primitives.Dimension.IsExplicitSet(minHeight))
+			{
+				minHeight = 20; // Legacy minimum value
+			}
+
+			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthConstraint, heightConstraint,
 				new Size(minWidth, minHeight));
 		}
 
