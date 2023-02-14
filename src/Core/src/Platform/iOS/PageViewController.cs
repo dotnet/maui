@@ -28,12 +28,8 @@ namespace Microsoft.Maui.Platform
 			{
 				var application = handler.GetRequiredService<IApplication>();
 
-				if (application is not null)
-				{
-					application.UpdateUserInterfaceStyle();
-
-					application.ThemeChanged();
-				}
+				application?.UpdateUserInterfaceStyle();
+				application?.ThemeChanged();
 			}
 
 			base.TraitCollectionDidChange(previousTraitCollection);

@@ -80,11 +80,8 @@ namespace Microsoft.Maui.LifecycleEvents
 					{
 						var application = platformApplication.Application;
 
-						if (application is not null)
-						{
-							application.UpdateNightMode();
-							application.ThemeChanged();
-						}
+						application?.UpdateNightMode();
+						application?.ThemeChanged();
 					}
 
 					var mauiWindow = activity.GetWindow();
