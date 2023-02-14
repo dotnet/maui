@@ -1,7 +1,5 @@
 ﻿using System;
-using Foundation;
 using UIKit;
-using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -31,12 +29,19 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
+			platformView.EditingDidBegin += OnEditingDidBegin;
+			platformView.EditingDidEnd += OnEditingDidEnd;
+
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
+			platformView.EditingDidBegin -= OnEditingDidBegin;
+			platformView.EditingDidEnd -= OnEditingDidEnd;
+
 			platformView.MauiDatePickerDelegate = null;
+
 			base.DisconnectHandler(platformView);
 		}
 
@@ -126,6 +131,18 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			VirtualView.Date = DatePickerDialog.Date.ToDateTime().Date;
+		}
+
+		void OnEditingDidBegin(object? sender, EventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = true;
+		}
+
+		void OnEditingDidEnd(object? sender, EventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.IsFocused = false;
 		}
 
 		class DatePickerDelegate : MauiDatePickerDelegate

@@ -1,16 +1,60 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using Microsoft.Maui.Hosting;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TimePickerHandlerTests
 	{
+		[Fact(DisplayName = "IsFocused Initializes Correctly")]
+		public async Task IsFocusedInitializesCorrectly()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<ButtonStub, ButtonHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			var timePicker = new TimePickerStub()
+			{
+				Time = TimeSpan.FromHours(8)
+			};
+
+			var button = new ButtonStub
+			{
+				Text = "Focus TimePicker"
+			};
+
+			layout.Add(timePicker);
+			layout.Add(button);
+
+			var clicked = false;
+
+			button.Clicked += delegate
+			{
+				timePicker.Focus();
+				clicked = true;
+			};
+
+			await PerformClick(button);
+
+			Assert.True(clicked);
+
+			Assert.True(timePicker.IsFocused);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -71,6 +115,17 @@ namespace Microsoft.Maui.DeviceTests
 			int currentTextColorInt = GetNativeTimePicker(timePickerHandler).CurrentTextColor;
 			AColor currentTextColor = new AColor(currentTextColorInt);
 			return currentTextColor.ToColor();
+		}
+
+		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
+			buttonHandler.PlatformView;
+
+		Task PerformClick(IButton button)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				GetNativeButton(CreateHandler<ButtonHandler>(button)).PerformClick();
+			});
 		}
 	}
 }

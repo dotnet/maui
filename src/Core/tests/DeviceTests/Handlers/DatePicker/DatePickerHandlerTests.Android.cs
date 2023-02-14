@@ -1,13 +1,57 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
+using Microsoft.Maui.Hosting;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class DatePickerHandlerTests
 	{
+		[Fact(DisplayName = "IsFocused Initializes Correctly")]
+		public async Task IsFocusedInitializesCorrectly()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<ButtonStub, ButtonHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			var datePicker = new DatePickerStub()
+			{
+				Date = DateTime.Today
+			};
+
+			var button = new ButtonStub
+			{
+				Text = "Focus DatePicker"
+			};
+
+			layout.Add(datePicker);
+			layout.Add(button);
+
+			var clicked = false;
+			
+			button.Clicked += delegate
+			{
+				datePicker.Focus();
+				clicked = true;
+			};
+
+			await PerformClick(button);
+
+			Assert.True(clicked);
+
+			Assert.True(datePicker.IsFocused);
+		}
+
 		[Fact(DisplayName = "Minimum Date Initializes Correctly")]
 		public async Task MinimumDateInitializesCorrectly()
 		{
@@ -125,6 +169,17 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var mauiDatePicker = GetNativeDatePicker(datePickerHandler);
 			return mauiDatePicker.LetterSpacing;
+		}
+
+		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
+			buttonHandler.PlatformView;
+
+		Task PerformClick(IButton button)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				GetNativeButton(CreateHandler<ButtonHandler>(button)).PerformClick();
+			});
 		}
 	}
 }
