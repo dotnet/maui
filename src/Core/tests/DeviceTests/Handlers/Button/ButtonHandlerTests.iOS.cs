@@ -86,7 +86,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var button = GetNativeButton(buttonHandler);
 
-			//var attributedText = button.TitleLabel.AttributedText;
 			var attributedText = button.GetAttributedTitle(UIControlState.Normal);
 
 			return attributedText.GetCharacterSpacing();
