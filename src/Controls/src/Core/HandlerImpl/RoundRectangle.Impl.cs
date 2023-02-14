@@ -40,14 +40,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeWidth)
 		{
-			if (HeightRequest < 0 && WidthRequest < 0)
-			{
-				Frame = viewBounds;
-			}
-
 			var path = GetInnerPath(strokeWidth);
 
-			base.TransformPathForBounds(path, viewBounds);
+			TransformPathForBounds(path, viewBounds);
 
 			return path;
 		}
