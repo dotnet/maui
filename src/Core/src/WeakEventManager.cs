@@ -125,9 +125,9 @@ namespace Microsoft.Maui
 			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription>? subscriptions))
 				return;
 
-			for (int n = subscriptions.Count; n > 0; n--)
+			for (int n = subscriptions.Count - 1; n >= 0; n--)
 			{
-				Subscription current = subscriptions[n - 1];
+				Subscription current = subscriptions[n];
 
 				if (current.Subscriber != null && !current.Subscriber.IsAlive)
 				{
