@@ -12,7 +12,7 @@ namespace Xamarin.Forms.ControlGallery.WPF
 		{
 			message = "Success";
 
-			if (element == null || element is OpenGLView)
+			if (element == null)
 				return true;
 
 			var renderer = Platform.WPF.Platform.GetOrCreateRenderer(element);

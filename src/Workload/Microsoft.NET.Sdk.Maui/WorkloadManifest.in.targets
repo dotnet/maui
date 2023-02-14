@@ -1,12 +1,23 @@
 <Project>
 
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiNuGets)' == 'true' or '$(UseMauiCore)' == 'true' ">
-    <ProjectCapability Include="UseMauiCore" />
-    <ProjectCapability Condition=" '$(UseMaui)' == 'true' or '$(UseMauiNuGets)' == 'true' " Include="UseMaui" />
+  <!--
+      .NET MAUI telemetry and failure tracking. These are used to detect when the user specified one of the
+      various <UseMaui*> properties, but for some reason the workload was not installed correctly.
+  -->
+  <ItemGroup>
+    <ProjectCapability Condition=" '$(UseMaui)' == 'true' " Include="UseMaui" />
+    <ProjectCapability Condition=" '$(UseMauiCore)' == 'true' " Include="UseMauiCore" />
+    <ProjectCapability Condition=" '$(UseMauiNuGets)' == 'true' " Include="UseMauiNuGets" />
+    <ProjectCapability Condition=" '$(UseMauiEssentials)' == 'true' " Include="UseMauiEssentials" />
+    <ProjectCapability Condition=" '$(UseMauiAssets)' == 'true' " Include="UseMauiAssets" />
   </ItemGroup>
 
+  <!--
+      Specifying any of the <UseMaui*> properties will enable the maui workload. BundledVersions.targets enables
+      the specific parts of .NET MAUI SDK.
+  -->
   <Import
-      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiNuGets)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))) "
+      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))) "
       Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk.net@MAUI_DOTNET_VERSION_MAJOR@"
   />
   <Import
@@ -14,10 +25,9 @@
       Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@"
   />
 
-  <Import
-      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true') and ('$(UseMauiNuGets)' != 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))) "
-      Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
-  />
+  <!--
+      Previous versions of the .NET MAUI SDK used Microsoft.Maui.Resizetizer.Sdk, but the new version uses a NuGet.
+  -->
   <Import
       Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@'))) "
       Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"

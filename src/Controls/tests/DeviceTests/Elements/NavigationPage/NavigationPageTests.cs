@@ -50,6 +50,43 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task InitialPageFiresNavigatedEvent()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var navPage = new NavigationPage(page) { Title = "App Page" };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(page);
+				Assert.True(page.HasNavigatedTo);
+			});
+		}
+
+		[Fact]
+		public async Task PushedPageFiresNavigatedEventOnInitialLoad()
+		{
+			SetupBuilder();
+
+			bool pageFiredNavigated = false;
+			var page = new ContentPage();
+			page.NavigatedTo += (_, _) => pageFiredNavigated = true;
+
+			var page2 = new ContentPage();
+
+			var navPage = new NavigationPage(page) { Title = "App Page" };
+			await navPage.PushAsync(page2);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(page2);
+				Assert.True(page2.HasNavigatedTo);
+			});
+
+			Assert.False(pageFiredNavigated);
+		}
+
 #if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()

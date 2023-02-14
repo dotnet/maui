@@ -21,6 +21,26 @@
          Version="$(SystemNumericsVectorsVersion)"
     />
     <PackageReference
+         Update="System.Memory"
+         Version="$(SystemMemoryPackageVersion)"
+    />
+    <PackageReference
+         Update="System.Buffers"
+         Version="$(SystemBuffersPackageVersion)"
+    />
+    <PackageReference
+         Update="System.IO.UnmanagedMemoryStream"
+         Version="$(SystemIOUnmanagedMemoryStreamPackageVersion)"
+    />
+    <PackageReference
+         Update="System.ObjectModel"
+         Version="$(SystemObjectModelPackageVersion)"
+    />
+    <PackageReference
+         Update="System.Runtime.CompilerServices.Unsafe"
+         Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(MicrosoftExtensionsServicingPackageVersion)"
     />
@@ -114,8 +134,20 @@
         Version="$(MicrosoftJSInteropPackageVersion)"
     />
     <PackageReference
+        Update="System.Text.Json"
+        Version="$(SystemTextJsonPackageVersion)"
+    />
+    <PackageReference
+        Update="System.Text.Encodings.Web"
+        Version="$(SystemTextEncodingsWebPackageVersion)"
+    />
+    <PackageReference
         Update="System.CodeDom"
         Version="$(SystemCodeDomPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Bcl.AsyncInterfaces"
+        Version="$(MicrosoftBclAsyncInterfacesPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Web.WebView2"

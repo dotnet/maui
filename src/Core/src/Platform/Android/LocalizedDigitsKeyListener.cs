@@ -33,9 +33,9 @@ namespace Microsoft.Maui.Platform
 			if ((inputTypes & InputTypes.NumberFlagDecimal) == 0)
 			{
 				// If decimal isn't allowed, we can just use the Android version
-#pragma warning disable 0618
+#pragma warning disable CS0618, CA1416, CA1422 // Deprecated in API 26: https://developer.android.com/reference/android/text/method/DigitsKeyListener#getInstance(boolean,%20boolean)
 				return DigitsKeyListener.GetInstance(inputTypes.HasFlag(InputTypes.NumberFlagSigned), false);
-#pragma warning restore 0618
+#pragma warning restore CS0618, CA1416, CA1422
 			}
 
 			// Figure out what the decimal separator is for the current locale
@@ -44,9 +44,9 @@ namespace Microsoft.Maui.Platform
 			if (decimalSeparator == '.')
 			{
 				// If it's '.', then we can just use the default Android version
-#pragma warning disable 0618
+#pragma warning disable CS0618, CA1416, CA1422 // Deprecated in API 26: https://developer.android.com/reference/android/text/method/DigitsKeyListener#getInstance(boolean,%20boolean)
 				return DigitsKeyListener.GetInstance(inputTypes.HasFlag(InputTypes.NumberFlagSigned), true);
-#pragma warning restore 0618
+#pragma warning restore CS0618, CA1416, CA1422
 			}
 
 			// If decimals are enabled and the locale's decimal separator is not '.'

@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using CoreLocation;
+#nullable enable
 
 namespace Microsoft.Maui.Devices.Sensors
 {
@@ -11,22 +8,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			get
 			{
-				switch (DesiredAccuracy)
-				{
-					case GeolocationAccuracy.Lowest:
-						return CLLocation.AccuracyThreeKilometers;
-					case GeolocationAccuracy.Low:
-						return CLLocation.AccuracyKilometer;
-					case GeolocationAccuracy.Default:
-					case GeolocationAccuracy.Medium:
-						return CLLocation.AccuracyHundredMeters;
-					case GeolocationAccuracy.High:
-						return CLLocation.AccuracyNearestTenMeters;
-					case GeolocationAccuracy.Best:
-						return CLLocation.AccurracyBestForNavigation;
-					default:
-						return CLLocation.AccuracyHundredMeters;
-				}
+				return DesiredAccuracy.PlatformDesiredAccuracy();
 			}
 		}
 	}
