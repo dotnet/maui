@@ -180,7 +180,7 @@ namespace Microsoft.Maui.DeviceTests
 							await action((THandler)cp.Content.Handler);
 						else if (typeof(THandler).IsAssignableFrom(typeof(WindowHandler)))
 							throw new Exception($"Use IWindowHandler instead of WindowHandler for CreateHandlerAndAddToWindow");
-						else 
+						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
 						window.Deactivated();
