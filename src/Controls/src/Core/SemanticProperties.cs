@@ -51,8 +51,8 @@ namespace Microsoft.Maui.Controls
 			AutomationProperties.NameProperty,
 			AutomationProperties.LabeledByProperty,
 			AutomationProperties.HelpTextProperty,
-			AutomationProperties.IsInAccessibleTreeProperty,
 #pragma warning restore CS0618 // Type or member is obsolete
+			AutomationProperties.IsInAccessibleTreeProperty,
 		};
 
 		// https://github.com/dotnet/maui/issues/9156
