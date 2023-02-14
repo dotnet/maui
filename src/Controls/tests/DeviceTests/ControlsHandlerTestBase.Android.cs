@@ -222,15 +222,27 @@ namespace Microsoft.Maui.DeviceTests
 			public override void OnResume()
 			{
 				base.OnResume();
-				_window.Created();
-				_window.Activated();
+
+				bool isCreated = (_window as Window)?.IsCreated ?? false;
+				bool isActivated = (_window as Window)?.IsActivated ?? false;
+
+				if (!isCreated)
+					_window.Created();
+
+				if (!isActivated)
+					_window.Activated();
+
 				_taskCompletionSource.SetResult(true);
 			}
 
 			public override void OnDestroy()
 			{
 				base.OnDestroy();
-				_window.Destroying();
+				bool isDestroyed = (_window as Window)?.IsDestroyed ?? false;
+
+				if (!isDestroyed)
+					_window.Destroying();
+
 				_finishedDestroying.SetResult(true);
 			}
 		}

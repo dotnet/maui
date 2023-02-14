@@ -194,21 +194,16 @@ namespace Microsoft.Maui.DeviceTests
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
-						if (window is Window cntrlsWindow)
-						{
-							if (cntrlsWindow.IsActivated)
-								window.Deactivated();
 
-							if (!cntrlsWindow.IsDestroyed)
-								window.Destroying();
-						}
-						else
-						{
+						bool isActivated = (window as Window)?.IsActivated ?? false;
+						bool isDestroyed = (window as Window)?.IsDestroyed ?? false;
+
+
+						if (isActivated)
 							window.Deactivated();
+
+						if (!isDestroyed)
 							window.Destroying();
-						}
-
-
 					}, mauiContext);
 				}
 				finally

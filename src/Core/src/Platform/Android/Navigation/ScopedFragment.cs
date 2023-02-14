@@ -18,8 +18,7 @@ namespace Microsoft.Maui.Platform
 
 		public override View OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
-			var pageMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
-			return DetailView.ToPlatform(pageMauiContext);
+			return DetailView.ToPlatform(_mauiContext, RequireContext(), inflater, ChildFragmentManager);
 		}
 	}
 }
