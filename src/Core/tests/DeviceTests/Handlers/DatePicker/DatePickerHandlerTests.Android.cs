@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Xunit;
 using Microsoft.Maui.Hosting;
+using Xunit;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 			layout.Add(button);
 
 			var clicked = false;
-			
+
 			button.Clicked += delegate
 			{
 				datePicker.Focus();

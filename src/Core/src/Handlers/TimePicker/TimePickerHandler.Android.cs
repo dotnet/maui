@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Handlers
 		void ShowPickerDialog(int hour, int minute)
 		{
 			_dialog = CreateTimePickerDialog(hour, minute);
-			
+
 			_dialog.ShowEvent += OnDialogShown;
 			_dialog.DismissEvent += OnDialogDismissed;
 
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Handlers
 
 		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
 			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
-	
+
 		void OnDialogShown(object? sender, EventArgs e)
 		{
 			if (VirtualView != null)

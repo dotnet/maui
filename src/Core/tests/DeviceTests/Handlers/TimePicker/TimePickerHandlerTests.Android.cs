@@ -5,8 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Xunit;
 using Microsoft.Maui.Hosting;
+using Xunit;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
