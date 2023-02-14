@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
 
 				Assert.True(imageLoaded);
-				
+
 				await Task.Delay(100);
 
 				var expectedColor = Color.FromArgb("#FF0000");
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
 				Assert.True(imageLoaded);
-				
+
 				await handler.PlatformView.AttachAndRun(async () =>
 				{
 					// Update the Slider ThumbImageSource
@@ -117,8 +117,8 @@ namespace Microsoft.Maui.DeviceTests
 		Size GetNativeThumbSize(SliderHandler sliderHandler)
 		{
 			var nativeSlider = GetNativeSlider(sliderHandler);
-			
-			if(nativeSlider.GetFirstDescendant<Thumb>() is Thumb thumb)
+
+			if (nativeSlider.GetFirstDescendant<Thumb>() is Thumb thumb)
 			{
 				return new Size(thumb.Width, thumb.Height);
 			}
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool ImageSourceLoaded(SliderHandler sliderHandler)
 		{
-           return (sliderHandler.PlatformView as MauiSlider)?.ThumbImageSource != null;
+			return (sliderHandler.PlatformView as MauiSlider)?.ThumbImageSource != null;
 		}
 	}
 }

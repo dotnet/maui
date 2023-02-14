@@ -143,12 +143,12 @@ namespace Microsoft.Maui.Platform
 							thumb.Height = bitmapImage.PixelHeight;
 							thumb.Width = bitmapImage.PixelWidth;
 						}
-												
+
 						if (nativeSlider.Parent is FrameworkElement frameworkElement)
 							frameworkElement.InvalidateMeasure();
 					};
 				}
-			
+
 				nativeSlider.ThumbImageSource = nativeThumbImageSource?.Value;
 			}
 		}
