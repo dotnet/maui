@@ -35,9 +35,6 @@
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
-    <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)">
-      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
-    </_MauiImplicitPackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
     <_MauiImplicitPackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)">

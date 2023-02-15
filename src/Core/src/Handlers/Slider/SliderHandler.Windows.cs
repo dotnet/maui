@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -8,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SliderHandler : ViewHandler<ISlider, Slider>
 	{
+		Size? _thumbSize;
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
@@ -45,6 +47,8 @@ namespace Microsoft.Maui.Handlers
 
 			_pointerPressedHandler = null;
 			_pointerReleasedHandler = null;
+
+			_thumbSize = null;
 		}
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)
@@ -83,7 +87,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler?.PlatformView is MauiSlider mauiSlider)
 			{
-				mauiSlider.UpdateThumbImageSourceAsync(slider, provider).FireAndForget(handler);
+				mauiSlider.UpdateThumbImageSourceAsync(slider, provider, (handler as SliderHandler)?._thumbSize).FireAndForget(handler);
 			}
 		}
 
@@ -91,8 +95,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			var platformView = sender as Slider;
 
-			if (platformView != null)
+			if (platformView is not null)
+			{
+				var thumb = platformView.GetFirstDescendant<Thumb>();
+
+				if (thumb is not null)
+					_thumbSize = new Size(thumb.Width, thumb.Height);
+
 				platformView.ValueChanged += OnPlatformValueChanged;
+			}
 		}
 
 		void OnPlatformValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
