@@ -13,16 +13,24 @@ namespace Samples.ViewModel
 		string currentLocation;
 		int accuracy = (int)GeolocationAccuracy.Default;
 		CancellationTokenSource cts;
+		string listeningLocation;
+		string listeningLocationStatus;
 
 		public GeolocationViewModel()
 		{
 			GetLastLocationCommand = new Command(OnGetLastLocation);
 			GetCurrentLocationCommand = new Command(OnGetCurrentLocation);
+			StartListeningCommand = new Command(OnStartListening);
+			StopListeningCommand = new Command(OnStopListening);
 		}
 
 		public ICommand GetLastLocationCommand { get; }
 
 		public ICommand GetCurrentLocationCommand { get; }
+
+		public ICommand StartListeningCommand { get; }
+
+		public ICommand StopListeningCommand { get; }
 
 		public string LastLocation
 		{
@@ -43,6 +51,22 @@ namespace Samples.ViewModel
 		{
 			get => accuracy;
 			set => SetProperty(ref accuracy, value);
+		}
+
+		public bool IsListening => Geolocation.IsListeningForeground;
+
+		public bool IsNotListening => !IsListening;
+
+		public string ListeningLocation
+		{
+			get => listeningLocation;
+			set => SetProperty(ref listeningLocation, value);
+		}
+
+		public string ListeningLocationStatus
+		{
+			get => listeningLocationStatus;
+			set => SetProperty(ref listeningLocationStatus, value);
 		}
 
 		async void OnGetLastLocation()
@@ -88,6 +112,53 @@ namespace Samples.ViewModel
 			IsBusy = false;
 		}
 
+		async void OnStartListening()
+		{
+			try
+			{
+				Geolocation.LocationChanged += Geolocation_LocationChanged;
+
+				var request = new GeolocationListeningRequest((GeolocationAccuracy)Accuracy);
+
+				var success = await Geolocation.StartListeningForegroundAsync(request);
+
+				ListeningLocationStatus = success
+					? "Started listening for foreground location updates"
+					: "Couldn't start listening";
+			}
+			catch (Exception ex)
+			{
+				ListeningLocationStatus = FormatLocation(null, ex);
+			}
+
+			OnPropertyChanged(nameof(IsListening));
+			OnPropertyChanged(nameof(IsNotListening));
+		}
+
+		void Geolocation_LocationChanged(object sender, GeolocationLocationChangedEventArgs e)
+		{
+			ListeningLocation = FormatLocation(e.Location);
+		}
+
+		void OnStopListening()
+		{
+			try
+			{
+				Geolocation.LocationChanged -= Geolocation_LocationChanged;
+
+				Geolocation.StopListeningForeground();
+
+				ListeningLocationStatus = "Stopped listening for foreground location updates";
+			}
+			catch (Exception ex)
+			{
+				ListeningLocationStatus = FormatLocation(null, ex);
+			}
+
+			OnPropertyChanged(nameof(IsListening));
+			OnPropertyChanged(nameof(IsNotListening));
+		}
+
 		string FormatLocation(Location location, Exception ex = null)
 		{
 			if (location == null)
@@ -116,6 +187,9 @@ namespace Samples.ViewModel
 				if (cts != null && !cts.IsCancellationRequested)
 					cts.Cancel();
 			}
+
+			OnStopListening();
+
 			base.OnDisappearing();
 		}
 	}
