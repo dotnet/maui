@@ -1,6 +1,6 @@
 ﻿using Tizen.UIExtensions.Common.GraphicsView;
-using TMaterialIconButton = Tizen.UIExtensions.NUI.GraphicsView.MaterialIconButton;
 using TColor = Tizen.UIExtensions.Common.Color;
+using TMaterialIconButton = Tizen.UIExtensions.NUI.GraphicsView.MaterialIconButton;
 
 namespace Microsoft.Maui.Platform
 {

@@ -10,14 +10,16 @@
 		public const string Button = "Button";
 		public const string CarouselView = "CarouselView";
 		public const string CheckBox = "CheckBox";
+		public const string CollectionView = "CollectionView";
 		public const string Compatibility = "Compatibility";
 		public const string ContentView = "ContentView";
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
 		public const string Element = "Element";
 		public const string Entry = "Entry";
-		public const string Frame = "Frame";
+		public const string FlexLayout = "FlexLayout";
 		public const string FlyoutPage = "FlyoutPage";
+		public const string Frame = "Frame";
 		public const string Gesture = "Gesture";
 		public const string Image = "Image";
 		public const string Label = "Label";

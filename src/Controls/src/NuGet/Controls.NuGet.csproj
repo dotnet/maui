@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+		<IsPackable>true</IsPackable>
+		<PackageId>Microsoft.Maui.Controls</PackageId>
+		<!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
+		<NoPackageAnalysis>true</NoPackageAnalysis>
+		<!-- Do not include any assemblies from this project as it is a "meta" project -->
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+		<ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+		<ProjectReference Include="..\..\..\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj" />
+		<ProjectReference Include="..\..\..\SingleProject\Resizetizer\src\Resizetizer.csproj" />
+	</ItemGroup>
+
+	<Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
+</Project>

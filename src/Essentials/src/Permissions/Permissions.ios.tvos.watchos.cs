@@ -10,21 +10,38 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
+		/// <summary>
+		/// Checks if the key specified in <paramref name="usageKey"/> is declared in the application's <c>Info.plist</c> file.
+		/// </summary>
+		/// <param name="usageKey">The key to check for declaration in the <c>Info.plist</c> file.</param>
+		/// <returns><see langword="true"/> when the key is declared, otherwise <see langword="false"/>.</returns>
 		public static bool IsKeyDeclaredInInfoPlist(string usageKey) =>
 			NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString(usageKey));
 
+		/// <summary>
+		/// Gets or sets the timeout that is used when the location permission is requested.
+		/// </summary>
 		public static TimeSpan LocationTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
+		/// <summary>
+		/// Represents the platform-specific abstract base class for all permissions on this platform.
+		/// </summary>
 		public abstract class BasePlatformPermission : BasePermission
 		{
+			/// <summary>
+			/// Gets the required entries that need to be present in the application's <c>Info.plist</c> file for this permission.
+			/// </summary>
 			protected virtual Func<IEnumerable<string>> RequiredInfoPlistKeys { get; }
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync() =>
 				Task.FromResult(PermissionStatus.Granted);
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> RequestAsync() =>
 				Task.FromResult(PermissionStatus.Granted);
 
+			/// <inheritdoc/>
 			public override void EnsureDeclared()
 			{
 				if (RequiredInfoPlistKeys == null)
@@ -42,6 +59,7 @@ namespace Microsoft.Maui.ApplicationModel
 				}
 			}
 
+			/// <inheritdoc/>
 			public override bool ShouldShowRationale() => false;
 
 			internal void EnsureMainThread()
@@ -51,11 +69,18 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 
+		/// <summary>
+		/// Represents permission to access events.
+		/// </summary>
 		public partial class EventPermissions : BasePlatformPermission
 		{
 		}
 
 		public partial class Battery : BasePlatformPermission
+		{
+		}
+
+		public partial class Bluetooth : BasePlatformPermission
 		{
 		}
 
@@ -89,9 +114,11 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class LocationWhenInUse : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
 				() => new string[] { "NSLocationWhenInUseUsageDescription" };
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -99,6 +126,7 @@ namespace Microsoft.Maui.ApplicationModel
 				return Task.FromResult(GetLocationStatus(true));
 			}
 
+			/// <inheritdoc/>
 			public override async Task<PermissionStatus> RequestAsync()
 			{
 				EnsureDeclared();
@@ -181,6 +209,7 @@ namespace Microsoft.Maui.ApplicationModel
 									}
 									catch (Exception ex)
 									{
+										// TODO change this to Logger?
 										Debug.WriteLine($"Exception processing location permission: {ex.Message}");
 										tcs?.TrySetException(ex);
 									}

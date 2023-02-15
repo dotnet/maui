@@ -59,6 +59,15 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		protected IServiceProvider ApplicationServices
+		{
+			get
+			{
+				EnsureHandlerCreated();
+				return _servicesProvider;
+			}
+		}
+
 		protected Task SetValueAsync<TValue, THandler>(IView view, TValue value, Action<THandler, TValue> func)
 			where THandler : IElementHandler, new()
 		{

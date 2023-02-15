@@ -1,8 +1,8 @@
 using Microsoft.Maui.Graphics;
+using NSize = Tizen.NUI.Size2D;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;
-using NSize = Tizen.NUI.Size2D;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
