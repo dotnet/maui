@@ -46,8 +46,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
 			platformView.TouchDown -= OnButtonTouchDown;
 
-			if(_observer != null && _observer.TryGetTarget(out NSObject? target))
-			{ 
+			if (_observer != null && _observer.TryGetTarget(out NSObject? target))
+			{
 				NSNotificationCenter.DefaultCenter.RemoveObserver(target);
 				_observer.SetTarget(null);
 			}
