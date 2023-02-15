@@ -46,7 +46,6 @@
                             BackgroundColor="Green"/>
                         <SwipeItem
                             Text="Test (Ajg)"
-                            IconImageSource="calculator.png"
                             IconImageSource="ic_flag.png"
                             BackgroundColor="Orange"/>
                         <SwipeItem
