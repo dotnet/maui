@@ -129,7 +129,6 @@
     <Compile Include="Controls\ListView.cs" />
     <Compile Include="Controls\NavigationChildPage.cs" />
     <Compile Include="Controls\NotebookWrapper.cs" />
-    <Compile Include="Controls\OpenGLView.cs" />
     <Compile Include="Controls\ScrolledTextView.cs" />
     <Compile Include="Controls\PageContainer.cs" />
     <Compile Include="Controls\SearchEntry.cs" />
@@ -197,7 +196,6 @@
     <Compile Include="Renderers\LayoutRenderer.cs" />
     <Compile Include="Renderers\ListViewRenderer.cs" />
     <Compile Include="Renderers\NavigationPageRenderer.cs" />
-    <Compile Include="Renderers\OpenGLViewRenderer.cs" />
     <Compile Include="Renderers\PageRenderer.cs" />
     <Compile Include="Renderers\PickerRenderer.cs" />
     <Compile Include="Renderers\ProgressBarRenderer.cs" />

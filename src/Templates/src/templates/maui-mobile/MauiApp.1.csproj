@@ -16,7 +16,6 @@
 
 		<!-- App Identifier -->
 		<ApplicationId>com.companyname.mauiapp._1</ApplicationId>
-		<ApplicationIdGuid>919dc1f9-17a9-48b3-81f8-0b8016bdfbf7</ApplicationIdGuid>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>

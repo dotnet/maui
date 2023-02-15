@@ -1,3 +1,4 @@
+using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
 namespace Benchmarks.Droid;
@@ -35,29 +36,14 @@ public class MainInstrumentation : Instrumentation
 		bool success = false;
 		try
 		{
-			// NOTE: this is mostly working around bugs in BenchmarkDotNet configuration
-			var logger = new Logger();
-			var baseConfig = new DebugInProcessConfig();
-
-			var config = new ManualConfig();
-
-			foreach (var e in baseConfig.GetExporters())
-				config.AddExporter(e);
-			foreach (var d in baseConfig.GetDiagnosers())
-				config.AddDiagnoser(d);
-			foreach (var a in baseConfig.GetAnalysers())
-				config.AddAnalyser(a);
-			foreach (var v in baseConfig.GetValidators())
-				config.AddValidator(v);
-			foreach (var p in baseConfig.GetColumnProviders())
-				config.AddColumnProvider(p);
-			config.AddJob(JobMode<Job>.Default.WithToolchain(new InProcessEmitToolchain(TimeSpan.FromMinutes(10), logOutput: true)));
-			config.UnionRule = ConfigUnionRule.AlwaysUseGlobal; // Overriding the default
-			config.AddLogger(logger);
+			var config = ManualConfig.CreateMinimumViable()
+				.AddJob(Job.Default.WithToolchain(new InProcessEmitToolchain(TimeSpan.FromMinutes(10), logOutput: true)))
+				.AddDiagnoser(MemoryDiagnoser.Default)
+				.WithOrderer(new DefaultOrderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Alphabetical));
 
 			// ImageBenchmark class is hardcoded here for now
-			BenchmarkRunner.Run<ImageBenchmark>(config.WithOptions(ConfigOptions.DisableLogFile));
-			BenchmarkRunner.Run<ViewHandlerBenchmark>(config.WithOptions(ConfigOptions.DisableLogFile));
+			BenchmarkRunner.Run<ImageBenchmark>(config);
+			BenchmarkRunner.Run<ViewHandlerBenchmark>(config);
 
 			success = true;
 		}
@@ -66,21 +52,5 @@ public class MainInstrumentation : Instrumentation
 			Log.Error(Tag, $"Error: {ex}");
 		}
 		return success;
-	}
-
-	// NOTE: the built-in ConsoleLogger throws PlatformNotSupportedException
-	class Logger : ILogger
-	{
-		public string Id => "AndroidLogger";
-
-		public int Priority => 0;
-
-		public void Flush() { }
-
-		public void Write(LogKind logKind, string text) => Console.Write(text);
-
-		public void WriteLine() => Console.WriteLine();
-
-		public void WriteLine(LogKind logKind, string text) => Console.WriteLine(text);
 	}
 }

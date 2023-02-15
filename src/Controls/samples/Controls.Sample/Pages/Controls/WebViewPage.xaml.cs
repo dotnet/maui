@@ -28,6 +28,14 @@ namespace Maui.Controls.Sample.Pages
 			MauiWebView.Navigated -= OnMauiWebViewNavigated;
 		}
 
+		void OnUpdateHtmlSourceClicked(object sender, EventArgs args)
+		{
+			Random rnd = new();
+			HtmlWebViewSource htmlWebViewSource = new();
+			HtmlSourceWebView.Source = htmlWebViewSource;
+			htmlWebViewSource.Html += $"<h1>Updated Content {rnd.Next()}!</h1><br>";
+		}
+
 		void OnGoBackClicked(object sender, EventArgs args)
 		{
 			Debug.WriteLine($"CanGoBack {MauiWebView.CanGoBack}");

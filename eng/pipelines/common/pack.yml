@@ -15,6 +15,11 @@ parameters:
   type: string
   default: 'nuget'
 
+- name: nugetFolder
+  type: string
+  default: 'artifacts'
+  
+
 - name: prepareSteps
   type: stepList
   default: []
@@ -23,9 +28,14 @@ parameters:
   type: string
   default: $(github--pat--vs-mobiletools-engineering-service2)
 
+- name: checkoutDirectory
+  type: string
+  default: $(System.DefaultWorkingDirectory)
+
 steps:
   - template: provision.yml
     parameters:
+      checkoutDirectory: ${{ parameters.checkoutDirectory }}
       platform: ${{ parameters.platform }}
       poolName: ${{ parameters.poolName }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -35,13 +45,13 @@ steps:
     - ${{ each pair in step }}:
         ${{ pair.key }}: ${{ pair.value }}
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
-  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
+  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Pack .NET Maui'
     name: PackMaui
     env:

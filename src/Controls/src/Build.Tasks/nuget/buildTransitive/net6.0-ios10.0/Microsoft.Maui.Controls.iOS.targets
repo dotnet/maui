@@ -1,0 +1,7 @@
+<Project>
+
+  <PropertyGroup>
+    <MtouchLink Condition="'$(MtouchLink)' == '' and '$(Configuration)' == 'Debug' and '$(UseInterpreter)' == 'true'">None</MtouchLink>
+  </PropertyGroup>
+
+</Project>

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
@@ -142,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 						if (isInShell && isDefaultBackgroundColor)
 						{
-							var color = Forms.IsMarshmallowOrNewer ?
+							var color = OperatingSystem.IsAndroidVersionAtLeast(23) ?
 								Context.Resources.GetColor(AColorRes.BackgroundLight, Context.Theme) :
 								new AColor(ContextCompat.GetColor(Context, AColorRes.BackgroundLight));
 							SetBackgroundColor(color);

@@ -408,6 +408,11 @@ namespace Microsoft.Maui.Controls
 								continue;
 						}
 
+						// This is the page that we will eventually get to once we've finished
+						// modifying the existing navigation stack
+						// So we want to fire appearing on it						
+						navPage.SendAppearing();
+
 						IsPoppingModalStack = true;
 
 						while (navStack.Count > popCount && Navigation.ModalStack.Count > 0)

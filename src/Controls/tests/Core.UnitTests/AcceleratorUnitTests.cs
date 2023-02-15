@@ -73,7 +73,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 		[Preserve(AllMembers = true)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 		public struct TestShortcut
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 		{
 			internal TestShortcut(string modifier)
 			{
