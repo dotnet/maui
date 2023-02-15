@@ -691,8 +691,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileNotExists ("drawable-hdpi/cat.png");
-				AssertFileExists ("drawable-hdpi/dog.png");
+				AssertFileNotExists("drawable-hdpi/cat.png");
+				AssertFileExists("drawable-hdpi/dog.png");
 
 				LogErrorEvents.Clear();
 				LogMessageEvents.Clear();
@@ -709,8 +709,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileNotExists ("drawable-hdpi/dot.png");
-				AssertFileExists ("drawable-hdpi/cat.png");
+				AssertFileNotExists("drawable-hdpi/dot.png");
+				AssertFileExists("drawable-hdpi/cat.png");
 			}
 
 			//[Theory]
@@ -1068,8 +1068,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileNotExists ("cat.png");
-				AssertFileExists ("dog.png");
+				AssertFileNotExists("cat.png");
+				AssertFileExists("dog.png");
 
 				LogErrorEvents.Clear();
 				LogMessageEvents.Clear();
@@ -1086,8 +1086,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileNotExists ("dot.png");
-				AssertFileExists ("cat.png");
+				AssertFileNotExists("dot.png");
+				AssertFileExists("cat.png");
 			}
 		}
 
@@ -1425,8 +1425,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileNotExists ("cat.scale-150.png");
-				AssertFileExists ("dog.scale-150.png");
+				AssertFileNotExists("cat.scale-150.png");
+				AssertFileExists("dog.scale-150.png");
 
 				LogErrorEvents.Clear();
 				LogMessageEvents.Clear();
@@ -1443,8 +1443,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileNotExists ("dot.scale-150.png");
-				AssertFileExists ("cat.scale-150.png");
+				AssertFileNotExists("dot.scale-150.png");
+				AssertFileExists("cat.scale-150.png");
 			}
 		}
 

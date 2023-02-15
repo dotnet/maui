@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Resizetizer
 				if (destinationModified > sourceModified)
 				{
 					Logger.Log($"Skipping `{img.Filename}` => `{destination}` file is up to date.");
-					resizedImages.Add(new ResizedImageInfo () { Dpi = dpi, Filename = destination});
+					resizedImages.Add(new ResizedImageInfo() { Dpi = dpi, Filename = destination });
 					continue;
 				}
 
