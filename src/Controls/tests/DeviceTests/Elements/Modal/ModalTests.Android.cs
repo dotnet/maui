@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 						};
 
 						// Add enough entries into the stack layout so that we can
-						// guarantee we'll have Entry's that would be covered by the keyboard
+						// guarantee we'll have entries that would be covered by the keyboard
 						for (int i = 0; i < 30; i++)
 						{
 							var entry = new Entry();
