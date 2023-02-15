@@ -101,11 +101,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var virtualView = (this as IViewHandler).VirtualView;
 			if (virtualView == null)
-			{ 
+			{
 				return Size.Zero;
 			}
 
-		 	var minWidth = virtualView.MinimumWidth;
+			var minWidth = virtualView.MinimumWidth;
 			var minHeight = virtualView.MinimumHeight;
 
 			if (!Primitives.Dimension.IsExplicitSet(minWidth))
