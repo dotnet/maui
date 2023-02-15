@@ -83,5 +83,27 @@ namespace Microsoft.Maui.DeviceTests
 		protected abstract void UpdateCursorStartPosition(THandler entryHandler, int position);
 		protected abstract int GetCursorStartPosition(THandler entryHandler);
 		protected abstract void SetNativeText(THandler entryHandler, string text);
+
+
+	[Fact]
+#if ANDROID
+		public async Task ShowsKeyboardOnFocus()
+		{
+			var button = new ButtonStub();
+			var textInput = new TStub();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = (IPlatformViewHandler)CreateHandler<THandler>(textInput);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					button.Focus();
+					textInput.Focus();
+					await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+				});
+			});
+		}
+#endif
 	}
 }
