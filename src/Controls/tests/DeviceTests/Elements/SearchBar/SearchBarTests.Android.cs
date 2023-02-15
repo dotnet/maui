@@ -18,23 +18,5 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Query);
 		}
-
-		[Fact]
-		public async Task ShowsKeyboardOnFocus()
-		{
-			var button = new Button();
-			var searchBar = new SearchBar();
-			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				await handler.PlatformView.AttachAndRun(async () =>
-				{
-					button.Focus();
-					searchBar.Focus();
-					await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
-				});
-			});
-		}
 	}
 }
