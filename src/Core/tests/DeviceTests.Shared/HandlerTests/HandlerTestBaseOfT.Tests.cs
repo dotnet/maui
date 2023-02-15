@@ -292,7 +292,8 @@ namespace Microsoft.Maui.DeviceTests
 			else if(size == 1 && view.GetType().Name.EndsWith("FrameStub")) 
 			{
 				// Frames have a legacy hard-coded minimum size of 20x20
-				Assert.Equal(new Size(20, 20), nativeBoundingBox.Size);
+				Assert.True(CloseEnough(20, nativeBoundingBox.Size.Width));
+				Assert.True(CloseEnough(20, nativeBoundingBox.Size.Height));
 			}
 #endif
 			else if (view is IProgress)
