@@ -101,8 +101,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var virtualView = (this as IViewHandler).VirtualView;
-			if (virtualView == null)
+			var virtualView = (this as IViewHandler)?.VirtualView;
+			if (virtualView is null)
 			{
 				return Size.Zero;
 			}
