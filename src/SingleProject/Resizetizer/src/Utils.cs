@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using SkiaSharp;
 
@@ -48,6 +49,13 @@ namespace Microsoft.Maui.Resizetizer
 			}
 
 			return null;
+		}
+
+		public static (bool Exists, DateTime Modified) FileExists(string path)
+		{
+			var exists = File.Exists(path);
+			var modified = exists ? File.GetLastWriteTimeUtc(path) : System.DateTime.MinValue;
+			return (exists, modified);
 		}
 	}
 }

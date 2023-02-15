@@ -4,14 +4,12 @@
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
-    <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'false' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
@@ -21,12 +19,12 @@
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
   </PropertyGroup>
 
   <PropertyGroup>
     <_ProvisionDependsOn>
       _DownloadDotNetInstallScript;
+      _GetExternalDotNetSdkVersions;
       _InstallDotNet;
       _AcquireWorkloadManifests;
       _InstallWorkloadPacks;
@@ -75,7 +73,7 @@
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(PackageOutputPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
-    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install tizen maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
+    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install tizen maui --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
 
   </Target>
 
@@ -97,11 +95,39 @@
     />
   </Target>
 
+  <!-- if we are building in the unified pipeline we want to install the runtimes from the props of the sdks -->
+  <Target Name="_GetExternalDotNetSdkVersions">
+    <XmlPeek
+        Condition="Exists('$(AndroidSrcPath)\eng\Versions.props')"
+        XmlInputPath="$(AndroidSrcPath)\eng\Versions.props"
+        Query="/Project/PropertyGroup/MicrosoftNETCoreAppRefPackageVersion/text()">
+      <Output TaskParameter="Result" PropertyName="VersionFromAndroid" />
+    </XmlPeek>
+    <XmlPeek
+        Condition="Exists('$(MaciosSrcPath)\eng\Versions.props')"
+        XmlInputPath="$(MaciosSrcPath)\eng\Versions.props"
+        Query="/Project/PropertyGroup/MicrosoftNETCoreAppRefPackageVersion/text()">
+      <Output TaskParameter="Result" PropertyName="VersionFromMacios" />
+    </XmlPeek>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+      <DotNetXARuntimeInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(VersionFromAndroid) -InstallDir '$(DotNetDirectory)' -Verbose -Runtime dotnet</DotNetXARuntimeInstallCommand>
+      <DotNetXMRuntimeInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(VersionFromMacios) -InstallDir '$(DotNetDirectory)' -Verbose -Runtime dotnet</DotNetXMRuntimeInstallCommand>
+      <DotNetXARuntimeInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetXARuntimeInstallCommand)&quot;</DotNetXARuntimeInstallCommand>
+      <DotNetXMRuntimeInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetXMRuntimeInstallCommand)&quot;</DotNetXMRuntimeInstallCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
+      <DotNetXARuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromAndroid) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXARuntimeInstallCommand>
+      <DotNetXMRuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromMacios) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXMRuntimeInstallCommand>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="_InstallDotNet"
       Inputs="$(_Inputs)"
       Outputs="$(DotNetDirectory).stamp">
     <RemoveDir Directories="$(DotNetDirectory)" />
     <Exec Command="$(DotNetInstallCommand)" />
+    <Exec Condition=" '$(VersionFromAndroid)' != '' " Command="$(DotNetXARuntimeInstallCommand)" />
+    <Exec Condition=" '$(VersionFromMacios)' != '' " Command="$(DotNetXMRuntimeInstallCommand)" />
     <Touch Files="$(DotNetDirectory).stamp" AlwaysCreate="true" />
     
     <!-- This is used by iOS pair to mac because pair to mac can't
@@ -168,7 +194,7 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
     />

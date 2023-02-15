@@ -27,6 +27,16 @@
                         IsEnabled="{Binding IsNotBusy}"
                         HorizontalOptions="FillAndExpand" />
                 <Button Text="Refresh" Command="{Binding GetCurrentLocationCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+                <Label Text="Foreground listener for Location:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <StackLayout Orientation="Horizontal" Spacing="6">
+                    <Button Text="Start Listening" HorizontalOptions="FillAndExpand"
+                            Command="{Binding StartListeningCommand}" IsEnabled="{Binding IsNotListening}" />
+                    <Button Text="Stop listening" HorizontalOptions="FillAndExpand"
+                            Command="{Binding StopListeningCommand}" IsEnabled="{Binding IsListening}" />
+                </StackLayout>
+                <Label Text="{Binding ListeningLocationStatus}" />
+                <Label Text="{Binding ListeningLocation}" />
             </StackLayout>
         </ScrollView>
     </Grid>

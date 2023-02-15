@@ -40,11 +40,11 @@ variables:
 - name: skipProvisionator
   value: $[ne(variables['provisioning'], 'true')]
 - name: provisionator.xcode
-  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+  value: 'eng/provisioning/xcode.csx'
 - name: provisionator.path
-  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+  value: 'eng/provisioning/provisioning.csx'
 - name: provisionator.vs
-  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
+  value: 'eng/provisioning/vs.csx'
 - name: provisionator.extraArguments
   value: '-vvvv'
 - name: DotNet.Dir
