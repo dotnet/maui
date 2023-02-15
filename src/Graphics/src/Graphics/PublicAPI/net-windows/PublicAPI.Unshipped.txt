@@ -721,6 +721,7 @@ Microsoft.Maui.Graphics.WindingMode.NonZero = 0 -> Microsoft.Maui.Graphics.Windi
 Microsoft.Maui.Graphics.XmlnsPrefixAttribute
 override Microsoft.Maui.Graphics.Color.GetHashCode() -> int
 override Microsoft.Maui.Graphics.Font.GetHashCode() -> int
+override Microsoft.Maui.Graphics.FontSource.Equals(object? obj) -> bool
 override Microsoft.Maui.Graphics.FontSource.GetHashCode() -> int
 override Microsoft.Maui.Graphics.GradientPaint.IsTransparent.get -> bool
 override Microsoft.Maui.Graphics.ImagePaint.IsTransparent.get -> bool
@@ -746,6 +747,10 @@ readonly Microsoft.Maui.Graphics.FontSource.Weight -> int
 static Microsoft.Maui.Graphics.CanvasState.GetLengthScale(System.Numerics.Matrix3x2 matrix) -> float
 static Microsoft.Maui.Graphics.Font.Default.get -> Microsoft.Maui.Graphics.Font
 static Microsoft.Maui.Graphics.Font.DefaultBold.get -> Microsoft.Maui.Graphics.Font
+static Microsoft.Maui.Graphics.Font.operator !=(Microsoft.Maui.Graphics.Font left, Microsoft.Maui.Graphics.Font right) -> bool
+static Microsoft.Maui.Graphics.Font.operator ==(Microsoft.Maui.Graphics.Font left, Microsoft.Maui.Graphics.Font right) -> bool
+static Microsoft.Maui.Graphics.FontSource.operator !=(Microsoft.Maui.Graphics.FontSource left, Microsoft.Maui.Graphics.FontSource right) -> bool
+static Microsoft.Maui.Graphics.FontSource.operator ==(Microsoft.Maui.Graphics.FontSource left, Microsoft.Maui.Graphics.FontSource right) -> bool
 static Microsoft.Maui.Graphics.GeometryUtil.DegreesToRadians(double angle) -> double
 static Microsoft.Maui.Graphics.GeometryUtil.DegreesToRadians(float angle) -> float
 static Microsoft.Maui.Graphics.GeometryUtil.EllipseAngleToPoint(float x, float y, float width, float height, float angleInDegrees) -> Microsoft.Maui.Graphics.PointF

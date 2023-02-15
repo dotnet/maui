@@ -861,7 +861,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_defaultAccessibilityHint == null)
 				_defaultAccessibilityHint = uIBarButtonItem.AccessibilityHint;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			uIBarButtonItem.AccessibilityHint = (string)element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void SetAccessibilityLabel(UIBarButtonItem uIBarButtonItem, Element element)
@@ -872,7 +874,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_defaultAccessibilityLabel == null)
 				_defaultAccessibilityLabel = uIBarButtonItem.AccessibilityLabel;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			uIBarButtonItem.AccessibilityLabel = (string)element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void SetIsAccessibilityElement(UIBarButtonItem uIBarButtonItem, Element element)

@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Preserve(AllMembers = true)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 		public struct TestPoint
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 		{
 			public TestPoint(int i) : this()
 			{

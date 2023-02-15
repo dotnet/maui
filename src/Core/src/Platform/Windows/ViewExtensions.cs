@@ -19,8 +19,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		internal static Page? ContainingPage; // Cache of containing page used for unfocusing
-
 		public static void TryMoveFocus(this FrameworkElement platformView, FocusNavigationDirection direction)
 		{
 			if (platformView?.XamlRoot?.Content is UIElement elem)
@@ -361,39 +359,11 @@ namespace Microsoft.Maui.Platform
 			if (control == null || !control.IsEnabled)
 				return;
 
-			// "Unfocusing" doesn't really make sense on Windows; for accessibility reasons,
-			// something always has focus. So forcing the unfocusing of a control would normally 
-			// just move focus to the next control, or leave it on the current control if no other
-			// focus targets are available. This is what happens if you use the "disable/enable"
-			// hack. What we *can* do is set the focus to the Page which contains Control;
-			// this will cause Control to lose focus without shifting focus to, say, the next Entry 
-
-			if (ContainingPage == null)
-			{
-				// Work our way up the tree to find the containing Page
-				DependencyObject parent = control;
-
-				while (parent != null && parent is not Page)
-				{
-					parent = VisualTreeHelper.GetParent(parent);
-				}
-
-				ContainingPage = parent as Page;
-			}
-
-			if (ContainingPage != null)
-			{
-				// Cache the tabstop setting
-				var wasTabStop = ContainingPage.IsTabStop;
-
-				// Controls can only get focus if they're a tabstop
-				ContainingPage.IsTabStop = true;
-				ContainingPage.Focus(FocusState.Programmatic);
-
-				// Restore the tabstop setting; that may cause the Page to lose focus,
-				// but it won't restore the focus to Control
-				ContainingPage.IsTabStop = wasTabStop;
-			}
+			var isTabStop = control.IsTabStop;
+			control.IsTabStop = false;
+			control.IsEnabled = false;
+			control.IsEnabled = true;
+			control.IsTabStop = isTabStop;
 		}
 
 		internal static IWindow? GetHostedWindow(this IView? view)
