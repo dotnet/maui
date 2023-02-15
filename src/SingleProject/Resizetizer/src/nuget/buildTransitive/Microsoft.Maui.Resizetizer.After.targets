@@ -595,7 +595,7 @@
 
         <!-- Remove files which are no longer needed -->
         <Delete
-            Condition="'@(_ResizetizerImagesToDelete)' != ''"
+            Condition="'@(_ResizetizerImagesToDelete->Count())' != '0'"
             Files="@(_ResizetizerImagesToDelete)"
         />
 
