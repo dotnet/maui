@@ -15,8 +15,6 @@ override Microsoft.Maui.Handlers.SwipeViewHandler.CreatePlatformView() -> Micros
 override Microsoft.Maui.Handlers.SwipeViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiSwipeView! platformView) -> void
 override Microsoft.Maui.Platform.MauiSwipeView.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
-#nullable enable
-static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
