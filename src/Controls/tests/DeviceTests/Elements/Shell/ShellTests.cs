@@ -36,6 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if ANDROID || IOS || MACCATALYST
 		[Fact]
 		public async Task SearchHandlerRendersCorrectly()
 		{
@@ -59,6 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 				// No crash using SearchHandler
 			});
 		}
+#endif
 
 		[Fact]
 		public async Task FlyoutWithAsMultipleItemsRendersWithoutCrashing()
