@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	}
 
 	[Obsolete]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public class InitializationOptions
 	{
 		public CoreApplication Context { get; set; }
@@ -47,6 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public DisplayResolutionUnit DisplayResolutionUnit { get; set; }
 
 		public struct EffectScope
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 		{
 			public string Name;
 			public ExportEffectAttribute[] Effects;
