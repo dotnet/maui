@@ -85,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected abstract void SetNativeText(THandler entryHandler, string text);
 
 
-	[Fact]
+		[Fact]
 #if ANDROID
 		public async Task ShowsKeyboardOnFocus()
 		{
