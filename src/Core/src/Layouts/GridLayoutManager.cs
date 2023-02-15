@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Layouts
 
 			void MeasureCells()
 			{
-				AutoMeasurePass();
+				KnownMeasurePass();
 
 				if (!_isStarWidthPrecomputable)
 				{
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Layouts
 				return result;
 			}
 
-			void AutoMeasurePass()
+			void KnownMeasurePass()
 			{
 				for (int n = 0; n < _cells.Length; n++)
 				{
@@ -375,7 +375,17 @@ namespace Microsoft.Maui.Layouts
 
 					if (double.IsNaN(cell.MeasureHeight) || double.IsNaN(cell.MeasureWidth))
 					{
+						// We still have some unknown measure constraints (* rows/columns that need to have
+						// the Auto measurements settled before we can measure them). So mark this cell for the 
+						// second pass, once we know the constraints.
 						cell.NeedsSecondPass = true;
+
+						if (!cell.IsColumnSpanAuto && !cell.IsRowSpanAuto)
+						{
+							// If neither span of this cell includes _any_ Auto values, then there's no reason
+							// to measure it at all during this pass; we can skip it for now
+							continue;
+						}
 					}
 
 					var measureWidth = double.IsNaN(cell.MeasureWidth) ? double.PositiveInfinity : cell.MeasureWidth;

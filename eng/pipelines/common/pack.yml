@@ -28,9 +28,14 @@ parameters:
   type: string
   default: $(github--pat--vs-mobiletools-engineering-service2)
 
+- name: checkoutDirectory
+  type: string
+  default: $(System.DefaultWorkingDirectory)
+
 steps:
   - template: provision.yml
     parameters:
+      checkoutDirectory: ${{ parameters.checkoutDirectory }}
       platform: ${{ parameters.platform }}
       poolName: ${{ parameters.poolName }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
