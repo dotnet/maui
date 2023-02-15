@@ -78,6 +78,7 @@
 ~override Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 ~override Microsoft.Maui.ApplicationModel.Permissions.Battery.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 ~override Microsoft.Maui.ApplicationModel.Permissions.Battery.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
+~override Microsoft.Maui.ApplicationModel.Permissions.Bluetooth.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.CalendarRead.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.CalendarWrite.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Camera.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
@@ -396,6 +397,8 @@ Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission
 Microsoft.Maui.ApplicationModel.Permissions.BasePlatformPermission.BasePlatformPermission() -> void
 Microsoft.Maui.ApplicationModel.Permissions.Battery
 Microsoft.Maui.ApplicationModel.Permissions.Battery.Battery() -> void
+Microsoft.Maui.ApplicationModel.Permissions.Bluetooth
+Microsoft.Maui.ApplicationModel.Permissions.Bluetooth.Bluetooth() -> void
 Microsoft.Maui.ApplicationModel.Permissions.CalendarRead
 Microsoft.Maui.ApplicationModel.Permissions.CalendarRead.CalendarRead() -> void
 Microsoft.Maui.ApplicationModel.Permissions.CalendarWrite

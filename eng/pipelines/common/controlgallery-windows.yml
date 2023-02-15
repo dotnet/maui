@@ -6,7 +6,7 @@ steps:
     displayName: 'Provisionator'
     condition: eq(variables['provisioning'], 'true')
     inputs:
-      provisioning_script: $(provisionator.path)
+      provisioning_script: $(System.DefaultWorkingDirectory)/$(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
     env:
       AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)

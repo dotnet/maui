@@ -35,6 +35,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
+		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView?.UpdateUserAgent(webView);
+		}
+
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.PlatformView.CanGoBack && handler.PlatformView.NavigationDelegate is MauiWebViewNavigationDelegate mauiDelegate)

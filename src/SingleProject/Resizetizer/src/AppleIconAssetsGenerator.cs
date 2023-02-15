@@ -41,6 +41,17 @@ namespace Microsoft.Maui.Resizetizer
 			var assetContentsFile = Path.Combine(outputAssetsDir, "Contents.json");
 			var appIconSetContentsFile = Path.Combine(outputAppIconSetDir, "Contents.json");
 
+			var (sourceExists, sourceModified) = Utils.FileExists(Info.Filename);
+			var (destinationExists, destinationModified) = Utils.FileExists(appIconSetContentsFile);
+
+			if (destinationModified > sourceModified)
+			{
+				Logger.Log($"Skipping `{Info.Filename}` => `{appIconSetContentsFile}` file is up to date.");
+				return new List<ResizedImageInfo> {
+					new ResizedImageInfo { Dpi = new DpiPath("", 1), Filename = appIconSetContentsFile }
+				};
+			}
+
 			var infoJsonProp = new JsonObject
 			{
 				["info"] = new JsonObject
@@ -65,7 +76,7 @@ namespace Microsoft.Maui.Resizetizer
 						["idiom"] = idiom,
 						["size"] = $"{w}x{h}",
 						["scale"] = $"{s}x",
-						["filename"] = AppIconName + dpi.FileSuffix + ".png",
+						["filename"] = AppIconName + dpi.FileSuffix + Resizer.RasterFileExtension,
 					};
 
 					appIconImagesJson.Add(imageIcon);

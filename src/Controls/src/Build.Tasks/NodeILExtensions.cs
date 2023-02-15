@@ -557,6 +557,32 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			yield break;
 		}
 
+		static IEnumerable<Instruction> PushNamescopes(INode node, ILContext context, ModuleDefinition module)
+		{
+			var scopes = new List<VariableDefinition>();
+			do
+			{
+
+				if (context.Scopes.TryGetValue(node, out var scope))
+					scopes.Add(scope.Item1);
+				node = node.Parent;
+			} while (node != null);
+
+
+			yield return Instruction.Create(OpCodes.Ldc_I4, scopes.Count);
+			yield return Instruction.Create(OpCodes.Newarr, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
+
+			var i = 0;
+			foreach (var scope in scopes)
+			{
+				yield return Instruction.Create(OpCodes.Dup);
+				yield return Instruction.Create(OpCodes.Ldc_I4, i);
+				yield return Instruction.Create(OpCodes.Ldloc, scope);
+				yield return Instruction.Create(OpCodes.Stelem_Ref);
+				i++;
+			}
+		}
+
 		public static IEnumerable<Instruction> PushServiceProvider(this INode node, ILContext context, FieldReference bpRef = null, PropertyReference propertyRef = null, TypeReference declaringTypeReference = null)
 		{
 			var module = context.Body.Method.Module;
@@ -589,12 +615,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				foreach (var instruction in PushTargetProperty(context, bpRef, propertyRef, declaringTypeReference, module))
 					yield return instruction;
 
-				if (context.Scopes.TryGetValue(node, out var scope))
-					yield return Create(Ldloc, scope.Item1);
-				else
-					yield return Create(Ldnull);
+				foreach (var instruction in PushNamescopes(node, context, module))
+					yield return instruction;
 
-				yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 3));
+				yield return Create(Ldc_I4_0); //don't ask
+				yield return Create(Newobj, module.ImportCtorReference(context.Cache,
+					("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 4));
+
 				//store the provider so we can register it again with a different key
 				yield return Create(Dup);
 				var refProvider = new VariableDefinition(module.ImportReference(context.Cache, ("mscorlib", "System", "Object")));

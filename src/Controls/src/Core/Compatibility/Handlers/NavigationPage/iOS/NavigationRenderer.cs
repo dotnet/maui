@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -42,8 +43,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		ViewHandlerDelegator<NavigationPage> _viewHandlerWrapper;
 		bool _navigating = false;
 		VisualElement _element;
+		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
 
-		[Preserve(Conditional = true)]
+		[Internals.Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
 		{
 			_viewHandlerWrapper = new ViewHandlerDelegator<NavigationPage>(Mapper, CommandMapper, this);
@@ -780,7 +782,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			TopViewController?.NavigationItem?.TitleView?.LayoutSubviews();
 		}
 
-		internal async Task UpdateFormsInnerNavigation(Page pageBeingRemoved)
+		async Task UpdateFormsInnerNavigation(Page pageBeingRemoved)
 		{
 			if (NavPage == null)
 				return;
@@ -789,9 +791,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_ignorePopCall = true;
 			if (Element.Navigation.NavigationStack.Contains(pageBeingRemoved))
+			{
 				await (NavPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
-			_ignorePopCall = false;
+				if (_uiRequestedPop)
+				{
+					NavPage?.SendNavigatedFromHandler(pageBeingRemoved);
+				}
+			}
 
+			_ignorePopCall = false;
+			_uiRequestedPop = false;
+		}
+
+		[Export("navigationBar:shouldPopItem:")]
+		[Internals.Preserve(Conditional = true)]
+		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
+		{
+			_uiRequestedPop = true;
+			return true;
 		}
 
 		internal static void SetFlyoutLeftBarButton(UIViewController containerController, FlyoutPage FlyoutPage)
@@ -844,7 +861,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_defaultAccessibilityHint == null)
 				_defaultAccessibilityHint = uIBarButtonItem.AccessibilityHint;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			uIBarButtonItem.AccessibilityHint = (string)element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void SetAccessibilityLabel(UIBarButtonItem uIBarButtonItem, Element element)
@@ -855,7 +874,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_defaultAccessibilityLabel == null)
 				_defaultAccessibilityLabel = uIBarButtonItem.AccessibilityLabel;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			uIBarButtonItem.AccessibilityLabel = (string)element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void SetIsAccessibilityElement(UIBarButtonItem uIBarButtonItem, Element element)
@@ -959,7 +980,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		class MauiNavigationDelegate : UINavigationControllerDelegate
 		{
+			bool _finishedWithInitialNavigation;
 			readonly WeakReference<NavigationRenderer> _navigation;
+
 			public MauiNavigationDelegate(NavigationRenderer navigationRenderer)
 			{
 				_navigation = new WeakReference<NavigationRenderer>(navigationRenderer);
@@ -973,6 +996,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (r.VisibleViewController is ParentingViewController pvc)
 					{
 						pvc.UpdateFrames();
+					}
+
+					if (r.Element is NavigationPage np && !_finishedWithInitialNavigation)
+					{
+						_finishedWithInitialNavigation = true;
+						np.SendNavigatedFromHandler(null);
 					}
 				}
 			}
