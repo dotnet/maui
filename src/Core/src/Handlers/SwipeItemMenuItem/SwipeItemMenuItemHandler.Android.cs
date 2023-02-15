@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override void ConnectHandler(AView platformView)
 		{
-			base.ConnectHandler(platformView);	
+			base.ConnectHandler(platformView);
 			PlatformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 		}
 
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Handlers
 
 			var iconSize = GetIconSize();
 			var density = PlatformView.Resources?.DisplayMetrics?.Density ?? 1.0f;
-			var textPadding = 1* density;
+			var textPadding = 1 * density;
 			var buttonPadding = (int)((contentHeight - (iconSize + lineHeight + textPadding)) / 2);
 
 			PlatformView.SetPadding(0, buttonPadding, 0, buttonPadding);
