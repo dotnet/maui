@@ -86,17 +86,11 @@ namespace Microsoft.Maui.DeviceTests
 			IWindow window;
 
 			if (view is IWindow w)
-			{
 				window = w;
-			}
 			else if (view is Page page)
-			{
 				window = new Controls.Window(page);
-			}
 			else
-			{
 				window = new Controls.Window(new ContentPage() { Content = (View)view });
-			}
 
 			return window;
 		}
@@ -147,6 +141,9 @@ namespace Microsoft.Maui.DeviceTests
 					await SetupWindowForTests<THandler>(window, async () =>
 					{
 						IView content = window.Content;
+
+						if (content is FlyoutPage fp)
+							content = fp.Detail;
 
 						if (content is IPageContainer<Page> pc)
 						{
