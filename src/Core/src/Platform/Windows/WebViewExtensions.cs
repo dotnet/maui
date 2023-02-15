@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
@@ -79,6 +78,18 @@ namespace Microsoft.Maui.Platform
 		public static void EvaluateJavaScript(this WebView2 webView, EvaluateJavaScriptAsyncRequest request)
 		{
 			request.RunAndReport(webView.ExecuteScriptAsync(request.Script));
+		}
+
+		internal static bool IsValid(this WebView2 webView)
+		{
+			try
+			{
+				return webView is not null && webView.CoreWebView2 is not null;
+			}
+			catch (Exception ex) when (ex is ObjectDisposedException || ex is InvalidOperationException)
+			{
+				return false;
+			}
 		}
 	}
 }

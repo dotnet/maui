@@ -159,6 +159,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public bool Equals(BarometerData other) =>
 			PressureInHectopascals.Equals(other.PressureInHectopascals);
 
+		/// <inheritdoc cref="object.GetHashCode"/>
 		public override int GetHashCode() =>
 			PressureInHectopascals.GetHashCode();
 
