@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (control.AttributedText is not null)
 				textStorage.SetString(control.AttributedText.Substring(start, length));
 #else
-			if(control.AttributedStringValue is not null)
+			if (control.AttributedStringValue is not null)
 				textStorage.SetString(control.AttributedStringValue.Substring(start, length));
 #endif
 			var layoutManager = new NSLayoutManager();
