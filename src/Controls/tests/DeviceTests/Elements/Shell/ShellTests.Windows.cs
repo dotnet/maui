@@ -65,12 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var platformView = shell.Handler.PlatformView as FrameworkElement;
 
-					if (platformView != null)
-					{
-						return platformView.Height > 0 || platformView.Width > 0;
-					}
-
-					return false;
+                   return platformView is not null && (platformView.Height > 0 || platformView.Width > 0)
 				});
 			});
 
