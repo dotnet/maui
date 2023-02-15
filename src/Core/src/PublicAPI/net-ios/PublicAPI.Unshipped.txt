@@ -32,3 +32,7 @@ static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this WebKit.WKW
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
+Microsoft.Maui.Platform.MauiUIWindow
+Microsoft.Maui.Platform.MauiUIWindow.MauiUIWindow() -> void
+Microsoft.Maui.Platform.MauiUIWindow.MauiUIWindow(UIKit.UIWindowScene! uIWindowScene) -> void
+override Microsoft.Maui.Platform.MauiUIWindow.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
