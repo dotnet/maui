@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 		{
 			InitializeComponent();
 
-			_demoFilteredItemSource = new DemoFilteredItemSource(filter: ItemMatches);
+			_demoFilteredItemSource = new DemoFilteredItemSource(count: 200, filter: ItemMatches);
 
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;
 
