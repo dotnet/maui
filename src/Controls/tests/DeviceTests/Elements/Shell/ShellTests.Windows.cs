@@ -64,8 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertionExtensions.Wait(() =>
 				{
 					var platformView = shell.Handler.PlatformView as FrameworkElement;
-
-                   return platformView is not null && (platformView.Height > 0 || platformView.Width > 0)
+					return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
 				});
 			});
 
