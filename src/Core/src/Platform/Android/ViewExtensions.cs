@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Platform
 				platformView.Background = null;
 				layerDrawable.Dispose();
 			}
-			
+
 			var paint = view.Background;
 
 			if (paint.IsNullOrEmpty())
