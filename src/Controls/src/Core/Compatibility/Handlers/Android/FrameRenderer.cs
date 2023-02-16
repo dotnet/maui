@@ -113,12 +113,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (!Primitives.Dimension.IsExplicitSet(minWidth))
 			{
-				minWidth = LegacyMinimumFrameSize; 
+				minWidth = LegacyMinimumFrameSize;
 			}
 
 			if (!Primitives.Dimension.IsExplicitSet(minHeight))
 			{
-				minHeight = LegacyMinimumFrameSize; 
+				minHeight = LegacyMinimumFrameSize;
 			}
 
 			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthConstraint, heightConstraint,
