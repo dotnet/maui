@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -150,6 +152,39 @@ namespace Microsoft.Maui.DeviceTests
 
 				layout.Add(label);
 			}
+		}
+
+		[Fact, Category(TestCategory.FlexLayout)]
+		public async Task FlexLayoutInVerticalStackLayoutDoesNotCycle() 
+		{
+			await FlexLayoutInStackLayoutDoesNotCycle(new VerticalStackLayout());
+		}
+
+		[Fact, Category(TestCategory.FlexLayout)]
+		public async Task FlexLayoutInHorizontalStackLayoutDoesNotCycle()
+		{
+			await FlexLayoutInStackLayoutDoesNotCycle(new HorizontalStackLayout());
+		}
+
+		async Task FlexLayoutInStackLayoutDoesNotCycle(IStackLayout root)
+		{
+			var flexLayout = new FlexLayout();
+			var label = new Label { Text = "Hello" };
+
+			flexLayout.Add(label);
+			root.Add(flexLayout);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var labelHandler = CreateHandler<LabelHandler>(label);
+				var flexLayoutHandler = CreateHandler<LayoutHandler>(flexLayout);
+				var layoutHandler = CreateHandler<LayoutHandler>(root);
+
+				// If this can be attached to the hierarchy and make it through a layout 
+				// without crashing, then we're good.
+				
+				await root.ToPlatform(MauiContext).AttachAndRun(() => { });
+			});
 		}
 	}
 }

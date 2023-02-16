@@ -17,8 +17,9 @@
 		public const string Editor = "Editor";
 		public const string Element = "Element";
 		public const string Entry = "Entry";
-		public const string Frame = "Frame";
+		public const string FlexLayout = "FlexLayout";
 		public const string FlyoutPage = "FlyoutPage";
+		public const string Frame = "Frame";
 		public const string Gesture = "Gesture";
 		public const string Image = "Image";
 		public const string Label = "Label";
