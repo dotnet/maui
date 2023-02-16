@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <IsPackable>false</IsPackable>
-    <BuildInParallel Condition="'$(Configuration)' == 'Release'">false</BuildInParallel>
   </PropertyGroup>
 
   <ItemGroup>
