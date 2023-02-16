@@ -55,6 +55,11 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
+		public static Task HideKeyboardForView(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static Task<string> CreateColorAtPointError(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
 

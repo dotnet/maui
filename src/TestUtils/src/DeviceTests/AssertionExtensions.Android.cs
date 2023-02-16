@@ -83,6 +83,13 @@ namespace Microsoft.Maui.DeviceTests
 			await view.WaitForKeyboardToShow(timeout);
 		}
 
+		public static async Task HideKeyboardForView(this AView view, int timeout = 1000)
+		{
+			await view.FocusView(timeout);
+			KeyboardManager.HideKeyboard(view);
+			await view.WaitForKeyboardToHide(timeout);
+		}
+
 		public static async Task WaitForKeyboardToShow(this AView view, int timeout = 1000)
 		{
 			var result = await Wait(() => KeyboardManager.IsSoftKeyboardVisible(view), timeout);
