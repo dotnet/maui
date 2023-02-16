@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
 
@@ -65,25 +66,21 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			if (message != null && message.BodyFormat != EmailBodyFormat.PlainText)
 				throw new FeatureNotSupportedException("Only EmailBodyFormat.PlainText is supported if no email account is set up.");
 
-			var parts = new List<string>();
-			if (!string.IsNullOrEmpty(message?.Body))
-				parts.Add("body=" + Uri.EscapeDataString(message!.Body));
-			if (!string.IsNullOrEmpty(message?.Subject))
-				parts.Add("subject=" + Uri.EscapeDataString(message!.Subject));
-			if (message?.Cc?.Count > 0)
-				parts.Add("cc=" + Uri.EscapeDataString(string.Join(",", message.Cc)));
-			if (message?.Bcc?.Count > 0)
-				parts.Add("bcc=" + Uri.EscapeDataString(string.Join(",", message.Bcc)));
-
-			var uri = "mailto:";
+			var uri = new StringBuilder("mailto:");
 
 			if (message?.To?.Count > 0)
-				uri += Uri.EscapeDataString(string.Join(",", message.To));
+				uri.Append(string.Join(",", message.To));
 
-			if (parts.Count > 0)
-				uri += "?" + string.Join("&", parts);
+			if (!string.IsNullOrEmpty(message?.Body))
+				uri.Append($"?body={Uri.EscapeDataString(message.Body)}");
+			if (!string.IsNullOrEmpty(message?.Subject))
+				uri.Append($"?subject={Uri.EscapeDataString(message.Subject)}");
+			if (message?.Cc?.Count > 0)
+				uri.Append($"?cc={Uri.EscapeDataString(string.Join(",", message.Cc))}");
+			if (message?.Bcc?.Count > 0)
+				uri.Append($"?bcc={Uri.EscapeDataString(string.Join(",", message.Bcc))}");
 
-			return uri;
+			return uri.ToString();
 		}
 	}
 
