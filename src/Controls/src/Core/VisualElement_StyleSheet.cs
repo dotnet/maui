@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -6,7 +7,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
 	public partial class VisualElement : IStylable
 	{
 		BindableProperty IStylable.GetProperty(string key, bool inheriting)

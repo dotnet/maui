@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UILabel platformLabel, ILabel label)
 		{
-			platformLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatformHorizontal(label);
+			platformLabel.TextAlignment = label.HorizontalTextAlignment.ToPlatformHorizontal(platformLabel.EffectiveUserInterfaceLayoutDirection);
 		}
 
 		// Don't use this method, it doesn't work. But we can't remove it.
@@ -83,9 +83,10 @@ namespace Microsoft.Maui.Platform
 				StringEncoding = NSStringEncoding.UTF8
 			};
 
-			NSError? nsError = null;
-
+			NSError nsError = new();
+#pragma warning disable CS8601
 			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
+#pragma warning restore CS8601
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)

@@ -1,6 +1,6 @@
 <Type Name="Grid" FullName="Microsoft.Maui.Controls.Grid">
   <TypeSignature Language="C#" Value="public class Grid : Microsoft.Maui.Controls.Layout&lt;Microsoft.Maui.Controls.View&gt;, Microsoft.Maui.Controls.IElementConfiguration&lt;Microsoft.Maui.Controls.Grid&gt;, Microsoft.Maui.Controls.IGridController" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Grid extends Microsoft.Maui.Controls.Layout`1&lt;class Microsoft.Maui.Controls.View&gt; implements class Microsoft.Maui.Controls.IElementConfiguration`1&lt;class Microsoft.Maui.Controls.Grid&gt;, class Microsoft.Maui.Controls.IGridController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Grid extends Microsoft.Maui.Controls.Layout&lt;class Microsoft.Maui.Controls.View&gt; implements class Microsoft.Maui.Controls.IElementConfiguration`1&lt;class Microsoft.Maui.Controls.Grid&gt;, class Microsoft.Maui.Controls.IGridController" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.Grid" />
   <TypeSignature Language="F#" Value="type Grid = class&#xA;    inherit Layout&lt;View&gt;&#xA;    interface IGridController&#xA;    interface IElementConfiguration&lt;Grid&gt;" />
   <AssemblyInfo>
@@ -134,7 +134,7 @@ namespace FormsGallery
       </example>
       <para>The following shows Grids on the various platforms:</para>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Grid.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Grid.TripleScreenShot.png" />
       </para>
       <para>It is convenient for the <see cref="T:Microsoft.Maui.Controls.Grid" /> layout class to store row and column indices of each of its child elements. Additionally, when a <see cref="T:Microsoft.Maui.Controls.View" /> element is laid out with a grid, application developers can access and change the child's position and span from the child itself by using the <see cref="M:Microsoft.Maui.Controls.Grid.GetRow(Microsoft.Maui.Controls.BindableObject)" />, <see cref="M:Microsoft.Maui.Controls.Grid.SetRow(Microsoft.Maui.Controls.BindableObject,System.Int32)" />, <see cref="M:Microsoft.Maui.Controls.Grid.GetRowSpan(Microsoft.Maui.Controls.BindableObject)" />, <see cref="M:Microsoft.Maui.Controls.Grid.SetRowSpan(Microsoft.Maui.Controls.BindableObject,System.Int32)" /> static methods, and the equivalent static methods for columns and column spans.</para>
       <para>The documentation for the following <see cref="T:Microsoft.Maui.Controls.Grid" /> member methods contains XAML syntax examples:
@@ -212,7 +212,7 @@ namespace FormsGallery
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.ColumnDefinitionCollectionTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -222,7 +222,7 @@ namespace FormsGallery
         <summary>Provides the interface for the bound property that gets or sets the ordered collection of <see cref="T:Microsoft.Maui.Controls.ColumnDefinition" /> objects that control the layout of columns in the <see cref="T:Microsoft.Maui.Controls.Grid" />.</summary>
         <value>A ColumnDefinitionCollection for the Grid instance.</value>
         <remarks>
-          <para>ColumnDefinitions is an ordered set of ColumnDefinition objects that determine the width of each column. Each successive ColumnDefintion controls the width of each successive column. If ColumnDefinitions is empty, or if there are more columns than definitions, then columns for which there is no definition are rendered as if they were controlled by a ColumnDefinition object that has its <see cref="P:Microsoft.Maui.Controls.ColumnDefinition.Width" /> property set to <see cref="P:Microsoft.Maui.Controls.GridLength.Star" />.</para>
+          <para>ColumnDefinitions is an ordered set of ColumnDefinition objects that determine the width of each column. Each successive ColumnDefintion controls the width of each successive column. If ColumnDefinitions is empty, or if there are more columns than definitions, then columns for which there is no definition are rendered as if they were controlled by a ColumnDefinition object that has its <see cref="P:Microsoft.Maui.Controls.ColumnDefinition.Width" /> property set to <see cref="P:Microsoft.Maui.GridLength.Star" />.</para>
           <para>The <see cref="P:Microsoft.Maui.Controls.Grid.ColumnDefinitions" /> property has XAML syntax support. The syntax for this operation is shown below.</para>
         </remarks>
       </Docs>
@@ -721,10 +721,10 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
-      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.Controls.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
-      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.Controls.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
+      <MemberSignature Language="C#" Value="protected override Microsoft.Maui.SizeRequest OnSizeRequest (double widthConstraint, double heightConstraint);" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance valuetype Microsoft.Maui.SizeRequest OnSizeRequest(float64 widthConstraint, float64 heightConstraint) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Grid.OnSizeRequest(System.Double,System.Double)" />
-      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.Controls.SizeRequest" Usage="grid.OnSizeRequest (widthConstraint, heightConstraint)" />
+      <MemberSignature Language="F#" Value="override this.OnSizeRequest : double * double -&gt; Microsoft.Maui.SizeRequest" Usage="grid.OnSizeRequest (widthConstraint, heightConstraint)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -746,7 +746,7 @@ namespace FormsGallery
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.SizeRequest</ReturnType>
+        <ReturnType>Microsoft.Maui.SizeRequest</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="widthConstraint" Type="System.Double" />
@@ -781,7 +781,7 @@ namespace FormsGallery
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -791,7 +791,7 @@ namespace FormsGallery
         <summary>Provides the interface for the bound property that gets or sets the collection of RowDefinition objects that control the heights of each row.</summary>
         <value>A RowDefinitionCollection for the Grid instance.</value>
         <remarks>
-          <para>RowDefinitions is an ordered set of <see cref="T:Microsoft.Maui.Controls.RowDefinition" /> objects that determine the height of each row. Each successive RowDefintion controls the width of each successive row. If RowDefinitions is empty, or if there are more rows than definitions, then rows for which there is no definition are rendered as if they were controlled by a RowDefinition object that has its <see cref="P:Microsoft.Maui.Controls.RowDefinition.Height" /> property set to <see cref="P:Microsoft.Maui.Controls.GridLength.Star" />.</para>
+          <para>RowDefinitions is an ordered set of <see cref="T:Microsoft.Maui.Controls.RowDefinition" /> objects that determine the height of each row. Each successive RowDefintion controls the width of each successive row. If RowDefinitions is empty, or if there are more rows than definitions, then rows for which there is no definition are rendered as if they were controlled by a RowDefinition object that has its <see cref="P:Microsoft.Maui.Controls.RowDefinition.Height" /> property set to <see cref="P:Microsoft.Maui.GridLength.Star" />.</para>
         </remarks>
       </Docs>
     </Member>

@@ -14,6 +14,12 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 
 			BindingContext = new ImageButtonPageViewModel();
+
+			ImageButton01.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == ImageButton.IsLoadingProperty.PropertyName)
+					Debug.WriteLine($"{e.PropertyName}: {ImageButton01.IsLoading}");
+			};
 		}
 
 		void OnImageButtonClicked(object sender, EventArgs e)

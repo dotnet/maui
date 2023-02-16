@@ -22,10 +22,10 @@
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public PromptArguments (string title, string message, string accept, string cancel, string placeholder, int maxLength, Microsoft.Maui.Controls.Keyboard keyboard);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, string message, string accept, string cancel, string placeholder, int32 maxLength, class Microsoft.Maui.Controls.Keyboard keyboard) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Internals.PromptArguments.#ctor(System.String,System.String,System.String,System.String,System.String,System.Int32,Microsoft.Maui.Controls.Keyboard)" />
-      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Internals.PromptArguments : string * string * string * string * string * int * Microsoft.Maui.Controls.Keyboard -&gt; Microsoft.Maui.Controls.Internals.PromptArguments" Usage="new Microsoft.Maui.Controls.Internals.PromptArguments (title, message, accept, cancel, placeholder, maxLength, keyboard)" />
+      <MemberSignature Language="C#" Value="public PromptArguments (string title, string message, string accept, string cancel, string placeholder, int maxLength, Microsoft.Maui.Keyboard keyboard);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, string message, string accept, string cancel, string placeholder, int32 maxLength, class Microsoft.Maui.Keyboard keyboard) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Internals.PromptArguments.#ctor(System.String,System.String,System.String,System.String,System.String,System.Int32,Microsoft.Maui.Keyboard)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Internals.PromptArguments : string * string * string * string * string * int * Microsoft.Maui.Keyboard -&gt; Microsoft.Maui.Controls.Internals.PromptArguments" Usage="new Microsoft.Maui.Controls.Internals.PromptArguments (title, message, accept, cancel, placeholder, maxLength, keyboard)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -46,7 +46,7 @@
         <Parameter Name="cancel" Type="System.String" />
         <Parameter Name="placeholder" Type="System.String" />
         <Parameter Name="maxLength" Type="System.Int32" />
-        <Parameter Name="keyboard" Type="Microsoft.Maui.Controls.Keyboard" />
+        <Parameter Name="keyboard" Type="Microsoft.Maui.Keyboard" />
       </Parameters>
       <Docs>
         <param name="title">To be added.</param>
@@ -61,10 +61,10 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public PromptArguments (string title, string message, string accept = &quot;OK&quot;, string cancel = &quot;Cancel&quot;, string placeholder = default, int maxLength = -1, Microsoft.Maui.Controls.Keyboard keyboard = default, string initialValue = &quot;&quot;);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, string message, string accept, string cancel, string placeholder, int32 maxLength, class Microsoft.Maui.Controls.Keyboard keyboard, string initialValue) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Internals.PromptArguments.#ctor(System.String,System.String,System.String,System.String,System.String,System.Int32,Microsoft.Maui.Controls.Keyboard,System.String)" />
-      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Internals.PromptArguments : string * string * string * string * string * int * Microsoft.Maui.Controls.Keyboard * string -&gt; Microsoft.Maui.Controls.Internals.PromptArguments" Usage="new Microsoft.Maui.Controls.Internals.PromptArguments (title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue)" />
+      <MemberSignature Language="C#" Value="public PromptArguments (string title, string message, string accept = &quot;OK&quot;, string cancel = &quot;Cancel&quot;, string placeholder = default, int maxLength = -1, Microsoft.Maui.Keyboard keyboard = default, string initialValue = &quot;&quot;);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string title, string message, string accept, string cancel, string placeholder, int32 maxLength, class Microsoft.Maui.Keyboard keyboard, string initialValue) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.Internals.PromptArguments.#ctor(System.String,System.String,System.String,System.String,System.String,System.Int32,Microsoft.Maui.Keyboard,System.String)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.Internals.PromptArguments : string * string * string * string * string * int * Microsoft.Maui.Keyboard * string -&gt; Microsoft.Maui.Controls.Internals.PromptArguments" Usage="new Microsoft.Maui.Controls.Internals.PromptArguments (title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -77,7 +77,7 @@
         <Parameter Name="cancel" Type="System.String" />
         <Parameter Name="placeholder" Type="System.String" />
         <Parameter Name="maxLength" Type="System.Int32" />
-        <Parameter Name="keyboard" Type="Microsoft.Maui.Controls.Keyboard" />
+        <Parameter Name="keyboard" Type="Microsoft.Maui.Keyboard" />
         <Parameter Name="initialValue" Type="System.String" />
       </Parameters>
       <Docs>
@@ -151,17 +151,17 @@
       </Docs>
     </Member>
     <Member MemberName="Keyboard">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Keyboard Keyboard { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Controls.Keyboard Keyboard" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Keyboard Keyboard { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Keyboard Keyboard" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Internals.PromptArguments.Keyboard" />
-      <MemberSignature Language="F#" Value="member this.Keyboard : Microsoft.Maui.Controls.Keyboard" Usage="Microsoft.Maui.Controls.Internals.PromptArguments.Keyboard" />
+      <MemberSignature Language="F#" Value="member this.Keyboard : Microsoft.Maui.Keyboard" Usage="Microsoft.Maui.Controls.Internals.PromptArguments.Keyboard" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Keyboard</ReturnType>
+        <ReturnType>Microsoft.Maui.Keyboard</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

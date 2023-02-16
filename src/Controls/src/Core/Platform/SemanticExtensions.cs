@@ -1,7 +1,4 @@
-﻿#nullable enable
-
-
-namespace Microsoft.Maui.Controls.Platform
+﻿namespace Microsoft.Maui.Controls.Platform
 {
 	public static partial class SemanticExtensions
 	{
@@ -15,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 				//Accessibility can't handle Tap Recognizers with > 1 tap
 				if (gesture is TapGestureRecognizer tgr && tgr.NumberOfTapsRequired == 1)
 				{
-					return true;
+					return (tgr.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
 				}
 			}
 			return false;

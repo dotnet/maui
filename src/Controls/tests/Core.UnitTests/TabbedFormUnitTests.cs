@@ -1,9 +1,9 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class TabbedPageTests : MultiPageTests<Page>
 	{
 		protected override MultiPage<Page> CreateMultiPage()
@@ -21,12 +21,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return TabbedPage.GetIndex(page);
 		}
 
-		[Test]
+		[Fact]
 		public void TestConstructor()
 		{
 			TabbedPage page = new TabbedPage();
 
-			Assert.That(page.Children, Is.Empty);
+			Assert.Empty(page.Children);
 		}
 	}
 }

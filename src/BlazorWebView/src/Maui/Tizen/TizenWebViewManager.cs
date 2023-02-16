@@ -4,7 +4,7 @@ using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
-using TWebView = Tizen.WebView.WebView;
+using NWebView = Tizen.NUI.BaseComponents.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private const string AppOrigin = "http://0.0.0.0/";
 
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
-		private readonly TWebView _webview;
+		private readonly NWebView _webview;
 		private readonly string _contentRootRelativeToAppRoot;
 
 		/// <summary>
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
-		public TizenWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, TWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
+		public TizenWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, NWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
 			: base(provider, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler ?? throw new ArgumentNullException(nameof(blazorMauiWebViewHandler));
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void SendMessage(string message)
 		{
 			var messageJSStringLiteral = JavaScriptEncoder.Default.Encode(message);
-			_webview.Eval($"__dispatchMessageCallback(\"{messageJSStringLiteral}\")");
+			_webview.EvaluateJavaScript($"__dispatchMessageCallback(\"{messageJSStringLiteral}\")");
 		}
 
 		internal void MessageReceivedInternal(Uri uri, string message)

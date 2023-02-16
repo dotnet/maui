@@ -1,8 +1,8 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ToolbarItemTests
 		: MenuItemTests
 	{

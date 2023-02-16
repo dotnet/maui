@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
@@ -16,26 +17,29 @@ namespace Microsoft.Maui
 
 			if (!fileImageSource.IsEmpty)
 			{
-				var callback = new ImageLoaderCallback();
+				var file = fileImageSource.File;
 
 				try
 				{
-					var id = imageView.Context?.GetDrawableId(fileImageSource.File) ?? -1;
-					if (id > 0)
+					if (!Path.IsPathRooted(file) || !File.Exists(file))
 					{
-						imageView.SetImageResource(id);
-						return Task.FromResult<IImageSourceServiceResult?>(new ImageSourceServiceLoadResult());
+						var id = imageView.Context?.GetDrawableId(file) ?? -1;
+						if (id > 0)
+						{
+							imageView.SetImageResource(id);
+							return Task.FromResult<IImageSourceServiceResult?>(new ImageSourceServiceLoadResult());
+						}
 					}
-					else
-					{
-						PlatformInterop.LoadImageFromFile(imageView, fileImageSource.File, callback);
-					}
+
+					var callback = new ImageLoaderCallback();
+
+					PlatformInterop.LoadImageFromFile(imageView, file, callback);
 
 					return callback.Result;
 				}
 				catch (Exception ex)
 				{
-					Logger?.LogWarning(ex, "Unable to load image file '{File}'.", fileImageSource.File);
+					Logger?.LogWarning(ex, "Unable to load image file '{File}'.", file);
 					throw;
 				}
 			}
@@ -48,25 +52,30 @@ namespace Microsoft.Maui
 			var fileImageSource = (IFileImageSource)imageSource;
 			if (!fileImageSource.IsEmpty)
 			{
+				var file = fileImageSource.File;
+
 				try
 				{
-					var id = context?.GetDrawableId(fileImageSource.File) ?? -1;
-					if (id > 0)
+					if (!Path.IsPathRooted(file) || !File.Exists(file))
 					{
-						var d = context?.GetDrawable(id);
-						if (d is not null)
-							return Task.FromResult<IImageSourceServiceResult<Drawable>?>(new ImageSourceServiceResult(d));
+						var id = context?.GetDrawableId(file) ?? -1;
+						if (id > 0)
+						{
+							var d = context?.GetDrawable(id);
+							if (d is not null)
+								return Task.FromResult<IImageSourceServiceResult<Drawable>?>(new ImageSourceServiceResult(d));
+						}
 					}
 
-					var drawableCallback = new ImageLoaderResultCallback();
+					var callback = new ImageLoaderResultCallback();
 
-					PlatformInterop.LoadImageFromFile(context, fileImageSource.File, drawableCallback);
+					PlatformInterop.LoadImageFromFile(context, file, callback);
 
-					return drawableCallback.Result;
+					return callback.Result;
 				}
 				catch (Exception ex)
 				{
-					Logger?.LogWarning(ex, "Unable to load image file '{File}'.", fileImageSource.File);
+					Logger?.LogWarning(ex, "Unable to load image file '{File}'.", file);
 					throw;
 				}
 			}

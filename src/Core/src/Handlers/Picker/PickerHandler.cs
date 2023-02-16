@@ -5,7 +5,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiPicker;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.ComboBox;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.Entry;
+using PlatformView = Tizen.UIExtensions.NUI.Entry;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -34,18 +34,17 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		static PickerHandler()
-		{
-#if __IOS__
-			Mapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
-#endif
-		}
-
 		public PickerHandler() : base(Mapper, CommandMapper)
 		{
 		}
 
-		public PickerHandler(IPropertyMapper mapper) : base(mapper)
+		public PickerHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public PickerHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

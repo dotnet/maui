@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
-	internal class BindingSystemTests : BaseTestFixture
+
+	public class BindingSystemTests : BaseTestFixture
 	{
 		class BindableViewCell : ViewCell
 		{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void RecursiveSettingInSystem()
 		{
 			var tempObjects = new[] {
@@ -52,11 +52,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var viewCell1 = (BindableViewCell)cell1;
 			var viewCell2 = (BindableViewCell)cell2;
 
-			Assert.AreEqual("Test1", viewCell1.Name);
-			Assert.AreEqual("Test2", viewCell2.Name);
+			Assert.Equal("Test1", viewCell1.Name);
+			Assert.Equal("Test2", viewCell2.Name);
 
-			Assert.AreEqual("Test1", viewCell1.NameLabel.Text);
-			Assert.AreEqual("Test2", viewCell2.NameLabel.Text);
+			Assert.Equal("Test1", viewCell1.NameLabel.Text);
+			Assert.Equal("Test2", viewCell2.NameLabel.Text);
 		}
 	}
 }

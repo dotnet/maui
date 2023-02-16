@@ -1,17 +1,30 @@
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TappedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.TappedEventArgs']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/TappedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.TappedEventArgs']/Docs/*" />
 	public class TappedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TappedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
-		public TappedEventArgs(object parameter)
+		Func<IElement?, Point?>? _getPosition;
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/TappedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		public TappedEventArgs(object? parameter)
 		{
 			Parameter = parameter;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TappedEventArgs.xml" path="//Member[@MemberName='Parameter']/Docs" />
-		public object Parameter { get; private set; }
+		internal TappedEventArgs(object? parameter, Func<IElement?, Point?>? getPosition) : this(parameter)
+		{
+			_getPosition = getPosition;
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/TappedEventArgs.xml" path="//Member[@MemberName='Parameter']/Docs/*" />
+		public object? Parameter { get; private set; }
+
+		public ButtonsMask Buttons { get; private set; }
+
+		public virtual Point? GetPosition(Element? relativeTo) =>
+			_getPosition?.Invoke(relativeTo);
 	}
 }

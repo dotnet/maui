@@ -237,10 +237,10 @@
       </Docs>
     </Member>
     <Member MemberName="Margin">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Thickness Margin { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Thickness Margin" />
+      <MemberSignature Language="C#" Value="publicMicrosoft.Maui.Thickness Margin { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetypeMicrosoft.Maui.Thickness Margin" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.View.Margin" />
-      <MemberSignature Language="F#" Value="member this.Margin : Microsoft.Maui.Controls.Thickness with get, set" Usage="Microsoft.Maui.Controls.View.Margin" />
+      <MemberSignature Language="F#" Value="member this.Margin :Microsoft.Maui.Thickness with get, set" Usage="Microsoft.Maui.Controls.View.Margin" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -248,7 +248,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Thickness</ReturnType>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the margin for the view.</summary>

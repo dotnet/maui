@@ -1,31 +1,44 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using ElmSharp;
-using Tizen.Common;
 using IOPath = System.IO.Path;
 using TApplication = Tizen.Applications.Application;
 
 namespace Microsoft.Maui
 {
+	/// <inheritdoc/>
 	public partial class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
 		const string _fontCacheFolderName = "fonts";
 
+		/// <summary>
+		/// Gets the path of the directory that is used to cache previously loaded fonts.
+		/// </summary>
 		public DirectoryInfo? FontCacheDirectory { get; private set; }
 
+		/// <inheritdoc/>
 		public string? LoadFont(EmbeddedFont font)
 		{
+			var fontResourcePath = IOPath.Combine(TApplication.Current.DirectoryInfo.Resource, _fontCacheFolderName);
+			var fontResourceFilePath = IOPath.Combine(fontResourcePath, font.FontName!);
+			if (File.Exists(fontResourceFilePath))
+			{
+				return IOPath.GetFileNameWithoutExtension(fontResourceFilePath);
+			}
+
 			if (FontCacheDirectory == null)
 			{
 				FontCacheDirectory = Directory.CreateDirectory(IOPath.Combine(TApplication.Current.DirectoryInfo.Data, _fontCacheFolderName));
-				Utility.AppendGlobalFontPath(FontCacheDirectory.FullName);
+				Tizen.NUI.FontClient.Instance.AddCustomFontDirectory(FontCacheDirectory.FullName);
 			}
 
 			var filePath = IOPath.Combine(FontCacheDirectory.FullName, font.FontName!);
 			var name = IOPath.GetFileNameWithoutExtension(filePath);
 			if (File.Exists(filePath))
+			{
 				return name;
+			}
+
 			try
 			{
 				using (var fileStream = File.Create(filePath))
@@ -35,13 +48,8 @@ namespace Microsoft.Maui
 
 					font.ResourceStream.CopyTo(fileStream);
 				}
+				Tizen.NUI.FontClient.Instance.AddCustomFontDirectory(FontCacheDirectory.FullName);
 
-#if __TIZEN__
-				if (DotnetUtil.TizenAPIVersion > 5)
-				{
-					Utility.FontReinit();
-				}
-#endif
 				return name;
 			}
 			catch (Exception ex)

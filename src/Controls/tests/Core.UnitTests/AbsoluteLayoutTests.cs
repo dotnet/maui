@@ -1,24 +1,21 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
 	public class AbsoluteLayoutTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
+		public AbsoluteLayoutTests()
 		{
-			base.Setup();
 			DeviceDisplay.SetCurrent(new MockDeviceDisplay());
 		}
 
-
-		[Test]
+		[Fact]
 		public void Constructor()
 		{
 			var abs = new AbsoluteLayout
@@ -26,14 +23,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			Assert.That(abs.Children, Is.Empty);
+			Assert.Empty(abs.Children);
 
 			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			Assert.AreEqual(Size.Zero, sizeReq.Request);
-			Assert.AreEqual(Size.Zero, sizeReq.Minimum);
+			Assert.Equal(Size.Zero, sizeReq.Request);
+			Assert.Equal(Size.Zero, sizeReq.Minimum);
 		}
 
-		[Test]
+		[Fact]
 		public void AbsolutePositionAndSizeUsingRectangle()
 		{
 			var abs = new Compatibility.AbsoluteLayout
@@ -47,11 +44,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			abs.Layout(new Rect(0, 0, 100, 100));
 
-			Assert.AreEqual(new Rect(10, 20, 30, 40), child.Bounds);
+			Assert.Equal(new Rect(10, 20, 30, 40), child.Bounds);
 		}
 
 
-		[Test]
+		[Fact]
 		public void AbsolutePositionRelativeSize()
 		{
 			var abs = new Compatibility.AbsoluteLayout
@@ -66,16 +63,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			abs.Layout(new Rect(0, 0, 100, 100));
 
-			Assert.That(child.X, Is.EqualTo(10));
-			Assert.That(child.Y, Is.EqualTo(20));
-			Assert.That(child.Width, Is.EqualTo(40).Within(0.0001));
-			Assert.That(child.Height, Is.EqualTo(50).Within(0.0001));
+			Assert.Equal(10, child.X);
+			Assert.Equal(20, child.Y);
+			Assert.Equal(40, child.Width, 4);
+			Assert.Equal(50, child.Height, 4);
 		}
 
-		[TestCase(30, 40, 0.2, 0.3)]
-		[TestCase(35, 45, 0.5, 0.5)]
-		[TestCase(35, 45, 0, 0)]
-		[TestCase(35, 45, 1, 1)]
+		[Theory]
+		[InlineData(30, 40, 0.2, 0.3)]
+		[InlineData(35, 45, 0.5, 0.5)]
+		[InlineData(35, 45, 0, 0)]
+		[InlineData(35, 45, 1, 1)]
 		public void RelativePositionAbsoluteSize(double width, double height, double relX, double relY)
 		{
 			var abs = new Compatibility.AbsoluteLayout
@@ -91,14 +89,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			double expectedX = Math.Round((100 - width) * relX);
 			double expectedY = Math.Round((100 - height) * relY);
-			Assert.That(child.X, Is.EqualTo(expectedX).Within(0.0001));
-			Assert.That(child.Y, Is.EqualTo(expectedY).Within(0.0001));
-			Assert.That(child.Width, Is.EqualTo(width));
-			Assert.That(child.Height, Is.EqualTo(height));
+			Assert.Equal(expectedX, child.X, 4);
+			Assert.Equal(expectedY, child.Y, 4);
+			Assert.Equal(width, child.Width);
+			Assert.Equal(height, child.Height);
 		}
 
-		[Test]
-		public void RelativePositionRelativeSize([Values(0.0, 0.2, 0.5, 1.0)] double relX, [Values(0.0, 0.2, 0.5, 1.0)] double relY, [Values(0.0, 0.2, 0.5, 1.0)] double relHeight, [Values(0.0, 0.2, 0.5, 1.0)] double relWidth)
+		public static IEnumerable<object[]> RelativeData()
+		{
+			return TestDataHelpers.Combinations(new List<double>() { 0.0, 0.2, 0.5, 1.0 });
+		}
+
+		[Theory]
+		[MemberData(nameof(RelativeData))]
+		public void RelativePositionRelativeSize(double relX, double relY, double relHeight, double relWidth)
 		{
 			var abs = new Compatibility.AbsoluteLayout
 			{
@@ -116,13 +120,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			double expectedHeight = Math.Round(100 * relHeight);
 			double expectedX = Math.Round((100 - expectedWidth) * relX);
 			double expectedY = Math.Round((100 - expectedHeight) * relY);
-			Assert.That(child.X, Is.EqualTo(expectedX).Within(0.0001));
-			Assert.That(child.Y, Is.EqualTo(expectedY).Within(0.0001));
-			Assert.That(child.Width, Is.EqualTo(expectedWidth).Within(0.0001));
-			Assert.That(child.Height, Is.EqualTo(expectedHeight).Within(0.0001));
+
+			Assert.Equal(expectedX, child.X, 4);
+			Assert.Equal(expectedY, child.Y, 4);
+			Assert.Equal(expectedWidth, child.Width, 4);
+			Assert.Equal(expectedHeight, child.Height, 4);
 		}
 
-		[Test]
+		[Fact]
 		public void SizeRequestWithNormalChild()
 		{
 			var abs = new Compatibility.AbsoluteLayout
@@ -137,11 +142,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			Assert.AreEqual(new Size(40, 60), sizeReq.Request);
-			Assert.AreEqual(new Size(40, 60), sizeReq.Minimum);
+			Assert.Equal(new Size(40, 60), sizeReq.Request);
+			Assert.Equal(new Size(40, 60), sizeReq.Minimum);
 		}
 
-		[Test]
+		[Fact]
 		public void SizeRequestWithRelativePositionChild()
 		{
 			var abs = new Compatibility.AbsoluteLayout
@@ -156,11 +161,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			Assert.AreEqual(new Size(30, 40), sizeReq.Request);
-			Assert.AreEqual(new Size(30, 40), sizeReq.Minimum);
+			Assert.Equal(new Size(30, 40), sizeReq.Request);
+			Assert.Equal(new Size(30, 40), sizeReq.Minimum);
 		}
 
-		[Test]
+		[Fact]
 		public void SizeRequestWithRelativeChild()
 		{
 			var abs = new Compatibility.AbsoluteLayout
@@ -178,11 +183,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			Assert.AreEqual(new Size(200, 40), sizeReq.Request);
-			Assert.AreEqual(new Size(0, 0), sizeReq.Minimum);
+			Assert.Equal(new Size(200, 40), sizeReq.Request);
+			Assert.Equal(new Size(0, 0), sizeReq.Minimum);
 		}
 
-		[Test]
+		[Fact]
 		public void SizeRequestWithRelativeSizeChild()
 		{
 			var abs = new Compatibility.AbsoluteLayout
@@ -200,11 +205,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			Assert.AreEqual(new Size(210, 60), sizeReq.Request);
-			Assert.AreEqual(new Size(10, 20), sizeReq.Minimum);
+			Assert.Equal(new Size(210, 60), sizeReq.Request);
+			Assert.Equal(new Size(10, 20), sizeReq.Minimum);
 		}
 
-		[Test]
+		[Fact]
 		public void MeasureInvalidatedFiresWhenFlagsChanged()
 		{
 			var abs = new Compatibility.AbsoluteLayout
@@ -227,7 +232,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[Test]
+		[Fact]
 		public void MeasureInvalidatedFiresWhenBoundsChanged()
 		{
 			var abs = new Compatibility.AbsoluteLayout
@@ -250,23 +255,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[TestCase("en-US"), TestCase("tr-TR")]
+		[Theory]
+		[InlineData("en-US"), InlineData("tr-TR")]
 		public void TestBoundsTypeConverter(string culture)
 		{
 			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
 
 			var converter = new BoundsTypeConverter();
 
-			Assert.IsTrue(converter.CanConvertFrom(typeof(string)));
-			Assert.AreEqual(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4"));
-			Assert.AreEqual(new Rect(3, 4, 20, 30), converter.ConvertFromInvariantString("3, 4, 20, 30"));
-			Assert.AreEqual(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, AutoSize, AutoSize"));
-			Assert.AreEqual(new Rect(3, 4, AbsoluteLayout.AutoSize, 30), converter.ConvertFromInvariantString("3, 4, AutoSize, 30"));
-			Assert.AreEqual(new Rect(3, 4, 20, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, 20, AutoSize"));
+			Assert.True(converter.CanConvertFrom(typeof(string)));
+			Assert.Equal(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4"));
+			Assert.Equal(new Rect(3, 4, 20, 30), converter.ConvertFromInvariantString("3, 4, 20, 30"));
+			Assert.Equal(new Rect(3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, AutoSize, AutoSize"));
+			Assert.Equal(new Rect(3, 4, AbsoluteLayout.AutoSize, 30), converter.ConvertFromInvariantString("3, 4, AutoSize, 30"));
+			Assert.Equal(new Rect(3, 4, 20, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3, 4, 20, AutoSize"));
 
 			var autoSize = "AutoSize";
-			Assert.AreEqual(new Rect(3.3, 4.4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3.3, 4.4, " + autoSize + ", AutoSize"));
-			Assert.AreEqual(new Rect(3.3, 4.4, 5.5, 6.6), converter.ConvertFromInvariantString("3.3, 4.4, 5.5, 6.6"));
+			Assert.Equal(new Rect(3.3, 4.4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3.3, 4.4, " + autoSize + ", AutoSize"));
+			Assert.Equal(new Rect(3.3, 4.4, 5.5, 6.6), converter.ConvertFromInvariantString("3.3, 4.4, 5.5, 6.6"));
 		}
 	}
 }

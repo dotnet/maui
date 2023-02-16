@@ -1,14 +1,15 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/SelectionChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.SelectionChangedEventArgs']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/SelectionChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.SelectionChangedEventArgs']/Docs/*" />
 	public class SelectionChangedEventArgs : EventArgs
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectionChangedEventArgs.xml" path="//Member[@MemberName='PreviousSelection']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectionChangedEventArgs.xml" path="//Member[@MemberName='PreviousSelection']/Docs/*" />
 		public IReadOnlyList<object> PreviousSelection { get; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectionChangedEventArgs.xml" path="//Member[@MemberName='CurrentSelection']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectionChangedEventArgs.xml" path="//Member[@MemberName='CurrentSelection']/Docs/*" />
 		public IReadOnlyList<object> CurrentSelection { get; }
 
 		static readonly IReadOnlyList<object> s_empty = new List<object>(0);

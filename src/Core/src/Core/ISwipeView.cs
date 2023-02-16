@@ -40,10 +40,22 @@
 		/// </summary>
 		public SwipeTransitionMode SwipeTransitionMode { get; }
 
+		/// <summary>
+		/// Event that is fired when the swipe starts.
+		/// </summary>
+		/// <param name="swipeStarted">Provides information related to the swipe gesture with data such as the swipe direction.</param>
 		public void SwipeStarted(SwipeViewSwipeStarted swipeStarted);
 
+		/// <summary>
+		/// Event that is fired when the swipe starts.
+		/// </summary>
+		/// <param name="swipeChanging">Provides information related to the swipe gesture with data such as the swipe direction.</param>
 		public void SwipeChanging(SwipeViewSwipeChanging swipeChanging);
 
+		/// <summary>
+		/// Event that is fired when the swipe is finished.
+		/// </summary>
+		/// <param name="swipeEnded">Provides information related to the swipe gesture with data such as the swipe direction.</param>
 		public void SwipeEnded(SwipeViewSwipeEnded swipeEnded);
 
 		/// <summary>

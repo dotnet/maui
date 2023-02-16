@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using FlexLayout = Microsoft.Maui.Controls.Compatibility.FlexLayout;
 
-	[TestFixture]
+
 	public class FlexLayoutAlignItemsTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestAlignItemsStretch()
 		{
 			var layout = new FlexLayout
@@ -28,11 +28,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Children.Add(view0);
 
 			layout.Layout(new Rect(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 100, 10)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 100, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignItemsCenter()
 		{
 			var layout = new FlexLayout
@@ -46,11 +46,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Children.Add(view0);
 
 			layout.Layout(new Rect(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(45, 0, 10, 10)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(45, 0, 10, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignItemsFlexStart()
 		{
 			var layout = new FlexLayout
@@ -64,11 +64,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Children.Add(view0);
 
 			layout.Layout(new Rect(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(0, 0, 10, 10)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(0, 0, 10, 10));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAlignItemsFlexEnd()
 		{
 			var layout = new FlexLayout
@@ -82,8 +82,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Children.Add(view0);
 
 			layout.Layout(new Rect(0, 0, 100, 100));
-			Assert.That(layout.Bounds, Is.EqualTo(new Rect(0, 0, 100, 100)));
-			Assert.That(view0.Bounds, Is.EqualTo(new Rect(90, 0, 10, 10)));
+			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 100));
+			Assert.Equal(view0.Bounds, new Rect(90, 0, 10, 10));
 		}
 	}
 }

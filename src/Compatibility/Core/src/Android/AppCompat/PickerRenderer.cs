@@ -7,7 +7,7 @@ using Android.Content;
 using Android.Text;
 using Android.Text.Style;
 using Android.Util;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			AutoPackage = false;
 		}
 
-		protected abstract EditText EditText { get; }
+		protected abstract AppCompatEditText EditText { get; }
 
 		protected override void Dispose(bool disposing)
 		{
@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 	}
 
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class PickerRenderer : PickerRendererBase<EditText>
+	public class PickerRenderer : PickerRendererBase<AppCompatEditText>
 	{
 		TextColorSwitcher _textColorSwitcher;
 		TextColorSwitcher _hintColorSwitcher;
@@ -202,12 +202,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 		}
 
-		protected override EditText CreateNativeControl()
+		protected override AppCompatEditText CreateNativeControl()
 		{
 			return new PickerEditText(Context);
 		}
 
-		protected override EditText EditText => Control;
+		protected override AppCompatEditText EditText => Control;
 
 		[PortHandler]
 		protected override void UpdateTitleColor()

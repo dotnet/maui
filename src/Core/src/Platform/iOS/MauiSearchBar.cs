@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Design;
 using System.Drawing;
 using CoreGraphics;
 using Foundation;
@@ -48,6 +49,34 @@ namespace Microsoft.Maui.Platform
 					TextSetOrChanged?.Invoke(this, new UISearchBarTextChangedEventArgs(value ?? String.Empty));
 				}
 			}
+		}
+
+		internal event EventHandler? OnMovedToWindow;
+		internal event EventHandler? EditingChanged;
+
+		public override void WillMoveToWindow(UIWindow? window)
+		{
+			var editor = this.GetSearchTextField();
+
+			base.WillMoveToWindow(window);
+
+			if (editor != null)
+				ResignFirstResponderTouchGestureRecognizer.Update(editor, window);
+
+			if (editor != null)
+			{
+				editor.EditingChanged -= OnEditingChanged;
+				if (window != null)
+					editor.EditingChanged += OnEditingChanged;
+			}
+
+			if (window != null)
+				OnMovedToWindow?.Invoke(this, EventArgs.Empty);
+		}
+
+		void OnEditingChanged(object? sender, EventArgs e)
+		{
+			EditingChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

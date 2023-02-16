@@ -41,7 +41,7 @@
     <remarks>
       <para>A Label is used to display single-line text elements as well as multi-line blocks of text.</para>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Label.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Label.TripleScreenShot.png" />
       </para>
       <para>The following example, adapted from the default Microsoft.Maui.Controls solution, shows a basic use:</para>
       <example>
@@ -292,7 +292,7 @@ public class App : Application
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -399,10 +399,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignment">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment HorizontalTextAlignment { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment HorizontalTextAlignment" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment HorizontalTextAlignment { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment HorizontalTextAlignment" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Label.HorizontalTextAlignment" />
-      <MemberSignature Language="F#" Value="member this.HorizontalTextAlignment : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Label.HorizontalTextAlignment" />
+      <MemberSignature Language="F#" Value="member this.HorizontalTextAlignment : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Label.HorizontalTextAlignment" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -411,7 +411,7 @@ public class App : Application
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the horizontal alignment of the Text property. This is a bindable property.</summary>
@@ -440,10 +440,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="LineBreakMode">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.LineBreakMode LineBreakMode { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.LineBreakMode LineBreakMode" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.LineBreakMode LineBreakMode { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.LineBreakMode LineBreakMode" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Label.LineBreakMode" />
-      <MemberSignature Language="F#" Value="member this.LineBreakMode : Microsoft.Maui.Controls.LineBreakMode with get, set" Usage="Microsoft.Maui.Controls.Label.LineBreakMode" />
+      <MemberSignature Language="F#" Value="member this.LineBreakMode : Microsoft.Maui.LineBreakMode with get, set" Usage="Microsoft.Maui.Controls.Label.LineBreakMode" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -457,11 +457,11 @@ public class App : Application
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.LineBreakMode</ReturnType>
+        <ReturnType>Microsoft.Maui.LineBreakMode</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the LineBreakMode for the Label. This is a bindable property.</summary>
-        <value>The <see cref="T:Microsoft.Maui.Controls.LineBreakMode" /> value for the Label. The default is <see cref="F:Microsoft.Maui.Controls.LineBreakMode.WordWrap" /></value>
+        <value>The <see cref="T:Microsoft.Maui.LineBreakMode" /> value for the Label. The default is <see cref="F:Microsoft.Maui.LineBreakMode.WordWrap" /></value>
         <remarks>
         </remarks>
       </Docs>
@@ -621,17 +621,17 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="Padding">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Thickness Padding { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Thickness Padding" />
+      <MemberSignature Language="C#" Value="publicMicrosoft.Maui.Thickness Padding { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetypeMicrosoft.Maui.Thickness Padding" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Label.Padding" />
-      <MemberSignature Language="F#" Value="member this.Padding : Microsoft.Maui.Controls.Thickness with get, set" Usage="Microsoft.Maui.Controls.Label.Padding" />
+      <MemberSignature Language="F#" Value="member this.Padding :Microsoft.Maui.Thickness with get, set" Usage="Microsoft.Maui.Controls.Label.Padding" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Thickness</ReturnType>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -685,10 +685,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="TextColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TextColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TextColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TextColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TextColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Label.TextColor" />
-      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Label.TextColor" />
+      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Label.TextColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -702,11 +702,11 @@ public class App : Application
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the <see cref="T:Microsoft.Maui.Controls.Color" /> for the text of this Label. This is a bindable property.</summary>
-        <value>The <see cref="T:Microsoft.Maui.Controls.Color" /> value.</value>
+        <summary>Gets or sets the <see cref="T:Microsoft.Maui.Graphics.Color" /> for the text of this Label. This is a bindable property.</summary>
+        <value>The <see cref="T:Microsoft.Maui.Graphics.Color" /> value.</value>
         <remarks>
         </remarks>
       </Docs>
@@ -738,10 +738,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="TextDecorations">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextDecorations TextDecorations { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextDecorations TextDecorations" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextDecorations TextDecorations { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextDecorations TextDecorations" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Label.TextDecorations" />
-      <MemberSignature Language="F#" Value="member this.TextDecorations : Microsoft.Maui.Controls.TextDecorations with get, set" Usage="Microsoft.Maui.Controls.Label.TextDecorations" />
+      <MemberSignature Language="F#" Value="member this.TextDecorations : Microsoft.Maui.TextDecorations with get, set" Usage="Microsoft.Maui.Controls.Label.TextDecorations" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IDecorableTextElement.TextDecorations</InterfaceMember>
@@ -751,10 +751,10 @@ public class App : Application
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextDecorations</ReturnType>
+        <ReturnType>Microsoft.Maui.TextDecorations</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the <see cref="T:Microsoft.Maui.Controls.TextDecorations" /> applied to <see cref="P:Microsoft.Maui.Controls.Label.Text" />.</summary>
+        <summary>Gets or sets the <see cref="T:Microsoft.Maui.TextDecorations" /> applied to <see cref="P:Microsoft.Maui.Controls.Label.Text" />.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -903,10 +903,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignment">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment VerticalTextAlignment { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment VerticalTextAlignment" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment VerticalTextAlignment { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment VerticalTextAlignment" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Label.VerticalTextAlignment" />
-      <MemberSignature Language="F#" Value="member this.VerticalTextAlignment : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Label.VerticalTextAlignment" />
+      <MemberSignature Language="F#" Value="member this.VerticalTextAlignment : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Label.VerticalTextAlignment" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -915,7 +915,7 @@ public class App : Application
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the vertical alignement of the Text property. This is a bindable property.</summary>
@@ -944,10 +944,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="XAlign">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment XAlign { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment XAlign" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment XAlign { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment XAlign" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Label.XAlign" />
-      <MemberSignature Language="F#" Value="member this.XAlign : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Label.XAlign" />
+      <MemberSignature Language="F#" Value="member this.XAlign : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Label.XAlign" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -969,11 +969,11 @@ public class App : Application
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the horizontal alignment for the Text inside of the Label bound.</summary>
-        <value>The <see cref="T:Microsoft.Maui.Controls.TextAlignment" /> value. The default is <see cref="F:Microsoft.Maui.Controls.TextAlignment.Start" />, i.e. the text is left-aligned.</value>
+        <value>The <see cref="T:Microsoft.Maui.TextAlignment" /> value. The default is <see cref="F:Microsoft.Maui.TextAlignment.Start" />, i.e. the text is left-aligned.</value>
         <remarks>
         </remarks>
       </Docs>
@@ -1149,10 +1149,10 @@ public class App : Application
       </Docs>
     </Member>
     <Member MemberName="YAlign">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment YAlign { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment YAlign" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment YAlign { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment YAlign" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Label.YAlign" />
-      <MemberSignature Language="F#" Value="member this.YAlign : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Label.YAlign" />
+      <MemberSignature Language="F#" Value="member this.YAlign : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Label.YAlign" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -1174,11 +1174,11 @@ public class App : Application
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the vertical alignment for the Text inside of the Label bound.</summary>
-        <value>The <see cref="T:Microsoft.Maui.Controls.TextAlignment" /> value. The default is <see cref="F:Microsoft.Maui.Controls.TextAlignment.Start" />, i.e. the text is top-aligned.</value>
+        <value>The <see cref="T:Microsoft.Maui.TextAlignment" /> value. The default is <see cref="F:Microsoft.Maui.TextAlignment.Start" />, i.e. the text is top-aligned.</value>
         <remarks>
         </remarks>
       </Docs>

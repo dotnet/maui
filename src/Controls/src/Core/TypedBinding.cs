@@ -1,3 +1,4 @@
+#nullable disable
 #define DO_NOT_CHECK_FOR_BINDING_REUSE
 
 using System;
@@ -10,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 namespace Microsoft.Maui.Controls.Internals
 {
 	//FIXME: need a better name for this, and share with Binding, so we can share more unittests
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.TypedBindingBase']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.TypedBindingBase']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class TypedBindingBase : BindingBase
 	{
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Controls.Internals
 		object _source;
 		string _updateSourceEventName;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Converter']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Converter']/Docs/*" />
 		public IValueConverter Converter
 		{
 			get { return _converter; }
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='ConverterParameter']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='ConverterParameter']/Docs/*" />
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Source']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Source']/Docs/*" />
 		public object Source
 		{
 			get { return _source; }
@@ -248,29 +249,28 @@ namespace Microsoft.Maui.Controls.Internals
 			public Func<TSource, object> PartGetter { get; }
 			public string PropertyName { get; }
 			public BindingExpression.WeakPropertyChangedProxy Listener { get; }
-			WeakReference<INotifyPropertyChanged> _weakPart = new WeakReference<INotifyPropertyChanged>(null);
 			readonly BindingBase _binding;
 			PropertyChangedEventHandler handler;
 			public INotifyPropertyChanged Part
 			{
 				get
 				{
-					INotifyPropertyChanged target;
-					if (_weakPart.TryGetTarget(out target))
+					if (Listener != null && Listener.Source.TryGetTarget(out var target))
 						return target;
 					return null;
 				}
 				set
 				{
-					if (Listener != null && Listener.Source.TryGetTarget(out var source) && ReferenceEquals(value, source))
+					if (Listener != null)
+					{
 						//Already subscribed
-						return;
+						if (Listener.Source.TryGetTarget(out var source) && ReferenceEquals(value, source))
+							return;
 
-					//clear out previous subscription
-					Listener?.Unsubscribe();
-
-					_weakPart.SetTarget(value);
-					Listener.SubscribeTo(value, handler);
+						//clear out previous subscription
+						Listener.Unsubscribe();
+						Listener.SubscribeTo(value, handler);
+					}
 				}
 			}
 

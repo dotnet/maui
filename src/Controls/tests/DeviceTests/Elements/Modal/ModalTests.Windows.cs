@@ -12,7 +12,7 @@ using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ModalTests : HandlerTestBase
+	public partial class ModalTests : ControlsHandlerTestBase
 	{
 		[Theory]
 		[InlineData(true)]

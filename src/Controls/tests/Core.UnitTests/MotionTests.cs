@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class MotionTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestLinearTween()
 		{
 			var animations = new TestAnimationManager();
@@ -17,34 +17,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			int updates = 0;
 			tweener.ValueUpdated += (sender, args) =>
 			{
-				Assert.That(tweener.Value, Is.GreaterThanOrEqualTo(value));
+				Assert.True(tweener.Value >= (value));
 				value = tweener.Value;
 				updates++;
 			};
 			tweener.Start();
 
-			Assert.That(updates, Is.GreaterThanOrEqualTo(10));
+			Assert.True(updates >= (10));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWithNullCallback()
 		{
 			Assert.Throws<ArgumentNullException>(() => new View().Animate("Test", (Action<double>)null));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWithNullTransform()
 		{
 			Assert.Throws<ArgumentNullException>(() => new View().Animate<float>("Test", null, f => { }));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWithNullSelf()
 		{
 			Assert.Throws<ArgumentNullException>(() => AnimationExtensions.Animate(null, "Foo", d => (float)d, f => { }));
 		}
 
-		[Test]
+		[Fact]
 		public void Kinetic()
 		{
 			var view = AnimationReadyHandler.Prepare(new View());
@@ -59,19 +59,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				velocity: 100,
 				drag: 1);
 
-			Assert.That(resultList, Is.Not.Empty);
+			Assert.NotEmpty(resultList);
 			int checkVelo = 100;
 			int dragStep = 16;
 
 			foreach (var item in resultList)
 			{
 				checkVelo -= dragStep;
-				Assert.AreEqual(checkVelo, item.Item2);
-				Assert.AreEqual(checkVelo * dragStep, item.Item1);
+				Assert.Equal(checkVelo, item.Item2);
+				Assert.Equal(checkVelo * dragStep, item.Item1);
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void KineticFinished()
 		{
 			var view = AnimationReadyHandler.Prepare(new View());

@@ -20,7 +20,11 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var onValue = await GetValueAsync(checkboxStub, (handler) => GetNativeCheckBox(handler).AccessibilityValue);
-			checkboxStub.IsChecked = false;
+			await SetValueAsync(checkboxStub, false, (handler, value) =>
+			{
+				handler.VirtualView.IsChecked = value;
+				handler.UpdateValue(nameof(ICheckBox.IsChecked));
+			});
 			var offValue = await GetValueAsync(checkboxStub, (handler) => GetNativeCheckBox(handler).AccessibilityValue);
 
 			Assert.Equal("1", onValue);

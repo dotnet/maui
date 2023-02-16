@@ -1,17 +1,17 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class DataTriggerTests : BaseTestFixture
 	{
 		class MockElement : VisualElement
 		{
 		}
 
-		[Test]
+		[Fact]
 		public void SettersAppliedOnAttachIfConditionIsTrue()
 		{
 			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
@@ -27,12 +27,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			element.SetValue(setterbp, "default");
 			element.BindingContext = new { foo = "foobar" };
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 			element.Triggers.Add(datatrigger);
-			Assert.AreEqual("qux", element.GetValue(setterbp));
+			Assert.Equal("qux", element.GetValue(setterbp));
 		}
 
-		[Test]
+		[Fact]
 		public void SettersUnappliedOnDetach()
 		{
 			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
@@ -49,14 +49,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.SetValue(setterbp, "default");
 			element.Triggers.Add(datatrigger);
 
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 			element.BindingContext = new { foo = "foobar" };
-			Assert.AreEqual("qux", element.GetValue(setterbp));
+			Assert.Equal("qux", element.GetValue(setterbp));
 			element.Triggers.Remove(datatrigger);
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 		}
 
-		[Test]
+		[Fact]
 		public void SettersAppliedOnConditionChanged()
 		{
 			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
@@ -73,14 +73,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.SetValue(setterbp, "default");
 			element.Triggers.Add(trigger);
 
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 			element.BindingContext = new { foo = "foobar" };
-			Assert.AreEqual("qux", element.GetValue(setterbp));
+			Assert.Equal("qux", element.GetValue(setterbp));
 			element.BindingContext = new { foo = "" };
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 		}
 
-		[Test]
+		[Fact]
 		public void TriggersAppliedOnMultipleElements()
 		{
 			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
@@ -96,11 +96,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var element1 = new MockElement { Triggers = { trigger } };
 
 			element0.BindingContext = element1.BindingContext = new { foo = "foobar" };
-			Assert.AreEqual("qux", element0.GetValue(setterbp));
-			Assert.AreEqual("qux", element1.GetValue(setterbp));
+			Assert.Equal("qux", element0.GetValue(setterbp));
+			Assert.Equal("qux", element1.GetValue(setterbp));
 		}
 
-		[Test]
+		[Fact]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=30074
 		public void AllTriggersUnappliedBeforeApplying()
 		{
@@ -133,20 +133,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			boxview.BindingContext = "Complete";
-			Assert.AreEqual(Colors.Green, boxview.Color);
-			Assert.AreEqual(.5, boxview.Opacity);
+			Assert.Equal(Colors.Green, boxview.Color);
+			Assert.Equal(.5, boxview.Opacity);
 
 			boxview.BindingContext = "MissingInfo";
-			Assert.AreEqual(Colors.Yellow, boxview.Color);
-			Assert.AreEqual(1, boxview.Opacity);
+			Assert.Equal(Colors.Yellow, boxview.Color);
+			Assert.Equal(1, boxview.Opacity);
 
 			boxview.BindingContext = "Error";
-			Assert.AreEqual(Colors.Red, boxview.Color);
-			Assert.AreEqual(1, boxview.Opacity);
+			Assert.Equal(Colors.Red, boxview.Color);
+			Assert.Equal(1, boxview.Opacity);
 
 			boxview.BindingContext = "Complete";
-			Assert.AreEqual(Colors.Green, boxview.Color);
-			Assert.AreEqual(.5, boxview.Opacity);
+			Assert.Equal(Colors.Green, boxview.Color);
+			Assert.Equal(.5, boxview.Opacity);
 		}
 	}
 }

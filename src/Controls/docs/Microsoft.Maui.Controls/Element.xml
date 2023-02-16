@@ -58,7 +58,7 @@
             <see cref="T:Microsoft.Maui.Controls.Layout" />
           </term>
           <description>
-            <see cref="T:Microsoft.Maui.Controls.Layout" /> have a single child of type <see cref="T:Microsoft.Maui.Controls.View" />, while subclasses of <see cref="T:Microsoft.Maui.Controls.Layout`1" /> have a collection of multiple children views, including other layouts.</description>
+            <see cref="T:Microsoft.Maui.Controls.Layout" /> have a single child of type <see cref="T:Microsoft.Maui.Controls.View" />, while subclasses of <see cref="T:Microsoft.Maui.Controls.Layout" /> have a collection of multiple children views, including other layouts.</description>
         </item>
         <item>
           <term>

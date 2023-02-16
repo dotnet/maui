@@ -78,6 +78,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (parentNode is IElementNode parentEnode)
 					parentEnode.Properties[name] = targetNode;
 			}
+			else if (node.CollectionItems.Count > 0) // syntax like {OnPlatform foo, iOS=bar}
+			{
+				if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+					return;
+				if (parentNode is IElementNode parentEnode)
+					parentEnode.Properties[name] = node.CollectionItems[0];
+			}
 			else //no prop for target and no Default set
 			{
 				if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))

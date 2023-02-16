@@ -1,31 +1,37 @@
-﻿#nullable enable
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using ElmSharp;
-using Tizen.UIExtensions.ElmSharp;
-using DPExtensions = Microsoft.Maui.Platform.DPExtensions;
+using System.Globalization;
+using Microsoft.Maui.Graphics;
+using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
+using TSize = Tizen.UIExtensions.Common.Size;
+using XLabel = Microsoft.Maui.Controls.Label;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	public class CollectionViewSelectionChangedEventArgs : EventArgs
+	{
+		public IList<object>? SelectedItems { get; set; }
+	}
+
 	public class ItemTemplateAdaptor : ItemAdaptor
 	{
-		Dictionary<EvasObject, View> _nativeTable = new Dictionary<EvasObject, View>();
+		Dictionary<NView, View> _nativeMauiTable = new Dictionary<NView, View>();
 		Dictionary<object, View?> _dataBindedViewTable = new Dictionary<object, View?>();
 		protected View? _headerCache;
 		protected View? _footerCache;
-		IMauiContext _context;
 
-		public ItemTemplateAdaptor(ItemsView itemsView) : this(itemsView, itemsView.ItemsSource, itemsView.ItemTemplate) { }
+		public ItemTemplateAdaptor(ItemsView itemsView) : this(itemsView, itemsView.ItemsSource, itemsView.ItemTemplate ?? new DefaultItemTemplate()) { }
 
-		protected ItemTemplateAdaptor(ItemsView itemsView, IEnumerable items, DataTemplate template) : base(items)
+		protected ItemTemplateAdaptor(Element itemsView, IEnumerable items, DataTemplate template) : base(items)
 		{
 			ItemTemplate = template;
 			Element = itemsView;
 			IsSelectable = itemsView is SelectableItemsView;
-			_context = itemsView.Handler!.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 		}
+
+		public event EventHandler<CollectionViewSelectionChangedEventArgs>? SelectionChanged;
 
 		protected DataTemplate ItemTemplate { get; set; }
 
@@ -33,10 +39,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual bool IsSelectable { get; }
 
+		protected IMauiContext MauiContext => Element.Handler!.MauiContext!;
 
-		public View GetTemplatedView(EvasObject evasObject)
+		public object GetData(int index)
 		{
-			return _nativeTable[evasObject];
+			if (this[index] == null)
+				throw new InvalidOperationException("No data");
+			return this[index]!;
+		}
+
+		public override void SendItemSelected(IEnumerable<int> selected)
+		{
+			var items = new List<object>();
+			foreach (var idx in selected)
+			{
+				if (idx < 0 || Count <= idx)
+					continue;
+
+				var selectedObject = this[idx];
+				if (selectedObject != null)
+					items.Add(selectedObject);
+			}
+
+			SelectionChanged?.Invoke(this, new CollectionViewSelectionChangedEventArgs
+			{
+				SelectedItems = items
+			});
+		}
+
+		public override void UpdateViewState(NView view, ViewHolderState state)
+		{
+			base.UpdateViewState(view, state);
+			if (_nativeMauiTable.TryGetValue(view, out View? formsView))
+			{
+				switch (state)
+				{
+					case ViewHolderState.Focused:
+						VisualStateManager.GoToState(formsView, VisualStateManager.CommonStates.Focused);
+						formsView.SetValue(VisualElement.IsFocusedPropertyKey, true);
+						break;
+					case ViewHolderState.Normal:
+						VisualStateManager.GoToState(formsView, VisualStateManager.CommonStates.Normal);
+						formsView.SetValue(VisualElement.IsFocusedPropertyKey, false);
+						break;
+					case ViewHolderState.Selected:
+						if (IsSelectable)
+							VisualStateManager.GoToState(formsView, VisualStateManager.CommonStates.Selected);
+						break;
+				}
+			}
+		}
+
+		public View? GetTemplatedView(NView view)
+		{
+			return _nativeMauiTable.ContainsKey(view) ? _nativeMauiTable[view] : null;
 		}
 
 		public View? GetTemplatedView(int index)
@@ -58,149 +114,170 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return base.GetViewCategory(index);
 		}
 
-		public override EvasObject? CreateNativeView(EvasObject parent)
+		public override NView CreateNativeView(int index)
 		{
-			return CreateNativeView(0, parent);
-		}
-
-		public override EvasObject? CreateNativeView(int index, EvasObject parent)
-		{
-			View? view = null;
+			View view;
 			if (ItemTemplate is DataTemplateSelector selector)
 			{
-				view = selector.SelectTemplate(this[index], Element).CreateContent() as View;
+				view = (View)selector.SelectTemplate(GetData(index), Element).CreateContent();
 			}
 			else
 			{
-				view = ItemTemplate.CreateContent() as View;
+				view = (View)ItemTemplate.CreateContent();
 			}
-
-			if (view != null)
-			{
-				var platformView = GetPlatformView(view);
-				view.Parent = Element;
-				_nativeTable[platformView] = view;
-				return platformView;
-			}
-			return null;
+			var native = view.ToPlatform(MauiContext);
+			_nativeMauiTable[native] = view;
+			return native;
 		}
 
-		public override EvasObject? GetFooterView(EvasObject parent)
+		public override NView CreateNativeView()
 		{
-			_footerCache = CreateFooterView();
-			if (_footerCache != null)
-			{
-				_footerCache.Parent = Element;
-				return GetPlatformView(_footerCache);
-			}
-			return null;
+			return CreateNativeView(0);
 		}
 
-		public override EvasObject? GetHeaderView(EvasObject parent)
+#pragma warning disable CS8764
+		public override NView? GetHeaderView()
+#pragma warning restore CS8764
 		{
+			if (_headerCache != null)
+			{
+				_headerCache.MeasureInvalidated -= OnHeaderFooterMeasureInvalidated;
+			}
 			_headerCache = CreateHeaderView();
 			if (_headerCache != null)
 			{
 				_headerCache.Parent = Element;
-				return GetPlatformView(_headerCache);
+
+				if (_headerCache.Handler is IPlatformViewHandler nativeHandler)
+					nativeHandler.Dispose();
+				_headerCache.Handler = null;
+				_headerCache.MeasureInvalidated += OnHeaderFooterMeasureInvalidated;
+				return _headerCache.ToPlatform(MauiContext);
 			}
 			return null;
 		}
 
-		public override Size MeasureFooter(int widthConstraint, int heightConstraint)
+#pragma warning disable CS8764
+		public override NView? GetFooterView()
+#pragma warning restore CS8764
 		{
-			return _footerCache?.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint)).Request.ToEFLPixel() ?? new Size(0, 0);
+			if (_footerCache != null)
+			{
+				_footerCache.MeasureInvalidated -= OnHeaderFooterMeasureInvalidated;
+			}
+			_footerCache = CreateFooterView();
+			if (_footerCache != null)
+			{
+				_footerCache.Parent = Element;
+				if (_footerCache.Handler is IPlatformViewHandler nativeHandler)
+					nativeHandler.Dispose();
+				_footerCache.Handler = null;
+				_footerCache.MeasureInvalidated += OnHeaderFooterMeasureInvalidated;
+				return _footerCache.ToPlatform(MauiContext);
+			}
+			return null;
 		}
 
-		public override Size MeasureHeader(int widthConstraint, int heightConstraint)
-		{
-			return _headerCache?.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint)).Request.ToEFLPixel() ?? new Size(0, 0);
-		}
-
-		public override Size MeasureItem(int widthConstraint, int heightConstraint)
-		{
-			return MeasureItem(0, widthConstraint, heightConstraint);
-		}
-
-		public override Size MeasureItem(int index, int widthConstraint, int heightConstraint)
-		{
-			if (widthConstraint > heightConstraint)
-			{
-				widthConstraint = int.MaxValue;
-			}
-			if (heightConstraint > widthConstraint)
-			{
-				heightConstraint = int.MaxValue;
-			}
-
-			var item = this[index];
-			if (item != null && _dataBindedViewTable.TryGetValue(item, out View? createdView) && createdView != null)
-			{
-				return createdView.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request.ToEFLPixel();
-			}
-
-			View? view = null;
-			if (ItemTemplate is DataTemplateSelector selector)
-			{
-				view = selector.SelectTemplate(this[index], Element).CreateContent() as View;
-			}
-			else
-			{
-				view = ItemTemplate.CreateContent() as View;
-			}
-
-			if (view != null)
-			{
-				view.Parent = Element;
-				if (Count > index)
-					view.BindingContext = this[index];
-				var request = view.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request;
-				return request.ToEFLPixel();
-			}
-			return new Size(0, 0);
-		}
-
-		public override void RemoveNativeView(EvasObject native)
+		public override void RemoveNativeView(NView native)
 		{
 			UnBinding(native);
-			if (_nativeTable.TryGetValue(native, out View? view))
+			if (_nativeMauiTable.TryGetValue(native, out View? view))
 			{
-				native.Unrealize();
-				_nativeTable.Remove(native);
+				if (view.Handler is IPlatformViewHandler handler)
+				{
+					_nativeMauiTable.Remove(handler.PlatformView!);
+					handler.Dispose();
+					view.Handler = null;
+				}
 			}
 		}
 
-		public override void SetBinding(EvasObject native, int index)
+		public override void SetBinding(NView native, int index)
 		{
-			if (_nativeTable.TryGetValue(native, out View? view))
+			if (_nativeMauiTable.TryGetValue(native, out View? view))
 			{
 				ResetBindedView(view);
-				var item = this[index];
-				if (item != null)
-				{
-					view.BindingContext = item;
-					_dataBindedViewTable[item] = view;
-				}
+				view.BindingContext = this[index];
+				_dataBindedViewTable[this[index]!] = view;
 				view.MeasureInvalidated += OnItemMeasureInvalidated;
+				view.Parent = Element;
+
 				AddLogicalChild(view);
 			}
 		}
 
-		public override void UnBinding(EvasObject native)
+		public override void UnBinding(NView native)
 		{
-			if (_nativeTable.TryGetValue(native, out View? view))
+			if (_nativeMauiTable.TryGetValue(native, out View? view))
 			{
 				view.MeasureInvalidated -= OnItemMeasureInvalidated;
 				ResetBindedView(view);
 			}
 		}
 
-		public void SendItemSelected(object selectedItem)
+		public override TSize MeasureItem(double widthConstraint, double heightConstraint)
 		{
-			if (Element is SelectableItemsView selectable)
+			return MeasureItem(0, widthConstraint, heightConstraint);
+		}
+
+		public override TSize MeasureItem(int index, double widthConstraint, double heightConstraint)
+		{
+			if (index < 0 || index >= Count || this[index] == null)
+				return new TSize(0, 0);
+
+			widthConstraint = widthConstraint.ToScaledDP();
+			heightConstraint = heightConstraint.ToScaledDP();
+
+			// TODO. It is hack code, it should be updated by Tizen.UIExtensions
+			if (widthConstraint > heightConstraint)
+				widthConstraint = double.PositiveInfinity;
+			else
+				heightConstraint = double.PositiveInfinity;
+
+			if (_dataBindedViewTable.TryGetValue(GetData(index), out View? createdView) && createdView != null)
 			{
-				selectable.SelectedItem = selectedItem;
+				return (createdView as IView).Measure(widthConstraint, heightConstraint).ToPixel();
 			}
+
+			View view;
+			if (ItemTemplate is DataTemplateSelector selector)
+			{
+				view = (View)selector.SelectTemplate(GetData(index), Element).CreateContent();
+			}
+			else
+			{
+				view = (View)ItemTemplate.CreateContent();
+			}
+
+			using var handler = (IPlatformViewHandler)view.Handler!;
+			if (Count > index)
+				view.BindingContext = this[index];
+			view.Parent = Element;
+
+			view.ToPlatform(MauiContext);
+			return (view as IView).Measure(widthConstraint, heightConstraint).ToPixel();
+		}
+
+		public override TSize MeasureHeader(double widthConstraint, double heightConstraint)
+		{
+			// TODO. It is workaround code, if update Tizen.UIExtensions.NUI, this code will be removed
+			if (CollectionView is Tizen.UIExtensions.NUI.CollectionView cv)
+			{
+				if (cv.LayoutManager != null)
+				{
+					if (cv.LayoutManager.IsHorizontal)
+						widthConstraint = double.PositiveInfinity;
+					else
+						heightConstraint = double.PositiveInfinity;
+				}
+			}
+
+			return (_headerCache as IView)?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP()).ToPixel() ?? new TSize(0, 0);
+		}
+
+		public override TSize MeasureFooter(double widthConstraint, double heightConstraint)
+		{
+			return (_footerCache as IView)?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP()).ToPixel() ?? new TSize(0, 0);
 		}
 
 		protected virtual View? CreateHeaderView()
@@ -216,13 +293,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 					else if (structuredItemsView.HeaderTemplate != null)
 					{
-						header = structuredItemsView.HeaderTemplate.CreateContent() as View;
-						if (header != null)
-							header.BindingContext = structuredItemsView.Header;
+						header = (View)structuredItemsView.HeaderTemplate.CreateContent();
+						header.BindingContext = structuredItemsView.Header;
 					}
-					else if (structuredItemsView.Header is String str)
+					else if (structuredItemsView.Header is string str)
 					{
-						header = new Label { Text = str, };
+						header = new XLabel { Text = str, };
 					}
 					return header;
 				}
@@ -243,18 +319,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 					else if (structuredItemsView.FooterTemplate != null)
 					{
-						footer = structuredItemsView.FooterTemplate.CreateContent() as View;
-						if (footer != null)
-							footer.BindingContext = structuredItemsView.Footer;
+						footer = (View)structuredItemsView.FooterTemplate.CreateContent();
+						footer.BindingContext = structuredItemsView.Footer;
 					}
-					else if (structuredItemsView.Footer is String str)
+					else if (structuredItemsView.Footer is string str)
 					{
-						footer = new Label { Text = str, };
+						footer = new XLabel { Text = str, };
 					}
 					return footer;
 				}
 			}
 			return null;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (_headerCache != null)
+				{
+					_headerCache.MeasureInvalidated -= OnHeaderFooterMeasureInvalidated;
+				}
+				if (_footerCache != null)
+				{
+					_footerCache.MeasureInvalidated -= OnHeaderFooterMeasureInvalidated;
+				}
+			}
+			base.Dispose(disposing);
 		}
 
 		void ResetBindedView(View view)
@@ -270,14 +361,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void OnItemMeasureInvalidated(object? sender, EventArgs e)
 		{
 			var data = (sender as View)?.BindingContext ?? null;
-			if (data != null)
+			int index = data != null ? GetItemIndex(data) : -1;
+
+			if (index != -1)
 			{
-				int index = GetItemIndex(data);
-				if (index != -1)
-				{
-					CollectionView?.ItemMeasureInvalidated(index);
-				}
+				CollectionView?.ItemMeasureInvalidated(index);
 			}
+		}
+
+		void OnHeaderFooterMeasureInvalidated(object? sender, EventArgs e)
+		{
+			CollectionView?.ItemMeasureInvalidated(-1);
 		}
 
 		void AddLogicalChild(Element element)
@@ -304,18 +398,54 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		EvasObject GetPlatformView(View view)
+	}
+
+	public class CarouselViewItemTemplateAdaptor : ItemTemplateAdaptor
+	{
+		public CarouselViewItemTemplateAdaptor(ItemsView itemsView) : base(itemsView) { }
+
+		public override TSize MeasureItem(double widthConstraint, double heightConstraint)
 		{
-			var platformView = view.ToPlatform(_context);
+			return MeasureItem(0, widthConstraint, heightConstraint);
+		}
 
-			if (view.Handler is IPlatformViewHandler handler)
+		public override TSize MeasureItem(int index, double widthConstraint, double heightConstraint)
+		{
+			return (CollectionView as NView)!.Size.ToCommon();
+		}
+	}
+
+	class DefaultItemTemplate : DataTemplate
+	{
+		public DefaultItemTemplate() : base(CreateView) { }
+
+		class ToTextConverter : IValueConverter
+		{
+			public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 			{
-				handler.ForceContainer = true;
-				handler.HasContainer = true;
-
-				platformView = handler.ContainerView!;
+				return value?.ToString() ?? string.Empty;
 			}
-			return platformView;
+
+			public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
+		}
+
+		static View CreateView()
+		{
+			var label = new XLabel
+			{
+				TextColor = Colors.Black,
+			};
+			label.SetBinding(XLabel.TextProperty, new Binding(".", converter: new ToTextConverter()));
+
+			return new Controls.StackLayout
+			{
+				BackgroundColor = Colors.White,
+				Padding = 30,
+				Children =
+					{
+						label
+					}
+			};
 		}
 	}
 }

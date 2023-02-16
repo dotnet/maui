@@ -14,62 +14,93 @@ namespace Microsoft.Maui.ApplicationModel
 
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Essentials/NotImplementedInReferenceAssemblyException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.NotImplementedInReferenceAssemblyException']/Docs" />
+	/// <summary>
+	/// Exception that occurs when executed from a reference assembly. This usually means that the NuGet was not installed into the app project.
+	/// </summary>
 	class NotImplementedInReferenceAssemblyException : NotImplementedException
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/NotImplementedInReferenceAssemblyException.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="NotImplementedInReferenceAssemblyException"/> class.
+		/// </summary>
 		public NotImplementedInReferenceAssemblyException()
 			: base("This functionality is not implemented in the portable version of this assembly. You should reference the NuGet package from your main application project in order to reference the platform-specific implementation.")
 		{
 		}
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Essentials/PermissionException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PermissionException']/Docs" />
+	/// <summary>
+	/// Exception that occurs when calling an API that requires a specific permission.
+	/// </summary>
 	public class PermissionException : UnauthorizedAccessException
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/PermissionException.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PermissionException"/> class with the specified message.
+		/// </summary>
+		/// <param name="message">A message that describes this exception in more detail.</param>
 		public PermissionException(string message)
 			: base(message)
 		{
 		}
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FeatureNotSupportedException']/Docs" />
+	/// <summary>
+	/// Exception that occurs when an attempt is made to use a feature on a platform that does not support it.
+	/// </summary>
 	public class FeatureNotSupportedException : NotSupportedException
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FeatureNotSupportedException"/> class.
+		/// </summary>
 		public FeatureNotSupportedException()
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FeatureNotSupportedException"/> class with the specified message.
+		/// </summary>
+		/// <param name="message">A message that describes this exception in more detail.</param>
 		public FeatureNotSupportedException(string message)
 			: base(message)
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotSupportedException.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FeatureNotSupportedException"/> class with the specified message and inner exception.
+		/// </summary>
+		/// <param name="message">A message that describes this exception in more detail.</param>
+		/// <param name="innerException">An inner exception that has relation to this exception.</param>
 		public FeatureNotSupportedException(string message, Exception innerException)
 			: base(message, innerException)
 		{
 		}
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FeatureNotEnabledException']/Docs" />
+	/// <summary>
+	///  Exception that occurs when an attempt is made to use a feature on a platform that does not have this feature enabled.
+	/// </summary>
 	public class FeatureNotEnabledException : InvalidOperationException
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FeatureNotEnabledException"/> class.
+		/// </summary>
 		public FeatureNotEnabledException()
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FeatureNotEnabledException"/> class with the specified message.
+		/// </summary>
+		/// <param name="message">A message that describes this exception in more detail.</param>
 		public FeatureNotEnabledException(string message)
 			: base(message)
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Essentials/FeatureNotEnabledException.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FeatureNotEnabledException"/> class with the specified message and inner exception.
+		/// </summary>
+		/// <param name="message">A message that describes this exception in more detail.</param>
+		/// <param name="innerException">An inner exception that has relation to this exception.</param>
 		public FeatureNotEnabledException(string message, Exception innerException)
 			: base(message, innerException)
 		{

@@ -1,12 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
 	internal static class IndicatorViewExtensions
 	{
+		/// <summary>
+		/// Gets the maximum number of visible indicator items that can be shown.
+		/// </summary>
+		/// <param name="indicatorView">The <see cref="IIndicatorView"/> instance to get the maximum visible items for.</param>
+		/// <returns>Maximum number of visible indicator items that can be shown.</returns>
 		public static int GetMaximumVisible(this IIndicatorView indicatorView)
 		{
 			var minValue = Math.Min(indicatorView.MaximumVisible, indicatorView.Count);
@@ -19,6 +22,11 @@ namespace Microsoft.Maui
 			return maximumVisible;
 		}
 
+		/// <summary>
+		/// Determines whether the current indicator items are circle shaped.
+		/// </summary>
+		/// <param name="indicatorView">The <see cref="IIndicatorView"/> instance to determine the indicator item shape for.</param>
+		/// <returns><see langword="true"/> if the indicator items are circle shaped, otherwise <see langword="false"/>.</returns>
 		public static bool IsCircleShape(this IIndicatorView indicatorView)
 		{
 			var sH = indicatorView.IndicatorsShape;

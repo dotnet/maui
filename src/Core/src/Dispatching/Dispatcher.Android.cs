@@ -3,6 +3,7 @@ using Android.OS;
 
 namespace Microsoft.Maui.Dispatching
 {
+	/// <inheritdoc/>
 	public partial class Dispatcher : IDispatcher
 	{
 		readonly Looper _looper;
@@ -29,23 +30,33 @@ namespace Microsoft.Maui.Dispatching
 		}
 	}
 
+	/// <inheritdoc/>
 	partial class DispatcherTimer : IDispatcherTimer
 	{
 		readonly Handler _handler;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DispatcherTimer"/> class.
+		/// </summary>
+		/// <param name="handler">The handler for this dispatcher to use.</param>
 		public DispatcherTimer(Handler handler)
 		{
 			_handler = handler;
 		}
 
+		/// <inheritdoc/>
 		public TimeSpan Interval { get; set; }
 
+		/// <inheritdoc/>
 		public bool IsRepeating { get; set; } = true;
 
+		/// <inheritdoc/>
 		public bool IsRunning { get; private set; }
 
+		/// <inheritdoc/>
 		public event EventHandler? Tick;
 
+		/// <inheritdoc/>
 		public void Start()
 		{
 			if (IsRunning)
@@ -56,6 +67,7 @@ namespace Microsoft.Maui.Dispatching
 			_handler.PostDelayed(OnTimerTick, (long)Interval.TotalMilliseconds);
 		}
 
+		/// <inheritdoc/>
 		public void Stop()
 		{
 			if (!IsRunning)
@@ -78,6 +90,7 @@ namespace Microsoft.Maui.Dispatching
 		}
 	}
 
+	/// <inheritdoc/>
 	public partial class DispatcherProvider
 	{
 		static IDispatcher? GetForCurrentThreadImplementation()

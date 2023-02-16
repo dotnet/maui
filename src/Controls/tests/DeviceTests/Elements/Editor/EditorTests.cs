@@ -8,10 +8,10 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Editor)]
-	public partial class EditorTests : HandlerTestBase
+	public partial class EditorTests : ControlsHandlerTestBase
 	{
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		// iOS is broken until this point
 		// https://github.com/dotnet/maui/issues/3425
 		[Theory]
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
-			await SetValueAsync<string, EditorHandler>(editor, text, SetPlatformText);
+			await SetValueAsync<string, EditorHandler>(editor, text, (h, s) => h.VirtualView.Text = s);
 
 			Assert.Equal(text.Length, editor.CursorPosition);
 		}
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
-			await SetValueAsync<string, EditorHandler>(editor, text, SetPlatformText);
+			await SetValueAsync<string, EditorHandler>(editor, text, (h, s) => h.VirtualView.Text = s);
 
 			Assert.Equal(0, editor.SelectionLength);
 		}

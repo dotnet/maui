@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 [assembly: Dependency(typeof(DependencyTestImpl))]
 
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class DependencyServiceTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void GetGlobalInstance()
 		{
 			var global = DependencyService.Get<IDependencyTest>();
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(ReferenceEquals(global, secondFetch));
 		}
 
-		[Test]
+		[Fact]
 		public void NewInstanceIsNotGlobalInstance()
 		{
 			var global = DependencyService.Get<IDependencyTest>();
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(ReferenceEquals(global, secondFetch));
 		}
 
-		[Test]
+		[Fact]
 		public void NewInstanceIsAlwaysNew()
 		{
 			var firstFetch = DependencyService.Get<IDependencyTest>(DependencyFetchTarget.NewInstance);
@@ -79,13 +79,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(ReferenceEquals(firstFetch, secondFetch));
 		}
 
-		[Test]
+		[Fact]
 		public void UnsatisfiedReturnsNull()
 		{
 			Assert.Null(DependencyService.Get<IUnsatisfied>());
 		}
 
-		[Test]
+		[Fact]
 		public void RegisterTypeImplementation()
 		{
 			DependencyService.Register<DependencyTestRegisterImpl>();
@@ -94,30 +94,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		[Test]
+		[Fact]
 		public void RegisterInterfaceAndImplementations()
 		{
 			DependencyService.Register<IDependencyTestRegister, DependencyTestRegisterImpl2>();
 			var global = DependencyService.Get<IDependencyTestRegister>();
-			Assert.IsInstanceOf<DependencyTestRegisterImpl2>(global);
+			Assert.IsType<DependencyTestRegisterImpl2>(global);
 		}
 
-		[Test]
+		[Fact]
 		public void RegisterInterfaceAndOverrideImplementations()
 		{
 			DependencyService.Register<IDependencyTestRegister, DependencyTestRegisterImpl>();
 			DependencyService.Register<IDependencyTestRegister, DependencyTestRegisterImpl2>();
 			var global = DependencyService.Get<IDependencyTestRegister>();
-			Assert.IsInstanceOf<DependencyTestRegisterImpl2>(global);
+			Assert.IsType<DependencyTestRegisterImpl2>(global);
 		}
 
-		[Test]
+		[Fact]
 		public void RegisterSingletonInterface()
 		{
 			var local = new DependencyTestRegisterImpl();
 			DependencyService.RegisterSingleton<IDependencyTestRegister>(local);
 			var global = DependencyService.Get<IDependencyTestRegister>();
-			Assert.AreEqual(local, global);
+			Assert.Equal(local, global);
 		}
 	}
 }

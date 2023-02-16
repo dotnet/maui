@@ -4,33 +4,66 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
+	/// <summary>
+	/// Provides a way to work with text on the device clipboard.
+	/// </summary>
 	public interface IClipboard
 	{
+		/// <summary>
+		/// Gets a value indicating whether there is any text on the clipboard.
+		/// </summary>
 		bool HasText { get; }
 
+		/// <summary>
+		/// Sets the contents of the clipboard to be the specified text.
+		/// </summary>
+		/// <param name="text">The text to put on the clipboard.</param>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
+		/// <remarks>This method returns immediately and does not guarentee that the text is on the clipboard by the time this method returns.</remarks>
 		Task SetTextAsync(string? text);
 
+		/// <summary>
+		/// Returns any text that is on the clipboard.
+		/// </summary>
+		/// <returns>Text content that is on the clipboard, or <see langword="null"/> if there is none.</returns>
 		Task<string?> GetTextAsync();
 
+		/// <summary>
+		/// Occurs when the clipboard content changes.
+		/// </summary>
 		event EventHandler<EventArgs> ClipboardContentChanged;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Clipboard']/Docs" />
+	/// <summary>
+	/// Provides a way to work with text on the device clipboard.
+	/// </summary>
 	public static class Clipboard
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='SetTextAsync']/Docs" />
+		/// <summary>
+		/// Sets the contents of the clipboard to be the specified text.
+		/// </summary>
+		/// <param name="text">The text to put on the clipboard.</param>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
+		/// <remarks>This method returns immediately and does not guarentee that the text is on the clipboard by the time this method returns.</remarks>
 		public static Task SetTextAsync(string? text)
 			=> Default.SetTextAsync(text ?? string.Empty);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='HasText']/Docs" />
+		/// <summary>
+		/// Gets a value indicating whether there is any text on the clipboard.
+		/// </summary>
 		public static bool HasText
 			=> Default.HasText;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='GetTextAsync']/Docs" />
+		/// <summary>
+		/// Returns any text that is on the clipboard.
+		/// </summary>
+		/// <returns>Text content that is on the clipboard, or <see langword="null"/> if there is none.</returns>
 		public static Task<string?> GetTextAsync()
 			=> Default.GetTextAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Clipboard.xml" path="//Member[@MemberName='ClipboardContentChanged']/Docs" />
+		/// <summary>
+		/// Occurs when the clipboard content changes.
+		/// </summary>
 		public static event EventHandler<EventArgs> ClipboardContentChanged
 		{
 			add => Default.ClipboardContentChanged += value;
@@ -39,6 +72,9 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 
 		static IClipboard? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IClipboard Default =>
 			defaultImplementation ??= new ClipboardImplementation();
 

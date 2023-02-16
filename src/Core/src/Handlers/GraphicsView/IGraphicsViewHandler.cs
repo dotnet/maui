@@ -1,4 +1,4 @@
-﻿#if __IOS__ || MACCATALYST || MONOANDROID || WINDOWS || TIZEN
+#if __IOS__ || MACCATALYST || MONOANDROID || WINDOWS || TIZEN
 using PlatformView = Microsoft.Maui.Platform.PlatformTouchGraphicsView;
 #else
 using PlatformView = System.Object;

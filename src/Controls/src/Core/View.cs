@@ -1,31 +1,34 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="Type[@FullName='Microsoft.Maui.Controls.View']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="Type[@FullName='Microsoft.Maui.Controls.View']/Docs/*" />
 	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers
 	{
 		protected internal IGestureController GestureController => this;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='VerticalOptionsProperty']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='VerticalOptionsProperty']/Docs/*" />
 		public static readonly BindableProperty VerticalOptionsProperty =
 			BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
 									propertyChanged: (bindable, oldvalue, newvalue) =>
 									((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.VerticalOptionsChanged));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='HorizontalOptionsProperty']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='HorizontalOptionsProperty']/Docs/*" />
 		public static readonly BindableProperty HorizontalOptionsProperty =
 			BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
 									propertyChanged: (bindable, oldvalue, newvalue) =>
 									((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.HorizontalOptionsChanged));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='MarginProperty']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='MarginProperty']/Docs/*" />
 		public static readonly BindableProperty MarginProperty =
 			BindableProperty.Create(nameof(Margin), typeof(Thickness), typeof(View), default(Thickness),
 									propertyChanged: MarginPropertyChanged);
@@ -77,8 +80,11 @@ namespace Microsoft.Maui.Controls
 
 		readonly ObservableCollection<IGestureRecognizer> _gestureRecognizers = new ObservableCollection<IGestureRecognizer>();
 
+		PointerGestureRecognizer _recognizerForPointerOverState;
+
 		protected internal View()
 		{
+			_gestureManager = new GestureManager(this);
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
 			{
 				void AddItems(IEnumerable<IElementDefinition> elements)
@@ -126,6 +132,9 @@ namespace Microsoft.Maui.Controls
 
 						foreach (IElementDefinition item in GestureController.CompositeGestureRecognizers.OfType<IElementDefinition>())
 						{
+							if (item == _recognizerForPointerOverState)
+								continue;
+
 							if (_gestureRecognizers.Contains((IGestureRecognizer)item))
 								item.Parent = this;
 							else
@@ -140,7 +149,7 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='GestureRecognizers']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='GestureRecognizers']/Docs/*" />
 		public IList<IGestureRecognizer> GestureRecognizers
 		{
 			get { return _gestureRecognizers; }
@@ -150,30 +159,53 @@ namespace Microsoft.Maui.Controls
 
 		IList<IGestureRecognizer> IGestureController.CompositeGestureRecognizers
 		{
-			get { return _compositeGestureRecognizers ?? (_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>()); }
+			get
+			{
+				if (_compositeGestureRecognizers == null)
+				{
+					_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>();
+					CheckPointerOver();
+				}
+
+				return _compositeGestureRecognizers;
+			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='GetChildElements']/Docs" />
+		protected internal override void ChangeVisualState()
+		{
+			CheckPointerOver();
+
+			if (_recognizerForPointerOverState == null && IsPointerOver)
+				SetPointerOver(false, false);
+
+			base.ChangeVisualState();
+		}
+
+		void CheckPointerOver() =>
+			PointerGestureRecognizer
+				.SetupForPointerOverVSM(this, (result) => SetPointerOver(result), ref _recognizerForPointerOverState);
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='GetChildElements']/Docs/*" />
 		public virtual IList<GestureElement> GetChildElements(Point point)
 		{
 			return null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='HorizontalOptions']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='HorizontalOptions']/Docs/*" />
 		public LayoutOptions HorizontalOptions
 		{
 			get { return (LayoutOptions)GetValue(HorizontalOptionsProperty); }
 			set { SetValue(HorizontalOptionsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='Margin']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='Margin']/Docs/*" />
 		public Thickness Margin
 		{
 			get { return (Thickness)GetValue(MarginProperty); }
 			set { SetValue(MarginProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='VerticalOptions']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='VerticalOptions']/Docs/*" />
 		public LayoutOptions VerticalOptions
 		{
 			get { return (LayoutOptions)GetValue(VerticalOptionsProperty); }

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -6,19 +6,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		DoubleCollectionConverter _doubleCollectionConverter;
 
-		[SetUp]
-		public void SetUp()
+
+		public DoubleCollectionTests()
 		{
 			_doubleCollectionConverter = new DoubleCollectionConverter();
 		}
 
-		[Test]
+		[Fact]
 		public void ConvertStringToDoubleCollectionTest()
 		{
 			DoubleCollection result = _doubleCollectionConverter.ConvertFromInvariantString("10,110 60,10 110,110") as DoubleCollection;
 
-			Assert.IsNotNull(result);
-			Assert.AreEqual(6, result.Count);
+			Assert.NotNull(result);
+			Assert.Equal(6, result.Count);
 		}
 	}
 }

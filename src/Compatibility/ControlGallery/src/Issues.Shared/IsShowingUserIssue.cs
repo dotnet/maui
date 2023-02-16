@@ -3,6 +3,7 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Maps;
 
 #if UITEST
 using Xamarin.UITest;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			var map = new Map(MapSpan.FromCenterAndRadius(new Position(37.79, -122.4), Distance.FromMiles(2)))
+			var map = new Map(MapSpan.FromCenterAndRadius(new Devices.Sensors.Location(37.79, -122.4), Distance.FromMiles(2)))
 			{
 				AutomationId = "FormsMap",
 				IsShowingUser = true

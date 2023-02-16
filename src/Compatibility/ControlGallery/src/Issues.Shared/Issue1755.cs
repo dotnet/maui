@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public Issue1755()
 		{
-			var map = new Map(MapSpan.FromCenterAndRadius(new Position(54.767683, -1.571671), Distance.FromMiles(5)))
+			var map = new Map(MapSpan.FromCenterAndRadius(new Devices.Sensors.Location(54.767683, -1.571671), Distance.FromMiles(5)))
 			{
 				IsShowingUser = false,
 				HeightRequest = 100,

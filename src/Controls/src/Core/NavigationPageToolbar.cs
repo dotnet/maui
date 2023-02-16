@@ -1,7 +1,6 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -20,6 +19,7 @@ namespace Microsoft.Maui.Controls
 		Page _rootPage;
 		List<NavigationPage> _navigationPagesStack = new List<NavigationPage>();
 		internal NavigationPage CurrentNavigationPage => _currentNavigationPage;
+		internal ToolbarTracker ToolbarTracker => _toolbarTracker;
 		public override Color BarTextColor { get => GetBarTextColor(); set => SetProperty(ref _barTextColor, value); }
 		public override Color IconColor { get => GetIconColor(); set => SetProperty(ref _iconColor, value); }
 		public override string Title { get => GetTitle(); set => SetProperty(ref _title, value); }

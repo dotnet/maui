@@ -1,13 +1,17 @@
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="Type[@FullName='Microsoft.Maui.Essentials.AppTheme']/Docs" />
+	/// <summary>
+	/// Enumerates different themes an operating system or application can show.
+	/// </summary>
 	public enum AppTheme
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="//Member[@MemberName='Unspecified']/Docs" />
+		/// <summary>Default, unknown or unspecified theme.</summary>
 		Unspecified,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="//Member[@MemberName='Light']/Docs" />
+
+		/// <summary>Light theme.</summary>
 		Light,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/AppTheme.xml" path="//Member[@MemberName='Dark']/Docs" />
+
+		/// <summary>Dark theme.</summary>
 		Dark
 	}
 }

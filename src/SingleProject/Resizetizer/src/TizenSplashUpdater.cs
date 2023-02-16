@@ -26,22 +26,23 @@ namespace Microsoft.Maui.Resizetizer
 		public override bool Execute()
 		{
 			var orientations = new List<string>() { "portrait", "landscape" };
-			var splashInfo = MauiSplashScreen?.Length > 0 ? ResizeImageInfo.Parse(MauiSplashScreen[0]) : null;
+			var splashInfo = ResizeImageInfo.Parse(MauiSplashScreen[0]);
 			var image = splashInfo.OutputName + ".png";
-			var sharedResFullPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, "shared/res/"));
-			var splashFullPath = Path.Combine(sharedResFullPath, splashDirectoryName);
+			var splashFullPath = Path.Combine(IntermediateOutputPath, splashDirectoryName);
 
 			if (Directory.Exists(splashFullPath))
 				Directory.Delete(splashFullPath, true);
 			Directory.CreateDirectory(splashFullPath);
 
+			var appTool = new SkiaSharpAppIconTools(splashInfo, Logger);
+
 			splashDpiMap.Clear();
 			foreach (var dpi in DpiPath.Tizen.SplashScreen)
 			{
-				var imageOutputPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, dpi.Path));
-				var imageFullPath = Path.Combine(imageOutputPath, image);
+				var destination = Resizer.GetRasterFileDestination(splashInfo, dpi, IntermediateOutputPath);
+				appTool.Resize(dpi, destination);
 
-				if (File.Exists(imageFullPath))
+				if (File.Exists(destination))
 				{
 					var resolution = dpi.Path.Split('-')[1].ToLower();
 					foreach (var orientation in orientations)
@@ -52,23 +53,8 @@ namespace Microsoft.Maui.Resizetizer
 							splashDpiMap.Remove((resolution, orientation));
 						}
 						splashDpiMap.Add((resolution, orientation), $"{splashDirectoryName}/{newImage}");
-						UpdateColorAndMoveFile(splashInfo, GetScreenSize(resolution, orientation), imageFullPath, Path.Combine(splashFullPath, newImage));
+						UpdateColorAndMoveFile(splashInfo, GetScreenSize(resolution, orientation), destination, Path.Combine(splashFullPath, newImage));
 					}
-				}
-				else
-				{
-					Log.LogWarning($"Unable to find splash image at {imageFullPath}.");
-					return false;
-				}
-			}
-
-			foreach (var dpi in DpiPath.Tizen.Image)
-			{
-				var imageOutputPath = Path.GetFullPath(Path.Combine(IntermediateOutputPath, dpi.Path));
-				var imageFullPath = Path.Combine(imageOutputPath, image);
-				if (File.Exists(imageFullPath))
-				{
-					File.Delete(imageFullPath);
 				}
 			}
 

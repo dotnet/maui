@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootRelativeToAppRoot;
 		private static readonly bool _isPackagedApp;
+		private readonly ILogger _logger;
 
 		static WinUIWebViewManager()
 		{
@@ -46,6 +48,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPagePathWithinFileProvider">Path to the host page within the <paramref name="fileProvider"/>.</param>
 		/// <param name="webViewHandler">The <see cref="BlazorWebViewHandler" />.</param>
+		/// <param name="logger">Logger to send log messages to.</param>
 		public WinUIWebViewManager(
 			WebView2Control webview,
 			IServiceProvider services,
@@ -54,9 +57,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			JSComponentConfigurationStore jsComponents,
 			string contentRootRelativeToAppRoot,
 			string hostPagePathWithinFileProvider,
-			BlazorWebViewHandler webViewHandler)
-			: base(webview, services, dispatcher, fileProvider, jsComponents, contentRootRelativeToAppRoot, hostPagePathWithinFileProvider, webViewHandler)
+			BlazorWebViewHandler webViewHandler,
+			ILogger logger)
+			: base(webview, services, dispatcher, fileProvider, jsComponents, contentRootRelativeToAppRoot, hostPagePathWithinFileProvider, webViewHandler, logger)
 		{
+			_logger = logger;
 			_webview = webview;
 			_hostPageRelativePath = hostPagePathWithinFileProvider;
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
@@ -77,21 +82,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var requestUri = QueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
 
+			_logger.HandlingWebRequest(requestUri);
+
 			// First, call into WebViewManager to see if it has a framework file for this request. It will
 			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
 			// return a file.
 			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers)
 				&& statusCode != 404)
 			{
-				// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams.
-				// See issue https://github.com/microsoft/CsWinRT/issues/670
-				var memStream = new MemoryStream();
-				content.CopyTo(memStream);
-				var ms = new InMemoryRandomAccessStream();
-				await ms.WriteAsync(memStream.GetWindowsRuntimeBuffer());
-
 				var headerString = GetHeaderString(headers);
-				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(ms, statusCode, statusMessage, headerString);
+				_logger.ResponseContentBeingSent(requestUri, statusCode);
+				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 			}
 			else if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
@@ -114,8 +115,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
 					if (winUIItem != null)
 					{
-						var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
-						stream = contentStream.AsRandomAccessStream();
+						using var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
+						stream = await CopyContentToRandomAccessStreamAsync(contentStream);
 					}
 				}
 				else
@@ -123,33 +124,41 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var path = Path.Combine(AppContext.BaseDirectory, relativePath);
 					if (File.Exists(path))
 					{
-						// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams.
-						// See issue https://github.com/microsoft/CsWinRT/issues/670
 						using var contentStream = File.OpenRead(path);
-						var memStream = new MemoryStream();
-						contentStream.CopyTo(memStream);
-						stream = new InMemoryRandomAccessStream();
-						await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+						stream = await CopyContentToRandomAccessStreamAsync(contentStream);
 					}
 				}
 
 				var hotReloadedContent = Stream.Null;
 				if (StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
 				{
-					stream = new InMemoryRandomAccessStream();
-					var memStream = new MemoryStream();
-					hotReloadedContent.CopyTo(memStream);
-					await stream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+					stream = await CopyContentToRandomAccessStreamAsync(hotReloadedContent);
 				}
 
 				if (stream != null)
 				{
 					var headerString = GetHeaderString(headers);
+
+					_logger.ResponseContentBeingSent(requestUri, statusCode);
+
 					eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
 						stream,
 						statusCode,
 						statusMessage,
 						headerString);
+				}
+				else
+				{
+					_logger.ReponseContentNotFound(requestUri);
+				}
+
+				async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
+				{
+					using var memStream = new MemoryStream();
+					await content.CopyToAsync(memStream);
+					var randomAccessStream = new InMemoryRandomAccessStream();
+					await randomAccessStream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+					return randomAccessStream;
 				}
 			}
 
@@ -163,6 +172,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// In .NET MAUI we use autostart='false' for the Blazor script reference, so we start it up manually in this event
 			_webview.CoreWebView2.DOMContentLoaded += async (_, __) =>
 			{
+				_logger.CallingBlazorStart();
+
 				await _webview.CoreWebView2!.ExecuteScriptAsync(@"
 					Blazor.start();
 					");

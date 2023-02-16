@@ -25,15 +25,15 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>Struct that defines minimum and maximum <see cref="T:Microsoft.Maui.Size" />s.</summary>
+    <summary>Struct that defines minimum and maximum <see cref="T:Microsoft.Maui.Graphics.Size" />s.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SizeRequest (Microsoft.Maui.Size request);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Size request) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.SizeRequest.#ctor(Microsoft.Maui.Size)" />
-      <MemberSignature Language="F#" Value="new Microsoft.Maui.SizeRequest : Microsoft.Maui.Size -&gt; Microsoft.Maui.SizeRequest" Usage="new Microsoft.Maui.SizeRequest request" />
+      <MemberSignature Language="C#" Value="public SizeRequest (Microsoft.Maui.Graphics.Size request);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Graphics.Size request) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.SizeRequest.#ctor(Microsoft.Maui.Graphics.Size)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.SizeRequest : Microsoft.Maui.Graphics.Size -&gt; Microsoft.Maui.SizeRequest" Usage="new Microsoft.Maui.SizeRequest request" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -48,7 +48,7 @@
         <AssemblyName>Microsoft.Maui.Core</AssemblyName>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="request" Type="Microsoft.Maui.Size" />
+        <Parameter Name="request" Type="Microsoft.Maui.Graphics.Size" />
       </Parameters>
       <Docs>
         <param name="request">The size of the request.</param>
@@ -57,10 +57,10 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SizeRequest (Microsoft.Maui.Size request, Microsoft.Maui.Size minimum);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Size request, valuetype Microsoft.Maui.Size minimum) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.SizeRequest.#ctor(Microsoft.Maui.Size,Microsoft.Maui.Size)" />
-      <MemberSignature Language="F#" Value="new Microsoft.Maui.SizeRequest : Microsoft.Maui.Size * Microsoft.Maui.Size -&gt; Microsoft.Maui.SizeRequest" Usage="new Microsoft.Maui.SizeRequest (request, minimum)" />
+      <MemberSignature Language="C#" Value="public SizeRequest (Microsoft.Maui.Graphics.Size request, Microsoft.Maui.Graphics.Size minimum);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Maui.Graphics.Size request, valuetype Microsoft.Maui.Graphics.Size minimum) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.SizeRequest.#ctor(Microsoft.Maui.Graphics.Size,Microsoft.Maui.Graphics.Size)" />
+      <MemberSignature Language="F#" Value="new Microsoft.Maui.SizeRequest : Microsoft.Maui.Graphics.Size * Microsoft.Maui.Graphics.Size -&gt; Microsoft.Maui.SizeRequest" Usage="new Microsoft.Maui.SizeRequest (request, minimum)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -75,8 +75,8 @@
         <AssemblyName>Microsoft.Maui.Core</AssemblyName>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="request" Type="Microsoft.Maui.Size" />
-        <Parameter Name="minimum" Type="Microsoft.Maui.Size" />
+        <Parameter Name="request" Type="Microsoft.Maui.Graphics.Size" />
+        <Parameter Name="minimum" Type="Microsoft.Maui.Graphics.Size" />
       </Parameters>
       <Docs>
         <param name="request">The size of the request.</param>
@@ -86,10 +86,10 @@
       </Docs>
     </Member>
     <Member MemberName="Minimum">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Size Minimum { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Size Minimum" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Size Minimum { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Size Minimum" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.SizeRequest.Minimum" />
-      <MemberSignature Language="F#" Value="member this.Minimum : Microsoft.Maui.Size with get, set" Usage="Microsoft.Maui.SizeRequest.Minimum" />
+      <MemberSignature Language="F#" Value="member this.Minimum : Microsoft.Maui.Graphics.Size with get, set" Usage="Microsoft.Maui.SizeRequest.Minimum" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -104,7 +104,7 @@
         <AssemblyName>Microsoft.Maui.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>The minimum acceptable size.</summary>
@@ -113,10 +113,10 @@
       </Docs>
     </Member>
     <Member MemberName="Request">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Size Request { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Size Request" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Size Request { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Size Request" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.SizeRequest.Request" />
-      <MemberSignature Language="F#" Value="member this.Request : Microsoft.Maui.Size with get, set" Usage="Microsoft.Maui.SizeRequest.Request" />
+      <MemberSignature Language="F#" Value="member this.Request : Microsoft.Maui.Graphics.Size with get, set" Usage="Microsoft.Maui.SizeRequest.Request" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -131,7 +131,7 @@
         <AssemblyName>Microsoft.Maui.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>The requested size.</summary>

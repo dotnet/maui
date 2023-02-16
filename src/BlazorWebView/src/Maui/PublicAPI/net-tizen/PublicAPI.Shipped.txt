@@ -1,4 +1,5 @@
-﻿#nullable enable
+#nullable enable
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Tizen.NUI.BaseComponents.WebView
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.BlazorWebViewInitializedEventArgs() -> void
 Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs
@@ -36,12 +37,7 @@ Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.WebView.Maui.RootComponentsCollection.RootComponentsCollection(Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! jsComponents) -> void
 Microsoft.AspNetCore.Components.WebView.Maui.TizenWebViewManager
-Microsoft.AspNetCore.Components.WebView.Maui.TizenWebViewManager.TizenWebViewManager(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! blazorMauiWebViewHandler, Tizen.WebView.WebView! webview, System.IServiceProvider! provider, Microsoft.AspNetCore.Components.Dispatcher! dispatcher, Microsoft.Extensions.FileProviders.IFileProvider! fileProvider, Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! jsComponents, string! contentRootRelativeToAppRoot, string! hostPageRelativePath) -> void
-override Microsoft.AspNetCore.Components.WebView.Maui.TizenWebViewManager.NavigateCore(System.Uri! absoluteUri) -> void
-override Microsoft.AspNetCore.Components.WebView.Maui.TizenWebViewManager.SendMessage(string! message) -> void
-Microsoft.AspNetCore.Components.WebView.Maui.WebViewContainer
-Microsoft.AspNetCore.Components.WebView.Maui.WebViewContainer.WebViewContainer(ElmSharp.EvasObject! parent) -> void
-Microsoft.AspNetCore.Components.WebView.Maui.WebViewContainer.WebView.get -> Tizen.WebView.WebView!
+Microsoft.AspNetCore.Components.WebView.Maui.TizenWebViewManager.TizenWebViewManager(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! blazorMauiWebViewHandler, Tizen.NUI.BaseComponents.WebView! webview, System.IServiceProvider! provider, Microsoft.AspNetCore.Components.Dispatcher! dispatcher, Microsoft.Extensions.FileProviders.IFileProvider! fileProvider, Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! jsComponents, string! contentRootRelativeToAppRoot, string! hostPageRelativePath) -> void
 Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs
 Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.Url.get -> System.Uri!
 Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.UrlLoadingStrategy.get -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
@@ -51,13 +47,14 @@ Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.CancelLoad = 2 -> Mic
 Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenExternally = 0 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenInWebView = 1 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions
-override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.CreatePlatformView() -> Microsoft.AspNetCore.Components.WebView.Maui.WebViewContainer!
-override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.ConnectHandler(Microsoft.AspNetCore.Components.WebView.Maui.WebViewContainer! platformView) -> void
-override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.DisconnectHandler(Microsoft.AspNetCore.Components.WebView.Maui.WebViewContainer! platformView) -> void
+override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.ConnectHandler(Tizen.NUI.BaseComponents.WebView! platformView) -> void
+override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.WebView!
+override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.DisconnectHandler(Tizen.NUI.BaseComponents.WebView! platformView) -> void
+override Microsoft.AspNetCore.Components.WebView.Maui.TizenWebViewManager.NavigateCore(System.Uri! absoluteUri) -> void
+override Microsoft.AspNetCore.Components.WebView.Maui.TizenWebViewManager.SendMessage(string! message) -> void
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewMapper -> Microsoft.Maui.PropertyMapper<Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView!, Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler!>!
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapHostPage(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapRootComponents(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddBlazorWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!
-static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewMapper -> Microsoft.Maui.PropertyMapper<Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView!, Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler!>!
 virtual Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.CreateFileProvider(string! contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider!
-~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Tizen.WebView.WebView

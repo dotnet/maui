@@ -13,6 +13,7 @@
                     Text="AspectFit"
                     Style="{StaticResource Headline}"/>
                 <ImageButton 
+                    x:Name="ImageButton01"
                     HorizontalOptions="Center" 
                     WidthRequest="200"    
                     Clicked="OnImageButtonClicked"
@@ -24,6 +25,7 @@
                     Text="AspectFill"     
                     Style="{StaticResource Headline}"/>
                 <ImageButton
+                    x:Name="ImageButton02"
                     HorizontalOptions="Center" 
                     WidthRequest="200"
                     HeightRequest="100" 
@@ -36,6 +38,7 @@
                     Text="Fill"
                     Style="{StaticResource Headline}"/>
                 <ImageButton
+                    x:Name="ImageButton03"
                     HorizontalOptions="Center" 
                     WidthRequest="200" 
                     HeightRequest="100"

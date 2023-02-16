@@ -80,8 +80,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateBackground(datePicker);
+			handler.PlatformView?.UpdateBackground(datePicker);
 		}
 
 		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)

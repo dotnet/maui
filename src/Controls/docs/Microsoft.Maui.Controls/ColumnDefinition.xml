@@ -26,7 +26,7 @@
     <summary>An <see cref="T:Microsoft.Maui.Controls.IDefinition" /> that defines properties for a column in a <see cref="T:Microsoft.Maui.Controls.Grid" />.</summary>
     <remarks>
       <example>
-        <para>The following example demonstrates setting three column widths to each of the three valid <see cref="T:Microsoft.Maui.Controls.GridUnitType" /> values:</para>
+        <para>The following example demonstrates setting three column widths to each of the three valid <see cref="T:Microsoft.Maui.GridUnitType" /> values:</para>
         <code lang="XAML"><![CDATA[
 <Grid.ColumnDefinitions>
     <ColumnDefinition Width="Auto" />
@@ -89,10 +89,10 @@
       </Docs>
     </Member>
     <Member MemberName="Width">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.GridLength Width { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.GridLength Width" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.GridLength.Star Width { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.GridLength.Star Width" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ColumnDefinition.Width" />
-      <MemberSignature Language="F#" Value="member this.Width : Microsoft.Maui.Controls.GridLength with get, set" Usage="Microsoft.Maui.Controls.ColumnDefinition.Width" />
+      <MemberSignature Language="F#" Value="member this.Width : Microsoft.Maui.GridLength.Star with get, set" Usage="Microsoft.Maui.Controls.ColumnDefinition.Width" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -106,7 +106,7 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.GridLength</ReturnType>
+        <ReturnType>Microsoft.Maui.GridLength.Star</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the width of the column.</summary>

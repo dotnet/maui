@@ -21,7 +21,7 @@
   </Interfaces>
   <Attributes>
     <Attribute>
-      <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
+      <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.ImageSourceConverter))</AttributeName>
     </Attribute>
   </Attributes>
   <Docs>
@@ -210,7 +210,7 @@
         <param name="stream">A factory method that returns a new stream that supplies image data.</param>
         <summary>Returns a new <see cref="T:Microsoft.Maui.Controls.StreamImageSource" /> that calls <paramref name="stream" /> and reads from the <see cref="T:System.IO.Stream" /> it returns.</summary>
         <returns>A new <see cref="T:Microsoft.Maui.Controls.StreamImageSource" /> with the data returned by <paramref name="stream" />.</returns>
-        <remarks>The delegate provided to <see paramref="stream" /> must return a new stream on every invocation.</remarks>
+        <remarks>The delegate provided to `stream` must return a new stream on every invocation.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromStream">
@@ -233,7 +233,7 @@
         <param name="stream">A factory method that returns a <see cref="T:System.Threading.Tasks.Task`1" /> that returns a new stream that supplies image data and supports cancellation.</param>
         <summary>Returns a new <see cref="T:Microsoft.Maui.Controls.StreamImageSource" /> that calls <paramref name="stream" /> and reads from the <see cref="T:System.IO.Stream" /> it returns.</summary>
         <returns>A new <see cref="T:Microsoft.Maui.Controls.StreamImageSource" /> with the data returned by <paramref name="stream" />.</returns>
-        <remarks>The delegate provided to <see paramref="stream" /> must return a new stream on every invocation.</remarks>
+        <remarks>The delegate provided to `stream` must return a new stream on every invocation.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromUri">

@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Editor)]
-	public partial class EditorHandlerTests : HandlerTestBase<EditorHandler, EditorStub>
+	public partial class EditorHandlerTests : CoreHandlerTestBase<EditorHandler, EditorStub>
 	{
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
@@ -93,8 +93,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "PlaceholderColor Updates Correctly")]
-		[InlineData(0xFF0000, 0x0000FF)]
-		[InlineData(0x0000FF, 0xFF0000)]
+		[InlineData(0xFFFF0000, 0xFF0000FF)]
+		[InlineData(0xFF0000FF, 0xFFFF0000)]
 		public async Task PlaceholderColorUpdatesCorrectly(uint setValue, uint unsetValue)
 		{
 			var editor = new EditorStub
@@ -370,23 +370,35 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsChatKeyboard, expected);
 		}
 
-		[Category(TestCategory.Editor)]
-		public class EditorTextInputTests : TextInputHandlerTests<EditorHandler, EditorStub>
+		[Theory(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.End)]
+		public async Task VerticalTextAlignmentInitializesCorrectly(TextAlignment textAlignment)
 		{
-			protected override void SetNativeText(EditorHandler editorHandler, string text)
+			var editor = new EditorStub
 			{
-				EditorHandlerTests.SetNativeText(editorHandler, text);
-			}
+				VerticalTextAlignment = textAlignment
+			};
 
-			protected override int GetCursorStartPosition(EditorHandler editorHandler)
-			{
-				return EditorHandlerTests.GetCursorStartPosition(editorHandler);
-			}
+			var platformAlignment = GetNativeVerticalTextAlignment(textAlignment);
 
-			protected override void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
-			{
-				EditorHandlerTests.UpdateCursorStartPosition(editorHandler, position);
-			}
+			// attach for windows because it uses control templates
+			var values = await GetValueAsync(editor, (handler) =>
+				handler.PlatformView.AttachAndRun(() =>
+					new
+					{
+						ViewValue = editor.VerticalTextAlignment,
+						PlatformViewValue = GetNativeVerticalTextAlignment(handler)
+					}));
+
+			Assert.Equal(textAlignment, values.ViewValue);
+			Assert.Equal(platformAlignment, values.PlatformViewValue);
+		}
+
+		[Category(TestCategory.Editor)]
+		public class EditorTextStyleTests : TextStyleHandlerTests<EditorHandler, EditorStub>
+		{
 		}
 	}
 }

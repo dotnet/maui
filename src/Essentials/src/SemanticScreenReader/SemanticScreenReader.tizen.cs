@@ -4,7 +4,7 @@
 	{
 		public void Announce(string text)
 		{
-			_ = ElmSharp.Accessible.AccessibleUtil.Say(text, true);
+			Tizen.NUI.Accessibility.Accessibility.Say(text, true);
 		}
 	}
 }

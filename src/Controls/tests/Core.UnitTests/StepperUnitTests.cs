@@ -1,54 +1,54 @@
 using System;
 
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class StepperUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestConstructor()
 		{
 			var stepper = new Stepper(120, 200, 150, 2);
 
-			Assert.AreEqual(120, stepper.Minimum);
-			Assert.AreEqual(200, stepper.Maximum);
-			Assert.AreEqual(150, stepper.Value);
-			Assert.AreEqual(2, stepper.Increment);
+			Assert.Equal(120, stepper.Minimum);
+			Assert.Equal(200, stepper.Maximum);
+			Assert.Equal(150, stepper.Value);
+			Assert.Equal(2, stepper.Increment);
 		}
 
-		[Test]
+		[Fact]
 		public void TestInvalidConstructor()
 		{
 			Assert.Throws<ArgumentOutOfRangeException>(() => new Stepper(100, 0, 50, 1));
 		}
 
-		[Test]
+		[Fact]
 		public void TestInvalidMaxValue()
 		{
 			Stepper stepper = new Stepper();
 			Assert.Throws<ArgumentException>(() => stepper.Maximum = stepper.Minimum - 1);
 		}
 
-		[Test]
+		[Fact]
 		public void TestInvalidMinValue()
 		{
 			Stepper stepper = new Stepper();
 			Assert.Throws<ArgumentException>(() => stepper.Minimum = stepper.Maximum + 1);
 		}
 
-		[Test]
+		[Fact]
 		public void TestValidMaxValue()
 		{
 			Stepper stepper = new Stepper();
 
 			stepper.Maximum = 2000;
 
-			Assert.AreEqual(2000, stepper.Maximum);
+			Assert.Equal(2000, stepper.Maximum);
 		}
 
-		[Test]
+		[Fact]
 		public void TestValidMinValue()
 		{
 			Stepper stepper = new Stepper();
@@ -56,22 +56,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			stepper.Maximum = 2000;
 			stepper.Minimum = 200;
 
-			Assert.AreEqual(200, stepper.Minimum);
+			Assert.Equal(200, stepper.Minimum);
 		}
 
-		[Test]
+		[Fact]
 		public void TestConstructorClampValue()
 		{
 			Stepper stepper = new Stepper(0, 100, 2000, 1);
 
-			Assert.AreEqual(100, stepper.Value);
+			Assert.Equal(100, stepper.Value);
 
 			stepper = new Stepper(0, 100, -200, 1);
 
-			Assert.AreEqual(0, stepper.Value);
+			Assert.Equal(0, stepper.Value);
 		}
 
-		[Test]
+		[Fact]
 		public void TestMinClampValue()
 		{
 			Stepper stepper = new Stepper();
@@ -95,13 +95,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			stepper.Minimum = 10;
 
-			Assert.AreEqual(10, stepper.Minimum);
-			Assert.AreEqual(10, stepper.Value);
+			Assert.Equal(10, stepper.Minimum);
+			Assert.Equal(10, stepper.Value);
 			Assert.True(minThrown);
 			Assert.True(valThrown);
 		}
 
-		[Test]
+		[Fact]
 		public void TestMaxClampValue()
 		{
 			Stepper stepper = new Stepper();
@@ -127,13 +127,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			stepper.Maximum = 25;
 
-			Assert.AreEqual(25, stepper.Maximum);
-			Assert.AreEqual(25, stepper.Value);
+			Assert.Equal(25, stepper.Maximum);
+			Assert.Equal(25, stepper.Value);
 			Assert.True(maxThrown);
 			Assert.True(valThrown);
 		}
 
-		[Test]
+		[Fact]
 		public void TestValueChangedEvent()
 		{
 			var stepper = new Stepper();
@@ -146,9 +146,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[TestCase(100.0, 0.5)]
-		[TestCase(10.0, 25.0)]
-		[TestCase(0, 39.5)]
+		[Theory]
+		[InlineData(100.0, 0.5)]
+		[InlineData(10.0, 25.0)]
+		[InlineData(0, 39.5)]
 		public void StepperValueChangedEventArgs(double initialValue, double finalValue)
 		{
 			var stepper = new Stepper
@@ -172,12 +173,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			stepper.Value = finalValue;
 
-			Assert.AreEqual(stepper, stepperFromSender);
-			Assert.AreEqual(initialValue, oldValue);
-			Assert.AreEqual(finalValue, newValue);
+			Assert.Equal(stepper, stepperFromSender);
+			Assert.Equal(initialValue, oldValue);
+			Assert.Equal(finalValue, newValue);
 		}
 
-		[TestCase(10)]
+		[Theory]
+		[InlineData(10)]
 		public void TestReturnToZero(int steps)
 		{
 			var stepper = new Stepper(0, 10, 0, 0.5);
@@ -188,62 +190,63 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			for (int i = steps; i < steps; i--)
 				stepper.Value += stepper.Increment;
 
-			Assert.AreEqual(0.0, stepper.Value);
+			Assert.Equal(0.0, stepper.Value);
 		}
 
-		[TestCase(100, .5, 0, 100)]
-		[TestCase(100, .3, 0, 100)]
-		[TestCase(100, .03, 0, 100)]
-		[TestCase(100, .003, 0, 100)]
-		[TestCase(100, .0003, 0, 100)]
-		[TestCase(100, .0000003, 0, 100)]
-		[TestCase(100, .0000000003, 0, 100)]
-		[TestCase(100, .0000000000003, 0, 100)]
-		[TestCase(100, .5, -10000, 10000)]
-		[TestCase(100, .3, -10000, 10000)]
-		[TestCase(100, .03, -10000, 10000)]
-		[TestCase(100, .003, -10000, 10000)]
-		[TestCase(100, .0003, -10000, 10000)]
-		[TestCase(100, .0000003, -10000, 10000)]
-		[TestCase(100, .0000000003, -10000, 10000)]
-		[TestCase(100, .0000000000003, -10000, 10000)]
-		[TestCase(100, .00003456, -10000, 10000)] //we support 4 significant digits for the increment. no less, no more
-												  //https://github.com/xamarin/Microsoft.Maui.Controls/issues/5168
+		[Theory]
+		[InlineData(100, .5, 0, 100)]
+		[InlineData(100, .3, 0, 100)]
+		[InlineData(100, .03, 0, 100)]
+		[InlineData(100, .003, 0, 100)]
+		[InlineData(100, .0003, 0, 100)]
+		[InlineData(100, .0000003, 0, 100)]
+		[InlineData(100, .0000000003, 0, 100)]
+		[InlineData(100, .0000000000003, 0, 100)]
+		[InlineData(100, .5, -10000, 10000)]
+		[InlineData(100, .3, -10000, 10000)]
+		[InlineData(100, .03, -10000, 10000)]
+		[InlineData(100, .003, -10000, 10000)]
+		[InlineData(100, .0003, -10000, 10000)]
+		[InlineData(100, .0000003, -10000, 10000)]
+		[InlineData(100, .0000000003, -10000, 10000)]
+		[InlineData(100, .0000000000003, -10000, 10000)]
+		[InlineData(100, .00003456, -10000, 10000)] //we support 4 significant digits for the increment. no less, no more
+													//https://github.com/xamarin/Microsoft.Maui.Controls/issues/5168
 		public void SmallIncrements(int steps, double increment, double min, double max)
 		{
 			var stepper = new Stepper(min, max, 0, increment);
 			int digits = Math.Max(1, Math.Min(15, (int)(-Math.Log10((double)increment) + 4))); //logic copied from the Stepper code
 
-			Assert.AreEqual(0.0, stepper.Value);
+			Assert.Equal(0.0, stepper.Value);
 
 			for (var i = 0; i < steps; i++)
 				stepper.Value += stepper.Increment;
 
-			Assert.AreEqual(Math.Round(stepper.Increment * steps, digits), stepper.Value);
+			Assert.Equal(Math.Round(stepper.Increment * steps, digits), stepper.Value);
 
 			for (var i = 0; i < steps; i++)
 				stepper.Value -= stepper.Increment;
 
-			Assert.AreEqual(0.0, stepper.Value);
+			Assert.Equal(0.0, stepper.Value);
 		}
 
-		[Test]
+		[Fact]
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/10032
 		public void InitialValue()
 		{
 			var increment = .1;
 			var stepper = new Stepper(0, 10, 4.99, increment);
 
-			Assert.AreEqual(4.99, stepper.Value);
+			Assert.Equal(4.99, stepper.Value);
 
 			stepper.Value += stepper.Increment;
-			Assert.AreEqual(5.09, stepper.Value);
+			Assert.Equal(5.09, stepper.Value);
 			stepper.Value += stepper.Increment;
-			Assert.AreEqual(5.19, stepper.Value);
+			Assert.Equal(5.19, stepper.Value);
 			stepper.Value += stepper.Increment;
-			Assert.AreEqual(5.29, stepper.Value);
+			Assert.Equal(5.29, stepper.Value);
 			stepper.Value += stepper.Increment;
-			Assert.AreEqual(5.39, stepper.Value);
+			Assert.Equal(5.39, stepper.Value);
 		}
 	}
 }

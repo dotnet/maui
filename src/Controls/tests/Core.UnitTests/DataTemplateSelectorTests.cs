@@ -1,11 +1,11 @@
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class DataTemplateSelectorTests : BaseTestFixture
 	{
 		class TemplateOne : DataTemplate
@@ -45,32 +45,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			readonly DataTemplate templateTwo;
 		}
 
-		[Test]
+		[Fact]
 		public void Constructor()
 		{
 			var dts = new TestDTS();
 		}
 
-		[Test]
+		[Fact]
 		public void ReturnsCorrectType()
 		{
 			var dts = new TestDTS();
-			Assert.IsInstanceOf<TemplateOne>(dts.SelectTemplate(1d, null));
-			Assert.IsInstanceOf<TemplateTwo>(dts.SelectTemplate("test", null));
+			Assert.IsType<TemplateOne>(dts.SelectTemplate(1d, null));
+			Assert.IsType<TemplateTwo>(dts.SelectTemplate("test", null));
 		}
 
-		[Test]
+		[Fact]
 		public void ListViewSupport()
 		{
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement);
 			listView.ItemsSource = new object[] { 0d, "test" };
 
 			listView.ItemTemplate = new TestDTS();
-			Assert.IsInstanceOf<ViewCell>(listView.TemplatedItems[0]);
-			Assert.IsInstanceOf<EntryCell>(listView.TemplatedItems[1]);
+			Assert.IsType<ViewCell>(listView.TemplatedItems[0]);
+			Assert.IsType<EntryCell>(listView.TemplatedItems[1]);
 		}
 
-		[Test]
+		[Fact]
 		public void NestingThrowsException()
 		{
 			var dts = new TestDTS();
@@ -78,13 +78,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	[TestFixture]
+
 	public class DataTemplateRecycleTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
+		public DataTemplateRecycleTests()
 		{
-			base.Setup();
 			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 		}
 
@@ -112,23 +110,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public int Counter = 0;
 		}
 
-		[Test]
+		[Fact]
 		public void ListViewSupport()
 		{
 			var listView = new ListView(ListViewCachingStrategy.RecycleElementAndDataTemplate);
 			listView.ItemsSource = new object[] { "foo", "bar", 0 };
 
-			Assert.AreEqual(ListViewCachingStrategy.RecycleElementAndDataTemplate, listView.CachingStrategy);
+			Assert.Equal(ListViewCachingStrategy.RecycleElementAndDataTemplate, listView.CachingStrategy);
 
 			var selector = new TestDataTemplateSelector();
 			listView.ItemTemplate = selector;
-			Assert.That(selector.Counter == 0);
+			Assert.True(selector.Counter == 0);
 
-			Assert.IsInstanceOf<ViewCell>(listView.TemplatedItems[0]);
-			Assert.That(selector.Counter == 1);
+			Assert.IsType<ViewCell>(listView.TemplatedItems[0]);
+			Assert.True(selector.Counter == 1);
 
-			Assert.IsInstanceOf<ViewCell>(listView.TemplatedItems[1]);
-			Assert.That(selector.Counter == 1);
+			Assert.IsType<ViewCell>(listView.TemplatedItems[1]);
+			Assert.True(selector.Counter == 1);
 
 			Assert.Throws<NotSupportedException>(
 				() => { var o = listView.TemplatedItems[2]; });

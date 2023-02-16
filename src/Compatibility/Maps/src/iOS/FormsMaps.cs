@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (s_isInitialized)
 				return;
-			GeocoderBackend.Register();
+
 			s_isInitialized = true;
 		}
 	}

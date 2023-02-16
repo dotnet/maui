@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using AndroidX.ViewPager2.Widget;
@@ -15,7 +14,7 @@ namespace Microsoft.Maui.Controls
 	public partial class TabbedPage
 	{
 		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
-		TabbedPageManager _tabbedPageManager;
+		TabbedPageManager? _tabbedPageManager;
 
 		ViewPager2 CreatePlatformView()
 		{
@@ -34,38 +33,45 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
-			if (args.OldHandler != null && args.NewHandler == null)
+			if (args.NewHandler != null &&
+				_tabbedPageManager != null &&
+				args.NewHandler.MauiContext != _tabbedPageManager.MauiContext)
+			{
+				DisconnectHandler();
+				_tabbedPageManager = null;
+			}
+			else if (args.OldHandler != null && args.NewHandler == null)
 				DisconnectHandler();
 		}
 
 		void DisconnectHandler()
 		{
-			_tabbedPageManager.SetElement(null);
+			_tabbedPageManager?.SetElement(null);
 		}
 
 		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)
 		{
-			view._tabbedPageManager.UpdateBarBackground();
+			view._tabbedPageManager?.UpdateBarBackground();
 		}
 
 		internal static void MapBarBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
 		{
-			view._tabbedPageManager.UpdateBarBackgroundColor();
+			view._tabbedPageManager?.UpdateBarBackgroundColor();
 		}
 
 		internal static void MapBarTextColor(ITabbedViewHandler handler, TabbedPage view)
 		{
-			view._tabbedPageManager.UpdateTabItemStyle();
+			view._tabbedPageManager?.UpdateTabItemStyle();
 		}
 
 		internal static void MapUnselectedTabColor(ITabbedViewHandler handler, TabbedPage view)
 		{
-			view._tabbedPageManager.UpdateTabItemStyle();
+			view._tabbedPageManager?.UpdateTabItemStyle();
 		}
 
 		internal static void MapSelectedTabColor(ITabbedViewHandler handler, TabbedPage view)
 		{
-			view._tabbedPageManager.UpdateTabItemStyle();
+			view._tabbedPageManager?.UpdateTabItemStyle();
 		}
 
 		internal static void MapItemsSource(ITabbedViewHandler handler, TabbedPage view)
@@ -85,12 +91,12 @@ namespace Microsoft.Maui.Controls
 
 		internal static void MapCurrentPage(ITabbedViewHandler handler, TabbedPage view)
 		{
-			view._tabbedPageManager.ScrollToCurrentPage();
+			view._tabbedPageManager?.ScrollToCurrentPage();
 		}
 
 		public static void MapIsSwipePagingEnabled(ITabbedViewHandler handler, TabbedPage view)
 		{
-			view._tabbedPageManager.UpdateSwipePaging();
+			view._tabbedPageManager?.UpdateSwipePaging();
 		}
 	}
 }

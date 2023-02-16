@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -78,27 +79,8 @@ namespace Microsoft.Maui.Layouts
 			}
 
 			var desiredWidth = view.DesiredSize.Width;
-			var startX = bounds.X;
 
-			if (view.ShouldArrangeLeftToRight())
-			{
-				return AlignHorizontal(startX, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
-			}
-
-			// If the flowdirection is RTL, then we can use the same logic to determine the X position of the Frame;
-			// we just have to flip a few parameters. First we flip the alignment if it's start or end:
-
-			if (alignment == LayoutAlignment.End)
-			{
-				alignment = LayoutAlignment.Start;
-			}
-			else if (alignment == LayoutAlignment.Start)
-			{
-				alignment = LayoutAlignment.End;
-			}
-
-			// And then we swap the left and right margins: 
-			return AlignHorizontal(startX, margin.Right, margin.Left, bounds.Width, desiredWidth, alignment);
+			return AlignHorizontal(bounds.X, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
 		}
 
 		static double AlignHorizontal(double startX, double startMargin, double endMargin, double boundsWidth,
@@ -207,17 +189,37 @@ namespace Microsoft.Maui.Layouts
 			return size;
 		}
 
-		public static bool ShouldArrangeLeftToRight(this IView view)
+		/// <summary>
+		/// Arranges content which can exceed the bounds of the IContentView.
+		/// </summary>
+		/// <remarks>
+		/// Useful for arranging content where the IContentView provides a viewport to a portion of the content (e.g, 
+		/// the content of an IScrollView).
+		/// </remarks>
+		/// <param name="contentView"></param>
+		/// <param name="bounds"></param>
+		/// <returns>The Size of the arranged content</returns>
+		public static Size ArrangeContentUnbounded(this IContentView contentView, Rect bounds)
 		{
-			var viewFlowDirection = view.GetEffectiveFlowDirection();
+			var presentedContent = contentView.PresentedContent;
 
-			// The various platforms handle layout and flow direction in different ways; some platforms
-			// helpfully flip the coordinates of arrange calls when in RTL mode, others don't
-			// So this gives us a place to ask the platform (via LayoutHandler) whether we need to do 
-			// the layout work to flip RTL stuff in our cross-platform layouts or not.
-			var layoutFlowDirection = LayoutHandler.GetLayoutFlowDirection(viewFlowDirection);
+			if (presentedContent == null)
+			{
+				return bounds.Size;
+			}
 
-			return layoutFlowDirection == FlowDirection.LeftToRight;
+			var padding = contentView.Padding;
+
+			// Normally we'd just want the content to be arranged within the ContentView's Frame,
+			// but in this case the content may exceed the size of the Frame.
+			// So in each dimension, we assume the larger of the two values.
+
+			bounds.Width = Math.Max(bounds.Width, presentedContent.DesiredSize.Width + padding.HorizontalThickness);
+			bounds.Height = Math.Max(bounds.Height, presentedContent.DesiredSize.Height + padding.VerticalThickness);
+
+			contentView.ArrangeContent(bounds);
+
+			return bounds.Size;
 		}
 	}
 }

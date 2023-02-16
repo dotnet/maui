@@ -1,19 +1,26 @@
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/NavigationMode.xml" path="Type[@FullName='Microsoft.Maui.Essentials.NavigationMode']/Docs" />
+	/// <summary>
+	/// Represents various modes of navigation that can be passed to the operating system's Maps app.
+	/// </summary>
 	public enum NavigationMode
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NavigationMode.xml" path="//Member[@MemberName='None']/Docs" />
+		/// <summary>No navigation mode.</summary>
 		None = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NavigationMode.xml" path="//Member[@MemberName='Default']/Docs" />
+
+		/// <summary>The default navigation mode on the platform.</summary>
 		Default = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NavigationMode.xml" path="//Member[@MemberName='Bicycling']/Docs" />
+
+		/// <summary>Bicycle route mode.</summary>
 		Bicycling = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NavigationMode.xml" path="//Member[@MemberName='Driving']/Docs" />
+
+		/// <summary>Car route mode.</summary>
 		Driving = 3,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NavigationMode.xml" path="//Member[@MemberName='Transit']/Docs" />
+
+		/// <summary>Transit route mode.</summary>
 		Transit = 4,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NavigationMode.xml" path="//Member[@MemberName='Walking']/Docs" />
+
+		/// <summary>Walking route mode.</summary>
 		Walking = 5,
 	}
 }

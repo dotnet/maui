@@ -1,22 +1,23 @@
+#nullable disable
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualMarker']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualMarker']/Docs/*" />
 	public static class VisualMarker
 	{
 		static bool _isMaterialRegistered = false;
 		static bool _warnedAboutMaterial = false;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='MatchParent']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='MatchParent']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IVisual MatchParent { get; } = new MatchParentVisual();
-		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='Default']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='Default']/Docs/*" />
 		public static IVisual Default { get; } = new DefaultVisual();
 
-		// /// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='Material']/Docs" />
+		// /// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='Material']/Docs/*" />
 		internal static IVisual Material { get; } = new MaterialVisual();
 
 		internal static void RegisterMaterial() => _isMaterialRegistered = true;

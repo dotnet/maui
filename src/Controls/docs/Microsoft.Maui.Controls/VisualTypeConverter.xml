@@ -1,6 +1,6 @@
 <Type Name="VisualTypeConverter" FullName="Microsoft.Maui.Controls.VisualTypeConverter">
-  <TypeSignature Language="C#" Value="public class VisualTypeConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit VisualTypeConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public class VisualTypeConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit VisualTypeConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.VisualTypeConverter" />
   <TypeSignature Language="F#" Value="type VisualTypeConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -8,7 +8,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>
@@ -17,7 +17,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>A <see cref="T:Microsoft.Maui.Controls.TypeConverter" /> that can convert a string into a <see cref="T:Microsoft.Maui.Controls.IVisual" /> object.</summary>
+    <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> that can convert a string into a <see cref="T:Microsoft.Maui.Controls.IVisual" /> object.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>

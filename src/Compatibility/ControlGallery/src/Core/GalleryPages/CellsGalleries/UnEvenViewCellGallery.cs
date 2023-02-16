@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Title = "UnevenViewCell Gallery - Legacy";
 
 			var map = MapGallery.MakeMap();
-			map.HasScrollEnabled = false;
+			map.IsScrollEnabled = false;
 
 			Content = new TableView
 			{

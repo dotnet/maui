@@ -1,19 +1,21 @@
 using System;
-using ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : ViewHandler<IStepper, Spinner>
+	public partial class StepperHandler : ViewHandler<IStepper, MauiStepper>
 	{
-		protected override Spinner CreatePlatformView() => new Spinner(PlatformParent) { IsEditable = false };
+		protected override MauiStepper CreatePlatformView() => new MauiStepper();
 
-		protected override void ConnectHandler(Spinner platformView)
+		protected override void ConnectHandler(MauiStepper platformView)
 		{
 			platformView!.ValueChanged += OnValueChanged;
 		}
 
-		protected override void DisconnectHandler(Spinner platformView)
+		protected override void DisconnectHandler(MauiStepper platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			platformView!.ValueChanged -= OnValueChanged;
 		}
 

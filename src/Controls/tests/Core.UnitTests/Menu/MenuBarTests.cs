@@ -2,13 +2,13 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 {
-	[TestFixture, Category("MenuBar")]
+	[Category("MenuBar")]
 	public class MenuBarTests :
-		MenuBarTestBase<MenuBar, IMenuBarItem, MenuBarItem, MenuBarHandlerUpdate>
+		MenuTestBase<MenuBar, IMenuBarItem, MenuBarItem, MenuBarHandlerUpdate>
 	{
 		protected override int GetIndex(MenuBarHandlerUpdate handlerUpdate) =>
 			handlerUpdate.Index;
@@ -35,6 +35,77 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 				});
 
 			return handler;
+		}
+
+		[Fact]
+		public void UsingWindowDoesNotReAssignParents()
+		{
+			MenuFlyoutItem flyout;
+			MenuBarItem menuItem;
+
+			var page = new ContentPage
+			{
+				MenuBarItems =
+				{
+					(menuItem = new MenuBarItem
+					{
+						(flyout = new MenuFlyoutItem { })
+					})
+				}
+			};
+
+			Assert.Equal(menuItem, flyout.Parent);
+			Assert.Equal(page, menuItem.Parent);
+
+			var window = new Window(page);
+
+			Assert.Equal(menuItem, flyout.Parent);
+			Assert.Equal(page, menuItem.Parent);
+			Assert.Equal(window, page.Parent);
+
+			var menubar = (window as IMenuBarElement).MenuBar;
+			Assert.NotNull(menubar);
+
+			Assert.Equal(menuItem, flyout.Parent);
+			Assert.Equal(page, menuItem.Parent);
+			Assert.Equal(window, page.Parent);
+		}
+
+		[Fact]
+		public void UsingWindowDoesNotReAssignBindingContext()
+		{
+			var bindingContext = new
+			{
+				Name = "Matthew"
+			};
+
+			MenuFlyoutItem flyout;
+			MenuBarItem menuItem;
+
+			var page = new ContentPage
+			{
+				BindingContext = bindingContext,
+				MenuBarItems =
+				{
+					(menuItem = new MenuBarItem
+					{
+						(flyout = new MenuFlyoutItem { })
+					})
+				}
+			};
+
+			flyout.SetBinding(MenuFlyoutItem.TextProperty, new Binding(nameof(bindingContext.Name)));
+
+			Assert.Equal(bindingContext.Name, flyout.Text);
+
+			var window = new Window(page);
+
+			Assert.Equal(bindingContext.Name, flyout.Text);
+
+			var menubar = (window as IMenuBarElement).MenuBar;
+			Assert.NotNull(menubar);
+
+			Assert.Equal(bindingContext.Name, flyout.Text);
 		}
 
 		class NonThrowingMenuBarHandler : MenuBarHandler

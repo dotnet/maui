@@ -101,16 +101,16 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
 
-		static void SetNativeText(EditorHandler editorHandler, string text) =>
+		internal static void SetNativeText(EditorHandler editorHandler, string text) =>
 			GetNativeEditor(editorHandler).Text = text;
 
-		static int GetCursorStartPosition(EditorHandler editorHandler)
+		internal static int GetCursorStartPosition(EditorHandler editorHandler)
 		{
 			var control = GetNativeEditor(editorHandler);
 			return control.SelectionStart;
 		}
 
-		static void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
+		internal static void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
 		{
 			var control = GetNativeEditor(editorHandler);
 			control.SetSelection(position);
@@ -153,6 +153,12 @@ namespace Microsoft.Maui.DeviceTests
 			var textView = GetNativeEditor(editorHandler);
 			return (textView.Gravity, textView.TextAlignment);
 		}
+
+		GravityFlags GetNativeVerticalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).Gravity & GravityFlags.VerticalGravityMask;
+
+		GravityFlags GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToVerticalGravityFlags();
 
 		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler)
 		{

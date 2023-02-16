@@ -249,10 +249,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetShadowColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetShadowColor (Microsoft.Maui.Controls.BindableObject element);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetShadowColor(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetShadowColor (Microsoft.Maui.Controls.BindableObject element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetShadowColor(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetShadowColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowColor element" />
+      <MemberSignature Language="F#" Value="static member GetShadowColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowColor element" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -260,7 +260,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -273,10 +273,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetShadowColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetShadowColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; config);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetShadowColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; config) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetShadowColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; config);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetShadowColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; config) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement})" />
-      <MemberSignature Language="F#" Value="static member GetShadowColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt; -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowColor config" />
+      <MemberSignature Language="F#" Value="static member GetShadowColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt; -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowColor config" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -284,7 +284,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt;" RefType="this" />
@@ -297,10 +297,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetShadowOffset">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Size GetShadowOffset (Microsoft.Maui.Controls.BindableObject element);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Size GetShadowOffset(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Size GetShadowOffset (Microsoft.Maui.Controls.BindableObject element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Size GetShadowOffset(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowOffset(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetShadowOffset : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowOffset element" />
+      <MemberSignature Language="F#" Value="static member GetShadowOffset : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowOffset element" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -308,7 +308,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -321,10 +321,10 @@
       </Docs>
     </Member>
     <Member MemberName="GetShadowOffset">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Size GetShadowOffset (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; config);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Size GetShadowOffset(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; config) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Size GetShadowOffset (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; config);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Size GetShadowOffset(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; config) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowOffset(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement})" />
-      <MemberSignature Language="F#" Value="static member GetShadowOffset : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt; -&gt; Microsoft.Maui.Controls.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowOffset config" />
+      <MemberSignature Language="F#" Value="static member GetShadowOffset : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt; -&gt; Microsoft.Maui.Graphics.Size" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.GetShadowOffset config" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -332,7 +332,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Size</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Size</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt;" RefType="this" />
@@ -659,10 +659,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetShadowColor">
-      <MemberSignature Language="C#" Value="public static void SetShadowColor (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetShadowColor(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetShadowColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowColor (element, value)" />
+      <MemberSignature Language="C#" Value="public static void SetShadowColor (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetShadowColor(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetShadowColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowColor (element, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -674,7 +674,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="element">The platform specific element on which to perform the operation.</param>
@@ -684,10 +684,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetShadowColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; SetShadowColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; config, Microsoft.Maui.Controls.Color value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; SetShadowColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; config, valuetype Microsoft.Maui.Controls.Color value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement},Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetShadowColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt; * Microsoft.Maui.Controls.Color -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowColor (config, value)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; SetShadowColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; config, Microsoft.Maui.Graphics.Color value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; SetShadowColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; config, valuetype Microsoft.Maui.Graphics.Color value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement},Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetShadowColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt; * Microsoft.Maui.Graphics.Color -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowColor (config, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -699,7 +699,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt;" RefType="this" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
@@ -710,10 +710,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetShadowOffset">
-      <MemberSignature Language="C#" Value="public static void SetShadowOffset (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Controls.Size value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetShadowOffset(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Controls.Size value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowOffset(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Size)" />
-      <MemberSignature Language="F#" Value="static member SetShadowOffset : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Size -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowOffset (element, value)" />
+      <MemberSignature Language="C#" Value="public static void SetShadowOffset (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Size value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetShadowOffset(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Graphics.Size value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowOffset(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Size)" />
+      <MemberSignature Language="F#" Value="static member SetShadowOffset : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Size -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowOffset (element, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -725,7 +725,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Size" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Size" />
       </Parameters>
       <Docs>
         <param name="element">The platform specific element on which to perform the operation.</param>
@@ -735,10 +735,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetShadowOffset">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; SetShadowOffset (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; config, Microsoft.Maui.Controls.Size value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; SetShadowOffset(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; config, valuetype Microsoft.Maui.Controls.Size value) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowOffset(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement},Microsoft.Maui.Controls.Size)" />
-      <MemberSignature Language="F#" Value="static member SetShadowOffset : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt; * Microsoft.Maui.Controls.Size -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowOffset (config, value)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; SetShadowOffset (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt; config, Microsoft.Maui.Graphics.Size value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; SetShadowOffset(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.iOS, class Microsoft.Maui.Controls.VisualElement&gt; config, valuetype Microsoft.Maui.Graphics.Size value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowOffset(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement},Microsoft.Maui.Graphics.Size)" />
+      <MemberSignature Language="F#" Value="static member SetShadowOffset : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt; * Microsoft.Maui.Graphics.Size -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.VisualElement&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement.SetShadowOffset (config, value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -750,7 +750,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.iOS,Microsoft.Maui.Controls.VisualElement&gt;" RefType="this" />
-        <Parameter Name="value" Type="Microsoft.Maui.Controls.Size" />
+        <Parameter Name="value" Type="Microsoft.Maui.Graphics.Size" />
       </Parameters>
       <Docs>
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>

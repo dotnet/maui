@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -117,8 +118,7 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyHandler(string action, int index, IMenuElement view)
 		{
-			var args = new Maui.Handlers.MenuFlyoutSubItemHandlerUpdate(index, view);
-			Handler?.Invoke(action, args);
+			Handler?.Invoke(action, new Maui.Handlers.MenuFlyoutSubItemHandlerUpdate(index, view));
 		}
 	}
 }

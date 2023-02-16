@@ -10,11 +10,11 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
-#if IOS
+#if IOS || MACCATALYST
 using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
 using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
@@ -23,10 +23,10 @@ using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedR
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Modal)]
-#if ANDROID || IOS
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+#if ANDROID || IOS || MACCATALYST
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
-	public partial class ModalTests : HandlerTestBase
+	public partial class ModalTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
@@ -43,6 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
 					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Image, ImageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Toolbar, ToolbarHandler>();
@@ -80,11 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public IEnumerator<object[]> GetEnumerator()
 			{
-#if IOS // Shell currently fails to run in CI for tests
-				for (int i = 0; i < 1; i++)
-#else
 				for (int i = 0; i < 2; i++)
-#endif
 				{
 					Func<Page> rootPage;
 
@@ -92,6 +89,10 @@ namespace Microsoft.Maui.DeviceTests
 						rootPage = () => new NavigationPage(new ContentPage());
 					else
 						rootPage = () => new Shell() { CurrentItem = new ContentPage() };
+
+					yield return new object[] {
+						rootPage(), new NavigationPage(new ContentPage())
+					};
 
 					yield return new object[] {
 						rootPage(), new ContentPage()

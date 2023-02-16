@@ -5,7 +5,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiScrollView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.ScrollViewer;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.ScrollView;
+using PlatformView = Tizen.UIExtensions.NUI.ScrollView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

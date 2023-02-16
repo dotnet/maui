@@ -34,6 +34,11 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		void StopClipboardListeners()
 			=> WindowsClipboard.ContentChanged -= ClipboardChangedEventListener;
 
+		/// <summary>
+		/// The event listener for triggering the <see cref="ClipboardContentChanged"/> event.
+		/// </summary>
+		/// <param name="sender">The object that initiated the event.</param>
+		/// <param name="val">The value for this event.</param>
 		public void ClipboardChangedEventListener(object? sender, object val) => OnClipboardContentChanged();
 	}
 }

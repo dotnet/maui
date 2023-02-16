@@ -5,7 +5,7 @@ using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.SwipeControl;
 #elif TIZEN
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISwipeView.TopItems)] = MapTopItems,
 			[nameof(ISwipeView.RightItems)] = MapRightItems,
 			[nameof(ISwipeView.BottomItems)] = MapBottomItems,
-#if ANDROID || IOS
+#if ANDROID || IOS || TIZEN
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 #endif
 #if ANDROID
@@ -41,14 +41,14 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		protected SwipeViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? ViewCommandMapper)
+		protected SwipeViewHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
 		{
 		}
 
-		public SwipeViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		protected SwipeViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
-
 		}
 
 		ISwipeView ISwipeViewHandler.VirtualView => VirtualView;

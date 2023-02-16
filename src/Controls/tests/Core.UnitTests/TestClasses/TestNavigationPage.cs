@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public void ValidateNavigationCompleted()
 		{
-			Assert.IsNull(CurrentNavigationTask);
+			Assert.Null(CurrentNavigationTask);
 			if (Handler is TestNavigationHandler nh)
-				Assert.IsNull(nh.CurrentNavigationRequest);
+				Assert.Null(nh.CurrentNavigationRequest);
 		}
 
 		public async Task<bool> SendBackButtonPressedAsync()
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return result;
 		}
 
-
+		public Task NavigatingTask => Handler?.NavigatingTask ?? Task.CompletedTask;
 	}
 
 	public class TestNavigationHandler : ViewHandler<NavigationPage, object>
@@ -54,23 +54,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public NavigationRequest CurrentNavigationRequest { get; private set; }
 
+		TaskCompletionSource _navigationSource;
 
-		public void CompleteCurrentNavigation()
+		public Task NavigatingTask => (_navigationSource?.Task ?? Task.CompletedTask);
+
+		public async void CompleteCurrentNavigation()
 		{
 			if (CurrentNavigationRequest == null)
 				throw new InvalidOperationException("No Active Navigation in the works");
 
 			var newStack = CurrentNavigationRequest.NavigationStack.ToList();
 			CurrentNavigationRequest = null;
-			(VirtualView as IStackNavigation)
-				.NavigationFinished(newStack);
+
+			var source = _navigationSource;
+			_navigationSource = null;
+
+			if ((this as IElementHandler).VirtualView is IStackNavigation sn)
+				sn.NavigationFinished(newStack);
+
+
+			await Task.Delay(1);
+			source.SetResult();
 		}
 
 		async void RequestNavigation(NavigationRequest navigationRequest)
 		{
-			if (CurrentNavigationRequest != null)
+			if (CurrentNavigationRequest != null || _navigationSource != null)
 				throw new InvalidOperationException("Already Processing Navigation");
 
+
+			_navigationSource = new TaskCompletionSource();
 			CurrentNavigationRequest = navigationRequest;
 
 			await Task.Delay(10);

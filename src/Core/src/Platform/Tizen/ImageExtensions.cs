@@ -1,4 +1,4 @@
-﻿using Tizen.UIExtensions.ElmSharp;
+﻿using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Platform
 {
@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Clear(this Image platformImage)
 		{
+			platformImage.ResourceUrl = null;
 		}
 
 		public static void UpdateAspect(this Image platformImage, IImage image)
@@ -15,8 +16,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsAnimationPlaying(this Image platformImage, IImageSourcePart image)
 		{
-			platformImage.IsAnimated = image.IsAnimationPlaying;
-			platformImage.IsAnimationPlaying = image.IsAnimationPlaying;
+			platformImage.SetIsAnimationPlaying(image.IsAnimationPlaying);
 		}
 	}
 }

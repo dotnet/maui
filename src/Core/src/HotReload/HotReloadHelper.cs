@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Internal;
 
 namespace Microsoft.Maui.HotReload
 {
@@ -69,14 +68,14 @@ namespace Microsoft.Maui.HotReload
 			catch (MissingMethodException)
 			{
 				Debug.WriteLine("You are using trying to HotReload a view that requires Parameters. Please call `HotReloadHelper.Register(this, params);` in the constructor;");
-				//TODO: Notifiy that we couldnt hot reload.
+				//TODO: Notify that we couldnt hot reload.
 				return view;
 			}
 			catch (Exception ex)
 			{
 				Debug.WriteLine($"Error Hotreloading type: {newViewType}");
 				Debug.WriteLine(ex);
-				//TODO: Notifiy that we couldnt hot reload.
+				//TODO: Notify that we couldnt hot reload.
 				return view;
 			}
 
@@ -107,7 +106,7 @@ namespace Microsoft.Maui.HotReload
 				{
 					Debug.WriteLine($"Error calling {method.Name} on type: {newViewType}");
 					Debug.WriteLine(ex);
-					//TODO: Notifiy that we couldnt execute OnHotReload for the Method;
+					//TODO: Notify that we couldnt execute OnHotReload for the Method;
 				}
 			};
 
@@ -155,7 +154,7 @@ namespace Microsoft.Maui.HotReload
 
 		public static void TriggerReload()
 		{
-			List<IHotReloadableView?>? roots = null;
+			List<IHotReloadableView>? roots = null;
 			while (roots == null)
 			{
 				try

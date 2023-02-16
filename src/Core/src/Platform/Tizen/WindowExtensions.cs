@@ -1,130 +1,131 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using ElmSharp;
-using Microsoft.Maui.ApplicationModel;
-using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.ElmSharp;
-using ELayout = ElmSharp.Layout;
+using Microsoft.Maui.Devices;
+using Tizen.NUI;
+using Tizen.NUI.BaseComponents;
+using Tizen.UIExtensions.NUI;
+using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui
 {
 	public static partial class WindowExtensions
 	{
+		static Dictionary<Window, NavigationStack> s_modalStacks = new Dictionary<Window, NavigationStack>();
 		static Dictionary<Window, Func<bool>> s_windowBackButtonPressedHandler = new Dictionary<Window, Func<bool>>();
 		static Dictionary<Window, Action> s_windowCloseRequestHandler = new Dictionary<Window, Action>();
-		static Dictionary<Window, ELayout> s_windowBaseLayout = new Dictionary<Window, ELayout>();
-		static Dictionary<Window, ModalStack> s_windowModalStack = new Dictionary<Window, ModalStack>();
+
+		public static void SetContent(this Window platformWindow, View content)
+		{
+			content.HeightSpecification = LayoutParamPolicies.MatchParent;
+			content.WidthSpecification = LayoutParamPolicies.MatchParent;
+			content.HeightResizePolicy = ResizePolicyType.FillToParent;
+			content.WidthResizePolicy = ResizePolicyType.FillToParent;
+
+			if (s_modalStacks.ContainsKey(platformWindow))
+			{
+				var modalStack = s_modalStacks[platformWindow];
+				modalStack.Clear();
+				modalStack.Push(content, true);
+			}
+		}
 
 		public static void Initialize(this Window platformWindow)
 		{
-			var baseLayout = (ELayout?)platformWindow.GetType().GetProperty("BaseLayout")?.GetValue(platformWindow);
+			platformWindow.AddAvailableOrientation(Window.WindowOrientation.Landscape);
+			platformWindow.AddAvailableOrientation(Window.WindowOrientation.LandscapeInverse);
+			platformWindow.AddAvailableOrientation(Window.WindowOrientation.Portrait);
+			platformWindow.AddAvailableOrientation(Window.WindowOrientation.PortraitInverse);
+			platformWindow.Resized += (s, e) => OnRotate(platformWindow);
 
-			if (baseLayout == null)
+			platformWindow.KeyEvent += (s, e) =>
 			{
-				var conformant = new Conformant(platformWindow);
-				conformant.Show();
-
-				var layout = new ApplicationLayout(conformant);
-				layout.Show();
-
-				baseLayout = layout;
-				conformant.SetContent(baseLayout);
-			}
-			platformWindow.SetBaseLayout(baseLayout);
-			var modalStack = new ModalStack(baseLayout)
-			{
-				AlignmentX = -1,
-				AlignmentY = -1,
-				WeightX = 1,
-				WeightY = 1,
-			};
-			modalStack.Show();
-			baseLayout.SetContent(modalStack);
-			platformWindow.SetModalStack(modalStack);
-
-			platformWindow.Active();
-			platformWindow.Show();
-			platformWindow.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_90 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270;
-
-			platformWindow.RotationChanged += (sender, e) =>
-			{
-				// TODO : should update later
+				if (e.Key.IsDeclineKeyEvent())
+				{
+					if (Popup.HasOpenedPopup)
+					{
+						if (Popup.CloseLast())
+							return;
+					}
+					OnBackButtonPressed(platformWindow);
+				}
 			};
 
-			platformWindow.BackButtonPressed += (s, e) => OnBackButtonPressed(platformWindow);
+			var modalStack = s_modalStacks[platformWindow] = new NavigationStack
+			{
+				HeightSpecification = LayoutParamPolicies.MatchParent,
+				WidthSpecification = LayoutParamPolicies.MatchParent,
+				WidthResizePolicy = ResizePolicyType.FillToParent,
+				HeightResizePolicy = ResizePolicyType.FillToParent,
+			};
+			platformWindow.GetDefaultLayer().Add(modalStack);
 		}
 
-		public static void SetOverlay(this Window window, EvasObject content)
+		public static NavigationStack? GetModalStack(this Window platformWindow)
 		{
-			content?.SetAlignment(-1, -1);
-			content?.SetWeight(1, 1);
-			content?.Show();
-			window.AddResizeObject(content);
+			if (s_modalStacks.ContainsKey(platformWindow))
+				return s_modalStacks[platformWindow];
+			return null;
 		}
 
-		public static void SetWindowCloseRequestHandler(this Window window, Action handler)
+		public static void SetWindowCloseRequestHandler(this Window platformWindow, Action handler)
 		{
-			s_windowCloseRequestHandler[window] = handler;
+			s_windowCloseRequestHandler[platformWindow] = handler;
 		}
 
-		public static void SetBackButtonPressedHandler(this Window window, Func<bool> handler)
+		public static void SetBackButtonPressedHandler(this Window platformWindow, Func<bool> handler)
 		{
-			s_windowBackButtonPressedHandler[window] = handler;
+			s_windowBackButtonPressedHandler[platformWindow] = handler;
 		}
 
-		public static ELayout GetBaseLayout(this Window window)
-		{
-			return s_windowBaseLayout[window];
-		}
-
-		public static void SetBaseLayout(this Window window, ELayout layout)
-		{
-			s_windowBaseLayout[window] = layout;
-		}
-
-		public static ModalStack GetModalStack(this Window window)
-		{
-			return s_windowModalStack[window];
-		}
-
-		public static void SetModalStack(this Window window, ModalStack modalStack)
-		{
-			s_windowModalStack[window] = modalStack;
-		}
-
-		public static float GetDisplayDensity(this Window window)
+		public static float GetDisplayDensity(this Window platformWindow)
 		{
 			return (float)DeviceInfo.ScalingFactor;
 		}
 
-		static void OnBackButtonPressed(Window window)
+		internal static DisplayOrientation GetOrientation(this IWindow? window)
 		{
-			if (s_windowBackButtonPressedHandler.ContainsKey(window))
+			if (window == null)
+				return DeviceDisplay.Current.MainDisplayInfo.Orientation;
+
+			return window.Handler?.MauiContext?.GetPlatformWindow()?.GetCurrentOrientation() switch
 			{
-				if (s_windowBackButtonPressedHandler[window].Invoke())
+				Window.WindowOrientation.Portrait => DisplayOrientation.Portrait,
+				Window.WindowOrientation.PortraitInverse => DisplayOrientation.Portrait,
+				Window.WindowOrientation.Landscape => DisplayOrientation.Landscape,
+				Window.WindowOrientation.LandscapeInverse => DisplayOrientation.Landscape,
+				_ => DisplayOrientation.Unknown
+			};
+		}
+
+		static void OnRotate(Window platformWindow)
+		{
+		}
+
+		static void OnBackButtonPressed(Window platformWindow)
+		{
+			if (s_windowBackButtonPressedHandler.ContainsKey(platformWindow))
+			{
+				if (s_windowBackButtonPressedHandler[platformWindow].Invoke())
 					return;
 			}
 
-			if (s_windowCloseRequestHandler.ContainsKey(window))
-				s_windowCloseRequestHandler[window].Invoke();
+			if (s_windowCloseRequestHandler.ContainsKey(platformWindow))
+				s_windowCloseRequestHandler[platformWindow].Invoke();
 		}
 
-		internal static Devices.DisplayOrientation GetOrientation(this IWindow? window)
-		{
-			if (window == null)
-				return Devices.DeviceDisplay.Current.MainDisplayInfo.Orientation;
+		internal static void UpdateX(this Window platformWindow, IWindow window) =>
+			platformWindow.UpdateUnsupportedCoordinate(window);
 
-			bool isTV = Elementary.GetProfile() == "tv";
-			return window.Handler?.MauiContext?.GetPlatformWindow()?.Rotation switch
-			{
-				0 => isTV ? Devices.DisplayOrientation.Landscape : Devices.DisplayOrientation.Portrait,
-				90 => isTV ? Devices.DisplayOrientation.Portrait : Devices.DisplayOrientation.Landscape,
-				180 => isTV ? Devices.DisplayOrientation.Landscape : Devices.DisplayOrientation.Portrait,
-				270 => isTV ? Devices.DisplayOrientation.Portrait : Devices.DisplayOrientation.Landscape,
-				_ => Devices.DisplayOrientation.Unknown
-			};
-		}
+		internal static void UpdateY(this Window platformWindow, IWindow window) =>
+			platformWindow.UpdateUnsupportedCoordinate(window);
+
+		internal static void UpdateWidth(this Window platformWindow, IWindow window) =>
+			platformWindow.UpdateUnsupportedCoordinate(window);
+
+		internal static void UpdateHeight(this Window platformWindow, IWindow window) =>
+			platformWindow.UpdateUnsupportedCoordinate(window);
+
+		internal static void UpdateUnsupportedCoordinate(this Window platformWindow, IWindow window) =>
+			window.FrameChanged(platformWindow.WindowPositionSize.ToDP());
 	}
 }

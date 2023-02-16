@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#nullable disable
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			if (index < Items?.Count)
 			{
 				var item = Items[index];
-				return item == null ? string.Empty : item;
+				return item ?? string.Empty;
 			}
 
 			return string.Empty;

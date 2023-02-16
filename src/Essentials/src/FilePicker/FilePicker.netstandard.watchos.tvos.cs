@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Storage
 			=> throw new NotImplementedInReferenceAssemblyException();
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FilePickerFileType']/Docs" />
 	public partial class FilePickerFileType
 	{
 		static FilePickerFileType PlatformImageFileType()

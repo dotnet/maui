@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
 {
+	/// <inheritdoc/>
 	public class FontManager : IFontManager
 	{
 		// UIFontWeight[Constant] is internal in Xamarin.iOS but the convertion from
@@ -30,18 +30,28 @@ namespace Microsoft.Maui
 
 		UIFont? _defaultFont;
 
+		/// <summary>
+		/// Creates a new <see cref="EmbeddedFontLoader"/> instance.
+		/// </summary>
+		/// <param name="fontRegistrar">A <see cref="IFontRegistrar"/> instance to retrieve details from about registered fonts.</param>
+		/// <param name="serviceProvider">The applications <see cref="IServiceProvider"/>.
+		/// Typically this is provided through dependency injection.</param>
 		public FontManager(IFontRegistrar fontRegistrar, IServiceProvider? serviceProvider = null)
 		{
 			_fontRegistrar = fontRegistrar;
 			_serviceProvider = serviceProvider;
 		}
 
+		/// <inheritdoc/>
 		public UIFont DefaultFont =>
 			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
 
 		static double? defaultFontSize;
+
+		/// <inheritdoc/>
 		public double DefaultFontSize => defaultFontSize ??= UIFont.SystemFontSize;
 
+		/// <inheritdoc/>
 		public UIFont GetFont(Font font, double defaultFontSize = 0) =>
 			GetFont(font, defaultFontSize, CreateFont);
 

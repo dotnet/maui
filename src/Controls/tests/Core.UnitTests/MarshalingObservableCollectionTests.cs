@@ -5,32 +5,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
-	public class MarshalingObservableCollectionTests
+
+	public class MarshalingObservableCollectionTests : IDisposable
 	{
 		MarshalingTestDispatcherProvider _dispatcherProvider;
 
-		[SetUp]
-		public void Setup()
+		public MarshalingObservableCollectionTests()
 		{
 			_dispatcherProvider = new MarshalingTestDispatcherProvider();
 			DispatcherProvider.SetCurrent(_dispatcherProvider);
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			DispatcherProvider.SetCurrent(null);
 			_dispatcherProvider.StopAllDispatchers();
 			_dispatcherProvider = null;
 		}
 
-		[Test]
-		[Description("Added items don't show up until they've been processed on the UI thread")]
+		[Fact("Added items don't show up until they've been processed on the UI thread")]
 		public Task AddOffUIThread() => DispatcherTest.Run(async () =>
 		{
 			var _dispatcher = Dispatcher.GetForCurrentThread();
@@ -62,13 +59,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				return moc.Count;
 			});
 
-			Assert.That(countFromThreadPool, Is.EqualTo(0), "Count should be zero because the update on the UI thread hasn't run yet");
-			Assert.That(onMainThreadCount, Is.EqualTo(1), "Count should be 1 because the UI thread has updated");
-			Assert.That(insertCount, Is.EqualTo(1), "The CollectionChanged event should have fired with an Add exactly 1 time");
+			Assert.True(countFromThreadPool == 0, "Count should be zero because the update on the UI thread hasn't run yet");
+			Assert.True(onMainThreadCount == 1, "Count should be 1 because the UI thread has updated");
+			Assert.True(insertCount == 1, "The CollectionChanged event should have fired with an Add exactly 1 time");
 		});
 
-		[Test]
-		[Description("Intial item count should match wrapped collection.")]
+		[Fact("Initial item count should match wrapped collection.")]
 		public Task InitialItemCountsMatch() => DispatcherTest.Run(async () =>
 		{
 			var _dispatcher = Dispatcher.GetForCurrentThread();
@@ -77,11 +73,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var moc = new MarshalingObservableCollection(source);
 
-			Assert.That(source.Count, Is.EqualTo(moc.Count));
+			Assert.Equal(source.Count, moc.Count);
 		});
 
-		[Test]
-		[Description("Clears don't show up until they've been processed on the UI thread")]
+		[Fact("Clears don't show up until they've been processed on the UI thread")]
 		public Task ClearOnUIThread() => DispatcherTest.Run(async () =>
 		{
 			var _dispatcher = Dispatcher.GetForCurrentThread();
@@ -106,12 +101,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Check the result on the main thread
 			var onMainThreadCount = await _dispatcher.DispatchAsync<int>(() => moc.Count);
 
-			Assert.That(countFromThreadPool, Is.EqualTo(2), "Count should be pre-clear");
-			Assert.That(onMainThreadCount, Is.EqualTo(0), "Count should be zero because the Clear has been processed");
+			Assert.True(countFromThreadPool == 2, "Count should be pre-clear");
+			Assert.True(onMainThreadCount == 0, "Count should be zero because the Clear has been processed");
 		});
 
-		[Test]
-		[Description("A Reset should reflect the state at the time of the Reset")]
+		[Fact("A Reset should reflect the state at the time of the Reset")]
 		public Task ClearAndAddOffUIThread() => DispatcherTest.Run(async () =>
 		{
 			var _dispatcher = Dispatcher.GetForCurrentThread();
@@ -137,12 +131,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Check the result on the main thread
 			var onMainThreadCount = await _dispatcher.DispatchAsync<int>(() => moc.Count);
 
-			Assert.That(countFromThreadPool, Is.EqualTo(2), "Count should be pre-clear");
-			Assert.That(onMainThreadCount, Is.EqualTo(1), "Should have processed a Clear and an Add");
+			Assert.True(countFromThreadPool == 2, "Count should be pre-clear");
+			Assert.True(onMainThreadCount == 1, "Should have processed a Clear and an Add");
 		});
 
-		[Test]
-		[Description("Removed items are still there until they're removed on the UI thread")]
+		[Fact("Removed items are still there until they're removed on the UI thread")]
 		public Task RemoveOffUIThread() => DispatcherTest.Run(async () =>
 		{
 			var _dispatcher = Dispatcher.GetForCurrentThread();
@@ -163,12 +156,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Check the result on the main thread
 			var onMainThreadCount = await _dispatcher.DispatchAsync<int>(() => moc.Count);
 
-			Assert.That(countFromThreadPool, Is.EqualTo(2), "Count should be pre-remove");
-			Assert.That(onMainThreadCount, Is.EqualTo(1), "Remove has now processed");
+			Assert.True(countFromThreadPool == 2, "Count should be pre-remove");
+			Assert.True(onMainThreadCount == 1, "Remove has now processed");
 		});
 
-		[Test]
-		[Description("Until the UI thread processes a change, the indexer should remain consistent")]
+		[Fact("Until the UI thread processes a change, the indexer should remain consistent")]
 		public Task IndexerConsistent() => DispatcherTest.Run(async () =>
 		{
 			var _dispatcher = Dispatcher.GetForCurrentThread();
@@ -186,11 +178,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				itemFromThreadPool = (int)moc[1];
 			});
 
-			Assert.That(itemFromThreadPool, Is.EqualTo(2), "Should have indexer value from before remove");
+			Assert.True(itemFromThreadPool == 2, "Should have indexer value from before remove");
 		});
 
-		[Test]
-		[Description("Don't show replacements until the UI thread has processed them")]
+		[Fact("Don't show replacements until the UI thread has processed them")]
 		public Task ReplaceOffUIThread() => DispatcherTest.Run(async () =>
 		{
 			var _dispatcher = Dispatcher.GetForCurrentThread();
@@ -211,12 +202,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Check the result on the main thread
 			var onMainThreadValue = await _dispatcher.DispatchAsync(() => moc[0]);
 
-			Assert.That(itemFromThreadPool, Is.EqualTo(1), "Should have value from before replace");
-			Assert.That(onMainThreadValue, Is.EqualTo(42), "Should have value from after replace");
+			Assert.True(itemFromThreadPool == 1, "Should have value from before replace");
+			Assert.True((int)onMainThreadValue == 42, "Should have value from after replace");
 		});
 
-		[Test]
-		[Description("Don't show moves until the UI thread has processed them")]
+		[Fact("Don't show moves until the UI thread has processed them")]
 		public Task MoveOffUIThread() => DispatcherTest.Run(async () =>
 		{
 			var _dispatcher = Dispatcher.GetForCurrentThread();
@@ -237,9 +227,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Check the result on the main thread
 			var onMainThreadValue = await _dispatcher.DispatchAsync(() => moc[0]);
 
-			Assert.That(itemFromThreadPool, Is.EqualTo(1), "Should have value from before move");
-			Assert.That(onMainThreadValue, Is.EqualTo(2), "Should have value from after move");
+			Assert.True(itemFromThreadPool == 1, "Should have value from before move");
+			Assert.True((int)onMainThreadValue == 2, "Should have value from after move");
 		});
+
+
 
 		// This class simulates running a single UI thread with a queue and non-UI threads;
 		// this allows us to test IsInvokeRequired/BeginInvoke without having to be on an actual device

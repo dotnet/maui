@@ -3,9 +3,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform;
 #pragma warning disable CS0612 // Type or member is obsolete
 using Microsoft.Maui.Graphics;
-using Rect = Microsoft.Maui.Graphics.Rect;
-using ERect = ElmSharp.Rect;
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -40,15 +38,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		public override bool NeedsContainer => false;
+
 		public override void PlatformArrange(Rect frame)
 		{
 			base.PlatformArrange(frame);
 			VisualElementRenderer.UpdateLayout();
-		}
-
-		public override ERect GetPlatformContentGeometry()
-		{
-			return VisualElementRenderer?.GetNativeContentGeometry() ?? new ERect();
 		}
 
 		protected override void Dispose(bool disposing)

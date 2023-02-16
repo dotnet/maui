@@ -20,30 +20,35 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTime(timePicker);
+			handler.PlatformView.UpdateTime(timePicker);
 		}
 
 		public static void MapTime(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateTime(timePicker);
+			handler.PlatformView.UpdateTime(timePicker);
 		}
 
 		public static void MapCharacterSpacing(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateCharacterSpacing(timePicker);
+			handler.PlatformView.UpdateCharacterSpacing(timePicker);
 		}
 
 		public static void MapFont(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.PlatformView?.UpdateFont(timePicker, fontManager);
+			handler.PlatformView.UpdateFont(timePicker, fontManager);
 		}
 
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			if (handler is TimePickerHandler platformHandler)
-				handler.PlatformView?.UpdateTextColor(timePicker);
+			handler.PlatformView.UpdateTextColor(timePicker);
+		}
+
+		// TODO NET8 make public
+		internal static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.PlatformView?.UpdateBackground(timePicker);
 		}
 
 		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)

@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ShellToolbarTests : ShellTestBase
 	{
-		[Test]
+		[Fact]
 		public async Task ShellToolbarItemsMergeWithPage()
 		{
 			var toolbarItem1 = new ToolbarItem("Foo1", "Foo.png", () => { });
@@ -36,17 +36,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var toolbar = shell.Toolbar;
-			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem1));
-			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem2));
-			Assert.AreEqual(2, toolbar.ToolbarItems.Count());
+			Assert.Contains(toolbarItem1, toolbar.ToolbarItems);
+			Assert.Contains(toolbarItem2, toolbar.ToolbarItems);
+			Assert.Equal(2, toolbar.ToolbarItems.Count());
 
 			await shell.Navigation.PushAsync(secondPage);
-			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem1));
-			Assert.True(toolbar.ToolbarItems.Contains(toolbarItem3));
-			Assert.AreEqual(2, toolbar.ToolbarItems.Count());
+			Assert.Contains(toolbarItem1, toolbar.ToolbarItems);
+			Assert.Contains(toolbarItem3, toolbar.ToolbarItems);
+			Assert.Equal(2, toolbar.ToolbarItems.Count());
 		}
 
-		[Test]
+		[Fact]
 		public async Task BackButtonExecutesCommand()
 		{
 			var pushedPage = new ContentPage();
@@ -77,12 +77,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Validate that we didn't navigate back and only the
 			// Command was executed
-			Assert.AreEqual(pushedPage, testShell.CurrentPage);
-			Assert.IsTrue(commandExecuted);
-			Assert.AreEqual("PARAMETER", parameter);
+			Assert.Equal(pushedPage, testShell.CurrentPage);
+			Assert.True(commandExecuted);
+			Assert.Equal("PARAMETER", parameter);
 		}
 
-		[Test]
+		[Fact]
 		public async Task BackButtonDisabledWhenCommandDisabled()
 		{
 			var page = new ContentPage();
@@ -91,34 +91,78 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var backButtonBehavior = new BackButtonBehavior();
 			Shell.SetBackButtonBehavior(page, backButtonBehavior);
-			Assert.IsTrue(testShell.Toolbar.BackButtonEnabled);
+			Assert.True(testShell.Toolbar.BackButtonEnabled);
 
 			bool canExecute = false;
 			backButtonBehavior.Command = new Command(() => { }, () => canExecute);
-			Assert.IsFalse(testShell.Toolbar.BackButtonEnabled);
+			Assert.False(testShell.Toolbar.BackButtonEnabled);
 			canExecute = true;
 			(backButtonBehavior.Command as Command).ChangeCanExecute();
-			Assert.IsTrue(testShell.Toolbar.BackButtonEnabled);
+			Assert.True(testShell.Toolbar.BackButtonEnabled);
 		}
 
-		[Test]
+		[Fact]
+		public async Task BackButtonBehaviorCommandFromPoppedPageIsCorrectlyUnsubscribedFrom()
+		{
+			var firstPage = new ContentPage();
+			var secondPage = new ContentPage();
+			bool canExecute = true;
+			var backButtonBehavior = new BackButtonBehavior();
+			TestShell testShell = new TestShell(firstPage);
+
+			await testShell.Navigation.PushAsync(secondPage);
+
+			Shell.SetBackButtonBehavior(secondPage, backButtonBehavior);
+
+			backButtonBehavior.Command = new Command(() => { }, () => canExecute);
+
+			await testShell.Navigation.PopAsync();
+
+			canExecute = false;
+			(backButtonBehavior.Command as Command).ChangeCanExecute();
+
+			Assert.True(testShell.Toolbar.BackButtonEnabled);
+		}
+
+		[Fact]
+		public async Task BackButtonUpdatesWhenSetToNewCommand()
+		{
+			var firstPage = new ContentPage();
+			var secondPage = new ContentPage();
+			bool canExecute = true;
+			var backButtonBehavior = new BackButtonBehavior();
+			TestShell testShell = new TestShell(firstPage);
+
+			await testShell.Navigation.PushAsync(secondPage);
+
+			Shell.SetBackButtonBehavior(secondPage, backButtonBehavior);
+
+			backButtonBehavior.Command = new Command(() => { }, () => true);
+			Assert.True(testShell.Toolbar.BackButtonEnabled);
+			backButtonBehavior.Command = new Command(() => { }, () => false);
+			Assert.False(testShell.Toolbar.BackButtonEnabled);
+			backButtonBehavior.Command = null;
+			Assert.True(testShell.Toolbar.BackButtonEnabled);
+		}
+
+		[Fact]
 		public async Task ShellToolbarUpdatesFromNewBackButtonBehavior()
 		{
 			var page = new ContentPage();
 			TestShell testShell = new TestShell(new ContentPage());
 			await testShell.Navigation.PushAsync(page);
 
-			Assert.IsTrue(testShell.Toolbar.BackButtonVisible);
+			Assert.True(testShell.Toolbar.BackButtonVisible);
 			var backButtonBehavior = new BackButtonBehavior()
 			{
 				IsVisible = false,
 			};
 
 			Shell.SetBackButtonBehavior(page, backButtonBehavior);
-			Assert.IsFalse(testShell.Toolbar.BackButtonVisible);
+			Assert.False(testShell.Toolbar.BackButtonVisible);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShellToolbarUpdatesFromPropertyChanged()
 		{
 			var page = new ContentPage();
@@ -126,44 +170,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Shell.SetBackButtonBehavior(page, new BackButtonBehavior());
 			await testShell.Navigation.PushAsync(page);
 
-			Assert.IsTrue(testShell.Toolbar.IsVisible);
+			Assert.True(testShell.Toolbar.IsVisible);
 			var backButtonBehavior = new BackButtonBehavior()
 			{
 				IsVisible = true,
 			};
 
 			Shell.SetBackButtonBehavior(page, backButtonBehavior);
-			Assert.IsTrue(testShell.Toolbar.BackButtonVisible);
+			Assert.True(testShell.Toolbar.BackButtonVisible);
 			backButtonBehavior.IsVisible = false;
-			Assert.IsFalse(testShell.Toolbar.BackButtonVisible);
+			Assert.False(testShell.Toolbar.BackButtonVisible);
 		}
 
-		[Test]
+		[Fact]
 		public void NavBarIsVisibleUpdates()
 		{
 			var page = new ContentPage() { Title = "Test" };
 			TestShell testShell = new TestShell(page);
 			var toolBar = testShell.Toolbar;
-			Assert.IsTrue(toolBar.IsVisible);
+			Assert.True(toolBar.IsVisible);
 			Shell.SetNavBarIsVisible(page, false);
 			Assert.False(toolBar.IsVisible);
 		}
 
-		[Test]
+		[Fact]
 		public void BackButtonBehaviorSet()
 		{
 			var page = new ContentPage();
 
-			Assert.IsNull(Shell.GetBackButtonBehavior(page));
+			Assert.Null(Shell.GetBackButtonBehavior(page));
 
 			var backButtonBehavior = new BackButtonBehavior();
 
 			Shell.SetBackButtonBehavior(page, backButtonBehavior);
 
-			Assert.AreEqual(backButtonBehavior, Shell.GetBackButtonBehavior(page));
+			Assert.Equal(backButtonBehavior, Shell.GetBackButtonBehavior(page));
 		}
 
-		[Test]
+		[Fact]
 		public void BackButtonBehaviorBindingContextPropagation()
 		{
 			object bindingContext = new object();
@@ -173,10 +217,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Shell.SetBackButtonBehavior(page, backButtonBehavior);
 			page.BindingContext = bindingContext;
 
-			Assert.AreEqual(page.BindingContext, backButtonBehavior.BindingContext);
+			Assert.Equal(page.BindingContext, backButtonBehavior.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void BackButtonBehaviorBindingContextPropagationWithExistingBindingContext()
 		{
 			object bindingContext = new object();
@@ -186,10 +230,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			page.BindingContext = bindingContext;
 			Shell.SetBackButtonBehavior(page, backButtonBehavior);
 
-			Assert.AreEqual(page.BindingContext, backButtonBehavior.BindingContext);
+			Assert.Equal(page.BindingContext, backButtonBehavior.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public async Task TitleAndTitleViewAreMutuallyExclusive()
 		{
 			var contentPage = new ContentPage() { Title = "Test Title" };
@@ -202,15 +246,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var toolbar = testShell.Toolbar;
-			Assert.AreEqual("Test Title", toolbar.Title);
+			Assert.Equal("Test Title", toolbar.Title);
 			Shell.SetTitleView(contentPage, titleView);
-			Assert.IsEmpty(toolbar.Title);
-			Assert.AreEqual(titleView, toolbar.TitleView);
+			Assert.Empty(toolbar.Title);
+			Assert.Equal(titleView, toolbar.TitleView);
 			Shell.SetTitleView(contentPage, null);
-			Assert.AreEqual("Test Title", toolbar.Title);
+			Assert.Equal("Test Title", toolbar.Title);
 		}
 
-		[Test]
+		[Fact]
 		public void ContentPageColorsPropagateToShellToolbar()
 		{
 			var contentPage = new ContentPage() { Title = "Test Title" };
@@ -222,12 +266,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_ = new Window() { Page = testShell };
 			var toolbar = testShell.Toolbar;
 
-			Assert.AreEqual(Colors.Green, (toolbar.BarBackground as SolidColorBrush).Color);
-			Assert.AreEqual(Colors.Orange, toolbar.IconColor);
-			Assert.AreEqual(Colors.Pink, toolbar.BarTextColor);
+			Assert.Equal(Colors.Green, (toolbar.BarBackground as SolidColorBrush).Color);
+			Assert.Equal(Colors.Orange, toolbar.IconColor);
+			Assert.Equal(Colors.Pink, toolbar.BarTextColor);
 		}
 
-		[Test]
+		[Fact]
 		public void ToolBarShouldBeVisibleWithEmptyTitleAndFlyoutBehaviorSetToFlyout()
 		{
 			TestShell testShell = new TestShell()
@@ -241,7 +285,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_ = new Window() { Page = testShell };
 			var toolbar = testShell.Toolbar;
 
-			Assert.IsTrue(toolbar.IsVisible);
+			Assert.True(toolbar.IsVisible);
 		}
 	}
 }

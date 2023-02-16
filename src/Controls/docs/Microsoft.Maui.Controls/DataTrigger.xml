@@ -84,7 +84,7 @@
         <Parameter Name="targetType" Type="System.Type">
           <Attributes>
             <Attribute>
-              <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.TypeTypeConverter))</AttributeName>
+              <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.TypeTypeConverter))</AttributeName>
             </Attribute>
           </Attributes>
         </Parameter>

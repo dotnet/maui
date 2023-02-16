@@ -1,16 +1,16 @@
 using System.Collections;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-	[TestFixture]
+
 	public class TitleViewUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void BindingContextPropagatesFromParent()
 		{
 			NavigationPage navigationPage = new NavigationPage();
@@ -39,13 +39,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var model = new Model();
 			navigationPage.BindingContext = new Model();
-			Assert.AreEqual(model.Title, title.Text);
+			Assert.Equal(model.Title, title.Text);
 
 			string success = "Success";
 			page.BindingContext = new Model() { Title = success };
-			Assert.AreEqual(success, title.Text);
+			Assert.Equal(success, title.Text);
 			navigationPage.BindingContext = new Model() { Title = "Failed" };
-			Assert.AreEqual(success, title.Text);
+			Assert.Equal(success, title.Text);
 		}
 
 		public class Model

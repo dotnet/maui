@@ -1,49 +1,49 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class CommandTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void Constructor()
 		{
 			var cmd = new Command(() => { });
 			Assert.True(cmd.CanExecute(null));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWithNullConstructor()
 		{
 			Assert.Throws<ArgumentNullException>(() => new Command((Action)null));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWithNullParameterizedConstructor()
 		{
 			Assert.Throws<ArgumentNullException>(() => new Command((Action<object>)null));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWithNullCanExecute()
 		{
 			Assert.Throws<ArgumentNullException>(() => new Command(() => { }, null));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWithNullParameterizedCanExecute()
 		{
 			Assert.Throws<ArgumentNullException>(() => new Command(o => { }, null));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsWithNullExecuteValidCanExecute()
 		{
 			Assert.Throws<ArgumentNullException>(() => new Command(null, () => true));
 		}
 
-		[Test]
+		[Fact]
 		public void Execute()
 		{
 			bool executed = false;
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(executed);
 		}
 
-		[Test]
+		[Fact]
 		public void ExecuteParameterized()
 		{
 			object executed = null;
@@ -62,10 +62,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var expected = new object();
 			cmd.Execute(expected);
 
-			Assert.AreEqual(expected, executed);
+			Assert.Equal(expected, executed);
 		}
 
-		[Test]
+		[Fact]
 		public void ExecuteWithCanExecute()
 		{
 			bool executed = false;
@@ -75,8 +75,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(executed);
 		}
 
-		[Test]
-		public void CanExecute([Values(true, false)] bool expected)
+		[Theory, InlineData(true), InlineData(false)]
+		public void CanExecute(bool expected)
 		{
 			bool canExecuteRan = false;
 			var cmd = new Command(() => { }, () =>
@@ -85,11 +85,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				return expected;
 			});
 
-			Assert.AreEqual(expected, cmd.CanExecute(null));
+			Assert.Equal(expected, cmd.CanExecute(null));
 			Assert.True(canExecuteRan);
 		}
 
-		[Test]
+		[Fact]
 		public void ChangeCanExecute()
 		{
 			bool signaled = false;
@@ -101,46 +101,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(signaled);
 		}
 
-		[Test]
+		[Fact]
 		public void GenericThrowsWithNullExecute()
 		{
 			Assert.Throws<ArgumentNullException>(() => new Command<string>(null));
 		}
 
-		[Test]
+		[Fact]
 		public void GenericThrowsWithNullExecuteAndCanExecuteValid()
 		{
 			Assert.Throws<ArgumentNullException>(() => new Command<string>(null, s => true));
 		}
 
-		[Test]
+		[Fact]
 		public void GenericThrowsWithValidExecuteAndCanExecuteNull()
 		{
 			Assert.Throws<ArgumentNullException>(() => new Command<string>(s => { }, null));
 		}
 
-		[Test]
+		[Fact]
 		public void GenericExecute()
 		{
 			string result = null;
 			var cmd = new Command<string>(s => result = s);
 
 			cmd.Execute("Foo");
-			Assert.AreEqual("Foo", result);
+			Assert.Equal("Foo", result);
 		}
 
-		[Test]
+		[Fact]
 		public void GenericExecuteWithCanExecute()
 		{
 			string result = null;
 			var cmd = new Command<string>(s => result = s, s => true);
 
 			cmd.Execute("Foo");
-			Assert.AreEqual("Foo", result);
+			Assert.Equal("Foo", result);
 		}
 
-		[Test]
-		public void GenericCanExecute([Values(true, false)] bool expected)
+		[Theory, InlineData(true), InlineData(false)]
+		public void GenericCanExecute(bool expected)
 		{
 			string result = null;
 			var cmd = new Command<string>(s => { }, s =>
@@ -149,8 +149,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				return expected;
 			});
 
-			Assert.AreEqual(expected, cmd.CanExecute("Foo"));
-			Assert.AreEqual("Foo", result);
+			Assert.Equal(expected, cmd.CanExecute("Foo"));
+			Assert.Equal("Foo", result);
 		}
 
 		class FakeParentContext
@@ -162,94 +162,94 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 		}
 
-		[Test]
+		[Fact]
 		public void CanExecuteReturnsFalseIfParameterIsWrongReferenceType()
 		{
 			var command = new Command<FakeChildContext>(context => { }, context => true);
 
-			Assert.IsFalse(command.CanExecute(new FakeParentContext()), "the parameter is of the wrong type");
+			Assert.False(command.CanExecute(new FakeParentContext()), "the parameter is of the wrong type");
 		}
 
-		[Test]
+		[Fact]
 		public void CanExecuteReturnsFalseIfParameterIsWrongValueType()
 		{
 			var command = new Command<int>(context => { }, context => true);
 
-			Assert.IsFalse(command.CanExecute(10.5), "the parameter is of the wrong type");
+			Assert.False(command.CanExecute(10.5), "the parameter is of the wrong type");
 		}
 
-		[Test]
+		[Fact]
 		public void CanExecuteUsesParameterIfReferenceTypeAndSetToNull()
 		{
 			var command = new Command<FakeChildContext>(context => { }, context => true);
 
-			Assert.IsTrue(command.CanExecute(null), "null is a valid value for a reference type");
+			Assert.True(command.CanExecute(null), "null is a valid value for a reference type");
 		}
 
-		[Test]
+		[Fact]
 		public void CanExecuteUsesParameterIfNullableAndSetToNull()
 		{
 			var command = new Command<int?>(context => { }, context => true);
 
-			Assert.IsTrue(command.CanExecute(null), "null is a valid value for a Nullable<int> type");
+			Assert.True(command.CanExecute(null), "null is a valid value for a Nullable<int> type");
 		}
 
-		[Test]
+		[Fact]
 		public void CanExecuteIgnoresParameterIfValueTypeAndSetToNull()
 		{
 			var command = new Command<int>(context => { }, context => true);
 
-			Assert.IsFalse(command.CanExecute(null), "null is not a valid valid for int");
+			Assert.False(command.CanExecute(null), "null is not a valid valid for int");
 		}
 
-		[Test]
+		[Fact]
 		public void ExecuteDoesNotRunIfParameterIsWrongReferenceType()
 		{
 			int executions = 0;
 			var command = new Command<FakeChildContext>(context => executions += 1);
 
-			Assert.DoesNotThrow(() => command.Execute(new FakeParentContext()), "the command should not execute, so no exception should be thrown");
-			Assert.IsTrue(executions == 0, "the command should not have executed");
+			command.Execute(new FakeParentContext()); // "the command should not execute, so no exception should be thrown"
+			Assert.True(executions == 0, "the command should not have executed");
 		}
 
-		[Test]
+		[Fact]
 		public void ExecuteDoesNotRunIfParameterIsWrongValueType()
 		{
 			int executions = 0;
 			var command = new Command<int>(context => executions += 1);
 
-			Assert.DoesNotThrow(() => command.Execute(10.5), "the command should not execute, so no exception should be thrown");
-			Assert.IsTrue(executions == 0, "the command should not have executed");
+			command.Execute(10.5); // "the command should not execute, so no exception should be thrown"
+			Assert.True(executions == 0, "the command should not have executed");
 		}
 
-		[Test]
+		[Fact]
 		public void ExecuteRunsIfReferenceTypeAndSetToNull()
 		{
 			int executions = 0;
 			var command = new Command<FakeChildContext>(context => executions += 1);
 
-			Assert.DoesNotThrow(() => command.Execute(null), "null is a valid value for a reference type");
-			Assert.IsTrue(executions == 1, "the command should have executed");
+			command.Execute(null); // "null is a valid value for a reference type"
+			Assert.True(executions == 1, "the command should have executed");
 		}
 
-		[Test]
+		[Fact]
 		public void ExecuteRunsIfNullableAndSetToNull()
 		{
 			int executions = 0;
 			var command = new Command<int?>(context => executions += 1);
 
-			Assert.DoesNotThrow(() => command.Execute(null), "null is a valid value for a Nullable<int> type");
-			Assert.IsTrue(executions == 1, "the command should have executed");
+			command.Execute(null); // "null is a valid value for a Nullable<int> type"
+			Assert.True(executions == 1, "the command should have executed");
 		}
 
-		[Test]
+		[Fact]
 		public void ExecuteDoesNotRunIfValueTypeAndSetToNull()
 		{
 			int executions = 0;
 			var command = new Command<int>(context => executions += 1);
 
-			Assert.DoesNotThrow(() => command.Execute(null), "null is not a valid value for int");
-			Assert.IsTrue(executions == 0, "the command should not have executed");
+			command.Execute(null); // "null is not a valid value for int"
+			Assert.True(executions == 0, "the command should not have executed");
 		}
 	}
 }

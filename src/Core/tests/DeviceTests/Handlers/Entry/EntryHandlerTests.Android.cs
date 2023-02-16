@@ -15,6 +15,45 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+
+		[Fact(DisplayName = "Padding is the same after background changes")]
+		public async Task PaddingDoesntChangeAfterBackground()
+		{
+			var paddingLeft = 0;
+			var paddingTop = 0;
+			var paddingRight = 0;
+			var paddingBottom = 0;
+
+			var entry = new EntryStub();
+
+			entry.PropertyMapperOverrides = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
+			{
+				["MyCustomization"] = (handler, view) =>
+				{
+					handler.PlatformView.SetPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+				}
+			};
+
+			var paddingLeftNative = await GetValueAsync(entry, h => h.PlatformView.PaddingLeft);
+			var paddingRightNative = await GetValueAsync(entry, h => h.PlatformView.PaddingRight);
+			var paddingTopNative = await GetValueAsync(entry, h => h.PlatformView.PaddingTop);
+			var paddingBottomNative = await GetValueAsync(entry, h => h.PlatformView.PaddingBottom);
+			Assert.Equal(paddingLeft, paddingLeftNative);
+			Assert.Equal(paddingTop, paddingTopNative);
+			Assert.Equal(paddingRight, paddingRightNative);
+			Assert.Equal(paddingBottom, paddingBottomNative);
+			entry.Background = new SolidPaint(Colors.Red);
+			var paddingLeftNativeAfter = await GetValueAsync(entry, h => h.PlatformView.PaddingLeft);
+			var paddingRightNativeAfter = await GetValueAsync(entry, h => h.PlatformView.PaddingRight);
+			var paddingTopNativeAfter = await GetValueAsync(entry, h => h.PlatformView.PaddingTop);
+			var paddingBottomNativeAfter = await GetValueAsync(entry, h => h.PlatformView.PaddingBottom);
+			Assert.Equal(paddingLeft, paddingLeftNative);
+			Assert.Equal(paddingTop, paddingTopNativeAfter);
+			Assert.Equal(paddingRight, paddingRightNativeAfter);
+			Assert.Equal(paddingBottom, paddingBottomNativeAfter);
+		}
+
+
 		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
 		public async Task PlaceholderColorInitializesCorrectly()
 		{
@@ -78,48 +117,22 @@ namespace Microsoft.Maui.DeviceTests
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
 
-		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
-		public async Task VerticalTextAlignmentInitializesCorrectily()
-		{
-			var xplatVerticalTextAlignment = TextAlignment.End;
-
-			var entry = new EntryStub
-			{
-				Text = "Test",
-				VerticalTextAlignment = xplatVerticalTextAlignment
-			};
-
-			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.Bottom;
-
-			var values = await GetValueAsync(entry, (handler) =>
-			{
-				return new
-				{
-					ViewValue = entry.VerticalTextAlignment,
-					PlatformViewValue = GetNativeVerticalTextAlignment(handler)
-				};
-			});
-
-			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
-			values.PlatformViewValue.AssertHasFlag(expectedValue);
-		}
-
 		static AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
 			entryHandler.PlatformView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		static void SetNativeText(EntryHandler entryHandler, string text) =>
+		internal static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
-		static int GetCursorStartPosition(EntryHandler entryHandler)
+		internal static int GetCursorStartPosition(EntryHandler entryHandler)
 		{
 			var control = GetNativeEntry(entryHandler);
 			return control.SelectionStart;
 		}
 
-		static void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
+		internal static void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
 		{
 			var control = GetNativeEntry(entryHandler);
 			control.SetSelection(position);
@@ -211,7 +224,10 @@ namespace Microsoft.Maui.DeviceTests
 			GetNativeEntry(entryHandler).TextAlignment;
 
 		Android.Views.GravityFlags GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Gravity;
+			GetNativeEntry(entryHandler).Gravity & Android.Views.GravityFlags.VerticalGravityMask;
+
+		Android.Views.GravityFlags GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToVerticalGravityFlags();
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;

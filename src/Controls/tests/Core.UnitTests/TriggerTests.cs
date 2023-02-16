@@ -1,15 +1,15 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class TriggerTests : BaseTestFixture
 	{
 		class MockElement : VisualElement
 		{
 		}
 
-		[Test]
+		[Fact]
 		public void SettersAppliedOnConditionChanged()
 		{
 			var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
@@ -27,14 +27,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.SetValue(setterbp, "default");
 			element.Triggers.Add(trigger);
 
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 			element.SetValue(conditionbp, "foobar");
-			Assert.AreEqual("qux", element.GetValue(setterbp));
+			Assert.Equal("qux", element.GetValue(setterbp));
 			element.SetValue(conditionbp, "");
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 		}
 
-		[Test]
+		[Fact]
 		public void SettersAppliedOnAttachIfConditionIsTrue()
 		{
 			var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
@@ -51,12 +51,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			element.SetValue(setterbp, "default");
 			element.SetValue(conditionbp, "foobar");
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 			element.Triggers.Add(trigger);
-			Assert.AreEqual("qux", element.GetValue(setterbp));
+			Assert.Equal("qux", element.GetValue(setterbp));
 		}
 
-		[Test]
+		[Fact]
 		public void SettersUnappliedOnDetach()
 		{
 			var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
@@ -74,14 +74,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.SetValue(setterbp, "default");
 			element.Triggers.Add(trigger);
 
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 			element.SetValue(conditionbp, "foobar");
-			Assert.AreEqual("qux", element.GetValue(setterbp));
+			Assert.Equal("qux", element.GetValue(setterbp));
 			element.Triggers.Remove(trigger);
-			Assert.AreEqual("default", element.GetValue(setterbp));
+			Assert.Equal("default", element.GetValue(setterbp));
 		}
 
-		[Test]
+		[Fact]
 		public void EnterAndExitActionsTriggered()
 		{
 			var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(exitaction.Invoked);
 		}
 
-		[Test]
+		[Fact]
 		// https://bugzilla.xamarin.com/show_bug.cgi?id=32896
 		public void SettersWithBindingsUnappliedIfConditionIsFalse()
 		{
@@ -135,15 +135,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			element.SetValue(setterbp, "default");
 			element.Triggers.Add(trigger);
-			Assume.That(element.GetValue(setterbp), Is.EqualTo("default"));
+			Assert.Equal("default", element.GetValue(setterbp));
 
 			//sets the condition to true
 			element.SetValue(conditionbp, "foobar");
-			Assume.That(element.GetValue(setterbp), Is.EqualTo("Qux"));
+			Assert.Equal("Qux", element.GetValue(setterbp));
 
 			//unsets the condition
 			element.SetValue(conditionbp, "baz");
-			Assert.That(element.GetValue(setterbp), Is.EqualTo("default"));
+			Assert.Equal("default", element.GetValue(setterbp));
 		}
 	}
 }

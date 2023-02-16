@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -119,9 +121,75 @@ namespace Microsoft.Maui
 			var bottom = Context.ToPixels(frame.Bottom);
 			var right = Context.ToPixels(frame.Right);
 
+			var viewParent = platformView.Parent;
+			if (viewParent?.LayoutDirection == LayoutDirection.Rtl && viewParent is View parentView)
+			{
+				// Determine the flipped left/right edges for the RTL layout
+				var width = right - left;
+				left = parentView.Width - left - width;
+				right = left + width;
+			}
+
 			platformView.Layout((int)left, (int)top, (int)right, (int)bottom);
 
 			viewHandler.Invoke(nameof(IView.Frame), frame);
+		}
+
+		internal static void PrepareForTextViewArrange(this IViewHandler handler, Rect frame)
+		{
+			if (frame.Width < 0 || frame.Height < 0)
+			{
+				return;
+			}
+
+			var platformView = handler.ToPlatform();
+			var context = platformView?.Context;
+
+			if (platformView == null || context == null)
+			{
+				return;
+			}
+
+			var virtualView = handler.VirtualView;
+			if (virtualView == null)
+			{
+				return;
+			}
+
+			// Depending on our layout situation, the TextView may need an additional measurement pass at the final size
+			// in order to properly handle any TextAlignment properties and some internal bookkeeping
+			if (virtualView.NeedsExactMeasure())
+			{
+				platformView.Measure(context.MakeMeasureSpecExact(frame.Width), context.MakeMeasureSpecExact(frame.Height));
+			}
+		}
+
+		internal static bool NeedsExactMeasure(this IView virtualView)
+		{
+			if (virtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill
+				&& virtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill)
+			{
+				// Layout Alignments of Start, Center, and End will be laying out the TextView at its measured size,
+				// so we won't need another pass with MeasureSpecMode.Exactly
+				return false;
+			}
+
+			if (virtualView.Width >= 0 && virtualView.Height >= 0)
+			{
+				// If the Width and Height are both explicit, then we've already done MeasureSpecMode.Exactly in 
+				// both dimensions; no need to do it again
+				return false;
+			}
+
+			// We're going to need a second measurement pass so TextView can properly handle alignments
+			return true;
+		}
+
+		internal static int MakeMeasureSpecExact(this Context context, double size)
+		{
+			// Convert to a native size to create the spec for measuring
+			var deviceSize = (int)context!.ToPixels(size);
+			return MeasureSpecMode.Exactly.MakeMeasureSpec(deviceSize);
 		}
 	}
 }

@@ -15,6 +15,10 @@
     <ProjectReference Include="..\WebViewAppShared\WebViewAppShared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+  </ItemGroup>
+
   <Import Project="..\..\src\WindowsForms\build\Microsoft.AspNetCore.Components.WebView.WindowsForms.targets" />
 
 </Project>

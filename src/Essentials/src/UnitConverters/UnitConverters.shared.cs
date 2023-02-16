@@ -2,7 +2,9 @@ using System;
 
 namespace Microsoft.Maui.Media
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="Type[@FullName='Microsoft.Maui.Essentials.UnitConverters']/Docs" />
+	/// <summary>
+	/// Static class with built-in unit converters.
+	/// </summary>
 	public static class UnitConverters
 	{
 		const double twoPi = 2.0 * Math.PI;
@@ -23,111 +25,225 @@ namespace Microsoft.Maui.Media
 		const double internationalFootDefinition = 0.3048;
 		const double usSurveyFootDefinition = 1200.0 / 3937;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='FahrenheitToCelsius']/Docs" />
+		/// <summary>
+		/// Converts temperatures from Fahrenheit to Celsius.
+		/// </summary>
+		/// <param name="fahrenheit">The value in Fahrenheit to convert.</param>
+		/// <returns>The value from <paramref name="fahrenheit"/> in degrees Celsius.</returns>
 		public static double FahrenheitToCelsius(double fahrenheit) =>
 			(fahrenheit - 32.0) / 1.8;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='CelsiusToFahrenheit']/Docs" />
+		/// <summary>
+		/// Converts temperatures from Celsius to Fahrenheit.
+		/// </summary>
+		/// <param name="celsius">The value in Celcius to convert.</param>
+		/// <returns>The value from <paramref name="celsius"/> in degrees Fahrenheit.</returns>
 		public static double CelsiusToFahrenheit(double celsius) =>
 			celsius * 1.8 + 32.0;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='CelsiusToKelvin']/Docs" />
+		/// <summary>
+		/// Converts temperatures from Celsius to Kelvin.
+		/// </summary>
+		/// <param name="celsius">The value in Celcius to convert.</param>
+		/// <returns>The value from <paramref name="celsius"/> in degrees Kelvin.</returns>
 		public static double CelsiusToKelvin(double celsius) =>
 			celsius + celsiusToKelvin;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='KelvinToCelsius']/Docs" />
+		/// <summary>
+		/// Converts temperatures from Kelvin to Celsius.
+		/// </summary>
+		/// <param name="kelvin">The value in Kelvin to convert.</param>
+		/// <returns>The value from <paramref name="kelvin"/> in degrees Celcius.</returns>
 		public static double KelvinToCelsius(double kelvin) =>
 			kelvin - celsiusToKelvin;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='MilesToMeters']/Docs" />
+		/// <summary>
+		/// Converts distances from miles to meters.
+		/// </summary>
+		/// <param name="miles">The value in miles to convert.</param>
+		/// <returns>The value from <paramref name="miles"/> in meters.</returns>
 		public static double MilesToMeters(double miles) =>
 			miles * milesToMeters;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='MilesToKilometers']/Docs" />
+		/// <summary>
+		/// Converts distances from miles to kilometers.
+		/// </summary>
+		/// <param name="miles">The value in miles to convert.</param>
+		/// <returns>The value from <paramref name="miles"/> in kilometers.</returns>
 		public static double MilesToKilometers(double miles) =>
 			miles * milesToKilometers;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='KilometersToMiles']/Docs" />
+		/// <summary>
+		/// Converts distances from kilometers to miles.
+		/// </summary>
+		/// <param name="kilometers">The value in kilometers to convert.</param>
+		/// <returns>The value from <paramref name="kilometers"/> in miles.</returns>
 		public static double KilometersToMiles(double kilometers) =>
 			kilometers * kilometersToMiles;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='DegreesToRadians']/Docs" />
+		/// <summary>
+		/// Converts degrees to radian.
+		/// </summary>
+		/// <param name="degrees">The value in degrees to convert.</param>
+		/// <returns>The value from <paramref name="degrees"/> in radian.</returns>
 		public static double DegreesToRadians(double degrees) =>
 			degrees * degreesToRadians;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='RadiansToDegrees']/Docs" />
+		/// <summary>
+		/// Converts radians to degrees.
+		/// </summary>
+		/// <param name="radians">The value in radians to convert.</param>
+		/// <returns>The value from <paramref name="radians"/> in degrees.</returns>
 		public static double RadiansToDegrees(double radians) =>
 			radians / degreesToRadians;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='PoundsToKilograms']/Docs" />
+		/// <summary>
+		/// Converts pounds to kilograms.
+		/// </summary>
+		/// <param name="pounds">The value in pounds to convert.</param>
+		/// <returns>The value from <paramref name="pounds"/> in kilograms.</returns>
 		public static double PoundsToKilograms(double pounds) =>
 			pounds * poundsToKg;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='PoundsToStones']/Docs" />
+		/// <summary>
+		/// Converts pounds to stones.
+		/// </summary>
+		/// <param name="pounds">The value in pounds to convert.</param>
+		/// <returns>The value from <paramref name="pounds"/> in stones.</returns>
 		public static double PoundsToStones(double pounds) =>
 			pounds * poundsToStones;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='StonesToPounds']/Docs" />
+		/// <summary>
+		/// Converts stones to pounds.
+		/// </summary>
+		/// <param name="stones">The value in stones to convert.</param>
+		/// <returns>The value from <paramref name="stones"/> in pounds.</returns>
 		public static double StonesToPounds(double stones) =>
 			stones * stonesToPounds;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='KilogramsToPounds']/Docs" />
+		/// <summary>
+		/// Converts kilograms to pounds.
+		/// </summary>
+		/// <param name="kilograms">The value in kilograms to convert.</param>
+		/// <returns>The value from <paramref name="kilograms"/> in pounds.</returns>
 		public static double KilogramsToPounds(double kilograms) =>
 			kilograms * kgToPounds;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='DegreesPerSecondToRadiansPerSecond']/Docs" />
+		/// <summary>
+		/// Converts degrees per second to radians per second.
+		/// </summary>
+		/// <param name="degrees">The value in degrees per second to convert.</param>
+		/// <returns>The value from <paramref name="degrees"/> in radians per second.</returns>
 		public static double DegreesPerSecondToRadiansPerSecond(double degrees) =>
 			HertzToRadiansPerSecond(DegreesPerSecondToHertz(degrees));
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='RadiansPerSecondToDegreesPerSecond']/Docs" />
+		/// <summary>
+		/// Converts radians per second to degrees per second.
+		/// </summary>
+		/// <param name="radians">The value in radians per second to convert.</param>
+		/// <returns>The value from <paramref name="radians"/> in degrees per second.</returns>
 		public static double RadiansPerSecondToDegreesPerSecond(double radians) =>
 			HertzToDegreesPerSecond(RadiansPerSecondToHertz(radians));
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='DegreesPerSecondToHertz']/Docs" />
+		/// <summary>
+		/// Converts degrees per second to hertz.
+		/// </summary>
+		/// <param name="degrees">The value in degrees per second to convert.</param>
+		/// <returns>The value from <paramref name="degrees"/> in hertz.</returns>
 		public static double DegreesPerSecondToHertz(double degrees) =>
 			degrees / totalDegrees;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='RadiansPerSecondToHertz']/Docs" />
+		/// <summary>
+		/// Converts radians per second to hertz.
+		/// </summary>
+		/// <param name="radians">The value in radians per second to convert.</param>
+		/// <returns>The value from <paramref name="radians"/> in hertz.</returns>
 		public static double RadiansPerSecondToHertz(double radians) =>
 			radians / twoPi;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='HertzToDegreesPerSecond']/Docs" />
+		/// <summary>
+		/// Converts hertz to degrees per second.
+		/// </summary>
+		/// <param name="hertz">The value in degrees per second to convert.</param>
+		/// <returns>The value from <paramref name="hertz"/> in degrees per second.</returns>
 		public static double HertzToDegreesPerSecond(double hertz) =>
 			hertz * totalDegrees;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='HertzToRadiansPerSecond']/Docs" />
+		/// <summary>
+		/// Converts hertz to radians per second.
+		/// </summary>
+		/// <param name="hertz">The value in radians per second to convert.</param>
+		/// <returns>The value from <paramref name="hertz"/> in radians per second.</returns>
 		public static double HertzToRadiansPerSecond(double hertz) =>
 			hertz * twoPi;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='KilopascalsToHectopascals']/Docs" />
+		/// <summary>
+		/// Converts Kilopascals to Hectopascals.
+		/// </summary>
+		/// <param name="kpa">The value in Kilopascals convert.</param>
+		/// <returns>The value from <paramref name="kpa"/> in Hectopascals.</returns>
 		public static double KilopascalsToHectopascals(double kpa) =>
 			kpa * 10.0;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='HectopascalsToKilopascals']/Docs" />
+		/// <summary>
+		/// Converts Kilopascals to Hectopascals.
+		/// </summary>
+		/// <param name="hpa">The value in Hectopascals convert.</param>
+		/// <returns>The value from <paramref name="hpa"/> in Kilopascals.</returns>
 		public static double HectopascalsToKilopascals(double hpa) =>
 			hpa / 10.0;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='KilopascalsToPascals']/Docs" />
+		/// <summary>
+		/// Converts Kilopascals to Pascals.
+		/// </summary>
+		/// <param name="kpa">The value in Kilopascals convert.</param>
+		/// <returns>The value from <paramref name="kpa"/> in Pascals.</returns>
 		public static double KilopascalsToPascals(double kpa) =>
 			kpa * 1000.0;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='HectopascalsToPascals']/Docs" />
+		/// <summary>
+		/// Converts Hectopascals to Pascals.
+		/// </summary>
+		/// <param name="hpa">The value in Hectopascals convert.</param>
+		/// <returns>The value from <paramref name="hpa"/> in Pascals.</returns>
 		public static double HectopascalsToPascals(double hpa) =>
 			hpa * 100.0;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='AtmospheresToPascals']/Docs" />
+		/// <summary>
+		/// Converts Atmospheres to Pascals.
+		/// </summary>
+		/// <param name="atm">The value in Atmospheres convert.</param>
+		/// <returns>The value from <paramref name="atm"/> in Pascals.</returns>
 		public static double AtmospheresToPascals(double atm) =>
 			atm * atmospherePascals;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='PascalsToAtmospheres']/Docs" />
+		/// <summary>
+		/// Converts Pascals to Atmospheres.
+		/// </summary>
+		/// <param name="pascals">The value in Pascals convert.</param>
+		/// <returns>The value from <paramref name="pascals"/> in Atmospheres.</returns>
 		public static double PascalsToAtmospheres(double pascals) =>
 			pascals / atmospherePascals;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='CoordinatesToMiles']/Docs" />
+		/// <summary>
+		/// Calculates the distance between two coordinates in miles.
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in miles.</returns>
 		public static double CoordinatesToMiles(double lat1, double lon1, double lat2, double lon2) =>
 			KilometersToMiles(CoordinatesToKilometers(lat1, lon1, lat2, lon2));
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/UnitConverters.xml" path="//Member[@MemberName='CoordinatesToKilometers']/Docs" />
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers.
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
 		public static double CoordinatesToKilometers(double lat1, double lon1, double lat2, double lon2)
 		{
 			if (lat1 == lat2 && lon1 == lon2)

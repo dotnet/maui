@@ -7,7 +7,7 @@ using Android.Text.Method;
 using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using Java.Lang;
 using Microsoft.Maui.Controls.Platform;
 
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			};
 		}
 
-		protected override EditText EditText => Control;
+		protected override AppCompatEditText EditText => Control;
 
 		[PortHandler]
 		protected override void UpdatePlaceholderColor()
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		where TControl : global::Android.Views.View
 	{
 		bool _disposed;
-		protected abstract EditText EditText { get; }
+		protected abstract AppCompatEditText EditText { get; }
 
 		public EditorRendererBase(Context context) : base(context)
 		{

@@ -1,42 +1,39 @@
-#nullable enable
-
 using System;
 using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.AdaptiveTrigger']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.AdaptiveTrigger']/Docs/*" />
 	public sealed class AdaptiveTrigger : StateTriggerBase
 	{
 		VisualElement? _visualElement;
-		Page? _page;
 		Window? _window;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public AdaptiveTrigger()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowHeight']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowHeight']/Docs/*" />
 		public double MinWindowHeight
 		{
 			get => (double)GetValue(MinWindowHeightProperty);
 			set => SetValue(MinWindowHeightProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowHeightProperty']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowHeightProperty']/Docs/*" />
 		public static readonly BindableProperty MinWindowHeightProperty =
 			BindableProperty.Create(nameof(MinWindowHeight), typeof(double), typeof(AdaptiveTrigger), -1d,
 				propertyChanged: OnMinWindowDimensionChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowWidth']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowWidth']/Docs/*" />
 		public double MinWindowWidth
 		{
 			get => (double)GetValue(MinWindowWidthProperty);
 			set => SetValue(MinWindowWidthProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowWidthProperty']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowWidthProperty']/Docs/*" />
 		public static readonly BindableProperty MinWindowWidthProperty =
 			BindableProperty.Create(nameof(MinWindowWidth), typeof(double), typeof(AdaptiveTrigger), -1d,
 				propertyChanged: OnMinWindowDimensionChanged);
@@ -65,52 +62,26 @@ namespace Microsoft.Maui.Controls
 			DetachEvents();
 
 			_visualElement = VisualState?.VisualStateGroup?.VisualElement;
-			if (_visualElement is not null)
-				_visualElement.PropertyChanged += OnVisualElementPropertyChanged;
 
 			_window = _visualElement?.Window;
 			if (_window is not null)
-				_window.PropertyChanged += OnWindowPropertyChanged;
-
-			_page = _window?.Page;
-			if (_page is not null)
-				_page.SizeChanged += OnPageSizeChanged;
+			{
+				_window.SizeChanged += OnWindowSizeChanged;
+			}
 		}
 
 		void DetachEvents()
 		{
-			if (_visualElement is not null)
-				_visualElement.PropertyChanged -= OnVisualElementPropertyChanged;
 			_visualElement = null;
 
 			if (_window is not null)
-				_window.PropertyChanged -= OnWindowPropertyChanged;
+			{
+				_window.SizeChanged -= OnWindowSizeChanged;
+			}
 			_window = null;
-
-			if (_page is not null)
-				_page.SizeChanged -= OnPageSizeChanged;
-			_page = null;
 		}
 
-		void OnVisualElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == VisualElement.WindowProperty.PropertyName)
-			{
-				AttachEvents();
-				UpdateState();
-			}
-		}
-
-		void OnWindowPropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == Window.PageProperty.PropertyName)
-			{
-				AttachEvents();
-				UpdateState();
-			}
-		}
-
-		void OnPageSizeChanged(object? sender, EventArgs e)
+		void OnWindowSizeChanged(object? sender, EventArgs e)
 		{
 			UpdateState();
 		}
@@ -120,8 +91,8 @@ namespace Microsoft.Maui.Controls
 			if (!knownAttached && !IsAttached)
 				return;
 
-			var w = _page?.Width ?? -1;
-			var h = _page?.Height ?? -1;
+			var w = _window?.Width ?? -1;
+			var h = _window?.Height ?? -1;
 
 			if (w == -1 || h == -1)
 				return;

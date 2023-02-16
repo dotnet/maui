@@ -1,32 +1,44 @@
 namespace Microsoft.Maui.Networking
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectionProfile.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ConnectionProfile']/Docs" />
+	/// <summary>
+	/// Describes the type of connection the device is using.
+	/// </summary>
 	public enum ConnectionProfile
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectionProfile.xml" path="//Member[@MemberName='Unknown']/Docs" />
+		/// <summary>Other unknown type of connection.</summary>
 		Unknown = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectionProfile.xml" path="//Member[@MemberName='Bluetooth']/Docs" />
+
+		/// <summary>The bluetooth data connection.</summary>
 		Bluetooth = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectionProfile.xml" path="//Member[@MemberName='Cellular']/Docs" />
+
+		/// <summary>The mobile/cellular data connection.</summary>
 		Cellular = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectionProfile.xml" path="//Member[@MemberName='Ethernet']/Docs" />
+
+		/// <summary>The ethernet data connection.</summary>
 		Ethernet = 3,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ConnectionProfile.xml" path="//Member[@MemberName='WiFi']/Docs" />
+
+		/// <summary>The Wi-Fi data connection.</summary>
 		WiFi = 4
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/NetworkAccess.xml" path="Type[@FullName='Microsoft.Maui.Essentials.NetworkAccess']/Docs" />
+	/// <summary>
+	/// Various states of the connection to the internet.
+	/// </summary>
 	public enum NetworkAccess
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NetworkAccess.xml" path="//Member[@MemberName='Unknown']/Docs" />
+		/// <summary>The state of the connectivity is not known.</summary>
 		Unknown = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NetworkAccess.xml" path="//Member[@MemberName='None']/Docs" />
+
+		/// <summary>No connectivity.</summary>
 		None = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NetworkAccess.xml" path="//Member[@MemberName='Local']/Docs" />
+
+		/// <summary>Local network access only.</summary>
 		Local = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NetworkAccess.xml" path="//Member[@MemberName='ConstrainedInternet']/Docs" />
+
+		/// <summary>Limited internet access.</summary>
 		ConstrainedInternet = 3,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/NetworkAccess.xml" path="//Member[@MemberName='Internet']/Docs" />
+
+		/// <summary>Local and Internet access.</summary>
 		Internet = 4
 	}
 }

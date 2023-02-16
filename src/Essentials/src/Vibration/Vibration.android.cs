@@ -23,7 +23,11 @@ namespace Microsoft.Maui.Devices
 
 		static Vibrator? VibratorServiceVibrator =>
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1422 // Validate platform compatibility
+#pragma warning disable CA1416 // Validate platform compatibility
 			Application.Context.GetSystemService(Context.VibratorService) as Vibrator;
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		static Vibrator? vibrator;
@@ -41,6 +45,8 @@ namespace Microsoft.Maui.Devices
 			Permissions.EnsureDeclared<Permissions.Vibrate>();
 
 			var time = (long)duration.TotalMilliseconds;
+			if (time <= 0)
+				return;
 #if __ANDROID_26__
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{

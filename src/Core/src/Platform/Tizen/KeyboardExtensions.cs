@@ -1,6 +1,5 @@
-﻿using ElmSharp;
+﻿using AutoCapital = Tizen.NUI.InputMethod.AutoCapitalType;
 using TKeyboard = Tizen.UIExtensions.Common.Keyboard;
-using TEntry = Tizen.UIExtensions.ElmSharp.Entry;
 
 namespace Microsoft.Maui.Platform
 {
@@ -42,35 +41,12 @@ namespace Microsoft.Maui.Platform
 			}
 			else if (keyboardFlags.HasFlag(KeyboardFlags.CapitalizeCharacter))
 			{
-				return AutoCapital.All;
+				return AutoCapital.Allcharacter;
 			}
 			else
 			{
 				return AutoCapital.None;
 			}
-		}
-
-		public static InputHints ToInputHints(this Keyboard keyboard, bool isSpellCheckEnabled, bool isTextPredictionEnabled)
-		{
-			if (keyboard is CustomKeyboard customKeyboard)
-			{
-				return customKeyboard.Flags.HasFlag(KeyboardFlags.Suggestions) || customKeyboard.Flags.HasFlag(KeyboardFlags.Spellcheck) ? InputHints.AutoComplete : InputHints.None;
-			}
-			return isSpellCheckEnabled && isTextPredictionEnabled ? InputHints.AutoComplete : InputHints.None;
-		}
-
-		public static void UpdateKeyboard(this TEntry control, Keyboard keyboard, bool isSpellCheckEnabled, bool isTextPredictionEnabled)
-		{
-			control.Keyboard = keyboard.ToPlatform();
-			if (keyboard is CustomKeyboard customKeyboard)
-			{
-				control.AutoCapital = customKeyboard.Flags.ToAutoCapital();
-			}
-			else
-			{
-				control.AutoCapital = AutoCapital.None;
-			}
-			control.InputHint = keyboard.ToInputHints(isSpellCheckEnabled, isTextPredictionEnabled);
 		}
 	}
 }

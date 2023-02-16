@@ -4,47 +4,47 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ImageTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestSizing()
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
 			var result = image.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-			Assert.AreEqual(100, result.Request.Width);
-			Assert.AreEqual(20, result.Request.Height);
+			Assert.Equal(100, result.Request.Width);
+			Assert.Equal(20, result.Request.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestAspectSizingWithConstrainedHeight()
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
 			var result = image.Measure(double.PositiveInfinity, 10);
 
-			Assert.AreEqual(50, result.Request.Width);
-			Assert.AreEqual(10, result.Request.Height);
+			Assert.Equal(50, result.Request.Width);
+			Assert.Equal(10, result.Request.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestAspectSizingWithConstrainedWidth()
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
 
 			var result = image.Measure(25, double.PositiveInfinity);
 
-			Assert.AreEqual(25, result.Request.Width);
-			Assert.AreEqual(5, result.Request.Height);
+			Assert.Equal(25, result.Request.Width);
+			Assert.Equal(5, result.Request.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestAspectFillSizingWithConstrainedHeight()
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
@@ -52,11 +52,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			image.Aspect = Aspect.AspectFill;
 			var result = image.Measure(double.PositiveInfinity, 10);
 
-			Assert.AreEqual(50, result.Request.Width);
-			Assert.AreEqual(10, result.Request.Height);
+			Assert.Equal(50, result.Request.Width);
+			Assert.Equal(10, result.Request.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestAspectFillSizingWithConstrainedWidth()
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
@@ -64,11 +64,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			image.Aspect = Aspect.AspectFill;
 			var result = image.Measure(25, double.PositiveInfinity);
 
-			Assert.AreEqual(25, result.Request.Width);
-			Assert.AreEqual(5, result.Request.Height);
+			Assert.Equal(25, result.Request.Width);
+			Assert.Equal(5, result.Request.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestFillSizingWithConstrainedHeight()
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
@@ -76,11 +76,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			image.Aspect = Aspect.AspectFill;
 			var result = image.Measure(double.PositiveInfinity, 10);
 
-			Assert.AreEqual(50, result.Request.Width);
-			Assert.AreEqual(10, result.Request.Height);
+			Assert.Equal(50, result.Request.Width);
+			Assert.Equal(10, result.Request.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestFillSizingWithConstrainedWidth()
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
@@ -88,30 +88,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			image.Aspect = Aspect.AspectFill;
 			var result = image.Measure(25, double.PositiveInfinity);
 
-			Assert.AreEqual(25, result.Request.Width);
-			Assert.AreEqual(5, result.Request.Height);
+			Assert.Equal(25, result.Request.Width);
+			Assert.Equal(5, result.Request.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSizeChanged()
 		{
 			var image = new Image { Source = "File0.png" };
-			Assert.AreEqual("File0.png", ((FileImageSource)image.Source).File);
+			Assert.Equal("File0.png", ((FileImageSource)image.Source).File);
 
 			var preferredSizeChanged = false;
 			image.MeasureInvalidated += (sender, args) => preferredSizeChanged = true;
 
 			image.Source = "File1.png";
-			Assert.AreEqual("File1.png", ((FileImageSource)image.Source).File);
+			Assert.Equal("File1.png", ((FileImageSource)image.Source).File);
 			Assert.True(preferredSizeChanged);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSource()
 		{
 			var image = new Image();
 
-			Assert.IsNull(image.Source);
+			Assert.Null(image.Source);
 
 			bool signaled = false;
 			image.PropertyChanged += (sender, e) =>
@@ -123,11 +123,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var source = ImageSource.FromFile("File.png");
 			image.Source = source;
 
-			Assert.AreEqual(source, image.Source);
+			Assert.Equal(source, image.Source);
 			Assert.True(signaled);
 		}
 
-		[Test]
+		[Fact]
 		public void TestSourceDoubleSet()
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png") };
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(signaled);
 		}
 
-		[Test]
+		[Fact]
 		public void TestFileImageSourceChanged()
 		{
 			var source = (FileImageSource)ImageSource.FromFile("File.png");
@@ -156,12 +156,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			source.File = "Other.png";
-			Assert.AreEqual("Other.png", source.File);
+			Assert.Equal("Other.png", source.File);
 
 			Assert.True(signaled);
 		}
 
-		[Test]
+		[Fact]
 		public void TestFileImageSourcePropertiesChangedTriggerResize()
 		{
 			var source = new FileImageSource();
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[Test]
+		[Fact]
 		public void TestStreamImageSourcePropertiesChangedTriggerResize()
 		{
 			var source = new StreamImageSource();
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[Test]
+		[Fact]
 		public void TestImageSourceToNullCancelsLoading()
 		{
 			var cancelled = false;
@@ -197,12 +197,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var loader = new StreamImageSource { Stream = GetStreamAsync };
 
 			image.Source = loader;
-			Assert.IsTrue(image.IsLoading);
+			Assert.True(image.IsLoading);
 
 			image.Source = null;
 			mockImageRenderer.CompletionSource.Task.Wait();
-			Assert.IsFalse(image.IsLoading);
-			Assert.IsTrue(cancelled);
+			Assert.False(image.IsLoading);
+			Assert.True(cancelled);
 
 			async Task<Stream> GetStreamAsync(CancellationToken cancellationToken)
 			{

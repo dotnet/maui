@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Platform;
@@ -283,11 +284,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (textField == null)
 				return;
 
-			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatformHorizontal();
-			if (view != null)
-			{
-				textField.TextAlignment = textField.TextAlignment.AdjustForFlowDirection(view);
-			}
+			textField.TextAlignment = _searchHandler.HorizontalTextAlignment.ToPlatformHorizontal(textField.EffectiveUserInterfaceLayoutDirection);
 		}
 
 		void UpdateSearchBarVerticalTextAlignment(UITextField textField)
@@ -376,7 +373,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			button.SetImage(newIcon, UIControlState.Normal);
 			button.SetImage(newIcon, UIControlState.Selected);
 			button.SetImage(newIcon, UIControlState.Highlighted);
-			button.TintColor = button.ImageView.TintColor = targetColor.ToPlatform() ?? defaultTintColor;
+			button.TintColor = button.ImageView.TintColor = targetColor != null ? targetColor.ToPlatform() : defaultTintColor;
 		}
 
 		protected virtual void Dispose(bool disposing)

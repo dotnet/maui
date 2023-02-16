@@ -1,11 +1,11 @@
 using System;
-using ElmSharp;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	public class ViewInitializedEventArgs : EventArgs
 	{
-		public EvasObject NativeView
+		public NView NativeView
 		{
 			get;
 			internal set;

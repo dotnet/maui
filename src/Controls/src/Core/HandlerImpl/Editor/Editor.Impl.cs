@@ -1,9 +1,10 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/Editor.xml" path="Type[@FullName='Microsoft.Maui.Controls.Editor']/Docs" />
+	/// <include file="../../../../docs/Microsoft.Maui.Controls/Editor.xml" path="Type[@FullName='Microsoft.Maui.Controls.Editor']/Docs/*" />
 	public partial class Editor : IEditor
 	{
 		double _previousWidthConstraint;

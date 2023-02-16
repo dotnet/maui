@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -31,10 +31,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public event EventHandler MockEvent2;
 	}
 
-	[TestFixture]
+
 	public class EventTriggerTest : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestTriggerActionInvoked()
 		{
 			var bindable = new MockBindableWithEvent();
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(triggeraction.Invoked);
 		}
 
-		[Test]
+		[Fact]
 		public void TestChangeEventOnEventTrigger()
 		{
 			var bindable = new MockBindableWithEvent();

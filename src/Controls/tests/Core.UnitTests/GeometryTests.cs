@@ -1,21 +1,22 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class GeometryTests : BaseTestFixture
 	{
-		[TestCase(0, true)]
-		[TestCase(0, false)]
-		[TestCase(45, true)]
-		[TestCase(45, false)]
-		[TestCase(180, true)]
-		[TestCase(180, false)]
-		[TestCase(270, true)]
-		[TestCase(270, false)]
+		[Theory]
+		[InlineData(0, true)]
+		[InlineData(0, false)]
+		[InlineData(45, true)]
+		[InlineData(45, false)]
+		[InlineData(180, true)]
+		[InlineData(180, false)]
+		[InlineData(270, true)]
+		[InlineData(270, false)]
 		public void FlattenArcTest(double angle, bool isLargeArc)
 		{
 			var path = new Path
@@ -58,55 +59,55 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				arcSegment.SweepDirection == SweepDirection.CounterClockwise,
 				1);
 
-			Assert.AreNotEqual(0, points.Count);
+			Assert.NotEmpty(points);
 		}
 
-		[Test]
+		[Fact]
 		public void TestRoundLineGeometryConstruction()
 		{
 			var lineGeometry = new LineGeometry(new Point(0, 0), new Point(100, 100));
 
-			Assert.IsNotNull(lineGeometry);
-			Assert.AreEqual(0, lineGeometry.StartPoint.X);
-			Assert.AreEqual(0, lineGeometry.StartPoint.Y);
-			Assert.AreEqual(100, lineGeometry.EndPoint.X);
-			Assert.AreEqual(100, lineGeometry.EndPoint.Y);
+			Assert.NotNull(lineGeometry);
+			Assert.Equal(0, lineGeometry.StartPoint.X);
+			Assert.Equal(0, lineGeometry.StartPoint.Y);
+			Assert.Equal(100, lineGeometry.EndPoint.X);
+			Assert.Equal(100, lineGeometry.EndPoint.Y);
 		}
 
-		[Test]
+		[Fact]
 		public void TestEllipseGeometryConstruction()
 		{
 			var ellipseGeometry = new EllipseGeometry(new Point(50, 50), 10, 20);
 
-			Assert.IsNotNull(ellipseGeometry);
-			Assert.AreEqual(50, ellipseGeometry.Center.X);
-			Assert.AreEqual(50, ellipseGeometry.Center.Y);
-			Assert.AreEqual(10, ellipseGeometry.RadiusX);
-			Assert.AreEqual(20, ellipseGeometry.RadiusY);
+			Assert.NotNull(ellipseGeometry);
+			Assert.Equal(50, ellipseGeometry.Center.X);
+			Assert.Equal(50, ellipseGeometry.Center.Y);
+			Assert.Equal(10, ellipseGeometry.RadiusX);
+			Assert.Equal(20, ellipseGeometry.RadiusY);
 		}
 
-		[Test]
+		[Fact]
 		public void TestRectangleGeometryConstruction()
 		{
 			var rectangleGeometry = new RectangleGeometry(new Rect(0, 0, 150, 150));
 
-			Assert.IsNotNull(rectangleGeometry);
-			Assert.AreEqual(150, rectangleGeometry.Rect.Height);
-			Assert.AreEqual(150, rectangleGeometry.Rect.Width);
+			Assert.NotNull(rectangleGeometry);
+			Assert.Equal(150, rectangleGeometry.Rect.Height);
+			Assert.Equal(150, rectangleGeometry.Rect.Width);
 		}
 
-		[Test]
+		[Fact]
 		public void TestRoundRectangleGeometryConstruction()
 		{
 			var roundRectangleGeometry = new RoundRectangleGeometry(new CornerRadius(12, 0, 0, 12), new Rect(0, 0, 150, 150));
 
-			Assert.IsNotNull(roundRectangleGeometry);
-			Assert.AreEqual(12, roundRectangleGeometry.CornerRadius.TopLeft);
-			Assert.AreEqual(0, roundRectangleGeometry.CornerRadius.TopRight);
-			Assert.AreEqual(0, roundRectangleGeometry.CornerRadius.BottomLeft);
-			Assert.AreEqual(12, roundRectangleGeometry.CornerRadius.BottomRight);
-			Assert.AreEqual(150, roundRectangleGeometry.Rect.Height);
-			Assert.AreEqual(150, roundRectangleGeometry.Rect.Width);
+			Assert.NotNull(roundRectangleGeometry);
+			Assert.Equal(12, roundRectangleGeometry.CornerRadius.TopLeft);
+			Assert.Equal(0, roundRectangleGeometry.CornerRadius.TopRight);
+			Assert.Equal(0, roundRectangleGeometry.CornerRadius.BottomLeft);
+			Assert.Equal(12, roundRectangleGeometry.CornerRadius.BottomRight);
+			Assert.Equal(150, roundRectangleGeometry.Rect.Height);
+			Assert.Equal(150, roundRectangleGeometry.Rect.Width);
 		}
 	}
 }

@@ -19,6 +19,10 @@ namespace Microsoft.Maui
 		/// <returns>The created window.</returns>
 		IWindow CreateWindow(IActivationState? activationState);
 
+		/// <summary>
+		/// Requests that the application open a new window.
+		/// </summary>
+		/// <param name="window">The window to open.</param>
 		void OpenWindow(IWindow window);
 
 		/// <summary>

@@ -3,7 +3,7 @@
 First of all, thank you for reporting this potential bug. Nobody likes bugs and to help us diagnose and resolve your potential issue as effective and quickly as possible, we would like to give you a bit more information about why we ask you for a reproducible example of the problem, and how to provide one.
 
 ## What is a reproduction?
-A reproduction, reprodicible example or just repro for short is the most basic code to demonstrate the issue that you're seeing. It's the simplest way to reproduce the issue.
+A reproduction, reproducible example or just repro for short is the most basic code to demonstrate the issue that you're seeing. It's the simplest way to reproduce the issue.
 Ideally, you should be able to reproduce the issue by just running the code in the project you have provided and see the problem. If any reproduction steps are needed, either note them in the issue or include them in the project somehow.
 
 ## Why do we ask for a reproducible example?
@@ -56,7 +56,7 @@ While we've never had problems with this, it is still a potential attack vector 
 
 Also, by putting it in a GitHub repo it's easier to potentially collaborate. We (and our amazing community!) can comment on a piece of code right then and there and help you further. It can even serve as a nice example for other people!
 
-If you don't like to have a lot of repos, you could opt for a repo where on the `main` branch you put a File > New .NET MAUI App. And from there createa branches for different issues.
+If you don't like to have a lot of repos, you could opt for a repo where on the `main` branch you put a File > New .NET MAUI App. And from there create branches for different issues.
 
 ## Big don'ts!
 - Never put any sensitive information in your code. No API keys, credentials, personal information, etc.

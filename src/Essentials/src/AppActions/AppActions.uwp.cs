@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.StartScreen;
 using Microsoft.UI.Xaml;
+using Windows.UI.StartScreen;
 
 namespace Microsoft.Maui.ApplicationModel
 {

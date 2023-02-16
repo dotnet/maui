@@ -16,7 +16,7 @@ updates:
     - dependency-name: "Newtonsoft.Json"                      # needs to be done manually to match VS
     - dependency-name: "Microsoft.Build*"                     # these packages neet to be kept on old version that supports netstandard2.0
     - dependency-name: "Microsoft.TemplateEngine.Tasks"
-      update-types: ["version-update:semver-patch"]
+    - dependency-name: "Selenium.*"                           # needs to be done manually because other packages need to be compiled with these new versions
       
   labels:
       - "nuget"

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
 
-//using NativeTextAlignment = Microsoft.UI.Xaml.TextAlignment;
+using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -22,13 +22,13 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
 
-		static void SetNativeText(EditorHandler editorHandler, string text) =>
+		internal static void SetNativeText(EditorHandler editorHandler, string text) =>
 			GetNativeEditor(editorHandler).Text = text;
 
-		static int GetCursorStartPosition(EditorHandler editorHandler) =>
+		internal static int GetCursorStartPosition(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).GetCursorPosition();
 
-		static void UpdateCursorStartPosition(EditorHandler editorHandler, int position) =>
+		internal static void UpdateCursorStartPosition(EditorHandler editorHandler, int position) =>
 			GetNativeEditor(editorHandler).SelectionStart = position;
 
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>
@@ -54,6 +54,21 @@ namespace Microsoft.Maui.DeviceTests
 
 		//NativeTextAlignment GetNativeHorizontalTextAlignment(EditorHandler editorHandler) =>
 		//	GetNativeEditor(editorHandler).TextAlignment;
+
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(EditorHandler editorHandler)
+		{
+			var textBox = GetNativeEditor(editorHandler);
+
+			var sv = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+			var placeholder = textBox.GetDescendantByName<TextBlock>("PlaceholderTextContentPresenter");
+
+			Assert.Equal(sv.VerticalAlignment, placeholder.VerticalAlignment);
+
+			return sv.VerticalAlignment;
+		}
+
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToPlatformVerticalAlignment();
 
 		bool IsInputScopeEquals(InputScope inputScope, InputScopeNameValue nameValue)
 		{

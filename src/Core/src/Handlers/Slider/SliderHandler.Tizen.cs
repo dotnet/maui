@@ -1,37 +1,42 @@
 using System;
-using Tizen.UIExtensions.ElmSharp;
-using EColor = ElmSharp.Color;
-using ESlider = ElmSharp.Slider;
+using Tizen.NUI;
+using Tizen.NUI.BaseComponents;
+using Tizen.NUI.Components;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler : ViewHandler<ISlider, ESlider>
+	public partial class SliderHandler : ViewHandler<ISlider, Slider>
 	{
-		static EColor? DefaultMinTrackColor;
-		static EColor? DefaultMaxTrackColor;
-		static EColor? DefaultThumbColor;
-
-		protected override ESlider CreatePlatformView() => new ESlider(PlatformParent);
-
-		protected override void ConnectHandler(ESlider platformView)
+		protected override Slider CreatePlatformView() => new Slider
 		{
-			platformView!.ValueChanged += OnControlValueChanged;
-			platformView!.DragStarted += OnDragStarted;
-			platformView!.DragStopped += OnDragStopped;
+			Focusable = true,
+		};
+
+		protected override void ConnectHandler(Slider platformView)
+		{
+			platformView.ValueChanged += OnControlValueChanged;
+			platformView.SlidingStarted += OnSlidingStarted;
+			platformView.SlidingFinished += OnSlidingFinished;
 		}
 
-		protected override void DisconnectHandler(ESlider platformView)
+		void OnSlidingStarted(object? sender, SliderSlidingStartedEventArgs e)
 		{
-			platformView!.ValueChanged -= OnControlValueChanged;
-			platformView!.DragStarted -= OnDragStarted;
-			platformView!.DragStopped -= OnDragStopped;
+			VirtualView.DragStarted();
 		}
 
-		void SetupDefaults(ESlider platformView)
+		void OnSlidingFinished(object? sender, SliderSlidingFinishedEventArgs e)
 		{
-			DefaultMinTrackColor = platformView.GetBarColor();
-			DefaultMaxTrackColor = platformView.GetBackgroundColor();
-			DefaultThumbColor = platformView.GetHandlerColor();
+			VirtualView.DragCompleted();
+		}
+
+		protected override void DisconnectHandler(Slider platformView)
+		{
+			if (!platformView.HasBody())
+				return;
+
+			platformView.ValueChanged -= OnControlValueChanged;
+			platformView.SlidingStarted -= OnSlidingStarted;
+			platformView.SlidingFinished -= OnSlidingFinished;
 		}
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)
@@ -44,7 +49,6 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateMaximum(slider);
 		}
 
-
 		public static void MapValue(ISliderHandler handler, ISlider slider)
 		{
 			handler.PlatformView?.UpdateValue(slider);
@@ -52,39 +56,33 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMinimumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMinimumTrackColor(slider, DefaultMinTrackColor);
+			handler.PlatformView?.UpdateMinimumTrackColor(slider);
 		}
 
 		public static void MapMaximumTrackColor(ISliderHandler handler, ISlider slider)
 		{
-			handler.PlatformView?.UpdateMaximumTrackColor(slider, DefaultMaxTrackColor);
+			handler.PlatformView?.UpdateMaximumTrackColor(slider);
 		}
 
 		public static void MapThumbColor(ISliderHandler handler, ISlider slider)
 		{
-
-			handler.PlatformView?.UpdateThumbColor(slider, DefaultThumbColor);
+			handler.PlatformView?.UpdateThumbColor(slider);
 		}
 
-		[MissingMapper]
-		public static void MapThumbImageSource(ISliderHandler handler, ISlider slider) { }
+		public static void MapThumbImageSource(ISliderHandler handler, ISlider slider)
+		{
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.PlatformView?.UpdateThumbImageSourceAsync(slider, provider)
+				.FireAndForget(handler);
+		}
 
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)
 		{
-			if (PlatformView == null || VirtualView == null)
+			if (PlatformView == null || VirtualView == null || PlatformView.CurrentValue == VirtualView.Value)
 				return;
 
-			VirtualView.Value = PlatformView.Value;
-		}
-
-		void OnDragStarted(object? sender, EventArgs e)
-		{
-			VirtualView?.DragStarted();
-		}
-
-		void OnDragStopped(object? sender, EventArgs e)
-		{
-			VirtualView?.DragCompleted();
+			VirtualView.Value = PlatformView.CurrentValue;
 		}
 	}
 }

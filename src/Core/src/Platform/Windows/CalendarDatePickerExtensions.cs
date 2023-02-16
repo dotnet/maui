@@ -3,7 +3,8 @@ using System.Linq;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class CalendarDatePickerExtensions
+	//TODO make this public on NET8
+	internal static class CalendarDatePickerExtensions
 	{
 		public static string ToDateFormat(this string dateFormat)
 		{
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Platform
 
 			return separator;
 		}
-		
+
 		internal static string GetPart(string format)
 		{
 			if (IsDay(format))
@@ -83,11 +84,11 @@ namespace Microsoft.Maui.Platform
 				var day = format.Count(x => x == 'd');
 
 				if (day == 3)
-					return "{day dayofweek.abbreviated}";
+					return "{day.integer} {dayofweek.abbreviated}";
 				else if (day == 4)
 					return "{dayofweek.full}";
 				else
-					return "{day.integer}";
+					return $"{{day.integer({day})}}";
 			}
 		}
 
@@ -111,10 +112,10 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var month = format.Count(x => x == 'M');
+				var month = format.Count(x => string.Equals(new string(new char[] { x }), "M", StringComparison.OrdinalIgnoreCase));
 
 				if (month <= 2)
-					return "{month.integer}";
+					return $"{{month.integer({month})}}";
 				else if (month == 3)
 					return "{month.abbreviated}";
 				else

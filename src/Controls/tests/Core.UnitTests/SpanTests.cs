@@ -1,12 +1,12 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class SpanTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void StyleApplied()
 		{
 			var pinkStyle = new Style(typeof(Span))
@@ -37,10 +37,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = label
 			};
 
-			Assert.AreEqual(Colors.Pink, span.TextColor);
+			Assert.Equal(Colors.Pink, span.TextColor);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingApplied()
 		{
 			var vm = new ViewModel()
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			label.BindingContext = vm;
 
-			Assert.AreEqual(vm.Text, span.Text);
+			Assert.Equal(vm.Text, span.Text);
 		}
 
 		class ViewModel

@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Platform
 			var radius = buttonStroke.CornerRadius;
 
 			if (radius >= 0)
-				platformButton.Resources.SetValueForAllKey(CornerRadiusResourceKeys, WinUIHelpers.CreateCornerRadius(buttonStroke.CornerRadius));
+				platformButton.Resources.SetValueForAllKey(CornerRadiusResourceKeys, WinUIHelpers.CreateCornerRadius(radius));
 			else
 				platformButton.Resources.RemoveKeys(CornerRadiusResourceKeys);
 

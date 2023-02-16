@@ -138,10 +138,10 @@
       </Docs>
     </Member>
     <Member MemberName="Keyboard">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Keyboard Keyboard { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Controls.Keyboard Keyboard" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Keyboard Keyboard { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Keyboard Keyboard" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.InputView.Keyboard" />
-      <MemberSignature Language="F#" Value="member this.Keyboard : Microsoft.Maui.Controls.Keyboard with get, set" Usage="Microsoft.Maui.Controls.InputView.Keyboard" />
+      <MemberSignature Language="F#" Value="member this.Keyboard : Microsoft.Maui.Keyboard with get, set" Usage="Microsoft.Maui.Controls.InputView.Keyboard" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -155,11 +155,11 @@
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Keyboard</ReturnType>
+        <ReturnType>Microsoft.Maui.Keyboard</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the Keyboard for the InputView. This is a bindable property.</summary>
-        <value>The <see cref="T:Microsoft.Maui.Controls.Keyboard" /> to use for the InputView.</value>
+        <value>The <see cref="T:Microsoft.Maui.Keyboard" /> to use for the InputView.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -295,17 +295,17 @@
       </Docs>
     </Member>
     <Member MemberName="PlaceholderColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color PlaceholderColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color PlaceholderColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color PlaceholderColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color PlaceholderColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.InputView.PlaceholderColor" />
-      <MemberSignature Language="F#" Value="member this.PlaceholderColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.InputView.PlaceholderColor" />
+      <MemberSignature Language="F#" Value="member this.PlaceholderColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.InputView.PlaceholderColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color of the placeholder text.</summary>
@@ -387,17 +387,17 @@
       </Docs>
     </Member>
     <Member MemberName="TextColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TextColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TextColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TextColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TextColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.InputView.TextColor" />
-      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.InputView.TextColor" />
+      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.InputView.TextColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text color.</summary>

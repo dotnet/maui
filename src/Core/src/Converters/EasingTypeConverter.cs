@@ -9,6 +9,7 @@ using static Microsoft.Maui.Easing;
 
 namespace Microsoft.Maui.Converters
 {
+	/// <inheritdoc/>
 	public class EasingTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Converters
 
 			strValue = strValue?.Trim() ?? "";
 			var parts = strValue.Split('.');
+
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
 				strValue = parts[parts.Length - 1];
 
@@ -91,6 +93,7 @@ namespace Microsoft.Maui.Converters
 				return nameof(SpringIn);
 			if (easing == SpringOut)
 				return nameof(SpringOut);
+
 			throw new NotSupportedException();
 		}
 
@@ -102,17 +105,17 @@ namespace Microsoft.Maui.Converters
 
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
 			=> new(new[] {
-				"Linear",
-				"SinOut",
-				"SinIn",
-				"SinInOut",
-				"CubicIn",
-				"CubicOut",
-				"CubicInOut",
-				"BounceOut",
-				"BounceIn",
-				"SpringIn",
-				"SpringOut"
+			"Linear",
+			"SinOut",
+			"SinIn",
+			"SinInOut",
+			"CubicIn",
+			"CubicOut",
+			"CubicInOut",
+			"BounceOut",
+			"BounceIn",
+			"SpringIn",
+			"SpringOut"
 			});
 	}
 }

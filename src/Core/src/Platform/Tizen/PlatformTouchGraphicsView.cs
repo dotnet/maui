@@ -1,71 +1,120 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ElmSharp;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Skia.Views;
+using PointStateType = Tizen.NUI.PointStateType;
 
 namespace Microsoft.Maui.Platform
 {
 	public class PlatformTouchGraphicsView : SkiaGraphicsView
 	{
 		IGraphicsView? _graphicsView;
-		GestureLayer? _gestureLayer;
+		RectF _bounds;
+		bool _dragStarted;
+		PointF[] _lastMovedViewPoints = new PointF[0];
+		bool _pressedContained = false;
 
-		public PlatformTouchGraphicsView(EvasObject? parent, IDrawable? drawable = null) : base(parent, drawable)
+		public PlatformTouchGraphicsView(IDrawable? drawable = null) : base(drawable)
 		{
-			_ = parent ?? throw new ArgumentNullException(nameof(parent));
+			HoverEvent += OnHoverEvent;
+			TouchEvent += OnTouchEvent;
 		}
 
-		public void Connect(IGraphicsView graphicsView)
+		protected override void OnResized()
 		{
-			_graphicsView = graphicsView;
-			_gestureLayer = new GestureLayer(this);
-			_gestureLayer.Attach(this);
+			base.OnResized();
+			_bounds = new RectF(0, 0, SizeWidth.ToScaledDP(), SizeHeight.ToScaledDP());
+		}
 
-			_gestureLayer.SetTapCallback(GestureLayer.GestureType.Tap, GestureLayer.GestureState.Start, (_) => { OnGestureStarted(); });
+		public void Connect(IGraphicsView graphicsView) => _graphicsView = graphicsView;
 
-			_gestureLayer.SetTapCallback(GestureLayer.GestureType.Tap, GestureLayer.GestureState.End, (_) => { OnGestureEnded(true); });
+		public void Disconnect() => _graphicsView = null;
 
-			_gestureLayer.SetLineCallback(GestureLayer.GestureState.Start, (_) => { OnGestureStarted(); });
+		bool OnTouchEvent(object source, TouchEventArgs e)
+		{
+			int touchCount = (int)e.Touch.GetPointCount();
+			var touchPoints = new PointF[touchCount];
+			for (uint i = 0; i < touchCount; i++)
+				touchPoints[i] = new PointF(e.Touch.GetLocalPosition(i).X.ToScaledDP(), e.Touch.GetLocalPosition(i).Y.ToScaledDP());
 
-			_gestureLayer.SetLineCallback(GestureLayer.GestureState.Move, (_) =>
+			switch (e.Touch.GetState(0))
 			{
-				_graphicsView?.DragInteraction(new[] { _gestureLayer.EvasCanvas.Pointer.ToPointF() });
-			});
+				case PointStateType.Motion:
+					TouchesMoved(touchPoints);
+					break;
+				case PointStateType.Down:
+					TouchesBegan(touchPoints);
+					break;
+				case PointStateType.Up:
+					TouchesEnded(touchPoints);
+					break;
+				case PointStateType.Interrupted:
+					TouchesCanceled();
+					break;
+			}
 
-			_gestureLayer.SetLineCallback(GestureLayer.GestureState.End, (_) =>
+			return false;
+		}
+
+		bool OnHoverEvent(object source, HoverEventArgs e)
+		{
+			int touchCount = (int)e.Hover.GetPointCount();
+			var touchPoints = new PointF[touchCount];
+			for (uint i = 0; i < touchCount; i++)
+				touchPoints[i] = new PointF(e.Hover.GetLocalPosition(i).X.ToScaledDP(), e.Hover.GetLocalPosition(i).Y.ToScaledDP());
+
+			switch (e.Hover.GetState(0))
 			{
-				OnGestureEnded(Geometry.ToDP().Contains(_gestureLayer.EvasCanvas.Pointer.ToPoint()));
-			});
+				case PointStateType.Motion:
+					_graphicsView?.MoveHoverInteraction(touchPoints);
+					break;
+				case PointStateType.Started:
+					_graphicsView?.StartHoverInteraction(touchPoints);
+					break;
+				case PointStateType.Finished:
+					_graphicsView?.EndHoverInteraction();
+					break;
+			}
 
-			_gestureLayer.SetLineCallback(GestureLayer.GestureState.Abort, (_) =>
+			return false;
+		}
+
+		void TouchesBegan(PointF[] points)
+		{
+			_dragStarted = false;
+			_lastMovedViewPoints = points;
+			_graphicsView?.StartInteraction(points);
+			_pressedContained = true;
+		}
+
+		void TouchesMoved(PointF[] points)
+		{
+			if (!_dragStarted)
 			{
-				_graphicsView?.CancelInteraction();
-			});
+				if (points.Length == 1)
+				{
+					float deltaX = _lastMovedViewPoints[0].X - points[0].X;
+					float deltaY = _lastMovedViewPoints[0].Y - points[0].Y;
+
+					if (Math.Abs(deltaX) <= 3 && Math.Abs(deltaY) <= 3)
+						return;
+				}
+			}
+
+			_lastMovedViewPoints = points;
+			_dragStarted = true;
+			_pressedContained = _bounds.ContainsAny(points);
+			_graphicsView?.DragInteraction(points);
 		}
 
-		public void Disconnect()
+		void TouchesEnded(PointF[] points)
 		{
-			_gestureLayer?.Unrealize();
-			_gestureLayer = null;
-			_graphicsView = null;
+			_graphicsView?.EndInteraction(points, _pressedContained);
 		}
 
-		void OnGestureStarted()
+		void TouchesCanceled()
 		{
-			if (_graphicsView is null || _gestureLayer is null)
-				return;
-
-			_graphicsView.StartInteraction(new[] { _gestureLayer.EvasCanvas.Pointer.ToPointF() });
-		}
-
-		void OnGestureEnded(bool isInsideBounds)
-		{
-			if (_graphicsView is null || _gestureLayer is null)
-				return;
-
-			_graphicsView.EndInteraction(new[] { _gestureLayer.EvasCanvas.Pointer.ToPointF() }, isInsideBounds);
+			_pressedContained = false;
+			_graphicsView?.CancelInteraction();
 		}
 	}
 }

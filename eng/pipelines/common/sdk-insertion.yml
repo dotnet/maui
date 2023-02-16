@@ -13,12 +13,6 @@ jobs:
   - checkout: self
   - task: DownloadPipelineArtifact@2
     inputs:
-      artifactName: library-packs
-      downloadPath: $(Build.StagingDirectory)\nuget
-      patterns: |
-        **/Microsoft.Maui.Graphics.*.nupkg
-  - task: DownloadPipelineArtifact@2
-    inputs:
       artifactName: nuget
       downloadPath: $(Build.StagingDirectory)\nuget
       patterns: |
@@ -36,7 +30,7 @@ jobs:
       blobName: $(NupkgCommitStatusName)
       packagePrefix: maui
       artifactsPath: $(Build.StagingDirectory)\nuget
-      yamlResourceName: xamarin-templates
+      yamlResourceName: yaml-templates
   - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
     parameters:
       githubToken: $(github--pat--vs-mobiletools-engineering-service2)
@@ -44,9 +38,22 @@ jobs:
       blobName: $(VSDropCommitStatusName)
       packagePrefix: maui
       artifactsPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
-      yamlResourceName: xamarin-templates
+      yamlResourceName: yaml-templates
       downloadSteps:
       - task: DownloadPipelineArtifact@2
         inputs:
           artifactName: vsdrop-signed
           downloadPath: $(Build.StagingDirectory)/$(VSDropCommitStatusName)
+  - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
+    parameters:
+      githubToken: $(github--pat--vs-mobiletools-engineering-service2)
+      githubContext: $(MultiTargetVSDropCommitStatusName)
+      blobName: $(MultiTargetVSDropCommitStatusName)
+      packagePrefix: maui
+      artifactsPath: $(Build.StagingDirectory)/$(MultiTargetVSDropCommitStatusName)
+      yamlResourceName: yaml-templates
+      downloadSteps:
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifactName: vsdrop-multitarget-signed
+          downloadPath: $(Build.StagingDirectory)/$(MultiTargetVSDropCommitStatusName)

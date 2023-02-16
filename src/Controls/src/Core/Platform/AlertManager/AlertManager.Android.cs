@@ -7,10 +7,13 @@ using Android.Content;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Internals;
+using static Android.Views.ViewGroup;
 using AButton = Android.Widget.Button;
 using AppCompatActivity = AndroidX.AppCompat.App.AppCompatActivity;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
+using AProgressBar = Android.Widget.ProgressBar;
 using AView = Android.Views.View;
 using AWindow = Android.Views.Window;
 
@@ -57,17 +60,18 @@ namespace Microsoft.Maui.Controls.Platform
 		internal sealed class AlertRequestHelper : IDisposable
 		{
 			int _busyCount;
-			bool? _supportsProgress;
 
 			internal AlertRequestHelper(Activity context, IMauiContext mauiContext)
 			{
 				Activity = context;
 				MauiContext = mauiContext;
 
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				MessagingCenter.Subscribe<Page, bool>(Activity, Page.BusySetSignalName, OnPageBusy);
 				MessagingCenter.Subscribe<Page, AlertArguments>(Activity, Page.AlertSignalName, OnAlertRequested);
 				MessagingCenter.Subscribe<Page, PromptArguments>(Activity, Page.PromptSignalName, OnPromptRequested);
 				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName, OnActionSheetRequested);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			public Activity Activity { get; }
@@ -75,10 +79,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public void Dispose()
 			{
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				MessagingCenter.Unsubscribe<Page, bool>(Activity, Page.BusySetSignalName);
 				MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
 				MessagingCenter.Unsubscribe<Page, PromptArguments>(Activity, Page.PromptSignalName);
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			public void ResetBusyCount()
@@ -255,7 +261,7 @@ namespace Microsoft.Maui.Controls.Platform
 				alertDialog.SetMessage(arguments.Message);
 
 				var frameLayout = new FrameLayout(Activity);
-				var editText = new EditText(Activity) { Hint = arguments.Placeholder, Text = arguments.InitialValue };
+				var editText = new AppCompatEditText(Activity) { Hint = arguments.Placeholder, Text = arguments.InitialValue };
 				var layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent)
 				{
 					LeftMargin = (int)(22 * Activity.Resources.DisplayMetrics.Density),
@@ -284,35 +290,50 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void UpdateProgressBarVisibility(bool isBusy)
 			{
-				if (!SupportsProgress)
-					return;
-#pragma warning disable 612, 618
+				int progressLayoutId = 16908999;
 
-				Activity.SetProgressBarIndeterminate(true);
-				Activity.SetProgressBarIndeterminateVisibility(isBusy);
-#pragma warning restore 612, 618
-			}
+				AView root = Activity?.Window?.DecorView?.RootView;
 
-			internal bool SupportsProgress
-			{
-				get
+				if (root?.FindViewById(Activity.Resources.GetIdentifier("content", "id", "android")) is not ViewGroup content)
 				{
-					if (_supportsProgress.HasValue)
-						return _supportsProgress.Value;
+					return;
+				}
 
-					int progressCircularId = Activity.Resources.GetIdentifier("progress_circular", "id", "android");
+				if (isBusy)
+				{
+					var progressLayout = new FrameLayout(Activity.ApplicationContext)
+					{
+						Id = progressLayoutId,
+						LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+					};
 
-					if (progressCircularId > 0)
-						_supportsProgress = Activity.FindViewById(progressCircularId) != null;
-					else
-						_supportsProgress = true;
+					var progressBar = new AProgressBar(Activity.ApplicationContext)
+					{
+						Indeterminate = true,
+						LayoutParameters = new FrameLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent)
+						{
+							Gravity = GravityFlags.Center
+						}
+					};
 
-					return _supportsProgress.Value;
+					progressLayout.AddView(progressBar);
+
+					content.AddView(progressLayout);
+				}
+				else
+				{
+					var viewToRemove = content.FindViewById(progressLayoutId);
+					content.RemoveView(viewToRemove);
 				}
 			}
 
 			bool PageIsInThisContext(IView page)
 			{
+				if (page.Handler == null)
+				{
+					return false;
+				}
+
 				var platformView = page.ToPlatform();
 
 				if (platformView.Context == null)

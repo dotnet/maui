@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -5,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ActionSheetArguments']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ActionSheetArguments']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ActionSheetArguments
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ActionSheetArguments(string title, string cancel, string destruction, IEnumerable<string> buttons)
 		{
 			Title = title;
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Internals
 		/// </summary>
 		public string Destruction { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='Result']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='Result']/Docs/*" />
 		public TaskCompletionSource<string> Result { get; }
 
 		/// <summary>
@@ -44,10 +45,9 @@ namespace Microsoft.Maui.Controls.Internals
 		/// </summary>
 		public string Title { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='FlowDirection']/Docs" />
 		public FlowDirection FlowDirection { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='SetResult']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='SetResult']/Docs/*" />
 		public void SetResult(string result)
 		{
 			Result.TrySetResult(result);

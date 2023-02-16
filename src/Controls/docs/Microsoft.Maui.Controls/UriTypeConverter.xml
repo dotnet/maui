@@ -1,6 +1,6 @@
 <Type Name="UriTypeConverter" FullName="Microsoft.Maui.Controls.UriTypeConverter">
-  <TypeSignature Language="C#" Value="public class UriTypeConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit UriTypeConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public class UriTypeConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit UriTypeConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.UriTypeConverter" />
   <TypeSignature Language="F#" Value="type UriTypeConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -15,7 +15,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>
@@ -24,7 +24,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>A <see cref="T:Microsoft.Maui.Controls.TypeConverter" /> that converts from a string or <see cref="T:System.Uri" /> to a <see cref="T:System.Uri" />.</summary>
+    <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> that converts from a string or <see cref="T:System.Uri" /> to a <see cref="T:System.Uri" />.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>

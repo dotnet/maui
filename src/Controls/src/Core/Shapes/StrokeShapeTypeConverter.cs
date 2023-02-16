@@ -1,11 +1,14 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.ComponentModel;
 using System.Globalization;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Converters;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StrokeShapeTypeConverter")]
 	public class StrokeShapeTypeConverter : TypeConverter
 	{
 		public const string Ellipse = nameof(Ellipse);
@@ -15,6 +18,8 @@ namespace Microsoft.Maui.Controls.Shapes
 		public const string Polyline = nameof(Polyline);
 		public const string Rectangle = nameof(Rectangle);
 		public const string RoundRectangle = nameof(RoundRectangle);
+
+		internal static readonly char[] Delimiter = { ' ' };
 
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			   => sourceType == typeof(string);
@@ -26,7 +31,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (strValue != null)
 			{
 				strValue = strValue.Trim();
-				char[] delimiter = { ' ' };
 
 				if (strValue.StartsWith(Ellipse, true, culture))
 				{
@@ -35,7 +39,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 				if (strValue.StartsWith(Line, true, culture))
 				{
-					var parts = strValue.Split(delimiter, 2);
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+						return new Line();
 
 					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
 					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
@@ -55,7 +61,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 				if (strValue.StartsWith(Path, true, culture))
 				{
-					var parts = strValue.Split(delimiter, 2);
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+						return new Path();
 
 					PathGeometryConverter pathGeometryConverter = new PathGeometryConverter();
 					Geometry pathGeometry = pathGeometryConverter.ConvertFromInvariantString(parts[1]) as Geometry;
@@ -68,7 +76,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 				if (strValue.StartsWith(Polygon, true, culture))
 				{
-					var parts = strValue.Split(delimiter, 2);
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+						return new Polygon();
 
 					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
 					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
@@ -81,7 +91,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 				if (strValue.StartsWith(Polyline, true, culture))
 				{
-					var parts = strValue.Split(delimiter, 2);
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+						return new Polyline();
 
 					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
 					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
@@ -99,7 +111,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 				if (strValue.StartsWith(RoundRectangle, true, culture))
 				{
-					var parts = strValue.Split(delimiter, 2);
+					var parts = strValue.Split(Delimiter, 2);
 
 					CornerRadius cornerRadius = new CornerRadius();
 

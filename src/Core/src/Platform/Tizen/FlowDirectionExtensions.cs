@@ -1,11 +1,11 @@
 using System;
-using ElmSharp;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Platform
 {
 	internal static class FlowDirectionExtensions
 	{
-		internal static void UpdateFlowDirection(this EvasObject platformView, IView view)
+		internal static void UpdateFlowDirection(this NView platformView, IView view)
 		{
 			// TODO: Need to impl
 		}

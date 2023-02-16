@@ -1,37 +1,71 @@
 parameters:
-  platform: ''
-  poolName: ''
-  provisionatorChannel: latest
-  artifact: 'nuget'
-  libraryPacksArtifact: 'library-packs'
+- name: platform
+  type: string
+  default: ''
+
+- name: poolName
+  type: string
+  default: ''
+
+- name: provisionatorChannel
+  type: string
+  default: 'latest'
+
+- name: artifact
+  type: string
+  default: 'nuget'
+
+- name: nugetFolder
+  type: string
+  default: 'artifacts'
+  
+
+- name: prepareSteps
+  type: stepList
+  default: []
+
+- name: gitHubToken
+  type: string
+  default: $(github--pat--vs-mobiletools-engineering-service2)
+
+- name: checkoutDirectory
+  type: string
+  default: $(System.DefaultWorkingDirectory)
 
 steps:
-  - ${{ if eq(parameters.platform, 'macOS') }}:
-    - template: agent-cleanser/v1.yml@xamarin-templates
-      parameters:
-        UninstallMono: false
-        UninstallXamarinMac: false
-        CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
   - template: provision.yml
     parameters:
+      checkoutDirectory: ${{ parameters.checkoutDirectory }}
       platform: ${{ parameters.platform }}
       poolName: ${{ parameters.poolName }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+      gitHubToken: ${{ parameters.gitHubToken }}
+
+  - ${{ each step in parameters.prepareSteps }}:
+    - ${{ each pair in step }}:
+        ${{ pair.key }}: ${{ pair.value }}
+
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
+    workingDirectory: ${{ parameters.checkoutDirectory }}
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
-  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
+
+  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Pack .NET Maui'
     name: PackMaui
+    workingDirectory: ${{ parameters.checkoutDirectory }}
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
+
   - ${{ if eq(parameters.platform, 'Windows') }}:
     - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
       displayName: 'Diff .NET Maui artifacts with NuGet'
+      workingDirectory: ${{ parameters.checkoutDirectory }}
+
   # artifacts
   - task: CopyFiles@2
     condition: always()
@@ -42,7 +76,6 @@ steps:
         artifacts/**/*.zip
         artifacts/vs-workload.props
         eng/automation/SignList.xml
-        !artifacts/library-packs/**
         !artifacts/docs-packs/**
       TargetFolder: $(build.artifactstagingdirectory)
       flattenFolders: true
@@ -68,18 +101,11 @@ steps:
     displayName: publish artifacts
     inputs:
       ArtifactName: ${{ parameters.artifact }}
-  # library-packs
-  - task: PublishBuildArtifacts@1
-    condition: always()
-    displayName: publish library packs artifacts
-    inputs:
-      PathToPublish: artifacts/library-packs
-      ArtifactName: ${{ parameters.libraryPacksArtifact }}
   # xml-docs
   - ${{ if eq(parameters.platform, 'Windows') }}:
     - task: PublishBuildArtifacts@1
       condition: always()
-      displayName: publish library packs artifacts
+      displayName: publish docs artifacts
       inputs:
         PathToPublish: artifacts/docs-packs
         ArtifactName: xml-docs

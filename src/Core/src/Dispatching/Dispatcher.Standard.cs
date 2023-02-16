@@ -2,6 +2,7 @@
 
 namespace Microsoft.Maui.Dispatching
 {
+	/// <inheritdoc/>
 	public partial class Dispatcher : IDispatcher
 	{
 		internal Dispatcher()
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Dispatching
 			throw new NotImplementedException();
 	}
 
+	/// <inheritdoc/>
 	public partial class DispatcherProvider
 	{
 		static IDispatcher? GetForCurrentThreadImplementation() => null;

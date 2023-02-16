@@ -35,17 +35,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetColor (Microsoft.Maui.Controls.BindableObject element);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetColor(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetColor (Microsoft.Maui.Controls.BindableObject element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetColor(class Microsoft.Maui.Controls.BindableObject element) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.GetColor(Microsoft.Maui.Controls.BindableObject)" />
-      <MemberSignature Language="F#" Value="static member GetColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.GetColor element" />
+      <MemberSignature Language="F#" Value="static member GetColor : Microsoft.Maui.Controls.BindableObject -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.GetColor element" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
@@ -58,17 +58,17 @@
       </Docs>
     </Member>
     <Member MemberName="GetColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.Color GetColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch&gt; config);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Controls.Color GetColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Tizen, class Microsoft.Maui.Controls.Switch&gt; config) cil managed" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Graphics.Color GetColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch&gt; config);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Microsoft.Maui.Graphics.Color GetColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Tizen, class Microsoft.Maui.Controls.Switch&gt; config) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.GetColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch})" />
-      <MemberSignature Language="F#" Value="static member GetColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen, Microsoft.Maui.Controls.Switch&gt; -&gt; Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.GetColor config" />
+      <MemberSignature Language="F#" Value="static member GetColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen, Microsoft.Maui.Controls.Switch&gt; -&gt; Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.GetColor config" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch&gt;" RefType="this" />
@@ -81,10 +81,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetColor">
-      <MemberSignature Language="C#" Value="public static void SetColor (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Controls.Color color);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetColor(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Controls.Color color) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.SetColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Controls.Color -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.SetColor (element, color)" />
+      <MemberSignature Language="C#" Value="public static void SetColor (Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetColor(class Microsoft.Maui.Controls.BindableObject element, valuetype Microsoft.Maui.Graphics.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.SetColor(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetColor : Microsoft.Maui.Controls.BindableObject * Microsoft.Maui.Graphics.Color -&gt; unit" Usage="Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.SetColor (element, color)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -95,7 +95,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="element" Type="Microsoft.Maui.Controls.BindableObject" />
-        <Parameter Name="color" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="color" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="element">To be added.</param>
@@ -105,10 +105,10 @@
       </Docs>
     </Member>
     <Member MemberName="SetColor">
-      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch&gt; SetColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch&gt; config, Microsoft.Maui.Controls.Color color);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Tizen, class Microsoft.Maui.Controls.Switch&gt; SetColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Tizen, class Microsoft.Maui.Controls.Switch&gt; config, valuetype Microsoft.Maui.Controls.Color color) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.SetColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch},Microsoft.Maui.Controls.Color)" />
-      <MemberSignature Language="F#" Value="static member SetColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen, Microsoft.Maui.Controls.Switch&gt; * Microsoft.Maui.Controls.Color -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen, Microsoft.Maui.Controls.Switch&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.SetColor (config, color)" />
+      <MemberSignature Language="C#" Value="public static Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch&gt; SetColor (this Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch&gt; config, Microsoft.Maui.Graphics.Color color);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Tizen, class Microsoft.Maui.Controls.Switch&gt; SetColor(class Microsoft.Maui.Controls.IPlatformElementConfiguration`2&lt;class Microsoft.Maui.Controls.PlatformConfiguration.Tizen, class Microsoft.Maui.Controls.Switch&gt; config, valuetype Microsoft.Maui.Graphics.Color color) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.SetColor(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch},Microsoft.Maui.Graphics.Color)" />
+      <MemberSignature Language="F#" Value="static member SetColor : Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen, Microsoft.Maui.Controls.Switch&gt; * Microsoft.Maui.Graphics.Color -&gt; Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen, Microsoft.Maui.Controls.Switch&gt;" Usage="Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch.SetColor (config, color)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -119,7 +119,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="config" Type="Microsoft.Maui.Controls.IPlatformElementConfiguration&lt;Microsoft.Maui.Controls.PlatformConfiguration.Tizen,Microsoft.Maui.Controls.Switch&gt;" RefType="this" />
-        <Parameter Name="color" Type="Microsoft.Maui.Controls.Color" />
+        <Parameter Name="color" Type="Microsoft.Maui.Graphics.Color" />
       </Parameters>
       <Docs>
         <param name="config">To be added.</param>

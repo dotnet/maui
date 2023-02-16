@@ -5,40 +5,74 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
+	/// <summary>
+	/// The Gyroscope API lets you monitor the device's gyroscope sensor which is the rotation around the device's three primary axes.
+	/// </summary>
 	public interface IGyroscope
 	{
+		/// <summary>
+		/// Gets a value indicating whether reading the gyroscope is supported on this device.
+		/// </summary>
 		bool IsSupported { get; }
 
+		/// <summary>
+		/// Gets a value indicating whether the gyroscope is actively being monitored.
+		/// </summary>
 		bool IsMonitoring { get; }
 
+		/// <summary>
+		/// Start monitoring for changes to the gyroscope.
+		/// </summary>
+		/// <param name="sensorSpeed">The speed to listen for changes.</param>
 		void Start(SensorSpeed sensorSpeed);
 
+		/// <summary>
+		/// Stop monitoring for changes to the gyroscope.
+		/// </summary>
 		void Stop();
 
+		/// <summary>
+		/// Occurs when the gyroscope reading changes.
+		/// </summary>
 		event EventHandler<GyroscopeChangedEventArgs> ReadingChanged;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Gyroscope']/Docs" />
+	/// <summary>
+	/// The Gyroscope API lets you monitor the device's gyroscope sensor which is the rotation around the device's three primary axes.
+	/// </summary>
 	public static partial class Gyroscope
 	{
+		/// <summary>
+		/// Occurs when the gyroscope reading changes.
+		/// </summary>
 		public static event EventHandler<GyroscopeChangedEventArgs> ReadingChanged
 		{
 			add => Current.ReadingChanged += value;
 			remove => Current.ReadingChanged -= value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		/// <summary>
+		/// Gets a value indicating whether the gyroscope is actively being monitored.
+		/// </summary>
 		public static bool IsMonitoring
 			=> Current.IsMonitoring;
 
+		/// <summary>
+		/// Gets a value indicating whether reading the gyroscope is supported on this device.
+		/// </summary>
 		public static bool IsSupported
 			=> Current.IsSupported;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Start']/Docs" />
+		/// <summary>
+		/// Start monitoring for changes to the gyroscope.
+		/// </summary>
+		/// <param name="sensorSpeed">The speed to listen for changes.</param>
 		public static void Start(SensorSpeed sensorSpeed)
 			=> Current.Start(sensorSpeed);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Gyroscope.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
+		/// <summary>
+		/// Stop monitoring for changes to the gyroscope.
+		/// </summary>
 		public static void Stop()
 			=> Current.Stop();
 
@@ -46,6 +80,9 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		static IGyroscope? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IGyroscope Default =>
 			defaultImplementation ??= new GyroscopeImplementation();
 
@@ -53,52 +90,96 @@ namespace Microsoft.Maui.Devices.Sensors
 			defaultImplementation = implementation;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GyroscopeChangedEventArgs']/Docs" />
+	/// <summary>
+	/// Contains the current axis reading information from the <see cref="IGyroscope.ReadingChanged"/> event.
+	/// </summary>
 	public class GyroscopeChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GyroscopeChangedEventArgs"/> class.
+		/// </summary>
+		/// <param name="reading">The gyroscope data reading.</param>
 		public GyroscopeChangedEventArgs(GyroscopeData reading) =>
 			Reading = reading;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeChangedEventArgs.xml" path="//Member[@MemberName='Reading']/Docs" />
+		/// <summary>
+		/// The current values of the gyroscope.
+		/// </summary>
 		public GyroscopeData Reading { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GyroscopeData']/Docs" />
+	/// <summary>
+	/// Contains the axis readings measured by the device's gyroscope.
+	/// </summary>
 	public readonly struct GyroscopeData : IEquatable<GyroscopeData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GyroscopeData"/> class.
+		/// </summary>
+		/// <param name="x">X axis data.</param>
+		/// <param name="y">Y axis data.</param>
+		/// <param name="z">Z axis data.</param>
 		public GyroscopeData(double x, double y, double z)
 			: this((float)x, (float)y, (float)z)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GyroscopeData"/> class.
+		/// </summary>
+		/// <param name="x">X axis data.</param>
+		/// <param name="y">Y axis data.</param>
+		/// <param name="z">Z axis data.</param>
 		public GyroscopeData(float x, float y, float z) =>
 			AngularVelocity = new Vector3(x, y, z);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='AngularVelocity']/Docs" />
+		/// <summary>
+		/// Gets the angular velocity vector in radians per second.
+		/// </summary>
 		public Vector3 AngularVelocity { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <summary>
+		/// Compares the underlying <see cref="GyroscopeData"/> instances.
+		/// </summary>
+		/// <param name="obj">Object to compare with.</param>
+		/// <returns><see langword="true"/> if they are equal, otherwise <see langword="false"/>.</returns>
 		public override bool Equals(object? obj) =>
 			(obj is GyroscopeData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
+		/// <summary>
+		/// Compares the underlying <see cref="GyroscopeData.AngularVelocity"/> instances.
+		/// </summary>
+		/// <param name="other"><see cref="GyroscopeData"/> object to compare with.</param>
+		/// <returns><see langword="true"/> if they are equal, otherwise <see langword="false"/>.</returns>
 		public bool Equals(GyroscopeData other) =>
 			AngularVelocity.Equals(other.AngularVelocity);
 
+		/// <summary>
+		/// Equality operator for equals.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
+		/// <returns><see langword="true"/> if objects are equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator ==(GyroscopeData left, GyroscopeData right) =>
 		  left.Equals(right);
 
+		/// <summary>
+		/// Inequality operator.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
+		/// <returns><see langword="true"/> if objects are not equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator !=(GyroscopeData left, GyroscopeData right) =>
 		   !left.Equals(right);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
+		/// <inheritdoc cref="ValueType.GetHashCode"/>
 		public override int GetHashCode() =>
 			AngularVelocity.GetHashCode();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GyroscopeData.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <summary>
+		/// Returns a string representation of the current values of <see cref="AngularVelocity"/>.
+		/// </summary>
+		/// <returns>A string representation of this instance in the format of <c>AngularVelocity.X: {value}, AngularVelocity.Y: {value}, AngularVelocity.Z: {value}</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(AngularVelocity.X)}: {AngularVelocity.X}, " +
 			$"{nameof(AngularVelocity.Y)}: {AngularVelocity.Y}, " +

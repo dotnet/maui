@@ -62,11 +62,8 @@ namespace Microsoft.Maui.Layouts
 
 			double top = padding.Top + bounds.Top;
 			double left = padding.Left + bounds.Left;
-			double right = bounds.Right - padding.Right;
 			double availableWidth = bounds.Width - padding.HorizontalThickness;
 			double availableHeight = bounds.Height - padding.VerticalThickness;
-
-			bool leftToRight = AbsoluteLayout.ShouldArrangeLeftToRight();
 
 			for (int n = 0; n < AbsoluteLayout.Count; n++)
 			{
@@ -96,12 +93,7 @@ namespace Microsoft.Maui.Layouts
 					destination.Y = (availableHeight - destination.Height) * destination.Y;
 				}
 
-				// Figure out where we're starting from (the left edge of the padded area, or the right edge)
-				if (leftToRight)
-					destination.X += left;
-				else
-					destination.X = right - destination.X - destination.Width;
-
+				destination.X += left;
 				destination.Y += top;
 
 				child.Arrange(destination);

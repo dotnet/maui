@@ -1,13 +1,17 @@
 namespace Microsoft.Maui.Devices
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayOrientation.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayOrientation']/Docs" />
+	/// <summary>
+	/// Represents the orientation a device display can have.
+	/// </summary>
 	public enum DisplayOrientation
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayOrientation.xml" path="//Member[@MemberName='Unknown']/Docs" />
+		/// <summary>Unknown display orientation.</summary>
 		Unknown = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayOrientation.xml" path="//Member[@MemberName='Portrait']/Docs" />
+
+		/// <summary>Device display is in portrait orientation.</summary>
 		Portrait = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayOrientation.xml" path="//Member[@MemberName='Landscape']/Docs" />
+
+		/// <summary>Device display is in landscape orientation.</summary>
 		Landscape = 2
 	}
 }

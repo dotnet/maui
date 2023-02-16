@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Platform
 {
@@ -22,16 +21,14 @@ namespace Microsoft.Maui.Platform
 			var platformBrush = picker.Background?.ToPlatform();
 
 			if (platformBrush == null)
-			{
-				nativeComboBox.Resources.RemoveKeys(_backgroundColorResourceKeys);
-			}
+				nativeComboBox.Resources.RemoveKeys(BackgroundColorResourceKeys);
 			else
-			{
-				nativeComboBox.Resources.SetValueForAllKey(_backgroundColorResourceKeys, platformBrush);
-			}
+				nativeComboBox.Resources.SetValueForAllKey(BackgroundColorResourceKeys, platformBrush);
+
+			nativeComboBox.RefreshThemeResources();
 		}
 
-		static readonly string[] _backgroundColorResourceKeys =
+		static readonly string[] BackgroundColorResourceKeys =
 		{
 			"ComboBoxBackground",
 			"ComboBoxBackgroundPointerOver",
@@ -44,18 +41,22 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this ComboBox nativeComboBox, IPicker picker)
 		{
 			var platformBrush = picker.TextColor?.ToPlatform();
+
 			if (platformBrush == null)
 			{
-				nativeComboBox.Resources.RemoveKeys(_textColorResourceKeys);
+				nativeComboBox.Resources.RemoveKeys(TextColorResourceKeys);
+				nativeComboBox.ClearValue(ComboBox.ForegroundProperty);
 			}
 			else
 			{
-				nativeComboBox.Resources.SetValueForAllKey(_textColorResourceKeys, platformBrush);
+				nativeComboBox.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
 				nativeComboBox.Foreground = platformBrush;
 			}
 		}
 
-		static readonly string[] _textColorResourceKeys =
+		// ResourceKeys controlling the foreground color of the ComboBox.
+		// https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.combobox?view=windows-app-sdk-1.1
+		static readonly string[] TextColorResourceKeys =
 		{
 			"ComboBoxForeground",
 			"ComboBoxForegroundDisabled",
