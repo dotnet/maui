@@ -174,8 +174,8 @@ namespace Microsoft.Maui.Platform
 			UpdateBackground(platformView, view, true);
 
 		// TODO: NET8 make this public for NET8.0
-		internal static void UpdateBackground(this EditText platformView, IView view, Drawable? defaultBackground = null)
-		{
+		internal static void UpdateBackground(this EditText platformView, IView view, Drawable? defaultBackgroundDrawable = null)
+		{		
 			// Remove previous background gradient if any
 			if (platformView.Background is MauiDrawable mauiDrawable)
 			{
@@ -188,33 +188,23 @@ namespace Microsoft.Maui.Platform
 				platformView.Background = null;
 				layerDrawable.Dispose();
 			}
-			
-			var paint = view.Background;
 
-			if (paint.IsNullOrEmpty())
-			{
-				platformView.Background = defaultBackground;
-
-				return;
-			}
-
-			// Remove previous background gradient if any
-			if (platformView.Background is MauiDrawable mauiDrawable)
-			{
-				platformView.Background = null;
-				mauiDrawable.Dispose();
-			}
-
-			// Android will reset the padding when setting a Background drawable
+			// Android will reset the padding when setting a Background drawable	
 			// So we need to reapply the padding after
 			var padLeft = platformView.PaddingLeft;
 			var padTop = platformView.PaddingTop;
 			var padRight = platformView.PaddingRight;
 			var padBottom = platformView.PaddingBottom;
 
-			var previousDrawable = platformView.Background;
-			var backgroundDrawable = paint!.ToDrawable(platformView.Context);
-			LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, defaultBackground! });
+			var paint = view.Background;
+
+			Drawable? backgroundDrawable = null;
+
+			if (!paint.IsNullOrEmpty())
+				backgroundDrawable = paint!.ToDrawable(platformView.Context);
+
+			var previousDrawable = defaultBackgroundDrawable ?? platformView.Background;
+			LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
 			platformView.Background = layer;
 
 			// Apply previous padding
