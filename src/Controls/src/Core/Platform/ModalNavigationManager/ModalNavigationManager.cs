@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!IsModalReady || syncing)
 				return;
 
-			bool changed = false;
+			bool syncAgain = false;
 
 			try
 			{
@@ -148,10 +148,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 					var page = await PopModalPlatformAsync(animated);
 					page.Parent = null;
-					changed = true;
+					syncAgain = true;
 				}
 
-				if (!changed)
+				if (!syncAgain)
 				{
 					//push any modals that need to be synced
 					var i = _platformModalPages.Count;
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Platform
 						bool animated = nextRequest.IsAnimated;
 
 						await PushModalPlatformAsync(nextPage, animated);
-						changed = true;
+						syncAgain = true;
 					}
 				}
 			}
@@ -173,11 +173,13 @@ namespace Microsoft.Maui.Controls.Platform
 				// gets transitioned to false. If more exit points are added at a later point  
 				// we don't have to always worry about the exit point setting syncing to false.
 				syncing = false;
-			}
 
-			if (changed)
-			{
-				await SyncModalStackWhenPlatformIsReadyAsync().ConfigureAwait(false);
+				// syncAgain is only set after a successful operation so we won't hit a case here
+				// where we hit an infinite loop of syncing.
+				if (syncAgain)
+				{
+					await SyncModalStackWhenPlatformIsReadyAsync().ConfigureAwait(false);
+				}
 			}
 		}
 
