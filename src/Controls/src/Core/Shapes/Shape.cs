@@ -25,12 +25,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
-					var shape = bindable as Shape;
-
-					if (shape is null)
-						return;
-
-					shape.OnBrushPropertyChanged(oldvalue, newvalue);
+					if (bindable is Shape shape)
+						shape.OnBrushPropertyChanged(oldvalue, newvalue);
 				});
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeProperty']/Docs/*" />
@@ -38,12 +34,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null,
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
-					var shape = bindable as Shape;
-
-					if (shape is null)
-						return;
-
-					shape.OnBrushPropertyChanged(oldvalue, newvalue);
+					if (bindable is Shape shape)
+						shape.OnBrushPropertyChanged(oldvalue, newvalue);
 				});
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeThicknessProperty']/Docs/*" />

@@ -240,12 +240,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				var element = (VisualElement)bindable;
-
-				if (element == null)
-					return;
-
-				element.OnBackgroundPropertyChanged(oldvalue, newvalue);
+				if (bindable is VisualElement element)
+					element.OnBackgroundPropertyChanged(oldvalue, newvalue);
 			});
 
 		void OnBackgroundPropertyChanged(object oldValue, object newValue)
