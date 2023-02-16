@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
-		Drawable? _defaultBackground;
 		MauiTimePicker? _timePicker;
 		AlertDialog? _dialog;
 
@@ -20,8 +19,6 @@ namespace Microsoft.Maui.Handlers
 				HidePicker = HidePickerDialog
 			};
 
-			_defaultBackground = _timePicker.Background;
-
 			return _timePicker;
 		}
 
@@ -32,8 +29,6 @@ namespace Microsoft.Maui.Handlers
 				_dialog.Hide();
 				_dialog = null;
 			}
-
-			_defaultBackground = null;
 		}
 
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hour, int minute)
@@ -60,8 +55,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			if (handler is TimePickerHandler timePickerHandler)
-				handler.PlatformView?.UpdateBackground(timePicker, timePickerHandler._defaultBackground);
+			handler.PlatformView?.UpdateBackground(timePicker);
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)

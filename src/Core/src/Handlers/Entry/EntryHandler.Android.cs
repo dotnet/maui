@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Handlers
 	// This type adds support to the SelectionChanged event
 	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
-		Drawable? _defaultBackground;
 		Drawable? _clearButtonDrawable;
 		bool _clearButtonVisible;
 		bool _set;
@@ -42,8 +41,6 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
-			_defaultBackground = platformView.Background;
-
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
@@ -54,7 +51,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
-			_defaultBackground = null;
 
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
@@ -70,8 +66,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry)
 		{
-			if (handler is EntryHandler entryHandler)
-				handler.PlatformView?.UpdateBackground(entry, entryHandler._defaultBackground);
+			handler.PlatformView?.UpdateBackground(entry);
 		}
 
 		public static void MapText(IEntryHandler handler, IEntry entry) =>

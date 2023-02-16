@@ -61,6 +61,9 @@ namespace Microsoft.Maui
 			// aapt resource value: 0x7F07001D
 			public static int abc_ic_clear_material = 2131165213;
 
+			// aapt resource value: 0x7F070014
+			public static int abc_edit_text_material = 2131165204;
+
 			static Drawable()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
