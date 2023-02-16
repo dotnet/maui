@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Matrix']/Docs/*" />
 	[System.ComponentModel.TypeConverter(typeof(MatrixTypeConverter))]
-	public struct Matrix
+	public struct Matrix : IEquatable<Matrix>
 	{
 		internal double _m11;
 		internal double _m12;
@@ -671,6 +671,20 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 			return;
 		}
+
+		public bool Equals(Matrix other) =>
+			_m11 == other._m11 && _m12 == other._m12 && _m21 == other._m21 && _m22 == other._m22 &&
+			_offsetX == other._offsetX && _offsetY == other._offsetY && _type == other._type && _padding == other._padding;
+
+		public override bool Equals(object obj) => obj is Matrix other && Equals(other);
+
+		public override int GetHashCode() =>
+			_m11.GetHashCode() ^ _m12.GetHashCode() ^ _m21.GetHashCode() ^ _m22.GetHashCode() ^
+			_offsetX.GetHashCode() ^ _offsetY.GetHashCode() ^ _type.GetHashCode() ^ _padding.GetHashCode();
+
+		public static bool operator ==(Matrix left, Matrix right) => left.Equals(right);
+
+		public static bool operator !=(Matrix left, Matrix right) => !(left == right);
 	}
 
 	internal static class MatrixUtil
