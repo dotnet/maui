@@ -84,9 +84,8 @@ namespace Microsoft.Maui.DeviceTests
 		protected abstract int GetCursorStartPosition(THandler entryHandler);
 		protected abstract void SetNativeText(THandler entryHandler, string text);
 
-
-	[Fact]
 #if ANDROID
+		[Fact]
 		public async Task ShowsKeyboardOnFocus()
 		{
 			var button = new ButtonStub();
