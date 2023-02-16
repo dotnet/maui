@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using AndroidX.RecyclerView.Widget;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				height = Context.ToPixels(height);
 
 			UpdateEmptyViewSize(width, height);
-			
+
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
