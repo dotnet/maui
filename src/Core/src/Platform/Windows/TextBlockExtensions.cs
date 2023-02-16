@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Platform
 		{
 			platformControl.Text = label.Text;
 		}
-		
+
 		static XElement? ParseXhtml(string? html)
 		{
 			if (string.IsNullOrEmpty(html))
