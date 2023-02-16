@@ -86,6 +86,8 @@ namespace Microsoft.Maui.DeviceTests
 							Content = layout
 						};
 
+						// Add enough entries into the stack layout so that we can
+						// guarantee we'll have entries that would be covered by the keyboard
 						for (int i = 0; i < 30; i++)
 						{
 							var entry = new Entry();
@@ -94,10 +96,10 @@ namespace Microsoft.Maui.DeviceTests
 						}
 
 						await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
-						await OnLoadedAsync(entries[0]);
+						await OnNavigatedToAsync(modalPage);
 
+						// Locate the lowest visible entry
 						var pageBoundingBox = modalPage.GetBoundingBox();
-
 						Entry testEntry = entries[0];
 						foreach (var entry in entries)
 						{
@@ -110,7 +112,10 @@ namespace Microsoft.Maui.DeviceTests
 							testEntry = entry;
 						}
 
+						// Ensure that the keyboard is closed before we start
 						await AssertionExtensions.HideKeyboardForView(testEntry);
+
+						// determine the screen dimensions with no keyboard open
 						var rootPageOffsetY = navPage.CurrentPage.GetLocationOnScreen().Value.Y;
 						var modalOffsetY = modalPage.GetLocationOnScreen().Value.Y;
 						var originalModalPageSize = modalPage.GetBoundingBox();
@@ -120,6 +125,7 @@ namespace Microsoft.Maui.DeviceTests
 						// Type text into the entries
 						testEntry.Text = "Typing";
 
+						// Wait for the size of the screen to settle after the keyboard has opened
 						bool offsetMatchesWhenKeyboardOpened = await AssertionExtensions.Wait(() =>
 						{
 							var keyboardOpenRootPageOffsetY = navPage.CurrentPage.GetLocationOnScreen().Value.Y;
@@ -128,7 +134,6 @@ namespace Microsoft.Maui.DeviceTests
 							var originalDiff = Math.Abs(rootPageOffsetY - modalOffsetY);
 							var openDiff = Math.Abs(keyboardOpenRootPageOffsetY - keyboardOpenModalOffsetY);
 
-
 							return Math.Abs(originalDiff - openDiff) <= 0.2;
 						});
 
@@ -136,6 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						await AssertionExtensions.HideKeyboardForView(testEntry);
 
+						// Wait for the size of the screen to settle after the keyboard has closed
 						bool offsetMatchesWhenKeyboardClosed = await AssertionExtensions.Wait(() =>
 						{
 							var keyboardClosedRootPageOffsetY = navPage.CurrentPage.GetLocationOnScreen().Value.Y;
@@ -147,6 +153,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						Assert.True(offsetMatchesWhenKeyboardClosed, "Modal page failed to return to expected offset");
 
+						// Make sure that everything has returned to the initial size once the keyboard has closed
 						var finalModalPageSize = modalPage.GetBoundingBox();
 						Assert.Equal(originalModalPageSize, finalModalPageSize);
 					}

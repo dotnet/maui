@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Internal;
 
 namespace Microsoft.Maui.HotReload
 {
@@ -155,7 +154,7 @@ namespace Microsoft.Maui.HotReload
 
 		public static void TriggerReload()
 		{
-			List<IHotReloadableView?>? roots = null;
+			List<IHotReloadableView>? roots = null;
 			while (roots == null)
 			{
 				try
