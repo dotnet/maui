@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls;
 
 using static Microsoft.Maui.Controls.SourceGen.Helper;
 
-namespace VijayAnand.MauiAutomation
+namespace Microsoft.Maui.Controls.SourceGen
 {
 	[Generator(LanguageNames.CSharp)]
 	public class RouteSourceGenerator : ISourceGenerator

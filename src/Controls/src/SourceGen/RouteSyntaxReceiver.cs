@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls;
 
 using static Microsoft.Maui.Controls.SourceGen.Helper;
 
-namespace VijayAnand.MauiAutomation
+namespace Microsoft.Maui.Controls.SourceGen
 {
 	public class RouteSyntaxReceiver : ISyntaxReceiver
 	{
