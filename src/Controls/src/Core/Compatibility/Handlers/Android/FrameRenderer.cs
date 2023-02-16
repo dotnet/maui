@@ -53,7 +53,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
 			= new CommandMapper<Frame, FrameRenderer>(ViewRenderer.VisualElementRendererCommandMapper);
 
-
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
 
@@ -68,6 +67,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		Frame? _element;
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
+
+		const double LegacyMinimumFrameSize = 20;
 
 		public FrameRenderer(Context context) : this(context, Mapper)
 		{
@@ -110,12 +111,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (!Primitives.Dimension.IsExplicitSet(minWidth))
 			{
-				minWidth = 20; // Legacy minimum value
+				minWidth = LegacyMinimumFrameSize; 
 			}
 
 			if (!Primitives.Dimension.IsExplicitSet(minHeight))
 			{
-				minHeight = 20; // Legacy minimum value
+				minHeight = LegacyMinimumFrameSize; 
 			}
 
 			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthConstraint, heightConstraint,
