@@ -1,7 +1,30 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
+Microsoft.Maui.Controls.MauiServiceAttribute
+Microsoft.Maui.Controls.MauiServiceAttribute.MauiServiceAttribute(Microsoft.Maui.Controls.ServiceScope scope = Microsoft.Maui.Controls.ServiceScope.Singleton) -> void
+Microsoft.Maui.Controls.MauiServiceAttribute.RegisterFor.get -> System.Type?
+Microsoft.Maui.Controls.MauiServiceAttribute.RegisterFor.set -> void
+Microsoft.Maui.Controls.MauiServiceAttribute.Scope.get -> Microsoft.Maui.Controls.ServiceScope
+Microsoft.Maui.Controls.MauiServiceAttribute.UseTryAdd.get -> bool
+Microsoft.Maui.Controls.MauiServiceAttribute.UseTryAdd.set -> void
 Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
+Microsoft.Maui.Controls.RouteAttribute
+Microsoft.Maui.Controls.RouteAttribute.ImplicitViewModel.get -> bool
+Microsoft.Maui.Controls.RouteAttribute.ImplicitViewModel.set -> void
+Microsoft.Maui.Controls.RouteAttribute.Route.get -> string?
+Microsoft.Maui.Controls.RouteAttribute.RouteAttribute() -> void
+Microsoft.Maui.Controls.RouteAttribute.RouteAttribute(string! route, Microsoft.Maui.Controls.ServiceScope scope = Microsoft.Maui.Controls.ServiceScope.Singleton) -> void
+Microsoft.Maui.Controls.RouteAttribute.Routes.get -> string![]?
+Microsoft.Maui.Controls.RouteAttribute.Routes.set -> void
+Microsoft.Maui.Controls.RouteAttribute.Scope.get -> Microsoft.Maui.Controls.ServiceScope
+Microsoft.Maui.Controls.RouteAttribute.Scope.set -> void
+Microsoft.Maui.Controls.RouteAttribute.ViewModelType.get -> System.Type?
+Microsoft.Maui.Controls.RouteAttribute.ViewModelType.set -> void
+Microsoft.Maui.Controls.ServiceScope
+Microsoft.Maui.Controls.ServiceScope.Scoped = 1 -> Microsoft.Maui.Controls.ServiceScope
+Microsoft.Maui.Controls.ServiceScope.Singleton = 0 -> Microsoft.Maui.Controls.ServiceScope
+Microsoft.Maui.Controls.ServiceScope.Transient = 2 -> Microsoft.Maui.Controls.ServiceScope
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
 override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
 override Microsoft.Maui.Controls.Region.GetHashCode() -> int
