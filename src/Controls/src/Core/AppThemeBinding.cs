@@ -51,12 +51,14 @@ namespace Microsoft.Maui.Controls
 
 		void OnApplicationChanging(object sender, ParentChangingEventArgs e)
 		{
-			if (Target is VisualElement { Window.Parent: Application app }) app.RequestedThemeChanged -= OnRequestedThemeChanged;
+			if (Target is VisualElement { Window.Parent: Application app })
+				app.RequestedThemeChanged -= OnRequestedThemeChanged;
 		}
 
 		void OnApplicationChanged(object sender, EventArgs e)
 		{
-			if (Target is VisualElement { Window.Parent: Application app }) app.RequestedThemeChanged += OnRequestedThemeChanged;
+			if (Target is VisualElement { Window.Parent: Application app })
+				app.RequestedThemeChanged += OnRequestedThemeChanged;
 
 			ApplyCore(true);
 		}
@@ -64,9 +66,10 @@ namespace Microsoft.Maui.Controls
 		void OnWindowChanging(object sender, PropertyChangingEventArgs e)
 		{
 			if (string.Equals(e.PropertyName, VisualElement.WindowProperty.PropertyName, StringComparison.Ordinal))
-				if (Target is VisualElement { Window: {} window })
+				if (Target is VisualElement { Window: { } window })
 				{
-					if (window.Parent is Application app) app.RequestedThemeChanged -= OnRequestedThemeChanged;
+					if (window.Parent is Application app)
+						app.RequestedThemeChanged -= OnRequestedThemeChanged;
 
 					window.ParentChanging -= OnApplicationChanging;
 					window.ParentChanged -= OnApplicationChanged;
@@ -77,11 +80,12 @@ namespace Microsoft.Maui.Controls
 		{
 			if (string.Equals(e.PropertyName, VisualElement.WindowProperty.PropertyName, StringComparison.Ordinal))
 			{
-				if (Target is VisualElement { Window: {} window })
+				if (Target is VisualElement { Window: { } window })
 				{
 					window.ParentChanging += OnApplicationChanging;
 					window.ParentChanged += OnApplicationChanged;
-					if (window.Parent is Application app) app.RequestedThemeChanged += OnRequestedThemeChanged;
+					if (window.Parent is Application app)
+						app.RequestedThemeChanged += OnRequestedThemeChanged;
 				}
 
 				ApplyCore(true);
@@ -98,7 +102,8 @@ namespace Microsoft.Maui.Controls
 			}
 
 			BindableProperty targetProperty = TargetProperty;
-			if (targetProperty is null) return;
+			if (targetProperty is null)
+				return;
 
 			if (dispatch)
 				target.Dispatcher.DispatchIfRequired(Set);
@@ -157,10 +162,10 @@ namespace Microsoft.Maui.Controls
 		AppTheme GetCurrentTheme()
 		{
 			return Target is VisualElement { Window.Parent: Application appFromTarget }
-			       ? appFromTarget.RequestedTheme
-			       : Application.Current is {} appFromStatic
-			       ? appFromStatic.RequestedTheme
-			       : AppInfo.RequestedTheme;
+				   ? appFromTarget.RequestedTheme
+				   : Application.Current is { } appFromStatic
+				   ? appFromStatic.RequestedTheme
+				   : AppInfo.RequestedTheme;
 		}
 
 		// Ideally this will get reworked to not use `Application.Current` at all
@@ -171,14 +176,14 @@ namespace Microsoft.Maui.Controls
 		object GetValue()
 		{
 			return GetCurrentTheme() switch
-			       {
-				       AppTheme.Dark => _isDarkSet
-				                        ? Dark
-				                        : Default,
-				       _ => _isLightSet
-				            ? Light
-				            : Default
-			       };
+			{
+				AppTheme.Dark => _isDarkSet
+								 ? Dark
+								 : Default,
+				_ => _isLightSet
+					 ? Light
+					 : Default
+			};
 		}
 
 		void AttachEvents()
@@ -189,11 +194,12 @@ namespace Microsoft.Maui.Controls
 			{
 				newVisualElementTarget.PropertyChanging += OnWindowChanging;
 				newVisualElementTarget.PropertyChanged += OnWindowChanged;
-				if (newVisualElementTarget.Window is {} newWindow)
+				if (newVisualElementTarget.Window is { } newWindow)
 				{
 					newWindow.ParentChanging += OnApplicationChanging;
 					newWindow.ParentChanged += OnApplicationChanged;
-					if (newWindow.Parent is Application newApplication) newApplication.RequestedThemeChanged += OnRequestedThemeChanged;
+					if (newWindow.Parent is Application newApplication)
+						newApplication.RequestedThemeChanged += OnRequestedThemeChanged;
 				}
 			}
 		}
@@ -202,9 +208,10 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Target is VisualElement oldVisualElementTarget)
 			{
-				if (oldVisualElementTarget.Window is {} oldWindow)
+				if (oldVisualElementTarget.Window is { } oldWindow)
 				{
-					if (oldWindow.Parent is Application oldApplication) oldApplication.RequestedThemeChanged -= OnRequestedThemeChanged;
+					if (oldWindow.Parent is Application oldApplication)
+						oldApplication.RequestedThemeChanged -= OnRequestedThemeChanged;
 
 					oldWindow.ParentChanging -= OnApplicationChanging;
 					oldWindow.ParentChanged -= OnApplicationChanged;
