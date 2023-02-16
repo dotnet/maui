@@ -48,18 +48,24 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
+    workingDirectory: ${{ parameters.checkoutDirectory }}
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
+
   - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Pack .NET Maui'
     name: PackMaui
+    workingDirectory: ${{ parameters.checkoutDirectory }}
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
+
   - ${{ if eq(parameters.platform, 'Windows') }}:
     - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
       displayName: 'Diff .NET Maui artifacts with NuGet'
+      workingDirectory: ${{ parameters.checkoutDirectory }}
+
   # artifacts
   - task: CopyFiles@2
     condition: always()
