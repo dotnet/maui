@@ -564,7 +564,6 @@
     <Target Name="ResizetizeImages"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
         Outputs="$(_ResizetizerStampFile)"
-        Condition="'$(DisableResizetizer)' != 'true'"
         AfterTargets="$(ResizetizeAfterTargets)"
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
