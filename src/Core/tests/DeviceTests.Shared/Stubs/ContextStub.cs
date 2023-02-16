@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return _windowManager ??= new NavigationRootManager(MauiProgramDefaults.DefaultWindow);
 
 			if (serviceType == typeof(UI.Xaml.Window))
-				return MauiProgramDefaults.DefaultWindow;
+				return _services.GetService(serviceType) ?? MauiProgramDefaults.DefaultWindow;
 #endif
 			if (serviceType == typeof(IDispatcher))
 				return _services.GetService(serviceType) ?? TestDispatcher.Current;
