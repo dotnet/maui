@@ -189,6 +189,8 @@ namespace Microsoft.Maui.Platform
 				layerDrawable.Dispose();
 			}
 
+			var paint = view.Background;
+
 			// Android will reset the padding when setting a Background drawable	
 			// So we need to reapply the padding after
 			var padLeft = platformView.PaddingLeft;

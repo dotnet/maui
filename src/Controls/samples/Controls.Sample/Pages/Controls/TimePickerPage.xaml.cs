@@ -9,10 +9,10 @@ namespace Maui.Controls.Sample.Pages
 		public TimePickerPage()
 		{
 			InitializeComponent();
-			
+
 			UpdateTimePickerBackground();
 		}
-		
+
 		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
 		{
 			UpdateTimePickerBackground();
