@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void StopListeningForeground()
 		{
 			if (!IsListeningForeground ||
-				listeningManager == null)
+				listeningManager is null)
 				return;
 
 			listeningManager.StopUpdatingLocation();

@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
-			if (LocationManager == null)
+			if (LocationManager is null)
 				throw new FeatureNotSupportedException("Android LocationManager is not available");
 
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			ArgumentNullException.ThrowIfNull(request);
 
-			if (LocationManager == null)
+			if (LocationManager is null)
 				throw new FeatureNotSupportedException("Android LocationManager is not available");
 
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			void RemoveUpdates()
 			{
-				if (LocationManager == null)
+				if (LocationManager is null)
 					return;
 
 				for (var i = 0; i < providers.Count; i++)
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			ArgumentNullException.ThrowIfNull(request);
 
-			if (LocationManager == null)
+			if (LocationManager is null)
 				throw new FeatureNotSupportedException("Android LocationManager is not available");
 
 			if (IsListeningForeground)
@@ -218,8 +218,8 @@ namespace Microsoft.Maui.Devices.Sensors
 			continuousListener.LocationHandler = null;
 			continuousListener.ErrorHandler = null;
 
-			if (listeningProviders == null ||
-				LocationManager == null)
+			if (listeningProviders is null ||
+				LocationManager is null)
 				return;
 
 			for (var i = 0; i < listeningProviders.Count; i++)
@@ -382,7 +382,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		void ILocationListener.OnStatusChanged(string? provider, Availability status, Bundle? extras)
 		{
-			if (provider == null)
+			if (provider is null)
 				return;
 
 			switch (status)
