@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Platform
 			var padBottom = platformView.PaddingBottom;
 
 			var paint = view.Background;
-			
+
 			var previousDrawable = defaultBackgroundDrawable ?? platformView.Background;
 
 			if (paint.IsNullOrEmpty())
