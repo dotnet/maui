@@ -4,6 +4,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.View;
+using Microsoft.Maui.ApplicationModel;
 using AView = Android.Views.View;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -38,7 +39,9 @@ namespace Microsoft.Maui.Platform
 			if (inputView?.Context is null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be shown.");
 
-			using (var inputMethodManager = inputView.Context.GetSystemService(Context.InputMethodService) as InputMethodManager)
+			if (inputView.IsFocused)
+				Show();
+			else
 			{
 				// The zero value for the second parameter comes from 
 				// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)

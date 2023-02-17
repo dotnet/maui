@@ -24,9 +24,15 @@ namespace Microsoft.Maui.Controls
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 			};
 
+		static CommandMapper<IView, IViewHandler> ControlsViewCommandMapper = new(ViewHandler.ViewCommandMapper)
+		{
+			[nameof(IView.Focus)] = MapFocus,
+		};
+
 		internal static void RemapForControls()
 		{
 			ViewHandler.ViewMapper = ControlsVisualElementMapper;
+			ViewHandler.ViewCommandMapper = ControlsViewCommandMapper;
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view)
@@ -62,6 +68,29 @@ namespace Microsoft.Maui.Controls
 			{
 				ve._platformContainerViewChanged?.Invoke(arg2, EventArgs.Empty);
 			}
+		}
+
+		static void MapFocus(IViewHandler handler, IView view, object args)
+		{
+			if (args is not FocusRequest fr)
+				return;
+
+			if (view is not VisualElement ve)
+				return;
+
+			if (ve.IsFocused)
+				return;
+
+			if (ve.FocusChangeRequested == null)
+			{
+				FocusRequest focusRequest = new FocusRequest(false);
+				ViewHandler.ViewCommandMapper?.Invoke(handler, view, nameof(IView.Focus), fr);
+				return;
+			}
+
+			var arg = new FocusRequestArgs { Focus = true };
+			ve.FocusChangeRequested(ve, arg);
+			fr.IsFocused = arg.Result;
 		}
 	}
 }
