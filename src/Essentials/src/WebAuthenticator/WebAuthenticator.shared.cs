@@ -41,8 +41,16 @@ namespace Microsoft.Maui.Authentication
 #endif
 	}
 
+	/// <summary>
+	/// Provides abstractions used for decoding a URI returned from a authentication request, for use with <see cref="IWebAuthenticator"/>.
+	/// </summary>
 	public interface IWebAuthenticatorResponseDecoder
 	{
+		/// <summary>
+		/// Decodes the given URIs query string into a dictionary.
+		/// </summary>
+		/// <param name="uri">The <see cref="Uri"/> object to decode the query parameters from.</param>
+		/// <returns>A <see cref="IDictionary{TKey, TValue}"/> object where each of the query parameters values of <paramref name="uri"/> are accessible through their respective keys.</returns>
 		IDictionary<string, string>? DecodeResponse(Uri uri);
 	}
 
@@ -158,6 +166,9 @@ namespace Microsoft.Maui.Authentication
 		/// <remarks>This setting only has effect on iOS.</remarks>
 		public bool PrefersEphemeralWebBrowserSession { get; set; }
 
+		/// <summary>
+		/// Gets or sets the decoder implementation used to decode the incoming authentication result URI. 
+		/// </summary>
 		public IWebAuthenticatorResponseDecoder? ResponseDecoder { get; set; }
 	}
 }
