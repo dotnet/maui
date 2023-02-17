@@ -72,30 +72,33 @@ steps:
     displayName: 'Copy files to staging'
     inputs:
       Contents: |
-        artifacts/**/*.*nupkg
-        artifacts/**/*.zip
-        artifacts/vs-workload.props
-        eng/automation/SignList.xml
+        ${{ parameters.checkoutDirectory }}/artifacts/**/*.*nupkg
+        ${{ parameters.checkoutDirectory }}/artifacts/**/*.zip
+        ${{ parameters.checkoutDirectory }}/artifacts/vs-workload.props
+        ${{ parameters.checkoutDirectory }}/eng/automation/SignList.xml
         !artifacts/docs-packs/**
       TargetFolder: $(build.artifactstagingdirectory)
       flattenFolders: true
+
   - task: CopyFiles@2
     condition: always()
     displayName: 'Copy metadata to staging'
     inputs:
       SourceFolder: artifacts
       Contents: |
-        metadata/**
-        api-diff/**
+        ${{ parameters.checkoutDirectory }}/metadata/**
+        ${{ parameters.checkoutDirectory }}/api-diff/**
       TargetFolder: $(build.artifactstagingdirectory)
+
   - task: CopyFiles@2
     displayName: 'Copy Log Files'
     condition: always()
     inputs:
       Contents: |
-        artifacts/logs/**
+        ${{ parameters.checkoutDirectory }}/artifacts/logs/**
       TargetFolder: $(build.artifactstagingdirectory)/logs
       flattenFolders: true
+
   - task: PublishBuildArtifacts@1
     condition: always()
     displayName: publish artifacts
@@ -107,6 +110,6 @@ steps:
       condition: always()
       displayName: publish docs artifacts
       inputs:
-        PathToPublish: artifacts/docs-packs
+        PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
         ArtifactName: xml-docs
 
