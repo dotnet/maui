@@ -138,8 +138,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 				}
 
-				UpdateHeaderSize();
-			}
+                UpdateHeaderSize();
+            }
 		}
 
 		public virtual UIContainerView HeaderView
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (_headerView is not null)
 					_headerView.HeaderSizeChanged -= OnHeaderViewMeasureChanged;
-
+				
 				_headerView = value;
 
 				if (_headerView is not null)
@@ -171,8 +171,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 
 				_footerView = value;
-				UpdateHeaderSize();
-			}
+                UpdateHeaderSize();
+            }
 		}
 
 		void OnHeaderViewMeasureChanged(object sender, EventArgs e)
