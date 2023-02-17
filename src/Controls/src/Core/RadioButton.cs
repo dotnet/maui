@@ -474,7 +474,7 @@ namespace Microsoft.Maui.Controls
 							source: RelativeBindingSource.TemplatedParent));
 
 			border.SetBinding(Border.StrokeShapeProperty,
-				new Binding(CornerRadiusProperty.PropertyName,
+				new Binding(CornerRadiusProperty.PropertyName, converter: new CornerRadiusToShape(),
 							source: RelativeBindingSource.TemplatedParent));
 
 			border.SetBinding(Border.StrokeThicknessProperty,
@@ -483,6 +483,7 @@ namespace Microsoft.Maui.Controls
 
 			var grid = new Grid
 			{
+				Padding = 1,
 				RowSpacing = 0,
 				ColumnSpacing = 6,
 				ColumnDefinitions = new ColumnDefinitionCollection {
@@ -579,6 +580,22 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return content?.ToString();
+		}
+
+		class CornerRadiusToShape : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			{
+				return new RoundRectangle
+				{
+					CornerRadius = (int)value,
+				};
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			{
+				throw new NotImplementedException();
+			}
 		}
 	}
 }
