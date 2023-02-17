@@ -76,7 +76,7 @@ steps:
         ${{ parameters.checkoutDirectory }}/artifacts/**/*.zip
         ${{ parameters.checkoutDirectory }}/artifacts/vs-workload.props
         ${{ parameters.checkoutDirectory }}/eng/automation/SignList.xml
-        !artifacts/docs-packs/**
+        !${{ parameters.checkoutDirectory}}/artifacts/docs-packs/**
       TargetFolder: $(build.artifactstagingdirectory)
       flattenFolders: true
 
@@ -84,10 +84,10 @@ steps:
     condition: always()
     displayName: 'Copy metadata to staging'
     inputs:
-      SourceFolder: artifacts
+      SourceFolder: ${{ parameters.checkoutDirectory }}/artifacts
       Contents: |
-        ${{ parameters.checkoutDirectory }}/metadata/**
-        ${{ parameters.checkoutDirectory }}/api-diff/**
+        metadata/**
+        api-diff/**
       TargetFolder: $(build.artifactstagingdirectory)
 
   - task: CopyFiles@2
