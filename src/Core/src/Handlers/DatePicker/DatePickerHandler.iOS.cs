@@ -29,17 +29,11 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			platformView.EditingDidBegin += OnEditingDidBegin;
-			platformView.EditingDidEnd += OnEditingDidEnd;
-
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
-			platformView.EditingDidBegin -= OnEditingDidBegin;
-			platformView.EditingDidEnd -= OnEditingDidEnd;
-
 			platformView.MauiDatePickerDelegate = null;
 
 			base.DisconnectHandler(platformView);
@@ -133,21 +127,9 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Date = DatePickerDialog.Date.ToDateTime().Date;
 		}
 
-		void OnEditingDidBegin(object? sender, EventArgs e)
-		{
-			if (VirtualView is not null)
-				VirtualView.IsFocused = true;
-		}
-
-		void OnEditingDidEnd(object? sender, EventArgs e)
-		{
-			if (VirtualView is not null)
-				VirtualView.IsFocused = false;
-		}
-
 		class DatePickerDelegate : MauiDatePickerDelegate
 		{
-			WeakReference<IDatePickerHandler> _handler;
+			readonly WeakReference<IDatePickerHandler> _handler;
 
 			public DatePickerDelegate(IDatePickerHandler handler) =>
 				_handler = new WeakReference<IDatePickerHandler>(handler);
