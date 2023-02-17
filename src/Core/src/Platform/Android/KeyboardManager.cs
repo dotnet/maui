@@ -51,15 +51,6 @@ namespace Microsoft.Maui.Platform
 				throw new ArgumentNullException(nameof(searchView));
 			}
 
-			// Dig into the SearchView and find the actual TextView that we want to show keyboard input for
-			int searchViewTextViewId = searchView.Resources.GetIdentifier("android:id/search_src_text", null, null);
-
-			if (searchViewTextViewId == 0)
-			{
-				// Cannot find the resource Id; nothing else to do
-				return;
-			}
-
 			var queryEditor = searchView.GetFirstChildOfType<EditText>();
 
 			if (queryEditor == null)
