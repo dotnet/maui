@@ -483,7 +483,7 @@ namespace Microsoft.Maui.Controls
 
 			var grid = new Grid
 			{
-				Padding = 1,
+				Padding = 2,
 				RowSpacing = 0,
 				ColumnSpacing = 6,
 				ColumnDefinitions = new ColumnDefinitionCollection {
