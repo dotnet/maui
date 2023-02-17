@@ -1,8 +1,13 @@
-﻿@page "/other"
+﻿@page "/other/{name?}"
 @inject NavigationManager NavigationManager
 
 <div>
     Here is another page. Looks like navigation works.
+
+    @if (!string.IsNullOrEmpty(Name))
+    {
+        <div>I even found your name: @Name</div>
+    }
 
     <button @onclick="BackToHome">Navigate back programmatically</button>
 </div>
@@ -17,6 +22,8 @@
 </div>
 
 @code {
+    [Parameter] public string Name { get; set; }
+
     string textValue;
 
     void BackToHome()

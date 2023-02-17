@@ -4,3 +4,8 @@
 export function showPrompt(message) {
   return prompt(message, 'Type anything here');
 }
+
+export function updateControlDiv(newValue) {
+    let controlDiv = document.getElementById('controlDiv');
+    controlDiv.innerHTML = newValue;
+}
