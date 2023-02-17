@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// Thrown when <paramref name="row"/> or <paramref name="column"/> are less than 0.
 		/// </exception>
+		/// <remarks>If the <see cref="Grid"/> does not have enough rows/columns to encompass the specified location, they will be added.</remarks>
 		public static void Add(this Grid grid, IView view, int column = 0, int row = 0)
 		{
 			grid.AddWithSpan(view, row, column, 1, 1);
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Controls
 		/// Thrown when <paramref name="left"/> or <paramref name="top"/> are less than 0, <paramref name="bottom"/> is less than or equal to <paramref name="top"/>,
 		/// or <paramref name="right"/> is less than or equal to <paramref name="left"/>.
 		/// </exception>
+		/// <remarks>If the <see cref="Grid"/> does not have enough rows/columns to encompass the specified spans, they will be added.</remarks>
 		public static void Add(this Grid grid, IView view, int left, int right, int top, int bottom)
 		{
 			grid.AddWithSpan(view, top, left, bottom - top, right - left);
@@ -53,6 +55,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// Thrown when <paramref name="row"/> or <paramref name="column"/> are less than 0, or  <paramref name="rowSpan"/> or <paramref name="columnSpan"/> are less than 1.
 		/// </exception>
+		/// <remarks>If the <see cref="Grid"/> does not have enough rows/columns to encompass the specified spans, they will be added.</remarks>
 		public static void AddWithSpan(this Grid grid, IView view, int row = 0, int column = 0, int rowSpan = 1, int columnSpan = 1)
 		{
 			if (view is null)
