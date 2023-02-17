@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Xunit.Sdk;
+using Java.Lang;
 using Microsoft.Maui.Controls;
 using Xunit;
-using Java.Lang;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 		public override async Task ReturnsNonEmptyNativeBoundingBox(int size)
 		{
 			// Frames have a legacy hard-coded minimum size of 20x20
-			var expectedSize = Math.Max(20, size); 
+			var expectedSize = Math.Max(20, size);
 			var expectedBounds = new Graphics.Rect(0, 0, expectedSize, expectedSize);
 
 			var view = new Frame()
