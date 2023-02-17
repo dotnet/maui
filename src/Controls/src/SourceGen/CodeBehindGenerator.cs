@@ -50,10 +50,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		public void Initialize(IncrementalGeneratorInitializationContext initContext)
 		{
-//#if DEBUG
-//			if (!System.Diagnostics.Debugger.IsAttached)
-//				System.Diagnostics.Debugger.Launch();
-//#endif
+			//#if DEBUG
+			//			if (!System.Diagnostics.Debugger.IsAttached)
+			//				System.Diagnostics.Debugger.Launch();
+			//#endif
 			var projectItemProvider = initContext.AdditionalTextsProvider
 				.Combine(initContext.AnalyzerConfigOptionsProvider)
 				.Select(ComputeProjectItem);
