@@ -81,9 +81,11 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				Page rootPage = ControlsPageTypesTestCases.CreatePageType(page, contentPage);
+				Page hostPage = new ContentPage();
 
-				await CreateHandlerAndAddToWindow(rootPage, async () =>
+				await CreateHandlerAndAddToWindow(hostPage, async () =>
 				{
+					await hostPage.Navigation.PushModalAsync(rootPage);
 					KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform());
 					await AssertionExtensions.Wait(() => entry2.IsFocused);
 					Assert.True(entry2.IsFocused);
