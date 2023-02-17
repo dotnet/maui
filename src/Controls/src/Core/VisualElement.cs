@@ -800,7 +800,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Focus']/Docs/*" />
 		public bool Focus()
 		{
-			if (IsFocused)
+			if (IsFocused && this is not ITextInput)
 				return true;
 
 			if (FocusChangeRequested == null)
