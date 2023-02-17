@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -1452,7 +1453,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task BindingDoesNotStayAliveForDeadTarget()
 		{
 			var viewModel = new TestViewModel();
-			WeakReference bindingRef = null, buttonRef = null;
+			WeakReference bindingRef = null, buttonRef = null, proxyRef = null;
 
 			int i = 0;
 			Action create = null;
@@ -1473,6 +1474,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				bindingRef = new WeakReference(binding);
 				buttonRef = new WeakReference(button);
+
+				// Access private members:
+				// WeakPropertyChangedProxy proxy = binding._handlers[0].Listener;
+				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+				var handlers = binding.GetType().GetField("_handlers", flags).GetValue(binding) as object[];
+				Assert.NotNull(handlers);
+				var handler = handlers[0];
+				var proxy = handler.GetType().GetProperty("Listener").GetValue(handler);
+				Assert.NotNull(proxy);
+				proxyRef = new WeakReference(proxy);
 			};
 
 			create();
@@ -1486,6 +1497,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
 			Assert.False(buttonRef.IsAlive, "Button should not be alive!");
+
+			// WeakPropertyChangedProxy won't go away until the second GC, PropertyChangedProxy unsubscribes in its finalizer
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			Assert.False(proxyRef.IsAlive, "WeakPropertyChangedProxy should not be alive!");
 		}
 
 		[Fact]
