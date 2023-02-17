@@ -57,5 +57,28 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(2, editor.CursorPosition);
 		}
+
+		//[Fact]
+		//public async Task ShowsKeyboardOnFocus()
+		//{
+		//	var editor = new Editor();
+
+		//	await InvokeOnMainThreadAsync(async () =>
+		//	{
+		//		var handler = CreateHandler<EditorHandler>(editor);
+
+		//		await handler.PlatformView.AttachAndRun(async () =>
+		//		{
+		//			editor.Focus();
+		//			await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+
+		//			// Test that keyboard reappears when refocusing on an already focused TextInput control
+		//			await AssertionExtensions.HideKeyboardForView(handler.PlatformView);
+		//			await AssertionExtensions.WaitForKeyboardToHide(handler.PlatformView);
+		//			editor.Focus();
+		//			await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+		//		});
+		//	});
+		//}
 	}
 }
