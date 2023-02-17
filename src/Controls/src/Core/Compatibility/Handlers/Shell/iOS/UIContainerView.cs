@@ -118,10 +118,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var height = Height ?? MeasuredHeight;
 			var width = Width ?? Frame.Width;
-			
+
 			if (double.IsNaN(height))
 				return;
-				
+
 			var platformFrame = new Rect(0, 0, width, height);
 
 
