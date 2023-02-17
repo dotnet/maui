@@ -305,7 +305,7 @@ namespace Microsoft.Maui.DeviceTests
 		Thickness GetSafeArea()
 		{
 #if IOS || MACCATALYST
-			var insets =  UIKit.UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
+			var insets = UIKit.UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 			return new Thickness(insets.Left, insets.Top, insets.Right, insets.Bottom);
 #else
 			return Thickness.Zero;

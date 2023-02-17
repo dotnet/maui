@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public IEnumerator<object[]> GetEnumerator()
 		{
-			yield return new object[] { "Flyout Header"};
+			yield return new object[] { "Flyout Header" };
 			yield return new object[] { "Flyout Content" };
 			yield return new object[] { "Flyout Footer" };
 		}
@@ -25,15 +25,18 @@ namespace Microsoft.Maui.DeviceTests
 			switch (name)
 			{
 				case "Flyout Header":
-					return (Shell shell, object newContent) => {
+					return (Shell shell, object newContent) =>
+					{
 						shell.FlyoutHeader = newContent;
 					};
 				case "Flyout Content":
-					return (Shell shell, object newContent) => {
+					return (Shell shell, object newContent) =>
+					{
 						shell.FlyoutContent = newContent;
 					};
 				case "Flyout Footer":
-					return (Shell shell, object newContent) => {
+					return (Shell shell, object newContent) =>
+					{
 						shell.FlyoutFooter = newContent;
 					};
 			}
