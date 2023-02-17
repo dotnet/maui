@@ -48,9 +48,9 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		public static bool TryGetFirstChildOfType<T>(this AViewGroup viewGroup, [NotNullWhen (true)] out T? result) where T : AView
+		public static bool TryGetFirstChildOfType<T>(this AViewGroup viewGroup, [NotNullWhen(true)] out T? result) where T : AView
 		{
-			result = viewGroup.GetFirstChildOfType<T> ();
+			result = viewGroup.GetFirstChildOfType<T>();
 			return result is not null;
 		}
 	}
