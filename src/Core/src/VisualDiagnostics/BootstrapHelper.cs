@@ -5,12 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Maui.VisualDiagnostics
+#pragma warning disable CS8600
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Enables C++ code to simulate ICLRRuntimeHost2::ExecuteAssembly on top of ICLRRuntimeHost2::CreateDelegate in .net core 2.
 	/// </summary>
-	static class BootstrapHelper
+	static class VisualDiagnosticsBootstrapHelper
 	{
 		// Do not overload this method. ICLRRuntimeHost2::CreateDelegate can not resolve overloaded methods.
 		[PreserveSig]
@@ -32,9 +33,9 @@ namespace Microsoft.Maui.VisualDiagnostics
 				}
 
 				Assembly assembly = (Assembly)loadFrom.Invoke(null, new object[] { assemblyPath });
-				Type type = assembly.GetType(typeName);
-				MethodInfo method = type.GetMethod(methodName);
-				method.Invoke(null, new object[] { argument });
+				Type type = assembly?.GetType(typeName);
+				MethodInfo method = type?.GetMethod(methodName);
+				method?.Invoke(null, new object[] { argument });
 				return 0;
 			}
 			catch (Exception ex)
@@ -44,3 +45,4 @@ namespace Microsoft.Maui.VisualDiagnostics
 		}
 	}
 }
+#pragma warning restore CS8600
