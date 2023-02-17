@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			var androidLocation = await tcs.Task;
 
-			if (androidLocation == null)
+			if (androidLocation is null)
 				return null;
 
 			return androidLocation.ToLocation();
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		public void StopListeningForeground()
 		{
-			if (continuousListener == null)
+			if (continuousListener is null)
 				return;
 
 			continuousListener.LocationHandler = null;
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		internal static bool IsBetterLocation(AndroidLocation location, AndroidLocation? bestLocation)
 		{
-			if (bestLocation == null)
+			if (bestLocation is null)
 				return true;
 
 			var timeDelta = location.Time - bestLocation.Time;
@@ -446,7 +446,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		void ILocationListener.OnStatusChanged(string? provider, Availability status, Bundle? extras)
 		{
-			if (provider == null)
+			if (provider is null)
 				return;
 
 			switch (status)
