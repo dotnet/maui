@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Indicates if currently listening to location updates while the app is in foreground.
 		/// </summary>
-		public bool IsListeningForeground { get => continuousListener != null; }
+		public bool IsListeningForeground { get => continuousListener is not null; }
 
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				var location = LocationManager.GetLastKnownLocation(provider);
 
-				if (location != null && IsBetterLocation(location, bestLocation))
+				if (location is not null && IsBetterLocation(location, bestLocation))
 					bestLocation = location;
 			}
 
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
 			var enabledProviders = LocationManager.GetProviders(true);
-			var hasProviders = enabledProviders != null &&
+			var hasProviders = enabledProviders is not null &&
 				enabledProviders.Any(p => !ignoredProviders.Contains(p));
 
 			if (!hasProviders)
@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			foreach (var provider in activeProviders)
 			{
 				var location = manager?.GetLastKnownLocation(provider);
-				if (location != null && GeolocationImplementation.IsBetterLocation(location, BestLocation))
+				if (location is not null && GeolocationImplementation.IsBetterLocation(location, BestLocation))
 					BestLocation = location;
 			}
 		}
@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			foreach (var provider in providers)
 			{
-				if (manager != null && manager.IsProviderEnabled(provider))
+				if (manager is not null && manager.IsProviderEnabled(provider))
 					activeProviders.Add(provider);
 			}
 		}
