@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 			grid.SetColumnSpan(view, columnSpan);
 		}
 
-		static void EnsureRows(Grid grid, int rows) 
+		static void EnsureRows(Grid grid, int rows)
 		{
 			if (rows == 1)
 			{

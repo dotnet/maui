@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void AddEnsuresRows() 
+		public void AddEnsuresRows()
 		{
 			var grid = new Grid();
 			grid.Add(new Label(), 0, 4);
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		[InlineData(0, 1, 0, 0)]
 		[InlineData(1, 0, 0, 1)]
 		[InlineData(0, 1, 1, 0)]
-		public void ThrowsOnInvalidSpans(int left, int right, int top, int bottom) 
+		public void ThrowsOnInvalidSpans(int left, int right, int top, int bottom)
 		{
 			var grid = new Grid();
 			Assert.Throws<ArgumentOutOfRangeException>(() => grid.Add(new Label(), left, right, top, bottom));
