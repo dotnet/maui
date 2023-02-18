@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Maui.Controls;
 
 using static Microsoft.Maui.Controls.SourceGen.Helper;
 
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 					var serviceAttribute = serviceAttributes.FirstOrDefault();
 
-					ServiceScope scope;
+					string lifetime;
 
 					if (routeAttribute is not null)
 					{
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 						var routes = new List<string>();
 
 						var routeArgument = true;
-						scope = ServiceScope.Singleton;
+						lifetime = Singleton;
 						arguments = routeAttribute.ArgumentList?.Arguments;
 
 						if (arguments is not null)
@@ -105,9 +105,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 									{
 										route = GetRoute(cds, argument.Expression);
 									}
-									else if (argument.NameColon.Name.Identifier.Text == "scope")
+									else if (argument.NameColon.Name.Identifier.Text == "lifetime")
 									{
-										scope = GetScope(argument.Expression);
+										lifetime = GetLifetime(argument.Expression);
 									}
 								}
 								else if (argument.NameEquals is not null)
@@ -135,9 +135,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 											}
 										}
 									}
-									else if (argument.NameEquals.Name.Identifier.Text == "Scope")
+									else if (argument.NameEquals.Name.Identifier.Text == "Lifetime")
 									{
-										scope = GetScope(argument.Expression);
+										lifetime = GetLifetime(argument.Expression);
 									}
 									else if (argument.NameEquals.Name.Identifier.Text == "ImplicitViewModel")
 									{
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 									}
 									else
 									{
-										scope = GetScope(argument.Expression);
+										lifetime = GetLifetime(argument.Expression);
 									}
 								}
 							}
@@ -175,14 +175,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 							routes.Add(route);
 						}
 
-						_routedPages.Add(new RoutedPage(cds, routes, scope, implicitViewModel, viewModelType));
+						_routedPages.Add(new RoutedPage(cds, routes, lifetime, implicitViewModel, viewModelType));
 					}
 
 					if (serviceAttribute is not null)
 					{
 						arguments = serviceAttribute.ArgumentList?.Arguments;
 
-						scope = ServiceScope.Singleton;
+						lifetime = Singleton;
 						var registerFor = string.Empty;
 						var useTryAdd = false;
 
@@ -192,9 +192,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 							{
 								if (argument.NameColon is not null)
 								{
-									if (argument.NameColon.Name.Identifier.Text == "scope")
+									if (argument.NameColon.Name.Identifier.Text == "lifetime")
 									{
-										scope = GetScope(argument.Expression);
+										lifetime = GetLifetime(argument.Expression);
 									}
 								}
 								else if (argument.NameEquals is not null)
@@ -216,12 +216,12 @@ namespace Microsoft.Maui.Controls.SourceGen
 								}
 								else if (argument.Expression is not null)
 								{
-									scope = GetScope(argument.Expression);
+									lifetime = GetLifetime(argument.Expression);
 								}
 							}
 						}
 
-						_services.Add(new Service(cds, scope, registerFor, useTryAdd));
+						_services.Add(new Service(cds, lifetime, registerFor, useTryAdd));
 					}
 				}
 			}
@@ -256,28 +256,28 @@ namespace Microsoft.Maui.Controls.SourceGen
 			}
 		}
 
-		private static ServiceScope GetScope(ExpressionSyntax? expression)
+		private static string GetLifetime(ExpressionSyntax? expression)
 		{
 			if (expression is IdentifierNameSyntax identifierName)
 			{
-				return ParseScope(identifierName.Identifier.ValueText);
+				return identifierName.Identifier.ValueText;
 			}
 			else if (expression is MemberAccessExpressionSyntax memberAccessExpression)
 			{
-				return ParseScope(memberAccessExpression.Name.Identifier.Text);
+				return memberAccessExpression.Name.Identifier.Text;
 			}
 			else
 			{
-				// Default scope
-				return ServiceScope.Singleton;
+				// Default lifetime
+				return Singleton;
 			}
 
-			static ServiceScope ParseScope(string scopeName) => scopeName switch
-			{
-				"Scoped" => ServiceScope.Scoped,
-				"Transient" => ServiceScope.Transient,
-				_ => ServiceScope.Singleton
-			};
+			//static ServiceLifetime ParseLifetime(string scopeName) => scopeName switch
+			//{
+			//	"Scoped" => ServiceLifetime.Scoped,
+			//	"Transient" => ServiceLifetime.Transient,
+			//	_ => ServiceLifetime.Singleton
+			//};
 		}
 	}
 
@@ -286,13 +286,13 @@ namespace Microsoft.Maui.Controls.SourceGen
 		public RoutedPage(
 			ClassDeclarationSyntax type,
 			IEnumerable<string> routes,
-			ServiceScope scope,
+			string lifetime,
 			bool implicitViewModel = false,
 			string? viewModelType = null)
 		{
 			Type = type;
 			Routes = routes;
-			Scope = scope;
+			Lifetime = lifetime;
 			ImplicitViewModel = implicitViewModel;
 			ViewModelType = viewModelType;
 		}
@@ -301,21 +301,21 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		public IEnumerable<string> Routes { get; }
 
-		public ServiceScope Scope { get; set; }
+		public string Lifetime { get; }
 
-		public bool ImplicitViewModel { get; set; }
+		public bool ImplicitViewModel { get; }
 
-		public string? ViewModelType { get; set; }
+		public string? ViewModelType { get; }
 	}
 
 	internal class Service
 	{
-		public Service(ClassDeclarationSyntax type, ServiceScope scope, string registerFor, bool useTryAdd)
-			=> (Type, Scope, RegisterFor, UseTryAdd) = (type, scope, registerFor, useTryAdd);
+		public Service(ClassDeclarationSyntax type, string lifetime, string registerFor, bool useTryAdd)
+			=> (Type, Lifetime, RegisterFor, UseTryAdd) = (type, lifetime, registerFor, useTryAdd);
 
 		public ClassDeclarationSyntax Type { get; }
 
-		public ServiceScope Scope { get; }
+		public string Lifetime { get; }
 
 		public string RegisterFor { get; }
 

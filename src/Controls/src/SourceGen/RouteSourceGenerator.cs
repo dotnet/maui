@@ -3,8 +3,6 @@ using System.Text;
 
 using Microsoft.CodeAnalysis;
 
-using Microsoft.Maui.Controls;
-
 using static Microsoft.Maui.Controls.SourceGen.Helper;
 
 namespace Microsoft.Maui.Controls.SourceGen
@@ -12,7 +10,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 	[Generator(LanguageNames.CSharp)]
 	public class RouteSourceGenerator : ISourceGenerator
 	{
-		static string indent = new string('\x20', 8);
+		static readonly string Indent = new string('\x20', 8);
 		const string Add = nameof(Add);
 		const string TryAdd = nameof(TryAdd);
 
@@ -54,17 +52,17 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 			var addComment = true;
 
-			foreach (var routedPage in routedPages.Where(x => x.Scope == ServiceScope.Singleton))
+			foreach (var routedPage in routedPages.Where(x => x.Lifetime == Singleton))
 			{
 				foreach (var route in routedPage.Routes)
 				{
 					if (string.IsNullOrEmpty(route))
 					{
-						routes.AppendLine($"{indent}Routing.RegisterRoute(nameof(global::{GetNamespace(routedPage.Type)}.{routedPage.Type.Identifier}), typeof(global::{GetNamespace(routedPage.Type)}.{routedPage.Type.Identifier}));");
+						routes.AppendLine($"{Indent}Routing.RegisterRoute(nameof(global::{GetNamespace(routedPage.Type)}.{routedPage.Type.Identifier}), typeof(global::{GetNamespace(routedPage.Type)}.{routedPage.Type.Identifier}));");
 					}
 					else
 					{
-						routes.AppendLine($"{indent}Routing.RegisterRoute({route}, typeof(global::{GetNamespace(routedPage.Type)}.{routedPage.Type.Identifier}));");
+						routes.AppendLine($"{Indent}Routing.RegisterRoute({route}, typeof(global::{GetNamespace(routedPage.Type)}.{routedPage.Type.Identifier}));");
 					}
 				}
 
@@ -76,25 +74,25 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				if (routedPage.ImplicitViewModel)
 				{
-					services.AppendLine($"{indent}builder.Services.AddSingleton<{routedPage.Type.Identifier.ValueText.Replace("Page", "ViewModel")}>();");
+					services.AppendLine($"{Indent}builder.Services.AddSingleton<{routedPage.Type.Identifier.ValueText.Replace("Page", "ViewModel")}>();");
 				}
 				else if (!string.IsNullOrEmpty(routedPage.ViewModelType))
 				{
-					services.AppendLine($"{indent}builder.Services.AddSingleton<{routedPage.ViewModelType}>();");
+					services.AppendLine($"{Indent}builder.Services.AddSingleton<{routedPage.ViewModelType}>();");
 				}
 
-				services.AppendLine($"{indent}builder.Services.AddSingleton<global::{GetNamespace(routedPage.Type)}.{routedPage.Type.Identifier}>();");
+				services.AppendLine($"{Indent}builder.Services.AddSingleton<global::{GetNamespace(routedPage.Type)}.{routedPage.Type.Identifier}>();");
 			}
 
-			foreach (var service in syntaxReceiver.Services.Where(x => x.Scope == ServiceScope.Singleton))
+			foreach (var service in syntaxReceiver.Services.Where(x => x.Lifetime == Singleton))
 			{
 				if (string.IsNullOrEmpty(service.RegisterFor))
 				{
-					services.AppendLine($"{indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Singleton<global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
+					services.AppendLine($"{Indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Singleton<global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
 				}
 				else
 				{
-					services.AppendLine($"{indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Singleton<{service.RegisterFor}, global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
+					services.AppendLine($"{Indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Singleton<{service.RegisterFor}, global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
 				}
 			}
 
@@ -104,47 +102,47 @@ namespace Microsoft.Maui.Controls.SourceGen
 				services.AppendLine();
 			}
 
-			foreach (var scopedView in routedPages.Where(x => x.Scope == ServiceScope.Scoped))
+			foreach (var scopedView in routedPages.Where(x => x.Lifetime == Scoped))
 			{
 				foreach (var route in scopedView.Routes)
 				{
 					if (string.IsNullOrEmpty(route))
 					{
-						routes.AppendLine($"{indent}Routing.RegisterRoute(nameof(global::{GetNamespace(scopedView.Type)}.{scopedView.Type.Identifier}), typeof(global::{GetNamespace(scopedView.Type)}.{scopedView.Type.Identifier}));");
+						routes.AppendLine($"{Indent}Routing.RegisterRoute(nameof(global::{GetNamespace(scopedView.Type)}.{scopedView.Type.Identifier}), typeof(global::{GetNamespace(scopedView.Type)}.{scopedView.Type.Identifier}));");
 					}
 					else
 					{
-						routes.AppendLine($"{indent}Routing.RegisterRoute({route}, typeof(global::{GetNamespace(scopedView.Type)}.{scopedView.Type.Identifier}));");
+						routes.AppendLine($"{Indent}Routing.RegisterRoute({route}, typeof(global::{GetNamespace(scopedView.Type)}.{scopedView.Type.Identifier}));");
 					}
 				}
 
 				if (addComment)
 				{
 					addComment = false;
-					services.AppendLine($"{indent}// Scoped Services");
+					services.AppendLine($"{Indent}// Scoped Services");
 				}
 
 				if (scopedView.ImplicitViewModel)
 				{
-					services.AppendLine($"{indent}builder.Services.AddScoped<{scopedView.Type.Identifier.ValueText.Replace("Page", "ViewModel")}>();");
+					services.AppendLine($"{Indent}builder.Services.AddScoped<{scopedView.Type.Identifier.ValueText.Replace("Page", "ViewModel")}>();");
 				}
 				else if (!string.IsNullOrEmpty(scopedView.ViewModelType))
 				{
-					services.AppendLine($"{indent}builder.Services.AddScoped<{scopedView.ViewModelType}>();");
+					services.AppendLine($"{Indent}builder.Services.AddScoped<{scopedView.ViewModelType}>();");
 				}
 
-				services.AppendLine($"{indent}builder.Services.AddScoped<global::{GetNamespace(scopedView.Type)}.{scopedView.Type.Identifier}>();");
+				services.AppendLine($"{Indent}builder.Services.AddScoped<global::{GetNamespace(scopedView.Type)}.{scopedView.Type.Identifier}>();");
 			}
 
-			foreach (var service in syntaxReceiver.Services.Where(x => x.Scope == ServiceScope.Scoped))
+			foreach (var service in syntaxReceiver.Services.Where(x => x.Lifetime == Scoped))
 			{
 				if (string.IsNullOrEmpty(service.RegisterFor))
 				{
-					services.AppendLine($"{indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Scoped<global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
+					services.AppendLine($"{Indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Scoped<global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
 				}
 				else
 				{
-					services.AppendLine($"{indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Scoped<{service.RegisterFor}, global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
+					services.AppendLine($"{Indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Scoped<{service.RegisterFor}, global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
 				}
 			}
 
@@ -154,47 +152,47 @@ namespace Microsoft.Maui.Controls.SourceGen
 				services.AppendLine();
 			}
 
-			foreach (var transientView in routedPages.Where(x => x.Scope == ServiceScope.Transient))
+			foreach (var transientView in routedPages.Where(x => x.Lifetime == Transient))
 			{
 				foreach (var route in transientView.Routes)
 				{
 					if (string.IsNullOrEmpty(route))
 					{
-						routes.AppendLine($"{indent}Routing.RegisterRoute(nameof(global::{GetNamespace(transientView.Type)}.{transientView.Type.Identifier}), typeof(global::{GetNamespace(transientView.Type)}.{transientView.Type.Identifier}));");
+						routes.AppendLine($"{Indent}Routing.RegisterRoute(nameof(global::{GetNamespace(transientView.Type)}.{transientView.Type.Identifier}), typeof(global::{GetNamespace(transientView.Type)}.{transientView.Type.Identifier}));");
 					}
 					else
 					{
-						routes.AppendLine($"{indent}Routing.RegisterRoute({route}, typeof(global::{GetNamespace(transientView.Type)}.{transientView.Type.Identifier}));");
+						routes.AppendLine($"{Indent}Routing.RegisterRoute({route}, typeof(global::{GetNamespace(transientView.Type)}.{transientView.Type.Identifier}));");
 					}
 				}
 
 				if (addComment)
 				{
 					addComment = false;
-					services.AppendLine($"{indent}// Transient Services");
+					services.AppendLine($"{Indent}// Transient Services");
 				}
 
 				if (transientView.ImplicitViewModel)
 				{
-					services.AppendLine($"{indent}builder.Services.AddTransient<{transientView.Type.Identifier.ValueText.Replace("Page", "ViewModel")}>();");
+					services.AppendLine($"{Indent}builder.Services.AddTransient<{transientView.Type.Identifier.ValueText.Replace("Page", "ViewModel")}>();");
 				}
 				else if (!string.IsNullOrEmpty(transientView.ViewModelType))
 				{
-					services.AppendLine($"{indent}builder.Services.AddTransient<{transientView.ViewModelType}>();");
+					services.AppendLine($"{Indent}builder.Services.AddTransient<{transientView.ViewModelType}>();");
 				}
 
-				services.AppendLine($"{indent}builder.Services.AddTransient<global::{GetNamespace(transientView.Type)}.{transientView.Type.Identifier}>();");
+				services.AppendLine($"{Indent}builder.Services.AddTransient<global::{GetNamespace(transientView.Type)}.{transientView.Type.Identifier}>();");
 			}
 
-			foreach (var service in syntaxReceiver.Services.Where(x => x.Scope == ServiceScope.Transient))
+			foreach (var service in syntaxReceiver.Services.Where(x => x.Lifetime == Transient))
 			{
 				if (string.IsNullOrEmpty(service.RegisterFor))
 				{
-					services.AppendLine($"{indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Transient<global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
+					services.AppendLine($"{Indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Transient<global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
 				}
 				else
 				{
-					services.AppendLine($"{indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Transient<{service.RegisterFor}, global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
+					services.AppendLine($"{Indent}builder.Services.{(service.UseTryAdd ? TryAdd : Add)}Transient<{service.RegisterFor}, global::{GetNamespace(service.Type)}.{service.Type.Identifier}>();");
 				}
 			}
 

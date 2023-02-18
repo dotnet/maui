@@ -5,6 +5,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 {
 	internal static class Helper
 	{
+		internal const string Singleton = nameof(Singleton);
+		internal const string Scoped = nameof(Scoped);
+		internal const string Transient = nameof(Transient);
+
 		// Determine the namespace the class/enum/struct/record is declared in, if any
 		internal static string GetNamespace(BaseTypeDeclarationSyntax syntax)
 		{

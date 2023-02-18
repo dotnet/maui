@@ -30,7 +30,6 @@
     <Compile Include="..\..\..\Core\src\Services\Crc64HashAlgorithm.cs">
       <Link>Crc64HashAlgorithm.cs</Link>
     </Compile>
-    <Compile Include="..\Core\ServiceScope.cs" Link="ServiceScope.cs" />
   </ItemGroup>
 
   <ItemGroup>

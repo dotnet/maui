@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls
 {
@@ -8,12 +9,12 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Type gets registered in the DI container, defaults to Singleton
 		/// </summary>
-		public MauiServiceAttribute(ServiceScope scope = ServiceScope.Singleton) => Scope = scope;
+		public MauiServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Singleton) => Lifetime = lifetime;
 
 		/// <summary>
-		/// Scope of the View Service type on which this attribute is defined.
+		/// Lifetime of the Service type on which this attribute is defined.
 		/// </summary>
-		public ServiceScope Scope { get; }
+		public ServiceLifetime Lifetime { get; }
 
 		/// <summary>
 		/// The type for which this service would be resolved for.
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		public Type? RegisterFor { get; set; }
 
 		/// <summary>
-		/// If set to true, uses the TryAdd method construct while registering the service
+		/// If set to true, makes use of the TryAdd method construct while registering the service.
 		/// </summary>
 		public bool UseTryAdd { get; set; }
 	}
