@@ -1,36 +1,36 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="8.0.100-alpha.1.23080.11" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="8.0.100-preview.1.23115.2" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>dec120944450abb58bc07a2fcdae2f4383bfd6bf</Sha>
+      <Sha>913e4679b3ea675f3ca06fd3504d05d034c82aa6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-alpha.1.23080.2" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-preview.1.23110.8" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>9529803ae29c2804880c6bd8ca710b8c037cb498</Sha>
+      <Sha>7deac7d6da3ce4e96d51d5f61a27ee85b7c42f60</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.0-preview.2.152">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.0-preview.1.156">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>aa54ed3d57d7c54095b869c1c0c3a7d7e4761d85</Sha>
+      <Sha>ae2fb25c22385c6952d253bc96eb9df04eafe380</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="16.2.223-net8-p1">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="16.2.235-net8-p1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>6498d7da54d56ce51603a184850ef3cee6530bdd</Sha>
+      <Sha>c61e327b278ed310f3fb0a5ab24e6449066128e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="13.1.223-net8-p1">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="13.1.235-net8-p1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>6498d7da54d56ce51603a184850ef3cee6530bdd</Sha>
+      <Sha>c61e327b278ed310f3fb0a5ab24e6449066128e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="16.2.223-net8-p1">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="16.2.235-net8-p1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>6498d7da54d56ce51603a184850ef3cee6530bdd</Sha>
+      <Sha>c61e327b278ed310f3fb0a5ab24e6449066128e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="16.1.1011-net8-p1">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="16.1.1023-net8-p1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>6498d7da54d56ce51603a184850ef3cee6530bdd</Sha>
+      <Sha>c61e327b278ed310f3fb0a5ab24e6449066128e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100-alpha.1" Version="8.0.0-alpha.1.23077.4" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100-preview.1" Version="8.0.0-preview.1.23101.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>0fe864fc71191ff4ee18e59ef0af2929ca367a11</Sha>
+      <Sha>c47bbefece200e429f8ed33494121fa9945f0ef9</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
