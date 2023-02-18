@@ -41,26 +41,8 @@ namespace Microsoft.Maui.DeviceTests
 			return mauiAppBuilder.ConfigureTestBuilder();
 		}
 
-		protected void SetupShellHandlers(IMauiHandlersCollection handlers)
-		{
-			handlers.TryAddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-			handlers.TryAddHandler<Layout, LayoutHandler>();
-			handlers.TryAddHandler<Image, ImageHandler>();
-			handlers.TryAddHandler<Label, LabelHandler>();
-			handlers.TryAddHandler<Page, PageHandler>();
-			handlers.TryAddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-			handlers.TryAddHandler(typeof(MenuBar), typeof(MenuBarHandler));
-			handlers.TryAddHandler(typeof(MenuBarItem), typeof(MenuBarItemHandler));
-			handlers.TryAddHandler(typeof(MenuFlyoutItem), typeof(MenuFlyoutItemHandler));
-			handlers.TryAddHandler(typeof(MenuFlyoutSubItem), typeof(MenuFlyoutSubItemHandler));
-			handlers.TryAddHandler<ScrollView, ScrollViewHandler>();
-
-#if WINDOWS
-			handlers.TryAddHandler(typeof(ShellItem), typeof(ShellItemHandler));
-			handlers.TryAddHandler(typeof(ShellSection), typeof(ShellSectionHandler));
-			handlers.TryAddHandler(typeof(ShellContent), typeof(ShellContentHandler));
-#endif
-		}
+		protected void SetupShellHandlers(IMauiHandlersCollection handlers) =>
+			handlers.SetupShellHandlers();
 
 		protected THandler CreateHandler<THandler>(IElement view)
 			where THandler : IElementHandler, new()
@@ -99,6 +81,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		IWindow CreateWindowForContent(IElement view)
+		{
+			IWindow window;
+
+			if (view is IWindow w)
+				window = w;
+			else if (view is Page page)
+				window = new Controls.Window(page);
+			else
+				window = new Controls.Window(new ContentPage() { Content = (View)view });
+
+			return window;
+		}
+
+		protected Task CreateHandlerAndAddToWindow(IElement view, Action action)
+		{
+			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
+			{
+				action();
+				return Task.CompletedTask;
+			});
+		}
+
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
 			where THandler : class, IElementHandler
 		{
@@ -117,22 +122,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				IWindow window = null;
+				IWindow window = CreateWindowForContent(view);
 
 				var application = mauiContext.Services.GetService<IApplication>();
-
-				if (view is IWindow w)
-				{
-					window = w;
-				}
-				else if (view is Page page)
-				{
-					window = new Controls.Window(page);
-				}
-				else
-				{
-					window = new Controls.Window(new ContentPage() { Content = (View)view });
-				}
 
 				if (application is ApplicationStub appStub)
 				{
@@ -149,6 +141,9 @@ namespace Microsoft.Maui.DeviceTests
 					await SetupWindowForTests<THandler>(window, async () =>
 					{
 						IView content = window.Content;
+
+						if (content is FlyoutPage fp)
+							content = fp.Detail;
 
 						if (content is IPageContainer<Page> pc)
 						{
@@ -169,6 +164,8 @@ namespace Microsoft.Maui.DeviceTests
 						}
 
 						await OnLoadedAsync(content as VisualElement);
+
+						window.Activated();
 #if WINDOWS
 						await Task.Delay(10);
 #endif
@@ -178,8 +175,14 @@ namespace Microsoft.Maui.DeviceTests
 							await action((THandler)window.Content.Handler);
 						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
 							await action((THandler)cp.Content.Handler);
+						else if (typeof(THandler).IsAssignableFrom(typeof(WindowHandler)))
+							throw new Exception($"Use IWindowHandler instead of WindowHandler for CreateHandlerAndAddToWindow");
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
+
+						window.Deactivated();
+						window.Destroying();
+
 					}, mauiContext);
 				}
 				finally
@@ -337,7 +340,16 @@ namespace Microsoft.Maui.DeviceTests
 			await OnLoadedAsync(page, timeOut);
 
 			if (page.HasNavigatedTo)
+			{
+				// TabbedPage fires OnNavigated earlier than it should
+				if (page.Parent is TabbedPage)
+					await Task.Delay(10);
+
+				if (page is IPageContainer<Page> pc)
+					await OnNavigatedToAsync(pc.CurrentPage);
+
 				return;
+			}
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
@@ -345,6 +357,11 @@ namespace Microsoft.Maui.DeviceTests
 			page.NavigatedTo += NavigatedTo;
 
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// TabbedPage fires OnNavigated earlier than it should
+			if (page.Parent is TabbedPage)
+				await Task.Delay(10);
+
 			void NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
 				taskCompletionSource.SetResult(true);

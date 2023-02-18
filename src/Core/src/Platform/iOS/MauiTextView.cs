@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiTextView : UITextView
 	{
 		readonly UILabel _placeholderLabel;
+		nfloat? _defaultPlaceholderSize;
 
 		public MauiTextView()
 		{
@@ -80,6 +81,17 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public override UIFont? Font
+		{
+			get => base.Font;
+			set
+			{
+				base.Font = value;
+				UpdatePlaceholderFontSize(value);
+
+			}
+		}
+
 		public override NSAttributedString AttributedText
 		{
 			get => base.AttributedText;
@@ -105,7 +117,7 @@ namespace Microsoft.Maui.Platform
 
 		UILabel InitPlaceholderLabel()
 		{
-			var placeholderLabel = new UILabel
+			var placeholderLabel = new MauiLabel
 			{
 				BackgroundColor = UIColor.Clear,
 				TextColor = ColorExtensions.PlaceholderColor,
@@ -117,23 +129,8 @@ namespace Microsoft.Maui.Platform
 			var edgeInsets = TextContainerInset;
 			var lineFragmentPadding = TextContainer.LineFragmentPadding;
 
-			var vConstraints = NSLayoutConstraint.FromVisualFormat(
-				"V:|-" + edgeInsets.Top + "-[PlaceholderLabel]-" + edgeInsets.Bottom + "-|", 0, new NSDictionary(),
-				NSDictionary.FromObjectsAndKeys(
-					new NSObject[] { placeholderLabel }, new NSObject[] { new NSString("PlaceholderLabel") })
-			);
-
-			var hConstraints = NSLayoutConstraint.FromVisualFormat(
-				"H:|-" + lineFragmentPadding + "-[PlaceholderLabel]-" + lineFragmentPadding + "-|",
-				0, new NSDictionary(),
-				NSDictionary.FromObjectsAndKeys(
-					new NSObject[] { placeholderLabel }, new NSObject[] { new NSString("PlaceholderLabel") })
-			);
-
-			placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
-
-			AddConstraints(hConstraints);
-			AddConstraints(vConstraints);
+			placeholderLabel.TextInsets = new UIEdgeInsets(edgeInsets.Top, edgeInsets.Left + lineFragmentPadding,
+				edgeInsets.Bottom, edgeInsets.Right + lineFragmentPadding);
 
 			return placeholderLabel;
 		}
@@ -153,13 +150,22 @@ namespace Microsoft.Maui.Platform
 		{
 			var fittingSize = new CGSize(Bounds.Width, NFloat.MaxValue);
 			var sizeThatFits = SizeThatFits(fittingSize);
-			var availableSpace = (Bounds.Height - sizeThatFits.Height * ZoomScale);
+			var availableSpace = Bounds.Height - sizeThatFits.Height * ZoomScale;
+			if (availableSpace <= 0)
+				return;
 			ContentOffset = VerticalTextAlignment switch
 			{
 				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),
 				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
 				_ => new CGPoint(0, 0),
 			};
+		}
+
+		void UpdatePlaceholderFontSize(UIFont? value)
+		{
+			_defaultPlaceholderSize ??= _placeholderLabel.Font.PointSize;
+			_placeholderLabel.Font = _placeholderLabel.Font.WithSize(
+				value?.PointSize ?? _defaultPlaceholderSize.Value);
 		}
 	}
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TImage = Tizen.NUI.BaseComponents.ImageView;
 using NView = Tizen.NUI.BaseComponents.View;
+using TImage = Tizen.NUI.BaseComponents.ImageView;
 
 namespace Microsoft.Maui.Platform
 {

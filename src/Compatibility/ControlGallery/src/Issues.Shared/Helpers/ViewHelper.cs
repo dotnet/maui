@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Helpers
 				new ListView { ItemsSource = Enumerable.Range(0,10), ItemTemplate = new DataTemplate(typeof(ImageCell)) },
 				new ListView { ItemsSource = Enumerable.Range(0,10), ItemTemplate = new DataTemplate(typeof(EntryCell)) },
 				new ListView { ItemsSource = Enumerable.Range(0,10), ItemTemplate = new DataTemplate(typeof(SwitchCell)) },
-				new OpenGLView { },
 				new Picker { },
 				new ProgressBar { },
 				new SearchBar { },
