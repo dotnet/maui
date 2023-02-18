@@ -307,6 +307,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, WColor expectedColor)
 		{
+			_ = await view.ToBitmap(); // TODO: Why is this required for several tests to pass?
 			var bitmap = await view.ToBitmap();
 			return await AssertContainsColor(bitmap, expectedColor);
 		}
