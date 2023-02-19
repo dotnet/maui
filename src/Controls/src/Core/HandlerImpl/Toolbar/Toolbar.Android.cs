@@ -71,57 +71,30 @@ namespace Microsoft.Maui.Controls
 			_ = MauiContext.Context ?? throw new ArgumentNullException(nameof(MauiContext.Context));
 
 			VisualElement titleView = TitleView;
-			if (_platformTitleViewHandler != null)
-			{
-				Type? rendererType = null;
-
-				if (titleView != null)
-					rendererType = MauiContext.Handlers.GetHandlerType(titleView.GetType());
-
-				if (titleView == null || titleView.Handler?.GetType() != rendererType)
-				{
-					if (_platformTitleView != null)
-						_platformTitleView.Child = null;
-
-					if (_platformTitleViewHandler?.VirtualView != null)
-						_platformTitleViewHandler.VirtualView.Handler = null;
-
-					_platformTitleViewHandler = null;
-				}
-			}
 
 			if (titleView == null)
+			{
+				_platformTitleView?.RemoveFromParent();
 				return;
-
-			if (_platformTitleViewHandler != null &&
-				_platformTitleViewHandler.MauiContext == MauiContext &&
-				_platformTitleView != null)
-			{
-				_platformTitleViewHandler.SetVirtualView(titleView);
-				if (_platformTitleView.Parent != PlatformView)
-				{
-					_platformTitleView.RemoveFromParent();
-					PlatformView.AddView(_platformTitleView);
-				}
-
-				_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
 			}
-			else
+
+			titleView.ToPlatform(MauiContext);
+			_platformTitleViewHandler = titleView.Handler;
+
+			if (_platformTitleView == null)
 			{
-				titleView.ToPlatform(MauiContext);
-				_platformTitleViewHandler = titleView.Handler;
-
-				if (_platformTitleView == null)
-				{
-					var context = MauiContext.Context!;
-					_platformTitleView = new Container(context);
-					var layoutParams = new MaterialToolbar.LayoutParams(LP.MatchParent, LP.MatchParent);
-					_platformTitleView.LayoutParameters = layoutParams;
-					PlatformView.AddView(_platformTitleView);
-				}
-
-				_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
+				var context = MauiContext.Context!;
+				_platformTitleView = new Container(context);
+				var layoutParams = new MaterialToolbar.LayoutParams(LP.MatchParent, LP.MatchParent);
+				_platformTitleView.LayoutParameters = layoutParams;
 			}
+
+			if (_platformTitleView.Parent != PlatformView)
+			{
+				PlatformView.AddView(_platformTitleView);
+			}
+
+			_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
 		}
 
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>

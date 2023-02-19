@@ -589,7 +589,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTitleView(Context context, AToolbar toolbar, View titleView)
 		{
-			_toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
+			if (_toolbar != null && ShellContext?.Shell?.GetCurrentShellPage() == Page)
+				_toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
 		}
 
 		protected virtual void UpdateToolbarItems(AToolbar toolbar, Page page)
