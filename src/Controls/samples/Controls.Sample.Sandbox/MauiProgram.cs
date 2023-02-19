@@ -18,9 +18,6 @@ namespace Maui.Controls.Sample
 	class App : Application
 	{
 		protected override Window CreateWindow(IActivationState activationState) =>
-			new Window(new SandboxShell())
-			{
-				FlowDirection = FlowDirection.RightToLeft
-			};
+			new Window(new NavigationPage(new MainPage()));
 	}
 }

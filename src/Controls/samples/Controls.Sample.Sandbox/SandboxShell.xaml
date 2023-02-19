@@ -3,15 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.SandboxShell"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
-    x:Name="shell"
-    FlyoutBehavior="Flyout"
-    FlyoutHeaderBehavior="CollapseOnScroll">
-
-    <Shell.FlyoutHeader>
-        <VerticalStackLayout MinimumHeightRequest="30">
-            <Label Text="Flyout Header"></Label>
-        </VerticalStackLayout>
-    </Shell.FlyoutHeader>
+    x:Name="shell">
     <FlyoutItem Title="Flyout Item Title">
         <ShellContent ContentTemplate="{DataTemplate local:MainPage}"></ShellContent>
     </FlyoutItem>
