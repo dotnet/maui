@@ -31,8 +31,6 @@ namespace Microsoft.Maui.Controls
 				if (_platformTitleView != null)
 					_platformTitleView.Child = null;
 
-				_platformTitleViewHandler?.DisconnectHandler();
-
 				Controls.Platform.ToolbarExtensions.DisposeMenuItems(
 					oldHandler?.PlatformView as AToolbar,
 					ToolbarItems,
@@ -95,8 +93,19 @@ namespace Microsoft.Maui.Controls
 			if (titleView == null)
 				return;
 
-			if (_platformTitleViewHandler != null)
+			if (_platformTitleViewHandler != null && 
+				_platformTitleViewHandler.MauiContext == MauiContext &&
+				_platformTitleView != null)
+			{
 				_platformTitleViewHandler.SetVirtualView(titleView);
+				if (_platformTitleView.Parent != PlatformView)
+				{
+					_platformTitleView.RemoveFromParent();
+					PlatformView.AddView(_platformTitleView);
+				}
+
+				_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
+			}
 			else
 			{
 				titleView.ToPlatform(MauiContext);
@@ -213,7 +222,6 @@ namespace Microsoft.Maui.Controls
 			{
 				set
 				{
-					_child?.DisconnectHandler();
 					RemoveAllViews();
 
 					_child = value;

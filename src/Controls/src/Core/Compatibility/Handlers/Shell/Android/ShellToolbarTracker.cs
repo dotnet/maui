@@ -276,6 +276,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Page == ShellContext?.Shell?.GetCurrentShellPage())
 			{
 				UpdateLeftBarButtonItem();
+				UpdateTitleView();
 			}
 		}
 
@@ -588,6 +589,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTitleView(Context context, AToolbar toolbar, View titleView)
 		{
+			_toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
 		}
 
 		protected virtual void UpdateToolbarItems(AToolbar toolbar, Page page)
@@ -677,7 +679,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateTitleView()
 		{
-			UpdateTitleView(ShellContext.AndroidContext, _platformToolbar, Shell.GetTitleView(Page));
+			UpdateTitleView(ShellContext.AndroidContext, _platformToolbar,
+				(_toolbar as Toolbar).TitleView as View ??
+				Shell.GetTitleView(Page));
 		}
 
 		void UpdateToolbarItems()
