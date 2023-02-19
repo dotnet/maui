@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls
 			if (titleView == null)
 				return;
 
-			if (_platformTitleViewHandler != null && 
+			if (_platformTitleViewHandler != null &&
 				_platformTitleViewHandler.MauiContext == MauiContext &&
 				_platformTitleView != null)
 			{
