@@ -27,6 +27,7 @@ dotnet_diagnostic.IL2050.severity = none
 # Code analyzers
 dotnet_diagnostic.CA1307.severity = error
 dotnet_diagnostic.CA1309.severity = error
+dotnet_diagnostic.CA1815.severity = error
 
 # Modifier preferences
 dotnet_style_require_accessibility_modifiers = never:suggestion

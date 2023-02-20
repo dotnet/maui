@@ -1,9 +1,22 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
+Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
+Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
+override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.LayoutSubviews() -> void
+override Microsoft.Maui.Controls.Region.GetHashCode() -> int
+override Microsoft.Maui.Controls.Shapes.Matrix.GetHashCode() -> int
+static Microsoft.Maui.Controls.LayoutOptions.operator !=(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
+static Microsoft.Maui.Controls.LayoutOptions.operator ==(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
+static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
+static Microsoft.Maui.Controls.Region.operator ==(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
+static Microsoft.Maui.Controls.Shapes.Matrix.operator !=(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
+static Microsoft.Maui.Controls.Shapes.Matrix.operator ==(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
+~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.AddSubview(UIKit.UIView view) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.WillRemoveSubview(UIKit.UIView uiview) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
@@ -21,6 +34,8 @@ override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
+~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
+~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void
@@ -42,5 +57,15 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.set -> void
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.OpenGLView() -> void
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Desktop = 3 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Phone = 1 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Tablet = 2 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.TV = 4 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Unsupported = 0 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Watch = 5 -> Microsoft.Maui.Controls.TargetIdiom
+*REMOVED*static Microsoft.Maui.Controls.Device.Idiom.get -> Microsoft.Maui.Controls.TargetIdiom
 *REMOVED*Microsoft.Maui.Controls.Application.SavePropertiesAsync() -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.Maui.Controls.Application.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!
+Microsoft.Maui.Controls.IValueConverter.Convert(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?
+Microsoft.Maui.Controls.IValueConverter.ConvertBack(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?

@@ -10,11 +10,13 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		Location lastKnownLocation = new Location();
 
+		public bool IsListeningForeground { get => false; }
+
 		public Task<Location> GetLastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
 
 		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
-			_ = request ?? throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
@@ -67,5 +69,11 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			return lastKnownLocation;
 		}
+
+		public Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public void StopListeningForeground() =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }
