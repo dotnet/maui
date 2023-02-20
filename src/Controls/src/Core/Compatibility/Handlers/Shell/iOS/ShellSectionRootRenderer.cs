@@ -136,10 +136,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var currentItem = ShellSection.CurrentItem;
 
-			if (!_renderers.ContainsKey(currentItem))
+			if (!_renderers.TryGetValue(currentItem, out var currentItemHandler))
 				return;
-
-			var currentItemHandler = _renderers[currentItem];
 
 			var application = currentItemHandler.GetRequiredService<IApplication>();
 			application?.ThemeChanged();
