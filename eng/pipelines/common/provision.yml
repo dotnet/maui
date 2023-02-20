@@ -123,10 +123,10 @@ steps:
 
   # Prepare Both
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
-    displayName: 'Use .NET SDK 6'
+    displayName: 'Use .NET SDK 7'
     inputs:
       packageType: sdk
-      version: 6.0.x
+      version: $(DOTNET_VERSION)
 
   - pwsh: |
       dotnet --version

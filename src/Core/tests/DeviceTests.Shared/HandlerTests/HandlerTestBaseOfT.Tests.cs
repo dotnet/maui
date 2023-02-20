@@ -8,6 +8,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Media;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -244,7 +245,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEqual(platformViewBounds, new Graphics.Rect());
 		}
 
-		[Theory(DisplayName = "Native View Bounding Box are not empty"
+		[Theory(DisplayName = "Native View Bounding Box is not empty"
 #if WINDOWS
 			, Skip = "https://github.com/dotnet/maui/issues/9054"
 #endif
@@ -252,7 +253,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
-		public async Task ReturnsNonEmptyNativeBoundingBounds(int size)
+		public virtual async Task ReturnsNonEmptyNativeBoundingBox(int size)
 		{
 			var view = new TStub()
 			{
@@ -261,8 +262,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var nativeBoundingBox = await GetValueAsync(view, handler => GetBoundingBox(handler));
-			Assert.NotEqual(nativeBoundingBox, new Graphics.Rect());
-
+			Assert.NotEqual(nativeBoundingBox, Graphics.Rect.Zero);
 
 			// Currently there's an issue with label/progress where they don't set the frame size to
 			// the explicit Width and Height values set
@@ -290,21 +290,29 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			else if (view is IProgress)
 			{
-				if (!CloseEnough(size, nativeBoundingBox.Size.Width))
-					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+				AssertWithinTolerance(size, nativeBoundingBox.Size.Width);
 			}
 			else
 			{
-				if (!CloseEnough(size, nativeBoundingBox.Size.Height) || !CloseEnough(size, nativeBoundingBox.Size.Width))
-					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
-			}
-
-			bool CloseEnough(double value1, double value2)
-			{
-				return System.Math.Abs(value2 - value1) < 0.2;
+				var expectedSize = new Size(size, size);
+				AssertWithinTolerance(expectedSize, nativeBoundingBox.Size);
 			}
 		}
 
+		protected void AssertWithinTolerance(double expected, double actual, double tolerance = 0.2, string message = "Value was not within tolerance.") 
+		{
+			var diff = System.Math.Abs(expected - actual);
+			if (diff > tolerance)
+			{
+				throw new XunitException($"{message} Expected: {expected}; Actual: {actual}; Tolerance {tolerance}");
+			}
+		}
+
+		protected void AssertWithinTolerance(Graphics.Size expected, Graphics.Size actual, double tolerance = 0.2) 
+		{
+			AssertWithinTolerance(expected.Height, actual.Height, tolerance, "Height was not within tolerance.");
+			AssertWithinTolerance(expected.Width, actual.Width, tolerance, "Width was not within tolerance.");
+		}
 
 		[Theory(DisplayName = "Native View Transforms are not empty"
 #if IOS
