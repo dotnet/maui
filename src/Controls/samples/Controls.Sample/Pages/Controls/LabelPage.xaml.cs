@@ -20,9 +20,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void ClickGestureRecognizer_Clicked(System.Object sender, System.EventArgs e)
 		{
-			var label = sender as Label;
-
-			if (label == null)
+			if (sender is not Label)
 				return;
 
 			var rnd = new System.Random();
