@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (item == currentItem)
 				{
-					_containerArea.AddSubview(renderer.PlatformView);
+					_containerArea.AddSubview(renderer.ViewController.View);
 					_currentContent = currentItem;
 					_currentIndex = i;
 				}
