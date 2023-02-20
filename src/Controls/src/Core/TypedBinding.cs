@@ -251,6 +251,9 @@ namespace Microsoft.Maui.Controls.Internals
 			public BindingExpression.WeakPropertyChangedProxy Listener { get; }
 			readonly BindingBase _binding;
 			PropertyChangedEventHandler handler;
+
+			~PropertyChangedProxy() => Listener?.Unsubscribe(finalizer: true);
+
 			public INotifyPropertyChanged Part
 			{
 				get
