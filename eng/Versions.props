@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
-    <MicrosoftMauiPreviousDotNetReleasedVersion>6.0.547</MicrosoftMauiPreviousDotNetReleasedVersion>
+    <MicrosoftMauiPreviousDotNetReleasedVersion>7.0.59</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
     <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-preview.1.23115.2</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
