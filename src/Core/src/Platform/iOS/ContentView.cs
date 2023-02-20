@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Platform
 
 			var maskLayer = ChildMaskLayer;
 
-			if (maskLayer == null && Clip == null)
+			if (maskLayer is null && Clip is null)
 				return;
 
 			maskLayer ??= ChildMaskLayer = new CAShapeLayer();
