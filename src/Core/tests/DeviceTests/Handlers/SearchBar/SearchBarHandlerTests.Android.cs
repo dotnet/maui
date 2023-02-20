@@ -218,7 +218,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 
-			if (editText == null)
+			if (editText is null)
 				return false;
 
 			return !editText.Focusable && !editText.FocusableInTouchMode;
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 
-			if (editText == null)
+			if (editText is null)
 				return false;
 
 			var inputTypes = editText.InputType;
@@ -243,7 +243,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 
-			if (editText == null)
+			if (editText is null)
 				return false;
 
 			var inputTypes = editText.InputType;
@@ -256,7 +256,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 
-			if (editText == null)
+			if (editText is null)
 				return false;
 
 			var inputTypes = editText.InputType;
@@ -269,7 +269,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 
-			if (editText == null)
+			if (editText is null)
 				return false;
 
 			var inputTypes = editText.InputType;
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 
-			if (editText == null)
+			if (editText is null)
 				return false;
 
 			var inputTypes = editText.InputType;
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 
-			if (editText == null)
+			if (editText is null)
 				return false;
 
 			var inputTypes = editText.InputType;
