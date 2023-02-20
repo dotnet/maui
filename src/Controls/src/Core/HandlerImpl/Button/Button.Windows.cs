@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if (_button != null)
+				if (_button is not null)
 				{
 					_button.SizeChanged -= OnButtonSizeChanged;
 					_button = null;
