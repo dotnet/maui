@@ -145,7 +145,8 @@ namespace Microsoft.Maui.Resizetizer
 			var adaptiveIconRoundDestination = Path.Combine(dir, AppIconName + "_round.xml");
 			Directory.CreateDirectory(dir);
 
-			if (File.Exists(adaptiveIconDestination) && File.Exists(adaptiveIconRoundDestination)) {
+			if (File.Exists(adaptiveIconDestination) && File.Exists(adaptiveIconRoundDestination))
+			{
 				results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1), Filename = adaptiveIconDestination });
 				results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1, "_round"), Filename = adaptiveIconRoundDestination });
 				return;
