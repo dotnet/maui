@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler != null)
+			if (Handler is not null)
 			{
 				if (Handler is ButtonHandler buttonHandler && buttonHandler.PlatformView is WButton button)
 				{
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls
 				var platformView = buttonHandler.PlatformView;
 				var virtualView = buttonHandler.VirtualView as Button;
 
-				if (platformView == null || virtualView == null)
+				if (platformView is null || virtualView is null)
 					return;
 
 				platformView.UpdateContentSize(virtualView);

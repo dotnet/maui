@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var image = platformButton.GetContent<UI.Xaml.Controls.Image>();
 
-				if (image != null)
+				if (image is not null)
 				{
 					var imageMargin = image.Margin.Left + image.Margin.Right;
 					horizontalSpace += image.ActualWidth + imageMargin;
