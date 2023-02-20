@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		public RouteAttribute() { }
 
-		public RouteAttribute(string route, ServiceLifetime lifetime = ServiceLifetime.Singleton) 
+		public RouteAttribute(string route, ServiceLifetime lifetime = ServiceLifetime.Singleton)
 			=> (Route, Lifetime) = (route, lifetime);
 
 		public string? Route { get; }
