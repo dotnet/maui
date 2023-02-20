@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Views.Animations;
 using AndroidX.CardView.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Platform;
@@ -52,7 +53,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
 			= new CommandMapper<Frame, FrameRenderer>(ViewRenderer.VisualElementRendererCommandMapper);
 
-
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
 
@@ -67,6 +67,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		Frame? _element;
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
+
+		const double LegacyMinimumFrameSize = 20;
 
 		public FrameRenderer(Context context) : this(context, Mapper)
 		{
@@ -96,17 +98,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		Size IViewHandler.GetDesiredSize(double widthMeasureSpec, double heightMeasureSpec)
+		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			double minWidth = 20;
-			if (Primitives.Dimension.IsExplicitSet(widthMeasureSpec) && !double.IsInfinity(widthMeasureSpec))
-				minWidth = widthMeasureSpec;
+			var virtualView = (this as IViewHandler)?.VirtualView;
+			if (virtualView is null)
+			{
+				return Size.Zero;
+			}
 
-			double minHeight = 20;
-			if (Primitives.Dimension.IsExplicitSet(widthMeasureSpec) && !double.IsInfinity(heightMeasureSpec))
-				minHeight = heightMeasureSpec;
+			var minWidth = virtualView.MinimumWidth;
+			var minHeight = virtualView.MinimumHeight;
 
-			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthMeasureSpec, heightMeasureSpec,
+			if (!Primitives.Dimension.IsExplicitSet(minWidth))
+			{
+				minWidth = LegacyMinimumFrameSize;
+			}
+
+			if (!Primitives.Dimension.IsExplicitSet(minHeight))
+			{
+				minHeight = LegacyMinimumFrameSize;
+			}
+
+			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthConstraint, heightConstraint,
 				new Size(minWidth, minHeight));
 		}
 
