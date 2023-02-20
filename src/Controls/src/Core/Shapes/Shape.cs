@@ -342,7 +342,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return result;
 		}
 
-		internal double WidthForPathComputation
+		internal virtual double WidthForPathComputation
 		{
 			get
 			{
@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		internal double HeightForPathComputation
+		internal virtual double HeightForPathComputation
 		{
 			get
 			{

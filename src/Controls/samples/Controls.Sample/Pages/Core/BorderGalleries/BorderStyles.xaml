@@ -22,6 +22,9 @@
         <StackLayout 
             Margin="12" 
             Spacing="12">
+            <Label 
+                Text="RoundRectangle 10,10,10,10"
+                Style="{StaticResource Headline}"/>
             <Border />
         </StackLayout>
     </ContentPage.Content>

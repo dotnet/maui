@@ -1,7 +1,6 @@
 ﻿using System;
 using CoreAnimation;
 using CoreGraphics;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 
@@ -130,12 +129,17 @@ namespace Microsoft.Maui.Platform
 			maskLayer ??= ChildMaskLayer = new CAShapeLayer();
 
 			var frame = Frame;
+
+			if (frame == CGRect.Empty)
+				return;
+
 			var strokeThickness = (float)(Clip?.StrokeThickness ?? 0);
 
-			var displayInfo = DeviceDisplay.MainDisplayInfo;
-			var displayDensity = (float)displayInfo.Density;
+			// In the MauiCALayer class, the Stroke is inner and we are clipping the outer, for that reason,
+			// we use the double to get the correct value. Here, again, we use the double to get the correct clip shape size values.
+			var strokeWidth = 2 * strokeThickness;
 
-			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * displayDensity), (float)frame.Height - (strokeThickness * displayDensity));
+			var bounds = new RectF(0, 0, (float)frame.Width - strokeWidth, (float)frame.Height - strokeWidth);
 
 			IShape? clipShape = Clip?.Shape;
 			PathF? path;
