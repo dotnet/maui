@@ -243,6 +243,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(Course)}: {Course}, " +
 			$"{nameof(Timestamp)}: {Timestamp}";
 
+		/// <inheritdoc cref="object.Equals(object)"/>
 		public override bool Equals(object obj)
 		{
 			if (ReferenceEquals(null, obj))
@@ -253,6 +254,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			return Latitude == other.Latitude && Longitude == other.Longitude;
 		}
 
+		/// <inheritdoc cref="object.GetHashCode"/>
 		public override int GetHashCode()
 		{
 			unchecked

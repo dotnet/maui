@@ -48,27 +48,6 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.tvOS instead.")]
 		public const string tvOS = "tvOS";
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Idiom']/Docs/*" />
-		[Obsolete("Use Microsoft.Maui.Devices.DeviceInfo.Idiom instead.")]
-		public static TargetIdiom Idiom
-		{
-			get
-			{
-				var idiom = DeviceInfo.Idiom;
-				if (idiom == DeviceIdiom.Tablet)
-					return TargetIdiom.Tablet;
-				if (idiom == DeviceIdiom.Phone)
-					return TargetIdiom.Phone;
-				if (idiom == DeviceIdiom.Desktop)
-					return TargetIdiom.Desktop;
-				if (idiom == DeviceIdiom.TV)
-					return TargetIdiom.TV;
-				if (idiom == DeviceIdiom.Watch)
-					return TargetIdiom.Watch;
-				return TargetIdiom.Unsupported;
-			}
-		}
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='RuntimePlatform']/Docs/*" />
 		[Obsolete("Use Microsoft.Maui.Devices.DeviceInfo.Platform instead.")]
 		public static string RuntimePlatform => DeviceInfo.Platform.ToString();

@@ -44,11 +44,14 @@ namespace Microsoft.Maui.Devices.Sensors
 	}
 
 	/// <summary>
-	/// Platform-specific APIs for use with <see cref="ICompass"/>
+	/// Platform-specific APIs for use with <see cref="ICompass"/>.
 	/// </summary>
 	public interface IPlatformCompass
 	{
 #if IOS || MACCATALYST
+		/// <summary>
+		/// Gets or sets if heading calibration should be shown.
+		/// </summary>
 		bool ShouldDisplayHeadingCalibration { get; set; }
 #endif
 	}
@@ -144,7 +147,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	}
 
 	/// <summary>
-	/// /// This class contains static extension methods for use with <see cref="ICompass"/>.
+	/// This class contains static extension methods for use with <see cref="ICompass"/>.
 	/// </summary>
 	public static class CompassExtensions
 	{
@@ -232,6 +235,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static bool operator !=(CompassData left, CompassData right) =>
 		   !left.Equals(right);
 
+		/// <inheritdoc cref="object.GetHashCode"/>
 		public override int GetHashCode() =>
 			HeadingMagneticNorth.GetHashCode();
 

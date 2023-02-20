@@ -268,23 +268,16 @@ namespace Microsoft.Maui.Platform
 
 			var layer = view.Layer;
 
-			UpdateBackgroundLayerFrame(layer, view.Bounds);
-		}
-
-		static void UpdateBackgroundLayerFrame(CALayer layer, CGRect bounds)
-		{
 			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
 
 			foreach (var sublayer in layer.Sublayers)
 			{
-				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != bounds)
+				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
 				{
-					sublayer.Frame = bounds;
+					sublayer.Frame = view.Bounds;
 					break;
 				}
-
-				UpdateBackgroundLayerFrame(sublayer, bounds);
 			}
 		}
 
@@ -735,40 +728,49 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		internal static UIView? FindNextView(this UIView view, UIView superView, Func<UIView, bool> isValidType)
+		internal static UIView? FindNextView(this UIView? view, UIView containerView, Func<UIView, bool> isValidType)
 		{
-			var passedOriginal = false;
+			UIView? nextView = null;
 
-			var nextView = superView.FindNextView(view, ref passedOriginal, isValidType);
+			while (view is not null && view != containerView && nextView is null)
+			{
+				var siblings = view.Superview?.Subviews;
+
+				if (siblings is null)
+					break;
+
+				nextView = view.FindNextView(siblings.IndexOf(view) + 1, isValidType);
+
+				view = view.Superview;
+			}
 
 			// if we did not find the next view, try to find the first one
-			nextView ??= superView.FindNextView(null, ref passedOriginal, isValidType);
+			nextView ??= containerView.Subviews?[0]?.FindNextView(0, isValidType);
 
 			return nextView;
 		}
 
-		static UIView? FindNextView(this UIView view, UIView? origView, ref bool passedOriginal, Func<UIView, bool> isValidType)
+		static UIView? FindNextView(this UIView? view, int index, Func<UIView, bool> isValidType)
 		{
-			foreach (var child in view.Subviews)
+			// search through the view's siblings and traverse down their branches
+			var siblings = view?.Superview?.Subviews;
+
+			if (siblings is null)
+				return null;
+
+			for (int i = index; i < siblings.Length; i++)
 			{
-				if (isValidType(child))
+				var sibling = siblings[i];
+
+				if (sibling.Subviews is not null && sibling.Subviews.Length > 0)
 				{
-					if (origView is null)
-						return child;
-
-					if (passedOriginal)
-						return child;
-
-					if (child == origView)
-						passedOriginal = true;
+					var childVal = sibling.Subviews[0].FindNextView(0, isValidType);
+					if (childVal is not null)
+						return childVal;
 				}
 
-				else if (child.Subviews.Length > 0 && !child.Hidden && child.Alpha > 0f)
-				{
-					var nextLevel = child.FindNextView(origView, ref passedOriginal, isValidType);
-					if (nextLevel is not null)
-						return nextLevel;
-				}
+				if (isValidType(sibling))
+					return sibling;
 			}
 
 			return null;

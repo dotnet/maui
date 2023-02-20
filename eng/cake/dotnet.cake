@@ -102,9 +102,14 @@ Task("dotnet-build")
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
+        {
             RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
+        }
         else
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", maxCpuCount: 1);
+        {
+            // NOTE: intentionally omit maxCpuCount, to avoid an issue with the 7.0.100 .NET SDK
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+        }
     });
 
 Task("dotnet-samples")
@@ -485,6 +490,8 @@ Task("VS")
             Error("!!!!BUILD TASKS FAILED: !!!!!");
         }
 
+        UseLocalNuGetCacheFolder();
+
         StartVisualStudioForDotNet6();
     }); 
 
@@ -561,6 +568,23 @@ void SetDotNetEnvironmentVariables()
     // Get "full" .binlog in Project System Tools
     if (HasArgument("dbg"))
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
+}
+
+void UseLocalNuGetCacheFolder(bool reset = false)
+{
+    var temp = Context.Environment.GetSpecialPath(SpecialPath.LocalTemp);
+    var packages = temp.Combine("Microsoft.Maui.Cache/NuGet/packages");
+
+    EnsureDirectoryExists(packages);
+
+    CleanDirectories(packages.FullPath + "/microsoft.maui.*");
+    CleanDirectories(packages.FullPath + "/microsoft.aspnetcore.*");
+
+    if (reset)
+        CleanDirectories(packages.FullPath);
+
+    SetEnvironmentVariable("RestorePackagesPath", packages.FullPath);
+    SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
 }
 
 void StartVisualStudioForDotNet6()
