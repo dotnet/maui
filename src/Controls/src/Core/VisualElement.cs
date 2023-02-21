@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 //using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
 using Rect = Microsoft.Maui.Graphics.Rect;
 
@@ -800,8 +801,15 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Focus']/Docs/*" />
 		public bool Focus()
 		{
-			if (IsFocused && this is not ITextInput)
-				return true;
+			if (IsFocused)
+			{
+#if ANDROID
+				// TODO: Refactor using mappers for .NET 8
+				if (this is ITextInput)
+					KeyboardManager.ShowKeyboard(this.ToPlatform());
+#endif               
+				return true; 
+			}
 
 			if (FocusChangeRequested == null)
 			{
