@@ -805,8 +805,8 @@ namespace Microsoft.Maui.Controls
 				// TODO: Refactor using mappers for .NET 8
 				if (this is ITextInput)
 					KeyboardManager.ShowKeyboard(this.ToPlatform());
-#endif               
-				return true; 
+#endif
+				return true;
 			}
 
 			if (FocusChangeRequested == null)
