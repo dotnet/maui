@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				yield return new object[] { Border.BackgroundColorProperty, Colors.Red };
 				yield return new object[] { Border.StrokeProperty, Colors.Magenta };
 				yield return new object[] { Border.StrokeShapeProperty, new RoundRectangle() };
-				yield return new object[] { Border.StrokeThicknessProperty, new Thickness(1,2,3,4) };
+				yield return new object[] { Border.StrokeThicknessProperty, new Thickness(1, 2, 3, 4) };
 				yield return new object[] { Border.MarginProperty, new Thickness(1, 2, 3, 4) };
 				yield return new object[] { Border.OpacityProperty, 0.67 };
 				yield return new object[] { Border.RotationProperty, 0.3 };
