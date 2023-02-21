@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using Android.Content;
 using Android.Graphics;
@@ -26,7 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 				label.TextTransform,
 				label.TextDecorations);
 
-		// TODO: NET7 this overload must be removed in net7.0 and replace with the one below
+		// TODO: NET8 this overload must be removed in net8.0 and replaced with the one below
 		public static SpannableString ToSpannableString(
 			this FormattedString formattedString,
 			IFontManager fontManager,
@@ -154,7 +153,11 @@ namespace Microsoft.Maui.Controls.Platform
 			int count = 0;
 			IList<int> totalLineHeights = new List<int>();
 
-			for (int i = 0; i < spannableString.Length(); i = next)
+#pragma warning disable CA1416
+			var strlen = spannableString.Length();
+#pragma warning restore CA1416
+
+			for (int i = 0; i < strlen; i = next)
 			{
 				var type = Java.Lang.Class.FromType(typeof(Java.Lang.Object));
 
@@ -166,7 +169,7 @@ namespace Microsoft.Maui.Controls.Platform
 					continue;
 
 				// Find the next span
-				next = spannableString.NextSpanTransition(i, spannableString.Length(), type);
+				next = spannableString.NextSpanTransition(i, strlen, type);
 
 				// Get all spans in the range - Android can have overlapping spans				
 				var spans = spannableString.GetSpans(i, next, type);

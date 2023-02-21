@@ -1,153 +1,104 @@
-﻿using System;
-using Tizen.UIExtensions.ElmSharp;
-using EEntry = ElmSharp.Entry;
-using InputPanelReturnKeyType = ElmSharp.InputPanelReturnKeyType;
+﻿using TEntry = Tizen.UIExtensions.NUI.Entry;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchBar>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
-		EditfieldEntry? _editor;
+		protected override MauiSearchBar CreatePlatformView() => new();
 
-		public EditfieldEntry? QueryEditor => _editor;
-
-		protected override SearchBar CreatePlatformView()
+		protected override void ConnectHandler(MauiSearchBar platformView)
 		{
-			var searchBar = new SearchBar(PlatformParent)
-			{
-				IsSingleLine = true
-			};
-			searchBar.SetInputPanelReturnKeyType(InputPanelReturnKeyType.Search);
-
-			_editor = searchBar;
-			return searchBar;
+			platformView.Entry.TextChanged += OnTextChanged;
+			platformView.SearchButtonPressed += OnSearchButtonPressed;
+			base.ConnectHandler(platformView);
 		}
 
-		protected override void ConnectHandler(SearchBar platformView)
+		protected override void DisconnectHandler(MauiSearchBar platformView)
 		{
-			platformView.Activated += OnActivated;
-			platformView.TextChanged += OnTextChanged;
-			platformView.PrependMarkUpFilter(MaxLengthFilter);
-			platformView.EntryLayoutFocused += OnFocused;
-			platformView.EntryLayoutUnfocused += OnUnfocused;
+			if (!platformView.HasBody())
+				return;
 
+			platformView.Entry.TextChanged -= OnTextChanged;
+			platformView.SearchButtonPressed -= OnSearchButtonPressed;
+			base.DisconnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(SearchBar platformView)
-		{
-			platformView.Activated -= OnActivated;
-			platformView.TextChanged -= OnTextChanged;
-			platformView.EntryLayoutFocused -= OnFocused;
-			platformView.EntryLayoutUnfocused -= OnUnfocused;
-		}
-
-		// TODO: NET7 make this public
-		internal static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
-		{
-			handler.PlatformView?.UpdateBackground(searchBar);
-		}
+		public TEntry? QueryEditor => PlatformView.Entry;
 
 		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateText(searchBar);
-
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, searchBar);
+			handler.PlatformView?.Entry.UpdateText(searchBar);
 		}
+
 		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdatePlaceholder(searchBar);
+			handler.PlatformView?.Entry.UpdatePlaceholder(searchBar);
 		}
 
 		public static void MapPlaceholderColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdatePlaceholderColor(searchBar);
+			handler.PlatformView?.Entry.UpdatePlaceholderColor(searchBar);
 		}
 
 		public static void MapFont(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
-
-			handler.PlatformView?.UpdateFont(searchBar, fontManager);
+			handler.PlatformView?.Entry.UpdateFont(searchBar, handler.GetRequiredService<IFontManager>());
 		}
 
 		public static void MapHorizontalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateHorizontalTextAlignment(searchBar);
+			handler.PlatformView?.Entry.UpdateHorizontalTextAlignment(searchBar);
 		}
 
 		public static void MapVerticalTextAlignment(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateVerticalTextAlignment(searchBar);
+			handler?.PlatformView?.Entry.UpdateVerticalTextAlignment(searchBar);
 		}
 
 		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateTextColor(searchBar);
+			handler.PlatformView?.Entry.UpdateTextColor(searchBar);
 		}
 
 		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateMaxLength(searchBar);
+			handler.PlatformView?.Entry.UpdateMaxLength(searchBar);
 		}
 
 		public static void MapIsReadOnly(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateIsReadOnly(searchBar);
+			handler.PlatformView?.Entry.UpdateIsReadOnly(searchBar);
 		}
 
 		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar);
+			handler.PlatformView?.Entry.UpdateIsTextPredictionEnabled(searchBar);
 		}
 
 		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateKeyboard(searchBar);
-		}
-
-		public static void MapFormatting(ISearchBarHandler handler, ISearchBar searchBar)
-		{
-			// Update all of the attributed text formatting properties
-			// Setting any of those may have removed text alignment settings,
-			// so we need to make sure those are applied, too
-			handler.PlatformView?.UpdateMaxLength(searchBar);
-			handler.PlatformView?.UpdateHorizontalTextAlignment(searchBar);
-		}
-
-		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
-		{
-			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
+			handler.PlatformView?.Entry.UpdateKeyboard(searchBar);
 		}
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar) { }
 
-		string? MaxLengthFilter(EEntry searchBar, string s)
+		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			if (VirtualView == null || PlatformView == null)
-				return null;
-
-			if (searchBar.Text.Length < VirtualView.MaxLength)
-				return s;
-
-			return null;
+			handler.PlatformView.Entry.UpdateCharacterSpacing(searchBar);
 		}
 
-		void OnTextChanged(object? sender, EventArgs e)
+		void OnTextChanged(object? sender, Tizen.NUI.BaseComponents.TextField.TextChangedEventArgs e)
 		{
 			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.Text = PlatformView.Text;
+			VirtualView.Text = PlatformView.Entry.Text;
 		}
 
-		void OnActivated(object? sender, EventArgs e)
+		void OnSearchButtonPressed(object? sender, System.EventArgs e)
 		{
-			if (PlatformView == null)
-				return;
-
-			PlatformView.HideInputPanel();
+			VirtualView?.SearchButtonPressed();
 		}
 	}
 }

@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Design
 {
@@ -16,7 +10,7 @@ namespace Microsoft.Maui.Controls.Design
 		public ColorDesignTypeConverter()
 		{ }
 
-		protected override string[] KnownValues =>
+		private static readonly string[] knownValues =
 			new[]
 			{
 				"AliceBlue",
@@ -169,6 +163,18 @@ namespace Microsoft.Maui.Controls.Design
 				"YellowGreen"
 			};
 
+		private static readonly HashSet<string> knowValuesSet;
+
+		static ColorDesignTypeConverter()
+		{
+			knowValuesSet = new HashSet<string>(knownValues, StringComparer.OrdinalIgnoreCase);
+
+			// Color.TryParse supports "default" (see ..\Graphics\Color.cs) as well as XAML parses used during build.
+			knowValuesSet.Add("Default");
+		}
+
+		protected override string[] KnownValues => knownValues;
+
 		// #rgb, #rrggbb, #aarrggbb are all valid 
 		const string RxColorHexPattern = @"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$";
 		static readonly Lazy<Regex> RxColorHex = new(() => new Regex(RxColorHexPattern, RegexOptions.Compiled | RegexOptions.Singleline));
@@ -189,12 +195,12 @@ namespace Microsoft.Maui.Controls.Design
 			if (string.IsNullOrWhiteSpace(str))
 				return false;
 
-			// Any named colors are ok
-			if (KnownValues.Any(v => str?.ToString()?.Equals(v, StringComparison.Ordinal) ?? false))
+			// Any named colors are ok. Surrounding white spaces are ok.
+			if (knowValuesSet.Contains(str.Trim()))
 				return true;
 
 			// Check for HEX Color string
-			if (RxColorHex.Value.IsMatch(value?.ToString()))
+			if (RxColorHex.Value.IsMatch(str))
 				return true;
 
 			var match = RxFuncExpr.Value.Match(str);

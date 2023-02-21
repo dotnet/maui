@@ -22,10 +22,20 @@ namespace Samples.ViewModel
 
 		public DeviceType DeviceType => DeviceInfo.DeviceType;
 
+		public double Rotation =>
+			ScreenMetrics.Rotation switch
+			{
+				DisplayRotation.Rotation0 => 0,
+				DisplayRotation.Rotation90 => -90,
+				DisplayRotation.Rotation180 => -180,
+				DisplayRotation.Rotation270 => -270,
+				_ => 0
+			};
+
 		public DisplayInfo ScreenMetrics
 		{
 			get => screenMetrics;
-			set => SetProperty(ref screenMetrics, value);
+			set => SetProperty(ref screenMetrics, value, onChanged: () => OnPropertyChanged(nameof(Rotation)));
 		}
 
 		public override void OnAppearing()

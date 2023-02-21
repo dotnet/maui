@@ -10,8 +10,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
@@ -30,6 +34,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			propertyType: typeof(string),
 			ownerType: typeof(BlazorWebView),
 			typeMetadata: new PropertyMetadata(OnHostPagePropertyChanged));
+
+		/// <summary>
+		/// The backing store for the <see cref="StartPath"/> property.
+		/// </summary>
+		public static readonly DependencyProperty StartPathProperty = DependencyProperty.Register(
+			name: nameof(StartPath),
+			propertyType: typeof(string),
+			ownerType: typeof(BlazorWebView),
+			typeMetadata: new PropertyMetadata("/"));
 
 		/// <summary>
 		/// The backing store for the <see cref="RootComponent"/> property.
@@ -79,6 +92,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		private WebView2WebViewManager? _webviewManager;
 		private bool _isDisposed;
 
+		static BlazorWebView()
+		{
+			// By default, prevent the BlazorWebView from receiving focus. Focus should typically be directed
+			// to the underlying WebView2 control.
+			FocusableProperty.OverrideMetadata(typeof(BlazorWebView), new FrameworkPropertyMetadata(false));
+
+			// Listen for changes to the IsTabStop property so we can manipulate how tab navigation affects
+			// the BlazorWebView's subtree.
+			IsTabStopProperty.OverrideMetadata(typeof(BlazorWebView), new FrameworkPropertyMetadata(OnIsTabStopPropertyChanged));
+		}
+
 		/// <summary>
 		/// Creates a new instance of <see cref="BlazorWebView"/>.
 		/// </summary>
@@ -93,6 +117,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			{
 				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), WebViewTemplateChildName)
 			};
+
+			ApplyTabNavigation(IsTabStop);
 		}
 
 		/// <summary>
@@ -113,6 +139,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		{
 			get => (string)GetValue(HostPageProperty);
 			set => SetValue(HostPageProperty, value);
+		}
+
+		/// <summary>
+		/// Path for initial Blazor navigation when the Blazor component is finished loading.
+		/// </summary>
+		public string StartPath
+		{
+			get => (string)GetValue(StartPathProperty);
+			set => SetValue(StartPathProperty, value);
 		}
 
 		/// <summary>
@@ -168,12 +203,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 		private void OnHostPagePropertyChanged(DependencyPropertyChangedEventArgs e) => StartWebViewCoreIfPossible();
 
+		private static void OnIsTabStopPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnIsTabStopPropertyChanged(e);
+
+		private void OnIsTabStopPropertyChanged(DependencyPropertyChangedEventArgs e) => ApplyTabNavigation((bool)e.NewValue);
+
+		private void ApplyTabNavigation(bool isTabStop)
+		{
+			var keyboardNavigationMode = isTabStop ? KeyboardNavigationMode.Local : KeyboardNavigationMode.None;
+			KeyboardNavigation.SetTabNavigation(this, keyboardNavigationMode);
+		}
+
 		private bool RequiredStartupPropertiesSet =>
 			_webview != null &&
 			HostPage != null &&
 			Services != null;
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="FrameworkElement.OnApplyTemplate" />
 		public override void OnApplyTemplate()
 		{
 			CheckDisposed();
@@ -188,7 +233,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 		}
 
-		/// <inheritdoc />
+		/// <inheritdoc cref="FrameworkElement.OnInitialized(EventArgs)" />
 		protected override void OnInitialized(EventArgs e)
 		{
 			// Called when BeginInit/EndInit are used, such as when creating the control from XAML
@@ -204,6 +249,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			{
 				return;
 			}
+
+			var logger = Services.GetService<ILogger<BlazorWebView>>() ?? NullLogger<BlazorWebView>.Instance;
 
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
@@ -222,6 +269,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
 			var contentRootDirRelativePath = Path.GetRelativePath(appRootDir, contentRootDirFullPath);
 
+			logger.CreatingFileProvider(contentRootDirFullPath, hostPageRelativePath);
 			var fileProvider = CreateFileProvider(contentRootDirFullPath);
 
 			_webviewManager = new WebView2WebViewManager(
@@ -234,16 +282,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				hostPageRelativePath,
 				(args) => UrlLoading?.Invoke(this, args),
 				(args) => BlazorWebViewInitializing?.Invoke(this, args),
-				(args) => BlazorWebViewInitialized?.Invoke(this, args));
+				(args) => BlazorWebViewInitialized?.Invoke(this, args),
+				logger);
 
 			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
 
 			foreach (var rootComponent in RootComponents)
 			{
+				logger.AddingRootComponent(rootComponent.ComponentType.FullName ?? string.Empty, rootComponent.Selector, rootComponent.Parameters?.Count ?? 0);
+
 				// Since the page isn't loaded yet, this will always complete synchronously
 				_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 			}
-			_webviewManager.Navigate("/");
+
+			logger.StartingInitialNavigation(StartPath);
+			_webviewManager.Navigate(StartPath);
 		}
 
 		private WpfDispatcher ComponentsDispatcher { get; }

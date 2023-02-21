@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				handler.PlatformView.ChangeView(request.HoriztonalOffset, request.VerticalOffset, null, request.Instant);
+				handler.PlatformView.ChangeView(request.HorizontalOffset, request.VerticalOffset, null, request.Instant);
 			}
 		}
 
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					currentPaddingLayer.Children.Clear();
 					currentPaddingLayer.Children.Add(nativeContent);
-					
+
 				}
 			}
 			else

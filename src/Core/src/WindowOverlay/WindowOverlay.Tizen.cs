@@ -1,13 +1,15 @@
-﻿using ElmSharp;
-using Microsoft.Maui.Graphics.Skia.Views;
+﻿using System;
+using System.Linq;
+using Tizen.UIExtensions.NUI.GraphicsView;
+using NLayoer = Tizen.NUI.Layer;
 using Point = Microsoft.Maui.Graphics.Point;
 
 namespace Microsoft.Maui
 {
 	public partial class WindowOverlay
 	{
-		SkiaGraphicsView? _graphicsView;
-		GestureLayer? _touchLayer;
+		PassthroughView? _graphicsView;
+		NLayoer? _overlayLayer;
 
 		public virtual bool Initialize()
 		{
@@ -17,28 +19,26 @@ namespace Microsoft.Maui
 			if (Window == null)
 				return false;
 
-			var platformWindow = Window.Content?.ToPlatform() as Window;
-			if (platformWindow == null)
-				return false;
-
-			var handler = Window.Handler as WindowHandler;
+			var handler = Window?.Handler as WindowHandler;
 			if (handler?.MauiContext == null)
 				return false;
 
-			_graphicsView = new SkiaGraphicsView(platformWindow);
-			_graphicsView.Drawable = this;
-			_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
+			var nativeWindow = handler?.MauiContext.GetPlatformWindow();
+			if (nativeWindow == null)
+				return false;
 
-			_touchLayer = new GestureLayer(platformWindow);
-			_touchLayer.Attach(_graphicsView);
-			_touchLayer.SetTapCallback(GestureLayer.GestureType.Tap, GestureLayer.GestureState.Start, (data) =>
+			_graphicsView = new PassthroughView(this)
 			{
-				var x = _touchLayer.EvasCanvas.Pointer.X;
-				var y = _touchLayer.EvasCanvas.Pointer.Y;
-				OnTappedInternal(new Point(DPExtensions.ConvertToScaledDP(x), DPExtensions.ConvertToScaledDP(y)));
-			});
+				HeightResizePolicy = Tizen.NUI.ResizePolicyType.FillToParent,
+				WidthResizePolicy = Tizen.NUI.ResizePolicyType.FillToParent,
+			};
+			_graphicsView.Drawable = this;
+			_graphicsView.OnTouch += OnTouch;
 
-			platformWindow.SetOverlay(_graphicsView);
+			_overlayLayer = new NLayoer();
+			_overlayLayer.Add(_graphicsView);
+			nativeWindow.AddLayer(_overlayLayer);
+
 			IsPlatformViewInitialized = true;
 			return IsPlatformViewInitialized;
 		}
@@ -61,17 +61,54 @@ namespace Microsoft.Maui
 			if (handler?.MauiContext == null)
 				return;
 
-			_graphicsView?.Unrealize();
+			var nativeWindow = handler?.MauiContext.GetPlatformWindow();
+			if (nativeWindow == null)
+				return;
+
+			nativeWindow.RemoveLayer(_overlayLayer);
+
+			_overlayLayer?.Remove(_graphicsView);
+			_graphicsView?.Dispose();
 			_graphicsView = null;
+			_overlayLayer?.Dispose();
+			_overlayLayer = null;
+
 			IsPlatformViewInitialized = false;
 		}
 
-		partial void OnDisableUITouchEventPassthroughSet()
+		void OnTouch(object? sender, Point e) =>
+			OnTappedInternal(e);
+	}
+
+	class PassthroughView : SkiaGraphicsView
+	{
+		WindowOverlay overlay;
+
+		public PassthroughView(WindowOverlay overlay)
 		{
-			if (_graphicsView != null)
-			{
-				_graphicsView.RepeatEvents = !DisableUITouchEventPassthrough;
-			}
+			GrabTouchAfterLeave = true;
+			this.overlay = overlay;
+			TouchEvent += (s, e) => false;
+		}
+
+		public event EventHandler<Point>? OnTouch;
+
+		protected override bool HitTest(Tizen.NUI.Touch touch)
+		{
+			if (touch == null)
+				return false;
+
+			var point = new Point(touch.GetLocalPosition(0).X.ToScaledDP(), touch.GetLocalPosition(0).Y.ToScaledDP());
+
+			var disableTouchEvent = false;
+
+			if (overlay.DisableUITouchEventPassthrough)
+				disableTouchEvent = true;
+			else if (overlay.EnableDrawableTouchHandling)
+				disableTouchEvent = overlay.WindowElements.Any(n => n.Contains(point));
+
+			OnTouch?.Invoke(this, point);
+			return disableTouchEvent;
 		}
 	}
 }

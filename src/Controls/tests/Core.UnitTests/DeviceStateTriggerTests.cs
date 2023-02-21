@@ -1,13 +1,13 @@
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class DeviceStateTriggerTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void ConstructionCanHappen()
 		{
 			var trigger = new DeviceStateTrigger();
@@ -15,9 +15,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(trigger);
 		}
 
-		[Test]
-		[TestCase("Android", true)]
-		[TestCase("iOS", false)]
+		[Theory]
+		[InlineData("Android", true)]
+		[InlineData("iOS", false)]
 		public void CorrectStateIsAppliedWhenAttached(string triggerDevice, bool isApplied)
 		{
 			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.Android));
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			label.IsPlatformEnabled = true;
 
-			Assert.That(label.Background, Is.EqualTo(isApplied ? greenBrush : redBrush));
+			Assert.Equal(label.Background, isApplied ? greenBrush : redBrush);
 		}
 	}
 }

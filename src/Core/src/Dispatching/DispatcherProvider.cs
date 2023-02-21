@@ -1,8 +1,8 @@
 ﻿using System;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.Dispatching
 {
+	/// <inheritdoc/>
 	public partial class DispatcherProvider : IDispatcherProvider
 	{
 		[ThreadStatic]
@@ -11,9 +11,17 @@ namespace Microsoft.Maui.Dispatching
 		// this is mainly settable for unit testing purposes
 		static IDispatcherProvider? s_currentProvider;
 
+		/// <summary>
+		/// Gets the currently set <see cref="IDispatcherProvider"/> instance.
+		/// </summary>
 		public static IDispatcherProvider Current =>
 			s_currentProvider ??= new DispatcherProvider();
 
+		/// <summary>
+		/// Sets the current dispatcher provider.
+		/// </summary>
+		/// <param name="provider">The <see cref="IDispatcherProvider"/> object to set as the current dispatcher provider.</param>
+		/// <returns><see langword="true"/> if the current dispatcher was actually updated, otherwise <see langword="false"/>.</returns>
 		public static bool SetCurrent(IDispatcherProvider? provider)
 		{
 			if (s_currentProvider == provider)
@@ -24,6 +32,7 @@ namespace Microsoft.Maui.Dispatching
 			return old != null;
 		}
 
+		/// <inheritdoc/>
 		public IDispatcher? GetForCurrentThread() =>
 			s_dispatcherInstance ??= GetForCurrentThreadImplementation();
 	}

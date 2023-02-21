@@ -91,9 +91,14 @@ namespace Microsoft.Maui.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
-				_handler = null;
+				Disconnect();
 
 			base.Dispose(disposing);
+		}
+
+		internal void Disconnect()
+		{
+			_handler = null;
 		}
 	}
 }

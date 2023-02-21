@@ -183,21 +183,32 @@ namespace Microsoft.Maui.DeviceTests
 				timer.Interval = TimeSpan.FromMilliseconds(200);
 				timer.IsRepeating = true;
 
+				TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
+
 				timer.Tick += (_, _) =>
 				{
 					Assert.True(timer.IsRunning, "Timer was not running DURING the tick.");
 					ticks++;
+
+					if (ticks > 1)
+						taskCompletionSource.SetResult();
 				};
 
 				timer.Start();
 
 				Assert.True(timer.IsRunning, "Timer was not running AFTER the tick.");
 
-				// Give it time to repeat at least once
-				await Task.Delay(TimeSpan.FromSeconds(1));
+				try
+				{
+					await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+				}
+				catch (TaskCanceledException)
+				{
+					// If the task is cancelled we want it to just fall through to the assert
+				}
 
 				// If it's repeating, ticks will be greater than 1
-				Assert.True(ticks > 1);
+				Assert.True(ticks > 1, $"# of Ticks: {ticks}, expected > 1");
 			});
 
 		class TimerDisposer : IDisposable

@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using AndroidX.Core.View;
+﻿using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Controls.Platform;
 using PlatformView = Android.Views.View;
@@ -17,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Handler = viewHandler;
 		}
 
-		public override void OnInitializeAccessibilityNodeInfo(PlatformView? host, AccessibilityNodeInfoCompat? info)
+		public override void OnInitializeAccessibilityNodeInfo(PlatformView host, AccessibilityNodeInfoCompat info)
 		{
 			base.OnInitializeAccessibilityNodeInfo(host, info);
 

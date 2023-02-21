@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class TableModelTests : BaseTestFixture
 	{
 		class TestModel : TableModel
@@ -30,37 +30,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void DefaultSectionTitle()
 		{
-			Assert.IsNull(new TestModel().ProtectedSectionTitle());
+			Assert.Null(new TestModel().ProtectedSectionTitle());
 		}
 
-		[Test]
+		[Fact]
 		public void DefualtSectionIndexTitles()
 		{
-			Assert.IsNull(new TestModel().GetSectionIndexTitles());
+			Assert.Null(new TestModel().GetSectionIndexTitles());
 		}
 
-		[Test]
+		[Fact]
 		public void DefaultHeaderCell()
 		{
-			Assert.IsNull(new TestModel().GetHeaderCell(0));
+			Assert.Null(new TestModel().GetHeaderCell(0));
 		}
 
-		[Test]
+		[Fact]
 		public void DefaultCellFromObject()
 		{
 			var model = new TestModel();
 			var cell = model.GetCell(0, 5);
 
-			Assert.That(cell, Is.TypeOf<TextCell>());
+			Assert.IsType<TextCell>(cell);
 
 			var textCell = (TextCell)cell;
-			Assert.AreEqual("Foo", textCell.Text);
+			Assert.Equal("Foo", textCell.Text);
 		}
 
-		[Test]
+		[Fact]
 		public void RowLongPressed()
 		{
 			var model = new TestModel();
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			model.RowLongPressed(0, 5);
 		}
 
-		[Test]
+		[Fact]
 		public void RowSelectedForObject()
 		{
 			var model = new TestModel();
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			model.ItemSelected += (sender, arg) => result = (string)arg.Data;
 
 			model.RowSelected("Foobar");
-			Assert.AreEqual("Foobar", result);
+			Assert.Equal("Foobar", result);
 		}
 	}
 }

@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ShellAppearanceTests : ShellTestBase
 	{
-		[Test]
+		[Fact]
 		public void ColorSetCorrectly()
 		{
 			var testShell = new TestShell(CreateShellItem<FlyoutItem>());
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			ShellAppearance result = new ShellAppearance();
 			result.Ingest(testShell.Items[0]);
-			Assert.AreEqual(Colors.Purple, result.DisabledColor);
+			Assert.Equal(Colors.Purple, result.DisabledColor);
 		}
 	}
 }

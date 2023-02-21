@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {
-	public class Circle : MapElement
+	public partial class Circle : MapElement
 	{
 		public static readonly BindableProperty CenterProperty = BindableProperty.Create(
 			nameof(Center),
-			typeof(Position),
+			typeof(Location),
 			typeof(Circle),
-			default(Position));
+			default(Location));
 
 		public static readonly BindableProperty RadiusProperty = BindableProperty.Create(
 			nameof(Radius),
@@ -25,9 +24,9 @@ namespace Microsoft.Maui.Controls.Maps
 			typeof(Circle),
 			null);
 
-		public Position Center
+		public Location Center
 		{
-			get => (Position)GetValue(CenterProperty);
+			get => (Location)GetValue(CenterProperty);
 			set => SetValue(CenterProperty, value);
 		}
 

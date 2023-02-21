@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class ShadowStub : IShadow
+	public class ShadowStub : IShadow
 	{
 		public float Radius { get; set; }
 

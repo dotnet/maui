@@ -1,25 +1,29 @@
 using System;
-using ElmSharp;
+using Tizen.UIExtensions.NUI.GraphicsView;
+
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwitchHandler : ViewHandler<ISwitch, Check>
+	public partial class SwitchHandler : ViewHandler<ISwitch, Switch>
 	{
-		protected override Check CreatePlatformView() => new Check(PlatformParent)
+		protected override Switch CreatePlatformView() => new Switch
 		{
-			Style = "toggle"
+			Focusable = true,
 		};
 
-		protected override void ConnectHandler(Check platformView)
+		protected override void ConnectHandler(Switch platformView)
 		{
 			base.ConnectHandler(platformView);
-			platformView!.StateChanged += OnStateChanged;
+			platformView.Toggled += OnStateChanged;
 		}
 
-		protected override void DisconnectHandler(Check platformView)
+		protected override void DisconnectHandler(Switch platformView)
 		{
+			if (!platformView.HasBody())
+				return;
+
 			base.DisconnectHandler(platformView);
-			platformView!.StateChanged -= OnStateChanged;
+			platformView.Toggled -= OnStateChanged;
 		}
 
 		public static void MapIsOn(ISwitchHandler handler, ISwitch view)
@@ -39,10 +43,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnStateChanged(object? sender, EventArgs e)
 		{
-			if (VirtualView is null || PlatformView is null || VirtualView.IsOn == PlatformView.IsChecked)
+			if (VirtualView == null || PlatformView == null)
 				return;
 
-			VirtualView.IsOn = PlatformView.IsChecked;
+			VirtualView.IsOn = PlatformView.IsToggled;
 		}
 	}
 }

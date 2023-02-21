@@ -10,6 +10,7 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp() =>
 			MauiApp
 				.CreateBuilder()
+				.UseMauiMaps()
 				.UseMauiApp<App>()
 				.Build();
 	}
@@ -17,6 +18,6 @@ namespace Maui.Controls.Sample
 	class App : Application
 	{
 		protected override Window CreateWindow(IActivationState activationState) =>
-			new Window(new MainPage());
+			new Window(new NavigationPage(new MainPage()));
 	}
 }

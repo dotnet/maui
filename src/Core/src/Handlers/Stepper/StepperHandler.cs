@@ -4,7 +4,9 @@ using PlatformView = UIKit.UIStepper;
 using PlatformView = Microsoft.Maui.Platform.MauiStepper;
 #elif WINDOWS
 using PlatformView = Microsoft.Maui.Platform.MauiStepper;
-#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
+#elif TIZEN
+using PlatformView = Microsoft.Maui.Platform.MauiStepper;
+#elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
 
@@ -18,7 +20,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IStepper.Maximum)] = MapMaximum,
 			[nameof(IStepper.Minimum)] = MapMinimum,
 			[nameof(IStepper.Value)] = MapValue,
-#if WINDOWS
+#if ANDROID
+			[nameof(IStepper.IsEnabled)] = MapIsEnabled,
+#elif WINDOWS
 			[nameof(IStepper.Background)] = MapBackground,
 #endif
 		};
@@ -31,7 +35,13 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public StepperHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
+		public StepperHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public StepperHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

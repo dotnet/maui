@@ -1,7 +1,7 @@
 using System;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

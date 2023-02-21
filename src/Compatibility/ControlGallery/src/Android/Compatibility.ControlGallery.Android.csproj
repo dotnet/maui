@@ -34,13 +34,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
     <PackageReference Include="Xamarin.Build.Download" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.AndroidX.Browser" />
-    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
     <PackageReference Include="Xamarin.AndroidX.Palette" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
   </ItemGroup>
@@ -58,7 +57,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Core\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs" Link="GalleryPages\AdvancedOpenGLGallery.cs" />
     <ProguardConfiguration Include="..\..\..\..\..\.nuspec\proguard.cfg" />
     <AndroidAsset Include="Assets\**" />
     <AndroidResource Include="Resources\**" />

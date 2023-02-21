@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Media;
 using Xunit;
 
 using NativeTextAlignment = Microsoft.UI.Xaml.TextAlignment;
-//using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
+using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -45,13 +45,13 @@ namespace Microsoft.Maui.DeviceTests
 		static string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		static void SetNativeText(EntryHandler entryHandler, string text) =>
+		internal static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
-		static int GetCursorStartPosition(EntryHandler entryHandler) =>
+		internal static int GetCursorStartPosition(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).GetCursorPosition();
 
-		static void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
+		internal static void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
 			GetNativeEntry(entryHandler).SelectionStart = position;
 
 		Color GetNativeTextColor(EntryHandler entryHandler) =>
@@ -101,8 +101,20 @@ namespace Microsoft.Maui.DeviceTests
 		NativeTextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
-		//NativeVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
-		//	GetNativeEntry(entryHandler).VerticalAlignment;
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler)
+		{
+			var textBox = GetNativeEntry(entryHandler);
+
+			var sv = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+			var placeholder = textBox.GetDescendantByName<TextBlock>("PlaceholderTextContentPresenter");
+
+			Assert.Equal(sv.VerticalAlignment, placeholder.VerticalAlignment);
+
+			return sv.VerticalAlignment;
+		}
+
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToPlatformVerticalAlignment();
 
 		int GetNativeCursorPosition(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).GetCursorPosition();

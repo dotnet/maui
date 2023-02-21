@@ -4,38 +4,61 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BrowserLaunchOptions']/Docs" />
+	/// <summary>
+	/// Optional setting to open the browser with.
+	/// </summary>
+	/// <remarks>Not all settings apply to all operating systems. Check documentation for more information.</remarks>
 	public class BrowserLaunchOptions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchOptions.xml" path="//Member[@MemberName='PreferredToolbarColor']/Docs" />
+		/// <summary>
+		/// Gets or sets the preferred color of the toolbar background of the in-app browser.
+		/// </summary>
+		/// <remarks>This setting only applies to iOS and Android.</remarks>
 		public Color? PreferredToolbarColor { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchOptions.xml" path="//Member[@MemberName='PreferredControlColor']/Docs" />
+		/// <summary>
+		/// Gets or sets the preferred color of the controls on the in-app browser.
+		/// </summary>
+		/// <remarks>This setting only applies to iOS.</remarks>
 		public Color? PreferredControlColor { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchOptions.xml" path="//Member[@MemberName='LaunchMode']/Docs" />
+		/// <summary>
+		/// Gets or sets how the browser should be launched.
+		/// </summary>
+		/// <remarks>The default value is <see cref="BrowserLaunchMode.SystemPreferred"/>.</remarks>
 		public BrowserLaunchMode LaunchMode { get; set; } = BrowserLaunchMode.SystemPreferred;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchOptions.xml" path="//Member[@MemberName='TitleMode']/Docs" />
+		/// <summary>
+		/// Gets or sets the preferred mode for the title display.
+		/// </summary>
+		/// <remarks>The default value is <see cref="BrowserTitleMode.Default"/>. This setting only applies to Android.</remarks>
 		public BrowserTitleMode TitleMode { get; set; } = BrowserTitleMode.Default;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchOptions.xml" path="//Member[@MemberName='Flags']/Docs" />
+		/// <summary>
+		/// Gets or sets additional launch flags that may or may not take effect based on the device and <see cref="LaunchMode"/>.
+		/// </summary>
+		/// <remarks>The default value is <see cref="BrowserLaunchFlags.None"/>. Not all flags work on all platforms, check the flag descriptions.</remarks>
 		public BrowserLaunchFlags Flags { get; set; } = BrowserLaunchFlags.None;
 
 		internal bool HasFlag(BrowserLaunchFlags flag) => Flags.HasFlag(flag);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchFlags.xml" path="Type[@FullName='Microsoft.Maui.Essentials.BrowserLaunchFlags']/Docs" />
+	/// <summary>
+	/// Additional flags that can be set to control how the browser opens.
+	/// </summary>
 	[Flags]
 	public enum BrowserLaunchFlags
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchFlags.xml" path="//Member[@MemberName='None']/Docs" />
+		/// <summary>No additional flags. This is the default.</summary>
 		None = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchFlags.xml" path="//Member[@MemberName='LaunchAdjacent']/Docs" />
+
+		/// <summary>Only applicable to Android: launches a new activity adjacent to the current activity if available.</summary>
 		LaunchAdjacent = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchFlags.xml" path="//Member[@MemberName='PresentAsPageSheet']/Docs" />
+
+		/// <summary>Only applicable to iOS: launches the browser as a page sheet with the system preferred browser where supported.</summary>
 		PresentAsPageSheet = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/BrowserLaunchFlags.xml" path="//Member[@MemberName='PresentAsFormSheet']/Docs" />
+
+		/// <summary>Only applicable to iOS: launches the browser as a form sheet with the system preferred browser where supported.</summary>
 		PresentAsFormSheet = 4
 	}
 }

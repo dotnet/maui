@@ -1,6 +1,5 @@
-﻿using ElmSharp;
-using Tizen.UIExtensions.ElmSharp;
-using EColor = ElmSharp.Color;
+﻿using System.Threading.Tasks;
+using Tizen.NUI.Components;
 
 namespace Microsoft.Maui.Platform
 {
@@ -8,68 +7,46 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateMinimum(this Slider platformSlider, ISlider slider)
 		{
-			platformSlider.Minimum = slider.Minimum;
+			platformSlider.MinValue = (float)slider.Minimum;
 		}
 
 		public static void UpdateMaximum(this Slider platformSlider, ISlider slider)
 		{
-			platformSlider.Maximum = slider.Maximum;
+			platformSlider.MaxValue = (float)slider.Maximum;
 		}
 
 		public static void UpdateValue(this Slider platformSlider, ISlider slider)
 		{
-			platformSlider.Value = slider.Value;
+			platformSlider.CurrentValue = (float)slider.Value;
 		}
 
 		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider)
 		{
-			UpdateMinimumTrackColor(platformSlider, slider, null);
-		}
-
-		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider, EColor? defaultMinTrackColor)
-		{
-			if (slider.MinimumTrackColor == null)
-			{
-				if (defaultMinTrackColor != null)
-					platformSlider.SetBarColor(defaultMinTrackColor.Value);
-			}
-			else
-				platformSlider.SetBarColor(slider.MinimumTrackColor.ToPlatformEFL());
+			platformSlider.SlidedTrackColor = slider.MinimumTrackColor.ToNUIColor();
 		}
 
 		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider)
 		{
-			UpdateMaximumTrackColor(platformSlider, slider, null);
-		}
-
-		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider, EColor? defaultMaxTrackColor)
-		{
-			if (slider.MaximumTrackColor == null)
-			{
-				if (defaultMaxTrackColor != null)
-					platformSlider.SetBackgroundColor(defaultMaxTrackColor.Value);
-			}
-			else
-			{
-				platformSlider.SetBackgroundColor(slider.MaximumTrackColor.ToPlatformEFL());
-			}
+			platformSlider.BgTrackColor = slider.MaximumTrackColor.ToNUIColor();
 		}
 
 		public static void UpdateThumbColor(this Slider platformSlider, ISlider slider)
 		{
-			UpdateThumbColor(platformSlider, slider, null);
+			platformSlider.ThumbColor = slider.ThumbColor.ToNUIColor();
 		}
 
-		public static void UpdateThumbColor(this Slider platformSlider, ISlider slider, EColor? defaultThumbColor)
+		public static async Task UpdateThumbImageSourceAsync(this Slider platformSlider, ISlider slider, IImageSourceServiceProvider provider)
 		{
-			if (slider.ThumbColor == null)
+			var thumbImageSource = slider.ThumbImageSource;
+			if (thumbImageSource != null)
 			{
-				if (defaultThumbColor != null)
-					platformSlider.SetHandlerColor(defaultThumbColor.Value);
-			}
-			else
-			{
-				platformSlider.SetHandlerColor(slider.ThumbColor.ToPlatformEFL());
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var result = await service.GetImageAsync(thumbImageSource);
+
+				if (result != null)
+				{
+					platformSlider.ThumbImageUrl = result.Value.ResourceUrl;
+				}
 			}
 		}
 	}

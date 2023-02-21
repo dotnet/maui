@@ -1,30 +1,27 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class BindableObjectExtensionTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void SetBindingNull()
 		{
-			Assert.That(() => BindableObjectExtensions.SetBinding(null, MockBindable.TextProperty, "Name"),
-				Throws.InstanceOf<ArgumentNullException>());
-			Assert.That(() => BindableObjectExtensions.SetBinding(new MockBindable(), null, "Name"),
-				Throws.InstanceOf<ArgumentNullException>());
-			Assert.That(() => BindableObjectExtensions.SetBinding(new MockBindable(), MockBindable.TextProperty, null),
-				Throws.InstanceOf<ArgumentNullException>());
+			Assert.Throws<ArgumentNullException>(() => BindableObjectExtensions.SetBinding(null, MockBindable.TextProperty, "Name"));
+			Assert.Throws<ArgumentNullException>(() => BindableObjectExtensions.SetBinding(new MockBindable(), null, "Name"));
+			Assert.Throws<ArgumentNullException>(() => BindableObjectExtensions.SetBinding(new MockBindable(), MockBindable.TextProperty, null));
 		}
 
-		[Test]
+		[Fact]
 		public void Issue2643()
 		{
 			Label labelTempoDiStampa = new Label();
 			labelTempoDiStampa.BindingContext = new { Name = "1", Company = "Microsoft.Maui.Controls" };
 			labelTempoDiStampa.SetBinding(Label.TextProperty, "Name", stringFormat: "Hi: {0}");
 
-			Assert.That(labelTempoDiStampa.Text, Is.EqualTo("Hi: 1"));
+			Assert.Equal("Hi: 1", labelTempoDiStampa.Text);
 		}
 
 		class Bz27229ViewModel
@@ -46,13 +43,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public TResult Result { get; set; }
 		}
 
-		[Test]
+		[Fact]
 		public void Bz27229()
 		{
 			var totalCheckTime = new TextCell { Text = "Total Check Time" };
 			totalCheckTime.BindingContext = new Bz27229ViewModel();
 			totalCheckTime.SetBinding(TextCell.DetailProperty, "Member.Result.Text");
-			Assert.AreEqual("foo", totalCheckTime.Detail);
+			Assert.Equal("foo", totalCheckTime.Detail);
 		}
 	}
 }

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -5,19 +6,16 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="Type[@FullName='Microsoft.Maui.Controls.Style']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="Type[@FullName='Microsoft.Maui.Controls.Style']/Docs/*" />
 	[ContentProperty(nameof(Setters))]
 	public sealed class Style : IStyle
 	{
 		internal const string StyleClassPrefix = "Microsoft.Maui.Controls.StyleClass.";
 
-		const int CleanupTrigger = 128;
-		int _cleanupThreshold = CleanupTrigger;
-
 		readonly BindableProperty _basedOnResourceProperty = BindableProperty.CreateAttached("BasedOnResource", typeof(Style), typeof(Style), default(Style),
 			propertyChanged: OnBasedOnResourceChanged);
 
-		readonly List<WeakReference<BindableObject>> _targets = new List<WeakReference<BindableObject>>(4);
+		readonly WeakList<BindableObject> _targets = new();
 
 		Style _basedOnStyle;
 
@@ -27,17 +25,17 @@ namespace Microsoft.Maui.Controls
 
 		IList<TriggerBase> _triggers;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Style([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType)
 		{
 			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
 			Setters = new List<Setter>();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='ApplyToDerivedTypes']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='ApplyToDerivedTypes']/Docs/*" />
 		public bool ApplyToDerivedTypes { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='BasedOn']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='BasedOn']/Docs/*" />
 		public Style BasedOn
 		{
 			get { return _basedOnStyle; }
@@ -55,7 +53,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='BaseResourceKey']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='BaseResourceKey']/Docs/*" />
 		public string BaseResourceKey
 		{
 			get { return _baseResourceKey; }
@@ -65,10 +63,8 @@ namespace Microsoft.Maui.Controls
 					return;
 				_baseResourceKey = value;
 				//update all DynamicResources
-				foreach (WeakReference<BindableObject> bindableWr in _targets)
+				foreach (var target in _targets)
 				{
-					if (!bindableWr.TryGetTarget(out BindableObject target))
-						continue;
 					target.RemoveDynamicResource(_basedOnResourceProperty);
 					if (value != null)
 						target.SetDynamicResource(_basedOnResourceProperty, value);
@@ -78,36 +74,34 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Behaviors']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Behaviors']/Docs/*" />
 		public IList<Behavior> Behaviors => _behaviors ??= new AttachedCollection<Behavior>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='CanCascade']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='CanCascade']/Docs/*" />
 		public bool CanCascade { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Class']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Class']/Docs/*" />
 		public string Class { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Setters']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Setters']/Docs/*" />
 		public IList<Setter> Setters { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Triggers']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Triggers']/Docs/*" />
 		public IList<TriggerBase> Triggers => _triggers ??= new AttachedCollection<TriggerBase>();
 
 		void IStyle.Apply(BindableObject bindable)
 		{
 			lock (_targets)
 			{
-				_targets.Add(new WeakReference<BindableObject>(bindable));
+				_targets.Add(bindable);
 			}
 
 			if (BaseResourceKey != null)
 				bindable.SetDynamicResource(_basedOnResourceProperty, BaseResourceKey);
 			ApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable));
-
-			CleanUpWeakReferences();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='TargetType']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='TargetType']/Docs/*" />
 		public Type TargetType { get; }
 
 		void IStyle.UnApply(BindableObject bindable)
@@ -116,7 +110,7 @@ namespace Microsoft.Maui.Controls
 			bindable.RemoveDynamicResource(_basedOnResourceProperty);
 			lock (_targets)
 			{
-				_targets.RemoveAll(wr => wr != null && wr.TryGetTarget(out BindableObject target) && target == bindable);
+				_targets.Remove(bindable);
 			}
 		}
 
@@ -148,11 +142,8 @@ namespace Microsoft.Maui.Controls
 
 		void BasedOnChanged(Style oldValue, Style newValue)
 		{
-			foreach (WeakReference<BindableObject> bindableRef in _targets)
+			foreach (var bindable in _targets)
 			{
-				if (!bindableRef.TryGetTarget(out BindableObject bindable))
-					continue;
-
 				UnApplyCore(bindable, oldValue);
 				ApplyCore(bindable, newValue);
 			}
@@ -182,17 +173,5 @@ namespace Microsoft.Maui.Controls
 
 		bool ValidateBasedOn(Style value)
 			=> value is null || value.TargetType.IsAssignableFrom(TargetType);
-
-		void CleanUpWeakReferences()
-		{
-			if (_targets.Count < _cleanupThreshold)
-				return;
-
-			lock (_targets)
-			{
-				_targets.RemoveAll(t => t == null || !t.TryGetTarget(out _));
-				_cleanupThreshold = _targets.Count + CleanupTrigger;
-			}
-		}
 	}
 }

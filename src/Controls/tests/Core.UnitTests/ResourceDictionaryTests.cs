@@ -2,70 +2,81 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class ResourceDictionaryTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void Add()
 		{
 			var rd = new ResourceDictionary();
 			rd.Add("foo", "bar");
-			Assert.AreEqual("bar", rd["foo"]);
+			Assert.Equal("bar", rd["foo"]);
 		}
 
-		[Test]
+		[Fact]
 		public void AddKVP()
 		{
 			var rd = new ResourceDictionary();
 			((ICollection<KeyValuePair<string, object>>)rd).Add(new KeyValuePair<string, object>("foo", "bar"));
-			Assert.AreEqual("bar", rd["foo"]);
+			Assert.Equal("bar", rd["foo"]);
 		}
 
-		[Test]
+		[Fact]
 		public void ResourceDictionaryTriggersValueChangedOnAdd()
 		{
 			var rd = new ResourceDictionary();
+			var passed = false;
 			((IResourceDictionary)rd).ValuesChanged += (sender, e) =>
 			{
-				Assert.AreEqual(1, e.Values.Count());
+				Assert.Single(e.Values);
 				var kvp = e.Values.First();
-				Assert.AreEqual("foo", kvp.Key);
-				Assert.AreEqual("FOO", kvp.Value);
-				Assert.Pass();
+				Assert.Equal("foo", kvp.Key);
+				Assert.Equal("FOO", kvp.Value);
+				passed = true;
 			};
 			rd.Add("foo", "FOO");
-			Assert.Fail();
+
+			if (!passed)
+			{
+				throw new XunitException();
+			}
 		}
 
-		[Test]
+		[Fact]
 		public void ResourceDictionaryTriggersValueChangedOnChange()
 		{
 			var rd = new ResourceDictionary();
 			rd.Add("foo", "FOO");
+			var passed = false;
 			((IResourceDictionary)rd).ValuesChanged += (sender, e) =>
 			{
-				Assert.AreEqual(1, e.Values.Count());
+				Assert.Single(e.Values);
 				var kvp = e.Values.First();
-				Assert.AreEqual("foo", kvp.Key);
-				Assert.AreEqual("BAR", kvp.Value);
-				Assert.Pass();
+				Assert.Equal("foo", kvp.Key);
+				Assert.Equal("BAR", kvp.Value);
+				passed = true;
 			};
 			rd["foo"] = "BAR";
-			Assert.Fail();
+
+			if (!passed)
+			{
+				throw new XunitException();
+			}
 		}
 
-		[Test]
+		[Fact]
 		public void ResourceDictionaryCtor()
 		{
 			var rd = new ResourceDictionary();
-			Assert.AreEqual(0, rd.Count());
+			Assert.Empty(rd);
 		}
 
-		[Test]
+		[Fact]
 		public void ElementMergesParentRDWithCurrent()
 		{
 			var elt = new VisualElement
@@ -86,12 +97,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			object value;
 			Assert.True(elt.TryGetResource("foo", out value));
-			Assert.AreEqual("FOO", value);
+			Assert.Equal("FOO", value);
 			Assert.True(elt.TryGetResource("bar", out value));
-			Assert.AreEqual("BAR", value);
+			Assert.Equal("BAR", value);
 		}
 
-		[Test]
+		[Fact]
 		public void CurrentOverridesParentValues()
 		{
 			var elt = new VisualElement
@@ -113,12 +124,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			object value;
 			Assert.True(elt.TryGetResource("foo", out value));
-			Assert.AreEqual("FOO", value);
+			Assert.Equal("FOO", value);
 			Assert.True(elt.TryGetResource("bar", out value));
-			Assert.AreEqual("BAZ", value);
+			Assert.Equal("BAZ", value);
 		}
 
-		[Test]
+		[Fact]
 		public void AddingToParentTriggersValuesChanged()
 		{
 			var elt = new VisualElement
@@ -137,20 +148,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			elt.Parent = parent;
 
+			var passed = false;
+
 			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
-				Assert.AreEqual(1, e.Values.Count());
+				Assert.Single(e.Values);
 				var kvp = e.Values.First();
-				Assert.AreEqual("baz", kvp.Key);
-				Assert.AreEqual("BAZ", kvp.Value);
-				Assert.Pass();
+				Assert.Equal("baz", kvp.Key);
+				Assert.Equal("BAZ", kvp.Value);
+				passed = true;
 			});
 
 			parent.Resources["baz"] = "BAZ";
-			Assert.Fail();
+
+			if (!passed)
+			{
+				throw new XunitException();
+			}
 		}
 
-		[Test]
+		[Fact]
 		public void ResourcesChangedNotRaisedIfKeyExistsInCurrent()
 		{
 			var elt = new VisualElement
@@ -169,12 +186,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			elt.Parent = parent;
 
-			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) => Assert.Fail());
+			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) => throw new XunitException());
 			parent.Resources["bar"] = "BAZ";
-			Assert.Pass();
 		}
 
-		[Test]
+		[Fact]
 		public void SettingParentTriggersValuesChanged()
 		{
 			var elt = new VisualElement
@@ -193,18 +209,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
+			var passed = false;
+
 			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
-				Assert.AreEqual(2, e.Values.Count());
-				Assert.AreEqual("FOO", e.Values.First(kvp => kvp.Key == "foo").Value);
-				Assert.AreEqual("BAZ", e.Values.First(kvp => kvp.Key == "baz").Value);
-				Assert.Pass();
+				Assert.Equal(2, e.Values.Count());
+				Assert.Equal("FOO", e.Values.First(kvp => kvp.Key == "foo").Value);
+				Assert.Equal("BAZ", e.Values.First(kvp => kvp.Key == "baz").Value);
+				passed = true;
 			});
 			elt.Parent = parent;
-			Assert.Fail();
+
+			if (!passed)
+			{
+				throw new XunitException();
+			}
 		}
 
-		[Test]
+		[Fact]
 		public void SettingResourcesTriggersResourcesChanged()
 		{
 			var elt = new VisualElement();
@@ -218,30 +240,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			elt.Parent = parent;
 
+			var passed = false;
+
 			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
-				Assert.AreEqual(3, e.Values.Count());
-				Assert.Pass();
+				Assert.Equal(3, e.Values.Count());
+				passed = true;
 			});
 			elt.Resources = new ResourceDictionary {
 				{"foo", "FOO"},
 				{"baz", "BAZ"},
 				{"bar", "NEWBAR"}
 			};
-			Assert.Fail();
+
+			if (!passed)
+			{
+				throw new XunitException();
+			}
 		}
 
-		[Test]
+		[Fact]
 		public void DontThrowOnReparenting()
 		{
 			var elt = new View { Resources = new ResourceDictionary() };
 			var parent = new StackLayout();
 
 			parent.Children.Add(elt);
-			Assert.DoesNotThrow(() => parent.Children.Remove(elt));
+			parent.Children.Remove(elt);
 		}
 
-		[Test]
+		[Fact]
 		public void MultiLevelMerge()
 		{
 			var elt = new VisualElement
@@ -264,23 +292,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
+			var passed = false;
+
 			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) =>
 			{
-				Assert.AreEqual(2, e.Values.Count());
-				Assert.Pass();
+				Assert.Equal(2, e.Values.Count());
+				passed = true;
 			});
 
 			elt.Parent = parent;
-			Assert.Fail();
+
+			if (!passed)
+			{
+				throw new XunitException();
+			}
 		}
 
-		[Test]
+		[Fact]
 		public void ShowKeyInExceptionIfNotFound()
 		{
 			var rd = new ResourceDictionary();
 			rd.Add("foo", "bar");
 			var ex = Assert.Throws<KeyNotFoundException>(() => { var foo = rd["test_invalid_key"]; });
-			Assert.That(ex.Message, Does.Contain("test_invalid_key"));
+			Assert.Contains("test_invalid_key", ex.Message, StringComparison.InvariantCulture);
 		}
 
 		class MyRD : ResourceDictionary
@@ -295,7 +329,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public static int CreationCount { get; set; }
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowOnDuplicateKey()
 		{
 			var rd0 = new ResourceDictionary();
@@ -306,13 +340,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 			catch (ArgumentException ae)
 			{
-				Assert.AreEqual("A resource with the key 'foo' is already present in the ResourceDictionary.", ae.Message);
-				Assert.Pass();
+				Assert.Equal("A resource with the key 'foo' is already present in the ResourceDictionary.", ae.Message);
 			}
-			Assert.Fail();
+			catch (Exception ex)
+			{
+				throw new XunitException(ex.ToString());
+			}
 		}
 
-		[Test]
+		[Fact]
 		public void MergedDictionaryResourcesAreFound()
 		{
 			var rd0 = new ResourceDictionary();
@@ -320,10 +356,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			object value;
 			Assert.True(rd0.TryGetValue("foo", out value));
-			Assert.AreEqual("bar", value);
+			Assert.Equal("bar", value);
 		}
 
-		[Test]
+		[Fact]
 		public void MergedDictionaryResourcesAreFoundLastDictionaryTakesPriority()
 		{
 			var rd0 = new ResourceDictionary();
@@ -333,10 +369,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			object value;
 			Assert.True(rd0.TryGetValue("foo", out value));
-			Assert.AreEqual("bar2", value);
+			Assert.Equal("bar2", value);
 		}
 
-		[Test]
+		[Fact]
 		public void CountDoesNotIncludeMergedDictionaries()
 		{
 			var rd = new ResourceDictionary {
@@ -345,10 +381,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			rd.MergedDictionaries.Add(new ResourceDictionary() { { "foo", "bar" } });
 
-			Assert.That(rd.Count, Is.EqualTo(2));
+			Assert.Equal(2, rd.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void ClearMergedDictionaries()
 		{
 			var rd = new ResourceDictionary {
@@ -357,14 +393,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			rd.MergedDictionaries.Add(new ResourceDictionary() { { "foo", "bar" } });
 
-			Assert.That(rd.Count, Is.EqualTo(2));
+			Assert.Equal(2, rd.Count);
 
 			rd.MergedDictionaries.Clear();
 
-			Assert.That(rd.MergedDictionaries.Count, Is.EqualTo(0));
+			Assert.Equal(0, rd.MergedDictionaries.Count);
 		}
 
-		[Test]
+		[Fact]
 		public void AddingMergedRDTriggersValueChanged()
 		{
 			var rd = new ResourceDictionary();
@@ -373,13 +409,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Resources = rd
 			};
 			label.SetDynamicResource(Label.TextProperty, "foo");
-			Assert.That(label.Text, Is.EqualTo(Label.TextProperty.DefaultValue));
+			Assert.Equal(label.Text, Label.TextProperty.DefaultValue);
 
 			rd.MergedDictionaries.Add(new ResourceDictionary { { "foo", "Foo" } });
-			Assert.That(label.Text, Is.EqualTo("Foo"));
+			Assert.Equal("Foo", label.Text);
 		}
 
-		[Test]
+		[Fact]
 		//this is to keep the alignment with resources removed from RD
 		public void RemovingMergedRDDoesntTriggersValueChanged()
 		{
@@ -397,13 +433,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			label.SetDynamicResource(Label.TextProperty, "foo");
-			Assert.That(label.Text, Is.EqualTo("Foo"));
+			Assert.Equal("Foo", label.Text);
 
 			rd.MergedDictionaries.Clear();
-			Assert.That(label.Text, Is.EqualTo("Foo"));
+			Assert.Equal("Foo", label.Text);
 		}
 
-		[Test]
+		[Fact]
 		public void AddingResourceInMergedRDTriggersValueChanged()
 		{
 			var rd0 = new ResourceDictionary();
@@ -419,10 +455,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Resources = rd,
 			};
 			label.SetDynamicResource(Label.TextProperty, "foo");
-			Assert.That(label.Text, Is.EqualTo(Label.TextProperty.DefaultValue));
+			Assert.Equal(label.Text, Label.TextProperty.DefaultValue);
 
 			rd0.Add("foo", "Foo");
-			Assert.That(label.Text, Is.EqualTo("Foo"));
+			Assert.Equal("Foo", label.Text);
 		}
 	}
 }

@@ -1,17 +1,23 @@
 namespace Microsoft.Maui.Devices
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayRotation.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DisplayRotation']/Docs" />
+	/// <summary>
+	/// Represents the rotation a device display can have.
+	/// </summary>
 	public enum DisplayRotation
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayRotation.xml" path="//Member[@MemberName='Unknown']/Docs" />
+		/// <summary>Unknown display rotation.</summary>
 		Unknown = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayRotation.xml" path="//Member[@MemberName='Rotation0']/Docs" />
+
+		/// <summary>The device display is rotated 0 degrees.</summary>
 		Rotation0 = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayRotation.xml" path="//Member[@MemberName='Rotation90']/Docs" />
+
+		/// <summary>The device display is rotated 90 degrees.</summary>
 		Rotation90 = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayRotation.xml" path="//Member[@MemberName='Rotation180']/Docs" />
+
+		/// <summary>The device display is rotated 180 degrees.</summary>
 		Rotation180 = 3,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DisplayRotation.xml" path="//Member[@MemberName='Rotation270']/Docs" />
+
+		/// <summary>The device display is rotated 270 degrees.</summary>
 		Rotation270 = 4
 	}
 }

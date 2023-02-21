@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Views;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Graphics.Drawable;
 using Microsoft.Maui.Controls.Platform;
 using ARect = Android.Graphics.Rect;
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 	}
 
-	public class FormsEditTextBase : EditText, IDescendantFocusToggler
+	public class FormsEditTextBase : AppCompatEditText, IDescendantFocusToggler
 	{
 		DescendantFocusToggler _descendantFocusToggler;
 

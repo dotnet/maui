@@ -1,6 +1,7 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
+using Tizen.UIExtensions.Common;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.FontNamedSizeService))]
@@ -13,42 +14,40 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	{
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
-			int pt;
-			// Actual font size depends on the target idiom.
-			switch (size)
+			if (DeviceInfo.IsTV || DeviceInfo.IsIoT)
 			{
-				case NamedSize.Micro:
-					pt = DeviceInfo.Idiom == DeviceIdiom.TV || DeviceInfo.Idiom == DeviceIdiom.Watch ? 24 : 19;
-					break;
-				case NamedSize.Small:
-					pt = DeviceInfo.Idiom == DeviceIdiom.TV ? 26 : (DeviceInfo.Idiom == DeviceIdiom.Watch ? 30 : 22);
-					break;
-				case NamedSize.Default:
-				case NamedSize.Medium:
-					pt = DeviceInfo.Idiom == DeviceIdiom.TV ? 28 : (DeviceInfo.Idiom == DeviceIdiom.Watch ? 32 : 25);
-					break;
-				case NamedSize.Large:
-					pt = DeviceInfo.Idiom == DeviceIdiom.TV ? 32 : (DeviceInfo.Idiom == DeviceIdiom.Watch ? 36 : 31);
-					break;
-				case NamedSize.Body:
-					pt = DeviceInfo.Idiom == DeviceIdiom.TV ? 30 : (DeviceInfo.Idiom == DeviceIdiom.Watch ? 32 : 28);
-					break;
-				case NamedSize.Caption:
-					pt = DeviceInfo.Idiom == DeviceIdiom.TV ? 26 : (DeviceInfo.Idiom == DeviceIdiom.Watch ? 24 : 22);
-					break;
-				case NamedSize.Header:
-					pt = DeviceInfo.Idiom == DeviceIdiom.TV ? 84 : (DeviceInfo.Idiom == DeviceIdiom.Watch ? 36 : 138);
-					break;
-				case NamedSize.Subtitle:
-					pt = DeviceInfo.Idiom == DeviceIdiom.TV ? 30 : (DeviceInfo.Idiom == DeviceIdiom.Watch ? 30 : 28);
-					break;
-				case NamedSize.Title:
-					pt = DeviceInfo.Idiom == DeviceIdiom.TV ? 42 : (DeviceInfo.Idiom == DeviceIdiom.Watch ? 36 : 40);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(size));
+				return size switch
+				{
+					NamedSize.Default => 22,
+					NamedSize.Micro => 18,
+					NamedSize.Small => 20,
+					NamedSize.Medium => 22,
+					NamedSize.Large => 26,
+					NamedSize.Body => 24,
+					NamedSize.Caption => 20,
+					NamedSize.Header => 42,
+					NamedSize.Subtitle => 24,
+					NamedSize.Title => 32,
+					_ => throw new ArgumentOutOfRangeException(nameof(size)),
+				};
 			}
-			return DPExtensions.ConvertToDPFont(pt);
+			else
+			{
+				return size switch
+				{
+					NamedSize.Default => 14,
+					NamedSize.Micro => 10,
+					NamedSize.Small => 12,
+					NamedSize.Medium => 14,
+					NamedSize.Large => 18,
+					NamedSize.Body => 16,
+					NamedSize.Caption => 12,
+					NamedSize.Header => 14,
+					NamedSize.Subtitle => 16,
+					NamedSize.Title => 24,
+					_ => throw new ArgumentOutOfRangeException(nameof(size)),
+				};
+			}
 		}
 	}
 }

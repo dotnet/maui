@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
+    <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
     <NoWarn>$(NoWarn),CA1416</NoWarn>
+    <!-- Disable multi-RID builds to workaround a parallel build issue -->
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,17 +24,16 @@
     <MauiFont Include="Resources\Fonts\*" />
     <EmbeddedResource Include="Resources\Fonts\dokdo_regular.ttf" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners.SourceGen\TestUtils.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
+    <ProjectReference Include="..\DeviceTests.Shared\Core.DeviceTests.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,22 +43,12 @@
   <!-- include/exclude the *.<platform>.cs files -->
   <ItemGroup>
     <None Include="@(Compile)" />
-    <None Include="Handlers\Entry\EntryHandlerTests.Windows.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <Compile Remove="Handlers\*\*.cs" />
-    <Compile Include="Handlers\ActivityIndicator\*.cs" />
-    <Compile Include="Handlers\Button\*.cs" />
-    <Compile Include="Handlers\DatePicker\*.cs" />
-    <Compile Include="Handlers\Layout\*.cs" />
-    <Compile Include="Handlers\Editor\*.cs" />
-    <Compile Include="Handlers\Entry\*.cs" />
-    <Compile Include="Handlers\Navigation\*.cs" />
-    <Compile Include="Handlers\RadioButton\*.cs" />
-    <Compile Include="Handlers\Switch\*.cs" />
-    <Compile Include="Handlers\TextInput\*.cs" />
-    <Compile Include="Handlers\View\*.cs" />
-    <Compile Include="Handlers\Window\*.cs" />
+    <Compile Remove="Handlers\Fonts\*.cs" />
+    <Compile Remove="Handlers\Image\*.cs" />
+    <Compile Remove="Handlers\ImageButton\*.cs" />
+    <Compile Remove="Handlers\ShapeView\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
     <Compile Remove="**\*.Android.cs" />

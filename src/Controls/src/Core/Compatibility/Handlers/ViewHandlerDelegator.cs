@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-#if WINDOWS || IOS || ANDROID
+﻿#if WINDOWS || IOS || ANDROID || TIZEN
 using System;
 using System.Collections.Generic;
 using System.Text;

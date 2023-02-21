@@ -3,16 +3,16 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<Image>?> GetImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
-			GetImageAsync((IStreamImageSource)imageSource, image, cancellationToken);
+		public override Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(IImageSource imageSource, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IStreamImageSource)imageSource, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<Image>?> GetImageAsync(IStreamImageSource imageSource, Image image, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(IStreamImageSource imageSource, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;
@@ -20,16 +20,11 @@ namespace Microsoft.Maui
 			try
 			{
 				var stream = await imageSource.GetStreamAsync(cancellationToken);
+				var image = new MauiImageSource();
 
-				if (stream == null)
-					throw new InvalidOperationException("Unable to load image stream.");
+				await image.LoadSource(stream);
 
-				var isLoadComplated = await image.LoadAsync(stream, cancellationToken);
-
-				if (!isLoadComplated)
-					throw new InvalidOperationException("Unable to decode image from stream.");
-
-				return new ImageSourceServiceResult(image);
+				return new ImageSourceServiceResult(image, image.Dispose);
 			}
 			catch (Exception ex)
 			{

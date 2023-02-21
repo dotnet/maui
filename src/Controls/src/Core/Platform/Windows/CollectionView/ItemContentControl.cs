@@ -1,11 +1,12 @@
+#nullable disable
 using System;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Maui.Controls.Internals;
-using WThickness = Microsoft.UI.Xaml.Thickness;
 using WSize = Windows.Foundation.Size;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public ItemContentControl()
 		{
 			DefaultStyleKey = typeof(ItemContentControl);
+			IsTabStop = false;
 		}
 
 		public static readonly DependencyProperty MauiContextProperty = DependencyProperty.Register(
@@ -167,7 +169,6 @@ namespace Microsoft.Maui.Controls.Platform
 				// or if we need to switch DataTemplates (because this instance is being recycled)
 				// then we'll need to create the content from the template 
 				_visualElement = formsTemplate.CreateContent(dataContext, container) as VisualElement;
-				_visualElement.BindingContext = dataContext;
 				_renderer = _visualElement.ToHandler(mauiContext);
 
 				// We need to set IsPlatformStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
@@ -185,11 +186,11 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// We are reusing this ItemContentControl and we can reuse the Element
 				_visualElement = _renderer.VirtualView as VisualElement;
-				_visualElement.BindingContext = dataContext;
 			}
 
 			Content = _renderer.ToPlatform();
 			itemsView?.AddLogicalChild(_visualElement);
+			_visualElement.BindingContext = dataContext;
 		}
 
 		void SetNativeStateConsistent(VisualElement visualElement)

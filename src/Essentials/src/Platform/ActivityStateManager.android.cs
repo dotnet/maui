@@ -8,23 +8,52 @@ using Android.OS;
 
 namespace Microsoft.Maui.ApplicationModel
 {
+	/// <summary>
+	/// Represents a manager object that can handle <see cref="Activity"/> states.
+	/// </summary>
 	public interface IActivityStateManager
 	{
+		/// <summary>
+		/// Initializes the <see cref="ActivityStateManager"/> for the given <see cref="Android.App.Application"/>.
+		/// </summary>
+		/// <param name="application">The <see cref="Android.App.Application"/> to use for initialization.</param>
 		void Init(Application application);
 
+		/// <summary>
+		/// Initializes the <see cref="ActivityStateManager"/> for the given <see cref="Activity"/> and <see cref="Bundle"/>.
+		/// </summary>
+		/// <param name="activity">The <see cref="Activity"/> to use for initialization.</param>
+		/// <param name="bundle">The <see cref="Bundle"/> to use for initialization.</param>
 		void Init(Activity activity, Bundle? bundle);
 
+		/// <summary>
+		/// Gets the <see cref="Activity"/> object that represents the application's current activity.
+		/// </summary>
 		Activity? GetCurrentActivity();
 
+		/// <summary>
+		/// Occurs when the state of an activity of this application changes.
+		/// </summary>
 		event EventHandler<ActivityStateChangedEventArgs> ActivityStateChanged;
 
+		/// <summary>
+		/// Waits for a <see cref="Activity"/> to be created or resumed.
+		/// </summary>
+		/// <param name="cancelToken">A token that can be used for cancelling the operation.</param>
+		/// <returns>The application's current <see cref="Activity"/> or the <see cref="Activity"/> that has been created or resumed.</returns>
 		Task<Activity> WaitForActivityAsync(CancellationToken cancelToken = default);
 	}
 
+	/// <summary>
+	/// Represents a manager object that can handle <see cref="Activity"/> states.
+	/// </summary>
 	public static class ActivityStateManager
 	{
 		static IActivityStateManager? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IActivityStateManager Default =>
 			defaultImplementation ??= new ActivityStateManagerImplementation();
 
@@ -88,6 +117,12 @@ namespace Microsoft.Maui.ApplicationModel
 
 	static class ActivityStateManagerExtensions
 	{
+		/// <summary>
+		/// Gets the <see cref="Activity"/> object that represents the application's current activity.
+		/// </summary>
+		/// <param name="manager">The object to invoke this method on.</param>
+		/// <param name="throwOnNull">Throws an exception if no current <see cref="Activity"/> can be found and this value is set to <see langword="true"/>, otherwise this method returns <see langword="null"/>.</param>
+		/// <exception cref="NullReferenceException">Thrown if no current <see cref="Activity"/> can be found and <paramref name="throwOnNull"/> is set to <see langword="true"/>.</exception>
 		public static Activity? GetCurrentActivity(this IActivityStateManager manager, bool throwOnNull)
 		{
 			var activity = manager.GetCurrentActivity();
@@ -98,14 +133,30 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 	}
 
+	/// <summary>
+	/// Represents states that a <see cref="Activity"/> can have.
+	/// </summary>
 	public enum ActivityState
 	{
+		/// <summary>The activity is created.</summary>
 		Created,
+
+		/// <summary>The activity is resumed.</summary>
 		Resumed,
+
+		/// <summary>The activity is paused.</summary>
 		Paused,
+
+		/// <summary>The activity is destroyed.</summary>
 		Destroyed,
+
+		/// <summary>The activity saving the instance state.</summary>
 		SaveInstanceState,
+
+		/// <summary>The activity is started.</summary>
 		Started,
+
+		/// <summary>The activity is stopped.</summary>
 		Stopped
 	}
 

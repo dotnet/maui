@@ -3,65 +3,119 @@ using System;
 
 namespace Microsoft.Maui.Devices
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceType.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceType']/Docs" />
+	/// <summary>
+	///Types of devices.
+	/// </summary>
 	public enum DeviceType
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceType.xml" path="//Member[@MemberName='Unknown']/Docs" />
+		/// <summary>An unknown device type.</summary>
 		Unknown = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceType.xml" path="//Member[@MemberName='Physical']/Docs" />
+
+		/// <summary>The device is a physical device, such as an iPhone, Android tablet, or Windows/macOS desktop.</summary>
 		Physical = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceType.xml" path="//Member[@MemberName='Virtual']/Docs" />
+
+		/// <summary>The device is virtual, such as the iOS Simulator, Android emulators, or Windows emulators.</summary>
 		Virtual = 2
 	}
 
+	/// <summary>
+	/// Represents information about the device.
+	/// </summary>
 	public interface IDeviceInfo
 	{
+		/// <summary>
+		/// Gets the model of the device.
+		/// </summary>
 		string Model { get; }
 
+		/// <summary>
+		/// Gets the manufacturer of the device.
+		/// </summary>
 		string Manufacturer { get; }
 
+		/// <summary>
+		/// Gets the name of the device.
+		/// </summary>
+		/// <remarks>This value is often specified by the user of the device.</remarks>
 		string Name { get; }
 
+		/// <summary>
+		/// Gets the string representation of the version of the operating system.
+		/// </summary>
 		string VersionString { get; }
 
+		/// <summary>
+		/// Gets the version of the operating system.
+		/// </summary>
 		Version Version { get; }
 
+		/// <summary>
+		/// Gets the platform or operating system of the device.
+		/// </summary>
 		DevicePlatform Platform { get; }
 
+		/// <summary>
+		/// Gets the idiom (form factor) of the device.
+		/// </summary>
 		DeviceIdiom Idiom { get; }
 
+		/// <summary>
+		/// Gets the type of device the application is running on.
+		/// </summary>
 		DeviceType DeviceType { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="Type[@FullName='Microsoft.Maui.Essentials.DeviceInfo']/Docs" />
+	/// <summary>
+	/// Represents information about the device.
+	/// </summary>
 	public static class DeviceInfo
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='Model']/Docs" />
+		/// <summary>
+		/// Gets the model of the device.
+		/// </summary>
 		public static string Model => Current.Model;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='Manufacturer']/Docs" />
+		/// <summary>
+		/// Gets the manufacturer of the device.
+		/// </summary>
 		public static string Manufacturer => Current.Manufacturer;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='Name']/Docs" />
+		/// <summary>
+		/// Gets the name of the device.
+		/// </summary>
+		/// <remarks>This value is often specified by the user of the device.</remarks>
 		public static string Name => Current.Name;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='VersionString']/Docs" />
+		/// <summary>
+		/// Gets the string representation of the version of the operating system.
+		/// </summary>
 		public static string VersionString => Current.VersionString;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='Version']/Docs" />
+		/// <summary>
+		/// Gets the version of the operating system.
+		/// </summary>
 		public static Version Version => Current.Version;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='Platform']/Docs" />
+		/// <summary>
+		/// Gets the platform or operating system of the device.
+		/// </summary>
 		public static DevicePlatform Platform => Current.Platform;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='Idiom']/Docs" />
+		/// <summary>
+		/// Gets the idiom (form factor) of the device.
+		/// </summary>
 		public static DeviceIdiom Idiom => Current.Idiom;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/DeviceInfo.xml" path="//Member[@MemberName='DeviceType']/Docs" />
+		/// <summary>
+		/// Gets the type of device the application is running on.
+		/// </summary>
 		public static DeviceType DeviceType => Current.DeviceType;
 
 		static IDeviceInfo? currentImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IDeviceInfo Current =>
 			currentImplementation ??= new DeviceInfoImplementation();
 

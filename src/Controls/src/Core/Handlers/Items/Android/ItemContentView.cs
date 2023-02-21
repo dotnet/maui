@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Android.Content;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var size = Context.FromPixels(r - l, b - t);
+			var size = this.FromPixels(r - l, b - t);
 
 			//TODO: RUI Is this the best way?
 			//View.Arrange(new Rectangle(Point.Zero, size));
@@ -99,23 +100,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var width = MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified
 				? double.PositiveInfinity
-				: Context.FromPixels(pixelWidth);
+				: this.FromPixels(pixelWidth);
 
 			var height = MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified
 				? double.PositiveInfinity
-				: Context.FromPixels(pixelHeight);
+				: this.FromPixels(pixelHeight);
 
 
 			var measure = View.Measure(width, height);
 
 			if (pixelWidth == 0)
 			{
-				pixelWidth = (int)Context.ToPixels(measure.Width);
+				pixelWidth = (int)this.ToPixels(measure.Width);
 			}
 
 			if (pixelHeight == 0)
 			{
-				pixelHeight = (int)Context.ToPixels(measure.Height);
+				pixelHeight = (int)this.ToPixels(measure.Height);
 			}
 
 			_reportMeasure?.Invoke(new Size(pixelWidth, pixelHeight));
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (this.IsAlive())
 			{
-				RequestLayout();
+				PlatformInterop.RequestLayoutIfNeeded(this);
 			}
 			else if (sender is VisualElement ve)
 			{
@@ -144,10 +145,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (mauiControlsView == null || aview == null)
 				return;
 
-			var x = (int)Context.ToPixels(mauiControlsView.X);
-			var y = (int)Context.ToPixels(mauiControlsView.Y);
-			var width = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Width));
-			var height = Math.Max(0, (int)Context.ToPixels(mauiControlsView.Height));
+			var x = (int)this.ToPixels(mauiControlsView.X);
+			var y = (int)this.ToPixels(mauiControlsView.Y);
+			var width = Math.Max(0, (int)this.ToPixels(mauiControlsView.Width));
+			var height = Math.Max(0, (int)this.ToPixels(mauiControlsView.Height));
 
 			aview.Layout(x, y, width, height);
 

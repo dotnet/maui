@@ -1,3 +1,4 @@
+#nullable disable
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
@@ -32,7 +33,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (_defaultAccessibilityHint == null)
 				_defaultAccessibilityHint = Control.AccessibilityHint;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Control.AccessibilityHint = (string)Element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
+#pragma warning restore CS0618 // Type or member is obsolete
 #else
 			if (_defaultAccessibilityHint == null)
 				_defaultAccessibilityHint = Control.AccessibilityTitle;
@@ -51,7 +54,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (_defaultAccessibilityLabel == null)
 				_defaultAccessibilityLabel = Control.AccessibilityLabel;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Control.AccessibilityLabel = (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return _defaultAccessibilityLabel;
 		}
@@ -65,7 +70,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (_defaultAccessibilityHint == null)
 				_defaultAccessibilityHint = Control.AccessibilityHint;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Control.AccessibilityHint = (string)Element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return _defaultAccessibilityHint;
 
@@ -79,7 +86,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (_defaultAccessibilityLabel == null)
 				_defaultAccessibilityLabel = Control.AccessibilityLabel;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Control.AccessibilityLabel = (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return _defaultAccessibilityLabel;
 		}

@@ -8,37 +8,39 @@
         <viewmodels:MapsViewModel />
     </views:BasePage.BindingContext>
 
-    <ScrollView>
-        <StackLayout Padding="10">
-            <Label Text="Open location in maps." FontAttributes="Bold"/>
+    <Grid RowDefinitions="Auto,*">
+        <Label Text="Open location in maps." FontAttributes="Bold" Margin="12" />
 
-            <Label Text="Options:"/>
-            <Label Text="Navigation Mode"/>
-            <Picker HorizontalOptions="FillAndExpand"
-                    ItemsSource="{Binding NavigationModes}"
-                    SelectedIndex="{Binding NavigationMode, Mode=TwoWay}" />
-            <Label Text="Name"/>
-            <Entry Text="{Binding Name}"/>
+        <ScrollView Grid.Row="1">
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <Label Text="Options:"/>
+                <Label Text="Navigation Mode"/>
+                <Picker HorizontalOptions="FillAndExpand"
+                        ItemsSource="{Binding NavigationModes}"
+                        SelectedIndex="{Binding NavigationMode, Mode=TwoWay}" />
+                <Label Text="Name"/>
+                <Entry Text="{Binding Name}"/>
 
-            <Label Text="Latitude" Margin="0,24,0,0" />
-            <Entry Keyboard="Numeric" Text="{Binding Latitude}" />
-            <Label Text="Longitude" />
-            <Entry Keyboard="Numeric" Text="{Binding Longitude}" />
-            <Button Text="Open coordinates" Command="{Binding MapsCommand}"/>
+                <Label Text="Latitude" Margin="0,24,0,0" />
+                <Entry Keyboard="Numeric" Text="{Binding Latitude}" />
+                <Label Text="Longitude" />
+                <Entry Keyboard="Numeric" Text="{Binding Longitude}" />
+                <Button Text="Open coordinates" Command="{Binding MapsCommand}"/>
 
-            <Label Text="Thoroughfare" Margin="0,24,0,0"/>
-            <Entry Text="{Binding Thoroughfare}"/>
-            <Label Text="Locality"/>
-            <Entry Text="{Binding Locality}"/>
-            <Label Text="Admin Area"/>
-            <Entry Text="{Binding AdminArea}"/>
-            <Label Text="Country Name"/>
-            <Entry Text="{Binding Country}"/>
-            <Label Text="Zip Code"/>
-            <Entry Text="{Binding ZipCode}" Keyboard="Numeric"/>
+                <Label Text="Thoroughfare" Margin="0,24,0,0"/>
+                <Entry Text="{Binding Thoroughfare}"/>
+                <Label Text="Locality"/>
+                <Entry Text="{Binding Locality}"/>
+                <Label Text="Admin Area"/>
+                <Entry Text="{Binding AdminArea}"/>
+                <Label Text="Country Name"/>
+                <Entry Text="{Binding Country}"/>
+                <Label Text="Zip Code"/>
+                <Entry Text="{Binding ZipCode}" Keyboard="Numeric"/>
 
-            <Button Text="Open address" Command="{Binding LaunchPlacemarkCommand}"/>
-        </StackLayout>
-    </ScrollView>
+                <Button Text="Open address" Command="{Binding LaunchPlacemarkCommand}"/>
+            </StackLayout>
+        </ScrollView>
+    </Grid>
 
 </views:BasePage>

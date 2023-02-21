@@ -17,7 +17,6 @@
 
         <!-- App Identifier -->
         <ApplicationId>com.companyname.mauiapp._1</ApplicationId>
-        <ApplicationIdGuid>8B51DC95-6D07-4C39-BC6C-3BFE96E8A7EA</ApplicationIdGuid>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -47,6 +46,10 @@
 
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
         <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_VERSION" />
     </ItemGroup>
 
 </Project>

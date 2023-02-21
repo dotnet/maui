@@ -1,28 +1,26 @@
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/PermissionStatus.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PermissionStatus']/Docs" />
+	/// <summary>
+	/// Possible statuses of a permission.
+	/// </summary>
 	public enum PermissionStatus
 	{
-		// Permission is in an unknown state
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PermissionStatus.xml" path="//Member[@MemberName='Unknown']/Docs" />
+		/// <summary>The permission is in an unknown state.</summary>
 		Unknown = 0,
 
-		// Denied by user
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PermissionStatus.xml" path="//Member[@MemberName='Denied']/Docs" />
+		/// <summary>The user denied the permission request</summary>
 		Denied = 1,
 
-		// Feature is disabled on device
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PermissionStatus.xml" path="//Member[@MemberName='Disabled']/Docs" />
+		/// <summary>The feature is disabled on the device.</summary>
 		Disabled = 2,
 
-		// Granted by user
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PermissionStatus.xml" path="//Member[@MemberName='Granted']/Docs" />
+		/// <summary>The user granted permission or is automatically granted.</summary>
 		Granted = 3,
 
-		// Restricted (only iOS)
+		/// <summary>In a restricted state (only iOS).</summary>
 		Restricted = 4,
 
-		// Limited (only iOS)
+		/// <summary>In a limited state (only iOS).</summary>
 		Limited = 5
 	}
 }

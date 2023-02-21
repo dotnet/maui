@@ -47,7 +47,7 @@
     <remarks>
       <para>For single line entries, see <see cref="T:Microsoft.Maui.Controls.Entry" />.</para>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Editor.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Editor.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -262,7 +262,7 @@ var editor = new Editor {
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

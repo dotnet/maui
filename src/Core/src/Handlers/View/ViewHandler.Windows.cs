@@ -1,6 +1,10 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace Microsoft.Maui.Handlers
@@ -98,14 +102,34 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public virtual bool NeedsContainer
+		public static void MapContextFlyout(IViewHandler handler, IView view)
 		{
-			get
+			if (view is IContextFlyoutElement contextFlyoutContainer)
 			{
-				if (VirtualView is IBorderView border)
-					return border?.Shape != null || border?.Stroke != null;
+				MapContextFlyout(handler, contextFlyoutContainer);
+			}
+		}
 
-				return false;
+		internal static void MapContextFlyout(IElementHandler handler, IContextFlyoutElement contextFlyoutContainer)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"The handler's {nameof(handler.MauiContext)} cannot be null.");
+
+			if (handler.PlatformView is Microsoft.UI.Xaml.UIElement uiElement)
+			{
+				if (contextFlyoutContainer.ContextFlyout != null)
+				{
+					var contextFlyoutHandler = contextFlyoutContainer.ContextFlyout.ToHandler(handler.MauiContext);
+					var contextFlyoutPlatformView = contextFlyoutHandler.PlatformView;
+
+					if (contextFlyoutPlatformView is FlyoutBase flyoutBase)
+					{
+						uiElement.ContextFlyout = flyoutBase;
+					}
+				}
+				else
+				{
+					uiElement.ClearValue(UIElement.ContextFlyoutProperty);
+				}
 			}
 		}
 

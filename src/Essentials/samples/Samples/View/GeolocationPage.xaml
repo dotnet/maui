@@ -8,10 +8,10 @@
         <viewmodels:GeolocationViewModel />
     </views:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Quickly get the current location." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
 
@@ -27,8 +27,18 @@
                         IsEnabled="{Binding IsNotBusy}"
                         HorizontalOptions="FillAndExpand" />
                 <Button Text="Refresh" Command="{Binding GetCurrentLocationCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+                <Label Text="Foreground listener for Location:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <StackLayout Orientation="Horizontal" Spacing="6">
+                    <Button Text="Start Listening" HorizontalOptions="FillAndExpand"
+                            Command="{Binding StartListeningCommand}" IsEnabled="{Binding IsNotListening}" />
+                    <Button Text="Stop listening" HorizontalOptions="FillAndExpand"
+                            Command="{Binding StopListeningCommand}" IsEnabled="{Binding IsListening}" />
+                </StackLayout>
+                <Label Text="{Binding ListeningLocationStatus}" />
+                <Label Text="{Binding ListeningLocation}" />
             </StackLayout>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </views:BasePage>

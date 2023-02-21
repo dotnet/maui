@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using CoreGraphics;
 using ObjCRuntime;
@@ -19,9 +20,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void ConstrainTo(CGSize size)
 		{
-			//TODO: Should we scale the items 
-			var width = size.Width - _carouselView.PeekAreaInsets.Left - _carouselView.PeekAreaInsets.Right;
-			var height = size.Height - _carouselView.PeekAreaInsets.Top - _carouselView.PeekAreaInsets.Bottom;
+			// TODO: Should we scale the items 
+			var width = size.Width != 0 ? size.Width - _carouselView.PeekAreaInsets.Left - _carouselView.PeekAreaInsets.Right : 0;
+			var height = size.Height != 0 ? size.Height - _carouselView.PeekAreaInsets.Top - _carouselView.PeekAreaInsets.Bottom : 0;
 
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{

@@ -49,8 +49,7 @@
     ],
     "preferNameDirectory": true,
     "guids": [
-      "07CD65EF-6238-4365-AF5D-F6D433967F48",
-      "8B51DC95-6D07-4C39-BC6C-3BFE96E8A7EA"
+      "07CD65EF-6238-4365-AF5D-F6D433967F48"
     ],
     "symbols": {
       "applicationId": {
@@ -58,6 +57,12 @@
         "description": "Overrides the $(ApplicationId) in the project",
         "datatype": "string",
         "replaces": "com.companyname.MauiApp.1"
+      },
+      "msExtensionsVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "MS_EXT_VERSION",
+        "defaultValue": "MS_EXT_VERSION_VALUE"
       },
       "Framework": {
         "type": "parameter",
@@ -75,6 +80,11 @@
       "HostIdentifier": {
         "type": "bind",
         "binding": "HostIdentifier"
+      },
+      "PhoneProductId": {
+        "type": "generated",
+        "generator": "guid",
+        "replaces": "$guid9$"
       }
     },
     "defaultName": "MauiApp1"

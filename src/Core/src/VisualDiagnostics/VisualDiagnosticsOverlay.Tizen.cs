@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ElmSharp;
+using Tizen.NUI.Components;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui
 {
@@ -9,7 +10,7 @@ namespace Microsoft.Maui
 	/// </summary>
 	public partial class VisualDiagnosticsOverlay
 	{
-		readonly Dictionary<IScrollView, EvasObject> _scrollViews = new();
+		readonly Dictionary<IScrollView, NView> _scrollViews = new();
 
 		public void AddScrollableElementHandler(IScrollView scrollBar)
 		{
@@ -17,9 +18,9 @@ namespace Microsoft.Maui
 			if (nativeScroll != null)
 			{
 				_scrollViews.Add(scrollBar, nativeScroll);
-				if (nativeScroll is Scroller scroller)
+				if (nativeScroll is ScrollableBase scroller)
 				{
-					scroller.Scrolled += OnScrolled;
+					scroller.Scrolling -= OnScrolled;
 				}
 			}
 		}
@@ -39,9 +40,9 @@ namespace Microsoft.Maui
 		{
 			foreach (var scroll in _scrollViews.Values)
 			{
-				if (scroll is Scroller scroller)
+				if (scroll is ScrollableBase scroller)
 				{
-					scroller.Scrolled -= OnScrolled;
+					scroller.Scrolling -= OnScrolled;
 				}
 			}
 			_scrollViews.Clear();

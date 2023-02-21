@@ -5,7 +5,7 @@ using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.SwipeItem;
 #elif TIZEN
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Tizen.UIExtensions.NUI.Button;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IMenuElement.Source)] = MapSource,
 			};
 
-		public static CommandMapper<ISwipeItemMenuItem, ISwipeViewHandler> CommandMapper =
+		public static CommandMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> CommandMapper =
 			new(ElementHandler.ElementCommandMapper)
 			{
 			};
@@ -39,14 +39,16 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		protected SwipeItemMenuItemHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? CommandMapper)
+		protected SwipeItemMenuItemHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
 		{
 		}
 
-		public SwipeItemMenuItemHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		protected SwipeItemMenuItemHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
+
 		ISwipeItemMenuItem ISwipeItemMenuItemHandler.VirtualView => VirtualView;
 
 		PlatformView ISwipeItemMenuItemHandler.PlatformView => PlatformView;

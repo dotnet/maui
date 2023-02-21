@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.PointerGestureGalleryPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    <StackLayout>
+        <Label 
+            x:Name="hoverLabel"
+            FontSize="24"
+            Text="Hover me!">
+            <Label.GestureRecognizers>
+                <PointerGestureRecognizer PointerEntered="HoverBegan" PointerExited="HoverEnded" PointerMoved="HoverMoved" />
+            </Label.GestureRecognizers>
+        </Label>
+        <Label x:Name="positionLabel" Text="Hover above label to reveal pointer position"/>
+        <Label x:Name="positionToWindow" />
+        <Label x:Name="positionToThisLabel" />
+    </StackLayout>
+</views:BasePage>

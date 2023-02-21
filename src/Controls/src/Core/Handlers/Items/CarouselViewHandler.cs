@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls.Handlers.Items
+﻿#nullable disable
+namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler
 	{
@@ -13,6 +14,9 @@
 
 		public static PropertyMapper<CarouselView, CarouselViewHandler> Mapper = new PropertyMapper<CarouselView, CarouselViewHandler>(ViewMapper)
 		{
+#if TIZEN
+			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
+#endif
 			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
 			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,
 			[Controls.ItemsView.VerticalScrollBarVisibilityProperty.PropertyName] = MapVerticalScrollBarVisibility,

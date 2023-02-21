@@ -1,96 +1,38 @@
-using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using EColor = ElmSharp.Color;
+using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class BoxViewRenderer : ViewRenderer<BoxView, RoundRectangle>
+	public class BoxViewRenderer : ViewRenderer<BoxView, NView>
 	{
 		public BoxViewRenderer()
 		{
 			RegisterPropertyHandler(nameof(Element.CornerRadius), OnRadiusUpdate);
+			RegisterPropertyHandler(nameof(Element.Color), UpdateColor);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new RoundRectangle(Forms.NativeParent));
+				SetNativeControl(new NView());
 			}
-
-			UpdateColor();
 			base.OnElementChanged(e);
 		}
-
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
-			{
-				UpdateColor();
-			}
-			base.OnElementPropertyChanged(sender, e);
-		}
-
-		protected override void UpdateBackgroundColor(bool initialize)
-		{
-			if (initialize && Element.BackgroundColor.IsDefault())
-				return;
-
-			if (Element.Color.IsDefault())
-			{
-				UpdateColor();
-			}
-		}
-
-		protected override void UpdateLayout()
-		{
-			base.UpdateLayout();
-			Control.Draw(Control.Geometry);
-		}
-
-		protected override void UpdateOpacity(bool initialize)
-		{
-			if (initialize && Element.Opacity == 1d)
-				return;
-
-			UpdateColor();
-		}
-
-		void OnRadiusUpdate(bool init)
+		void OnRadiusUpdate()
 		{
 			int topLeft = Forms.ConvertToScaledPixel(Element.CornerRadius.TopLeft);
-			int topRight = Forms.ConvertToScaledPixel(Element.CornerRadius.TopRight);
-			int bottomLeft = Forms.ConvertToScaledPixel(Element.CornerRadius.BottomLeft);
-			int bottomRight = Forms.ConvertToScaledPixel(Element.CornerRadius.BottomRight);
-			Control.SetRadius(topLeft, topRight, bottomLeft, bottomRight);
-			if (!init)
-			{
-				Control.Draw();
-			}
+			Control.CornerRadius = topLeft;
 		}
 
-		void UpdateColor()
+		void UpdateColor(bool init)
 		{
-			if (Element.Color.IsDefault())
-			{
-				if (Element.BackgroundColor.IsDefault())
-				{
-					// Set to default color. (Transparent)
-					Control.Color = EColor.Transparent;
-				}
-				else
-				{
-					// Use BackgroundColor only if color is default and background color is not default.
-					Control.Color = Element.BackgroundColor.MultiplyAlpha((float)Element.Opacity).ToNative();
-				}
-			}
-			else
-			{
-				// Color has higer priority than BackgroundColor.
-				Control.Color = Element.Color.MultiplyAlpha((float)Element.Opacity).ToNative();
-			}
+			if (init && Element.Color.IsDefault())
+				return;
+
+			Control.UpdateBackgroundColor(!Element.Color.IsDefault() ? Element.Color.ToNative() : Element.BackgroundColor.ToNative());
 		}
 	}
 }

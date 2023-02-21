@@ -89,10 +89,10 @@
       </Docs>
     </Member>
     <Member MemberName="LayoutTo">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; LayoutTo (this Microsoft.Maui.Controls.VisualElement view, Microsoft.Maui.Controls.Rectangle bounds, uint length = 250, Microsoft.Maui.Controls.Easing easing = default);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; LayoutTo(class Microsoft.Maui.Controls.VisualElement view, valuetype Microsoft.Maui.Controls.Rectangle bounds, unsigned int32 length, class Microsoft.Maui.Controls.Easing easing) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ViewExtensions.LayoutTo(Microsoft.Maui.Controls.VisualElement,Microsoft.Maui.Controls.Rectangle,System.UInt32,Microsoft.Maui.Controls.Easing)" />
-      <MemberSignature Language="F#" Value="static member LayoutTo : Microsoft.Maui.Controls.VisualElement * Microsoft.Maui.Controls.Rectangle * uint32 * Microsoft.Maui.Controls.Easing -&gt; System.Threading.Tasks.Task&lt;bool&gt;" Usage="Microsoft.Maui.Controls.ViewExtensions.LayoutTo (view, bounds, length, easing)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; LayoutTo (this Microsoft.Maui.Controls.VisualElement view, Microsoft.Maui.Controls.Shapes.Rectangle bounds, uint length = 250, Microsoft.Maui.Controls.Easing easing = default);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; LayoutTo(class Microsoft.Maui.Controls.VisualElement view, valuetype Microsoft.Maui.Controls.Shapes.Rectangle bounds, unsigned int32 length, class Microsoft.Maui.Controls.Easing easing) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ViewExtensions.LayoutTo(Microsoft.Maui.Controls.VisualElement,Microsoft.Maui.Controls.Shapes.Rectangle,System.UInt32,Microsoft.Maui.Controls.Easing)" />
+      <MemberSignature Language="F#" Value="static member LayoutTo : Microsoft.Maui.Controls.VisualElement * Microsoft.Maui.Controls.Shapes.Rectangle * uint32 * Microsoft.Maui.Controls.Easing -&gt; System.Threading.Tasks.Task&lt;bool&gt;" Usage="Microsoft.Maui.Controls.ViewExtensions.LayoutTo (view, bounds, length, easing)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -110,7 +110,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="view" Type="Microsoft.Maui.Controls.VisualElement" RefType="this" />
-        <Parameter Name="bounds" Type="Microsoft.Maui.Controls.Rectangle" />
+        <Parameter Name="bounds" Type="Microsoft.Maui.Controls.Shapes.Rectangle" />
         <Parameter Name="length" Type="System.UInt32" />
         <Parameter Name="easing" Type="Microsoft.Maui.Controls.Easing" />
       </Parameters>

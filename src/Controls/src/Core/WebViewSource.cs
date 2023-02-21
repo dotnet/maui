@@ -1,9 +1,10 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/WebViewSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebViewSource']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/WebViewSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebViewSource']/Docs/*" />
 	public abstract class WebViewSource : BindableObject, IWebViewSource
 	{
 		public static implicit operator WebViewSource(Uri url)
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls
 				eh(this, EventArgs.Empty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebViewSource.xml" path="//Member[@MemberName='Load']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebViewSource.xml" path="//Member[@MemberName='Load']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public abstract void Load(IWebViewDelegate renderer);
 

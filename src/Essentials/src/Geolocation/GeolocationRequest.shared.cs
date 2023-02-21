@@ -1,79 +1,103 @@
+#nullable enable
 using System;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationAccuracy.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GeolocationAccuracy']/Docs" />
+	/// <summary>
+	/// Represents levels of accuracy when determining the device location.
+	/// </summary>
 	public enum GeolocationAccuracy
 	{
 		// Default is Medium
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationAccuracy.xml" path="//Member[@MemberName='Default']/Docs" />
+		/// <summary>Represents default accuracy (Medium), typically within 30-500 meters.</summary>
 		Default = 0,
 
 		// iOS:     ThreeKilometers         (3000m)
 		// Android: ACCURACY_LOW, POWER_LOW (500m)
 		// UWP:     3000                    (1000-5000m)
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationAccuracy.xml" path="//Member[@MemberName='Lowest']/Docs" />
+		/// <summary>Represents the lowest accuracy, using the least power to obtain and typically within 1000-5000 meters.</summary>
 		Lowest = 1,
 
 		// iOS:     Kilometer               (1000m)
 		// Android: ACCURACY_LOW, POWER_MED (500m)
 		// UWP:     1000                    (300-3000m)
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationAccuracy.xml" path="//Member[@MemberName='Low']/Docs" />
+		/// <summary>Represents low accuracy, typically within 300-3000 meters.</summary>
 		Low = 2,
 
 		// iOS:     HundredMeters           (100m)
 		// Android: ACCURACY_MED, POWER_MED (100-500m)
 		// UWP:     100                     (30-500m)
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationAccuracy.xml" path="//Member[@MemberName='Medium']/Docs" />
+		/// <summary>Represents medium accuracy, typically within 30-500 meters.</summary>
 		Medium = 3,
 
 		// iOS:     NearestTenMeters        (10m)
 		// Android: ACCURACY_HI, POWER_HI   (0-100m)
 		// UWP:     High                    (<=10m)
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationAccuracy.xml" path="//Member[@MemberName='High']/Docs" />
+		/// <summary>Represents high accuracy, typically within 10-100 meters.</summary>
 		High = 4,
 
 		// iOS:     Best                    (0m)
 		// Android: ACCURACY_HI, POWER_HI   (0-100m)
 		// UWP:     High                    (<=10m)
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationAccuracy.xml" path="//Member[@MemberName='Best']/Docs" />
+		/// <summary>Represents the best accuracy, using the most power to obtain and typically within 10 meters.</summary>
 		Best = 5
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="Type[@FullName='Microsoft.Maui.Essentials.GeolocationRequest']/Docs" />
+	/// <summary>
+	/// Represents the criteria for a location request.
+	/// </summary>
 	public partial class GeolocationRequest
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GeolocationRequest"/> class with default options.
+		/// </summary>
 		public GeolocationRequest()
 		{
 			Timeout = TimeSpan.Zero;
 			DesiredAccuracy = GeolocationAccuracy.Default;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GeolocationRequest"/> class with the specified accuracy.
+		/// </summary>
+		/// <param name="accuracy">The desired accuracy for determining the location.</param>
 		public GeolocationRequest(GeolocationAccuracy accuracy)
 		{
 			Timeout = TimeSpan.Zero;
 			DesiredAccuracy = accuracy;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GeolocationRequest"/> class with the specified accuracy and timeout.
+		/// </summary>
+		/// <param name="accuracy">The desired accuracy for determining the location.</param>
+		/// <param name="timeout">A timeout value after which the location determination will be cancelled.</param>
 		public GeolocationRequest(GeolocationAccuracy accuracy, TimeSpan timeout)
 		{
 			Timeout = timeout;
 			DesiredAccuracy = accuracy;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='Timeout']/Docs" />
+		/// <summary>
+		/// Gets or sets the location request timeout.
+		/// </summary>
 		public TimeSpan Timeout { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='DesiredAccuracy']/Docs" />
+		/// <summary>
+		/// Gets or sets the desired accuracy of the resulting location.
+		/// </summary>
 		public GeolocationAccuracy DesiredAccuracy { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='RequestFullAccuracy']/Docs" />
+		/// <summary>
+		/// Gets or sets whether to request full permission to temporarily use location services with full accuracy.
+		/// </summary>
+		/// <remarks>This value is only used on iOS 14+. Using this functionality requires the <c>NSLocationTemporaryUsageDescriptionDictionary</c> key to be present in the <c>info.plist</c> file.</remarks>
 		public bool RequestFullAccuracy { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/GeolocationRequest.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <summary>
+		/// Returns a string representation of the current values of <see cref="GeolocationRequest"/>.
+		/// </summary>
+		/// <returns>A string representation of this instance in the format of <c>DesiredAccuracy: {value}, Timeout: {value}</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(DesiredAccuracy)}: {DesiredAccuracy}, {nameof(Timeout)}: {Timeout}";
 	}

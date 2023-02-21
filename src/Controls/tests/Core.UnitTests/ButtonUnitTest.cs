@@ -1,13 +1,13 @@
 using System;
-using NUnit.Framework;
+using Xunit;
+using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
-	public class ButtonUnitTest
-		: CommandSourceTests<Button>
+
+	public class ButtonUnitTest : VisualElementCommandSourceTests<Button>
 	{
-		[Test]
+		[Fact]
 		public void MeasureInvalidatedOnTextChange()
 		{
 			var button = new Button();
@@ -19,9 +19,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[Test]
-		[TestCase(true)]
-		[TestCase(false)]
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
 		public void TestClickedvent(bool isEnabled)
 		{
 			var view = new Button()
@@ -37,9 +37,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(activated == isEnabled ? true : false);
 		}
 
-		[Test]
-		[TestCase(true)]
-		[TestCase(false)]
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
 		public void TestPressedEvent(bool isEnabled)
 		{
 			var view = new Button()
@@ -55,9 +55,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(pressed == isEnabled ? true : false);
 		}
 
-		[Test]
-		[TestCase(true)]
-		[TestCase(false)]
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
 		public void TestReleasedEvent(bool isEnabled)
 		{
 			var view = new Button()
@@ -70,7 +70,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IButtonController)view).SendReleased();
 
-			Assert.True(released == isEnabled ? true : false);
+			// Released should always fire, even if the button is disabled
+			// Otherwise, a press which disables a button will leave it in the
+			// Pressed state forever
+			Assert.True(released);
 		}
 
 		protected override Button CreateSource()
@@ -99,7 +102,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		[Test]
+		[Fact]
 		public void TestBindingContextPropagation()
 		{
 			var context = new object();
@@ -107,16 +110,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			button.BindingContext = context;
 			var source = new FileImageSource();
 			button.ImageSource = source;
-			Assert.AreSame(context, source.BindingContext);
+			Assert.Same(context, source.BindingContext);
 
 			button = new Button();
 			source = new FileImageSource();
 			button.ImageSource = source;
 			button.BindingContext = context;
-			Assert.AreSame(context, source.BindingContext);
+			Assert.Same(context, source.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void TestImageSourcePropertiesChangedTriggerResize()
 		{
 			var source = new FileImageSource();
@@ -129,58 +132,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[Test]
+		[Fact]
 		public void AssignToFontFamilyUpdatesFont()
 		{
 			var button = new Button();
 
 			button.FontFamily = "CrazyFont";
-			Assert.AreEqual((button as ITextStyle).Font, Font.OfSize("CrazyFont", button.FontSize));
+			Assert.Equal((button as ITextStyle).Font, Font.OfSize("CrazyFont", button.FontSize));
 		}
 
-		[Test]
+		[Fact]
 		public void AssignToFontSizeUpdatesFont()
 		{
 			var button = new Button();
 
 			button.FontSize = 1000;
-			Assert.AreEqual((button as ITextStyle).Font, Font.SystemFontOfSize(1000));
+			Assert.Equal((button as ITextStyle).Font, Font.SystemFontOfSize(1000));
 		}
 
-		[Test]
+		[Fact]
 		public void AssignToFontAttributesUpdatesFont()
 		{
 			var button = new Button();
 
 			button.FontAttributes = FontAttributes.Italic | FontAttributes.Bold;
-			Assert.AreEqual((button as ITextStyle).Font, Font.SystemFontOfSize(button.FontSize, FontWeight.Bold, FontSlant.Italic));
+			Assert.Equal((button as ITextStyle).Font, Font.SystemFontOfSize(button.FontSize, FontWeight.Bold, FontSlant.Italic));
 		}
 
-		[Test]
-		public void CommandCanExecuteUpdatesEnabled()
-		{
-			var button = new Button();
-
-			bool result = false;
-
-			var bindingContext = new
-			{
-				Command = new Command(() => { }, () => result)
-			};
-
-			button.SetBinding(Button.CommandProperty, "Command");
-			button.BindingContext = bindingContext;
-
-			Assert.False(button.IsEnabled);
-
-			result = true;
-
-			bindingContext.Command.ChangeCanExecute();
-
-			Assert.True(button.IsEnabled);
-		}
-
-		[Test]
+		[Fact]
 		public void ButtonContentLayoutTypeConverterTest()
 		{
 			var converter = new Button.ButtonContentTypeConverter();
@@ -195,7 +174,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString(""));
 		}
 
-		[Test]
+		[Fact]
 		public void ButtonClickWhenCommandCanExecuteFalse()
 		{
 			bool invoked = false;
@@ -211,24 +190,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(invoked);
 		}
 
-		[Test]
+		[Fact]
 		public void ButtonCornerRadiusSetToFive()
 		{
 			var button = new Button();
 
 			button.CornerRadius = 25;
-			Assert.AreEqual(25, button.CornerRadius);
+			Assert.Equal(25, button.CornerRadius);
 
 			button.CornerRadius = 5;
-			Assert.AreEqual(5, button.CornerRadius);
+			Assert.Equal(5, button.CornerRadius);
 		}
 
 		private void AssertButtonContentLayoutsEqual(Button.ButtonContentLayout layout1, object layout2)
 		{
 			var bcl = (Button.ButtonContentLayout)layout2;
 
-			Assert.AreEqual(layout1.Position, bcl.Position);
-			Assert.AreEqual(layout1.Spacing, bcl.Spacing);
+			Assert.Equal(layout1.Position, bcl.Position);
+			Assert.Equal(layout1.Spacing, bcl.Spacing);
+		}
+
+		[Fact]
+		public void PressedVisualState()
+		{
+			var vsgList = CreateTestStateGroups();
+			var stateGroup = vsgList[0];
+			var element = new Button();
+			VisualStateManager.SetVisualStateGroups(element, vsgList);
+
+			element.SendPressed();
+			Assert.Equal(PressedStateName, stateGroup.CurrentState.Name);
+
+			element.SendReleased();
+			Assert.NotEqual(PressedStateName, stateGroup.CurrentState.Name);
 		}
 	}
 }

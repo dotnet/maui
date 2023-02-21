@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.UI.Xaml;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 

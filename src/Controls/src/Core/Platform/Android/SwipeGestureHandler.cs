@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
@@ -6,11 +7,23 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class SwipeGestureHandler
 	{
-		readonly Func<double, double> _pixelTranslation;
-
-		public SwipeGestureHandler(Func<View> getView, Func<double, double> pixelTranslation)
+		Func<double, double> PixelTranslation
 		{
-			_pixelTranslation = pixelTranslation;
+			get
+			{
+				return (input) =>
+				{
+					var context = GetView()?.Handler?.MauiContext?.Context;
+					if (context == null)
+						return 0;
+
+					return context.FromPixels(input);
+				};
+			}
+		}
+
+		public SwipeGestureHandler(Func<View> getView)
+		{
 			GetView = getView;
 		}
 
@@ -27,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 			foreach (SwipeGestureRecognizer swipeGesture in
 					 view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
-				((ISwipeGestureController)swipeGesture).SendSwipe(view, _pixelTranslation(x), _pixelTranslation(y));
+				((ISwipeGestureController)swipeGesture).SendSwipe(view, PixelTranslation(x), PixelTranslation(y));
 				result = true;
 			}
 

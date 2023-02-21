@@ -12,6 +12,10 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		public async Task<Contact> PickContactAsync()
 		{
 			var contactPicker = new ContactPicker();
+
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
+			WinRT.Interop.InitializeWithWindow.Initialize(contactPicker, hwnd);
+
 			var contactSelected = await contactPicker.PickContactAsync();
 			return ConvertContact(contactSelected);
 		}

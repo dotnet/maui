@@ -6,6 +6,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -42,9 +43,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textColor != null)
 			{
-				var androidColor = textColor.ToPlatform();
-				if (!editText.TextColors.IsOneColor(ColorStates.EditText, androidColor))
-					editText.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
+					editText.SetTextColor(c);
 			}
 		}
 
@@ -136,9 +136,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (placeholderTextColor != null)
 			{
-				var androidColor = placeholderTextColor.ToPlatform();
-				if (!editText.HintTextColors.IsOneColor(ColorStates.EditText, androidColor))
-					editText.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
+					editText.SetHintTextColor(c);
 			}
 		}
 
@@ -173,11 +172,11 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
-		// TODO: NET7 hartez - Remove this, nothing uses it
+		// TODO: NET8 hartez - Remove this, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
 			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
 
-		// TODO: NET7 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
+		// TODO: NET8 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
 		{
 			if (entry?.Handler is not EntryHandler entryHandler)
@@ -207,7 +206,7 @@ namespace Microsoft.Maui.Platform
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
-		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
 		internal static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
 		{
 			var newCursorPosition = editText.SelectionStart + cursorOffset;
@@ -270,7 +269,7 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
-		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
 		internal static int GetSelectedTextLength(this EditText editText)
 		{
 			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
@@ -280,7 +279,6 @@ namespace Microsoft.Maui.Platform
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
 		{
 			var previousCursorPosition = editText.SelectionStart;
-
 			var keyboard = textInput.Keyboard;
 			var nativeInputTypeToUpdate = keyboard.ToInputType();
 
@@ -314,18 +312,30 @@ namespace Microsoft.Maui.Platform
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
 
+			if (textInput is IElement element)
+			{
+				var services = element.Handler?.MauiContext?.Services;
+
+				if (services == null)
+					return;
+
+				var fontManager = services.GetRequiredService<IFontManager>();
+				editText.UpdateFont(textInput, fontManager);
+			}
+
 			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
 			// Let's restore the cursor position to its previous location.
 			editText.SetSelection(previousCursorPosition);
 		}
 
-		internal static bool IsCompletedAction(this EditorActionEventArgs e)
+		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction? currentInputImeFlag)
 		{
 			var actionId = e.ActionId;
 			var evt = e.Event;
 
 			return
 				actionId == ImeAction.Done ||
+				actionId == currentInputImeFlag ||
 				(actionId == ImeAction.ImeNull && evt?.KeyCode == Keycode.Enter && evt?.Action == KeyEventActions.Up);
 		}
 
@@ -334,7 +344,7 @@ namespace Microsoft.Maui.Platform
 		/// This will return True to handle OnTouch to prevent re-activating keyboard after clearing the text.
 		/// </summary>
 		/// <returns>True if clear button is clicked and Text is cleared. False if not.</returns>
-		internal static bool HandleClearButtonTouched(this EditText? platformView, FlowDirection flowDirection, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
+		internal static bool HandleClearButtonTouched(this EditText? platformView, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
 		{
 			if (platformView is null)
 				return false;
@@ -343,24 +353,26 @@ namespace Microsoft.Maui.Platform
 			if (motionEvent is null)
 				return false;
 
+			if (motionEvent.Action != MotionEventActions.Up)
+				return false;
+
 			var rBounds = getClearButtonDrawable?.Invoke()?.Bounds;
 			var buttonWidth = rBounds?.Width();
 
 			if (buttonWidth <= 0)
 				return false;
 
-			if (motionEvent.Action != MotionEventActions.Up)
-				return false;
-
-			var x = motionEvent.RawX;
+			var x = motionEvent.GetX();
 			var y = motionEvent.GetY();
 
-			if ((flowDirection != FlowDirection.LeftToRight
+			var flowDirection = platformView.LayoutDirection;
+
+			if ((flowDirection != LayoutDirection.Ltr
 				|| x < platformView.Right - buttonWidth
 				|| x > platformView.Right - platformView.PaddingRight
 				|| y < platformView.PaddingTop
 				|| y > platformView.Height - platformView.PaddingBottom) &&
-				(flowDirection != FlowDirection.RightToLeft
+				(flowDirection != LayoutDirection.Rtl
 				|| x < platformView.Left + platformView.PaddingLeft
 				|| x > platformView.Left + buttonWidth
 				|| y < platformView.PaddingTop

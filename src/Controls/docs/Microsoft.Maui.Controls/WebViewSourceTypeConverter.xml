@@ -1,6 +1,6 @@
 <Type Name="WebViewSourceTypeConverter" FullName="Microsoft.Maui.Controls.WebViewSourceTypeConverter">
-  <TypeSignature Language="C#" Value="public class WebViewSourceTypeConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit WebViewSourceTypeConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public class WebViewSourceTypeConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit WebViewSourceTypeConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.WebViewSourceTypeConverter" />
   <TypeSignature Language="F#" Value="type WebViewSourceTypeConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -15,7 +15,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>
@@ -24,7 +24,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>A <see cref="T:Microsoft.Maui.Controls.TypeConverter" /> that converts a string to a <see cref="T:Microsoft.Maui.Controls.UrlWebViewSource" />.</summary>
+    <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> that converts a string to a <see cref="T:Microsoft.Maui.Controls.UrlWebViewSource" />.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>

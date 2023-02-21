@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Converters
 {
+	/// <inheritdoc/>
 	public class KeyboardTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
@@ -17,9 +18,11 @@ namespace Microsoft.Maui.Converters
 		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
 		{
 			var strValue = value?.ToString();
+
 			if (strValue != null)
 			{
 				string[] parts = strValue.Split('.');
+
 				if (parts != null && parts.Length == 1 || (parts != null && parts.Length == 2 && parts[0] == "Keyboard"))
 				{
 					var kbType = typeof(Keyboard);
@@ -42,6 +45,7 @@ namespace Microsoft.Maui.Converters
 		{
 			if (!(value is Keyboard keyboard))
 				throw new NotSupportedException();
+
 			if (keyboard == Keyboard.Plain)
 				return nameof(Keyboard.Plain);
 			if (keyboard == Keyboard.Chat)
@@ -58,6 +62,7 @@ namespace Microsoft.Maui.Converters
 				return nameof(Keyboard.Text);
 			if (keyboard == Keyboard.Url)
 				return nameof(Keyboard.Url);
+
 			throw new NotSupportedException();
 		}
 	}

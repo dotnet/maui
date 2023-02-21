@@ -1,13 +1,13 @@
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Label;
+using Microsoft.Maui.Graphics;
+using NLabel = Tizen.UIExtensions.NUI.Label;
+using TFormattedString = Tizen.UIExtensions.Common.FormattedString;
+using TSpan = Tizen.UIExtensions.Common.Span;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-
-	public class LabelRenderer : ViewRenderer<Label, Native.Label>
+	public class LabelRenderer : ViewRenderer<Label, NLabel>
 	{
 
 		public LabelRenderer()
@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			RegisterPropertyHandler(Label.VerticalTextAlignmentProperty, UpdateVerticalTextAlignment);
 			RegisterPropertyHandler(Label.FormattedTextProperty, UpdateFormattedText);
 			RegisterPropertyHandler(Label.LineHeightProperty, UpdateLineHeight);
-			RegisterPropertyHandler(Specific.FontWeightProperty, UpdateFontWeight);
 			RegisterPropertyHandler(Label.TextDecorationsProperty, UpdateTextDecorations);
 		}
 
@@ -27,39 +26,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				base.SetNativeControl(new Native.Label(Forms.NativeParent));
+				base.SetNativeControl(new NLabel());
 			}
 			base.OnElementChanged(e);
 		}
 
-		protected override Size MinimumSize()
-		{
-			return Control.Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
-		}
-
-		Native.FormattedString ConvertFormattedText(FormattedString formattedString)
+		TFormattedString ConvertFormattedText(FormattedString formattedString)
 		{
 			if (formattedString == null)
 			{
 				return null;
 			}
 
-			Native.FormattedString nativeString = new Native.FormattedString();
+			var nativeString = new TFormattedString();
 
 			foreach (var span in formattedString.Spans)
 			{
-				var textDecorations = span.TextDecorations;
-
-				Native.Span nativeSpan = new Native.Span();
-				nativeSpan.Text = span.Text;
-				nativeSpan.FontAttributes = span.FontAttributes;
-				nativeSpan.FontFamily = span.FontFamily;
-				nativeSpan.FontSize = span.FontSize;
-				nativeSpan.ForegroundColor = span.TextColor.ToPlatformEFL();
-				nativeSpan.BackgroundColor = span.BackgroundColor.ToPlatformEFL();
-				nativeSpan.Underline = (textDecorations & TextDecorations.Underline) != 0;
-				nativeSpan.Strikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
-				nativeSpan.LineHeight = span.LineHeight;
+				var nativeSpan = new TSpan
+				{
+					Text = span.Text,
+					FontAttributes = span.FontAttributes.ToPlatform(),
+					FontFamily = span.FontFamily,
+					FontSize = span.FontSize.ToPoint(),
+					ForegroundColor = span.TextColor.ToPlatform(),
+					BackgroundColor = span.BackgroundColor.ToPlatform(),
+					TextDecorations = span.TextDecorations.ToPlatform(),
+					LineHeight = span.LineHeight,
+				};
 				nativeString.Spans.Add(nativeSpan);
 			}
 
@@ -68,11 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateTextDecorations()
 		{
-			Control.BatchBegin();
-			var textDecorations = Element.TextDecorations;
-			Control.Strikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
-			Control.Underline = (textDecorations & TextDecorations.Underline) != 0;
-			Control.BatchCommit();
+			Control.TextDecorations = Element.TextDecorations.ToPlatform();
 		}
 
 		void UpdateFormattedText()
@@ -81,7 +70,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				Control.FormattedText = ConvertFormattedText(Element.FormattedText);
 		}
 
-		[PortHandler]
 		void UpdateText()
 		{
 			Control.Text = Element.Text ?? "";
@@ -89,63 +77,37 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateTextColor()
 		{
-			Control.TextColor = Element.TextColor.ToPlatformEFL();
+			if (Element.TextColor.IsDefault())
+				Control.TextColor = Colors.Black.ToPlatform();
+			else
+				Control.TextColor = Element.TextColor.ToPlatform();
 		}
 
 		void UpdateHorizontalTextAlignment()
 		{
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
 		}
 
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToNative();
+			Control.VerticalTextAlignment = Element.VerticalTextAlignment.ToPlatform();
 		}
 
 		void UpdateFontProperties()
 		{
-			Control.BatchBegin();
-
-			Control.FontSize = Element.FontSize;
-			Control.FontAttributes = Element.FontAttributes;
-			Control.FontFamily = Element.FontFamily.ToNativeFontFamily(Element.RequireFontManager());
-
-			Control.BatchCommit();
+			Control.FontSize = Element.FontSize.ToPoint();
+			Control.FontAttributes = Element.FontAttributes.ToPlatform();
+			Control.FontFamily = Element.FontFamily;
 		}
 
 		void UpdateLineBreakMode()
 		{
-			Control.LineBreakMode = ConvertToNativeLineBreakMode(Element.LineBreakMode);
-		}
-
-		void UpdateFontWeight()
-		{
-			Control.FontWeight = Specific.GetFontWeight(Element);
+			Control.LineBreakMode = Element.LineBreakMode.ToPlatform();
 		}
 
 		void UpdateLineHeight()
 		{
-			Control.LineHeight = Element.LineHeight;
-		}
 
-		Native.LineBreakMode ConvertToNativeLineBreakMode(LineBreakMode mode)
-		{
-			switch (mode)
-			{
-				case LineBreakMode.CharacterWrap:
-					return Native.LineBreakMode.CharacterWrap;
-				case LineBreakMode.HeadTruncation:
-					return Native.LineBreakMode.HeadTruncation;
-				case LineBreakMode.MiddleTruncation:
-					return Native.LineBreakMode.MiddleTruncation;
-				case LineBreakMode.NoWrap:
-					return Native.LineBreakMode.NoWrap;
-				case LineBreakMode.TailTruncation:
-					return Native.LineBreakMode.TailTruncation;
-				case LineBreakMode.WordWrap:
-				default:
-					return Native.LineBreakMode.WordWrap;
-			}
 		}
 	}
 }

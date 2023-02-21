@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class CustomImageCacheStub
+	public class CustomImageCacheStub
 	{
 		readonly Dictionary<Color, (ImageSource Source, int Count)> _cache = new();
 

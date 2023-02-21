@@ -1,28 +1,28 @@
 using System;
 using System.Collections.ObjectModel;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class FormattedStringTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void NullSpansNotAllowed()
 		{
 			var fs = new FormattedString();
-			Assert.That(() => fs.Spans.Add(null), Throws.InstanceOf<ArgumentNullException>());
+			Assert.Throws<ArgumentNullException>(() => fs.Spans.Add(null));
 
 			fs = new FormattedString();
 			fs.Spans.Add(new Span());
 
-			Assert.That(() =>
+			Assert.Throws<ArgumentNullException>(() =>
 			{
 				fs.Spans[0] = null;
-			}, Throws.InstanceOf<ArgumentNullException>());
+			});
 		}
 
-		[Test]
+		[Fact]
 		public void SpanChangeTriggersSpansPropertyChange()
 		{
 			var span = new Span();
@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			span.Text = "New text";
 
-			Assert.That(spansChanged, Is.True);
+			Assert.True(spansChanged);
 		}
 
-		[Test]
+		[Fact]
 		public void SpanChangesUnsubscribes()
 		{
 			var span = new Span();
@@ -58,10 +58,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			span.Text = "New text";
 
-			Assert.That(spansChanged, Is.False);
+			Assert.False(spansChanged);
 		}
 
-		[Test]
+		[Fact]
 		public void AddingSpanTriggersSpansPropertyChange()
 		{
 			var span = new Span();
@@ -76,29 +76,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			fs.Spans.Add(span);
 
-			Assert.That(spansChanged, Is.True);
+			Assert.True(spansChanged);
 		}
 
-		[Test]
+		[Fact]
 		public void ImplicitStringConversion()
 		{
 			string original = "fubar";
 			FormattedString fs = original;
-			Assert.That(fs, Is.Not.Null);
-			Assert.That(fs.Spans.Count, Is.EqualTo(1));
-			Assert.That(fs.Spans[0], Is.Not.Null);
-			Assert.That(fs.Spans[0].Text, Is.EqualTo(original));
+			Assert.NotNull(fs);
+			Assert.Equal(1, fs.Spans.Count);
+			Assert.NotNull(fs.Spans[0]);
+			Assert.Equal(fs.Spans[0].Text, original);
 		}
 
-		[Test]
+		[Fact]
 		public void ImplicitStringConversionNull()
 		{
 			string original = null;
 			FormattedString fs = original;
-			Assert.That(fs, Is.Not.Null);
-			Assert.That(fs.Spans.Count, Is.EqualTo(1));
-			Assert.That(fs.Spans[0], Is.Not.Null);
-			Assert.That(fs.Spans[0].Text, Is.EqualTo(original));
+			Assert.NotNull(fs);
+			Assert.Equal(1, fs.Spans.Count);
+			Assert.NotNull(fs.Spans[0]);
+			Assert.Equal(fs.Spans[0].Text, original);
 		}
 	}
 }

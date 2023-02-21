@@ -103,8 +103,17 @@ namespace Microsoft.Maui.UnitTests
 		public void Dispose() =>
 			s_dispatcherInstance.Dispose();
 
-		public IDispatcher? GetForCurrentThread() =>
-			s_dispatcherInstance.Value;
+		public IDispatcher? GetForCurrentThread()
+		{
+			var x = s_dispatcherInstance.Value;
+
+			if (x == null)
+			{
+				System.Diagnostics.Debug.WriteLine("WTH");
+			}
+
+			return x;
+		}
 	}
 
 	public class DispatcherProviderStubOptions

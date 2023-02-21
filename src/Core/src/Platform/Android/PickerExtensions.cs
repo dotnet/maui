@@ -13,9 +13,8 @@ namespace Microsoft.Maui.Platform
 
 			if (titleColor != null)
 			{
-				var androidColor = titleColor.ToPlatform();
-				if (!platformPicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))
-					platformPicker.SetHintTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(platformPicker.TextColors, titleColor.ToPlatform()) is ColorStateList c)
+					platformPicker.SetHintTextColor(c);
 			}
 		}
 
@@ -29,9 +28,8 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var androidColor = textColor.ToPlatform();
-				if (!platformPicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))
-					platformPicker.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(platformPicker.TextColors, textColor.ToPlatform()) is ColorStateList c)
+					platformPicker.SetTextColor(c);
 			}
 		}
 

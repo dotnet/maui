@@ -1,15 +1,16 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Controls.Maps
 {
-	public class Polyline : MapElement
+	public partial class Polyline : MapElement
 	{
-		public IList<Position> Geopath { get; }
+		public IList<Location> Geopath { get; }
 
 		public Polyline()
 		{
-			var observable = new ObservableCollection<Position>();
+			var observable = new ObservableCollection<Location>();
 			observable.CollectionChanged += (sender, args) => OnPropertyChanged(nameof(Geopath));
 			Geopath = observable;
 		}

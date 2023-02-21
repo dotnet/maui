@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Resizetizer
 			UpdateSharedResources(xmlns, manifest);
 		}
 
-		void UpdateSharedManifest(XNamespace xmlns ,XElement manifest)
+		void UpdateSharedManifest(XNamespace xmlns, XElement manifest)
 		{
 			var uiApplication = manifest.Element(xmlns + UiApplicationName);
 

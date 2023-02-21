@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 {
-	[TestFixture]
+
 	public class SelectorTests
 	{
 		IStyleSelectable Page;
@@ -17,8 +17,8 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 		IStyleSelectable Label4 => StackLayout.Children.Skip(4).First();
 		IStyleSelectable ContentView0 => StackLayout.Children.Skip(2).First();
 
-		[SetUp]
-		public void SetUp()
+
+		public SelectorTests()
 		{
 			Page = new MockStylable
 			{
@@ -54,66 +54,67 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 				SetParents(s, stylable);
 		}
 
-		[TestCase("label", true, true, true, true, true, false)]
-		[TestCase(" label", true, true, true, true, true, false)]
-		[TestCase("label ", true, true, true, true, true, false)]
-		[TestCase(".test", true, false, true, false, false, true)]
-		[TestCase("label.test", true, false, true, false, false, false)]
-		[TestCase("stacklayout>label.test", true, false, false, false, false, false)]
-		[TestCase("stacklayout >label.test", true, false, false, false, false, false)]
-		[TestCase("stacklayout> label.test", true, false, false, false, false, false)]
-		[TestCase("stacklayout label.test", true, false, true, false, false, false)]
-		[TestCase("stacklayout  label.test", true, false, true, false, false, false)]
-		[TestCase("stacklayout .test", true, false, true, false, false, true)]
-		[TestCase("stacklayout.test", false, false, false, false, false, false)]
-		[TestCase("*", true, true, true, true, true, true)]
-		[TestCase("#foo", false, false, false, true, false, false)]
-		[TestCase("label#foo", false, false, false, true, false, false)]
-		[TestCase("div#foo", false, false, false, false, false, false)]
-		[TestCase(".test,#foo", true, false, true, true, false, true)]
-		[TestCase(".test ,#foo", true, false, true, true, false, true)]
-		[TestCase(".test, #foo", true, false, true, true, false, true)]
-		[TestCase("#foo,.test", true, false, true, true, false, true)]
-		[TestCase("#foo ,.test", true, false, true, true, false, true)]
-		[TestCase("#foo, .test", true, false, true, true, false, true)]
-		[TestCase("contentview+label", false, false, false, true, false, false)]
-		[TestCase("contentview +label", false, false, false, true, false, false)]
-		[TestCase("contentview+ label", false, false, false, true, false, false)]
-		[TestCase("contentview~label", false, false, false, true, true, false)]
-		[TestCase("contentview ~label", false, false, false, true, true, false)]
-		[TestCase("contentview\r\n~label", false, false, false, true, true, false)]
-		[TestCase("contentview~ label", false, false, false, true, true, false)]
-		[TestCase("label~*", false, true, false, true, true, true)]
-		[TestCase("label~.test", false, false, false, false, false, true)]
-		[TestCase("label~#foo", false, false, false, true, false, false)]
-		[TestCase("page contentview stacklayout label", false, false, false, false, false, false)]
-		[TestCase("page stacklayout contentview label", false, false, true, false, false, false)]
-		[TestCase("page contentview label", false, false, true, false, false, false)]
-		[TestCase("page contentview>label", false, false, true, false, false, false)]
-		[TestCase("page>stacklayout contentview label", false, false, true, false, false, false)]
-		[TestCase("page stacklayout>contentview label", false, false, true, false, false, false)]
-		[TestCase("page stacklayout contentview>label", false, false, true, false, false, false)]
-		[TestCase("page>stacklayout>contentview label", false, false, true, false, false, false)]
-		[TestCase("page>stack/* comment * */layout>contentview label", false, false, true, false, false, false)]
-		[TestCase("page>stacklayout contentview>label", false, false, true, false, false, false)]
-		[TestCase("page stacklayout>contentview>label", false, false, true, false, false, false)]
-		[TestCase("page>stacklayout>contentview>label", false, false, true, false, false, false)]
-		[TestCase("visualelement", false, false, false, false, false, false)]
-		[TestCase("^visualelement", true, true, true, true, true, true)]
-		[TestCase("^layout", false, false, false, false, false, true)]
-		[TestCase("stacklayout visualelement", false, false, false, false, false, false)]
-		[TestCase("stacklayout>visualelement", false, false, false, false, false, false)]
-		[TestCase("stacklayout ^visualelement", true, true, true, true, true, true)]
-		[TestCase("stacklayout>^visualelement", true, true, false, true, true, true)]
+		[Theory]
+		[InlineData("label", true, true, true, true, true, false)]
+		[InlineData(" label", true, true, true, true, true, false)]
+		[InlineData("label ", true, true, true, true, true, false)]
+		[InlineData(".test", true, false, true, false, false, true)]
+		[InlineData("label.test", true, false, true, false, false, false)]
+		[InlineData("stacklayout>label.test", true, false, false, false, false, false)]
+		[InlineData("stacklayout >label.test", true, false, false, false, false, false)]
+		[InlineData("stacklayout> label.test", true, false, false, false, false, false)]
+		[InlineData("stacklayout label.test", true, false, true, false, false, false)]
+		[InlineData("stacklayout  label.test", true, false, true, false, false, false)]
+		[InlineData("stacklayout .test", true, false, true, false, false, true)]
+		[InlineData("stacklayout.test", false, false, false, false, false, false)]
+		[InlineData("*", true, true, true, true, true, true)]
+		[InlineData("#foo", false, false, false, true, false, false)]
+		[InlineData("label#foo", false, false, false, true, false, false)]
+		[InlineData("div#foo", false, false, false, false, false, false)]
+		[InlineData(".test,#foo", true, false, true, true, false, true)]
+		[InlineData(".test ,#foo", true, false, true, true, false, true)]
+		[InlineData(".test, #foo", true, false, true, true, false, true)]
+		[InlineData("#foo,.test", true, false, true, true, false, true)]
+		[InlineData("#foo ,.test", true, false, true, true, false, true)]
+		[InlineData("#foo, .test", true, false, true, true, false, true)]
+		[InlineData("contentview+label", false, false, false, true, false, false)]
+		[InlineData("contentview +label", false, false, false, true, false, false)]
+		[InlineData("contentview+ label", false, false, false, true, false, false)]
+		[InlineData("contentview~label", false, false, false, true, true, false)]
+		[InlineData("contentview ~label", false, false, false, true, true, false)]
+		[InlineData("contentview\r\n~label", false, false, false, true, true, false)]
+		[InlineData("contentview~ label", false, false, false, true, true, false)]
+		[InlineData("label~*", false, true, false, true, true, true)]
+		[InlineData("label~.test", false, false, false, false, false, true)]
+		[InlineData("label~#foo", false, false, false, true, false, false)]
+		[InlineData("page contentview stacklayout label", false, false, false, false, false, false)]
+		[InlineData("page stacklayout contentview label", false, false, true, false, false, false)]
+		[InlineData("page contentview label", false, false, true, false, false, false)]
+		[InlineData("page contentview>label", false, false, true, false, false, false)]
+		[InlineData("page>stacklayout contentview label", false, false, true, false, false, false)]
+		[InlineData("page stacklayout>contentview label", false, false, true, false, false, false)]
+		[InlineData("page stacklayout contentview>label", false, false, true, false, false, false)]
+		[InlineData("page>stacklayout>contentview label", false, false, true, false, false, false)]
+		[InlineData("page>stack/* comment * */layout>contentview label", false, false, true, false, false, false)]
+		[InlineData("page>stacklayout contentview>label", false, false, true, false, false, false)]
+		[InlineData("page stacklayout>contentview>label", false, false, true, false, false, false)]
+		[InlineData("page>stacklayout>contentview>label", false, false, true, false, false, false)]
+		[InlineData("visualelement", false, false, false, false, false, false)]
+		[InlineData("^visualelement", true, true, true, true, true, true)]
+		[InlineData("^layout", false, false, false, false, false, true)]
+		[InlineData("stacklayout visualelement", false, false, false, false, false, false)]
+		[InlineData("stacklayout>visualelement", false, false, false, false, false, false)]
+		[InlineData("stacklayout ^visualelement", true, true, true, true, true, true)]
+		[InlineData("stacklayout>^visualelement", true, true, false, true, true, true)]
 		public void TestCase(string selectorString, bool label0match, bool label1match, bool label2match, bool label3match, bool label4match, bool content0match)
 		{
 			var selector = Selector.Parse(new CssReader(new StringReader(selectorString)));
-			Assert.AreEqual(label0match, selector.Matches(Label0));
-			Assert.AreEqual(label1match, selector.Matches(Label1));
-			Assert.AreEqual(label2match, selector.Matches(Label2));
-			Assert.AreEqual(label3match, selector.Matches(Label3));
-			Assert.AreEqual(label4match, selector.Matches(Label4));
-			Assert.AreEqual(content0match, selector.Matches(ContentView0));
+			Assert.Equal(label0match, selector.Matches(Label0));
+			Assert.Equal(label1match, selector.Matches(Label1));
+			Assert.Equal(label2match, selector.Matches(Label2));
+			Assert.Equal(label3match, selector.Matches(Label3));
+			Assert.Equal(label4match, selector.Matches(Label4));
+			Assert.Equal(content0match, selector.Matches(ContentView0));
 		}
 	}
 }

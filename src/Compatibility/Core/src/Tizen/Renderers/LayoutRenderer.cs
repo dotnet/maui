@@ -1,7 +1,7 @@
-using System;
 using System.ComponentModel;
-using SkiaSharp.Views.Tizen;
 using Microsoft.Maui.Controls.Platform;
+using NViewGroup = Tizen.UIExtensions.NUI.ViewGroup;
+using TLayoutEventArgs = Tizen.UIExtensions.Common.LayoutEventArgs;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -9,13 +9,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	/// Renderer of a Layout.
 	/// </summary>
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class LayoutRenderer : ViewRenderer<Layout, Native.Canvas>, SkiaSharp.IBackgroundCanvas, ILayoutRenderer
+	public class LayoutRenderer : ViewRenderer<Layout, NViewGroup>, ILayoutRenderer
 	{
 		bool _layoutUpdatedRegistered = false;
-
-		Lazy<SKCanvasView> _backgroundCanvas;
-
-		public SKCanvasView BackgroundCanvas => _backgroundCanvas.Value;
 
 		public void RegisterOnLayoutUpdated()
 		{
@@ -30,24 +26,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (null == Control)
 			{
-				SetNativeControl(new Native.Canvas(Forms.NativeParent));
-			}
-
-			if (Forms.UseSkiaSharp)
-			{
-				Control.LayoutUpdated += OnBackgroundLayoutUpdated;
-				_backgroundCanvas = new Lazy<SKCanvasView>(() =>
-				{
-					var canvas = new SKCanvasView(Forms.NativeParent);
-					canvas.PassEvents = true;
-					canvas.PaintSurface += OnBackgroundPaint;
-					canvas.Show();
-					Control.Children.Add(canvas);
-					canvas.Lower();
-					return canvas;
-				});
+				SetNativeControl(new NViewGroup());
 			}
 			base.OnElementChanged(e);
+
+			RegisterOnLayoutUpdated();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -68,18 +51,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					Control.LayoutUpdated -= OnLayoutUpdated;
 					_layoutUpdatedRegistered = false;
 				}
-
-				if (Forms.UseSkiaSharp && Control != null)
-				{
-					Control.LayoutUpdated -= OnBackgroundLayoutUpdated;
-
-					if (_backgroundCanvas.IsValueCreated)
-					{
-						BackgroundCanvas.PaintSurface -= OnBackgroundPaint;
-						BackgroundCanvas.Unrealize();
-						_backgroundCanvas = null;
-					}
-				}
 			}
 			base.Dispose(disposing);
 		}
@@ -91,30 +62,37 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				return;
 			}
 
+
+			if (initialize)
+			{
+				// On initialize time, GestureDetector was not created even if GestureRecognizer was existed
+				Application.Current.Dispatcher.Dispatch(() => UpdateInputTransparent(false));
+				return;
+			}
+
 			if (Element.InputTransparent)
 			{
+				// Disabling event
 				if (Element.CascadeInputTransparent)
 				{
-					//Ignore all events of both layout and it's chidren
-					NativeView.PassEvents = true;
+					// disabling all event including child
+					NativeView.Sensitive = false;
 				}
 				else
 				{
-					//Ignore Layout's event only. Children's events should be allowded.
-					NativeView.PassEvents = false;
-					NativeView.RepeatEvents = true;
+					// Child can get event, but layout blocking all event
+					// acutally, it allow event on view, so we need to manually block a event.
+					NativeView.Sensitive = true;
 				}
+				// Disabling gesture detecting on layout
+				if (GestureDetector != null)
+					GestureDetector.IsEnabled = false;
 			}
 			else
 			{
-				//Allow layout's events and children's events would be determined by CascadeInputParent.
-				NativeView.PassEvents = false;
-				NativeView.RepeatEvents = false;
-			}
-
-			if (GestureDetector != null)
-			{
-				GestureDetector.InputTransparent = Element.InputTransparent;
+				if (GestureDetector != null)
+					GestureDetector.IsEnabled = true;
+				NativeView.Sensitive = true;
 			}
 		}
 
@@ -130,35 +108,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 		}
 
-		protected virtual void OnBackgroundPaint(object sender, SKPaintSurfaceEventArgs e)
+		void OnLayoutUpdated(object sender, TLayoutEventArgs e)
 		{
-			var canvas = e.Surface.Canvas;
-			canvas.Clear();
-
-			var bounds = e.Info.Rect;
-			var paint = Element.GetBackgroundPaint(bounds);
-
-			if (paint != null)
-			{
-				using (paint)
-				using (var path = bounds.ToPath())
-				{
-					canvas.DrawPath(path, paint);
-				}
-			}
-		}
-
-		protected virtual void OnBackgroundLayoutUpdated(object sender, Native.LayoutEventArgs e)
-		{
-			if (_backgroundCanvas.IsValueCreated)
-			{
-				BackgroundCanvas.Geometry = Control.Geometry;
-			}
-		}
-
-		void OnLayoutUpdated(object sender, Native.LayoutEventArgs e)
-		{
-			Element.Layout(e.Geometry.ToDP());
+			var bound = e.Geometry.ToDP();
+			bound.X = Element.X;
+			bound.Y = Element.Y;
+			Element.Layout(bound);
 		}
 	}
 }

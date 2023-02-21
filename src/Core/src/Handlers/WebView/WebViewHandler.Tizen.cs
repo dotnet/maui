@@ -1,20 +1,37 @@
-﻿using System;
-using Tizen.UIExtensions.ElmSharp;
-using TChromium = Tizen.WebView.Chromium;
-using TWebView = Tizen.WebView.WebView;
-
-namespace Microsoft.Maui.Handlers
+﻿namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, MauiWebView>
 	{
 		protected virtual double MinimumSize => 44d;
 
-		TWebView PlatformWebView => PlatformView.WebView;
+		protected override MauiWebView CreatePlatformView() => new()
+		{
+			MinimumSize = new Tizen.NUI.Size2D(MinimumSize.ToScaledPixel(), MinimumSize.ToScaledPixel()),
+		};
+
+		protected override void ConnectHandler(MauiWebView platformView)
+		{
+			base.ConnectHandler(platformView);
+			platformView.PageLoadFinished += OnPageLoadFinished;
+		}
+
+		protected override void DisconnectHandler(MauiWebView platformView)
+		{
+			if (!platformView.HasBody())
+				return;
+
+			base.DisconnectHandler(platformView);
+			platformView.PageLoadFinished -= OnPageLoadFinished;
+		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)
 		{
-			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
-			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
+			handler.PlatformView?.UpdateSource(webView, handler.PlatformView);
+		}
+
+		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView?.UpdateUserAgent(webView);
 		}
 
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
@@ -29,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
 		{
-			handler.PlatformView?.UpdateReload(webView);
+			handler.PlatformView.UpdateReload(webView);
 		}
 
 		public static void MapEval(IWebViewHandler handler, IWebView webView, object? arg)
@@ -37,43 +54,21 @@ namespace Microsoft.Maui.Handlers
 			if (arg is not string script)
 				return;
 
-			handler.PlatformView?.Eval(webView, script);
+			handler.PlatformView?.EvaluateJavaScript(script);
 		}
 
 		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)
 		{
-			if (arg is not string script)
-				return;
-
-			handler.PlatformView?.Eval(webView, script);
-		}
-
-		protected override MauiWebView CreatePlatformView()
-		{
-			return new MauiWebView(PlatformParent)
+			if (arg is EvaluateJavaScriptAsyncRequest request)
 			{
-				MinimumHeight = MinimumSize.ToScaledPixel(),
-				MinimumWidth = MinimumSize.ToScaledPixel()
-			};
+				handler.PlatformView.EvaluateJavaScript(request);
+			}
 		}
 
-		protected override void ConnectHandler(MauiWebView platformView)
+		void OnPageLoadFinished(object? sender, Tizen.NUI.WebViewPageLoadEventArgs e)
 		{
-			TChromium.Initialize();
-			MauiApplication.Current.Terminated += (sender, arg) => TChromium.Shutdown();
-			PlatformWebView.LoadFinished += OnLoadFinished;
+			PlatformView?.UpdateCanGoBackForward(VirtualView);
 		}
 
-		protected override void DisconnectHandler(MauiWebView platformView)
-		{
-			PlatformWebView.StopLoading();
-			PlatformWebView.LoadFinished -= OnLoadFinished;
-			base.DisconnectHandler(platformView);
-		}
-
-		void OnLoadFinished(object? sender, EventArgs e)
-		{
-			PlatformWebView.SetFocus(true);
-		}
 	}
 }

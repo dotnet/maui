@@ -4,14 +4,16 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/PlacemarkExtensions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PlacemarkExtensions']/Docs" />
+	/// <summary>
+	/// This class contains static extension methods for use with <see cref="Placemark"/> objects.
+	/// </summary>
 	public static partial class PlacemarkExtensions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PlacemarkExtensions.xml" path="//Member[@MemberName='OpenMapsAsync'][2]/Docs" />
+		/// <inheritdoc cref="Map.OpenAsync(Placemark, MapLaunchOptions)"/>
 		public static Task OpenMapsAsync(this Placemark placemark, MapLaunchOptions options) =>
 			Map.OpenAsync(placemark, options);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PlacemarkExtensions.xml" path="//Member[@MemberName='OpenMapsAsync'][1]/Docs" />
+		/// <inheritdoc cref="Map.OpenAsync(Placemark)"/>
 		public static Task OpenMapsAsync(this Placemark placemark) =>
 			Map.OpenAsync(placemark);
 

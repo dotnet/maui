@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,14 +7,16 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Profile']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Profile']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public struct Profile : IDisposable
 	{
 		const int Capacity = 1000;
 
 		[DebuggerDisplay("{Name,nq} {Id} {Ticks}")]
 		public struct Datum
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 		{
 			public string Name;
 			public string Id;
@@ -21,10 +24,10 @@ namespace Microsoft.Maui.Controls.Internals
 			public int Depth;
 			public int Line;
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Data']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Data']/Docs/*" />
 		public static List<Datum> Data;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='IsEnabled']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsEnabled { get; private set; } = false;
 
@@ -37,7 +40,7 @@ namespace Microsoft.Maui.Controls.Internals
 		readonly string _name;
 		readonly int _slot;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Enable']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Enable']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void Enable()
 		{
@@ -50,7 +53,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Start']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Start']/Docs/*" />
 		public static void Start()
 		{
 			if (!IsEnabled)
@@ -59,7 +62,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Running = true;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Stop']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Stop']/Docs/*" />
 		public static void Stop()
 		{
 			if (!IsEnabled)
@@ -71,7 +74,7 @@ namespace Microsoft.Maui.Controls.Internals
 				Stack.Pop();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FrameBegin']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FrameBegin']/Docs/*" />
 		public static void FrameBegin(
 			[CallerMemberName] string name = "",
 			[CallerLineNumber] int line = 0)
@@ -82,7 +85,7 @@ namespace Microsoft.Maui.Controls.Internals
 			FrameBeginBody(name, null, line);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FrameEnd']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FrameEnd']/Docs/*" />
 		public static void FrameEnd(
 			[CallerMemberName] string name = "")
 		{
@@ -92,7 +95,7 @@ namespace Microsoft.Maui.Controls.Internals
 			FrameEndBody(name);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FramePartition']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FramePartition']/Docs/*" />
 		public static void FramePartition(
 			string id,
 			[CallerLineNumber] int line = 0)
@@ -157,7 +160,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Depth++;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Dispose']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Dispose']/Docs/*" />
 		public void Dispose()
 		{
 			if (!IsEnabled)

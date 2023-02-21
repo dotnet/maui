@@ -119,7 +119,7 @@ namespace FormsGallery
 ]]></code>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Picker.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Picker.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -275,7 +275,7 @@ namespace FormsGallery
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -307,17 +307,17 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignment">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment HorizontalTextAlignment { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment HorizontalTextAlignment" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment HorizontalTextAlignment { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment HorizontalTextAlignment" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Picker.HorizontalTextAlignment" />
-      <MemberSignature Language="F#" Value="member this.HorizontalTextAlignment : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Picker.HorizontalTextAlignment" />
+      <MemberSignature Language="F#" Value="member this.HorizontalTextAlignment : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Picker.HorizontalTextAlignment" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -577,10 +577,10 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="TextColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TextColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TextColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TextColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TextColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Picker.TextColor" />
-      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Picker.TextColor" />
+      <MemberSignature Language="F#" Value="member this.TextColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Picker.TextColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -588,7 +588,7 @@ namespace FormsGallery
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text color.</summary>
@@ -679,17 +679,17 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="TitleColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TitleColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TitleColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TitleColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TitleColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Picker.TitleColor" />
-      <MemberSignature Language="F#" Value="member this.TitleColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Picker.TitleColor" />
+      <MemberSignature Language="F#" Value="member this.TitleColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Picker.TitleColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -767,17 +767,17 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignment">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment VerticalTextAlignment { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment VerticalTextAlignment" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment VerticalTextAlignment { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment VerticalTextAlignment" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Picker.VerticalTextAlignment" />
-      <MemberSignature Language="F#" Value="member this.VerticalTextAlignment : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Picker.VerticalTextAlignment" />
+      <MemberSignature Language="F#" Value="member this.VerticalTextAlignment : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Picker.VerticalTextAlignment" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

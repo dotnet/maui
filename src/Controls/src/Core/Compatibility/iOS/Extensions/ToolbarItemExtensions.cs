@@ -1,3 +1,4 @@
+#nullable disable
 using System.ComponentModel;
 using CoreGraphics;
 using ObjCRuntime;
@@ -74,10 +75,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 							UpdateTextAndStyle();
 					}
 				}
+#pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 					this.SetAccessibilityHint(_item);
 				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
 					this.SetAccessibilityLabel(_item);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			void UpdateIconAndStyle()
@@ -105,9 +108,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			void UpdateTextAndStyle()
 			{
 				Title = _item.Text;
-#pragma warning disable CA1416 // TODO: [UnsupportedOSPlatform("ios8.0")]
+#pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios8.0")]
 				Style = UIBarButtonItemStyle.Bordered;
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 				Image = null;
 			}
 		}
@@ -148,9 +151,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					UpdateIcon();
 				else if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
 					UpdateIsEnabled();
+#pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 					this.SetAccessibilityHint(_item);
 				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+#pragma warning restore CS0618 // Type or member is obsolete
 					this.SetAccessibilityLabel(_item);
 			}
 

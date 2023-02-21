@@ -1,55 +1,59 @@
-using System.ComponentModel;
-using ElmSharp;
+using System;
+using NGestureDetector = Tizen.NUI.GestureDetector;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public abstract class GestureHandler : IGestureController, INotifyPropertyChanged, IRegisterable
+	public abstract class GestureHandler : IDisposable, IRegisterable
 	{
+		bool _disposedValue;
+
+		IViewHandler? _handler;
+		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
+		protected View? View => Element as View;
+		protected NView? NativeView => _handler?.ToPlatform();
+
+
 		public IGestureRecognizer Recognizer { get; private set; }
 
-		public abstract GestureLayer.GestureType Type { get; }
+		public NGestureDetector NativeDetector { get; }
 
-		public virtual double Timeout { get; }
+
+		public void Attach(IViewHandler handler)
+		{
+			_handler = handler;
+			NativeDetector.Attach(NativeView);
+		}
+
+		public void Detach()
+		{
+			NativeDetector.Detach(NativeView);
+		}
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected abstract NGestureDetector CreateNativeDetector(IGestureRecognizer recognizer);
 
 		protected GestureHandler(IGestureRecognizer recognizer)
 		{
 			Recognizer = recognizer;
-			Recognizer.PropertyChanged += OnRecognizerPropertyChanged;
+			NativeDetector = CreateNativeDetector(recognizer);
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		protected abstract void OnStarted(View sender, object data);
-
-		protected abstract void OnMoved(View sender, object data);
-
-		protected abstract void OnCompleted(View sender, object data);
-
-		protected abstract void OnCanceled(View sender, object data);
-
-		void IGestureController.SendStarted(View sender, object data)
+		protected virtual void Dispose(bool disposing)
 		{
-			OnStarted(sender, data);
-		}
-
-		void IGestureController.SendCompleted(View sender, object data)
-		{
-			OnCompleted(sender, data);
-		}
-
-		void IGestureController.SendMoved(View sender, object data)
-		{
-			OnMoved(sender, data);
-		}
-
-		void IGestureController.SendCanceled(View sender, object data)
-		{
-			OnCanceled(sender, data);
-		}
-
-		protected virtual void OnRecognizerPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			PropertyChanged?.Invoke(this, e);
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					NativeDetector.Dispose();
+				}
+				_disposedValue = true;
+			}
 		}
 	}
 }

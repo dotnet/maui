@@ -1,6 +1,6 @@
 <Type Name="ImageSourceConverter" FullName="Microsoft.Maui.Controls.ImageSourceConverter">
-  <TypeSignature Language="C#" Value="public sealed class ImageSourceConverter : Microsoft.Maui.Controls.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit ImageSourceConverter extends Microsoft.Maui.Controls.TypeConverter" />
+  <TypeSignature Language="C#" Value="public sealed class ImageSourceConverter : System.ComponentModel.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit ImageSourceConverter extends System.ComponentModel.TypeConverter" />
   <TypeSignature Language="DocId" Value="T:Microsoft.Maui.Controls.ImageSourceConverter" />
   <TypeSignature Language="F#" Value="type ImageSourceConverter = class&#xA;    inherit TypeConverter" />
   <AssemblyInfo>
@@ -10,7 +10,7 @@
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>Microsoft.Maui.Controls.TypeConverter</BaseTypeName>
+    <BaseTypeName>System.ComponentModel.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
   <Attributes>

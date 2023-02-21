@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 	{
 		// Caching this display density here means that all pixel calculations are going to be based on the density
 		// of the first Context these extensions are run against. That's probably fine, but if we run into a 
-		// situation where subsequent activities can be launched with a different display density from the intial
+		// situation where subsequent activities can be launched with a different display density from the initial
 		// activity, we'll need to remove this cached value or cache it in a Dictionary<Context, float>
 		static float s_displayDensity = float.MinValue;
 
@@ -32,11 +32,23 @@ namespace Microsoft.Maui.Platform
 		// TODO FromPixels/ToPixels is both not terribly descriptive and also possibly sort of inaccurate?
 		// These need better names. It's really To/From Device-Independent, but that doesn't exactly roll off the tongue.
 
+		internal static double FromPixels(this View view, double pixels)
+		{
+			if (s_displayDensity != float.MinValue)
+				return pixels / s_displayDensity;
+			return view.Context.FromPixels(pixels);
+		}
+
 		public static double FromPixels(this Context? self, double pixels)
 		{
 			EnsureMetrics(self);
 
 			return pixels / s_displayDensity;
+		}
+
+		internal static Size FromPixels(this View view, double width, double height)
+		{
+			return new Size(view.FromPixels(width), view.FromPixels(height));
 		}
 
 		public static Size FromPixels(this Context context, double width, double height)
@@ -58,6 +70,13 @@ namespace Microsoft.Maui.Platform
 				context.FromPixels(rect.Width),
 				context.FromPixels(rect.Height));
 
+		internal static Rect FromPixels(this Context context, Android.Graphics.Rect rect) =>
+			new Rect(
+				context.FromPixels(rect.Left),
+				context.FromPixels(rect.Top),
+				context.FromPixels(rect.Width()),
+				context.FromPixels(rect.Height()));
+
 		public static void HideKeyboard(this Context self, global::Android.Views.View view)
 		{
 			// Service may be null in the context of the Android Designer
@@ -70,6 +89,13 @@ namespace Microsoft.Maui.Platform
 			// Can happen in the context of the Android Designer
 			if (self.GetSystemService(Context.InputMethodService) is InputMethodManager service)
 				service.ShowSoftInput(view, ShowFlags.Implicit);
+		}
+
+		internal static float ToPixels(this View view, double dp)
+		{
+			if (s_displayDensity != float.MinValue)
+				return (float)Math.Ceiling(dp * s_displayDensity);
+			return view.Context.ToPixels(dp);
 		}
 
 		public static float ToPixels(this Context? self, double dp)
@@ -278,10 +304,14 @@ namespace Microsoft.Maui.Platform
 			if (platformWindow is null)
 				return null;
 
-			foreach (var window in MauiApplication.Current.Application.Windows)
+			var windows = WindowExtensions.GetWindows();
+			foreach (var window in windows)
 			{
-				if (window?.Handler?.PlatformView == platformWindow)
-					return window;
+				if (window.Handler?.PlatformView is Android.App.Activity activity)
+				{
+					if (activity == platformWindow)
+						return window;
+				}
 			}
 
 			return null;
@@ -388,6 +418,37 @@ namespace Microsoft.Maui.Platform
 
 			return Rect.FromLTRB(0, 0,
 				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
+		}
+
+		internal static bool IsDestroyed(this Context? context)
+		{
+			if (context == null)
+				return true;
+
+			if (context.GetActivity() is FragmentActivity fa)
+			{
+				if (fa.IsDisposed())
+					return true;
+
+				var stateCheck = AndroidX.Lifecycle.Lifecycle.State.Destroyed;
+
+				if (stateCheck != null &&
+					fa.Lifecycle.CurrentState == stateCheck)
+				{
+					return true;
+				}
+
+				if (fa.IsDestroyed)
+					return true;
+			}
+
+			return context.IsDisposed();
+		}
+
+		internal static bool IsPlatformContextDestroyed(this IElementHandler? handler)
+		{
+			var context = handler?.MauiContext?.Context;
+			return context.IsDestroyed();
 		}
 	}
 }

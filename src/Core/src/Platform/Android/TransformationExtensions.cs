@@ -6,18 +6,12 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateTranslationX(this AView platformView, IView view)
 		{
-			if (platformView.Context == null)
-				return;
-
-			platformView.TranslationX = platformView.Context.ToPixels(view.TranslationX);
+			platformView.TranslationX = platformView.ToPixels(view.TranslationX);
 		}
 
 		public static void UpdateTranslationY(this AView platformView, IView view)
 		{
-			if (platformView.Context == null)
-				return;
-
-			platformView.TranslationY = platformView.Context.ToPixels(view.TranslationY);
+			platformView.TranslationY = platformView.ToPixels(view.TranslationY);
 		}
 
 		public static void UpdateScale(this AView platformView, IView view)
@@ -63,19 +57,13 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateAnchorX(this AView platformView, IView view)
 		{
-			if (platformView.Context == null)
-				return;
-
-			var pivotX = (float)(view.AnchorX * platformView.Context.ToPixels(view.Frame.Width));
+			var pivotX = (float)(view.AnchorX * platformView.ToPixels(view.Frame.Width));
 			PlatformInterop.SetPivotXIfNeeded(platformView, pivotX);
 		}
 
 		public static void UpdateAnchorY(this AView platformView, IView view)
 		{
-			if (platformView.Context == null)
-				return;
-
-			var pivotY = (float)(view.AnchorY * platformView.Context.ToPixels(view.Frame.Height));
+			var pivotY = (float)(view.AnchorY * platformView.ToPixels(view.Frame.Height));
 			PlatformInterop.SetPivotYIfNeeded(platformView, pivotY);
 		}
 	}

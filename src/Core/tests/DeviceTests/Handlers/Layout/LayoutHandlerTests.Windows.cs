@@ -1,14 +1,9 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
-using System.Collections.Generic;
-using System.Linq;
 using LayoutPanel = Microsoft.Maui.Platform.LayoutPanel;
 
 namespace Microsoft.Maui.DeviceTests.Handlers.Layout
@@ -59,27 +54,6 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(expected, actual);
-		}
-
-		[Theory]
-		[InlineData(FlowDirection.LeftToRight)]
-		[InlineData(FlowDirection.RightToLeft)]
-		[InlineData(FlowDirection.MatchParent)]
-		public async Task LayoutFlowDirectionAlwaysMapToLeftToRight(FlowDirection flowDirection)
-		{
-			var layout = new LayoutStub();
-
-			layout.FlowDirection = flowDirection;
-
-			var handler = await CreateHandlerAsync(layout);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				if (handler.PlatformView is LayoutPanel layoutPanel)
-				{
-					Assert.Equal(UI.Xaml.FlowDirection.LeftToRight, layoutPanel.FlowDirection);
-				}
-			});
 		}
 	}
 }

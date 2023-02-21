@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using System.Reflection;
@@ -5,7 +6,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="Type[@FullName='Microsoft.Maui.Controls.PropertyCondition']/Docs" />
+	/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="Type[@FullName='Microsoft.Maui.Controls.PropertyCondition']/Docs/*" />
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.PassthroughValueProvider")]
 	[AcceptEmptyServiceProvider]
 	public sealed class PropertyCondition : Condition, IValueProvider
@@ -15,13 +16,13 @@ namespace Microsoft.Maui.Controls
 		BindableProperty _property;
 		object _triggerValue;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public PropertyCondition()
 		{
 			_stateProperty = BindableProperty.CreateAttached("State", typeof(bool), typeof(PropertyCondition), false, propertyChanged: OnStatePropertyChanged);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='Property']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='Property']/Docs/*" />
 		public BindableProperty Property
 		{
 			get { return _property; }
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='Value']/Docs" />
+		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='Value']/Docs/*" />
 		public object Value
 		{
 			get { return _triggerValue; }

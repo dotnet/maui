@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public IFileInfo GetFileInfo(string subpath)
 			=> new TizenMauiAssetFileInfo(Path.Combine(_resDir, subpath));
 
-		public IChangeToken? Watch(string filter)
-			=> null;
+		public IChangeToken Watch(string filter)
+			=> NullChangeToken.Singleton;
 
 		private sealed class TizenMauiAssetFileInfo : IFileInfo
 		{

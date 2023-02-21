@@ -1,5 +1,6 @@
-using Microsoft.UI.Xaml;
+#nullable disable
 using System.ComponentModel;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 			SizeChanged += OnShellHeaderViewSizeChanged;
 			HorizontalContentAlignment = HorizontalAlignment.Stretch;
 			VerticalContentAlignment = VerticalAlignment.Stretch;
+			IsTabStop = false;
 		}
 
 		void OnShellHeaderViewSizeChanged(object sender, SizeChangedEventArgs e)

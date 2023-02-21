@@ -22,9 +22,8 @@ namespace Microsoft.Maui.Platform
 
 			if (textColor != null)
 			{
-				var androidColor = textColor.ToPlatform();
-				if (!platformDatePicker.TextColors.IsOneColor(ColorStates.EditText, androidColor))
-					platformDatePicker.SetTextColor(ColorStateListExtensions.CreateEditText(androidColor));
+				if (PlatformInterop.CreateEditTextColorStateList(platformDatePicker.TextColors, textColor.ToPlatform()) is ColorStateList c)
+					platformDatePicker.SetTextColor(c);
 			}
 		}
 

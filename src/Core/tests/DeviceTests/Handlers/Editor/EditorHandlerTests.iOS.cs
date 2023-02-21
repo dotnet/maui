@@ -12,6 +12,26 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
+#if IOS
+		[Fact(DisplayName = "Placeholder Size is the same as control")]
+		public async Task PlaceholderFontHasTheSameSize()
+		{
+			var sizeFont = 22;
+			var editor = new EditorStub()
+			{
+				Text = "Text",
+				Font = Font.SystemFontOfSize(sizeFont)
+			};
+
+			var nativePlaceholderSize = await GetValueAsync(editor, handler =>
+			{
+				return GetNativePlaceholder(handler).Font.PointSize;
+			});
+
+			Assert.True(nativePlaceholderSize == sizeFont);
+		}
+#endif
+
 		[Fact(DisplayName = "Placeholder Toggles Correctly When Text Changes")]
 		public async Task PlaceholderTogglesCorrectlyWhenTextChanges()
 		{
@@ -131,6 +151,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
 			values.PlatformViewValue.AssertHasFlag(expectedValue);
 		}
+		[Theory(DisplayName = "IsEnabled Initializes Correctly")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task IsEnabledInitializesCorrectly(bool isEnabled)
+		{
+			var xplatIsEnabled = isEnabled;
+
+			var editor = new EditorStub()
+			{
+				IsEnabled = xplatIsEnabled,
+				Text = "Test"
+			};
+
+			var values = await GetValueAsync(editor, (handler) =>
+			{
+				return new
+				{
+					ViewValue = editor.IsEnabled,
+					PlatformViewValue = GetNativeIsEnabled(handler)
+				};
+			});
+
+			Assert.Equal(xplatIsEnabled, values.ViewValue);
+			Assert.Equal(xplatIsEnabled, values.PlatformViewValue);
+		}
 
 		static MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
 			editorHandler.PlatformView;
@@ -138,16 +183,16 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
 
-		static void SetNativeText(EditorHandler editorHandler, string text) =>
+		internal static void SetNativeText(EditorHandler editorHandler, string text) =>
 			GetNativeEditor(editorHandler).Text = text;
 
-		static int GetCursorStartPosition(EditorHandler editorHandler)
+		internal static int GetCursorStartPosition(EditorHandler editorHandler)
 		{
 			var control = GetNativeEditor(editorHandler);
 			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
 		}
 
-		static void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
+		internal static void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
 		{
 			var control = GetNativeEditor(editorHandler);
 			var endPosition = control.GetPosition(control.BeginningOfDocument, position);
@@ -232,6 +277,9 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
+		bool GetNativeIsEnabled(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).Editable;
+
 		int GetNativeSelectionLength(EditorHandler editorHandler)
 		{
 			var nativeEditor = GetNativeEditor(editorHandler);
@@ -241,5 +289,32 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		TextAlignment GetNativeVerticalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).VerticalTextAlignment;
+
+		TextAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment;
+
+#if !MACCATALYST
+		[Fact(DisplayName = "Completed Event Fires")]
+		public async Task CompletedEventFiresFromTappingDone()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Test"
+			};
+
+			int completedCount = 0;
+			editor.Completed += (_, _) => completedCount++;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(editor);
+				TapDoneOnInputAccessoryView(handler.PlatformView);
+			});
+
+			Assert.Equal(1, completedCount);
+		}
+#endif
 	}
 }

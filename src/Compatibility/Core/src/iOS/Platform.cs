@@ -325,10 +325,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					safeAreaInsets = new UIEdgeInsets(UIApplication.SharedApplication.StatusBarFrame.Size.Height, 0, 0, 0);
 				else if (UIApplication.SharedApplication.GetKeyWindow() != null)
 					safeAreaInsets = UIApplication.SharedApplication.GetKeyWindow().SafeAreaInsets;
-#pragma warning disable CA1416 // TODO: UIApplication.Windows is unsupported on: 'ios' 15.0 and later
+#pragma warning disable CA1416, CA1422  // TODO: UIApplication.Windows is unsupported on: 'ios' 15.0 and later
 				else if (UIApplication.SharedApplication.Windows.Length > 0)
 					safeAreaInsets = UIApplication.SharedApplication.Windows[0].SafeAreaInsets;
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 				else
 					safeAreaInsets = UIEdgeInsets.Zero;
 
@@ -665,9 +665,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (!PageIsChildOfPlatform(sender))
 					return;
 				busyCount = Math.Max(0, enabled ? busyCount + 1 : busyCount - 1);
-#pragma warning disable CA1416 // TODO: 'UIApplication.NetworkActivityIndicatorVisible' is unsupported on: 'ios' 13.0 and later
+#pragma warning disable CA1416, CA1422  // TODO: 'UIApplication.NetworkActivityIndicatorVisible' is unsupported on: 'ios' 13.0 and later
 				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = busyCount > 0;
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 			});
 
 			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>

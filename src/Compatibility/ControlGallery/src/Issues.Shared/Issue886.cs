@@ -42,13 +42,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			isScrollEnabledSwitch.Toggled += (sender, e) =>
 			{
 				isScrollEnabledLabelOn.Text = e.Value.ToString();
-				map.HasScrollEnabled = e.Value;
+				map.IsScrollEnabled = e.Value;
 			};
 
 			isZoomEnabledSwitch.Toggled += (sender, e) =>
 			{
 				isZoomEnabledLabelOn.Text = e.Value.ToString();
-				map.HasZoomEnabled = e.Value;
+				map.IsZoomEnabled = e.Value;
 			};
 
 			Content = new StackLayout

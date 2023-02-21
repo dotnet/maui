@@ -5,39 +5,77 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
+	/// <summary>
+	/// The OrientationSensor API lets you monitor the orientation of a device in three dimensional space.
+	/// </summary>
 	public interface IOrientationSensor
 	{
+		/// <summary>
+		/// Gets a value indicating whether reading the orientation sensor is supported on this device.
+		/// </summary>
 		bool IsSupported { get; }
 
+		/// <summary>
+		/// Gets a value indicating whether the orientation sensor is actively being monitored.
+		/// </summary>
 		bool IsMonitoring { get; }
 
+		/// <summary>
+		/// Start monitoring for changes to the orientation.
+		/// </summary>
+		/// <param name="sensorSpeed">The speed to listen for changes.</param>
 		void Start(SensorSpeed sensorSpeed);
 
+		/// <summary>
+		/// Stop monitoring for changes to the orientation.
+		/// </summary>
 		void Stop();
 
+		/// <summary>
+		/// Occurs when the orientation reading changes.
+		/// </summary>
 		event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensor']/Docs" />
+	/// <summary>
+	/// The OrientationSensor API lets you monitor the orientation of a device in three dimensional space.
+	/// </summary>
 	public static class OrientationSensor
 	{
+		/// <summary>
+		/// Occurs when the orientation reading changes.
+		/// </summary>
 		public static event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged
 		{
 			add => Current.ReadingChanged += value;
 			remove => Current.ReadingChanged -= value;
 		}
 
+		/// <summary>
+		/// Gets a value indicating whether reading the orientation sensor is supported on this device.
+		/// </summary>
 		public static bool IsSupported
 			=> Current.IsSupported;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='IsMonitoring']/Docs" />
+		/// <summary>
+		/// Gets a value indicating whether the orientation sensor is actively being monitored.
+		/// </summary>
 		public static bool IsMonitoring { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Start']/Docs" />
+		/// <summary>
+		/// Start monitoring for changes to the orientation.
+		/// </summary>
+		/// <remarks>
+		/// Will throw <see cref="FeatureNotSupportedException"/> if not supported on device.
+		/// Will throw <see cref="InvalidOperationException"/> if <see cref="IsMonitoring"/> is <see langword="true"/>.
+		/// </remarks>
+		/// <param name="sensorSpeed">The speed to listen for changes.</param>
 		public static void Start(SensorSpeed sensorSpeed)
 			=> Current.Start(sensorSpeed);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensor.xml" path="//Member[@MemberName='Stop'][1]/Docs" />
+		/// <summary>
+		/// Stop monitoring for changes to the orientation.
+		/// </summary>
 		public static void Stop()
 			=> Current.Stop();
 
@@ -45,6 +83,9 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		static IOrientationSensor? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IOrientationSensor Default =>
 			defaultImplementation ??= new OrientationSensorImplementation();
 
@@ -52,52 +93,98 @@ namespace Microsoft.Maui.Devices.Sensors
 			defaultImplementation = implementation;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensorChangedEventArgs']/Docs" />
+	/// <summary>
+	/// Contains the current orientation sensor information from the <see cref="IOrientationSensor.ReadingChanged"/> event.
+	/// </summary>
 	public class OrientationSensorChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OrientationSensorChangedEventArgs"/> class.
+		/// </summary>
+		/// <param name="reading">The orientation sensor data reading.</param>
 		public OrientationSensorChangedEventArgs(OrientationSensorData reading) =>
 			Reading = reading;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorChangedEventArgs.xml" path="//Member[@MemberName='Reading']/Docs" />
+		/// <summary>
+		/// The current values of the orientation sensor.
+		/// </summary>
 		public OrientationSensorData Reading { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="Type[@FullName='Microsoft.Maui.Essentials.OrientationSensorData']/Docs" />
+	/// <summary>
+	/// Contains the orientation measured by the user's device orientation sensor.
+	/// </summary>
 	public readonly struct OrientationSensorData : IEquatable<OrientationSensorData>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OrientationSensorData"/> class.
+		/// </summary>
+		/// <param name="x">X axis data.</param>
+		/// <param name="y">Y axis data.</param>
+		/// <param name="z">Z axis data.</param>
+		/// <param name="w">W axis data.</param>
 		public OrientationSensorData(double x, double y, double z, double w)
 			: this((float)x, (float)y, (float)z, (float)w)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OrientationSensorData"/> class.
+		/// </summary>
+		/// <param name="x">X axis data.</param>
+		/// <param name="y">Y axis data.</param>
+		/// <param name="z">Z axis data.</param>
+		/// <param name="w">W axis data.</param>
 		public OrientationSensorData(float x, float y, float z, float w) =>
 			Orientation = new Quaternion(x, y, z, w);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Orientation']/Docs" />
+		/// <summary>
+		/// Gets the current orientation that represents a <see cref="Quaternion"/>.
+		/// </summary>
 		public Quaternion Orientation { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals'][1]/Docs" />
+		/// <summary>
+		/// Compares the underlying <see cref="OrientationSensorData"/> instances.
+		/// </summary>
+		/// <param name="obj">Object to compare with.</param>
+		/// <returns><see langword="true"/> if they are equal, otherwise <see langword="false"/>.</returns>
 		public override bool Equals(object? obj) =>
 			(obj is OrientationSensorData data) && Equals(data);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='Equals'][2]/Docs" />
+		/// <summary>
+		/// Compares the underlying <see cref="OrientationSensorData"/> instances.
+		/// </summary>
+		/// <param name="other"><see cref="OrientationSensorData"/> object to compare with.</param>
+		/// <returns><see langword="true"/> if they are equal, otherwise <see langword="false"/>.</returns>
 		public bool Equals(OrientationSensorData other) =>
 			Orientation.Equals(other.Orientation);
 
+		/// <summary>
+		/// Equality operator for equals.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
+		/// <returns><see langword="true"/> if objects are equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator ==(OrientationSensorData left, OrientationSensorData right) =>
 			left.Equals(right);
 
+		/// <summary>
+		/// Inequality operator.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
+		/// <returns><see langword="true"/> if objects are not equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator !=(OrientationSensorData left, OrientationSensorData right) =>
 			!left.Equals(right);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='GetHashCode']/Docs" />
+		/// <inheritdoc cref="ValueType.GetHashCode"/>
 		public override int GetHashCode() =>
 			Orientation.GetHashCode();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/OrientationSensorData.xml" path="//Member[@MemberName='ToString']/Docs" />
+		/// <summary>
+		/// Returns a string representation of the current values of <see cref="Orientation"/>.
+		/// </summary>
+		/// <returns>A string representation of this instance in the format of <c>Orientation.X: {value}, Orientation.Y: {value}, Orientation.Z: {value}, Orientation.W: {value}</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(Orientation.X)}: {Orientation.X}, " +
 			$"{nameof(Orientation.Y)}: {Orientation.Y}, " +
@@ -105,19 +192,39 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(Orientation.W)}: {Orientation.W}";
 	}
 
+	/// <summary>
+	/// Concrete implementation of the <see cref="IOrientationSensor"/> APIs.
+	/// </summary>
 	public partial class OrientationSensorImplementation : IOrientationSensor
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
 		SensorSpeed SensorSpeed { get; set; } = SensorSpeed.Default;
 
+		/// <summary>
+		/// Occurs when the orientation reading changes.
+		/// </summary>
 		public event EventHandler<OrientationSensorChangedEventArgs>? ReadingChanged;
 
+		/// <summary>
+		/// Gets a value indicating whether reading the orientation sensor is supported on this device.
+		/// </summary>
 		public bool IsSupported
 			=> PlatformIsSupported;
 
+		/// <summary>
+		/// Gets a value indicating whether the orientation sensor is actively being monitored.
+		/// </summary>
 		public bool IsMonitoring { get; private set; }
 
+		/// <summary>
+		/// Start monitoring for changes to the orientation.
+		/// </summary>
+		/// <remarks>
+		/// Will throw <see cref="FeatureNotSupportedException"/> if not supported on device.
+		/// Will throw <see cref="InvalidOperationException"/> if <see cref="IsMonitoring"/> is <see langword="true"/>.
+		/// </remarks>
+		/// <param name="sensorSpeed">The speed to listen for changes.</param>
 		public void Start(SensorSpeed sensorSpeed)
 		{
 			if (!PlatformIsSupported)
@@ -140,6 +247,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
+		/// <summary>
+		/// Stop monitoring for changes to the orientation.
+		/// </summary>
 		public void Stop()
 		{
 			if (!PlatformIsSupported)

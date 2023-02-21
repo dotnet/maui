@@ -1,5 +1,6 @@
-﻿using ElmSharp;
-using Tizen.UIExtensions.ElmSharp;
+﻿using Tizen.UIExtensions.NUI;
+using TScrollBarVisibility = Tizen.UIExtensions.Common.ScrollBarVisibility;
+using TScrollOrientation = Tizen.UIExtensions.Common.ScrollOrientation;
 
 namespace Microsoft.Maui.Platform
 {
@@ -7,48 +8,44 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateVerticalScrollBarVisibility(this ScrollView scrollView, ScrollBarVisibility scrollBarVisibility)
 		{
-			scrollView.VerticalScrollBarVisiblePolicy = scrollBarVisibility.ToPlatform();
+			scrollView.VerticalScrollBarVisibility = scrollBarVisibility.ToPlatform();
 		}
 
 		public static void UpdateHorizontalScrollBarVisibility(this ScrollView scrollView, ScrollBarVisibility scrollBarVisibility)
 		{
-			scrollView.HorizontalScrollBarVisiblePolicy = scrollBarVisibility.ToPlatform();
+			scrollView.HorizontalScrollBarVisibility = scrollBarVisibility.ToPlatform();
 		}
 
 		public static void UpdateOrientation(this ScrollView scrollView, ScrollOrientation scrollOrientation)
 		{
+			scrollView.ScrollOrientation = scrollOrientation.ToNative();
+		}
+
+		public static TScrollOrientation ToNative(this ScrollOrientation scrollOrientation)
+		{
 			switch (scrollOrientation)
 			{
 				case ScrollOrientation.Horizontal:
-					scrollView.ScrollBlock = ScrollBlock.Vertical;
-					scrollView.HorizontalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Auto;
-					scrollView.VerticalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Invisible;
-					break;
+					return TScrollOrientation.Horizontal;
 				case ScrollOrientation.Vertical:
-					scrollView.ScrollBlock = ScrollBlock.Horizontal;
-					scrollView.HorizontalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Invisible;
-					scrollView.VerticalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Auto;
-					break;
+					return TScrollOrientation.Vertical;
 				default:
-					scrollView.ScrollBlock = ScrollBlock.None;
-					scrollView.HorizontalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Auto;
-					scrollView.VerticalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Auto;
-					break;
+					return TScrollOrientation.Both;
 			}
 		}
 
-		public static ScrollBarVisiblePolicy ToPlatform(this ScrollBarVisibility visibility)
+		public static TScrollBarVisibility ToPlatform(this ScrollBarVisibility visibility)
 		{
 			switch (visibility)
 			{
 				case ScrollBarVisibility.Default:
-					return ScrollBarVisiblePolicy.Auto;
+					return TScrollBarVisibility.Default;
 				case ScrollBarVisibility.Always:
-					return ScrollBarVisiblePolicy.Visible;
+					return TScrollBarVisibility.Always;
 				case ScrollBarVisibility.Never:
-					return ScrollBarVisiblePolicy.Invisible;
+					return TScrollBarVisibility.Never;
 				default:
-					return ScrollBarVisiblePolicy.Auto;
+					return TScrollBarVisibility.Default;
 			}
 		}
 	}

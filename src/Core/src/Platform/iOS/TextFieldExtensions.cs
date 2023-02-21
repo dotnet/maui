@@ -35,13 +35,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
 		{
-			if (textAlignment is IView view)
-			{
-				textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatformHorizontal().AdjustForFlowDirection(view);
-				return;
-			}
-
-			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatformHorizontal();
+			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToPlatformHorizontal(textField.EffectiveUserInterfaceLayoutDirection);
 		}
 
 		public static void UpdateVerticalTextAlignment(this UITextField textField, ITextAlignment textAlignment)

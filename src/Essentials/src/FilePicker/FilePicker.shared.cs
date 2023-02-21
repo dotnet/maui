@@ -9,26 +9,82 @@ using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Storage
 {
+	/// <summary>
+	/// Lets the user pick a file from the device's storage.
+	/// </summary>
+	/// <remarks>To enable iCloud capabilities in the file picker on iOS, you'll need to add the iCloud Documents in your <c>Entitlements.plist</c>.</remarks>
 	public interface IFilePicker
 	{
+		/// <summary>
+		/// Opens the default file picker to allow the user to pick a single file.
+		/// </summary>
+		/// <param name="options">File picker options to use; may be <see langword="null"/> for default options.</param>
+		/// <returns>File picking result object, or <see langword="null"/> if picking was cancelled by the user.</returns>
+		/// <remarks>
+		/// File types can be specified in order to limit files that can be selected, using a
+		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
+		/// occurred during file picking. When calling <see cref="PickAsync(PickOptions?)"/> again while showing a file
+		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
+		/// also handle the <see cref="TaskCanceledException"/> in this case.
+		/// </remarks>
 		Task<FileResult?> PickAsync(PickOptions? options = null);
 
+		/// <summary>
+		/// Opens the default file picker to allow the user to pick one or more files.
+		/// </summary>
+		/// <param name="options">File picker options to use; may be <see langword="null"/> for default options.</param>
+		/// <returns>An IEnumerable of file picking result objects, or <see langword="null"/> if picking was cancelled by the user.</returns>
+		/// <remarks>
+		/// File types can be specified in order to limit files that can be selected, using a
+		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
+		/// occurred during file picking. When calling <see cref="PickMultipleAsync(PickOptions?)"/> again while showing a file
+		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
+		/// also handle the <see cref="TaskCanceledException"/> in this case.
+		/// </remarks>
 		Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions? options = null);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/FilePicker.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FilePicker']/Docs" />
+	/// <summary>
+	/// Lets the user pick a file from the device's storage.
+	/// </summary>
+	/// <remarks>To enable iCloud capabilities in the file picker on iOS, you'll need to add the iCloud Documents in your <c>Entitlements.plist</c>.</remarks>
 	public static partial class FilePicker
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePicker.xml" path="//Member[@MemberName='PickAsync']/Docs" />
+		/// <summary>
+		/// Opens the default file picker to allow the user to pick a single file.
+		/// </summary>
+		/// <param name="options">File picker options to use; may be <see langword="null"/> for default options.</param>
+		/// <returns>File picking result object, or <see langword="null"/> if picking was cancelled by the user.</returns>
+		/// <remarks>
+		/// File types can be specified in order to limit files that can be selected, using a
+		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
+		/// occurred during file picking. When calling <see cref="PickAsync(PickOptions?)"/> again while showing a file
+		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
+		/// also handle the <see cref="TaskCanceledException"/> in this case.
+		/// </remarks>
 		public static Task<FileResult?> PickAsync(PickOptions? options = null) =>
 			Default.PickAsync(options);
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePicker.xml" path="//Member[@MemberName='PickMultipleAsync']/Docs" />
+		/// <summary>
+		/// Opens the default file picker to allow the user to pick one or more files.
+		/// </summary>
+		/// <param name="options">File picker options to use; may be <see langword="null"/> for default options.</param>
+		/// <returns>An IEnumerable of file picking result objects, or <see langword="null"/> if picking was cancelled by the user.</returns>
+		/// <remarks>
+		/// File types can be specified in order to limit files that can be selected, using a
+		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
+		/// occurred during file picking. When calling <see cref="PickMultipleAsync(PickOptions?)"/> again while showing a file
+		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
+		/// also handle the <see cref="TaskCanceledException"/> in this case.
+		/// </remarks>
 		public static Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions? options = null) =>
 			Default.PickMultipleAsync(options);
 
 		static IFilePicker? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IFilePicker Default =>
 			defaultImplementation ??= new FilePickerImplementation();
 
@@ -45,32 +101,66 @@ namespace Microsoft.Maui.Storage
 			PlatformPickAsync(options ?? PickOptions.Default, true);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FilePickerFileType']/Docs" />
+	/// <summary>
+	/// Represents the file types that are allowed to be picked by the user when using <see cref="IFilePicker"/>.
+	/// </summary>
 	public partial class FilePickerFileType
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Images']/Docs" />
+		/// <summary>
+		/// Predefined <see cref="FilePickerFileType"/> object for allowing picking image files only.
+		/// </summary>
 		public static readonly FilePickerFileType Images = PlatformImageFileType();
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Png']/Docs" />
+
+		/// <summary>
+		/// Predefined <see cref="FilePickerFileType"/> object for allowing picking PNG image files only.
+		/// </summary>
 		public static readonly FilePickerFileType Png = PlatformPngFileType();
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Jpeg']/Docs" />
+
+		/// <summary>
+		/// Predefined <see cref="FilePickerFileType"/> object for allowing picking JPEG image files only.
+		/// </summary>
 		public static readonly FilePickerFileType Jpeg = PlatformJpegFileType();
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Videos']/Docs" />
+
+		/// <summary>
+		/// Predefined <see cref="FilePickerFileType"/> object for allowing picking video files only.
+		/// </summary>
 		public static readonly FilePickerFileType Videos = PlatformVideoFileType();
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Pdf']/Docs" />
+
+		/// <summary>
+		/// Predefined <see cref="FilePickerFileType"/> object for allowing picking PDF files only.
+		/// </summary>
 		public static readonly FilePickerFileType Pdf = PlatformPdfFileType();
 
 		readonly IDictionary<DevicePlatform, IEnumerable<string>> fileTypes;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FilePickerFileType"/> class.
+		/// </summary>
 		protected FilePickerFileType() =>
 			fileTypes = new Dictionary<DevicePlatform, IEnumerable<string>>();
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FilePickerFileType"/> class.
+		/// </summary>
+		/// <param name="fileTypes">
+		/// A <see cref="IDictionary{TKey, TValue}"/> where the key is the platform
+		/// and the value is a collection of file types that are allowed to be picked by the user.
+		/// </param>
+		/// <remarks>Note that the file types (specified in the <paramref name="fileTypes"/> value)
+		/// should be identified differently per platform.</remarks>
 		public FilePickerFileType(IDictionary<DevicePlatform, IEnumerable<string>> fileTypes) =>
 			this.fileTypes = fileTypes;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FilePickerFileType.xml" path="//Member[@MemberName='Value']/Docs" />
+		/// <summary>
+		/// Gets the configured allowed file types that can be picked by the user for the current platform.
+		/// </summary>
+		/// <exception cref="PlatformNotSupportedException">Thrown if the current platform does not have any file types configured.</exception>
 		public IEnumerable<string> Value => GetPlatformFileType(DeviceInfo.Current.Platform);
 
+		/// <summary>
+		/// Gets the configured allowed file types that can be picked by the user for the current platform.
+		/// </summary>
+		/// <exception cref="PlatformNotSupportedException">Thrown if the current platform does not have any file types configured.</exception>
 		protected virtual IEnumerable<string> GetPlatformFileType(DevicePlatform platform)
 		{
 			if (fileTypes.TryGetValue(platform, out var type))
@@ -80,27 +170,50 @@ namespace Microsoft.Maui.Storage
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/PickOptions.xml" path="Type[@FullName='Microsoft.Maui.Essentials.PickOptions']/Docs" />
+	/// <summary>
+	/// Represents file picking options that can be used to customize the working of <see cref="IFilePicker"/>.
+	/// </summary>
 	public class PickOptions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PickOptions.xml" path="//Member[@MemberName='Default']/Docs" />
+		/// <summary>
+		/// Default file picking options. This object can be used when no special pick options are necessary.
+		/// </summary>
 		public static PickOptions Default =>
 			new PickOptions
 			{
 				FileTypes = null,
 			};
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PickOptions.xml" path="//Member[@MemberName='Images']/Docs" />
+		/// <summary>
+		/// Predefined <see cref="PickOptions"/> object for picking image files only.
+		/// </summary>
 		public static PickOptions Images =>
 			new PickOptions
 			{
 				FileTypes = FilePickerFileType.Images
 			};
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PickOptions.xml" path="//Member[@MemberName='PickerTitle']/Docs" />
+		/// <summary>
+		/// Title used for the file picker that is shown to the user.
+		/// </summary>
+		/// <remarks>The file picker title is only used on the Android platform and only for certain file pickers. This title is not guaranteed to be shown.</remarks>
 		public string? PickerTitle { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/PickOptions.xml" path="//Member[@MemberName='FileTypes']/Docs" />
+		/// <summary>
+		/// List of file types that file file picker should return.
+		/// </summary>
+		/// <remarks>
+		/// On Android and iOS the files not matching this list are shown in the file picker,
+		/// but will be grayed out and cannot be selected.
+		/// When the <see cref="FilePickerFileType.Value"/> array is <see langword="null"/> or empty,
+		/// all file types can be selected while picking.
+		/// The contents of this array is platform specific; every platform has its own way to
+		/// specify the file types.
+		/// <para>On Android you can specify one or more MIME types, e.g.
+		/// <c>image/png</c>. Additionally, wildcard characters can be used, e.g. <c>image/*</c></para>
+		/// <para>On iOS, you can specify <c>UTType</c> constants, e.g. <c>UTType.Image</c>.</para>
+		/// <para>On Windows, you can specify a list of extensions, like this: <c>".jpg", ".png"</c>.</para>
+		///</remarks>
 		public FilePickerFileType? FileTypes { get; set; }
 	}
 }

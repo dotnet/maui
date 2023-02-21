@@ -1,12 +1,13 @@
+#nullable disable
 using System;
 using Android.Content;
 using Android.Views;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public sealed class EntryCellEditText : EditText
+	public sealed class EntryCellEditText : AppCompatEditText
 	{
 		SoftInput _startingMode;
 

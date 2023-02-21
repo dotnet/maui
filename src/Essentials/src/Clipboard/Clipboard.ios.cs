@@ -36,6 +36,10 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 				NSNotificationCenter.DefaultCenter.RemoveObserver(observer);
 		}
 
+		/// <summary>
+		/// The observer for triggering the <see cref="ClipboardContentChanged"/> event.
+		/// </summary>
+		/// <param name="notification">The notification that triggered this event.</param>
 		public void ClipboardChangedObserver(NSNotification notification)
 			=> OnClipboardContentChanged();
 	}

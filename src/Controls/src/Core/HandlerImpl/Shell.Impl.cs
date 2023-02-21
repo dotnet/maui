@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -28,14 +29,5 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
 		}
-
-#if ANDROID
-		protected override void OnHandlerChanging(HandlerChangingEventArgs args)
-		{
-			base.OnHandlerChanging(args);
-			args.OldHandler?.DisconnectHandler();
-		}
-
-#endif
 	}
 }

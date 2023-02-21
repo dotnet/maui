@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 	}
 
-	public abstract partial class ImageHandlerTests<TImageHandler, TStub> : HandlerTestBase<TImageHandler, TStub>
+	public abstract partial class ImageHandlerTests<TImageHandler, TStub> : CoreHandlerTestBase<TImageHandler, TStub>
 		where TImageHandler : class, IImageHandler, new()
 		where TStub : StubBase, IImageStub, new()
 	{
@@ -34,8 +34,8 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 		[Theory(
-#if IOS
-			Skip = "Test failing on IOS"
+#if IOS || MACCATALYST
+			Skip = "Test failing on iOS"
 #endif
 			)]
 		[InlineData("#FF0000")]

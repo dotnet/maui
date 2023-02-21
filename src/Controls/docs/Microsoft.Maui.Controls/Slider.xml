@@ -34,7 +34,7 @@
     <summary>A <see cref="T:Microsoft.Maui.Controls.View" /> control that inputs a linear value.</summary>
     <remarks>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Slider.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Slider.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -315,10 +315,10 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="MaximumTrackColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color MaximumTrackColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color MaximumTrackColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color MaximumTrackColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color MaximumTrackColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Slider.MaximumTrackColor" />
-      <MemberSignature Language="F#" Value="member this.MaximumTrackColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Slider.MaximumTrackColor" />
+      <MemberSignature Language="F#" Value="member this.MaximumTrackColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Slider.MaximumTrackColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -326,7 +326,7 @@ namespace FormsGallery
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color of the portion of the slider track that contains the maximum value of the slider.</summary>
@@ -407,10 +407,10 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="MinimumTrackColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color MinimumTrackColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color MinimumTrackColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color MinimumTrackColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color MinimumTrackColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Slider.MinimumTrackColor" />
-      <MemberSignature Language="F#" Value="member this.MinimumTrackColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Slider.MinimumTrackColor" />
+      <MemberSignature Language="F#" Value="member this.MinimumTrackColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Slider.MinimumTrackColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -418,7 +418,7 @@ namespace FormsGallery
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color of the portion of the slider track that contains the minimum value of the slider.</summary>
@@ -478,10 +478,10 @@ namespace FormsGallery
       </Docs>
     </Member>
     <Member MemberName="ThumbColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color ThumbColor { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color ThumbColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color ThumbColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color ThumbColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Slider.ThumbColor" />
-      <MemberSignature Language="F#" Value="member this.ThumbColor : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.Slider.ThumbColor" />
+      <MemberSignature Language="F#" Value="member this.ThumbColor : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.Slider.ThumbColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -489,7 +489,7 @@ namespace FormsGallery
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color of the slider thumb button.</summary>

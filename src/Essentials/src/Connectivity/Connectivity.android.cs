@@ -11,6 +11,9 @@ namespace Microsoft.Maui.Networking
 {
 	partial class ConnectivityImplementation : IConnectivity
 	{
+		/// <summary>
+		/// Unique identifier for the connectivity changed action on Android.
+		/// </summary>
 		public const string ConnectivityChangedAction = "com.maui.essentials.ESSENTIALS_CONNECTIVITY_CHANGED";
 		static Intent connectivityIntent = new Intent(ConnectivityChangedAction);
 
@@ -137,7 +140,11 @@ namespace Microsoft.Maui.Networking
 					var manager = ConnectivityManager;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 					var networks = manager.GetAllNetworks();
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 
 					// some devices running 21 and 22 only use the older api.
@@ -157,13 +164,13 @@ namespace Microsoft.Maui.Networking
 								continue;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 							var info = manager.GetNetworkInfo(network);
-#pragma warning restore CS0618 // Type or member is obsolete
 
-#pragma warning disable CS0618 // Type or member is obsolete
 							if (info == null || !info.IsAvailable)
-#pragma warning restore CS0618 // Type or member is obsolete
 								continue;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 							// Check to see if it has the internet capability
 							if (!capabilities.HasCapability(NetCapability.Internet))
@@ -196,10 +203,13 @@ namespace Microsoft.Maui.Networking
 					{
 						if (info == null || !info.IsAvailable)
 							return;
+
 						if (info.IsConnected)
 							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
 						else if (info.IsConnectedOrConnecting)
 							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 					}
 
@@ -207,6 +217,7 @@ namespace Microsoft.Maui.Networking
 				}
 				catch (Exception e)
 				{
+					// TODO add Logging here
 					Debug.WriteLine("Unable to get connected state - do you have ACCESS_NETWORK_STATE permission? - error: {0}", e);
 					return NetworkAccess.Unknown;
 				}
@@ -221,6 +232,8 @@ namespace Microsoft.Maui.Networking
 
 				var manager = ConnectivityManager;
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 				var networks = manager.GetAllNetworks();
 #pragma warning restore CS0618 // Type or member is obsolete
 				foreach (var network in networks)
@@ -245,11 +258,15 @@ namespace Microsoft.Maui.Networking
 #pragma warning disable CS0618 // Type or member is obsolete
 				static ConnectionProfile? ProcessNetworkInfo(NetworkInfo info)
 				{
+
 					if (info == null || !info.IsAvailable || !info.IsConnectedOrConnecting)
 						return null;
 
+
 					return GetConnectionType(info.Type, info.TypeName);
 				}
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
@@ -301,10 +318,17 @@ namespace Microsoft.Maui.Networking
 	{
 		Action onChanged;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ConnectivityBroadcastReceiver"/> class.
+		/// </summary>
 		public ConnectivityBroadcastReceiver()
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ConnectivityBroadcastReceiver"/> class.
+		/// </summary>
+		/// <param name="onChanged">The action that is triggered whenever the connectivity changes.</param>
 		public ConnectivityBroadcastReceiver(Action onChanged) =>
 			this.onChanged = onChanged;
 

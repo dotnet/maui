@@ -6,10 +6,12 @@ using Windows.Storage;
 
 namespace Microsoft.Maui
 {
+	/// <inheritdoc/>
 	public partial class EmbeddedFontLoader
 	{
 		const string FontCacheFolderName = "fonts";
 
+		/// <inheritdoc/>
 		public string? LoadFont(EmbeddedFont font)
 		{
 			var tmpdir = ApplicationData.Current.LocalFolder.CreateFolderAsync(FontCacheFolderName, CreationCollisionOption.OpenIfExists).AsTask().Result;

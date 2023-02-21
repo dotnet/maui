@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Controls.Platform
 				inputView?.Text,
 				textView.SecureTextEntry ? TextTransform.Default : inputView.TextTransform
 				);
-			
+
 			// Re-calculate the cursor offset position if the text was modified by a Converter.
 			// but if the text is being set by code, let's just move the cursor to the end.
 			var cursorOffset = newText.Length - oldText.Length;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !MACCATALYST
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
@@ -124,3 +125,4 @@ namespace Microsoft.Maui.DeviceTests
 			GetNativeDatePicker(datePickerHandler).Font.PointSize;
 	}
 }
+#endif

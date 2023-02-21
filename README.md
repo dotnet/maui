@@ -19,6 +19,8 @@
 
 ## Current News
 
+* November 8, 2022 - [Announcing .NET MAUI for .NET 7 General Availability](https://devblogs.microsoft.com/dotnet/dotnet-maui-dotnet-7/)
+* May 23, 2022 - [Introducing .NET MAUI – One Codebase, Many Platforms](https://devblogs.microsoft.com/dotnet/introducing-dotnet-maui-one-codebase-many-platforms/)
 * May 10, 2022 - [.NET MAUI Release Candidate 3](https://devblogs.microsoft.com/dotnet/dotnet-maui-rc-3/)
 * April 26, 2022 - [.NET MAUI Release Candidate 2](https://devblogs.microsoft.com/dotnet/dotnet-maui-rc-2/)
 * April 12, 2022 - [.NET MAUI Release Candidate - Ready for Cross-Platform App Development](https://devblogs.microsoft.com/dotnet/dotnet-maui-rc-1/)

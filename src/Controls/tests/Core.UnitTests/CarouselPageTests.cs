@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -19,11 +19,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return CarouselPage.GetIndex(page);
 		}
 
-		[Test]
+		[Fact]
 		public void TestConstructor()
 		{
 			var page = new CarouselPage();
-			Assert.That(page.Children, Is.Empty);
+			Assert.Empty(page.Children);
 		}
 	}
 }

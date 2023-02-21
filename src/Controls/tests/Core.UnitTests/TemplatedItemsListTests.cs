@@ -4,11 +4,11 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class TemplatedItemsListTests : BaseTestFixture
 	{
 		class MockItemsView
@@ -88,22 +88,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[SetUp]
-		public override void Setup()
+
+		public TemplatedItemsListTests()
 		{
-			base.Setup();
+
 			bindable = new MockItemsView();
 		}
 
 		MockItemsView bindable;
 
-		[Test]
+		[Fact]
 		public void ListProxyNotNullWithNullItemsSource()
 		{
-			Assert.IsNotNull(bindable.TemplatedItems.ListProxy);
+			Assert.NotNull(bindable.TemplatedItems.ListProxy);
 		}
 
-		[Test]
+		[Fact]
 		public void ResetOnItemsSourceChanged()
 		{
 			bool raised = false;
@@ -116,11 +116,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bindable.SetValue(ItemsView<BindableObject>.ItemsSourceProperty, Enumerable.Empty<string>());
 
-			Assert.IsTrue(raised, "CollectionChanged was not raised");
-			Assert.AreEqual(NotifyCollectionChangedAction.Reset, action);
+			Assert.True(raised, "CollectionChanged was not raised");
+			Assert.Equal(NotifyCollectionChangedAction.Reset, action);
 		}
 		/*
-		[Test]
+		[Fact]
 		public void ResetOnInfiniteScrollingChanged()
 		{
 			bool raised = false;
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual (NotifyCollectionChangedAction.Reset, action);
 		}*/
 
-		[Test]
+		[Fact]
 		public void ResetOnTemplateChanged()
 		{
 			// Template changes won't trigger a reset if there's no items.
@@ -152,11 +152,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bindable.SetValue(ItemsView<BindableObject>.ItemTemplateProperty, new DataTemplate());
 
-			Assert.IsTrue(raised, "CollectionChanged was not raised");
-			Assert.AreEqual(NotifyCollectionChangedAction.Reset, action);
+			Assert.True(raised, "CollectionChanged was not raised");
+			Assert.Equal(NotifyCollectionChangedAction.Reset, action);
 		}
 
-		[Test]
+		[Fact]
 		public void PassThroughChanges()
 		{
 			var collection = new ObservableCollection<string>();
@@ -173,26 +173,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			string str = "foo bar";
 			collection.Add(str);
 
-			Assert.IsTrue(raised, "CollectionChanged was not raised");
-			Assert.AreEqual(NotifyCollectionChangedAction.Add, args.Action);
-			Assert.AreEqual(0, args.NewStartingIndex);
-			Assert.IsNotNull(args.NewItems);
-			Assert.AreEqual(1, args.NewItems.Count);
-			Assert.AreSame(str, ((Cell)args.NewItems[0]).BindingContext);
+			Assert.True(raised, "CollectionChanged was not raised");
+			Assert.Equal(NotifyCollectionChangedAction.Add, args.Action);
+			Assert.Equal(0, args.NewStartingIndex);
+			Assert.NotNull(args.NewItems);
+			Assert.Equal(1, args.NewItems.Count);
+			Assert.Same(str, ((Cell)args.NewItems[0]).BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void ListProxyUpdatesWithItemsSource()
 		{
 			var collection = new List<string> { "foo bar" };
 			bindable.SetValue(ItemsView<BindableObject>.ItemsSourceProperty, collection);
 
-			Assert.IsNotNull(bindable.TemplatedItems.ListProxy);
-			Assert.AreEqual(collection.Count, bindable.TemplatedItems.ListProxy.Count);
+			Assert.NotNull(bindable.TemplatedItems.ListProxy);
+			Assert.Equal(collection.Count, bindable.TemplatedItems.ListProxy.Count);
 		}
 
-		[Test]
-		public void GetOrCreateContent([Values(0, 1, 2)] int index)
+		[Theory, InlineData(0), InlineData(1), InlineData(2)]
+		public void GetOrCreateContent(int index)
 		{
 			var collection = new List<string> { "foo", "bar", "baz" };
 			bindable.SetValue(ItemsView<BindableObject>.ItemsSourceProperty, collection);
@@ -202,41 +202,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.SetValue(ItemsView<BindableObject>.ItemTemplateProperty, template);
 
 			BindableObject content = bindable.TemplatedItems.GetOrCreateContent(index, collection[index]);
-			Assert.IsNotNull(content);
+			Assert.NotNull(content);
 
 			TextCell textCell = content as TextCell;
-			Assert.IsNotNull(textCell, "Content was did not match the template type, expected {0} but got {1}", typeof(TextCell), content.GetType());
+			Assert.NotNull(textCell);
 
-			Assert.AreSame(collection[index], textCell.BindingContext);
-			Assert.AreSame(collection[index], textCell.Text);
+			Assert.Same(collection[index], textCell.BindingContext);
+			Assert.Same(collection[index], textCell.Text);
 
 			BindableObject content2 = bindable.TemplatedItems.GetOrCreateContent(index, collection[index]);
-			Assert.AreSame(content, content2);
+			Assert.Same(content, content2);
 		}
 
-		[Test]
+		[Fact]
 		public void GetOrCreateContentDefault()
 		{
-			Assert.IsNull(bindable.GetValue(ItemsView<BindableObject>.ItemTemplateProperty));
+			Assert.Null(bindable.GetValue(ItemsView<BindableObject>.ItemTemplateProperty));
 
 			var collection = new List<string> { "foo", "bar", "baz" };
 			bindable.SetValue(ItemsView<BindableObject>.ItemsSourceProperty, collection);
 
 			const int index = 0;
 			BindableObject content = bindable.TemplatedItems.GetOrCreateContent(index, collection[index]);
-			Assert.IsNotNull(content);
+			Assert.NotNull(content);
 
 			TextCell textCell = content as TextCell;
-			Assert.IsNotNull(textCell, "Content was did not match the template type, expected {0} but got {1}", typeof(TextCell), content.GetType());
+			Assert.True(textCell != null, $"Content was did not match the template type, expected {typeof(TextCell)} but got {content.GetType()}");
 
-			Assert.AreSame(collection[index], textCell.BindingContext);
-			Assert.AreSame(collection[index], textCell.Text);
+			Assert.Same(collection[index], textCell.BindingContext);
+			Assert.Same(collection[index], textCell.Text);
 
 			BindableObject content2 = bindable.TemplatedItems.GetOrCreateContent(index, collection[index]);
-			Assert.AreSame(content, content2);
+			Assert.Same(content, content2);
 		}
 
-		[Test]
+		[Fact]
 		public void GetOrCreateContentAfterTemplateChange()
 		{
 			var collection = new List<string> { "foo", "bar", "baz" };
@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.SetValue(ItemsView<BindableObject>.ItemTemplateProperty, template);
 
 			BindableObject content = bindable.TemplatedItems.GetOrCreateContent(index, collection[index]);
-			Assert.That(content, Is.InstanceOf<TextCell>());
+			Assert.IsType<TextCell>(content);
 
 			template = new DataTemplate(typeof(SwitchCell));
 			template.SetBinding(SwitchCell.TextProperty, new Binding("."));
@@ -257,14 +257,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.SetValue(ItemsView<BindableObject>.ItemTemplateProperty, template);
 
 			BindableObject content2 = bindable.TemplatedItems.GetOrCreateContent(index, collection[index]);
-			Assert.IsNotNull(content2);
-			Assert.That(content2, Is.InstanceOf<SwitchCell>());
+			Assert.NotNull(content2);
+			Assert.IsType<SwitchCell>(content2);
 
 			var switchCell = (SwitchCell)content2;
-			Assert.AreSame(collection[index], switchCell.BindingContext);
+			Assert.Same(collection[index], switchCell.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void GetOrCreateContentAfterItemsSourceChanged()
 		{
 			var collection = new List<string> { "foo", "bar", "baz" };
@@ -277,19 +277,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.SetValue(ItemsView<BindableObject>.ItemTemplateProperty, template);
 
 			BindableObject content = bindable.TemplatedItems.GetOrCreateContent(index, collection[index]);
-			Assert.IsNotNull(content);
+			Assert.NotNull(content);
 
 			collection = new List<string> { "we", "wee", "weee" };
 			bindable.SetValue(ItemsView<BindableObject>.ItemsSourceProperty, collection);
 
 			var content2 = (TextCell)bindable.TemplatedItems.GetOrCreateContent(index, collection[index]);
 
-			Assert.AreNotSame(content, content2);
-			Assert.AreSame(collection[index], content2.BindingContext);
-			Assert.AreSame(collection[index], content2.Text);
+			Assert.NotSame(content, content2);
+			Assert.Same(collection[index], content2.BindingContext);
+			Assert.Same(collection[index], content2.Text);
 		}
 
-		/*[Test]
+		/*[Fact]
 		public void GetOrCreateContentAfterInfiniteScrollingChanged()
 		{
 			var collection = new List<string> { "foo", "bar", "baz" };
@@ -313,36 +313,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreSame (collection[index], content2.Text);
 		}*/
 
-		[Test]
-		[Description("Make sure we're not duplicate cell instances for an equal item if it's a different index")]
+		[Fact("Make sure we're not duplicate cell instances for an equal item if it's a different index")]
 		public void GetOrCreateContentEqualItemDifferentItemDifferentIndex()
 		{
-			Assert.IsNull(bindable.GetValue(ItemsView<BindableObject>.ItemTemplateProperty));
+			Assert.Null(bindable.GetValue(ItemsView<BindableObject>.ItemTemplateProperty));
 
 			var collection = new List<string> { "foo", "foo" };
 			bindable.SetValue(ItemsView<BindableObject>.ItemsSourceProperty, collection);
 
 			BindableObject content = bindable.TemplatedItems.GetOrCreateContent(0, collection[0]);
-			Assert.IsNotNull(content);
+			Assert.NotNull(content);
 
 			TextCell textCell = content as TextCell;
-			Assert.IsNotNull(textCell, "Content was did not match the template type, expected {0} but got {1}", typeof(TextCell), content.GetType());
+			Assert.True(textCell != null, $"Content was did not match the template type, expected {typeof(TextCell)} but got {content.GetType()}");
 
-			Assert.AreSame(collection[0], textCell.BindingContext);
-			Assert.AreSame(collection[0], textCell.Text);
+			Assert.Same(collection[0], textCell.BindingContext);
+			Assert.Same(collection[0], textCell.Text);
 
 			BindableObject content2 = bindable.TemplatedItems.GetOrCreateContent(1, collection[1]);
-			Assert.AreNotSame(content, content2);
+			Assert.NotSame(content, content2);
 
-			Assert.AreSame(collection[1], textCell.BindingContext);
-			Assert.AreSame(collection[1], textCell.Text);
+			Assert.Same(collection[1], textCell.BindingContext);
+			Assert.Same(collection[1], textCell.Text);
 		}
 
-		[Test]
-		[Description("Make sure we're not duplicate cell instances for the same item if it's a different index")]
+		[Fact("Make sure we're not duplicate cell instances for the same item if it's a different index")]
 		public void GetOrCreateContentEqualItemSameItemDifferentIndex()
 		{
-			Assert.IsNull(bindable.GetValue(ItemsView<BindableObject>.ItemTemplateProperty));
+			Assert.Null(bindable.GetValue(ItemsView<BindableObject>.ItemTemplateProperty));
 
 			string item = "foo";
 
@@ -350,22 +348,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.SetValue(ItemsView<BindableObject>.ItemsSourceProperty, collection);
 
 			BindableObject content = bindable.TemplatedItems.GetOrCreateContent(0, item);
-			Assert.IsNotNull(content);
+			Assert.NotNull(content);
 
 			TextCell textCell = content as TextCell;
-			Assert.IsNotNull(textCell, "Content was did not match the template type, expected {0} but got {1}", typeof(TextCell), content.GetType());
+			Assert.True(textCell != null, $"Content was did not match the template type, expected {typeof(TextCell)} but got {content.GetType()}");
 
-			Assert.AreSame(item, textCell.BindingContext);
-			Assert.AreSame(item, textCell.Text);
+			Assert.Same(item, textCell.BindingContext);
+			Assert.Same(item, textCell.Text);
 
 			BindableObject content2 = bindable.TemplatedItems.GetOrCreateContent(1, item);
-			Assert.AreNotSame(content, content2);
+			Assert.NotSame(content, content2);
 
-			Assert.AreSame(item, textCell.BindingContext);
-			Assert.AreSame(item, textCell.Text);
+			Assert.Same(item, textCell.BindingContext);
+			Assert.Same(item, textCell.Text);
 		}
 
-		[Test]
+		[Fact]
 		public void ItemsSourceInsertPreRealzied()
 		{
 			var collection = new ObservableCollection<string> { "foo", "bar" };
@@ -373,13 +371,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			collection.Insert(1, "baz");
 
-			Assert.That(bindable.TemplatedItems.Count, Is.EqualTo(3));
-			Assert.That(bindable.TemplatedItems.GetOrCreateContent(0, collection[0]).BindingContext, Is.SameAs(collection[0]));
-			Assert.That(bindable.TemplatedItems.GetOrCreateContent(1, collection[1]).BindingContext, Is.SameAs(collection[1]));
-			Assert.That(bindable.TemplatedItems.GetOrCreateContent(2, collection[2]).BindingContext, Is.SameAs(collection[2]));
+			Assert.Equal(3, bindable.TemplatedItems.Count);
+			Assert.Same(bindable.TemplatedItems.GetOrCreateContent(0, collection[0]).BindingContext, collection[0]);
+			Assert.Same(bindable.TemplatedItems.GetOrCreateContent(1, collection[1]).BindingContext, collection[1]);
+			Assert.Same(bindable.TemplatedItems.GetOrCreateContent(2, collection[2]).BindingContext, collection[2]);
 		}
 
-		[Test]
+		[Fact]
 		public void ItemsSourceInsertPostRealized()
 		{
 			var collection = new ObservableCollection<string> { "foo", "bar" };
@@ -391,14 +389,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			collection.Insert(1, "baz");
 
-			Assert.That(bindable.TemplatedItems.Count, Is.EqualTo(3));
-			Assert.That(bindable.TemplatedItems.GetOrCreateContent(0, collection[0]).BindingContext, Is.SameAs(collection[0]));
-			Assert.That(bindable.TemplatedItems.GetOrCreateContent(1, collection[1]).BindingContext, Is.SameAs(collection[1]));
-			Assert.That(bindable.TemplatedItems.GetOrCreateContent(2, collection[2]).BindingContext, Is.SameAs(collection[2]));
+			Assert.Equal(3, bindable.TemplatedItems.Count);
+			Assert.Same(bindable.TemplatedItems.GetOrCreateContent(0, collection[0]).BindingContext, collection[0]);
+			Assert.Same(bindable.TemplatedItems.GetOrCreateContent(1, collection[1]).BindingContext, collection[1]);
+			Assert.Same(bindable.TemplatedItems.GetOrCreateContent(2, collection[2]).BindingContext, collection[2]);
 		}
 
-		[TestCase(0, 0, 0)]
-		[TestCase(3, 1, 0)]
+		[Theory]
+		[InlineData(0, 0, 0)]
+		[InlineData(3, 1, 0)]
 		public void GetGroupIndexFromGlobalGroupIndex(int globalIndex, int expectedIndex, int expectedLeftOver)
 		{
 			var collection = new[] {
@@ -410,14 +409,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			int leftOver;
 			int index = bindable.TemplatedItems.GetGroupIndexFromGlobal(globalIndex, out leftOver);
-			Assert.That(index, Is.EqualTo(expectedIndex));
-			Assert.That(leftOver, Is.EqualTo(expectedLeftOver));
+			Assert.Equal(index, expectedIndex);
+			Assert.Equal(leftOver, expectedLeftOver);
 		}
 
-		[TestCase(1, 0, 1)]
-		[TestCase(2, 0, 2)]
-		[TestCase(4, 1, 1)]
-		[TestCase(5, 1, 2)]
+		[Theory]
+		[InlineData(1, 0, 1)]
+		[InlineData(2, 0, 2)]
+		[InlineData(4, 1, 1)]
+		[InlineData(5, 1, 2)]
 		public void GetGroupIndexFromGlobalItemIndex(int globalIndex, int expectedIndex, int expectedLeftOver)
 		{
 			var collection = new[] {
@@ -429,12 +429,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			int leftOver;
 			int index = bindable.TemplatedItems.GetGroupIndexFromGlobal(globalIndex, out leftOver);
-			Assert.That(index, Is.EqualTo(expectedIndex));
-			Assert.That(leftOver, Is.EqualTo(expectedLeftOver));
+			Assert.Equal(index, expectedIndex);
+			Assert.Equal(leftOver, expectedLeftOver);
 		}
 
-		[Test]
-		public void GetGroupAndIndexOfItem([Values(0, 1, 2)] int group, [Values(0, 1, 2)] int index)
+
+
+		[Theory]
+		[InlineData(0, 0)]
+		[InlineData(0, 1)]
+		[InlineData(0, 2)]
+		[InlineData(1, 0)]
+		[InlineData(1, 1)]
+		[InlineData(1, 2)]
+		[InlineData(2, 0)]
+		[InlineData(2, 1)]
+		[InlineData(2, 2)]
+		public void GetGroupAndIndexOfItem(int group, int index)
 		{
 			var collection = new[] {
 				new[] { "foo", "fad" },
@@ -457,11 +468,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var location = bindable.TemplatedItems.GetGroupAndIndexOfItem(item);
-			Assert.That(location.Item1, Is.EqualTo(group), "Group index was incorrect");
-			Assert.That(location.Item2, Is.EqualTo(index), "Item index was incorrect");
+			Assert.Equal(group, location.Item1);
+			Assert.Equal(index, location.Item2);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGroupAndIndexOfItemNotGrouped()
 		{
 			var items = Enumerable.Range(0, 10).ToList();
@@ -469,11 +480,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var location = bindable.TemplatedItems.GetGroupAndIndexOfItem(null, items[2]);
 
-			Assert.That(location.Item1, Is.EqualTo(0));
-			Assert.That(location.Item2, Is.EqualTo(2));
+			Assert.Equal(0, location.Item1);
+			Assert.Equal(2, location.Item2);
 		}
 
-		[Test]
+		[Fact]
 		public void ItemsSourcePropertyChangedWithBindable()
 		{
 			bool raised = false;
@@ -485,10 +496,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bindable.ItemsSource = new object[0];
 
-			Assert.That(raised, Is.True, "INPC not raised for ItemsSource");
+			Assert.True(raised, "INPC not raised for ItemsSource");
 		}
 
-		[Test]
+		[Fact]
 		public void IndexCorrectAfterMovingGroups()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -504,10 +515,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var til = bindable.TemplatedItems.GetGroup(1);
 			int index = GetIndex(til.HeaderContent);
 
-			Assert.That(index, Is.EqualTo(1));
+			Assert.Equal(1, index);
 		}
 
-		[Test]
+		[Fact]
 		public void ShortNameSetBeforeGrouping()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -520,10 +531,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.GroupShortNameBinding = new Binding(".[0]");
 			bindable.IsGroupingEnabled = true;
 
-			Assert.That(bindable.TemplatedItems.ShortNames[0], Is.EqualTo("foo"));
+			Assert.Equal("foo", bindable.TemplatedItems.ShortNames[0]);
 		}
 
-		[Test]
+		[Fact]
 		public void ItemAddedWithShortNameSetButUngrouped()
 		{
 			var items = new ObservableCollection<string> { "foo", "bar" };
@@ -531,10 +542,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.ItemsSource = items;
 			bindable.GroupShortNameBinding = new Binding(".");
 
-			Assert.That(() => items.Add("baz"), Throws.Nothing);
+			items.Add("baz");
 		}
 
-		[Test]
+		[Fact]
 		public void ItemAddedWithShortNameSetButGroupingDisabled()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -547,7 +558,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.IsGroupingEnabled = true;
 			bindable.IsGroupingEnabled = false;
 
-			Assert.That(() => items.Add(new ObservableCollection<string>()), Throws.Nothing);
+			items.Add(new ObservableCollection<string>());
 		}
 
 		int GetIndex(BindableObject item)
@@ -555,8 +566,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return TemplatedItemsList<ItemsView<BindableObject>, BindableObject>.GetIndex(item);
 		}
 
-		[Test]
-		public void GetIndex()
+		[Fact]
+		public void GetIndexTest()
 		{
 			var items = new List<string> { "foo", "bar", "baz" };
 
@@ -564,10 +575,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			BindableObject item = bindable.TemplatedItems.GetOrCreateContent(1, items[1]);
 			int index = GetIndex(item);
-			Assert.That(index, Is.EqualTo(1));
+			Assert.Equal(1, index);
 		}
 
-		[Test]
+		[Fact]
 		public void GetIndexAfterInsert()
 		{
 			var items = new ObservableCollection<string> { "foo", "bar", "baz" };
@@ -581,13 +592,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			BindableObject item = bindable.TemplatedItems.GetOrCreateContent(1, items[1]);
 
 			int index = GetIndex(item);
-			Assert.That(index, Is.EqualTo(1));
+			Assert.Equal(1, index);
 
 			index = GetIndex(originalItem);
-			Assert.That(index, Is.EqualTo(2));
+			Assert.Equal(2, index);
 		}
 
-		[Test]
+		[Fact]
 		public void GetIndexAfterMove()
 		{
 			var items = new ObservableCollection<string> { "foo", "bar", "baz" };
@@ -600,12 +611,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			items.Move(0, 2); // foo, bar, baz becomes bar (1), baz (2), foo (0)
 
-			Assert.That(GetIndex(item0), Is.EqualTo(2));
-			Assert.That(GetIndex(item1), Is.EqualTo(0));
-			Assert.That(GetIndex(item2), Is.EqualTo(1));
+			Assert.Equal(2, GetIndex(item0));
+			Assert.Equal(0, GetIndex(item1));
+			Assert.Equal(1, GetIndex(item2));
 		}
 
-		[Test]
+		[Fact]
 		public void GetIndexAfterRemove()
 		{
 			var items = new ObservableCollection<string> { "foo", "bar", "baz" };
@@ -617,11 +628,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			items.RemoveAt(0);
 
-			Assert.That(GetIndex(item1), Is.EqualTo(0));
-			Assert.That(GetIndex(item2), Is.EqualTo(1));
+			Assert.Equal(0, GetIndex(item1));
+			Assert.Equal(1, GetIndex(item2));
 		}
 
-		[Test]
+		[Fact]
 		public void GetGroup()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -638,10 +649,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var group = TemplatedItemsList<ItemsView<BindableObject>, BindableObject>.GetGroup(item);
 
-			Assert.That(group, Is.SameAs(til));
+			Assert.Same(group, til);
 		}
 
-		[Test]
+		[Fact]
 		public void GetIndexGrouped()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -657,11 +668,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var item = til[1];
 
 			int index = GetIndex(item);
-			Assert.That(index, Is.EqualTo(1));
+			Assert.Equal(1, index);
 		}
 
-		[Test]
-		public void GetGroupAndIndexOfItem()
+		[Fact]
+		public void GetGroupAndIndexOfItemTest()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
 				new ObservableCollection<string> { "foo", "faz" },
@@ -674,11 +685,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var result = bindable.TemplatedItems.GetGroupAndIndexOfItem(items[1], items[1][1]);
 
-			Assert.That(result.Item1, Is.EqualTo(1));
-			Assert.That(result.Item2, Is.EqualTo(1));
+			Assert.Equal(1, result.Item1);
+			Assert.Equal(1, result.Item2);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGroupAndIndexOfItemNoGroup()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -692,11 +703,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var result = bindable.TemplatedItems.GetGroupAndIndexOfItem(null, items[1][1]);
 
-			Assert.That(result.Item1, Is.EqualTo(1));
-			Assert.That(result.Item2, Is.EqualTo(1));
+			Assert.Equal(1, result.Item1);
+			Assert.Equal(1, result.Item2);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGroupAndIndexOfItemNotFound()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -712,11 +723,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var result = bindable.TemplatedItems.GetGroupAndIndexOfItem(group, group[0]);
 
-			Assert.That(result.Item1, Is.EqualTo(-1));
-			Assert.That(result.Item2, Is.EqualTo(-1));
+			Assert.Equal(-1, result.Item1);
+			Assert.Equal(-1, result.Item2);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGroupAndIndexOfItemItemNotFound()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -730,12 +741,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var result = bindable.TemplatedItems.GetGroupAndIndexOfItem(items[1], "bam");
 
-			Assert.That(result.Item1, Is.EqualTo(1));
-			Assert.That(result.Item2, Is.EqualTo(-1));
+			Assert.Equal(1, result.Item1);
+			Assert.Equal(-1, result.Item2);
 		}
 
-		[Test]
-		[Description("Issue #2464: ANE thrown when moving items in a ListView")]
+		[Fact("Issue #2464: ANE thrown when moving items in a ListView")]
 		public void MovingPastRealizedWindowAndBackDoesntThrow()
 		{
 			var items = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => i.ToString()));
@@ -746,35 +756,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.TemplatedItems.GetOrCreateContent(1, items[1]);
 
 			items.Move(0, 3);
-			Assert.That(() => items.Move(3, 2), Throws.Nothing);
+			items.Move(3, 2);
 
-			Assert.That(GetIndex(bindable.TemplatedItems[0]), Is.EqualTo(0));
-			Assert.That(GetIndex(bindable.TemplatedItems[1]), Is.EqualTo(1));
-			Assert.That(GetIndex(bindable.TemplatedItems[2]), Is.EqualTo(2));
-			Assert.That(GetIndex(bindable.TemplatedItems[3]), Is.EqualTo(3));
+			Assert.Equal(0, GetIndex(bindable.TemplatedItems[0]));
+			Assert.Equal(1, GetIndex(bindable.TemplatedItems[1]));
+			Assert.Equal(2, GetIndex(bindable.TemplatedItems[2]));
+			Assert.Equal(3, GetIndex(bindable.TemplatedItems[3]));
 		}
 
-		[Test]
+		[Fact]
 		public void GetGlobalIndexOfItem()
 		{
 			var items = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => i.ToString()));
 			bindable.ItemsSource = items;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem("50");
-			Assert.That(global, Is.EqualTo(50));
+			Assert.Equal(50, global);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGlobalIndexOfItemNotFound()
 		{
 			var items = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => i.ToString()));
 			bindable.ItemsSource = items;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem("101");
-			Assert.That(global, Is.EqualTo(-1));
+			Assert.Equal(-1, global);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGlobalIndexOfItemGrouped()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -787,10 +797,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.IsGroupingEnabled = true;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem("baz");
-			Assert.That(global, Is.EqualTo(5));
+			Assert.Equal(5, global);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGlobalIndexOfItemGroupedNotFound()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -803,10 +813,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.IsGroupingEnabled = true;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem("101");
-			Assert.That(global, Is.EqualTo(-1));
+			Assert.Equal(-1, global);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGlobalIndexOfGroupItemGrouped()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -819,10 +829,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.IsGroupingEnabled = true;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem(items[1], "baz");
-			Assert.That(global, Is.EqualTo(5));
+			Assert.Equal(5, global);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGlobalIndexOfGroupItemGroupedNotFound()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -835,10 +845,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.IsGroupingEnabled = true;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem(items[1], "bar");
-			Assert.That(global, Is.EqualTo(-1));
+			Assert.Equal(-1, global);
 		}
 
-		[Test]
+		[Fact]
 		public void GetGlobalIndexOfGroupItemGroupedGroupNotFound()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -851,10 +861,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.IsGroupingEnabled = true;
 
 			int global = bindable.TemplatedItems.GetGlobalIndexOfItem(new object(), "foo");
-			Assert.That(global, Is.EqualTo(-1));
+			Assert.Equal(-1, global);
 		}
 
-		[Test]
+		[Fact]
 		public void SetupContentOnCreation()
 		{
 			var items = new ObservableCollection<string> {
@@ -873,8 +883,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.Hooked += obj =>
 			{
 				count++;
-				Assert.That(obj, Is.InstanceOf(typeof(TextCell)));
-				Assert.That(items, Contains.Item(obj.BindingContext));
+				Assert.IsType<TextCell>(obj);
+				Assert.Contains(obj.BindingContext, items);
 			};
 
 			bindable.ItemsSource = items;
@@ -882,10 +892,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.TemplatedItems.GetOrCreateContent(0, items[0]);
 			bindable.TemplatedItems.GetOrCreateContent(1, items[1]);
 
-			Assert.That(count, Is.EqualTo(2));
+			Assert.Equal(2, count);
 		}
 
-		[Test]
+		[Fact]
 		public void UnhookGroupOnRemoval()
 		{
 			var inner = new ObservableCollection<string> {
@@ -911,12 +921,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				if (count == 0)
 				{
-					Assert.That(obj.BindingContext, Is.InstanceOf(typeof(TemplatedItemsList<ItemsView<BindableObject>, BindableObject>)));
-					Assert.That(((TemplatedItemsList<ItemsView<BindableObject>, BindableObject>)obj.BindingContext).ListProxy.ProxiedEnumerable, Is.SameAs(inner));
+					Assert.IsType<TemplatedItemsList<ItemsView<BindableObject>, BindableObject>>(obj.BindingContext);
+					Assert.Same(((TemplatedItemsList<ItemsView<BindableObject>, BindableObject>)obj.BindingContext).ListProxy.ProxiedEnumerable, inner);
 				}
 				else
 				{
-					Assert.That(obj.BindingContext, Is.SameAs(inner[0]));
+					Assert.Same(obj.BindingContext, inner[0]);
 				}
 
 				count++;
@@ -927,16 +937,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var til = bindable.TemplatedItems.GetGroup(0);
 			til.GetOrCreateContent(0, inner[0]);
 
-			Assume.That(til, Is.Not.Null);
-			Assume.That(til.HeaderContent, Is.Not.Null);
-			Assume.That(count, Is.EqualTo(0));
+			Assert.NotNull(til);
+			Assert.NotNull(til.HeaderContent);
+			Assert.Equal(0, count);
 
 			items.RemoveAt(0);
 
-			Assert.That(count, Is.EqualTo(2));
+			Assert.Equal(2, count);
 		}
 
-		[Test]
+		[Fact]
 		public void HookAndUnhookGroupOnReplace()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -959,33 +969,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var til = bindable.TemplatedItems.GetGroup(0);
 			til.GetOrCreateContent(0, items[0][0]);
 
-			Assume.That(til, Is.Not.Null);
-			Assume.That(til.HeaderContent, Is.Not.Null);
+			Assert.NotNull(til);
+			Assert.NotNull(til.HeaderContent);
 
 			int hcount = 0;
 			bindable.Hooked += obj =>
 			{
-				Assert.That(obj.BindingContext, Is.InstanceOf(typeof(TemplatedItemsList<ItemsView<BindableObject>, BindableObject>)));
+				Assert.IsType<TemplatedItemsList<ItemsView<BindableObject>, BindableObject>>(obj.BindingContext);
 				hcount++;
 			};
 
 			int ucount = 0;
 			bindable.Unhooked += obj =>
 			{
-				Assert.That(obj.BindingContext,
-					Is.InstanceOf(typeof(TemplatedItemsList<ItemsView<BindableObject>, BindableObject>))
-						.Or.EqualTo("Foo"));
+				Assert.True(obj.BindingContext.GetType() == typeof(TemplatedItemsList<ItemsView<BindableObject>, BindableObject>)
+					|| (string)obj.BindingContext == "Foo");
 
 				ucount++;
 			};
 
 			items[0] = new ObservableCollection<string> { "Baz" };
 
-			Assert.That(hcount, Is.EqualTo(1));
-			Assert.That(ucount, Is.EqualTo(2));
+			Assert.Equal(1, hcount);
+			Assert.Equal(2, ucount);
 		}
 
-		[Test]
+		[Fact]
 		public void UnhookContentOnRemoval()
 		{
 			var items = new ObservableCollection<string> {
@@ -1004,8 +1013,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.Unhooked += obj =>
 			{
 				count++;
-				Assert.That(obj, Is.InstanceOf(typeof(TextCell)));
-				Assert.That(obj.BindingContext, Is.EqualTo("Foo"));
+				Assert.IsType<TextCell>(obj);
+				Assert.Equal("Foo", obj.BindingContext);
 			};
 
 			bindable.ItemsSource = items;
@@ -1013,14 +1022,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.TemplatedItems.GetOrCreateContent(0, items[0]);
 			bindable.TemplatedItems.GetOrCreateContent(1, items[1]);
 
-			Assume.That(count, Is.EqualTo(0));
+			Assert.Equal(0, count);
 
 			items.RemoveAt(0);
 
-			Assert.That(count, Is.EqualTo(1));
+			Assert.Equal(1, count);
 		}
 
-		[Test]
+		[Fact]
 		public void HookAndUnhookContentOnReplace()
 		{
 			var items = new ObservableCollection<string> {
@@ -1044,25 +1053,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bindable.Hooked += obj =>
 			{
 				hcount++;
-				Assert.That(obj, Is.InstanceOf(typeof(TextCell)));
-				Assert.That(obj.BindingContext, Is.EqualTo("Baz"));
+				Assert.IsType<TextCell>(obj);
+				Assert.Equal("Baz", obj.BindingContext);
 			};
 
 			int ucount = 0;
 			bindable.Unhooked += obj =>
 			{
 				ucount++;
-				Assert.That(obj, Is.InstanceOf(typeof(TextCell)));
-				Assert.That(obj.BindingContext, Is.EqualTo("Foo"));
+				Assert.IsType<TextCell>(obj);
+				Assert.Equal("Foo", obj.BindingContext);
 			};
 
 			items[0] = "Baz";
 
-			Assert.That(hcount, Is.EqualTo(1));
-			Assert.That(ucount, Is.EqualTo(1));
+			Assert.Equal(1, hcount);
+			Assert.Equal(1, ucount);
 		}
 
-		[Test(Description = "If the cell exists and has an index, we still need to check if it's in the group asked for")]
+		[Fact("If the cell exists and has an index, we still need to check if it's in the group asked for")]
 		public void IndexOfFailsForCellInAnotherGroup()
 		{
 			var items = new ObservableCollection<ObservableCollection<string>> {
@@ -1077,11 +1086,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var group1 = bindable.TemplatedItems.GetGroup(0);
 			var cell = group1[1];
 
-			Assume.That(group1.IndexOf(cell), Is.EqualTo(1));
+			Assert.Equal(1, group1.IndexOf(cell));
 
 			var group2 = bindable.TemplatedItems.GetGroup(1);
 
-			Assert.That(group2.IndexOf(cell), Is.EqualTo(-1));
+			Assert.Equal(-1, group2.IndexOf(cell));
 		}
 	}
 }

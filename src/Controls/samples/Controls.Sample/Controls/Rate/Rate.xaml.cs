@@ -2,11 +2,11 @@
 
 namespace Maui.Controls.Sample.Themes
 {
-    public partial class Rate : ResourceDictionary
-    {
-        public Rate()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class Rate : ResourceDictionary
+	{
+		public Rate()
+		{
+			InitializeComponent();
+		}
+	}
 }

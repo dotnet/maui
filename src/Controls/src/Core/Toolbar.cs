@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -53,8 +54,12 @@ namespace Microsoft.Maui.Controls
 				if (_handler == value)
 					return;
 
+				var oldHandler = _handler;
 				OnHandlerChanging(_handler, value);
 				_handler = value;
+
+				if (oldHandler?.VirtualView == this)
+					oldHandler?.DisconnectHandler();
 			}
 		}
 

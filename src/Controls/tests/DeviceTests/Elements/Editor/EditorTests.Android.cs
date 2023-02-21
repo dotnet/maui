@@ -1,11 +1,12 @@
 ﻿using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Collection(HandlerTestBase.RunInNewWindowCollection)]
+	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class EditorTests
 	{
 		AppCompatEditText GetPlatformControl(EditorHandler handler) =>
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		void SetPlatformText(EditorHandler editorHandler, string text) =>
-			GetPlatformControl(editorHandler).Text = text;
+			GetPlatformControl(editorHandler).SetTextKeepState(text);
 
 		int GetPlatformCursorPosition(EditorHandler editorHandler)
 		{
@@ -37,6 +38,24 @@ namespace Microsoft.Maui.DeviceTests
 				return textView.SelectionEnd - textView.SelectionStart;
 
 			return -1;
+		}
+
+		[Fact]
+		public async Task CursorPositionPreservedWhenTextTransformPresent()
+		{
+			var editor = new Editor
+			{
+				Text = "TET",
+				TextTransform = TextTransform.Uppercase
+			};
+
+			await SetValueAsync<int, EditorHandler>(editor, 2, (h, s) => h.PlatformView.SetSelection(2));
+
+			Assert.Equal(2, editor.CursorPosition);
+
+			await SetValueAsync<string, EditorHandler>(editor, "TEsT", SetPlatformText);
+
+			Assert.Equal(2, editor.CursorPosition);
 		}
 	}
 }

@@ -4,7 +4,7 @@
     x:Class="Maui.Controls.Sample.Pages.GraphicsViewPage"
     xmlns:drawable="clr-namespace:Maui.Controls.Sample.Pages"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
-    Title="Button">
+    Title="GraphicsView">
     <views:BasePage.Resources>
         <ResourceDictionary>
 

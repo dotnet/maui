@@ -6,54 +6,145 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
+	/// <summary>
+	/// The Screenshot API lets you take a capture of the current displayed screen of the app.
+	/// </summary>
 	public interface IScreenshot
 	{
+		/// <summary>
+		/// Gets a value indicating whether capturing screenshots is supported on this device.
+		/// </summary>
 		bool IsCaptureSupported { get; }
 
+		/// <summary>
+		/// Captures a screenshot of the current screen of the running application.
+		/// </summary>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		Task<IScreenshotResult> CaptureAsync();
 	}
 
+	/// <summary>
+	/// Provides abstractions for the platform screenshot methods when using Screenshot.
+	/// </summary>
 	public interface IPlatformScreenshot : IScreenshot
 	{
 #if ANDROID
+		/// <summary>
+		/// Captures a screenshot of the specified activity.
+		/// </summary>
+		/// <param name="activity">The activity to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		Task<IScreenshotResult> CaptureAsync(Android.App.Activity activity);
-		Task<IScreenshotResult> CaptureAsync(Android.Views.View view);
+
+		/// <summary>
+		/// Captures a screenshot of the specified view.
+		/// </summary>
+		/// <param name="view">The view to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		Task<IScreenshotResult?> CaptureAsync(Android.Views.View view);
 #elif IOS || MACCATALYST
+		/// <summary>
+		/// Captures a screenshot of the specified window.
+		/// </summary>
+		/// <param name="window">The window to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		Task<IScreenshotResult> CaptureAsync(UIKit.UIWindow window);
-		Task<IScreenshotResult> CaptureAsync(UIKit.UIView view);
-		//Task<IScreenshotResult> CaptureAsync(CoreAnimation.CALayer layer, bool skipChildren);
+
+		/// <summary>
+		/// Captures a screenshot of the specified view.
+		/// </summary>
+		/// <param name="view">The view to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		Task<IScreenshotResult?> CaptureAsync(UIKit.UIView view);
+
+		/// <summary>
+		/// Captures a screenshot of the specified layer.
+		/// </summary>
+		/// <param name="layer">The layer to capture.</param>
+		/// <param name="skipChildren">Specifies whether to include the child layers or not.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		Task<IScreenshotResult?> CaptureAsync(CoreAnimation.CALayer layer, bool skipChildren);
 #elif WINDOWS
+		/// <summary>
+		/// Captures a screenshot of the specified window.
+		/// </summary>
+		/// <param name="window">The window to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		Task<IScreenshotResult> CaptureAsync(UI.Xaml.Window window);
-		Task<IScreenshotResult> CaptureAsync(UI.Xaml.UIElement element);
+
+		/// <summary>
+		/// Captures a screenshot of the specified user-interface element.
+		/// </summary>
+		/// <param name="element">The user-interface element to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		Task<IScreenshotResult?> CaptureAsync(UI.Xaml.UIElement element);
+#elif TIZEN
+
+		/// <summary>
+		/// Captures a screenshot of the specified window.
+		/// </summary>
+		/// <param name="window">The window to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		Task<IScreenshotResult> CaptureAsync(Tizen.NUI.Window window);
+
+		/// <summary>
+		/// Captures a screenshot of the specified view.
+		/// </summary>
+		/// <param name="view">The view to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		Task<IScreenshotResult?> CaptureAsync(Tizen.NUI.BaseComponents.View view);
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.IScreenshotResult']/Docs" />
+	/// <summary>
+	/// A representation of a screenshot, as a result of a screenshot captured by the user.
+	/// </summary>
 	public interface IScreenshotResult
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='Width']/Docs" />
+		/// <summary>
+		/// The width of this screenshot in pixels.
+		/// </summary>
 		int Width { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='Height']/Docs" />
+		/// <summary>
+		/// The height of this screenshot in pixels.
+		/// </summary>
 		int Height { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='OpenReadAsync']/Docs" />
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		/// <summary>
+		/// Opens a <see cref="Stream"/> to the corresponding screenshot file on the filesystem.
+		/// </summary>
+		/// <param name="format">The image format used to read this screenshot.</param>
+		/// <param name="quality">The quality used to read this screenshot.</param>
+		/// <returns>A <see cref="Stream"/> containing the screenshot file data.</returns>
 		Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100);
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/IScreenshotResult.xml" path="//Member[@MemberName='CopyToAsync']/Docs" />
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="destination">The destination <see cref="Stream"/> to copy the screenshot file data to.</param>
+		/// <param name="format">The image format used to copy this screenshot.</param>
+		/// <param name="quality">The quality used to copy this screenshot.</param>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		Task CopyToAsync(Stream destination, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Screenshot']/Docs" />
+	/// <summary>
+	/// The Screenshot API lets you take a capture of the current displayed screen of the app.
+	/// </summary>
 	public static partial class Screenshot
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='IsCaptureSupported']/Docs" />
+		/// <summary>
+		/// Gets a value indicating whether capturing screenshots is supported on this device.
+		/// </summary>
 		public static bool IsCaptureSupported
 			=> Default.IsCaptureSupported;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Screenshot.xml" path="//Member[@MemberName='CaptureAsync']/Docs" />
+		/// <summary>
+		/// Captures a screenshot of the current screen of the running application.
+		/// </summary>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		/// <exception cref="FeatureNotSupportedException">Thrown when <see cref="IsCaptureSupported"/> is <see langword="false"/>.</exception>
 		public static Task<IScreenshotResult> CaptureAsync()
 		{
 			if (!IsCaptureSupported)
@@ -64,6 +155,9 @@ namespace Microsoft.Maui.Media
 
 		static IScreenshot? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IScreenshot Default =>
 			defaultImplementation ??= new ScreenshotImplementation();
 
@@ -71,6 +165,9 @@ namespace Microsoft.Maui.Media
 			defaultImplementation = implementation;
 	}
 
+	/// <summary>
+	/// This class contains static extension methods for use with <see cref="IScreenshot"/>.
+	/// </summary>
 	public static class ScreenshotExtensions
 	{
 		static IPlatformScreenshot AsPlatform(this IScreenshot screenshot)
@@ -82,52 +179,108 @@ namespace Microsoft.Maui.Media
 		}
 
 #if ANDROID
-
+		/// <summary>
+		/// Captures a screenshot of the specified activity.
+		/// </summary>
+		/// <param name="screenshot">The object this method is invoked on.</param>
+		/// <param name="activity">The activity to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Android.App.Activity activity) =>
 			screenshot.AsPlatform().CaptureAsync(activity);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Android.Views.View view) =>
+		/// <summary>
+		/// Captures a screenshot of the specified view.
+		/// </summary>
+		/// <param name="screenshot">The object this method is invoked on.</param>
+		/// <param name="view">The view to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, Android.Views.View view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
 
 #elif IOS || MACCATALYST
-
+		/// <summary>
+		/// Captures a screenshot of the specified window.
+		/// </summary>
+		/// <param name="screenshot">The object this method is invoked on.</param>
+		/// <param name="window">The window to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIWindow window) =>
 			screenshot.AsPlatform().CaptureAsync(window);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UIKit.UIView view) =>
+		/// <summary>
+		/// Captures a screenshot of the specified view.
+		/// </summary>
+		/// <param name="screenshot">The object this method is invoked on.</param>
+		/// <param name="view">The view to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, UIKit.UIView view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
 
-		//public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, CoreAnimation.CALayer layer, bool skipChildren) =>
-		//	screenshot.AsPlatform().CaptureAsync(layer, skipChildren);
+		/// <summary>
+		/// Captures a screenshot of the specified layer.
+		/// </summary>
+		/// <param name="screenshot">The object this method is invoked on.</param>
+		/// <param name="layer">The layer to capture.</param>
+		/// <param name="skipChildren">Specifies whether to include the child layers or not.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, CoreAnimation.CALayer layer, bool skipChildren) =>
+			screenshot.AsPlatform().CaptureAsync(layer, skipChildren);
 
 #elif WINDOWS
-
+		/// <summary>
+		/// Captures a screenshot of the specified window.
+		/// </summary>
+		/// <param name="screenshot">The object this method is invoked on.</param>
+		/// <param name="window">The window to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UI.Xaml.Window window) =>
 			screenshot.AsPlatform().CaptureAsync(window);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, UI.Xaml.UIElement element) =>
+		/// <summary>
+		/// Captures a screenshot of the specified user-interface element.
+		/// </summary>
+		/// <param name="screenshot">The object this method is invoked on.</param>
+		/// <param name="element">The user-interface element to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, UI.Xaml.UIElement element) =>
 			screenshot.AsPlatform().CaptureAsync(element);
 
 #elif TIZEN
-
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, ElmSharp.Window window) =>
+		/// <summary>
+		/// Captures a screenshot of the specified window.
+		/// </summary>
+		/// <param name="screenshot">The object this method is invoked on.</param>
+		/// <param name="window">The window to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.Window window) =>
 			screenshot.AsPlatform().CaptureAsync(window);
 
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, ElmSharp.EvasObject view) =>
+		/// <summary>
+		/// Captures a screenshot of the specified view.
+		/// </summary>
+		/// <param name="screenshot">The object this method is invoked on.</param>
+		/// <param name="view">The view to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.BaseComponents.View view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
-
 #endif
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ScreenshotFormat']/Docs" />
+	/// <summary>
+	/// The possible formats for reading screenshot images.
+	/// </summary>
 	public enum ScreenshotFormat
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Png']/Docs" />
+		/// <summary>Read the screenshot image as a PNG image.</summary>
 		Png,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ScreenshotFormat.xml" path="//Member[@MemberName='Jpeg']/Docs" />
+
+		/// <summary>Read the screenshot image as a JPEG image.</summary>
 		Jpeg
 	}
 
+	/// <summary>
+	/// A representation of a screenshot, as a result of a screenshot captured by the user.
+	/// </summary>
 	partial class ScreenshotResult : IScreenshotResult
 	{
 		public int Width { get; }

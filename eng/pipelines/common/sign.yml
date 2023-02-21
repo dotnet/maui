@@ -3,7 +3,7 @@ stages:
     dependsOn: pack_net6
     displayName: Sign Nuget
     jobs:
-      - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+      - template: sign-artifacts/jobs/v2.yml@yaml-templates
         parameters:
           signType: Real
           teamName: $(TeamName)
@@ -12,20 +12,14 @@ stages:
           signedArtifactName: nuget
           signedArtifactPath: signed
           displayName: Sign Phase
-          condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/net6.0'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') )))))
+          condition: and(succeeded(), eq(variables.signingCondition, true))
 
-      - template: nuget-msi-convert/job/v2.yml@xamarin-templates
+      - template: nuget-msi-convert/job/v3.yml@yaml-templates
         parameters:
-          yamlResourceName: xamarin-templates
+          yamlResourceName: yaml-templates
           artifactName: nuget
           artifactPatterns: |
             **/signed/*.nupkg
           artifactPath: signed
           propsArtifactName: nuget
           signType: Real
-          preConvertSteps:
-            - task: DownloadPipelineArtifact@2
-              displayName: Download library-packs nugets
-              inputs:
-                artifactName: library-packs
-                downloadPath: $(Build.StagingDirectory)\nugets\signed

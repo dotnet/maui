@@ -1,3 +1,4 @@
+#nullable disable
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.Content;
@@ -53,6 +54,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				aView.Measure(widthMeasureSpec, heightMeasureSpec);
 				SetMeasuredDimension(aView.MeasuredWidth, aView.MeasuredHeight);
 			}
+			else
+				SetMeasuredDimension(0, 0);
 		}
 	}
 }

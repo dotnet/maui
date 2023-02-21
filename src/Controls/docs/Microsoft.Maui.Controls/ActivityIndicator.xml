@@ -32,7 +32,7 @@
     <remarks>
       <para>This control gives a visual clue to the user that something is happening, without information about its progress.</para>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/ActivityIndicator.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/ActivityIndicator.TripleScreenShot.png" />
       </para>
       <example>
         <para>The example below creates a red activity indicator that is animated to imply that an activity is ongoing:</para>
@@ -74,10 +74,10 @@ var indicator = new ActivityIndicator {
       </Docs>
     </Member>
     <Member MemberName="Color">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color Color { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Color" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color Color { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Color" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ActivityIndicator.Color" />
-      <MemberSignature Language="F#" Value="member this.Color : Microsoft.Maui.Controls.Color with get, set" Usage="Microsoft.Maui.Controls.ActivityIndicator.Color" />
+      <MemberSignature Language="F#" Value="member this.Color : Microsoft.Maui.Graphics.Color with get, set" Usage="Microsoft.Maui.Controls.ActivityIndicator.Color" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -91,11 +91,11 @@ var indicator = new ActivityIndicator {
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the <see cref="T:Microsoft.Maui.Controls.Color" /> of the ActivityIndicator. This is a bindable property.</summary>
-        <value>A <see cref="T:Microsoft.Maui.Controls.Color" /> used to display the ActivityIndicator. Default is <see cref="P:Microsoft.Maui.Controls.Color.Default" />.</value>
+        <summary>Gets or sets the <see cref="T:Microsoft.Maui.Graphics.Color" /> of the ActivityIndicator. This is a bindable property.</summary>
+        <value>A <see cref="T:Microsoft.Maui.Graphics.Color" /> used to display the ActivityIndicator.</value>
         <remarks>
         </remarks>
       </Docs>

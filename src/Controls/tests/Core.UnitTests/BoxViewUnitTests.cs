@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class BoxViewUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestConstructor()
 		{
 			var box = new BoxView
@@ -20,13 +20,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.AreEqual(new Color(0.2f, 0.3f, 0.4f), box.Color);
+			Assert.Equal(new Color(0.2f, 0.3f, 0.4f), box.Color);
 			var request = box.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.AreEqual(20, request.Width);
-			Assert.AreEqual(30, request.Height);
+			Assert.Equal(20, request.Width);
+			Assert.Equal(30, request.Height);
 		}
 
-		[Test]
+		[Fact]
 		public void DefaultSize()
 		{
 			var box = new BoxView
@@ -35,8 +35,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var request = box.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.AreEqual(40, request.Width);
-			Assert.AreEqual(40, request.Height);
+			Assert.Equal(40, request.Width);
+			Assert.Equal(40, request.Height);
 		}
 	}
 }

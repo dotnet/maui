@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateStrokeColor(this UIButton platformButton, IButtonStroke buttonStroke)
 		{
-			if (buttonStroke.StrokeColor != null)
+			if (buttonStroke.StrokeColor is not null)
 				platformButton.Layer.BorderColor = buttonStroke.StrokeColor.ToCGColor();
 		}
 
@@ -30,21 +30,22 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button)
 		{
-			if (button.TextColor != null)
-			{
-				var color = button.TextColor.ToPlatform();
+			if (button.TextColor is null)
+				return;
 
-				platformButton.SetTitleColor(color, UIControlState.Normal);
-				platformButton.SetTitleColor(color, UIControlState.Highlighted);
-				platformButton.SetTitleColor(color, UIControlState.Disabled);
+			var color = button.TextColor.ToPlatform();
 
-				platformButton.TintColor = color;
-			}
+			platformButton.SetTitleColor(color, UIControlState.Normal);
+			platformButton.SetTitleColor(color, UIControlState.Highlighted);
+			platformButton.SetTitleColor(color, UIControlState.Disabled);
+
+			platformButton.TintColor = color;
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)
 		{
-			platformButton.TitleLabel.UpdateCharacterSpacing(textStyle);
+			var attributedText = platformButton?.TitleLabel.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
+			platformButton?.SetAttributedTitle(attributedText, UIControlState.Normal);
 		}
 
 		public static void UpdateFont(this UIButton platformButton, ITextStyle textStyle, IFontManager fontManager)
@@ -70,14 +71,14 @@ namespace Microsoft.Maui.Platform
 				bottom = AlmostZero;
 
 #pragma warning disable CA1416 // TODO: 'UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later.
+#pragma warning disable CA1422 // Validate platform compatibility
 			platformButton.ContentEdgeInsets = new UIEdgeInsets(
 				(float)top,
 				(float)padding.Left,
 				(float)bottom,
 				(float)padding.Right);
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 		}
-
-
 	}
 }

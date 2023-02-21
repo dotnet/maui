@@ -1,58 +1,60 @@
 ﻿using Microsoft.Maui.Primitives;
-using NUnit.Framework;
+using Xunit;
+using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
+
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class VisualElementTests
 	{
-		[Test(Description = "If WidthRequest has been set and is reset to -1, the Core Width should return to being Unset")]
+		[Fact("If WidthRequest has been set and is reset to -1, the Core Width should return to being Unset")]
 		public void SettingWidthRequestToNegativeOneShouldResetWidth()
 		{
 			var visualElement = new Label();
 			var coreView = visualElement as IView;
 
-			Assert.That(coreView.Width, Is.EqualTo(Dimension.Unset));
+			Assert.Equal(Dimension.Unset, coreView.Width);
 			Assert.False(visualElement.IsSet(VisualElement.WidthRequestProperty));
 
 			double testWidth = 100;
 			visualElement.WidthRequest = testWidth;
 
-			Assert.That(coreView.Width, Is.EqualTo(testWidth));
+			Assert.Equal(coreView.Width, testWidth);
 			Assert.True(visualElement.IsSet(VisualElement.WidthRequestProperty));
-			Assert.That(visualElement.WidthRequest, Is.EqualTo(testWidth));
+			Assert.Equal(visualElement.WidthRequest, testWidth);
 
 			// -1 is the legacy "unset" value for WidthRequest; we want to support setting it back to -1 as a way 
 			// to "reset" it to the "unset" value.
 			visualElement.WidthRequest = -1;
 
-			Assert.That(coreView.Width, Is.EqualTo(Dimension.Unset));
-			Assert.That(visualElement.WidthRequest, Is.EqualTo(-1));
+			Assert.Equal(Dimension.Unset, coreView.Width);
+			Assert.Equal(-1, visualElement.WidthRequest);
 		}
 
-		[Test(Description = "If HeightRequest has been set and is reset to -1, the Core Height should return to being Unset")]
+		[Fact("If HeightRequest has been set and is reset to -1, the Core Height should return to being Unset")]
 		public void SettingHeightRequestToNegativeOneShouldResetWidth()
 		{
 			var visualElement = new Label();
 			var coreView = visualElement as IView;
 
-			Assert.That(coreView.Height, Is.EqualTo(Dimension.Unset));
+			Assert.Equal(Dimension.Unset, coreView.Height);
 			Assert.False(visualElement.IsSet(VisualElement.HeightRequestProperty));
 
 			double testHeight = 100;
 			visualElement.HeightRequest = testHeight;
 
-			Assert.That(coreView.Height, Is.EqualTo(testHeight));
+			Assert.Equal(coreView.Height, testHeight);
 			Assert.True(visualElement.IsSet(VisualElement.HeightRequestProperty));
-			Assert.That(visualElement.HeightRequest, Is.EqualTo(testHeight));
+			Assert.Equal(visualElement.HeightRequest, testHeight);
 
 			// -1 is the legacy "unset" value for HeightRequest; we want to support setting it back to -1 as a way 
 			// to "reset" it to the "unset" value.
 			visualElement.HeightRequest = -1;
 
-			Assert.That(coreView.Height, Is.EqualTo(Dimension.Unset));
-			Assert.That(visualElement.HeightRequest, Is.EqualTo(-1));
+			Assert.Equal(Dimension.Unset, coreView.Height);
+			Assert.Equal(-1, visualElement.HeightRequest);
 		}
 
-		[Test]
+		[Fact]
 		public void BindingContextPropagatesToBackground()
 		{
 			var visualElement = new Label();
@@ -61,12 +63,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var bc1 = new object();
 			visualElement.BindingContext = bc1;
-			Assert.AreEqual(bc1, brush.BindingContext);
+			Assert.Equal(bc1, brush.BindingContext);
 
 			var brush2 = new LinearGradientBrush();
 			visualElement.Background = brush2;
-			Assert.AreEqual(bc1, brush2.BindingContext);
+			Assert.Equal(bc1, brush2.BindingContext);
 
+		}
+
+		[Fact]
+		public void FocusedElementGetsFocusedVisualState()
+		{
+			var vsgList = CreateTestStateGroups();
+			var stateGroup = vsgList[0];
+			var element = new Button();
+			VisualStateManager.SetVisualStateGroups(element, vsgList);
+
+			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			Assert.Equal(FocusedStateName, stateGroup.CurrentState.Name);
+		}
+
+		[Fact]
+		public void ContainerChangedFiresWhenMapContainerIsCalled()
+		{
+			var handlerStub = new HandlerStub((PropertyMapper)VisualElement.ControlsVisualElementMapper);
+			var button = new Button();
+			button.Handler = handlerStub;
+
+			bool fired = false;
+			(button as IControlsView).PlatformContainerViewChanged += (_, _) => fired = true;
+			handlerStub.UpdateValue(nameof(IViewHandler.ContainerView));
+			Assert.True(fired);
 		}
 	}
 }

@@ -116,10 +116,10 @@
       </Docs>
     </Member>
     <Member MemberName="DetailBounds">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Rectangle DetailBounds { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Rectangle DetailBounds" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Shapes.Rectangle DetailBounds { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Shapes.Rectangle DetailBounds" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.FlyoutPage.DetailBounds" />
-      <MemberSignature Language="F#" Value="member this.DetailBounds : Microsoft.Maui.Controls.Rectangle with get, set" Usage="Microsoft.Maui.Controls.FlyoutPage.DetailBounds" />
+      <MemberSignature Language="F#" Value="member this.DetailBounds : Microsoft.Maui.Controls.Shapes.Rectangle with get, set" Usage="Microsoft.Maui.Controls.FlyoutPage.DetailBounds" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IFlyoutPageController.DetailBounds</InterfaceMember>
@@ -134,7 +134,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Rectangle</ReturnType>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Rectangle</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -162,10 +162,10 @@
       </Docs>
     </Member>
     <Member MemberName="FlyoutBounds">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Rectangle FlyoutBounds { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Rectangle FlyoutBounds" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Shapes.Rectangle FlyoutBounds { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Shapes.Rectangle FlyoutBounds" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.FlyoutPage.FlyoutBounds" />
-      <MemberSignature Language="F#" Value="member this.FlyoutBounds : Microsoft.Maui.Controls.Rectangle with get, set" Usage="Microsoft.Maui.Controls.FlyoutPage.FlyoutBounds" />
+      <MemberSignature Language="F#" Value="member this.FlyoutBounds : Microsoft.Maui.Controls.Shapes.Rectangle with get, set" Usage="Microsoft.Maui.Controls.FlyoutPage.FlyoutBounds" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IFlyoutPageController.FlyoutBounds</InterfaceMember>
@@ -180,7 +180,7 @@
         </Attribute>
       </Attributes>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Rectangle</ReturnType>
+        <ReturnType>Microsoft.Maui.Controls.Shapes.Rectangle</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

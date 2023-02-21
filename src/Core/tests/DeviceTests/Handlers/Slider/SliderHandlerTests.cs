@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Slider)]
-	public partial class SliderHandlerTests : HandlerTestBase<SliderHandler, SliderStub>
+	public partial class SliderHandlerTests : CoreHandlerTestBase<SliderHandler, SliderStub>
 	{
 		[Theory(DisplayName = "Percent Value Initializes Correctly")]
 		[InlineData(0, 1, 0)]
@@ -51,6 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedPercent, nativePercent, 5);
 		}
 
+#if !WINDOWS
 		[Fact(DisplayName = "Thumb Color Initializes Correctly", Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/1275")]
 		public async Task ThumbColorInitializesCorrectly()
 		{
@@ -61,6 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateNativeThumbColor(slider, Colors.Purple);
 		}
+#endif
 
 		[Fact(DisplayName = "Null Thumb Color Doesn't Crash")]
 		public async Task NullThumbColorDoesntCrash()

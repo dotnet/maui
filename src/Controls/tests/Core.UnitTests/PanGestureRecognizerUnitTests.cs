@@ -1,13 +1,13 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
 	public class PanGestureRecognizerUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void PanRaisesStartedEventTest()
 		{
 			var view = new View();
@@ -20,10 +20,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			((IPanGestureController)pan).SendPanStarted(view, 0);
-			Assert.AreEqual(GestureStatus.Started, target);
+			Assert.Equal(GestureStatus.Started, target);
 		}
 
-		[Test]
+		[Fact]
 		public void PanRaisesRunningEventTest()
 		{
 			var view = new View();
@@ -36,10 +36,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			((IPanGestureController)pan).SendPan(view, gestureId: 0, totalX: 5, totalY: 10);
-			Assert.AreEqual(GestureStatus.Running, target);
+			Assert.Equal(GestureStatus.Running, target);
 		}
 
-		[Test]
+		[Fact]
 		public void PanRunningEventContainsTotalXTest()
 		{
 			var view = new View();
@@ -52,10 +52,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			((IPanGestureController)pan).SendPan(view, gestureId: 0, totalX: 5, totalY: 10);
-			Assert.AreEqual(5, target);
+			Assert.Equal(5, target);
 		}
 
-		[Test]
+		[Fact]
 		public void PanRunningEventContainsTotalYTest()
 		{
 			var view = new View();
@@ -68,10 +68,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			((IPanGestureController)pan).SendPan(view, gestureId: 0, totalX: 5, totalY: 10);
-			Assert.AreEqual(10, target);
+			Assert.Equal(10, target);
 		}
 
-		[Test]
+		[Fact]
 		public void PanRaisesCompletedEventTest()
 		{
 			var view = new View();
@@ -84,10 +84,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			((IPanGestureController)pan).SendPanCompleted(view, 0);
-			Assert.AreEqual(GestureStatus.Completed, target);
+			Assert.Equal(GestureStatus.Completed, target);
 		}
 
-		[Test]
+		[Fact]
 		public void PanRaisesCanceledEventTest()
 		{
 			var view = new View();
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			((IPanGestureController)pan).SendPanCanceled(view, 0);
-			Assert.AreEqual(GestureStatus.Canceled, target);
+			Assert.Equal(GestureStatus.Canceled, target);
 		}
 	}
 }

@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
 	public class AcceleratorTypeConverterUnitTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestAcceleratorTypeConverter()
 		{
 			var converter = new AcceleratorTypeConverter();
 			string shourtCutKeyBinding = "ctrl+A";
-			Assert.AreEqual(Accelerator.FromString(shourtCutKeyBinding), (Accelerator)converter.ConvertFromInvariantString(shourtCutKeyBinding));
+			Assert.Equal(Accelerator.FromString(shourtCutKeyBinding), (Accelerator)converter.ConvertFromInvariantString(shourtCutKeyBinding));
 		}
 	}
 }

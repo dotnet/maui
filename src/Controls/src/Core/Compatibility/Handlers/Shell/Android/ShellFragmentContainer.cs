@@ -1,3 +1,4 @@
+#nullable disable
 using Android.OS;
 using Android.Views;
 using AndroidX.Fragment.App;
@@ -22,32 +23,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			_page = ((IShellContentController)ShellContentTab).GetOrCreateContent();
+			_page.ToPlatform(_mauiContext, RequireContext(), inflater, ChildFragmentManager);
 
-			IMauiContext mauiContext = null;
-
-			// If the page has already been created with a handler then we just let it retain the same
-			// Handler and MauiContext
-			// But we want to update the inflater and ChildFragmentManager to match
-			// the handlers new home			
-			if (_page.Handler?.MauiContext is MauiContext scopedMauiContext)
-			{
-				// If this page comes to us from a different activity then don't reuse it
-				// disconnect the handler so it can recreate against new MauiContext
-				if (scopedMauiContext.GetActivity() == Context.GetActivity())
-				{
-					scopedMauiContext.AddWeakSpecific(ChildFragmentManager);
-					scopedMauiContext.AddWeakSpecific(inflater);
-					mauiContext = scopedMauiContext;
-				}
-				else
-				{
-					_page.Handler.DisconnectHandler();
-				}
-			}
-
-			mauiContext ??= _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
-
-			return new ShellPageContainer(RequireContext(), (IPlatformViewHandler)_page.ToHandler(mauiContext), true)
+			return new ShellPageContainer(RequireContext(), (IPlatformViewHandler)_page.Handler, true)
 			{
 				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
 			};

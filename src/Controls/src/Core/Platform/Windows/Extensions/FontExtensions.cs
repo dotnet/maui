@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;

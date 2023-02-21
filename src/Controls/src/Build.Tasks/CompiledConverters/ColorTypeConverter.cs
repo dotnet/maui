@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.XamlC
 {
 	class ColorTypeConverter : ICompiledTypeConverter
 	{
-		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
+		public virtual IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 		{
 			var module = context.Body.Method.Module;
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.XamlC
 					yield return Instruction.Create(OpCodes.Ldc_R4, color.Blue);
 					yield return Instruction.Create(OpCodes.Ldc_R4, color.Alpha);
 
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Color"), parameterTypes: new[] {
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Color"), parameterTypes: new[] {
 						("mscorlib", "System", "Single"),
 						("mscorlib", "System", "Single"),
 						("mscorlib", "System", "Single"),
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.XamlC
 						yield break;
 					}
 
-					var fieldReference = module.ImportFieldReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Colors"),
+					var fieldReference = module.ImportFieldReference(context.Cache, ("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Colors"),
 																	 color,
 																	 isStatic: true,
 																	 caseSensitive: false);
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.XamlC
 						yield break;
 					}
 
-					var propertyGetterReference = module.ImportPropertyGetterReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Colors"),
+					var propertyGetterReference = module.ImportPropertyGetterReference(context.Cache, ("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Colors"),
 																					   color,
 																					   isStatic: true,
 																					   caseSensitive: false);

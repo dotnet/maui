@@ -1,9 +1,9 @@
 # .NET MAUI Bug Report Reproduction Guide
 
-First or all, thank you for reporting this potential bug. Here you will find more information about why we ask you for a reproducible example of the problem, and how to provide it.
+First of all, thank you for reporting this potential bug. Nobody likes bugs and to help us diagnose and resolve your potential issue as effective and quickly as possible, we would like to give you a bit more information about why we ask you for a reproducible example of the problem, and how to provide one.
 
 ## What is a reproduction?
-A reproduction, reprodicible example or just repro for short is the most basic code to demonstrate the issue that you're seeing. It's the simplest way to reproduce the issue.
+A reproduction, reproducible example or just repro for short is the most basic code to demonstrate the issue that you're seeing. It's the simplest way to reproduce the issue.
 Ideally, you should be able to reproduce the issue by just running the code in the project you have provided and see the problem. If any reproduction steps are needed, either note them in the issue or include them in the project somehow.
 
 ## Why do we ask for a reproducible example?
@@ -47,11 +47,25 @@ At this point we would love for you to include the reproduction.
 * Try to remove some code or make small changes to see how that influences the issue you're seeing. Remove any code that is not needed to reproduce the issue. This is noise and will interfere with getting to a cause and solution.
 * Put the code on a GitHub repository and include that link in the issue that you're opening. 
 
-**Note: we can't accept any zip files attached to the issue.** If we need the code in a zip, we can get that from the GitHub repository. This will also make it easier to collaborate. If we think we spot something that doesn't look right, we can open a PR on your repro repo (😬) and you can easily see the differences.
+> **Warning**
+> 
+> **We can't accept any zip files attached to the issue.** If we need the code in a zip, we can get that from the GitHub repository. This will also make it easier to collaborate. If we think we spot something that doesn't look right, we can open a PR on your repro repo (😬) and you can easily see the differences.
+
+## Why can't you just download my zip file reproduction?!
+While we've never had problems with this, it is still a potential attack vector for hackers and other malicious people. Even unzipping a zip file could execute code, let alone load code into Visual Studio that we could not (easily) look at before opening it. Because we value your safety and privacy as well as our own, we want to make sure that none of this can happen.
+
+Also, by putting it in a GitHub repo it's easier to potentially collaborate. We (and our amazing community!) can comment on a piece of code right then and there and help you further. It can even serve as a nice example for other people!
+
+If you don't like to have a lot of repos, you could opt for a repo where on the `main` branch you put a File > New .NET MAUI App. And from there create branches for different issues.
 
 ## Big don'ts!
 - Never put any sensitive information in your code. No API keys, credentials, personal information, etc.
-- Never put any propriatary code in your reproduction. We are contractually not allowed to look at code that you do not own without bit legal hassles and NDA's.
+- Never put any propriatary code in your reproduction. We are contractually not allowed to look at code that you do not own without big legal hassles and NDA's, that's not fun for anyone.
 - Never submit binaries (mostly covered by putting it on a GitHub repo)
 - Do not reference external data-sources, this should rarely be needed.
 - Always refer to concrete version numbers. Avoid saying "this happens in the latest version". We don't know if you're using a preview version or maybe you _think_ you're using the latest version but actually aren't. To avoid any confusion, always refer to exact version numbers.
+
+# That's it!
+The first time might take you a bit longer to go through all this, but once you've done it you'll see it isn't that much more work and it will benefit the process a lot.
+
+Thank you so much for taking some of your valuable time to make .NET MAUI the best version it can be! We really appreciate it.

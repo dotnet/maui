@@ -5,37 +5,78 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Storage
 {
+	/// <summary>
+	/// Provides an easy way to access the locations for device folders.
+	/// </summary>
 	public interface IFileSystem
 	{
+		/// <summary>
+		/// Gets the location where temporary data can be stored.
+		/// </summary>
+		/// <remarks>This location usually is not visible to the user, is not backed up, and may be cleared by the operating system at any time.</remarks>
 		string CacheDirectory { get; }
 
+		/// <summary>
+		/// Gets the location where app data can be stored.
+		/// </summary>
+		/// <remarks>This location usually is not visible to the user, and is backed up.</remarks>
 		string AppDataDirectory { get; }
 
+		/// <summary>
+		/// Opens a stream to a file contained within the app package.
+		/// </summary>
+		/// <param name="filename">The name of the file (excluding the path) to load from the app package.</param>
+		/// <returns>A <see cref="Stream"/> containing the (read-only) file data.</returns>
 		Task<Stream> OpenAppPackageFileAsync(string filename);
 
+		/// <summary>
+		/// Determines whether or not a file exists in the app package.
+		/// </summary>
+		/// <param name="filename">The name of the file (excluding the path) to load from the app package.</param>
+		/// <returns><see langword="true"/> when the specified file exists in the app package, otherwise <see langword="false"/>.</returns>
 		Task<bool> AppPackageFileExistsAsync(string filename);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileSystem']/Docs" />
+	/// <summary>
+	/// Provides an easy way to access the locations for device folders.
+	/// </summary>
 	public static class FileSystem
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='CacheDirectory']/Docs" />
+		/// <summary>
+		/// Gets the location where temporary data can be stored.
+		/// </summary>
+		/// <remarks>This location usually is not visible to the user, is not backed up, and may be cleared by the operating system at any time.</remarks>
 		public static string CacheDirectory
 			=> Current.CacheDirectory;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='AppDataDirectory']/Docs" />
+		/// <summary>
+		/// Gets the location where app data can be stored.
+		/// </summary>
+		/// <remarks>This location usually is not visible to the user, and is backed up.</remarks>
 		public static string AppDataDirectory
 			=> Current.AppDataDirectory;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileSystem.xml" path="//Member[@MemberName='OpenAppPackageFileAsync']/Docs" />
+		/// <summary>
+		/// Opens a stream to a file contained within the app package.
+		/// </summary>
+		/// <param name="filename">The name of the file (excluding the path) to load from the app package.</param>
+		/// <returns>A <see cref="Stream"/> containing the (read-only) file data.</returns>
 		public static Task<Stream> OpenAppPackageFileAsync(string filename)
 			=> Current.OpenAppPackageFileAsync(filename);
 
+		/// <summary>
+		/// Determines whether or not a file exists in the app package.
+		/// </summary>
+		/// <param name="filename">The path of the file (relative to the app package) to check the existence of.</param>
+		/// <returns><see langword="true"/> when the specified file exists in the app package, otherwise <see langword="false"/>.</returns>
 		public static Task<bool> AppPackageFileExistsAsync(string filename)
 			=> Current.AppPackageFileExistsAsync(filename);
 
 		static IFileSystem? currentImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IFileSystem Current =>
 			currentImplementation ??= new FileSystemImplementation();
 
@@ -43,17 +84,24 @@ namespace Microsoft.Maui.Storage
 			currentImplementation = implementation;
 	}
 
+	/// <summary>
+	/// Concrete implementation of the <see cref="IFileSystem"/> APIs.
+	/// </summary>
 	public partial class FileSystemImplementation
 	{
+		/// <inheritdoc cref="IFileSystem.CacheDirectory"/>
 		public string CacheDirectory
 			=> PlatformCacheDirectory;
 
+		/// <inheritdoc cref="IFileSystem.AppDataDirectory"/>
 		public string AppDataDirectory
 			=> PlatformAppDataDirectory;
 
+		/// <inheritdoc cref="IFileSystem.OpenAppPackageFileAsync(string)"/>
 		public Task<Stream> OpenAppPackageFileAsync(string filename)
 			=> PlatformOpenAppPackageFileAsync(filename);
 
+		/// <inheritdoc cref="IFileSystem.AppPackageFileExistsAsync(string)"/>
 		public Task<bool> AppPackageFileExistsAsync(string filename)
 			=> PlatformAppPackageFileExistsAsync(filename);
 	}
@@ -124,7 +172,9 @@ namespace Microsoft.Maui.Storage
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileBase']/Docs" />
+	/// <summary>
+	/// A representation of a file and its content type.
+	/// </summary>
 	public abstract partial class FileBase
 	{
 		internal const string DefaultContentType = FileMimeTypes.OctetStream;
@@ -148,7 +198,10 @@ namespace Microsoft.Maui.Storage
 			FullPath = fullPath;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='.ctor']/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FileBase"/> class from an existing instance.
+		/// </summary>
+		/// <param name="file">A <see cref="FileBase"/> instance that will be used to clone.</param>
 		public FileBase(FileBase file)
 		{
 			FullPath = file.FullPath;
@@ -164,10 +217,14 @@ namespace Microsoft.Maui.Storage
 			ContentType = contentType;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='FullPath']/Docs" />
+		/// <summary>
+		/// Gets the full path and filename.
+		/// </summary>
 		public string FullPath { get; internal set; } = null!;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='ContentType']/Docs" />
+		/// <summary>
+		/// Gets or sets the file's content type as a MIME type (e.g.: <c>image/png</c>).
+		/// </summary>
 		public string ContentType
 		{
 			get => GetContentType();
@@ -194,7 +251,9 @@ namespace Microsoft.Maui.Storage
 
 		string? fileName;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='FileName']/Docs" />
+		/// <summary>
+		/// Gets or sets the filename for this file.
+		/// </summary>
 		public string FileName
 		{
 			get => GetFileName();
@@ -215,34 +274,51 @@ namespace Microsoft.Maui.Storage
 			throw new InvalidOperationException($"Unable to determine the file name from '{FullPath}'.");
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileBase.xml" path="//Member[@MemberName='OpenReadAsync']/Docs" />
+		/// <summary>
+		/// Opens a <see cref="Stream"/> to the corresponding file on the filesystem.
+		/// </summary>
+		/// <returns>A <see cref="Stream"/> containing the file data.</returns>
 		public Task<Stream> OpenReadAsync()
 			=> PlatformOpenReadAsync();
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="Type[@FullName='Microsoft.Maui.Essentials.ReadOnlyFile']/Docs" />
+	/// <summary>
+	/// A representation of a file, that is read-only, and its content type.
+	/// </summary>
 	public class ReadOnlyFile : FileBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ReadOnlyFile"/> class from a file path.
+		/// </summary>
+		/// <param name="fullPath">Full file path to the corresponding file on the filesystem.</param>
 		public ReadOnlyFile(string fullPath)
 			: base(fullPath)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ReadOnlyFile"/> class from a file path, explicitly specifying the content type.
+		/// </summary>
+		/// <param name="fullPath">Full file path to the corresponding file on the filesystem.</param>
+		/// <param name="contentType">Content type (MIME type) of the file (e.g.: <c>image/png</c>).</param>
 		public ReadOnlyFile(string fullPath, string contentType)
 			: base(fullPath, contentType)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/ReadOnlyFile.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ReadOnlyFile"/> class from an existing instance.
+		/// </summary>
+		/// <param name="file">A <see cref="FileBase"/> instance that will be used to clone.</param>
 		public ReadOnlyFile(FileBase file)
 			: base(file)
 		{
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="Type[@FullName='Microsoft.Maui.Essentials.FileResult']/Docs" />
+	/// <summary>
+	/// A representation of a file, as a result of a pick action by the user, and its content type.
+	/// </summary>
 	public partial class FileResult : FileBase
 	{
 		// The caller must setup FullPath at least!!!
@@ -250,19 +326,29 @@ namespace Microsoft.Maui.Storage
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="//Member[@MemberName='.ctor'][1]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FileResult"/> class from a file path.
+		/// </summary>
+		/// <param name="fullPath">Full file path to the corresponding file on the filesystem.</param>
 		public FileResult(string fullPath)
 			: base(fullPath)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="//Member[@MemberName='.ctor'][3]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FileResult"/> class from a file path, explicitly specifying the content type.
+		/// </summary>
+		/// <param name="fullPath">Full file path to the corresponding file on the filesystem.</param>
+		/// <param name="contentType">Content type (MIME type) of the file (e.g.: <c>image/png</c>).</param>
 		public FileResult(string fullPath, string contentType)
 			: base(fullPath, contentType)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/FileResult.xml" path="//Member[@MemberName='.ctor'][2]/Docs" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FileResult"/> class from an existing instance.
+		/// </summary>
+		/// <param name="file">A <see cref="FileBase"/> instance that will be used to clone.</param>
 		public FileResult(FileBase file)
 			: base(file)
 		{

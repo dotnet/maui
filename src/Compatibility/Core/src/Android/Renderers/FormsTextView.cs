@@ -2,11 +2,11 @@ using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Util;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	public class FormsTextView : TextView
+	public class FormsTextView : AppCompatTextView
 	{
 		public FormsTextView(Context context) : base(context)
 		{

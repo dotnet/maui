@@ -1,12 +1,23 @@
+#nullable disable
 using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/TextTransformUtilites.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.TextTransformUtilites']/Docs" />
+	// TODO Rename this class to not have a typo
+	/// <summary>
+	/// A utilities class for text transformations.
+	/// </summary>
+	/// <remarks>For internal use by the .NET MAUI platform.</remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class TextTransformUtilites
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/TextTransformUtilites.xml" path="//Member[@MemberName='GetTransformedText']/Docs" />
+		/// <summary>
+		/// Applies the <paramref name="textTransform"/> to <paramref name="source"/>.
+		/// </summary>
+		/// <remarks>For internal use by the .NET MAUI platform mostly.</remarks>
+		/// <param name="source">The text to transform.</param>
+		/// <param name="textTransform">The transform to apply to <paramref name="source"/>.</param>
+		/// <returns>The transformed text.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static string GetTransformedText(string source, TextTransform textTransform)
 		{
@@ -25,8 +36,12 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/TextTransformUtilites.xml" path="//Member[@MemberName='SetPlainText']/Docs" />
+		/// <summary>
+		/// Sets the plain text value to the specified input view.
+		/// </summary>
+		/// <remarks>For internal use by the .NET MAUI platform.</remarks>
+		/// <param name="inputView">The view that will receive the text value.</param>
+		/// <param name="platformText">The text that will be applied to the view.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetPlainText(InputView inputView, string platformText)
 		{

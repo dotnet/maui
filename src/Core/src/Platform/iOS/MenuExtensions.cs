@@ -40,6 +40,27 @@ namespace Microsoft.Maui.Platform
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 		internal static UIMenu ToPlatformMenu(
 			this IList<IMenuElement> menuElements,
+			IMauiContext mauiContext)
+		{
+			UIMenuElement[] platformMenuElements = new UIMenuElement[menuElements.Count];
+
+			for (int i = 0; i < menuElements.Count; i++)
+			{
+				var item = menuElements[i];
+				var menuElement = (UIMenuElement)item.ToHandler(mauiContext)!.PlatformView!;
+				platformMenuElements[i] = menuElement;
+			}
+
+#pragma warning disable CA1416
+			var platformMenu = UIMenu.Create(children: platformMenuElements);
+#pragma warning restore CA1416
+
+			return platformMenu;
+		}
+
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		internal static UIMenu ToPlatformMenu(
+			this IList<IMenuElement> menuElements,
 			string title,
 			IImageSource? imageSource,
 			IMauiContext mauiContext,

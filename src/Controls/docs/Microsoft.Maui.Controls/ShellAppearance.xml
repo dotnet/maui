@@ -26,17 +26,17 @@
   </Docs>
   <Members>
     <Member MemberName="BackgroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color BackgroundColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color BackgroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color BackgroundColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color BackgroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.BackgroundColor" />
-      <MemberSignature Language="F#" Value="member this.BackgroundColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.BackgroundColor" />
+      <MemberSignature Language="F#" Value="member this.BackgroundColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.BackgroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -45,17 +45,17 @@
       </Docs>
     </Member>
     <Member MemberName="DisabledColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color DisabledColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color DisabledColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color DisabledColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color DisabledColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.DisabledColor" />
-      <MemberSignature Language="F#" Value="member this.DisabledColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.DisabledColor" />
+      <MemberSignature Language="F#" Value="member this.DisabledColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.DisabledColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -106,17 +106,17 @@
       </Docs>
     </Member>
     <Member MemberName="ForegroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color ForegroundColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color ForegroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color ForegroundColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color ForegroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.ForegroundColor" />
-      <MemberSignature Language="F#" Value="member this.ForegroundColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.ForegroundColor" />
+      <MemberSignature Language="F#" Value="member this.ForegroundColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.ForegroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -237,17 +237,17 @@
       </Docs>
     </Member>
     <Member MemberName="TabBarBackgroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TabBarBackgroundColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TabBarBackgroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TabBarBackgroundColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TabBarBackgroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.TabBarBackgroundColor" />
-      <MemberSignature Language="F#" Value="member this.TabBarBackgroundColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarBackgroundColor" />
+      <MemberSignature Language="F#" Value="member this.TabBarBackgroundColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarBackgroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -256,17 +256,17 @@
       </Docs>
     </Member>
     <Member MemberName="TabBarDisabledColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TabBarDisabledColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TabBarDisabledColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TabBarDisabledColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TabBarDisabledColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.TabBarDisabledColor" />
-      <MemberSignature Language="F#" Value="member this.TabBarDisabledColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarDisabledColor" />
+      <MemberSignature Language="F#" Value="member this.TabBarDisabledColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarDisabledColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -275,17 +275,17 @@
       </Docs>
     </Member>
     <Member MemberName="TabBarForegroundColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TabBarForegroundColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TabBarForegroundColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TabBarForegroundColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TabBarForegroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.TabBarForegroundColor" />
-      <MemberSignature Language="F#" Value="member this.TabBarForegroundColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarForegroundColor" />
+      <MemberSignature Language="F#" Value="member this.TabBarForegroundColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarForegroundColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -294,17 +294,17 @@
       </Docs>
     </Member>
     <Member MemberName="TabBarTitleColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TabBarTitleColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TabBarTitleColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TabBarTitleColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TabBarTitleColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.TabBarTitleColor" />
-      <MemberSignature Language="F#" Value="member this.TabBarTitleColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarTitleColor" />
+      <MemberSignature Language="F#" Value="member this.TabBarTitleColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarTitleColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -313,17 +313,17 @@
       </Docs>
     </Member>
     <Member MemberName="TabBarUnselectedColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TabBarUnselectedColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TabBarUnselectedColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TabBarUnselectedColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TabBarUnselectedColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.TabBarUnselectedColor" />
-      <MemberSignature Language="F#" Value="member this.TabBarUnselectedColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarUnselectedColor" />
+      <MemberSignature Language="F#" Value="member this.TabBarUnselectedColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TabBarUnselectedColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -332,17 +332,17 @@
       </Docs>
     </Member>
     <Member MemberName="TitleColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color TitleColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color TitleColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color TitleColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color TitleColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.TitleColor" />
-      <MemberSignature Language="F#" Value="member this.TitleColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TitleColor" />
+      <MemberSignature Language="F#" Value="member this.TitleColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.TitleColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -351,17 +351,17 @@
       </Docs>
     </Member>
     <Member MemberName="UnselectedColor">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Color UnselectedColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color UnselectedColor" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.Graphics.Color UnselectedColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color UnselectedColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.UnselectedColor" />
-      <MemberSignature Language="F#" Value="member this.UnselectedColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.UnselectedColor" />
+      <MemberSignature Language="F#" Value="member this.UnselectedColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.ShellAppearance.UnselectedColor" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -370,10 +370,10 @@
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor">
-      <MemberSignature Language="C#" Value="Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor" />
+      <MemberSignature Language="C#" Value="Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.Xamarin#Forms#IShellAppearanceElement#EffectiveTabBarBackgroundColor" />
-      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor" />
+      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarBackgroundColor</InterfaceMember>
@@ -383,7 +383,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -392,10 +392,10 @@
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor">
-      <MemberSignature Language="C#" Value="Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor" />
+      <MemberSignature Language="C#" Value="Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.Xamarin#Forms#IShellAppearanceElement#EffectiveTabBarDisabledColor" />
-      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor" />
+      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarDisabledColor</InterfaceMember>
@@ -405,7 +405,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -414,10 +414,10 @@
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor">
-      <MemberSignature Language="C#" Value="Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor" />
+      <MemberSignature Language="C#" Value="Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.Xamarin#Forms#IShellAppearanceElement#EffectiveTabBarForegroundColor" />
-      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor" />
+      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarForegroundColor</InterfaceMember>
@@ -427,7 +427,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -436,10 +436,10 @@
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor">
-      <MemberSignature Language="C#" Value="Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor" />
+      <MemberSignature Language="C#" Value="Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.Xamarin#Forms#IShellAppearanceElement#EffectiveTabBarTitleColor" />
-      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor" />
+      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarTitleColor</InterfaceMember>
@@ -449,7 +449,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -458,10 +458,10 @@
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor">
-      <MemberSignature Language="C#" Value="Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor" />
+      <MemberSignature Language="C#" Value="Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Graphics.Color Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.ShellAppearance.Xamarin#Forms#IShellAppearanceElement#EffectiveTabBarUnselectedColor" />
-      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor : Microsoft.Maui.Controls.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor" />
+      <MemberSignature Language="F#" Value="member this.Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor : Microsoft.Maui.Graphics.Color" Usage="Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor" />
       <MemberType>Property</MemberType>
       <Implements>
         <InterfaceMember>P:Microsoft.Maui.Controls.IShellAppearanceElement.EffectiveTabBarUnselectedColor</InterfaceMember>
@@ -471,7 +471,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Color</ReturnType>
+        <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

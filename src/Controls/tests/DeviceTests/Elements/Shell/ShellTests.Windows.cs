@@ -1,21 +1,75 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 using Xunit;
+using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
-	public partial class ShellTests : HandlerTestBase
+	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		protected Task CheckFlyoutState(ShellHandler handler, bool desiredState)
 		{
 			Assert.Equal(desiredState, handler.PlatformView.IsPaneOpen);
 			return Task.CompletedTask;
+		}
+
+		[Theory(DisplayName = "Shell FlyoutBackground Initializes Correctly")]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#0000FF")]
+		[InlineData("#000000")]
+		public async Task ShellFlyoutBackgroundInitializesCorrectly(string colorHex)
+		{
+			SetupBuilder();
+
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				shell.FlyoutBackground = new SolidColorBrush(expectedColor);
+
+				var shellItem = new FlyoutItem();
+				shellItem.Items.Add(new ContentPage());
+				shell.Items.Add(shellItem);
+			});
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler)  =>
+				{
+					var rootNavView = handler.PlatformView;
+					var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
+					var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Left;
+					var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+
+					Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
+					Assert.NotNull(shellItemView);
+					Assert.Equal(expectedShellItems, shellItemView.PaneDisplayMode);
+
+					return Task.CompletedTask;
+				});
+
+				await AssertionExtensions.Wait(() =>
+				{
+					var platformView = shell.Handler.PlatformView as FrameworkElement;
+					return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
+				});
+			});
+
+			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 		}
 
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]
@@ -235,6 +289,35 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Shell Has Correct Item Count")]
+		public async Task ShellContentHasCorrectItemCount()
+		{
+			SetupBuilder();
+
+			var content1 = new ShellContent();
+			content1.Title = "Hello";
+			content1.Route = $"...";
+
+			var content2 = new ShellContent();
+			content2.Title = "World";
+			content2.Route = $"...";
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(content1);
+				shell.Items.Add(content2);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
+				handler.PlatformView.UpdateMenuItemSource();
+
+				var items = handler.PlatformView.MenuItemsSource as ObservableCollection<object>;
+				Assert.True(items.Count == 2);
+			});
+		}
+
 		[Fact(DisplayName = "Single Shell Section with Multiple Children")]
 		public async Task SingleShellSectionWithMultipleChildren()
 		{
@@ -332,7 +415,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
 		[Fact(DisplayName = "Selected Item On ShellView Correct With Implict Flyout Item")]
 		public async Task SelectedItemOnShellViewCorrectWithImplictFlyoutItem()
 		{
@@ -376,19 +458,17 @@ namespace Microsoft.Maui.DeviceTests
 				var navigationView =
 					handler.PlatformView as MauiNavigationView;
 
-				var menuItems = navigationView.MenuItemsSource as IList<NavigationViewItemViewModel>;
-
-				Assert.Equal(flyoutItem1, navigationView.SelectedItem);
+				Assert.Equal(flyoutItem1, (navigationView.SelectedItem as NavigationViewItemViewModel).Data);
 
 				// Switch to Shell Section 
 				shell.CurrentItem = flyoutItem2ShellSection;
 				await OnLoadedAsync(page2);
-				Assert.Equal(flyoutItem2ShellSection, navigationView.SelectedItem);
+				Assert.Equal(flyoutItem2ShellSection, (navigationView.SelectedItem as NavigationViewItemViewModel).Data);
 
 				// Switch to Shell Content 
 				shell.CurrentItem = flyoutItem3ShellContent;
 				await OnLoadedAsync(page3);
-				Assert.Equal(flyoutItem3ShellContent, navigationView.SelectedItem);
+				Assert.Equal(flyoutItem3ShellContent, (navigationView.SelectedItem as NavigationViewItemViewModel).Data);
 			});
 		}
 
@@ -438,21 +518,64 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task OpenFlyout(ShellHandler shellRenderer, TimeSpan? timeOut = null)
+		[Fact]
+		public async Task EmptyShellHasNoTopMargin()
 		{
-			throw new NotImplementedException();
+			SetupBuilder();
+
+			var mainPage = new ContentPage();
+			var shell = new Shell() { CurrentItem = mainPage };
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				Assert.True(await AssertionExtensions.Wait(() => mainPage.ToPlatform().GetLocationOnScreen().Value.Y > 0));
+				var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
+				var position = mainPage.ToPlatform().GetLocationOnScreen();
+
+				Assert.True(Math.Abs(position.Value.Y - appTitleBarHeight) < 1);
+			});
 		}
 
-		internal Graphics.Rect GetFrameRelativeToFlyout(ShellHandler shellRenderer, IView view)
+		protected async Task OpenFlyout(ShellHandler shellRenderer, TimeSpan? timeOut = null)
 		{
-			throw new NotImplementedException();
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+
+			var navView = (shellRenderer.PlatformView as ShellView);
+
+			if (navView.IsPaneOpen)
+				return;
+
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			navView.PaneOpened += OnPaneOpened;
+			navView.IsPaneOpen = true;
+
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			void OnPaneOpened(NavigationView sender, object args)
+			{
+				navView.PaneOpened -= OnPaneOpened;
+				taskCompletionSource.SetResult(true);
+			}
+		}
+
+		internal Graphics.Rect GetFrameRelativeToFlyout(ShellHandler handler, IView view)
+		{
+			var shellView = handler.PlatformView as ShellView;
+			var flyoutContainer = shellView.RootSplitView.FindName("PaneContentGrid") as UIElement;
+			var titleBar = handler.MauiContext.GetNavigationRootManager().AppTitleBar;
+			var platformView = view.Handler.PlatformView as FrameworkElement;
+			var point = platformView.GetLocationRelativeTo(flyoutContainer);
+
+			// We subtract the titlebar height because the PaneContentGrid extends into the titlebar area but
+			// our flyout content is already offset from the title bar
+			return new Graphics.Rect(point.Value.X, point.Value.Y - titleBar.ActualHeight, platformView.ActualWidth, platformView.ActualHeight);
 		}
 
 		internal Graphics.Rect GetFlyoutFrame(ShellHandler shellRenderer)
 		{
 			throw new NotImplementedException();
-    }
-    
+		}
+
 		// this is only relevant on windows where the title/backbutton aren't in the same
 		// area
 		[Fact(DisplayName = "Shell Toolbar not visible when only back button is present")]
@@ -470,6 +593,120 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PushAsync(new ContentPage());
 				Assert.False(IsNavigationBarVisible(handler));
 			});
+		}
+
+		[Fact]
+		public async Task SelectingTabUpdatesSelectedFlyoutItem()
+		{
+			SetupBuilder();
+
+			var flyoutItem = new FlyoutItem()
+			{
+				FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,
+				Items =
+				{
+					new ShellContent()
+					{
+						Content = new ContentPage()
+					}
+				}
+			};
+
+			var tabItems = new Tab()
+			{
+				Items =
+				{
+					new ShellContent()
+					{
+						Content = new ContentPage()
+					},
+					new ShellContent()
+					{
+						Content = new ContentPage()
+					}
+				}
+			};
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				flyoutItem.Items.Add(tabItems);
+				shell.Items.Add(flyoutItem);
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				var flyoutItems = shell.FlyoutItems.Cast<IReadOnlyList<Element>>().ToList();
+				var rootView = handler.PlatformView as MauiNavigationView;
+				var tabbedView = (flyoutItem.Handler.PlatformView as MauiNavigationView);
+
+				var platformTabItems = tabbedView.MenuItemsSource as IList<NavigationViewItemViewModel>;
+				var platformFlyoutItems = rootView.MenuItemsSource as IList<object>;
+
+				var selectedTabItem = tabbedView.SelectedItem as NavigationViewItemViewModel;
+
+				// check that the initial flyout item is selected
+				Assert.Equal((rootView.SelectedItem as NavigationViewItemViewModel).Data, flyoutItems[0][0]);
+				Assert.Equal(selectedTabItem.Data, flyoutItem.Items[0].Items[0]);
+
+				tabbedView.SelectedItem = platformTabItems[1].MenuItemsSource[1];
+
+				// Wait for the selected item to propagate to the rootview
+				await AssertionExtensions.Wait(() => (rootView.SelectedItem as NavigationViewItemViewModel).Data == flyoutItems[0][1]);
+
+				// Verify that the flyout item updates
+				Assert.Equal((rootView.SelectedItem as NavigationViewItemViewModel).Data, flyoutItems[0][1]);
+			});
+		}
+
+		async Task TapToSelect(ContentPage page)
+		{
+			var shellContent = page.Parent as ShellContent;
+			var shellSection = shellContent.Parent as ShellSection;
+			var shellItem = shellSection.Parent as ShellItem;
+			var shell = shellItem.Parent as Shell;
+
+			await OnNavigatedToAsync(shell.CurrentPage);
+
+			if (shellItem != shell.CurrentItem)
+				throw new NotImplementedException();
+
+			if (shellSection != shell.CurrentItem.CurrentItem)
+				throw new NotImplementedException();
+
+			var mauiNavigationView = shellItem.Handler.PlatformView as MauiNavigationView;
+			var navSource = mauiNavigationView.MenuItemsSource as IEnumerable;
+
+			bool found = false;
+			foreach (NavigationViewItemViewModel item in navSource)
+			{
+				if (item.Data == shellContent)
+				{
+					mauiNavigationView.SelectedItem = item;
+					found = true;
+					break;
+				}
+				else if (item.MenuItemsSource is IEnumerable children)
+				{
+					foreach (NavigationViewItemViewModel childContent in children)
+					{
+						if (childContent.Data == shellContent)
+						{
+							mauiNavigationView.SelectedItem = childContent;
+							found = true;
+							break;
+						}
+					}
+				}
+
+				if (found)
+					break;
+			}
+
+			if (!found)
+				throw new InvalidOperationException("Unable to locate page inside platform shell components");
+
+			await OnNavigatedToAsync(page);
 		}
 	}
 }

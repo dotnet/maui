@@ -1,6 +1,6 @@
-﻿#nullable enable
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	public class Border : View, IContentView, IBorderView, IPaddingElement
 	{
+		float[]? _strokeDashPattern;
 		ReadOnlyCollection<Element>? _logicalChildren;
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new();
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static readonly BindableProperty StrokeShapeProperty =
-			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), null);
+			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle());
 
 		public static readonly BindableProperty StrokeProperty =
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null);
@@ -131,7 +132,21 @@ namespace Microsoft.Maui.Controls
 				_ => LineJoin.Round
 			};
 
-		public float[]? StrokeDashPattern => StrokeDashArray?.ToFloatArray();
+		public float[]? StrokeDashPattern
+		{
+			get
+			{
+				if (StrokeDashArray is INotifyCollectionChanged oldCollection)
+					oldCollection.CollectionChanged -= OnStrokeDashArrayChanged;
+
+				_strokeDashPattern = StrokeDashArray?.ToFloatArray();
+
+				if (StrokeDashArray is INotifyCollectionChanged newCollection)
+					newCollection.CollectionChanged += OnStrokeDashArrayChanged;
+
+				return _strokeDashPattern;
+			}
+		}
 
 		float IStroke.StrokeDashOffset => (float)StrokeDashOffset;
 
@@ -201,6 +216,13 @@ namespace Microsoft.Maui.Controls
 				propertyName == WidthProperty.PropertyName ||
 				propertyName == StrokeShapeProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
+			else if (propertyName == StrokeDashArrayProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
+		}
+
+		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)
+		{
+			Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
 		}
 	}
 }

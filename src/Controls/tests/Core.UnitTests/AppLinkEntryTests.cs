@@ -1,34 +1,34 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class AppLinkEntryTests : BaseTestFixture
 	{
 
-		[Test]
+		[Fact]
 		public void KeyValuesTest()
 		{
 			var entry = new AppLinkEntry();
 
 			entry.KeyValues.Add("contentType", "GalleryPage");
 			entry.KeyValues.Add("companyName", "Microsoft.Maui.Controls");
-			Assert.AreEqual(entry.KeyValues.Count, 2);
+			Assert.Equal(2, entry.KeyValues.Count);
 		}
 
 
-		[Test]
+		[Fact]
 		public void FromUriTest()
 		{
 			var uri = new Uri("http://foo.com");
 
 			var entry = AppLinkEntry.FromUri(uri);
 
-			Assert.AreEqual(uri, entry.AppLinkUri);
+			Assert.Equal(uri, entry.AppLinkUri);
 		}
 
-		[Test]
+		[Fact]
 		public void ToStringTest()
 		{
 			var str = "http://foo.com";
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var entry = new AppLinkEntry { AppLinkUri = uri };
 
-			Assert.AreEqual(uri.ToString(), entry.ToString());
+			Assert.Equal(uri.ToString(), entry.ToString());
 		}
 	}
 }

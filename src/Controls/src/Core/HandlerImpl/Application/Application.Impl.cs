@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
@@ -77,7 +76,7 @@ namespace Microsoft.Maui.Controls
 			if (window is Element windowElement)
 			{
 				var oldIndex = InternalChildren.IndexOf(windowElement);
-				InternalChildren.Remove(windowElement);
+				InternalChildren.RemoveAt(oldIndex);
 				windowElement.Parent = null;
 				OnChildRemoved(windowElement, oldIndex);
 			}

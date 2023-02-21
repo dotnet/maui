@@ -6,13 +6,14 @@ using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 [assembly: Dependency(typeof(RegistrarValidationService))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
+	[System.Obsolete]
 	public class RegistrarValidationService : IRegistrarValidationService
 	{
 		public bool Validate(VisualElement element, out string message)
 		{
 			message = "Success";
 
-			if (element == null || element is OpenGLView)
+			if (element == null)
 				return true;
 
 #pragma warning disable CS0612 // Type or member is obsolete

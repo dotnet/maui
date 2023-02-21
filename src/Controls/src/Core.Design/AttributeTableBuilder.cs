@@ -62,6 +62,7 @@ namespace Microsoft.Maui.Controls.Design
 			);
 
 			AddTypeAttributes("Microsoft.Maui.Graphics.Color", new TypeConverterAttribute(typeof(ColorDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.GridLength", new TypeConverterAttribute(typeof(GridLengthDesignTypeConverter)));
 
 			AddTypeAttributes("Microsoft.Maui.Controls.ConstraintExpression", new MarkupExtensionReturnTypeAttribute());
 			AddTypeAttributes("Microsoft.Maui.Controls.LayoutOptions", new TypeConverterAttribute(typeof(LayoutOptionsDesignTypeConverter)));
@@ -79,6 +80,9 @@ namespace Microsoft.Maui.Controls.Design
 			AddMemberAttributes("Microsoft.Maui.Controls.RadioButton", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
 			AddMemberAttributes("Microsoft.Maui.Controls.SearchHandler", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
 			AddMemberAttributes("Microsoft.Maui.Controls.Span", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+
+			AddMemberAttributes("Microsoft.Maui.Controls.Grid", "RowDefinitions", new TypeConverterAttribute(typeof(GridLengthCollectionDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.Grid", "ColumnDefinitions", new TypeConverterAttribute(typeof(GridLengthCollectionDesignTypeConverter)));
 
 			AddTypeAttributes("Microsoft.Maui.Layouts.FlexJustify", new TypeConverterAttribute(typeof(FlexJustifyDesignTypeConverter)));
 			AddTypeAttributes("Microsoft.Maui.Layouts.FlexDirection", new TypeConverterAttribute(typeof(FlexDirectionDesignTypeConverter)));

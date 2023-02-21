@@ -14,7 +14,7 @@ using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers
 {
-	// TODO: NET7 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
+	// TODO: NET8 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
 	// This type adds support to the SelectionChanged event
 	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
@@ -29,21 +29,21 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
-		protected virtual Drawable GetClearButtonDrawable() =>
+		protected virtual Drawable? GetClearButtonDrawable() =>
 			_clearButtonDrawable ??= ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (!_set && PlatformView is MauiAppCompatEditText editText)
 				editText.SelectionChanged += OnSelectionChanged;
 
 			_set = true;
 		}
 
-		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
+		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
 			platformView.TextChanged += OnTextChanged;
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditorAction += OnEditorAction;
 		}
 
-		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
+		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (_set && platformView is MauiAppCompatEditText editText)
 				editText.SelectionChanged -= OnSelectionChanged;
 
@@ -135,7 +135,13 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			// Let the mapping know that the update is coming from changes to the platform control
+			DataFlowDirection = DataFlowDirection.FromPlatform;
 			VirtualView.UpdateText(e);
+
+			// Reset to the default direction
+			DataFlowDirection = DataFlowDirection.ToPlatform;
+
 			MapClearButtonVisibility(this, VirtualView);
 		}
 
@@ -153,27 +159,32 @@ namespace Microsoft.Maui.Handlers
 		void OnTouch(object? sender, TouchEventArgs e) =>
 			e.Handled =
 				_clearButtonVisible && VirtualView != null &&
-				PlatformView.HandleClearButtonTouched(VirtualView.GetEffectiveFlowDirection(), e, GetClearButtonDrawable);
+				PlatformView.HandleClearButtonTouched(e, GetClearButtonDrawable);
 
 		void OnEditorAction(object? sender, EditorActionEventArgs e)
 		{
-			if (e.IsCompletedAction())
-			{
-				// TODO: Dismiss keyboard for hardware / physical keyboards
+			var returnType = VirtualView?.ReturnType;
 
-				VirtualView?.Completed();
+			if (returnType != null)
+			{
+				var currentInputImeFlag = returnType.Value.ToPlatform();
+
+				if (e.IsCompletedAction(currentInputImeFlag))
+				{
+					VirtualView?.Completed();
+				}
 			}
 
-			e.Handled = true;
+			e.Handled = false;
 		}
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{
-			var cursorPostion = PlatformView.GetCursorPosition();
+			var cursorPosition = PlatformView.GetCursorPosition();
 			var selectedTextLength = PlatformView.GetSelectedTextLength();
 
-			if (VirtualView.CursorPosition != cursorPostion)
-				VirtualView.CursorPosition = cursorPostion;
+			if (VirtualView.CursorPosition != cursorPosition)
+				VirtualView.CursorPosition = cursorPosition;
 
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
@@ -188,7 +199,7 @@ namespace Microsoft.Maui.Handlers
 
 			var drawable = GetClearButtonDrawable();
 
-			if (VirtualView.GetEffectiveFlowDirection() == FlowDirection.RightToLeft)
+			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
 			{
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 			}

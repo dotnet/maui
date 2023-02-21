@@ -1,11 +1,14 @@
 namespace Microsoft.Maui.Devices
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/HapticFeedbackType.xml" path="Type[@FullName='Microsoft.Maui.Essentials.HapticFeedbackType']/Docs" />
+	/// <summary>
+	/// Enumerates the possible types of <see cref="IHapticFeedback"/> response.
+	/// </summary>
 	public enum HapticFeedbackType
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/HapticFeedbackType.xml" path="//Member[@MemberName='Click']/Docs" />
+		/// <summary>The haptic feedback that belongs to a click/tap action.</summary>
 		Click,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/HapticFeedbackType.xml" path="//Member[@MemberName='LongPress']/Docs" />
+
+		/// <summary>The haptic feedback that belongs to a long press action.</summary>
 		LongPress
 	}
 }

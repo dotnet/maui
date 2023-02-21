@@ -4,14 +4,21 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="Type[@FullName='Microsoft.Maui.Essentials.MainThread']/Docs" />
+	/// <summary>
+	/// The MainThread class allows applications to run code on the main thread of execution, and to determine if a particular block of code is currently running on the main thread.
+	/// </summary>
 	public static partial class MainThread
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='IsMainThread']/Docs" />
+		/// <summary>
+		/// True if the current thread is the UI thread.
+		/// </summary>
 		public static bool IsMainThread =>
 			PlatformIsMainThread;
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='BeginInvokeOnMainThread']/Docs" />
+		/// <summary>
+		/// Invokes an action on the main thread of the application.
+		/// </summary>
+		/// <param name="action">The action to invoke on the main thread.</param>
 		public static void BeginInvokeOnMainThread(Action action)
 		{
 			if (IsMainThread)
@@ -24,7 +31,11 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][1]/Docs" />
+		/// <summary>
+		/// Invokes an action on the main thread of the application asynchronously.
+		/// </summary>
+		/// <param name="action">The action to invoke on the main thread.</param>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		public static Task InvokeOnMainThreadAsync(Action action)
 		{
 			if (IsMainThread)
@@ -51,7 +62,12 @@ namespace Microsoft.Maui.ApplicationModel
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][2]/Docs" />
+		/// <summary>
+		/// Invokes a function on the main thread of the application asynchronously.
+		/// </summary>
+		/// <typeparam name="T">Type of the object to be returned.</typeparam>
+		/// <param name="func">The function task to execute on the main thread.</param>
+		/// <returns>A <see cref="Task"/> object that can be awaited to capture the result object.</returns>
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func)
 		{
 			if (IsMainThread)
@@ -77,7 +93,11 @@ namespace Microsoft.Maui.ApplicationModel
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][2]/Docs" />
+		/// <summary>
+		/// Invokes a function on the main thread of the application asynchronously.
+		/// </summary>
+		/// <param name="funcTask">The function task to execute on the main thread.</param>
+		/// <returns>A <see cref="Task"/> object that can be awaited.</returns>
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
 		{
 			if (IsMainThread)
@@ -104,7 +124,12 @@ namespace Microsoft.Maui.ApplicationModel
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][1]/Docs" />
+		/// <summary>
+		/// Invokes a function on the main thread of the application asynchronously.
+		/// </summary>
+		/// <typeparam name="T">Type of the object to be returned.</typeparam>
+		/// <param name="funcTask">The function task to execute on the main thread.</param>
+		/// <returns>A <see cref="Task"/> object that can be awaited to capture the result object.</returns>
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask)
 		{
 			if (IsMainThread)
@@ -131,7 +156,10 @@ namespace Microsoft.Maui.ApplicationModel
 			return tcs.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/MainThread.xml" path="//Member[@MemberName='GetMainThreadSynchronizationContextAsync']/Docs" />
+		/// <summary>
+		/// Gets the main thread synchonization context.
+		/// </summary>
+		/// <returns>The synchronization context for the main thread.</returns>
 		public static async Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync()
 		{
 			SynchronizationContext ret = null;

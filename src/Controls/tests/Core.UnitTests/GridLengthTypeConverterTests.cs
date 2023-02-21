@@ -1,53 +1,53 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
+
 	public class GridLengthTypeConverterTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void TestAbsolute()
 		{
 			var converter = new GridLengthTypeConverter();
 
-			Assert.AreEqual(new GridLength(42), converter.ConvertFromInvariantString("42"));
-			Assert.AreEqual(new GridLength(42.2), converter.ConvertFromInvariantString("42.2"));
+			Assert.Equal(new GridLength(42), converter.ConvertFromInvariantString("42"));
+			Assert.Equal(new GridLength(42.2), converter.ConvertFromInvariantString("42.2"));
 
 			Assert.Throws<FormatException>(() => converter.ConvertFromInvariantString("foo"));
 		}
 
-		[Test]
+		[Fact]
 		public void TestAuto()
 		{
 			var converter = new GridLengthTypeConverter();
 
-			Assert.AreEqual(GridLength.Auto, converter.ConvertFromInvariantString("auto"));
-			Assert.AreEqual(GridLength.Auto, converter.ConvertFromInvariantString(" AuTo "));
+			Assert.Equal(GridLength.Auto, converter.ConvertFromInvariantString("auto"));
+			Assert.Equal(GridLength.Auto, converter.ConvertFromInvariantString(" AuTo "));
 		}
 
-		[Test]
+		[Fact]
 		public void TestStar()
 		{
 			var converter = new GridLengthTypeConverter();
 
-			Assert.AreEqual(new GridLength(1, GridUnitType.Star), converter.ConvertFromInvariantString("*"));
-			Assert.AreEqual(new GridLength(42, GridUnitType.Star), converter.ConvertFromInvariantString("42*"));
+			Assert.Equal(new GridLength(1, GridUnitType.Star), converter.ConvertFromInvariantString("*"));
+			Assert.Equal(new GridLength(42, GridUnitType.Star), converter.ConvertFromInvariantString("42*"));
 
 		}
 
-		[Test]
+		[Fact]
 		public void TestValue()
 		{
 			var converter = new GridLengthTypeConverter();
-			Assert.AreEqual(new GridLength(3.3), converter.ConvertFromInvariantString("3.3"));
+			Assert.Equal(new GridLength(3.3), converter.ConvertFromInvariantString("3.3"));
 		}
 
-		[Test]
+		[Fact]
 		public void TestValueStar()
 		{
 			var converter = new GridLengthTypeConverter();
-			Assert.AreEqual(new GridLength(32.3, GridUnitType.Star), converter.ConvertFromInvariantString("32.3*"));
+			Assert.Equal(new GridLength(32.3, GridUnitType.Star), converter.ConvertFromInvariantString("32.3*"));
 		}
 	}
 }

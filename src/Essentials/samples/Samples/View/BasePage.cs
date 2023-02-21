@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 using Samples.ViewModel;
@@ -14,20 +13,19 @@ namespace Samples.View
 			NavigationPage.SetBackButtonTitle(this, "Back");
 			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
 				NavigationPage.SetHasNavigationBar(this, false);
+
+			Loaded += OnLoaded;
+			Unloaded += OnUnloaded;
 		}
 
-		protected override void OnAppearing()
+		void OnLoaded(object sender, EventArgs e)
 		{
-			base.OnAppearing();
-
 			SetupBinding(BindingContext);
 		}
 
-		protected override void OnDisappearing()
+		void OnUnloaded(object sender, EventArgs e)
 		{
 			TearDownBinding(BindingContext);
-
-			base.OnDisappearing();
 		}
 
 		protected void SetupBinding(object bindingContext)

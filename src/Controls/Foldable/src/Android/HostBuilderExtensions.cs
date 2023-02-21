@@ -21,6 +21,15 @@ namespace Microsoft.Maui.Foldable
 
 		}
 
+		/// <summary>
+		/// Configure the .NET MAUI app to listen for fold-related events
+		/// in the Android lifecycle. Ensures <see cref="Microsoft.Maui.Controls.Foldable.TwoPaneView"/>
+		/// can detect and layout around a hinge or screen fold.
+		/// </summary>
+		/// <remarks>
+		/// Relies on Jetpack Window Manager to detect and respond to
+		/// foldable device features and capabilities.
+		/// </remarks>
 		public static MauiAppBuilder UseFoldable(this MauiAppBuilder builder)
 		{
 			builder.Services.AddScoped(typeof(IFoldableContext), (sp) => new FoldableService());

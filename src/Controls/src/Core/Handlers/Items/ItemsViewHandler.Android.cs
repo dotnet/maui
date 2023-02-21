@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Text;
 using AndroidX.RecyclerView.Widget;
@@ -20,6 +21,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ConnectHandler(platformView);
 			(platformView as IMauiRecyclerView<TItemsView>)?.SetUpNewElement(VirtualView);
 		}
+
+		protected override void DisconnectHandler(RecyclerView platformView)
+		{
+			base.DisconnectHandler(platformView);
+			(platformView as IMauiRecyclerView<TItemsView>)?.TearDownOldElement(VirtualView);
+		}
+
 		protected override RecyclerView CreatePlatformView() =>
 			new MauiRecyclerView<TItemsView, ItemsViewAdapter<TItemsView, IItemsViewSource>, IItemsViewSource>(Context, GetItemsLayout, CreateAdapter);
 

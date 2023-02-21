@@ -1,15 +1,41 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using Foundation;
 using UIKit;
 using WebKit;
 
 namespace Microsoft.Maui.Platform
 {
-	class MauiWebViewUIDelegate : WKUIDelegate
+	public class MauiWebViewUIDelegate : WKUIDelegate
 	{
+		WeakReference<IWebViewHandler> _handler;
 		static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
 		static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
+
+		public MauiWebViewUIDelegate(IWebViewHandler handler)
+		{
+			_ = handler ?? throw new ArgumentNullException("handler");
+			_handler = new WeakReference<IWebViewHandler>(handler);
+		}
+
+		public override void SetContextMenuConfiguration(WKWebView webView, WKContextMenuElementInfo elementInfo, Action<UIContextMenuConfiguration> completionHandler)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+				return;
+
+			foreach (var interaction in webView.Interactions)
+			{
+				if (interaction is MauiUIContextMenuInteraction cmi)
+				{
+					var contextMenu = cmi.GetConfigurationForMenu();
+					if (contextMenu != null)
+						completionHandler(contextMenu);
+
+					break;
+				}
+			}
+
+			return;
+		}
 
 		public override void RunJavaScriptAlertPanel(WKWebView webView, string message, WKFrameInfo frame, Action completionHandler)
 		{
@@ -31,14 +57,16 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public override void RunJavaScriptTextInputPanel(
-			WKWebView webView, string prompt, string defaultText, WKFrameInfo frame, Action<string> completionHandler)
+			WKWebView webView, string prompt, string? defaultText, WKFrameInfo frame, Action<string> completionHandler)
 		{
+			// TODO the okAction and cancelAction were already taking null when I removed `#nullable disable`
+			// and it doesn't seem to have been causing issues so leaving for now
 			PresentAlertController(
 				webView,
 				prompt,
 				defaultText: defaultText,
-				okAction: x => completionHandler(x.TextFields[0].Text),
-				cancelAction: _ => completionHandler(null)
+				okAction: x => completionHandler(x.TextFields[0].Text!),
+				cancelAction: _ => completionHandler(null!)
 			);
 		}
 
@@ -72,9 +100,9 @@ namespace Microsoft.Maui.Platform
 		static void PresentAlertController(
 			WKWebView webView,
 			string message,
-			string defaultText = null,
-			Action<UIAlertController> okAction = null,
-			Action<UIAlertController> cancelAction = null)
+			string? defaultText = null,
+			Action<UIAlertController>? okAction = null,
+			Action<UIAlertController>? cancelAction = null)
 		{
 			var controller = UIAlertController.Create(GetJsAlertTitle(webView), message, UIAlertControllerStyle.Alert);
 
@@ -87,8 +115,21 @@ namespace Microsoft.Maui.Platform
 			if (cancelAction != null)
 				AddCancelAction(controller, () => cancelAction(controller));
 
-			GetTopViewController(UIApplication.SharedApplication.GetKeyWindow().RootViewController)
-				.PresentViewController(controller, true, null);
+
+			var handler = (webView.UIDelegate as MauiWebViewUIDelegate)?.Handler;
+
+			UIViewController? rootViewController = null;
+
+			if (handler != null)
+				rootViewController = handler.MauiContext?.GetPlatformWindow()?.RootViewController;
+
+			rootViewController ??= UIApplication.SharedApplication?.GetKeyWindow()?.RootViewController;
+
+			if (rootViewController != null)
+			{
+				GetTopViewController(rootViewController)
+					.PresentViewController(controller, true, null);
+			}
 		}
 
 		static UIViewController GetTopViewController(UIViewController viewController)
@@ -96,13 +137,26 @@ namespace Microsoft.Maui.Platform
 			if (viewController is UINavigationController navigationController)
 				return GetTopViewController(navigationController.VisibleViewController);
 
-			if (viewController is UITabBarController tabBarController)
+			if (viewController is UITabBarController tabBarController && tabBarController.SelectedViewController != null)
 				return GetTopViewController(tabBarController.SelectedViewController);
 
 			if (viewController.PresentedViewController != null)
 				return GetTopViewController(viewController.PresentedViewController);
 
 			return viewController;
+		}
+
+		IWebViewHandler? Handler
+		{
+			get
+			{
+				if (_handler.TryGetTarget(out var handler))
+				{
+					return handler;
+				}
+
+				return null;
+			}
 		}
 	}
 }

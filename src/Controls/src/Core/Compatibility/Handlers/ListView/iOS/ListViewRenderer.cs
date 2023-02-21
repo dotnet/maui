@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -221,7 +222,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (Control == null)
 				{
-					if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
+					if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+						|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+					)
 					{
 						var parentNav = e.NewElement.FindParentOfType<NavigationPage>();
 						_usingLargeTitles = (parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles());
@@ -229,7 +234,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_tableViewController = new FormsUITableViewController(e.NewElement, _usingLargeTitles);
 					SetNativeControl(_tableViewController.TableView);
 
-					if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+					if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15)
+#if TVOS
+						|| OperatingSystem.IsTvOSVersionAtLeast(15)
+#endif
+					)
 						_tableViewController.TableView.SectionHeaderTopPadding = new nfloat(0);
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
@@ -961,7 +970,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_prototype != null)
 				{
 					var element = _prototype.VirtualView;
-					element.Handler?.DisconnectHandler();
+					element?.Handler?.DisconnectHandler();
 					//_prototype?.Dispose();
 					//_prototype = null;
 				}

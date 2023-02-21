@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -6,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BoundsConstraint.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoundsConstraint']/Docs" />
+	/// <include file="../../docs/Microsoft.Maui.Controls/BoundsConstraint.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoundsConstraint']/Docs/*" />
 	public class BoundsConstraint
 	{
 		Func<Rect> _measureFunc;
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		internal bool CreatedFromExpression { get; set; }
 		internal IEnumerable<View> RelativeTo { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BoundsConstraint.xml" path="//Member[@MemberName='FromExpression']/Docs" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/BoundsConstraint.xml" path="//Member[@MemberName='FromExpression']/Docs/*" />
 		public static BoundsConstraint FromExpression(Expression<Func<Rect>> expression, IEnumerable<View> parents = null)
 		{
 			return FromExpression(expression, false, parents);

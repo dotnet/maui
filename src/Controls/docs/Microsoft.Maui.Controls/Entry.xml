@@ -59,7 +59,7 @@ View CreateLoginForm ()
         <para>The FormsGallery sample, which can be found on the <format type="text/html"><a href="https://developer.xamarin.com/samples/tag/Microsoft.Maui.Controls/" target="_blank">Sample Applications</a></format> page, has an EntryDemoPage.cs file. This file contains a more complete example.</para>
       </example>
       <para>
-        <img href="~/Microsoft.Maui.Controls/_images/Entry.TripleScreenShot.png" />
+        <img href="~/xml/Microsoft.Maui.Controls/_images/Entry.TripleScreenShot.png" />
       </para>
     </remarks>
   </Docs>
@@ -302,7 +302,7 @@ View CreateLoginForm ()
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.FontSizeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -335,10 +335,10 @@ View CreateLoginForm ()
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignment">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment HorizontalTextAlignment { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment HorizontalTextAlignment" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment HorizontalTextAlignment { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment HorizontalTextAlignment" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Entry.HorizontalTextAlignment" />
-      <MemberSignature Language="F#" Value="member this.HorizontalTextAlignment : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Entry.HorizontalTextAlignment" />
+      <MemberSignature Language="F#" Value="member this.HorizontalTextAlignment : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Entry.HorizontalTextAlignment" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -347,7 +347,7 @@ View CreateLoginForm ()
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the horizontal text alignment.</summary>
@@ -783,17 +783,17 @@ View CreateLoginForm ()
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignment">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.TextAlignment VerticalTextAlignment { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.TextAlignment VerticalTextAlignment" />
+      <MemberSignature Language="C#" Value="public Microsoft.Maui.TextAlignment VerticalTextAlignment { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.TextAlignment VerticalTextAlignment" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Entry.VerticalTextAlignment" />
-      <MemberSignature Language="F#" Value="member this.VerticalTextAlignment : Microsoft.Maui.Controls.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Entry.VerticalTextAlignment" />
+      <MemberSignature Language="F#" Value="member this.VerticalTextAlignment : Microsoft.Maui.TextAlignment with get, set" Usage="Microsoft.Maui.Controls.Entry.VerticalTextAlignment" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.TextAlignment</ReturnType>
+        <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

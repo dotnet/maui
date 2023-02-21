@@ -19,7 +19,7 @@ namespace Xamarin.Forms.ControlGallery.MacOS
 	{
 		public void ClearImageCache()
 		{
-			var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			var documents = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 			var cache = IOPath.Combine(documents, ".config", ".isolated-storage", "ImageLoaderCache");
 			foreach (var file in Directory.GetFiles(cache))
 			{

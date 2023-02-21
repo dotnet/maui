@@ -1,20 +1,44 @@
 <Project>
   <ItemGroup>
     <PackageReference
-        Update="Microsoft.Maui.Graphics"
-        Version="$(MicrosoftMauiGraphicsVersion)"
+        Update="SkiaSharp"
+        Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
-         Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
-         Version="$(MicrosoftMauiGraphicsVersion)"
+        Update="SkiaSharp.Views"
+        Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
-         Update="Microsoft.Maui.Graphics.Skia"
-         Version="$(MicrosoftMauiGraphicsVersion)"
+        Update="SkiaSharp.Views.WinUI"
+        Version="$(_SkiaSharpVersion)"
+    />
+    <PackageReference
+        Update="SkiaSharp.HarfBuzz"
+        Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
          Update="System.Numerics.Vectors"
          Version="$(SystemNumericsVectorsVersion)"
+    />
+    <PackageReference
+         Update="System.Memory"
+         Version="$(SystemMemoryPackageVersion)"
+    />
+    <PackageReference
+         Update="System.Buffers"
+         Version="$(SystemBuffersPackageVersion)"
+    />
+    <PackageReference
+         Update="System.IO.UnmanagedMemoryStream"
+         Version="$(SystemIOUnmanagedMemoryStreamPackageVersion)"
+    />
+    <PackageReference
+         Update="System.ObjectModel"
+         Version="$(SystemObjectModelPackageVersion)"
+    />
+    <PackageReference
+         Update="System.Runtime.CompilerServices.Unsafe"
+         Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
@@ -86,6 +110,18 @@
         Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)"
     />
     <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.Google"
+        Version="$(MicrosoftAspNetCoreAuthenticationGooglePackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.Facebook"
+        Version="$(MicrosoftAspNetCoreAuthenticationFacebookPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.MicrosoftAccount"
+        Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
         Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)"
     />
@@ -98,8 +134,20 @@
         Version="$(MicrosoftJSInteropPackageVersion)"
     />
     <PackageReference
+        Update="System.Text.Json"
+        Version="$(SystemTextJsonPackageVersion)"
+    />
+    <PackageReference
+        Update="System.Text.Encodings.Web"
+        Version="$(SystemTextEncodingsWebPackageVersion)"
+    />
+    <PackageReference
         Update="System.CodeDom"
         Version="$(SystemCodeDomPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Bcl.AsyncInterfaces"
+        Version="$(MicrosoftBclAsyncInterfacesPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Web.WebView2"
@@ -110,7 +158,7 @@
         Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)"
     />
     <PackageReference
-        Update="Tizen.UIExtensions.ElmSharp"
+        Update="Tizen.UIExtensions.NUI"
         Version="$(TizenUIExtensionsVersion)"
     />
     <PackageReference

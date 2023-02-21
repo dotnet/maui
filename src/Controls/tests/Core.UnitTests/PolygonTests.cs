@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -7,15 +7,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		PointCollectionConverter _pointCollectionConverter;
 
-		[SetUp]
-		public override void Setup()
+
+		public PolygonTests()
 		{
-			base.Setup();
+
 
 			_pointCollectionConverter = new PointCollectionConverter();
 		}
 
-		[Test]
+		[Fact]
 		public void CreatePolygonFromStringPointCollectionTest()
 		{
 			PointCollection points = _pointCollectionConverter.ConvertFromInvariantString("0 48, 0 144, 96 150, 100 0, 192 0, 192 96, 50 96, 48 192, 150 200 144 48") as PointCollection;
@@ -25,9 +25,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Points = points
 			};
 
-			Assert.IsNotNull(points);
-			Assert.IsNotNull(polygon);
-			Assert.AreEqual(10, points.Count);
+			Assert.NotNull(points);
+			Assert.NotNull(polygon);
+			Assert.Equal(10, points.Count);
 		}
 	}
 }

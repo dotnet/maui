@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <!--<PackageReference Include="AdvancedColorPicker" Version="2.0.1" />-->
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <!--<PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />-->
     <!--<PackageReference Include="Xamarin.TestCloud.Agent" Version="0.22.1" />-->
@@ -33,10 +33,6 @@
     <ProjectReference Include="..\..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\..\Compatibility\Core\tests\iOS\Compatibility.iOS.UnitTests.csproj" />
     <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\Core\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs" Link="GalleryPages\AdvancedOpenGLGallery.cs" />
   </ItemGroup>
 
   <ItemGroup>

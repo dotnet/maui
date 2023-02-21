@@ -67,7 +67,6 @@ namespace Microsoft.Maui
 			return false;
 		}
 
-		/// <inheritdoc/>
 		public virtual void Draw(ICanvas canvas, RectF dirtyRect)
 		{
 			UpdateModel();

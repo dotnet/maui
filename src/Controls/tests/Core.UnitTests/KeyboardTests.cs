@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Converters;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TestFixture]
-	internal class KeyboardTests : BaseTestFixture
+
+	public class KeyboardTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void KeyboardTypesAreCorrect()
 		{
 			Assert.True(Keyboard.Chat is ChatKeyboard);
@@ -23,10 +23,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	[TestFixture]
-	internal class KeyboardTypeConverterTests : BaseTestFixture
+
+	public class KeyboardTypeConverterTests : BaseTestFixture
 	{
-		[Test]
+		[Fact]
 		public void ConversionConvert()
 		{
 
@@ -40,10 +40,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{"Keyboard.Telephone", Keyboard.Telephone},
 				{"Keyboard.Chat", Keyboard.Chat},
 			})
-				Assert.AreSame(kvp.Value, converter.ConvertFromInvariantString(kvp.Key));
+				Assert.Same(kvp.Value, converter.ConvertFromInvariantString(kvp.Key));
 		}
 
-		[Test]
+		[Fact]
 		public void ConversionFail()
 		{
 			var converter = new KeyboardTypeConverter();

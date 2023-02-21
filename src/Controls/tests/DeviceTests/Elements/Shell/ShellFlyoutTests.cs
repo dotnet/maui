@@ -1,21 +1,70 @@
-﻿#if ANDROID
+﻿
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ShellTests : HandlerTestBase
+	public partial class ShellTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		public async Task LogicalChildrenPropagateCorrectly()
+		{
+			var flyoutItemGrid = new Grid();
+			var shellSectionGrid = new Grid();
+			var shellContentGrid = new Grid();
+
+			var flyoutItem = new FlyoutItem() { Items = { new ContentPage() } };
+			var shellSection = new ShellSection() { Items = { new ContentPage() } };
+			var shellContent = new ShellContent() { Content = new ContentPage() };
+
+			// Validate the the bindingcontext of the flyout content only gets set to the Shell Part it came from
+			flyoutItemGrid.BindingContextChanged += (_, _) =>
+				Assert.True(flyoutItemGrid.BindingContext == flyoutItem || flyoutItem.BindingContext == null);
+
+			shellSectionGrid.BindingContextChanged += (_, _) =>
+				Assert.True(shellSectionGrid.BindingContext == shellSection || shellSection.BindingContext == null);
+
+			shellContentGrid.BindingContextChanged += (_, _) =>
+				Assert.True(shellContentGrid.BindingContext == shellContent || shellContent.BindingContext == null);
+
+			Shell.SetItemTemplate(flyoutItem, new DataTemplate(() => flyoutItemGrid));
+			Shell.SetItemTemplate(shellSection, new DataTemplate(() => shellSectionGrid));
+			Shell.SetItemTemplate(shellContent, new DataTemplate(() => shellContentGrid));
+
+			await RunShellTest(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				shell.Items.Add(flyoutItem);
+				shell.Items.Add(shellSection);
+				shell.Items.Add(shellContent);
+			},
+			async (shell, handler) =>
+			{
+				await OnLoadedAsync(flyoutItemGrid);
+				await OnLoadedAsync(shellSectionGrid);
+				await OnLoadedAsync(shellContentGrid);
+
+				Assert.Equal(flyoutItemGrid.Parent, flyoutItem);
+				Assert.Equal(shellSectionGrid.Parent, shellSection);
+				Assert.Equal(shellContentGrid.Parent, shellContent);
+
+				Assert.Contains(flyoutItemGrid, (flyoutItem as IVisualTreeElement).GetVisualChildren());
+				Assert.Contains(shellSectionGrid, (shellSection as IVisualTreeElement).GetVisualChildren());
+				Assert.Contains(shellContentGrid, (shellContent as IVisualTreeElement).GetVisualChildren());
+			});
+		}
+
 		[Fact]
 		public async Task FlyoutHeaderAdaptsToMinimumHeight()
 		{
@@ -35,11 +84,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OpenFlyout(handler);
 				var flyoutFrame = GetFrameRelativeToFlyout(handler, shell.FlyoutHeader as IView);
-
 				AssertionExtensions.CloseEnough(flyoutFrame.Height, 30);
 			});
 		}
 
+#if !WINDOWS
+
+
+#if ANDROID
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
 		public async Task FlyoutHeaderMinimumHeight(FlyoutHeaderBehavior behavior)
@@ -82,12 +134,13 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FlyoutContentSetsCorrectBottomPaddingWhenMinHeightIsSetForFlyoutHeader()
 		{
+			var layout = new VerticalStackLayout()
+			{
+				new Label() { Text = "Flyout Header" }
+			};
+
 			await RunShellTest(shell =>
 			{
-				var layout = new VerticalStackLayout()
-				{
-					new Label() { Text = "Flyout Header" }
-				};
 
 				layout.MinimumHeightRequest = 30;
 				shell.FlyoutHeader = layout;
@@ -105,17 +158,21 @@ namespace Microsoft.Maui.DeviceTests
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
 				// validate footer position
-				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height);
+				AssertionExtensions.CloseEnough(footerFrame.Y + layout.Margin.Top, headerFrame.Height + contentFrame.Height);
 			});
 		}
+#endif
 
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
 		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(FlyoutHeaderBehavior behavior)
 		{
+			// flyoutHeader.Margin.Top gets set to the SafeAreaPadding
+			// so we have to account for that in the default setup
+			var flyoutHeader = new Label() { Text = "Flyout Header" };
 			await RunShellTest(shell =>
 			{
-				shell.FlyoutHeader = new Label() { Text = "Flyout Header" };
+				shell.FlyoutHeader = flyoutHeader;
 				shell.FlyoutFooter = new Label() { Text = "Flyout Footer" };
 				shell.FlyoutContent = new VerticalStackLayout() { new Label() { Text = "Flyout Content" } };
 				shell.FlyoutHeaderBehavior = behavior;
@@ -131,24 +188,25 @@ namespace Microsoft.Maui.DeviceTests
 
 				// validate header position
 				AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
-				AssertionExtensions.CloseEnough(0, headerFrame.Y, message: "Header Y");
+				AssertionExtensions.CloseEnough(flyoutHeader.Margin.Top, headerFrame.Y, message: "Header Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
 
 				// validate content position
 				AssertionExtensions.CloseEnough(0, contentFrame.X, message: "Content X");
-				AssertionExtensions.CloseEnough(headerFrame.Height, contentFrame.Y, epsilon: 0.5, message: "Content Y");
+				AssertionExtensions.CloseEnough(headerFrame.Height + flyoutHeader.Margin.Top, contentFrame.Y, epsilon: 0.5, message: "Content Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, contentFrame.Width, message: "Content Width");
 
 				// validate footer position
 				AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + flyoutHeader.Margin.Top, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
 				//All three views should measure to the height of the flyout
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height + flyoutHeader.Margin.Top, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
 			});
 		}
 
+#if ANDROID
 		[Fact]
 		public async Task FlyoutHeaderCollapsesOnScroll()
 		{
@@ -180,7 +238,6 @@ namespace Microsoft.Maui.DeviceTests
 			async (shell, handler) =>
 			{
 				await OpenFlyout(handler);
-				await Task.Delay(10);
 
 				var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
 
@@ -237,6 +294,9 @@ namespace Microsoft.Maui.DeviceTests
 				);
 			});
 		}
+#endif
+
+#endif
 
 		async Task RunShellTest(Action<Shell> action, Func<Shell, ShellHandler, Task> testAction)
 		{
@@ -256,4 +316,3 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
-#endif

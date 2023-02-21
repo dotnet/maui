@@ -1,7 +1,7 @@
 ﻿namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Represents a View that is used for single-line text input.
+	/// Represents a <see cref="IView"/> that is used for single-line text input.
 	/// </summary>
 	public interface IEntry : IView, ITextInput, ITextAlignment
 	{

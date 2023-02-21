@@ -15,7 +15,19 @@ namespace Microsoft.Maui.Resizetizer
 		static Dictionary<string, SKColor> GetColors()
 		{
 			var colors = new Dictionary<string, SKColor>(StringComparer.OrdinalIgnoreCase);
+
+			// add from SKColors fields
 			FillWithProperties(colors, typeof(SKColors));
+
+			// add "grey" (with an "e") overloads
+			colors.Add("DarkGrey", colors["DarkGray"]);
+			colors.Add("DarkSlateGrey", colors["DarkSlateGray"]);
+			colors.Add("DimGrey", colors["DimGray"]);
+			colors.Add("Grey", colors["Gray"]);
+			colors.Add("LightGrey", colors["LightGray"]);
+			colors.Add("LightSlateGrey", colors["LightSlateGray"]);
+			colors.Add("SlateGrey", colors["SlateGray"]);
+
 			return colors;
 		}
 

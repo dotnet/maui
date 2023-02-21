@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using Maui.Controls.Sample.Models;
-using Maui.Controls.Sample.ViewModels.Base;
 using Maui.Controls.Sample.Pages.ScrollViewPages;
+using Maui.Controls.Sample.ViewModels.Base;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.ViewModels
 {
@@ -31,8 +31,8 @@ namespace Maui.Controls.Sample.ViewModels
 				"Default Template with Large Item Spacing", new ScrollViewTemplatePageModel{ Spacing = 200 }),
 
 			new SectionModel(typeof(ScrollViewTemplatePage), "Large Item Spacing, ScrollView Padding",
-				"Default Template with Large Item Spacing and ScrollView Padding", 
-				new ScrollViewTemplatePageModel{ Spacing = 200, ScrollViewPadding = new Thickness(25), 
+				"Default Template with Large Item Spacing and ScrollView Padding",
+				new ScrollViewTemplatePageModel{ Spacing = 200, ScrollViewPadding = new Thickness(25),
 					ContentBackground = Colors.LightBlue, VerticalAlignment = LayoutOptions.Fill }),
 
 

@@ -622,10 +622,7 @@ public partial class App : Application
         <summary>Gets a dictionary of persistent properties for this <see cref="T:Microsoft.Maui.Controls.Application" /> object.</summary>
         <value>A dictionary of persistent properties for the application.</value>
         <remarks>
-          <para>Developers can use this property to store persistent application state across all application code. This values in the dictionary are preserved on the device when the application is paused or shut down.</para>
-          <block type="note">
-            <para>Values saved in the properties dictionary must be primitive types, such as integers or strings. Attempting to save reference types, or collections in particular, can fail silently.</para>
-          </block>
+          <para>Developers can use this property to store persistent application state across all application code. This values in the dictionary are preserved on the device when the application is paused or shut down. Note: values saved in the properties dictionary must be primitive types, such as integers or strings. Attempting to save reference types, or collections in particular, can fail silently.</para>
         </remarks>
       </Docs>
     </Member>

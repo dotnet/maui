@@ -13,16 +13,31 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Foldable
 {
+	/// <summary>
+	/// Event args for <see cref="Microsoft.Maui.Foldable.DualScreenInfo"/>'s 
+	/// HingeAngleChanged event on foldable devices.
+	/// </summary>
 	public class HingeAngleChangedEventArgs : EventArgs
 	{
+		/// <summary>
+		/// Creates a new HingeAngleChangedEventArgs specifying 
+		/// the angle of the hinge between the screens.
+		/// </summary>
 		public HingeAngleChangedEventArgs(double hingeAngleInDegrees)
 		{
 			HingeAngleInDegrees = hingeAngleInDegrees;
 		}
 
+		/// <summary>
+		/// Current angle of the hinge between the screens on a foldable device (0 - 360 degrees).
+		/// </summary>
 		public double HingeAngleInDegrees { get; }
 	}
 
+	/// <summary>
+	/// Provides details about the visible areas a layout occupies so the content 
+	/// can be positioned around where the screens split.
+	/// </summary>
 	public partial class DualScreenInfo : INotifyPropertyChanged
 	{
 		Rect[] _spanningBounds;
@@ -38,7 +53,14 @@ namespace Microsoft.Maui.Foldable
 
 		static Lazy<DualScreenInfo> _dualScreenInfo { get; } = new Lazy<DualScreenInfo>(OnCreate);
 
+		/// <summary>
+		/// Singleton that provides information about how the app window is 
+		/// positioned across both screens.
+		/// </summary>
 		public static DualScreenInfo Current => _dualScreenInfo.Value;
+		/// <summary>
+		/// Used to watch for changes of any properties.
+		/// </summary>
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		public DualScreenInfo(VisualElement element) : this(element, null)
@@ -70,6 +92,10 @@ namespace Microsoft.Maui.Foldable
 
 		EventHandler<HingeAngleChangedEventArgs> _hingeAngleChanged;
 		int subscriberCount = 0;
+		/// <summary>
+		/// Triggered whenever the hinge angle is changed as a device is 
+		/// folded or unfolded.
+		/// </summary>
 		public event EventHandler<HingeAngleChangedEventArgs> HingeAngleChanged
 		{
 			add
@@ -84,7 +110,11 @@ namespace Microsoft.Maui.Foldable
 			}
 		}
 
-
+		/// <summary>
+		/// When spanned across two regions this will return a 
+		/// <see cref="Microsoft.Maui.Graphics.Rect"/> 
+		/// for each region. If not spanned this will return an empty array.
+		/// </summary>
 		public Rect[] SpanningBounds
 		{
 			get => GetSpanningBounds();
@@ -102,6 +132,10 @@ namespace Microsoft.Maui.Foldable
 			}
 		}
 
+		/// <summary>
+		/// A <see cref="Microsoft.Maui.Graphics.Rect"/> 
+		/// representing the absolute screen positioning of the device's hinge.
+		/// </summary>
 		public Rect HingeBounds
 		{
 			get => GetHingeBounds();
@@ -111,11 +145,12 @@ namespace Microsoft.Maui.Foldable
 			}
 		}
 
-		/// <summary>
+		/// <summary>Indicates if the device is Landscape.</summary>
+		/// <remarks>
 		/// Used when app is detected to be on a single screen - 
 		/// mainly on Surface Duo (although possible also on other
 		/// foldable with multi-window enabled)
-		/// </summary>
+		/// </remarks>
 		public bool IsLandscape
 		{
 			get => GetIsLandscape();
@@ -126,7 +161,7 @@ namespace Microsoft.Maui.Foldable
 		}
 
 		/// <summary>
-		/// Determines the layout direction of the panes
+		/// Determines the layout direction of the panes:
 		/// SinglePane, Wide, Tall
 		/// </summary>
 		public TwoPaneViewMode SpanMode
@@ -200,6 +235,10 @@ namespace Microsoft.Maui.Foldable
 #else
 
 		static object hingeAngleLock = new object();
+		/// <summary>
+		/// Query the current hinge angle of the foldable device.
+		/// </summary>
+		/// <returns>Hinge angle between 0 and 360 degrees.</returns>
 		public Task<int> GetHingeAngleAsync() => FoldableService?.GetHingeAngleAsync() ?? Task.FromResult(0);
 
 		void ProcessHingeAngleSubscriberCount(int newCount)

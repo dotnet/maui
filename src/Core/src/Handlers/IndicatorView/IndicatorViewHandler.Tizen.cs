@@ -1,56 +1,47 @@
-﻿using System;
-using Tizen.UIExtensions.ElmSharp;
-
-namespace Microsoft.Maui.Handlers
+﻿namespace Microsoft.Maui.Handlers
 {
-	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, IndicatorView>
+	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, MauiPageControl>
 	{
-		protected override IndicatorView CreatePlatformView() => new IndicatorView(PlatformParent);
-
-		protected override void ConnectHandler(IndicatorView platformView)
-		{
-			base.ConnectHandler(platformView);
-			PlatformView.SelectedPosition += OnSelectedPosition;
-		}
-
-		protected override void DisconnectHandler(IndicatorView platformView)
-		{
-			base.DisconnectHandler(platformView);
-			PlatformView.SelectedPosition -= OnSelectedPosition;
-		}
+		protected override MauiPageControl CreatePlatformView() => new MauiPageControl(VirtualView);
 
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.PlatformView.UpdateIndicatorCount(indicator);
+			handler.PlatformView.UpdateCount();
 		}
 
 		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.PlatformView.UpdatePosition(indicator);
+			handler.PlatformView.UpdatePosition();
 		}
 
-		//TODO : Need to impl
-		[MissingMapper]
-		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator) { }
-
-		[MissingMapper]
-		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator) { }
-
-		[MissingMapper]
-		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator) { }
-
-		[MissingMapper]
-		public static void MapIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) { }
-
-		[MissingMapper]
-		public static void MapSelectedIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator) { }
-
-		[MissingMapper]
-		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator) { }
-
-		void OnSelectedPosition(object? sender, SelectedPositionChangedEventArgs e)
+		public static void MapHideSingle(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			VirtualView.Position = e.SelectedPosition;
+			handler.PlatformView.UpdateCount();
+		}
+
+		public static void MapMaximumVisible(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.UpdateCount();
+		}
+
+		public static void MapIndicatorSize(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.ResetIndicators();
+		}
+
+		public static void MapIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.ResetIndicators();
+		}
+
+		public static void MapSelectedIndicatorColor(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.ResetIndicators();
+		}
+
+		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.PlatformView.ResetIndicators();
 		}
 	}
 }

@@ -14,14 +14,14 @@ namespace Microsoft.Maui.Platform
 		UIControlContentVerticalAlignment _verticalAlignment = UIControlContentVerticalAlignment.Center;
 
 		public UIEdgeInsets TextInsets { get; set; }
-		internal UIControlContentVerticalAlignment VerticalAlignment 
+		internal UIControlContentVerticalAlignment VerticalAlignment
 		{
 			get => _verticalAlignment;
 			set
 			{
 				_verticalAlignment = value;
 				SetNeedsDisplay();
-			} 
+			}
 		}
 
 		public MauiLabel(RectangleF frame) : base(frame)
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Platform
 		{
 			rect = TextInsets.InsetRect(rect);
 
-			if (_verticalAlignment != UIControlContentVerticalAlignment.Center 
+			if (_verticalAlignment != UIControlContentVerticalAlignment.Center
 				&& _verticalAlignment != UIControlContentVerticalAlignment.Fill)
 			{
 				rect = AlignVertical(rect);
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 			base.DrawText(rect);
 		}
 
-		RectangleF AlignVertical(RectangleF rect) 
+		RectangleF AlignVertical(RectangleF rect)
 		{
 			var frameSize = Frame.Size;
 			var height = Lines == 1 ? Font.LineHeight : SizeThatFits(frameSize).Height;

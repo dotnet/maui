@@ -51,7 +51,13 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.InsertSubview(child.ToPlatform(MauiContext), targetIndex);
+			var childPlatformView = child.ToPlatform(MauiContext);
+			PlatformView.InsertSubview(childPlatformView, targetIndex);
+
+			if (child.FlowDirection == FlowDirection.MatchParent)
+			{
+				childPlatformView.UpdateFlowDirection(child);
+			}
 		}
 
 		public void Remove(IView child)
@@ -77,7 +83,13 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.InsertSubview(child.ToPlatform(MauiContext), targetIndex);
+			var childPlatformView = child.ToPlatform(MauiContext);
+			PlatformView.InsertSubview(childPlatformView, targetIndex);
+
+			if (child.FlowDirection == FlowDirection.MatchParent)
+			{
+				childPlatformView.UpdateFlowDirection(child);
+			}
 		}
 
 		public void Update(int index, IView child)

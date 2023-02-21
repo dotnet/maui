@@ -1,26 +1,31 @@
 using System;
 using System.Threading.Tasks;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.NUI.BaseComponents;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
-		protected override Button CreatePlatformView() => new Button(PlatformParent);
+		protected override Button CreatePlatformView() => new Button
+		{
+			Focusable = true,
+		};
 
 		protected override void ConnectHandler(Button platformView)
 		{
-			platformView.Released += OnButtonReleased;
+			platformView.TouchEvent += OnTouch;
 			platformView.Clicked += OnButtonClicked;
-			platformView.Pressed += OnButtonPressed;
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(Button platformView)
 		{
-			platformView.Released -= OnButtonReleased;
+			if (!platformView.HasBody())
+				return;
+
+			platformView.TouchEvent -= OnTouch;
 			platformView.Clicked -= OnButtonClicked;
-			platformView.Pressed -= OnButtonPressed;
 			base.DisconnectHandler(platformView);
 		}
 
@@ -46,26 +51,49 @@ namespace Microsoft.Maui.Handlers
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button) { }
+		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
+		{
+			handler.PlatformView.UpdateCharacterSpacing(button);
+		}
 
-		[MissingMapper]
-		public static void MapFont(IButtonHandler handler, ITextStyle button) { }
+		public static void MapFont(IButtonHandler handler, ITextStyle button)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView.UpdateFont(button, fontManager);
+		}
 
 		[MissingMapper]
 		public static void MapPadding(IButtonHandler handler, IButton button) { }
 
-		[MissingMapper]
-		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateStrokeColor(buttonStroke);
+		}
 
-		[MissingMapper]
-		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateStrokeThickness(buttonStroke);
+		}
 
-		[MissingMapper]
-		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke) { }
+		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
+		{
+			handler.PlatformView.UpdateCornerRadius(buttonStroke);
+		}
 
-		[MissingMapper]
-		public static void MapLineBreakMode(IButtonHandler handler, IButton button) { }
+		bool OnTouch(object source, View.TouchEventArgs e)
+		{
+			var state = e.Touch.GetState(0);
+
+			if (state == Tizen.NUI.PointStateType.Down)
+			{
+				OnButtonPressed(source, e);
+			}
+			else if (state == Tizen.NUI.PointStateType.Up)
+			{
+				OnButtonReleased(source, e);
+			}
+			return false;
+		}
 
 		void OnButtonClicked(object? sender, EventArgs e)
 		{
@@ -82,9 +110,11 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Pressed();
 		}
 
-		void OnSetImageSource(Image? image)
+		void OnSetImageSource(MauiImageSource? image)
 		{
-			PlatformView.Image = image;
+			if (image == null)
+				return;
+			PlatformView.Icon.ResourceUrl = image.ResourceUrl;
 		}
 	}
 }

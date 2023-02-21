@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
-		// TODO: NET7 make public for net7.0
+		// TODO: NET8 make public for net8.0
 		internal void SetEmptyBorderBrush()
 		{
 			_invalidatePath = true;
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderDash(float[]? strokeDashArray, double strokeDashOffset)
 		{
-			if (strokeDashArray == null || strokeDashArray.Length == 0 || strokeDashOffset <= 0)
+			if (strokeDashArray is null || strokeDashArray.Length == 0)
 				_borderPathEffect = null;
 			else
 			{
@@ -353,7 +353,7 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
-		protected override void OnBoundsChange(ARect? bounds)
+		protected override void OnBoundsChange(ARect bounds)
 		{
 			if (_bounds != bounds)
 			{
@@ -542,9 +542,12 @@ namespace Microsoft.Maui.Graphics
 			if (platformPaint != null)
 			{
 				if (_backgroundColor != null)
+				{
+					platformPaint.SetShader(null);
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					platformPaint.Color = _backgroundColor.Value;
 #pragma warning restore CA1416
+				}
 				else
 				{
 					if (_background != null)

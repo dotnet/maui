@@ -1,21 +1,12 @@
 ﻿using System;
-using EvasObject = ElmSharp.EvasObject;
-using ERect = ElmSharp.Rect;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui
 {
 	public interface IPlatformViewHandler : IViewHandler, IDisposable
 	{
-		new EvasObject? PlatformView { get; }
+		new NView? PlatformView { get; }
 
-		new EvasObject? ContainerView { get; }
-
-		void SetParent(IPlatformViewHandler parent);
-
-		IPlatformViewHandler? Parent { get; }
-
-		bool ForceContainer { get; set; }
-
-		ERect GetPlatformContentGeometry();
+		new NView? ContainerView { get; }
 	}
 }

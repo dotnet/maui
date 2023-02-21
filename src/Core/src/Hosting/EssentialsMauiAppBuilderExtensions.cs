@@ -62,10 +62,6 @@ namespace Microsoft.Maui.Hosting
 					}));
 #elif WINDOWS
 				life.AddWindows(windows => windows
-					.OnPlatformMessage((window, args) =>
-					{
-						ApplicationModel.Platform.OnWindowMessage(args.Hwnd, args.MessageId, args.WParam, args.LParam);
-					})
 					.OnActivated((window, args) =>
 					{
 						ApplicationModel.Platform.OnActivated(window, args);

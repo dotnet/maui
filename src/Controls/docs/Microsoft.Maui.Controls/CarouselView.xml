@@ -261,7 +261,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.ReferenceTypeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.ReferenceTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -457,7 +457,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>Microsoft.Maui.Controls.TypeConverter(typeof(Microsoft.Maui.Controls.CarouselLayoutTypeConverter))</AttributeName>
+          <AttributeName>System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.CarouselLayoutTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -587,17 +587,17 @@
       </Docs>
     </Member>
     <Member MemberName="PeekAreaInsets">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Thickness PeekAreaInsets { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Maui.Controls.Thickness PeekAreaInsets" />
+      <MemberSignature Language="C#" Value="publicMicrosoft.Maui.Thickness PeekAreaInsets { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetypeMicrosoft.Maui.Thickness PeekAreaInsets" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.CarouselView.PeekAreaInsets" />
-      <MemberSignature Language="F#" Value="member this.PeekAreaInsets : Microsoft.Maui.Controls.Thickness with get, set" Usage="Microsoft.Maui.Controls.CarouselView.PeekAreaInsets" />
+      <MemberSignature Language="F#" Value="member this.PeekAreaInsets :Microsoft.Maui.Thickness with get, set" Usage="Microsoft.Maui.Controls.CarouselView.PeekAreaInsets" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Thickness</ReturnType>
+        <ReturnType>Microsoft.Maui.Thickness</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
