@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Platform
 			base.ViewDidLayoutSubviews();
 			if (currentPlatformView == null)
 				return;
-			currentPlatformView.Frame = View!.Bounds;
+			//currentPlatformView.Frame = View!.Bounds;
 		}
 
 		public void Reload() => SetView(CurrentView, true);
