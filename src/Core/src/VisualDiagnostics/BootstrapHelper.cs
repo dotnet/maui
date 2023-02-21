@@ -33,7 +33,7 @@ namespace Microsoft.Maui
 			try
 			{
 				MethodInfo loadFrom = typeof(Assembly).GetMethod("LoadFrom", new Type[] { typeof(string) });
-				if (loadFrom == null)
+				if (loadFrom is null)
 				{
 					// LoadFrom is only available in .net core 2.0 and later. Since the target
 					// assembly isn't in the normal load path there isn't anything we can do.
