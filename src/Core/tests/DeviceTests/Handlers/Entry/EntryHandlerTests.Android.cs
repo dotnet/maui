@@ -15,6 +15,25 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Theory(DisplayName = "ClearButton Color Initializes Correctly")]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
+		public async Task ClearButtonColorInitializesCorrectly(uint color)
+		{
+			var expected = Color.FromUint(color);
+
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				TextColor= expected,
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			entry.Focus();
+
+			await ValidateHasColor(entry, expected);
+		}
 
 		[Fact(DisplayName = "Padding is the same after background changes")]
 		public async Task PaddingDoesntChangeAfterBackground()
