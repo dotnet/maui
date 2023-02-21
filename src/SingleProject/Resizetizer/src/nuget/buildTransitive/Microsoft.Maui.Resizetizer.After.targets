@@ -586,7 +586,7 @@
         <ItemGroup>
             <!-- Get Images that were generated -->
             <!-- Either from the task, or if the task was skipped (up to date), use the wildcard lookup -->
-            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' != ''" Include="@(_CopiedResources)" />
+            <_ResizetizerCollectedImages Condition="'@(_CopiedResources->Count())' != '0'" Include="@(_CopiedResources)" />
             <_ResizetizerExistingImages Include="$(_MauiIntermediateImages)\**\*" />
             <_ResizetizerImagesToDelete Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
             <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == ''" Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
