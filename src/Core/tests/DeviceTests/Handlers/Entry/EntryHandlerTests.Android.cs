@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 			var entry = new EntryStub()
 			{
 				Text = "Test",
-				TextColor= expected,
+				TextColor = expected,
 				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
 			};
 
