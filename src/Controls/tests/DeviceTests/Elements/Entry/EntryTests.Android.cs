@@ -58,27 +58,27 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, entry.CursorPosition);
 		}
 
-		//[Fact]
-		//public async Task ShowsKeyboardOnFocus()
-		//{
-		//	var entry = new Entry();
+		[Fact]
+		public async Task ShowsKeyboardOnFocus()
+		{
+			var entry = new Entry();
 
-		//	await InvokeOnMainThreadAsync(async () =>
-		//	{
-		//		var handler = CreateHandler<EntryHandler>(entry);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
 
-		//		await handler.PlatformView.AttachAndRun(async () =>
-		//		{
-		//			entry.Focus();
-		//			await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					entry.Focus();
+					await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
 
-		//			// Test that keyboard reappears when refocusing on an already focused TextInput control
-		//			await AssertionExtensions.HideKeyboardForView(handler.PlatformView);
-		//			await AssertionExtensions.WaitForKeyboardToHide(handler.PlatformView);
-		//			entry.Focus();
-		//			await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
-		//		});
-		//	});
-		//}
+					// Test that keyboard reappears when refocusing on an already focused TextInput control
+					await AssertionExtensions.HideKeyboardForView(handler.PlatformView);
+					await AssertionExtensions.WaitForKeyboardToHide(handler.PlatformView);
+					entry.Focus();
+					await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+				});
+			});
+		}
 	}
 }

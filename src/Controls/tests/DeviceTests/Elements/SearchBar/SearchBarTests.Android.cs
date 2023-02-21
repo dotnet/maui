@@ -19,27 +19,27 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Query);
 		}
 
-		//[Fact]
-		//public async Task ShowsKeyboardOnFocus()
-		//{
-		//	var searchBar = new SearchBar();
+		[Fact]
+		public async Task ShowsKeyboardOnFocus()
+		{
+			var searchBar = new SearchBar();
 
-		//	await InvokeOnMainThreadAsync(async () =>
-		//	{
-		//		var handler = CreateHandler<SearchBarHandler>(searchBar);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<SearchBarHandler>(searchBar);
 
-		//		await handler.PlatformView.AttachAndRun(async () =>
-		//		{
-		//			searchBar.Focus();
-		//			await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					searchBar.Focus();
+					await AssertionExtensions.WaitForKeyboardToShow(handler.QueryEditor);
 
-		//			// Test that keyboard reappears when refocusing on an already focused TextInput control
-		//			await AssertionExtensions.HideKeyboardForView(handler.PlatformView);
-		//			await AssertionExtensions.WaitForKeyboardToHide(handler.PlatformView);
-		//			searchBar.Focus();
-		//			await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
-		//		});
-		//	});
-		//}
+					// Test that keyboard reappears when refocusing on an already focused TextInput control
+					await AssertionExtensions.HideKeyboardForView(handler.QueryEditor);
+					await AssertionExtensions.WaitForKeyboardToHide(handler.QueryEditor);
+					searchBar.Focus();
+					await AssertionExtensions.WaitForKeyboardToShow(handler.QueryEditor);
+				});
+			});
+		}
 	}
 }
