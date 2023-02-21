@@ -6,12 +6,20 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 #pragma warning disable CS8600
+#if COMPATIBILITY
+namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP
+#else
 namespace Microsoft.Maui
+#endif
 {
 	/// <summary>
 	/// Enables C++ code to simulate ICLRRuntimeHost2::ExecuteAssembly on top of ICLRRuntimeHost2::CreateDelegate in .net core 2.
 	/// </summary>
+#if COMPATIBILITY
+	static class BootstrapHelper
+#else
 	static class VisualDiagnosticsBootstrapHelper
+#endif
 	{
 		// Do not overload this method. ICLRRuntimeHost2::CreateDelegate can not resolve overloaded methods.
 		[PreserveSig]
