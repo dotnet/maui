@@ -125,10 +125,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var searchBar = new SearchBarStub()
 			{
-				CancelButtonColor = Colors.MediumPurple
+				Text = "foobar",
+				Width = 200,
+				CancelButtonColor = Colors.Yellow,
 			};
 
-			await ValidateHasColor(searchBar, Colors.MediumPurple, () => searchBar.CancelButtonColor = Colors.MediumPurple);
+			await ValidateHasColor(searchBar, Colors.Yellow, () => searchBar.CancelButtonColor = Colors.Yellow, updatePropertyValue: nameof(searchBar.CancelButtonColor));
 		}
 
 		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]
