@@ -6,11 +6,11 @@
  */
 
 using System;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using UIKit;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.Maui.Platform;
 
