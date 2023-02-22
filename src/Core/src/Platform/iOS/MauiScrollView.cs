@@ -1,6 +1,6 @@
 ﻿using System;
-using UIKit;
 using CoreGraphics;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
