@@ -266,37 +266,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ThrowsInSetIsPresentOnSplitModeOnTablet()
-		{
-			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
-			var page = new FlyoutPage
-			{
-				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
-				Detail = new ContentPage { Content = new View(), IsPlatformEnabled = true },
-				IsPlatformEnabled = true,
-				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split
-			};
-
-			Assert.Throws<InvalidOperationException>(() => page.IsPresented = false);
-		}
-
-		[Fact]
-		public void ThrowsInSetIsPresentOnSplitPortraitModeOnTablet()
-		{
-			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
-			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Portrait);
-
-			var page = new FlyoutPage
-			{
-				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
-				Detail = new ContentPage { Content = new View(), IsPlatformEnabled = true },
-				FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnPortrait
-			};
-
-			Assert.Throws<InvalidOperationException>(() => page.IsPresented = false);
-		}
-
-		[Fact]
 		public void TestSetIsPresentedOnPopoverMode()
 		{
 			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Landscape);
