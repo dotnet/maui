@@ -168,8 +168,8 @@ internal static class KeyboardAutoManagerScroll
 		if (description is null)
 			return null;
 
-		// remove letters in all languages, spaces, and curly brackets
-		var temp = Regex.Replace(description, @"[\p{L}\s:{}]", "");
+		// remove everything except for numbers and commas
+		var temp = Regex.Replace(description, @"[^0-9,]", "");
 		var dimensions = temp.Split(',');
 
 		if (int.TryParse(dimensions[0], out var x) && int.TryParse(dimensions[1], out var y)
@@ -278,6 +278,13 @@ internal static class KeyboardAutoManagerScroll
 
 		var keyboardYPosition = window.Frame.Height - kbSize.Height - TextViewTopDistance;
 
+		var viewRectInWindow = View.ConvertRectToView(View.Bounds, window);
+
+		// readjust contentInset when the textView height is too large for the screen
+		var rootSuperViewFrameInWindow = window.Frame;
+		if (RootController.Superview is UIView v)
+			rootSuperViewFrameInWindow = v.ConvertRectToView(v.Bounds, window);
+
 		CGRect cursorRect;
 
 		if (CursorRect is CGRect cRect)
@@ -285,21 +292,37 @@ internal static class KeyboardAutoManagerScroll
 		else
 			return;
 
-		if (cursorRect.Y >= topLayoutGuide && cursorRect.Y < keyboardYPosition)
+		nfloat cursorNotInViewScroll = 0;
+		nfloat move = 0;
+		bool cursorTooHigh = false;
+		bool cursorTooLow = false;
+
+		if (cursorRect.Y >= viewRectInWindow.GetMaxY())
+		{
+			cursorNotInViewScroll = viewRectInWindow.GetMaxY() - cursorRect.GetMaxY();
+			move = cursorRect.Y - keyboardYPosition + cursorNotInViewScroll;
+			cursorTooLow = true;
+		}
+
+		else if (cursorRect.Y < viewRectInWindow.GetMinY())
+		{
+			cursorNotInViewScroll = viewRectInWindow.GetMinY() - cursorRect.Y;
+			move = cursorRect.Y - keyboardYPosition + cursorNotInViewScroll;
+			cursorTooHigh = true;
+
+			// no need to move the screen down if we can already see the view
+			if (move > 0)
+				move = 0;
+		}
+
+		else if (cursorRect.Y >= topLayoutGuide && cursorRect.Y < keyboardYPosition)
 			return;
 
-		nfloat move = 0;
-
-		// readjust contentInset when the textView height is too large for the screen
-		var rootSuperViewFrameInWindow = window.Frame;
-		if (RootController.Superview is UIView v)
-			rootSuperViewFrameInWindow = v.ConvertRectToView(v.Bounds, window);
-
-		if (cursorRect.Y > keyboardYPosition)
-			move = cursorRect.Y - keyboardYPosition;
+		else if (cursorRect.Y > keyboardYPosition)
+			move = cursorRect.Y - keyboardYPosition - cursorNotInViewScroll;
 
 		else if (cursorRect.Y <= topLayoutGuide)
-			move = cursorRect.Y - (nfloat)topLayoutGuide;
+			move = cursorRect.Y - (nfloat)topLayoutGuide - cursorNotInViewScroll;
 
 		// Find the next parent ScrollView that is scrollable
 		UIScrollView? superScrollView = null;
@@ -445,14 +468,14 @@ internal static class KeyboardAutoManagerScroll
 
 				else
 				{
-					if (cursorRect.Y - innerScrollValue >= topLayoutGuide && cursorRect.Y - innerScrollValue <= keyboardYPosition)
+					if (innerScrollValue == 0 && cursorRect.Y + cursorNotInViewScroll >= topLayoutGuide && cursorRect.Y + cursorNotInViewScroll <= keyboardYPosition)
 						shouldContinue = false;
 					else
 						shouldContinue = true;
 
-					if (cursorRect.Y - innerScrollValue < topLayoutGuide)
+					if (cursorRect.Y - innerScrollValue < topLayoutGuide && !cursorTooHigh)
 						move = cursorRect.Y - innerScrollValue - (nfloat)topLayoutGuide;
-					else if (cursorRect.Y - innerScrollValue > keyboardYPosition)
+					else if (cursorRect.Y - innerScrollValue > keyboardYPosition && !cursorTooLow)
 						move = cursorRect.Y - innerScrollValue - keyboardYPosition;
 				}
 
@@ -480,7 +503,7 @@ internal static class KeyboardAutoManagerScroll
 
 					var newContentOffset = new CGPoint(superScrollView.ContentOffset.X, shouldOffsetY);
 
-					if (!superScrollView.ContentOffset.Equals(newContentOffset))
+					if (!superScrollView.ContentOffset.Equals(newContentOffset) || innerScrollValue != 0)
 					{
 						if (nextScrollView is null)
 						{
@@ -535,15 +558,11 @@ internal static class KeyboardAutoManagerScroll
 
 		else
 		{
-			var disturbDistance = rootViewOrigin.Y - TopViewBeginOrigin.Y;
+			rootViewOrigin.Y -= move;
 
-			if (disturbDistance <= 0)
+			if (RootController.Frame.X != rootViewOrigin.X || RootController.Frame.Y != rootViewOrigin.Y)
 			{
-				rootViewOrigin.Y -= (nfloat)Math.Max(move, disturbDistance);
-
-				if (RootController.Frame.X != rootViewOrigin.X || RootController.Frame.Y != rootViewOrigin.Y)
-				{
-					AnimateScroll(() =>
+				AnimateScroll(() =>
 					{
 						var rect = RootController.Frame;
 						rect.X = rootViewOrigin.X;
@@ -551,7 +570,6 @@ internal static class KeyboardAutoManagerScroll
 
 						RootController.Frame = rect;
 					});
-				}
 			}
 		}
 	}
