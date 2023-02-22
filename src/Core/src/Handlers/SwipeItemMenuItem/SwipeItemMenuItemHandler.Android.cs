@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Handlers
 		void UpdateSize()
 		{
 			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
-		
+
 			if (mauiSwipeView == null)
 				return;
 
