@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
@@ -110,14 +111,23 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateSize()
 		{
-			var textSize = 0;
-			var contentHeight = 0;
-
 			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
+		
 			if (mauiSwipeView == null)
 				return;
 
-			contentHeight = mauiSwipeView.Height;
+			var contentHeight = mauiSwipeView.Height;
+
+			var swipeView = VirtualView?.FindParentOfType<ISwipeView>();
+
+			if (swipeView?.Content is IView content)
+			{
+				float density = mauiSwipeView.Context.GetDisplayDensity();
+				var verticalThickness = (int)(content.Margin.VerticalThickness * density);
+				contentHeight -= verticalThickness;
+			}
+
+			var textSize = 0;
 
 			if (PlatformView is TextView textView)
 			{
