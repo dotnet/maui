@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
-		const int FrameBorderWindowsThickness = 1;
+		const int FrameBorderThickness = 1;
 
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper)
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				// If there's a border specified, include the thickness in our measurements
 				// multiplied by 2 to account for both sides (left/right or top/bot)
-				var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderWindowsThickness : 0) * 2;
+				var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
 
 				// Measure content but subtract border from available space
 				var measureContent = cv.CrossPlatformMeasure(
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element.BorderColor.IsNotDefault())
 			{
 				Control.BorderBrush = Element.BorderColor.ToPlatform();
-				Control.BorderThickness = WinUIHelpers.CreateThickness(FrameBorderWindowsThickness);
+				Control.BorderThickness = WinUIHelpers.CreateThickness(FrameBorderThickness);
 			}
 			else
 			{
