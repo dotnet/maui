@@ -2724,6 +2724,73 @@
           }
         ]
       }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "t/breaking 💥"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Tag Dave Britch when a breaking change is tagged on an issue",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "🚨 Breaking change detected @davidbritch FYI"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "t/breaking 💥"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Tag Dave Britch when a breaking change is tagged on an PR",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "🚨 Breaking change detected @davidbritch FYI"
+            }
+          }
+        ]
+      }
     }
   ],
   "userGroups": []

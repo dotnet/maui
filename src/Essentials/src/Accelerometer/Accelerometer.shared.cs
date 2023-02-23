@@ -150,6 +150,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		public Vector3 Acceleration { get; }
 
+		/// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
 		public override bool Equals(object? obj) =>
 			(obj is AccelerometerData data) && Equals(data);
 
@@ -179,6 +180,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static bool operator !=(AccelerometerData left, AccelerometerData right) =>
 			!left.Equals(right);
 
+		/// <inheritdoc cref="object.GetHashCode"/>
 		public override int GetHashCode() =>
 			Acceleration.GetHashCode();
 

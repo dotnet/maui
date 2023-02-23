@@ -155,7 +155,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact, Category(TestCategory.FlexLayout)]
-		public async Task FlexLayoutInVerticalStackLayoutDoesNotCycle() 
+		public async Task FlexLayoutInVerticalStackLayoutDoesNotCycle()
 		{
 			await FlexLayoutInStackLayoutDoesNotCycle(new VerticalStackLayout());
 		}
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// If this can be attached to the hierarchy and make it through a layout 
 				// without crashing, then we're good.
-				
+
 				await root.ToPlatform(MauiContext).AttachAndRun(() => { });
 			});
 		}
