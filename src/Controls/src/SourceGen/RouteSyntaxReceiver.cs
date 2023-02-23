@@ -49,7 +49,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 						MauiApp = cds;
 						break;
 					}
-					else if (identifierName.Identifier.ValueText == "Shell")
+
+					if (identifierName.Identifier.ValueText == "Shell")
 					{
 						_shellPages.Add(cds);
 						break;
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				if (routeAttribute is not null)
 				{
-					string? viewModelType = null;
+					TypeSyntax? viewModelType = null;
 					var implicitViewModel = false;
 					var route = string.Empty;
 					var routes = new List<string>();
@@ -99,46 +100,42 @@ namespace Microsoft.Maui.Controls.SourceGen
 					{
 						foreach (var argument in arguments)
 						{
-							if (argument.NameColon is not null)
+							switch (argument.NameColon?.Name.Identifier.Text)
 							{
-								switch (argument.NameColon.Name.Identifier.Text)
-								{
-									case "route":
-										route = GetRoute(cds, argument.Expression);
-										break;
-									case "lifetime":
-										lifetime = GetLifetime(argument.Expression);
-										break;
-								}
+								case "route":
+									route = GetRoute(cds, argument.Expression);
+									break;
+								case "lifetime":
+									lifetime = GetLifetime(argument.Expression);
+									break;
 							}
-							else if (argument.NameEquals is not null)
+
+							switch (argument.NameEquals?.Name.Identifier.Text)
 							{
-								switch (argument.NameEquals.Name.Identifier.Text)
-								{
-									case "Routes" when argument.Expression is ArrayCreationExpressionSyntax arrayExpression:
-										if (arrayExpression?.Initializer?.Kind() == SyntaxKind.ArrayInitializerExpression)
-										{
-											routes.AddRange(arrayExpression.Initializer.Expressions.Select(expr => GetRoute(cds, expr)));
-										}
-										break;
-									case "Routes" when argument.Expression is ImplicitArrayCreationExpressionSyntax implicitArrayExpression:
-										if (implicitArrayExpression.Initializer.Kind() == SyntaxKind.ArrayInitializerExpression)
-										{
-											routes.AddRange(implicitArrayExpression.Initializer.Expressions.Select(expr => GetRoute(cds, expr)));
-										}
-										break;
-									case "Lifetime":
-										lifetime = GetLifetime(argument.Expression);
-										break;
-									case "ImplicitViewModel" when argument.Expression is LiteralExpressionSyntax literalExpression:
-										_ = bool.TryParse(literalExpression.Token.ValueText, out implicitViewModel);
-										break;
-									case "ViewModelType" when argument.Expression is TypeOfExpressionSyntax typeOfExpression:
-										viewModelType = ((IdentifierNameSyntax)typeOfExpression.Type).Identifier.Text;
-										break;
-								}
+								case "Routes" when argument.Expression is ArrayCreationExpressionSyntax arrayExpression:
+									if (arrayExpression?.Initializer?.Kind() == SyntaxKind.ArrayInitializerExpression)
+									{
+										routes.AddRange(arrayExpression.Initializer.Expressions.Select(expr => GetRoute(cds, expr)));
+									}
+									break;
+								case "Routes" when argument.Expression is ImplicitArrayCreationExpressionSyntax implicitArrayExpression:
+									if (implicitArrayExpression.Initializer.Kind() == SyntaxKind.ArrayInitializerExpression)
+									{
+										routes.AddRange(implicitArrayExpression.Initializer.Expressions.Select(expr => GetRoute(cds, expr)));
+									}
+									break;
+								case "Lifetime":
+									lifetime = GetLifetime(argument.Expression);
+									break;
+								case "ImplicitViewModel" when argument.Expression is LiteralExpressionSyntax literalExpression:
+									_ = bool.TryParse(literalExpression.Token.ValueText, out implicitViewModel);
+									break;
+								case "ViewModelType" when argument.Expression is TypeOfExpressionSyntax typeOfExpression:
+									viewModelType = typeOfExpression.Type;
+									break;
 							}
-							else if (argument.Expression is not null)
+
+							if (argument.Expression is not null)
 							{
 								if (routeArgument)
 								{
@@ -166,33 +163,29 @@ namespace Microsoft.Maui.Controls.SourceGen
 					arguments = serviceAttribute.ArgumentList?.Arguments;
 
 					lifetime = Singleton;
-					var registerFor = string.Empty;
+					TypeSyntax? registerFor = null;
 					var useTryAdd = false;
 
 					if (arguments is not null)
 					{
 						foreach (var argument in arguments)
 						{
-							if (argument.NameColon is not null)
+							if (argument.NameColon?.Name.Identifier.Text == "lifetime")
 							{
-								if (argument.NameColon.Name.Identifier.Text == "lifetime")
-								{
-									lifetime = GetLifetime(argument.Expression);
-								}
+								lifetime = GetLifetime(argument.Expression);
 							}
-							else if (argument.NameEquals is not null)
+
+							switch (argument.NameEquals?.Name.Identifier.Text)
 							{
-								switch (argument.NameEquals.Name.Identifier.Text)
-								{
-									case "RegisterFor" when argument.Expression is TypeOfExpressionSyntax typeOfExpression:
-										registerFor = ((IdentifierNameSyntax)typeOfExpression.Type).Identifier.Text;
-										break;
-									case "UseTryAdd" when argument.Expression is LiteralExpressionSyntax literalExpression:
-										_ = bool.TryParse(literalExpression.Token.ValueText, out useTryAdd);
-										break;
-								}
+								case "RegisterFor" when argument.Expression is TypeOfExpressionSyntax typeOfExpression:
+									registerFor = typeOfExpression.Type;
+									break;
+								case "UseTryAdd" when argument.Expression is LiteralExpressionSyntax literalExpression:
+									_ = bool.TryParse(literalExpression.Token.ValueText, out useTryAdd);
+									break;
 							}
-							else if (argument.Expression is not null)
+
+							if (argument.Expression is not null)
 							{
 								lifetime = GetLifetime(argument.Expression);
 							}
@@ -231,7 +224,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			IEnumerable<string> routes,
 			string lifetime,
 			bool implicitViewModel = false,
-			string? viewModelType = null)
+			TypeSyntax? viewModelType = null)
 		{
 			Type = type;
 			Routes = routes;
@@ -248,19 +241,19 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		public bool ImplicitViewModel { get; }
 
-		public string? ViewModelType { get; }
+		public TypeSyntax? ViewModelType { get; }
 	}
 
 	internal class Service
 	{
-		public Service(ClassDeclarationSyntax type, string lifetime, string registerFor, bool useTryAdd)
+		public Service(ClassDeclarationSyntax type, string lifetime, TypeSyntax? registerFor, bool useTryAdd)
 			=> (Type, Lifetime, RegisterFor, UseTryAdd) = (type, lifetime, registerFor, useTryAdd);
 
 		public ClassDeclarationSyntax Type { get; }
 
 		public string Lifetime { get; }
 
-		public string RegisterFor { get; }
+		public TypeSyntax? RegisterFor { get; }
 
 		public bool UseTryAdd { get; }
 	}

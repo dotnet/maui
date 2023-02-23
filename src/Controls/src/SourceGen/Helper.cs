@@ -37,15 +37,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				// Keep moving "out" of the namespace declarations until we 
 				// run out of nested namespace declarations
-				while (true)
+				while (namespaceParent.Parent is NamespaceDeclarationSyntax parent)
 				{
-					if (namespaceParent.Parent is not NamespaceDeclarationSyntax parent)
-					{
-						break;
-					}
-
 					// Add the outer namespace as a prefix to the final namespace
-					@namespace = $"{namespaceParent.Name}.{@namespace}";
+					@namespace = $"{parent.Name}.{@namespace}";
 					namespaceParent = parent;
 				}
 			}
