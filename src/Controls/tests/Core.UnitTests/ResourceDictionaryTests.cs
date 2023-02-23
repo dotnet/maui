@@ -469,7 +469,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{"foo", "bar"},
 			};
 			rd.MergedDictionaries.Add(
-				new ResourceDictionary() { 
+				new ResourceDictionary() {
 					{ "foo", "bar" },
 					{ "qux", "Qux" }
 				}
