@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var shellContent = items[i];
 				if (_renderers.TryGetValue(shellContent, out var renderer))
 				{
-					var view = renderer.PlatformView;
+					var view = renderer.ViewController.View;
 					if (view != null)
 						view.Frame = new CGRect(0, 0, View.Bounds.Width, View.Bounds.Height);
 				}
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (item == currentItem)
 				{
-					_containerArea.AddSubview(renderer.PlatformView);
+					_containerArea.AddSubview(renderer.ViewController.View);
 					_currentContent = currentItem;
 					_currentIndex = i;
 				}
