@@ -16,6 +16,7 @@ Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs.GeolocationLi
 Microsoft.Maui.Devices.Sensors.IGeolocation.ListeningFailed -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs!>?
 Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.ListeningFailed -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs!>!
+override Microsoft.Maui.Devices.Sensors.GeolocationRequest.ToString() -> string!
 static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
 Microsoft.Maui.Devices.Sensors.IGeolocation.IsListeningForeground.get -> bool
 Microsoft.Maui.Devices.Sensors.IGeolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs!>?

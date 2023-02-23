@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Entry is a single line text entry. It is best used for collecting small discrete pieces of information, like usernames and passwords.
 	/// </summary>
-	public partial class Entry : InputView, IFontElement, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>
+	public partial class Entry : InputView, IFontElement, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>, IEntry
 	{
 		/// <summary>
 		/// Backing store for the <see cref="ReturnType"/> property.
@@ -298,6 +298,13 @@ namespace Microsoft.Maui.Controls
 
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{
+		}
+
+		Font ITextStyle.Font => this.ToFont();
+
+		void IEntry.Completed()
+		{
+			(this as IEntryController).SendCompleted();
 		}
 	}
 }

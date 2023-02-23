@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Xunit;
@@ -22,6 +23,53 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			Assert.Equal(desiredState, handler.PlatformView.IsPaneOpen);
 			return Task.CompletedTask;
+		}
+
+		[Theory(DisplayName = "Shell FlyoutBackground Initializes Correctly")]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#0000FF")]
+		[InlineData("#000000")]
+		public async Task ShellFlyoutBackgroundInitializesCorrectly(string colorHex)
+		{
+			SetupBuilder();
+
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				shell.FlyoutBackground = new SolidColorBrush(expectedColor);
+
+				var shellItem = new FlyoutItem();
+				shellItem.Items.Add(new ContentPage());
+				shell.Items.Add(shellItem);
+			});
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler)  =>
+				{
+					var rootNavView = handler.PlatformView;
+					var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
+					var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Left;
+					var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+
+					Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
+					Assert.NotNull(shellItemView);
+					Assert.Equal(expectedShellItems, shellItemView.PaneDisplayMode);
+
+					return Task.CompletedTask;
+				});
+
+				await AssertionExtensions.Wait(() =>
+				{
+					var platformView = shell.Handler.PlatformView as FrameworkElement;
+					return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
+				});
+			});
+
+			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 		}
 
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]
