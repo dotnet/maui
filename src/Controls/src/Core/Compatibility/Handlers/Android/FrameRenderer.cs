@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : CardView, IPlatformViewHandler
 	{
+		const int FrameBorderThickness = 3;
+
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(ViewRenderer.VisualElementRendererMapper)
 			{
@@ -176,8 +178,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element?.Handler is IPlatformViewHandler pvh &&
 				Element is IContentView cv)
 			{
-				var size = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);
-				SetMeasuredDimension((int)size.Width, (int)size.Height);
+				var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+
+				var size = pvh.MeasureVirtualView(
+					widthMeasureSpec - borderThickness,
+					heightMeasureSpec - borderThickness,
+					cv.CrossPlatformMeasure);
+				SetMeasuredDimension((int)size.Width + borderThickness, (int)size.Height + borderThickness);
 			}
 			else
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -307,7 +314,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (borderColor == null)
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
 			else
-				_backgroundDrawable.SetStroke(3, borderColor.ToPlatform());
+				_backgroundDrawable.SetStroke(FrameBorderThickness, borderColor.ToPlatform());
 		}
 
 		void UpdateShadow()
