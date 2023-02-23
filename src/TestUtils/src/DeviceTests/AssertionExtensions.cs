@@ -133,5 +133,48 @@ namespace Microsoft.Maui.DeviceTests
 			view.ToPlatform().IsExcludedWithChildren();
 #endif
 
+
+		public static IDisposable OnUnloaded(this IElement element, Action action)
+		{
+#if PLATFORM
+			if (element.Handler is IPlatformViewHandler platformViewHandler &&
+				platformViewHandler.PlatformView != null)
+			{
+				return platformViewHandler.PlatformView.OnUnloaded(action);
+			}
+
+			throw new InvalidOperationException("Handler is not set on element");
+#else
+			throw new NotImplementedException();
+#endif
+		}
+
+		public static IDisposable OnLoaded(this IElement element, Action action)
+		{
+#if PLATFORM
+			if (element.Handler is IPlatformViewHandler platformViewHandler &&
+				platformViewHandler.PlatformView != null)
+			{
+				return platformViewHandler.PlatformView.OnLoaded(action);
+			}
+
+			throw new InvalidOperationException("Handler is not set on element");
+#else
+			throw new NotImplementedException();
+#endif
+		}
+
+		public static bool IsLoadedOnPlatform(this IElement element)
+		{
+
+#if PLATFORM
+			if (element.Handler is not IPlatformViewHandler pvh)
+				return false;
+
+			return pvh.PlatformView?.IsLoaded() == true;
+#else
+			return true;
+#endif
+		}
 	}
 }
