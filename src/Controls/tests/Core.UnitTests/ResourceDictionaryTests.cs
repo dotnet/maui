@@ -460,5 +460,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			rd0.Add("foo", "Foo");
 			Assert.Equal("Foo", label.Text);
 		}
+
+		[Fact]
+		public void ContainsKeySearchesForKeyInMergedRD()
+		{
+			var rd = new ResourceDictionary {
+				{"baz", "Baz"},
+				{"foo", "bar"},
+			};
+			rd.MergedDictionaries.Add(
+				new ResourceDictionary() { 
+					{ "foo", "bar" },
+					{ "qux", "Qux" }
+				}
+			);
+
+			Assert.True(rd.ContainsKey("foo"));
+			Assert.True(rd.ContainsKey("baz"));
+			Assert.True(rd.ContainsKey("qux"));
+			Assert.False(rd.ContainsKey("bar"));
+		}
 	}
 }
