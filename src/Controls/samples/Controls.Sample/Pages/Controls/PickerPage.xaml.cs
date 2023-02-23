@@ -118,21 +118,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnUpdateHorizontalOptionsClicked(object sender, EventArgs e)
 		{
-			switch (_horizontalOptionsIndex)
-			{
-				case 0:
-					AlignmentPicker.HorizontalOptions = LayoutOptions.Start;
-					break;
-				case 1:
-					AlignmentPicker.HorizontalOptions = LayoutOptions.Center;
-					break;
-				case 2:
-					AlignmentPicker.HorizontalOptions = LayoutOptions.End;
-					break;
-				case 3:
-					AlignmentPicker.HorizontalOptions = LayoutOptions.Fill;
-					break;
-			}
+			AlignmentPicker.HorizontalOptions = GetLayoutOptions(_horizontalOptionsIndex);
 
 			_horizontalOptionsIndex++;
 
@@ -142,26 +128,28 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnUpdateVerticalOptionsClicked(object sender, EventArgs e)
 		{
-			_verticalOptionsIndex++;
+			AlignmentPicker.VerticalOptions = GetLayoutOptions(_verticalOptionsIndex);
 
-			switch (_verticalOptionsIndex)
-			{
-				case 0:
-					AlignmentPicker.VerticalOptions = LayoutOptions.Start;
-					break;
-				case 1:
-					AlignmentPicker.VerticalOptions = LayoutOptions.Center;
-					break;
-				case 2:
-					AlignmentPicker.VerticalOptions = LayoutOptions.End;
-					break;
-				case 3:
-					AlignmentPicker.VerticalOptions = LayoutOptions.Fill;
-					break;
-			}
+			_verticalOptionsIndex++;
 
 			if (_verticalOptionsIndex == 4)
 				_verticalOptionsIndex = 0;
+		}
+
+		LayoutOptions GetLayoutOptions(int index)
+		{
+			switch (_verticalOptionsIndex)
+			{
+				default:
+				case 0:
+					return LayoutOptions.Start;
+				case 1:
+					return LayoutOptions.Center;
+				case 2:
+					return LayoutOptions.End;
+				case 3:
+					return LayoutOptions.Fill;
+			}
 		}
 	}
 
