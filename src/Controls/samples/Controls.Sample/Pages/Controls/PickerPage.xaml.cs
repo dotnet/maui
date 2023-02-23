@@ -8,6 +8,9 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class PickerPage
 	{
+		int _horizontalOptionsIndex;
+		int _verticalOptionsIndex;
+
 		public PickerPage()
 		{
 			InitializeComponent();
@@ -111,6 +114,54 @@ namespace Maui.Controls.Sample.Pages
 					new PickerData { Name = $"Item {random.Next(0, 100)}" },
 				}
 			};
+		}
+
+		void OnUpdateHorizontalOptionsClicked(object sender, EventArgs e)
+		{
+			switch (_horizontalOptionsIndex)
+			{
+				case 0:
+					AlignmentPicker.HorizontalOptions = LayoutOptions.Start;
+					break;
+				case 1:
+					AlignmentPicker.HorizontalOptions = LayoutOptions.Center;
+					break;
+				case 2:
+					AlignmentPicker.HorizontalOptions = LayoutOptions.End;
+					break;
+				case 3:
+					AlignmentPicker.HorizontalOptions = LayoutOptions.Fill;
+					break;
+			}
+
+			_horizontalOptionsIndex++;
+
+			if (_horizontalOptionsIndex == 4)
+				_horizontalOptionsIndex = 0;
+		}
+
+		void OnUpdateVerticalOptionsClicked(object sender, EventArgs e)
+		{
+			_verticalOptionsIndex++;
+
+			switch (_verticalOptionsIndex)
+			{
+				case 0:
+					AlignmentPicker.VerticalOptions = LayoutOptions.Start;
+					break;
+				case 1:
+					AlignmentPicker.VerticalOptions = LayoutOptions.Center;
+					break;
+				case 2:
+					AlignmentPicker.VerticalOptions = LayoutOptions.End;
+					break;
+				case 3:
+					AlignmentPicker.VerticalOptions = LayoutOptions.Fill;
+					break;
+			}
+
+			if (_verticalOptionsIndex == 4)
+				_verticalOptionsIndex = 0;
 		}
 	}
 

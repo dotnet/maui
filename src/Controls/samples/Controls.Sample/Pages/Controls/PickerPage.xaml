@@ -83,6 +83,37 @@
                         Clicked="OnRemoveBindingContextClicked" />
                 </StackLayout>
 
+                <Label
+                     Text="Alignment"
+                     Style="{StaticResource Headline}" />
+                <Grid
+                    HeightRequest="150"
+                    RowDefinitions="Auto, *">
+                    <HorizontalStackLayout
+                        HorizontalOptions="Center">
+                        <Button 
+                            x:Name="HorizontalOptionsButton"
+                            Text="Update HorizontalOptions"
+                            Clicked="OnUpdateHorizontalOptionsClicked"/>
+                        <Button 
+                            x:Name="VerticalOptionsButton"
+                            Text="Update VerticalOptions"
+                            Clicked="OnUpdateVerticalOptionsClicked"/>
+                    </HorizontalStackLayout>
+                    <Picker
+                        x:Name="AlignmentPicker"
+                        Grid.Row="1"
+                        SelectedIndex="0"
+                        BackgroundColor="Green"
+                        TextColor="White"
+                        Margin="0, 6">
+                        <Picker.Items>
+                            <x:String>Item 1</x:String>
+                            <x:String>Item 2</x:String>
+                            <x:String>Item 3</x:String>
+                        </Picker.Items>
+                    </Picker>
+                </Grid>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
