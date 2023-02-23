@@ -225,6 +225,38 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(500 > layoutFrame.Height);
 		}
 
+		[Fact]
+		public async Task FrameIncludesBorderThickness()
+		{
+			SetupBuilder();
+
+			var content = new Label { Text = "Hey", WidthRequest = 50, HeightRequest = 50 };
+
+			var frame = new Frame()
+			{
+				Content = content,
+				BorderColor = Colors.Black,
+				CornerRadius = 10,
+				Padding = new Thickness(0),
+				Margin = new Thickness(0),
+				VerticalOptions = LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Start
+			};
+
+			var layout = new StackLayout()
+			{
+				Children =
+				{
+					frame
+				}
+			};
+
+			var layoutFrame = await LayoutFrame(layout, frame, 500, 500);
+
+			Assert.True(layoutFrame.Width >= 52);
+			Assert.True(layoutFrame.Height >= 52);
+		}
+
 		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double measureWidth, double measureHeight)
 		{
 			return await InvokeOnMainThreadAsync(() =>
