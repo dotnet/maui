@@ -30,255 +30,198 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
 		{
-			if (syntaxNode is ClassDeclarationSyntax cds)
+			if (syntaxNode is not ClassDeclarationSyntax cds)
 			{
-				if (cds.BaseList is not null)
+				return;
+			}
+
+			if (cds.BaseList is not null)
+			{
+				foreach (var baseType in cds.BaseList.Types)
 				{
-					foreach (var baseType in cds.BaseList.Types)
+					if (baseType.Type is not IdentifierNameSyntax identifierName)
 					{
-						if (baseType.Type is IdentifierNameSyntax identifierName)
-						{
-							if (identifierName.Identifier.ValueText == "Application")
-							{
-								MauiApp = cds;
-								break;
-							}
-							else if (identifierName.Identifier.ValueText == "Shell")
-							{
-								_shellPages.Add(cds);
-								break;
-							}
-						}
+						continue;
+					}
+
+					if (identifierName.Identifier.ValueText == "Application")
+					{
+						MauiApp = cds;
+						break;
+					}
+					else if (identifierName.Identifier.ValueText == "Shell")
+					{
+						_shellPages.Add(cds);
+						break;
 					}
 				}
+			}
 
-				if (cds.Identifier.ValueText == "MauiProgram")
+			if (cds.Identifier.ValueText == "MauiProgram")
+			{
+				foreach (var member in cds.Members)
 				{
-					foreach (var member in cds.Members)
+					if (member is MethodDeclarationSyntax { Identifier.ValueText: "CreateMauiApp" })
 					{
-						if (member is MethodDeclarationSyntax methodDeclaration)
-						{
-							if (methodDeclaration.Identifier.ValueText == "CreateMauiApp")
-							{
-								MauiStartup = cds;
-							}
-						}
+						MauiApp = cds;
+						break;
 					}
 				}
-				else if (cds.AttributeLists.Count > 0)
+			}
+			else if (cds.AttributeLists.Count > 0)
+			{
+				IEnumerable<AttributeArgumentSyntax>? arguments;
+
+				var routeAttributes = cds.AttributeLists.SelectMany(al => al.Attributes)
+					.Where(a => a.Name.NormalizeWhitespace().ToFullString().Replace("Attribute", string.Empty) == "Route");
+
+				var routeAttribute = routeAttributes.FirstOrDefault();
+
+				var serviceAttributes = cds.AttributeLists.SelectMany(al => al.Attributes)
+					.Where(a => a.Name.NormalizeWhitespace().ToFullString().Replace("Attribute", string.Empty) == "MauiService");
+
+				var serviceAttribute = serviceAttributes.FirstOrDefault();
+
+				string lifetime;
+
+				if (routeAttribute is not null)
 				{
-					SeparatedSyntaxList<AttributeArgumentSyntax>? arguments;
+					string? viewModelType = null;
+					var implicitViewModel = false;
+					var route = string.Empty;
+					var routes = new List<string>();
 
-					// .Where(a => a.Name.NormalizeWhitespace().ToFullString().Replace("Attribute", string.Empty) == "Route");
-					// .Where(a => a.Name.NormalizeWhitespace().ToFullString().Replace("Attribute", string.Empty) == "Service");
+					var routeArgument = true;
+					lifetime = Singleton;
+					arguments = routeAttribute.ArgumentList?.Arguments;
 
-					var routeAttributes = cds.AttributeLists.SelectMany(al => al.Attributes)
-						.Where(a => a.Name.NormalizeWhitespace().ToFullString().Replace("Attribute", string.Empty) == "Route");
-
-					var routeAttribute = routeAttributes.FirstOrDefault();
-
-					var serviceAttributes = cds.AttributeLists.SelectMany(al => al.Attributes)
-						.Where(a => a.Name.NormalizeWhitespace().ToFullString().Replace("Attribute", string.Empty) == "MauiService");
-
-					var serviceAttribute = serviceAttributes.FirstOrDefault();
-
-					string lifetime;
-
-					if (routeAttribute is not null)
+					if (arguments is not null)
 					{
-						string? viewModelType = null;
-						var implicitViewModel = false;
-						var route = string.Empty;
-						var routes = new List<string>();
-
-						var routeArgument = true;
-						lifetime = Singleton;
-						arguments = routeAttribute.ArgumentList?.Arguments;
-
-						if (arguments is not null)
+						foreach (var argument in arguments)
 						{
-							foreach (var argument in arguments)
+							if (argument.NameColon is not null)
 							{
-								if (argument.NameColon is not null)
+								switch (argument.NameColon.Name.Identifier.Text)
 								{
-									if (argument.NameColon.Name.Identifier.Text == "route")
-									{
+									case "route":
 										route = GetRoute(cds, argument.Expression);
-									}
-									else if (argument.NameColon.Name.Identifier.Text == "lifetime")
-									{
+										break;
+									case "lifetime":
 										lifetime = GetLifetime(argument.Expression);
-									}
-								}
-								else if (argument.NameEquals is not null)
-								{
-									if (argument.NameEquals.Name.Identifier.Text == "Routes")
-									{
-										if (argument.Expression is ImplicitArrayCreationExpressionSyntax implicitArrayCreationExpression)
-										{
-											if (implicitArrayCreationExpression.Initializer.Kind() == SyntaxKind.ArrayInitializerExpression)
-											{
-												foreach (var expression in implicitArrayCreationExpression.Initializer.Expressions)
-												{
-													routes.Add(GetRoute(cds, expression));
-												}
-											}
-										}
-										else if (argument.Expression is ArrayCreationExpressionSyntax arrayCreationExpression)
-										{
-											if (arrayCreationExpression?.Initializer?.Kind() == SyntaxKind.ArrayInitializerExpression)
-											{
-												foreach (var expression in arrayCreationExpression.Initializer.Expressions)
-												{
-													routes.Add(GetRoute(cds, expression));
-												}
-											}
-										}
-									}
-									else if (argument.NameEquals.Name.Identifier.Text == "Lifetime")
-									{
-										lifetime = GetLifetime(argument.Expression);
-									}
-									else if (argument.NameEquals.Name.Identifier.Text == "ImplicitViewModel")
-									{
-										if (argument.Expression is LiteralExpressionSyntax literalExpression)
-										{
-											bool.TryParse(literalExpression.Token.ValueText, out implicitViewModel);
-										}
-									}
-									else if (argument.NameEquals.Name.Identifier.Text == "ViewModelType")
-									{
-										if (argument.Expression is TypeOfExpressionSyntax typeOfExpression)
-										{
-											//viewModelType = $"global::{GetNamespace(cds)}.{((IdentifierNameSyntax)typeOfExpression.Type).Identifier.Text}";
-											viewModelType = ((IdentifierNameSyntax)typeOfExpression.Type).Identifier.Text;
-										}
-									}
-								}
-								else if (argument.Expression is not null)
-								{
-									if (routeArgument)
-									{
-										routeArgument = false;
-										route = GetRoute(cds, argument.Expression);
-									}
-									else
-									{
-										lifetime = GetLifetime(argument.Expression);
-									}
+										break;
 								}
 							}
-						}
-
-						if (routes.Count == 0)
-						{
-							routes.Add(route);
-						}
-
-						_routedPages.Add(new RoutedPage(cds, routes, lifetime, implicitViewModel, viewModelType));
-					}
-
-					if (serviceAttribute is not null)
-					{
-						arguments = serviceAttribute.ArgumentList?.Arguments;
-
-						lifetime = Singleton;
-						var registerFor = string.Empty;
-						var useTryAdd = false;
-
-						if (arguments is not null)
-						{
-							foreach (var argument in arguments)
+							else if (argument.NameEquals is not null)
 							{
-								if (argument.NameColon is not null)
+								switch (argument.NameEquals.Name.Identifier.Text)
 								{
-									if (argument.NameColon.Name.Identifier.Text == "lifetime")
-									{
+									case "Routes" when argument.Expression is ArrayCreationExpressionSyntax arrayExpression:
+										if (arrayExpression?.Initializer?.Kind() == SyntaxKind.ArrayInitializerExpression)
+										{
+											routes.AddRange(arrayExpression.Initializer.Expressions.Select(expr => GetRoute(cds, expr)));
+										}
+										break;
+									case "Routes" when argument.Expression is ImplicitArrayCreationExpressionSyntax implicitArrayExpression:
+										if (implicitArrayExpression.Initializer.Kind() == SyntaxKind.ArrayInitializerExpression)
+										{
+											routes.AddRange(implicitArrayExpression.Initializer.Expressions.Select(expr => GetRoute(cds, expr)));
+										}
+										break;
+									case "Lifetime":
 										lifetime = GetLifetime(argument.Expression);
-									}
+										break;
+									case "ImplicitViewModel" when argument.Expression is LiteralExpressionSyntax literalExpression:
+										_ = bool.TryParse(literalExpression.Token.ValueText, out implicitViewModel);
+										break;
+									case "ViewModelType" when argument.Expression is TypeOfExpressionSyntax typeOfExpression:
+										viewModelType = ((IdentifierNameSyntax)typeOfExpression.Type).Identifier.Text;
+										break;
 								}
-								else if (argument.NameEquals is not null)
+							}
+							else if (argument.Expression is not null)
+							{
+								if (routeArgument)
 								{
-									if (argument.NameEquals.Name.Identifier.Text == "RegisterFor")
-									{
-										if (argument.Expression is TypeOfExpressionSyntax typeOfExpression)
-										{
-											registerFor = ((IdentifierNameSyntax)typeOfExpression.Type).Identifier.Text;
-										}
-									}
-									else if (argument.NameEquals.Name.Identifier.Text == "UseTryAdd")
-									{
-										if (argument.Expression is LiteralExpressionSyntax literalExpression)
-										{
-											bool.TryParse(literalExpression.Token.ValueText, out useTryAdd);
-										}
-									}
+									routeArgument = false;
+									route = GetRoute(cds, argument.Expression);
 								}
-								else if (argument.Expression is not null)
+								else
 								{
 									lifetime = GetLifetime(argument.Expression);
 								}
 							}
 						}
-
-						_services.Add(new Service(cds, lifetime, registerFor, useTryAdd));
 					}
-				}
-			}
-		}
 
-		private static string GetRoute(ClassDeclarationSyntax classDeclaration, ExpressionSyntax? expression)
-		{
-			if (expression is LiteralExpressionSyntax literalExpression)
-			{
-				return $"\"{literalExpression.Token.ValueText}\"";
-			}
-			else if (expression is InvocationExpressionSyntax invocationExpression)
-			{
-				if (((IdentifierNameSyntax)invocationExpression.Expression).Identifier.Text == "nameof")
+					if (routes.Count == 0)
+					{
+						routes.Add(route);
+					}
+
+					_routedPages.Add(new RoutedPage(cds, routes, lifetime, implicitViewModel, viewModelType));
+				}
+
+				if (serviceAttribute is not null)
 				{
-					return $"nameof(global::{GetNamespace(classDeclaration)}.{invocationExpression.ArgumentList.Arguments})";
+					arguments = serviceAttribute.ArgumentList?.Arguments;
+
+					lifetime = Singleton;
+					var registerFor = string.Empty;
+					var useTryAdd = false;
+
+					if (arguments is not null)
+					{
+						foreach (var argument in arguments)
+						{
+							if (argument.NameColon is not null)
+							{
+								if (argument.NameColon.Name.Identifier.Text == "lifetime")
+								{
+									lifetime = GetLifetime(argument.Expression);
+								}
+							}
+							else if (argument.NameEquals is not null)
+							{
+								switch (argument.NameEquals.Name.Identifier.Text)
+								{
+									case "RegisterFor" when argument.Expression is TypeOfExpressionSyntax typeOfExpression:
+										registerFor = ((IdentifierNameSyntax)typeOfExpression.Type).Identifier.Text;
+										break;
+									case "UseTryAdd" when argument.Expression is LiteralExpressionSyntax literalExpression:
+										_ = bool.TryParse(literalExpression.Token.ValueText, out useTryAdd);
+										break;
+								}
+							}
+							else if (argument.Expression is not null)
+							{
+								lifetime = GetLifetime(argument.Expression);
+							}
+						}
+					}
+
+					_services.Add(new Service(cds, lifetime, registerFor, useTryAdd));
 				}
-				else
-				{
-					// Default route
-					return string.Empty;
-				}
-			}
-			else if (expression is MemberAccessExpressionSyntax memberAccessExpression)
-			{
-				return $"{((IdentifierNameSyntax)memberAccessExpression.Expression).Identifier.Text}.{memberAccessExpression.Name.Identifier.Text}";
-			}
-			else
-			{
-				// Default route
-				return string.Empty;
 			}
 		}
 
-		private static string GetLifetime(ExpressionSyntax? expression)
+		private static string GetRoute(ClassDeclarationSyntax classDeclaration, ExpressionSyntax? expression) => expression switch
 		{
-			if (expression is IdentifierNameSyntax identifierName)
+			LiteralExpressionSyntax literalExpression => $"\"{literalExpression.Token.ValueText}\"",
+			InvocationExpressionSyntax invocationExpression => ((IdentifierNameSyntax)invocationExpression.Expression).Identifier.Text switch
 			{
-				return identifierName.Identifier.ValueText;
-			}
-			else if (expression is MemberAccessExpressionSyntax memberAccessExpression)
-			{
-				return memberAccessExpression.Name.Identifier.Text;
-			}
-			else
-			{
-				// Default lifetime
-				return Singleton;
-			}
+				"nameof" => $"nameof(global::{GetNamespace(classDeclaration)}.{invocationExpression.ArgumentList.Arguments})",
+				_ => string.Empty,// Default route
+			},
+			MemberAccessExpressionSyntax memberAccessExpression => $"{((IdentifierNameSyntax)memberAccessExpression.Expression).Identifier.Text}.{memberAccessExpression.Name.Identifier.Text}",
+			_ => string.Empty,// Default route
+		};
 
-			//static ServiceLifetime ParseLifetime(string scopeName) => scopeName switch
-			//{
-			//	"Scoped" => ServiceLifetime.Scoped,
-			//	"Transient" => ServiceLifetime.Transient,
-			//	_ => ServiceLifetime.Singleton
-			//};
-		}
+		private static string GetLifetime(ExpressionSyntax? expression) => expression switch
+		{
+			IdentifierNameSyntax identifierName => identifierName.Identifier.ValueText,
+			MemberAccessExpressionSyntax memberAccessExpression => memberAccessExpression.Name.Identifier.Text,
+			_ => Singleton
+		};
 	}
 
 	internal class RoutedPage
