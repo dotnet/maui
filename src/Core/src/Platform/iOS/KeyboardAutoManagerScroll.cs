@@ -62,22 +62,22 @@ internal static class KeyboardAutoManagerScroll
 
 		WillShowToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillShowNotification"), async (notification) =>
 		{
-			NSObject? frameSize = null;
-			NSObject? curveSize = null;
+			var userInfo = notification.UserInfo;
 
-			var foundFrameSize = notification.UserInfo?.TryGetValue(new NSString("UIKeyboardFrameEndUserInfoKey"), out frameSize);
-			if (foundFrameSize == true && frameSize is not null)
+			if (userInfo is not null)
 			{
-				var frameSizeRect = DescriptionToCGRect(frameSize.Description);
-				if (frameSizeRect is not null)
-					KeyboardFrame = (CGRect)frameSizeRect;
-			}
+				if (userInfo.TryGetValue(new NSString("UIKeyboardFrameEndUserInfoKey"), out var frameSize))
+				{
+					var frameSizeRect = DescriptionToCGRect(frameSize?.Description);
+					if (frameSizeRect is not null)
+						KeyboardFrame = (CGRect)frameSizeRect;
+				}
 
-			var foundAnimationDuration = notification.UserInfo?.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out curveSize);
-			if (foundAnimationDuration == true && curveSize is not null)
-			{
-				var num = (NSNumber)NSObject.FromObject(curveSize);
-				AnimationDuration = (double)num;
+				if (userInfo.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out var curveSize))
+				{
+					var num = (NSNumber)NSObject.FromObject(curveSize);
+					AnimationDuration = (double)num;
+				}
 			}
 
 			if (TopViewBeginOrigin == InvalidPoint && RootController is not null)
@@ -129,7 +129,7 @@ internal static class KeyboardAutoManagerScroll
 									superScrollView.ContentOffset = newContentOffset;
 							}
 						}
-						superScrollView = superScrollView.Superview as UIScrollView;
+						superScrollView = superScrollView.FindResponder<UIScrollView>();
 					}
 				});
 			}
@@ -161,7 +161,7 @@ internal static class KeyboardAutoManagerScroll
 
 	// Used to get the numeric values from the UserInfo dictionary's NSObject value to CGRect.
 	// Doing manually since CGRectFromString is not yet bound
-	static CGRect? DescriptionToCGRect(string description)
+	static CGRect? DescriptionToCGRect(string? description)
 	{
 		// example of passed in description: "NSRect: {{0, 586}, {430, 346}}"
 
@@ -193,27 +193,16 @@ internal static class KeyboardAutoManagerScroll
 		// the cursor needs a small amount of time to update the position
 		await Task.Delay(5);
 
-		UITextRange? selectedTextRange;
 		CGRect? localCursor = null;
 
-		if (View is UITextView tv)
+		if (View is IUITextInput textInput)
 		{
-			selectedTextRange = tv.SelectedTextRange;
+			var selectedTextRange = textInput.SelectedTextRange;
 			if (selectedTextRange is UITextRange selectedRange)
 			{
-				localCursor = tv.GetCaretRectForPosition(selectedRange.Start);
+				localCursor = textInput.GetCaretRectForPosition(selectedRange.Start);
 				if (localCursor is CGRect local)
-					CursorRect = tv.ConvertRectToView(local, null);
-			}
-		}
-		else if (View is UITextField tf)
-		{
-			selectedTextRange = tf.SelectedTextRange;
-			if (selectedTextRange is UITextRange selectedRange)
-			{
-				localCursor = tf.GetCaretRectForPosition(selectedRange.Start);
-				if (localCursor is CGRect local)
-					CursorRect = tf.ConvertRectToView(local, null);
+					CursorRect = View.ConvertRectToView(local, null);
 			}
 		}
 
@@ -252,10 +241,7 @@ internal static class KeyboardAutoManagerScroll
 
 		var kbSize = KeyboardFrame.Size;
 		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
-		if (intersectRect == CGRect.Empty)
-			kbSize = new CGSize(KeyboardFrame.Width, 0);
-		else
-			kbSize = intersectRect.Size;
+		kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
 
 		nfloat statusBarHeight;
 		nfloat navigationBarAreaHeight;
@@ -311,7 +297,7 @@ internal static class KeyboardAutoManagerScroll
 			cursorTooHigh = true;
 
 			// no need to move the screen down if we can already see the view
-			if (move > 0)
+			if (move < 0)
 				move = 0;
 		}
 
@@ -325,18 +311,8 @@ internal static class KeyboardAutoManagerScroll
 			move = cursorRect.Y - (nfloat)topLayoutGuide - cursorNotInViewScroll;
 
 		// Find the next parent ScrollView that is scrollable
-		UIScrollView? superScrollView = null;
 		var superView = View.FindResponder<UIScrollView>();
-		while (superView is not null)
-		{
-			if (superView.ScrollEnabled)
-			{
-				superScrollView = superView;
-				break;
-			}
-
-			superView = superView.FindResponder<UIScrollView>();
-		}
+		var superScrollView = FindParentScroll(superView);
 
 		// This is the case when the keyboard is already showing and we click another editor/entry
 		if (LastScrollView is not null)
@@ -410,10 +386,8 @@ internal static class KeyboardAutoManagerScroll
 			StartingContentInsets = superScrollView.ContentInset;
 			StartingContentOffset = superScrollView.ContentOffset;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(11, 1))
-				StartingScrollIndicatorInsets = superScrollView.VerticalScrollIndicatorInsets;
-			else
-				StartingScrollIndicatorInsets = superScrollView.ScrollIndicatorInsets;
+			StartingScrollIndicatorInsets = OperatingSystem.IsIOSVersionAtLeast(11, 1) ?
+				superScrollView.VerticalScrollIndicatorInsets : superScrollView.ScrollIndicatorInsets;
 		}
 
 		// Calculate the move for the ScrollViews
@@ -483,18 +457,7 @@ internal static class KeyboardAutoManagerScroll
 				if (shouldContinue)
 				{
 					var tempScrollView = superScrollView.FindResponder<UIScrollView>();
-					UIScrollView? nextScrollView = null;
-
-					// set tempScrollView to next scrollable superview of superScrollView
-					while (tempScrollView is not null)
-					{
-						if (tempScrollView.ScrollEnabled)
-						{
-							nextScrollView = tempScrollView;
-							break;
-						}
-						tempScrollView = tempScrollView.FindResponder<UIScrollView>();
-					}
+					var nextScrollView = FindParentScroll(tempScrollView);
 
 					var shouldOffsetY = superScrollView.ContentOffset.Y - Math.Min(superScrollView.ContentOffset.Y, -move);
 
@@ -580,6 +543,19 @@ internal static class KeyboardAutoManagerScroll
 		{
 			action?.Invoke();
 		}, () => { });
+	}
+
+	static UIScrollView? FindParentScroll(UIScrollView? view)
+	{
+		while (view is not null)
+		{
+			if (view.ScrollEnabled)
+				return view;
+
+			view = view.FindResponder<UIScrollView>();
+		}
+
+		return null;
 	}
 
 	static void RestorePosition()
