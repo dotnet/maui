@@ -60,7 +60,7 @@
         "type": "parameter",
         "description": "Overrides the $(ApplicationId) in the project",
         "datatype": "string",
-        "replaces": "com.companyname.MauiApp.1"
+        "replaces": "com.companyname.mauiapp"
       },
       "msExtensionsVersion": {
         "type": "parameter",
