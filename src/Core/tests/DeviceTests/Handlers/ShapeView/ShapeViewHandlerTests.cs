@@ -9,7 +9,8 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.ShapeView)]
 	public partial class ShapeViewHandlerTests : CoreHandlerTestBase<ShapeViewHandler, ShapeViewStub>
 	{
-		[Fact(DisplayName = "Shadow Initializes Correctly on Shapes")]
+		[Fact(DisplayName = "Shadow Initializes Correctly on Shapes",
+			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
 		public async Task ShadowInitializesCorrectly()
 		{
 			var xPlatShadow = new ShadowStub

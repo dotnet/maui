@@ -288,6 +288,13 @@ namespace Microsoft.Maui.DeviceTests
 			if (withinRectModifier is not null)
 				imageRect = withinRectModifier.Invoke(imageRect);
 
+			if (imageRect.Width == 0 || imageRect.Height == 0)
+			{
+				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
+				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				return bitmap;
+			}
+
 			var colors = bitmap.GetPixelColors((int)imageRect.X, (int)imageRect.Y, (int)imageRect.Width, (int)imageRect.Height);
 
 			foreach (var c in colors)
@@ -307,7 +314,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, WColor expectedColor)
 		{
-			//_ = await view.ToBitmap(); // TODO: Why is this required for several tests to pass?
 			var bitmap = await view.ToBitmap();
 			return await AssertContainsColor(bitmap, expectedColor);
 		}
