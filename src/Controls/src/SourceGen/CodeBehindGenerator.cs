@@ -92,6 +92,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return cache;
 			foreach (var reference in compilation.References)
 			{
+				cancellationToken.ThrowIfCancellationRequested();
+
 				if (compilation.GetAssemblyOrModuleSymbol(reference) is not IAssemblySymbol symbol)
 					continue;
 				foreach (var attr in symbol.GetAttributes())
@@ -111,7 +113,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		static void GenerateXamlCodeBehind(ProjectItem projItem, Compilation compilation, SourceProductionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
 		{
-			var text = projItem.AdditionalText.GetText();
+			var text = projItem.AdditionalText.GetText(context.CancellationToken);
 			if (text == null)
 				return;
 
@@ -121,7 +123,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return;
 			var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
 
-			if (!TryParseXaml(text, uid, compilation, xmlnsDefinitionCache, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
+			if (!TryParseXaml(text, uid, compilation, xmlnsDefinitionCache, context.CancellationToken, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
 			{
 				if (parseException != null)
 					context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, parseException.Message));
@@ -206,8 +208,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 			context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 		}
 
-		static bool TryParseXaml(SourceText text, string uid, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields, out Exception? exception)
+		static bool TryParseXaml(SourceText text, string uid, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, CancellationToken cancellationToken, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields, out Exception? exception)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 
 			rootType = null;
 			rootClrNamespace = null;
@@ -229,6 +232,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 				exception = xe;
 				return false;
 			}
+
+			cancellationToken.ThrowIfCancellationRequested();
 
 			// if the following xml processing instruction is present
 			//
@@ -253,6 +258,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 				nsmgr.AddNamespace(attr.LocalName, attr.Value);
 			}
 
+			cancellationToken.ThrowIfCancellationRequested();
+
 			var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
 						 ?? root.Attributes["Class", XamlParser.X2009Uri];
 
@@ -272,7 +279,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return true;
 			}
 
-			namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsDefinitionCache);
+			namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsDefinitionCache, cancellationToken);
 			var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
 			baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, xmlnsDefinitionCache);
 
@@ -293,7 +300,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			return false;
 		}
 
-		static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache)
+		static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, CancellationToken cancellationToken)
 		{
 			var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 			if (xPrefix == null)
@@ -305,6 +312,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 					"][not(ancestor:: __f__:DataTemplate) and not(ancestor:: __f__:ControlTemplate) and not(ancestor:: __f__:Style) and not(ancestor:: __f__:VisualStateManager.VisualStateGroups)]", nsmgr);
 			foreach (XmlNode node in names)
 			{
+				cancellationToken.ThrowIfCancellationRequested();
+
 				var name = GetAttributeValue(node, "Name", XamlParser.X2006Uri, XamlParser.X2009Uri) ?? throw new Exception();
 				var typeArguments = GetAttributeValue(node, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
 				var fieldModifier = GetAttributeValue(node, "FieldModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
