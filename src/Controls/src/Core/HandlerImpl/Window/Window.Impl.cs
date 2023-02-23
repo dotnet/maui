@@ -472,11 +472,11 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Created()
 		{
-#if DEBUG
 			if (IsCreated)
 				throw new InvalidOperationException("Window was already created");
-#endif
+
 			IsCreated = true;
+			IsDestroyed = false;
 
 			Created?.Invoke(this, EventArgs.Empty);
 			OnCreated();
@@ -485,10 +485,9 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Activated()
 		{
-#if DEBUG
 			if (IsActivated)
 				throw new InvalidOperationException("Window was already activated");
-#endif
+
 			IsActivated = true;
 			Activated?.Invoke(this, EventArgs.Empty);
 			OnActivated();
@@ -496,10 +495,9 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Deactivated()
 		{
-#if DEBUG
 			if (!IsActivated)
 				throw new InvalidOperationException("Window was already deactivated");
-#endif
+
 			IsActivated = false;
 			Deactivated?.Invoke(this, EventArgs.Empty);
 			OnDeactivated();
@@ -514,11 +512,12 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Destroying()
 		{
-#if DEBUG
 			if (IsDestroyed)
 				throw new InvalidOperationException("Window was already destroyed");
-#endif
+
 			IsDestroyed = true;
+			IsCreated = false;
+
 			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
