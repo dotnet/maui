@@ -673,11 +673,7 @@ namespace Microsoft.Maui.DeviceTests
 
 
 			var window = new Controls.Window(shell);
-			var mauiContextStub1 = new ContextStub(ApplicationServices);
-#if ANDROID
-			var activity = mauiContextStub1.GetActivity();
-			mauiContextStub1.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
-#endif
+			var mauiContextStub1 = ContextStub.CreateNew(MauiContext);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
@@ -687,11 +683,8 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.GoToAsync("//FlyoutItem2");
 			}, mauiContextStub1);
 
-			var mauiContextStub2 = new ContextStub(ApplicationServices);
+			var mauiContextStub2 = ContextStub.CreateNew(MauiContext);
 
-#if ANDROID
-			mauiContextStub2.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
-#endif
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
 				await OnLoadedAsync(shell.CurrentPage);

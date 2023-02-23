@@ -150,6 +150,9 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						IView content = window.Content;
 
+						if (window is Window w && w.Navigation.ModalStack.Count > 0)
+							content = w.Navigation.ModalStack.LastOrDefault();
+
 						if (content is IPageContainer<Page> pc)
 						{
 							content = pc.CurrentPage;
@@ -170,7 +173,15 @@ namespace Microsoft.Maui.DeviceTests
 
 						await OnLoadedAsync(content as VisualElement);
 
-						window.Activated();
+						if (window is Window controlsWindow)
+						{
+							if (!controlsWindow.IsActivated)
+								window.Activated();
+						}
+						else
+						{
+							window.Activated();
+						}
 #if WINDOWS
 						await Task.Delay(10);
 #endif
@@ -183,9 +194,16 @@ namespace Microsoft.Maui.DeviceTests
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
-						window.Deactivated();
-						window.Destroying();
 
+						bool isActivated = (window as Window)?.IsActivated ?? false;
+						bool isDestroyed = (window as Window)?.IsDestroyed ?? false;
+
+
+						if (isActivated)
+							window.Deactivated();
+
+						if (!isDestroyed)
+							window.Destroying();
 					}, mauiContext);
 				}
 				finally
@@ -281,7 +299,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected void OnLoaded(VisualElement frameworkElement, Action action)
 		{
-			if (frameworkElement.IsLoaded)
+			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
 				action();
 				return;
@@ -303,9 +321,18 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected void OnUnloaded(VisualElement frameworkElement, Action action)
 		{
-			if (!frameworkElement.IsLoaded)
+			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
 				action();
+				return;
+			}
+
+			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
+			// This will happen before the the control has been unloaded at the platform level.
+			// This is most likely a bug.
+			if (frameworkElement.IsLoadedOnPlatform())
+			{
+				frameworkElement.OnUnloaded(action);
 				return;
 			}
 
@@ -322,20 +349,45 @@ namespace Microsoft.Maui.DeviceTests
 			frameworkElement.Unloaded += unloaded;
 		}
 
-		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			OnUnloaded(frameworkElement, () => taskCompletionSource.SetResult(true));
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			try
+			{
+				timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+				OnUnloaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
+				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			}
+			catch (TimeoutException)
+			{
+				if (!frameworkElement.IsLoadedOnPlatform() && !frameworkElement.IsLoaded)
+				{
+					taskCompletionSource.TrySetResult(true);
+				}
+				else
+					throw;
+			}
 		}
 
-		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			OnLoaded(frameworkElement, () => taskCompletionSource.SetResult(true));
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			try
+			{
+				timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+				OnLoaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
+				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			}
+			catch (TimeoutException)
+			{
+				if (frameworkElement.IsLoadedOnPlatform() &&
+					frameworkElement.IsLoaded)
+				{
+					taskCompletionSource.TrySetResult(true);
+				}
+				else
+					throw;
+			}
 		}
 
 		protected async Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
