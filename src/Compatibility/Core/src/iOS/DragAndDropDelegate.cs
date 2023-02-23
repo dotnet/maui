@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	[SupportedOSPlatform("ios11.0")]
 	internal class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
-#region UIDragInteractionDelegate
+		#region UIDragInteractionDelegate
 
 
 		[Export("dragInteraction:session:willEndWithOperation:")]
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			return new UIDragItem[0];
 		}
-#endregion
+		#endregion
 
 		[Export("dropInteraction:canHandleSession:")]
 		[Preserve(Conditional = true)]

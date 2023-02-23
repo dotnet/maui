@@ -4,26 +4,40 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
+		/// <summary>
+		/// Represents the platform-specific abstract base class for all permissions on this platform.
+		/// </summary>
 		public abstract partial class BasePlatformPermission : BasePermission
 		{
+			/// <summary>
+			/// Initializes a new instance of the <see cref="BasePlatformPermission"/> class.
+			/// </summary>
 			protected BasePlatformPermission()
 			{
 			}
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync() =>
 				throw ExceptionUtils.NotSupportedOrImplementedException;
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> RequestAsync() =>
 				throw ExceptionUtils.NotSupportedOrImplementedException;
 
+			/// <inheritdoc/>
 			public override void EnsureDeclared() =>
 				throw ExceptionUtils.NotSupportedOrImplementedException;
 
+			/// <inheritdoc/>
 			public override bool ShouldShowRationale() =>
 				throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
 
 		public partial class Battery : BasePlatformPermission
+		{
+		}
+
+		public partial class Bluetooth : BasePlatformPermission
 		{
 		}
 

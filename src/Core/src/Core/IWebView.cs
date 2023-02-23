@@ -19,6 +19,11 @@ namespace Microsoft.Maui
 		CookieContainer Cookies { get; }
 
 		/// <summary>
+		/// Gets or sets the WebView's user agent string.
+		/// </summary>
+		string? UserAgent { get; set; }
+
+		/// <summary>
 		/// Gets a value that indicates whether the user can navigate to previous pages.
 		/// </summary>
 		bool CanGoBack { get; set; }

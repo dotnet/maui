@@ -22,6 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<StackLayout, LayoutHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Frame, FrameRenderer>();
 					handlers.AddHandler<Frame, FrameRenderer>();
@@ -90,30 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			var layoutFrame =
-				await InvokeOnMainThreadAsync(() =>
-					layout.ToPlatform(MauiContext).AttachAndRun(async () =>
-					{
-						var size = (layout as IView).Measure(double.PositiveInfinity, double.PositiveInfinity);
-						(layout as IView).Arrange(new Graphics.Rect(0, 0, size.Width, size.Height));
-
-						await OnFrameSetToNotEmpty(layout);
-						await OnFrameSetToNotEmpty(frame);
-
-						// verify that the PlatformView was measured
-						var frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
-						Assert.True(frameControlSize.Width > 0);
-						Assert.True(frameControlSize.Width > 0);
-
-						// if the control sits inside a container make sure that also measured
-						var containerControlSize = frame.ToPlatform().GetBoundingBox();
-						Assert.True(frameControlSize.Width > 0);
-						Assert.True(frameControlSize.Width > 0);
-
-						return layout.Frame;
-
-					})
-				);
+			var layoutFrame = await LayoutFrame(layout, frame, double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.True(entry.Width > 0);
 			Assert.True(entry.Height > 0);
@@ -185,6 +163,125 @@ namespace Microsoft.Maui.DeviceTests
 				var platformView = frame.ToPlatform(MauiContext);
 				platformView.AssertContainsColor(expectedColor);
 			});
+		}
+
+		[Fact(DisplayName = "Frame Respects minimum height/width")]
+		public async Task FrameRespectsMinimums()
+		{
+			SetupBuilder();
+
+			var content = new Button { Text = "Hey", WidthRequest = 50, HeightRequest = 50 };
+
+			var frame = new Frame()
+			{
+				Content = content,
+				MinimumHeightRequest = 100,
+				MinimumWidthRequest = 100,
+				VerticalOptions = LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Start
+			};
+
+			var layout = new StackLayout()
+			{
+				Children =
+				{
+					frame
+				}
+			};
+
+			var layoutFrame = await LayoutFrame(layout, frame, 500, 500);
+
+			Assert.True(100 <= layoutFrame.Height);
+			Assert.True(100 <= layoutFrame.Width);
+		}
+
+		[Fact]
+		public async Task FrameDoesNotInterpretConstraintsAsMinimums()
+		{
+			SetupBuilder();
+
+			var content = new Button { Text = "Hey", WidthRequest = 50, HeightRequest = 50 };
+
+			var frame = new Frame()
+			{
+				Content = content,
+				MinimumHeightRequest = 100,
+				MinimumWidthRequest = 100,
+				VerticalOptions = LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Start
+			};
+
+			var layout = new StackLayout()
+			{
+				Children =
+				{
+					frame
+				}
+			};
+
+			var layoutFrame = await LayoutFrame(layout, frame, 500, 500);
+
+			Assert.True(500 > layoutFrame.Width);
+			Assert.True(500 > layoutFrame.Height);
+		}
+
+		[Fact]
+		public async Task FrameIncludesBorderThickness()
+		{
+			SetupBuilder();
+
+			var content = new Label { Text = "Hey", WidthRequest = 50, HeightRequest = 50 };
+
+			var frame = new Frame()
+			{
+				Content = content,
+				BorderColor = Colors.Black,
+				CornerRadius = 10,
+				Padding = new Thickness(0),
+				Margin = new Thickness(0),
+				VerticalOptions = LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Start
+			};
+
+			var layout = new StackLayout()
+			{
+				Children =
+				{
+					frame
+				}
+			};
+
+			var layoutFrame = await LayoutFrame(layout, frame, 500, 500);
+
+			Assert.True(layoutFrame.Width >= 52);
+			Assert.True(layoutFrame.Height >= 52);
+		}
+
+		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double measureWidth, double measureHeight)
+		{
+			return await InvokeOnMainThreadAsync(() =>
+					layout.ToPlatform(MauiContext).AttachAndRun(async () =>
+					{
+						var size = (layout as IView).Measure(measureWidth, measureHeight);
+						(layout as IView).Arrange(new Graphics.Rect(0, 0, size.Width, size.Height));
+
+						await OnFrameSetToNotEmpty(layout);
+						await OnFrameSetToNotEmpty(frame);
+
+						// verify that the PlatformView was measured
+						var frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
+						Assert.True(frameControlSize.Width > 0);
+						Assert.True(frameControlSize.Width > 0);
+
+						// if the control sits inside a container make sure that also measured
+						var containerControlSize = frame.ToPlatform().GetBoundingBox();
+						Assert.True(frameControlSize.Width > 0);
+						Assert.True(frameControlSize.Width > 0);
+
+						return layout.Frame;
+
+					})
+				);
 		}
 	}
 }

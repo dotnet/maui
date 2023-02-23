@@ -1,0 +1,828 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <ItemGroup>
+        <AvailableItemName Include="MauiAsset" />
+        <AvailableItemName Include="MauiImage" />
+        <AvailableItemName Include="MauiIcon" />
+        <AvailableItemName Include="MauiFont" />
+        <AvailableItemName Include="MauiSplashScreen" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <_ResizetizerTaskAssemblyName>$(MSBuildThisFileDirectory)\Microsoft.Maui.Resizetizer.dll</_ResizetizerTaskAssemblyName>
+    </PropertyGroup>
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.ResizetizeImages" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.DetectInvalidResourceOutputFilenamesTask" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.CreatePartialInfoPlistTask" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateSplashAndroidResources" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateSplashStoryboard" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.TizenSplashUpdater" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateSplashAssets" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GetMauiAssetPath" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GeneratePackageAppxManifest" />
+
+  <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateTizenManifest" />
+
+    <PropertyGroup>
+        <CleanDependsOn>
+            $(CleanDependsOn);
+            _CleanResizetizer;
+        </CleanDependsOn>
+
+        <_ResizetizerInputsFile>$(IntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
+        <_ResizetizerStampFile>$(IntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
+        <_MauiFontInputsFile>$(IntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
+        <_MauiFontStampFile>$(IntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
+        <_MauiSplashInputsFile>$(IntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
+        <_MauiSplashStampFile>$(IntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
+        <_MauiManifestStampFile>$(IntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
+
+        <_ResizetizerIntermediateOutputRoot>$(IntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
+        <_MauiIntermediateImages>$(_ResizetizerIntermediateOutputRoot)r\</_MauiIntermediateImages>
+        <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
+        <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
+        <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
+
+        <_ResizetizerPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_ResizetizerPlatformIdentifier>
+        <_ResizetizerNoTargetPlatform Condition="'$(_ResizetizerPlatformIdentifier)' == ''">True</_ResizetizerNoTargetPlatform>
+        <_ResizetizerPlatformIsAndroid Condition="'$(_ResizetizerPlatformIdentifier)' == 'android'">True</_ResizetizerPlatformIsAndroid>
+        <_ResizetizerPlatformIsiOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'ios'">True</_ResizetizerPlatformIsiOS>
+        <_ResizetizerPlatformIsMacCatalyst Condition="'$(_ResizetizerPlatformIdentifier)' == 'maccatalyst'">True</_ResizetizerPlatformIsMacCatalyst>
+        <_ResizetizerPlatformIsmacOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'macos'">True</_ResizetizerPlatformIsmacOS>
+        <_ResizetizerPlatformIstvOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'tvos'">True</_ResizetizerPlatformIstvOS>
+        <_ResizetizerPlatformIsWindows Condition="$(_ResizetizerPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerPlatformIsWindows>
+        <_ResizetizerPlatformIsTizen Condition="'$(_ResizetizerPlatformIdentifier)' == 'tizen'">True</_ResizetizerPlatformIsTizen>
+
+        <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
+
+        <_ResizetizerDefaultInvalidFilenamesErrorMessage>One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: </_ResizetizerDefaultInvalidFilenamesErrorMessage>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+        <_ResizetizerIsNetCore>True</_ResizetizerIsNetCore>
+        <_ResizetizerIsAndroidApp Condition=" '$(_ResizetizerPlatformIsAndroid)' == 'True' And '$(AndroidApplication)' == 'True'">True</_ResizetizerIsAndroidApp>
+        <_ResizetizerIsiOSApp Condition="( '$(_ResizetizerPlatformIsiOS)' == 'True' OR '$(_ResizetizerPlatformIsMacCatalyst)' == 'True' ) And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
+        <_ResizetizerIsiOSSpecificApp Condition=" '$(_ResizetizerPlatformIsiOS)' == 'True' And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSSpecificApp>
+        <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(_ResizetizerPlatformIsWindows)' == 'True'">True</_ResizetizerIsWPFApp>
+        <_ResizetizerIsWindowsAppSdk Condition="('$(ProjectReunionWinUI)'=='True' Or '$(WindowsAppSDKWinUI)'=='True') And '$(_ResizetizerPlatformIsWindows)' == 'True' And ('$(OutputType)' == 'WinExe' Or '$(OutputType)' == 'Exe')">True</_ResizetizerIsWindowsAppSdk>
+        <_ResizetizerIsTizenApp Condition="'$(_ResizetizerPlatformIsTizen)' == 'True' And ( '$(OutputType)' == 'Exe' )">True</_ResizetizerIsTizenApp>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True'">
+        <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
+
+        <ResizetizeDependsOnTargets>
+            $(ResizetizeDependsOnTargets);
+            ResizetizeCollectItems;
+            ProcessMauiSplashScreens;
+        </ResizetizeDependsOnTargets>
+        <ProcessMauiFontsDependsOnTargets>
+            $(ProcessMauiFontsDependsOnTargets);
+            ResizetizeCollectItems;
+            ProcessMauiAssets;
+            ProcessMauiSplashScreens;
+        </ProcessMauiFontsDependsOnTargets>
+    </PropertyGroup>
+
+    <!-- iOS -->
+    <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
+        <ResizetizerPlatformType>ios</ResizetizerPlatformType>
+
+        <!-- We don't want to resizetize anything for an inner build when building a universal app, it's enough to only do it in the outer build -->
+        <DisableResizetizer Condition="'$(_IsMultiRidBuild)' == 'true'">true</DisableResizetizer>
+
+        <CollectBundleResourcesDependsOn>
+            $(CollectBundleResourcesDependsOn);
+            ResizetizeCollectItems;
+        </CollectBundleResourcesDependsOn>
+
+        <CompileImageAssetsDependsOn>
+            $(CompileImageAssetsDependsOn);
+            ResizetizeCollectItems;
+        </CompileImageAssetsDependsOn>
+
+        <ResizetizeAfterTargets>
+            $(ResizetizeAfterTargets);
+            ResizetizeCollectItems;
+        </ResizetizeAfterTargets>
+
+        <CollectAppManifestsDependsOn>
+            ProcessMauiFonts;
+            ProcessMauiSplashScreens;
+            $(CollectAppManifestsDependsOn)
+        </CollectAppManifestsDependsOn>
+    </PropertyGroup>
+
+    <!-- Android -->
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+        <ResizetizerPlatformType>android</ResizetizerPlatformType>
+
+        <ResizetizeCollectItemsBeforeTargets>
+            $(ResizetizeCollectItemsAfterTargets);
+            _ComputeAndroidResourcePaths;
+        </ResizetizeCollectItemsBeforeTargets>
+
+        <ResizetizeAfterTargets>
+            $(ResizetizeAfterTargets);
+            ResizetizeCollectItems;
+        </ResizetizeAfterTargets>
+
+        <ProcessMauiFontsAfterTargets>
+            $(ProcessMauiFontsAfterTargets);
+            ResizetizeCollectItems;
+        </ProcessMauiFontsAfterTargets>
+    </PropertyGroup>
+
+    <!-- Windows App SDK -->
+    <PropertyGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+        <ResizetizerPlatformType>uwp</ResizetizerPlatformType>
+
+        <ResizetizeBeforeTargets>
+            $(ResizetizeBeforeTargets);
+            AssignTargetPaths;
+        </ResizetizeBeforeTargets>
+
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
+            AssignTargetPaths;
+        </ProcessMauiFontsBeforeTargets>
+
+        <MauiGeneratePackageAppxManifestDependsOnTargets>
+            $(MauiGeneratePackageAppxManifestDependsOnTargets);
+            ResizetizeCollectItems;
+        </MauiGeneratePackageAppxManifestDependsOnTargets>
+    </PropertyGroup>
+
+    <!-- WPF -->
+    <PropertyGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">
+        <ResizetizerPlatformType>wpf</ResizetizerPlatformType>
+
+        <ResizetizeBeforeTargets>
+            $(ResizetizeBeforeTargets);
+            FileClassification;
+        </ResizetizeBeforeTargets>
+
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
+            FileClassification;
+        </ProcessMauiFontsBeforeTargets>
+    </PropertyGroup>
+
+    <!-- Tizen -->
+    <PropertyGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
+        <ResizetizerPlatformType>tizen</ResizetizerPlatformType>
+
+        <ResizetizeBeforeTargets>
+            $(ResizetizeBeforeTargets);
+            PrepareResources;
+        </ResizetizeBeforeTargets>
+
+        <ResizetizeAfterTargets>
+            $(ResizetizeAfterTargets);
+            ResizetizeCollectItems;
+        </ResizetizeAfterTargets>
+
+        <ProcessMauiFontsAfterTargets>
+            $(ProcessMauiFontsAfterTargets);
+            ResizetizeCollectItems;
+        </ProcessMauiFontsAfterTargets>
+    </PropertyGroup>
+
+    <!-- Finds absolute paths to any MauiImage in this project -->
+    <!-- App head projects will invoke this target on their project references to collect images -->
+    <Target Name="GetMauiItems" Outputs="@(ExportedMauiItem)">
+        <ItemGroup>
+            <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
+            <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
+            <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" />
+            <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
+            <MauiItem Include="@(MauiAsset)" ItemGroupName="MauiAsset" ProjectDirectory="$(MSBuildProjectDirectory)" />
+            <MauiItem Include="@(MauiSplashScreen)" ItemGroupName="MauiSplashScreen" />
+        </ItemGroup>
+
+        <ConvertToAbsolutePath Paths="@(MauiItem)">
+            <Output TaskParameter="AbsolutePaths" ItemName="ExportedMauiItem" />
+        </ConvertToAbsolutePath>
+
+    </Target>
+
+
+    <!-- Collect images from referenced projects -->
+    <Target Name="ResizetizeCollectItems"
+        Condition="'$(_ResizetizerIsCompatibleApp)' == 'True' And '$(DisableResizetizer)' != 'true'"
+        BeforeTargets="$(ResizetizeCollectItemsBeforeTargets)"
+        AfterTargets="$(ResizetizeCollectItemsAfterTargets)">
+
+        <CallTarget Targets="GetMauiItems" Condition="'$(ResizetizerIncludeSelfProject)' == 'True'">
+            <Output
+                TaskParameter="TargetOutputs"
+                ItemName="ImportedMauiItem" />
+        </CallTarget>
+
+        <!-- Invoke the GetMauiItems target on all project references -->
+        <!-- This will accumulate images into our MauiImage group -->
+        <!--<MSBuild Targets="GetMauiItems" Projects="@(_MSBuildProjectReferenceExistent)">-->
+        <MSBuild
+            Targets="GetMauiItems"
+            Projects="@(ProjectReference)"
+            BuildInParallel="true"
+            Properties="TargetFramework=$(TargetFramework)"
+            SkipNonexistentProjects="true"
+            SkipNonexistentTargets="true">
+            <Output
+                TaskParameter="TargetOutputs"
+                ItemName="ImportedMauiItem" />
+        </MSBuild>
+
+        <ItemGroup>
+            <MauiImage
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiImage'" />
+            <MauiIcon
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiIcon'" />
+            <MauiFont
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiFont'" />
+            <MauiAsset
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiAsset'" />
+            <MauiSplashScreen
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiSplashScreen'" />
+        </ItemGroup>
+
+        <!-- Make sure animated gifs are not resized by default -->
+        <ItemGroup>
+            <MauiImage Update="@(MauiImage)" Resize="False" Condition="'%(MauiImage.Extension)' == '.gif' and '%(MauiImage.Resize)' == ''" />
+        </ItemGroup>
+
+        <!-- Map @(MauiIcon) to @(MauiImage IsAppIcon=true) -->
+        <ItemGroup>
+            <MauiImage Include="@(MauiIcon)" IsAppIcon="True" />
+        </ItemGroup>
+
+        <!-- Add a hash to the splash screen so we can use it later -->
+        <GetFileHash Files="@(MauiSplashScreen)">
+            <Output TaskParameter="Items" ItemName="_MauiSplashScreenWithHashes" />
+        </GetFileHash>
+
+        <!-- Write out item spec and metadata to a file we can use as an inputs for the resize target -->
+        <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
+        <WriteLinesToFile
+            File="$(_ResizetizerInputsFile)"
+            Lines="@(MauiImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true" />
+
+        <WriteLinesToFile
+            File="$(_MauiFontInputsFile)"
+            Lines="@(MauiFont->'File=%(Identity);Link=%(Link);Alias=%(Alias)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true" />
+
+        <WriteLinesToFile
+            File="$(_MauiSplashInputsFile)"
+            Lines="@(_MauiSplashScreenWithHashes->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);ForegroundScale=%(ForegroundScale);FileHash=%(FileHash)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true" />
+
+        <!-- Get a hash of the splash screen inputs file -->
+        <GetFileHash Files="$(_MauiSplashInputsFile)">
+            <Output TaskParameter="Hash" PropertyName="_MauiSplashInputsFileHash" />
+        </GetFileHash>
+
+        <!-- Add the inputs file's hash to the splash items -->
+        <ItemGroup>
+            <_MauiSplashScreenWithHashes Update="@(_MauiSplashScreenWithHashes)" InputsFileHash="$(_MauiSplashInputsFileHash)" />
+        </ItemGroup>
+
+        <ItemGroup>
+            <FileWrites Include="$(_ResizetizerInputsFile)" />
+            <FileWrites Include="$(_MauiFontInputsFile)" />
+            <FileWrites Include="$(_MauiSplashInputsFile)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="ProcessMauiAssets">
+        <PropertyGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+            <_MauiAssetItemMetadata>TargetPath</_MauiAssetItemMetadata>
+        </PropertyGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+            <!-- Windows does not recognize %(LogicalName), so we must copy it to %(Link) -->
+            <MauiAsset Update="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
+        </ItemGroup>
+        <PropertyGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
+            <_MauiAssetItemMetadata>TizenTpkFileName</_MauiAssetItemMetadata>
+        </PropertyGroup>
+      <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
+        <MauiAsset Update="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
+      </ItemGroup>
+        <GetMauiAssetPath
+            ProjectDirectory="$(MSBuildProjectDirectory)"
+            ItemMetadata="$(_MauiAssetItemMetadata)"
+            Input="@(MauiAsset)">
+            <Output ItemName="AndroidAsset"          TaskParameter="Output" Condition="'$(_ResizetizerIsAndroidApp)' == 'True'" />
+            <Output ItemName="Content"               TaskParameter="Output" Condition="'$(_ResizetizerIsiOSApp)' == 'True'" />
+            <Output ItemName="ContentWithTargetPath" TaskParameter="Output" Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
+            <Output ItemName="TizenResource" TaskParameter="Output" Condition="'$(_ResizetizerIsTizenApp)' == 'True'" />
+        </GetMauiAssetPath>
+    </Target>
+
+    <Target Name="ProcessMauiSplashScreens"
+        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
+        Outputs="$(_MauiSplashStampFile)">
+
+        <PropertyGroup>
+            <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
+            <_MauiHasSplashScreens Condition="'@(MauiSplashScreen->Count())' != '0'">true</_MauiHasSplashScreens>
+        </PropertyGroup>
+
+        <DetectInvalidResourceOutputFilenamesTask
+            Condition="'$(_MauiHasSplashScreens)' == 'true'"
+            Items="@(MauiSplashScreen->Distinct())"
+            ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)"
+        />
+
+        <Warning
+            Condition="'$(_MauiHasSplashScreens)' == 'true' and '@(MauiSplashScreen->Count())' &gt; '1'"
+            Text="More than one 'MauiSplashScreen' is defined; only the first will be used."
+        />
+
+        <!-- Android -->
+        <GenerateSplashAndroidResources
+            Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            MauiSplashScreen="@(MauiSplashScreen)"
+            InputsFile="$(_MauiSplashInputsFile)"
+        />
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
+            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
+            <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
+                <StampFile>$(_ResizetizerStampFile)</StampFile>
+            </LibraryResourceDirectories>
+        </ItemGroup>
+
+        <!-- iOS, but not Catalyst -->
+        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+            <!-- Add a Link attribute in the form of '<filename>_<inputshash>.<extension>' -->
+          <_MauiSplashScreenWithHashesInFilename
+              Include="@(_MauiSplashScreenWithHashes->HasMetadata('Link'))"
+              OriginalLink="%(_MauiSplashScreenWithHashes.Link)"
+              Link="$([System.IO.Path]::GetFilenameWithoutExtension('%(_MauiSplashScreenWithHashes.Link)'))_%(InputsFileHash)$([System.IO.Path]::GetExtension('%(_MauiSplashScreenWithHashes.Link)'))" />
+          <_MauiSplashScreenWithHashesInFilename
+              Include="@(_MauiSplashScreenWithHashes)"
+              Exclude="@(_MauiSplashScreenWithHashesInFilename)"
+              Link="%(Filename)_%(InputsFileHash)%(Extension)" />
+        </ItemGroup>
+        <GenerateSplashStoryboard
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            MauiSplashScreen="@(_MauiSplashScreenWithHashesInFilename)"
+            InputsFile="$(_MauiSplashInputsFile)"
+        />
+        <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+            <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
+            <_MauiIntermediatePList>$(_MauiIntermediateSplashScreen)MauiInfo.plist</_MauiIntermediatePList>
+        </PropertyGroup>
+        <CreatePartialInfoPlistTask
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            PlistName="MauiInfo.plist"
+            Storyboard="$(_MauiIntermediateStoryboard)"
+        />
+        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
+            <_MauiSplashStoryboard Include="$(_MauiIntermediateStoryboard)" />
+            <_MauiSplashPList Include="$(_MauiIntermediatePList)" />
+            <_MauiSplashImages Include="@(_MauiSplashAssets)" Exclude="@(_MauiSplashStoryboard);@(_MauiSplashPList)" />
+            <!-- Add the launch storyboard file -->
+            <InterfaceDefinition Include="@(_MauiSplashStoryboard)" Link="%(Filename)%(Extension)" />
+            <!-- Add the splash screen plist to the partial plist files -->
+            <PartialAppManifest Include="@(_MauiSplashPList)" />
+            <!-- Add the splash screen images to BundleResource -->
+            <BundleResource Include="@(_MauiSplashImages->'%(FullPath)')">
+                <LogicalName>%(_MauiSplashImages.Filename)%(_MauiSplashImages.Extension)</LogicalName>
+                <TargetPath>%(_MauiSplashImages.Filename)%(_MauiSplashImages.Extension)</TargetPath>
+            </BundleResource>
+        </ItemGroup>
+
+        <!-- Windows App SDK -->
+        <GenerateSplashAssets
+            Condition="('$(_ResizetizerIsWindowsAppSdk)' == 'True') and '$(_MauiHasSplashScreens)' == 'true'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            MauiSplashScreen="@(MauiSplashScreen)"
+        />
+        <ItemGroup Condition="('$(_ResizetizerIsWindowsAppSdk)' == 'True') and '$(_MauiHasSplashScreens)' == 'true'">
+            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
+            <ContentWithTargetPath Include="@(_MauiSplashAssets)">
+                <TargetPath>%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</TargetPath>
+            </ContentWithTargetPath>
+        </ItemGroup>
+
+        <!-- Tizen -->
+        <TizenSplashUpdater
+            Condition="'$(_ResizetizerIsTizenApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            MauiSplashScreen="@(MauiSplashScreen)"
+        />
+        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
+            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
+            <MauiImage Include="@(MauiSplashScreen)" />
+            <_MauiSplashScreens Include="$(_MauiIntermediateSplashScreen)splash\*" />
+            <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
+        </ItemGroup>
+
+        <!-- Stamp file for Outputs -->
+        <MakeDir Directories="$(IntermediateOutputPath)"/>
+        <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
+
+        <ItemGroup>
+            <FileWrites Include="@(_MauiSplashAssets)" />
+            <FileWrites Include="$(_MauiSplashStampFile)" />
+        </ItemGroup>
+
+    </Target>
+
+    <Target Name="ProcessMauiFonts"
+        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
+        Outputs="$(_MauiFontStampFile)"
+        AfterTargets="$(ProcessMauiFontsAfterTargets)"
+        BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
+        DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)">
+
+        <!-- Copy font files over -->
+        <Copy
+            SourceFiles="@(MauiFont)"
+            DestinationFolder="$(_MauiIntermediateFonts)"
+            SkipUnchangedFiles="true" />
+
+        <ItemGroup>
+            <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
+        </ItemGroup>
+
+        <!-- iOS -->
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''">
+
+            <!-- iOS Expects fonts to be in this group -->
+            <_MauiFontBundleResource Include="@(_MauiFontCopied)">
+                <LogicalName>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</LogicalName>
+                <TargetPath>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
+            </_MauiFontBundleResource>
+
+            <BundleResource Include="@(_MauiFontBundleResource)" />
+
+        </ItemGroup>
+
+        <!-- Create a partial info.plist for iOS -->
+        <CreatePartialInfoPlistTask
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''"
+            IntermediateOutputPath="$(_MauiIntermediateFonts)"
+            PlistName="MauiInfo.plist"
+            CustomFonts="@(_MauiFontCopied)" />
+
+        <!-- iOS - Partial Info.plist for font registration  -->
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' ">
+            <_MauiFontPListFiles Include="$(_MauiIntermediateFonts)MauiInfo.plist" Condition="Exists('$(_MauiIntermediateFonts)MauiInfo.plist')" />
+            <PartialAppManifest Include="@(_MauiFontPListFiles)" Condition="'@(_MauiFontPListFiles)' != ''" />
+            <FileWrites Include="@(_MauiFontPListFiles)" Condition="'@(_MauiFontPListFiles)' != ''" />
+        </ItemGroup>
+
+        <!-- Android -->
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+
+            <AndroidAsset Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
+                <Link>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</Link>
+            </AndroidAsset>
+
+        </ItemGroup>
+
+        <!-- Windows App SDK -->
+        <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+
+            <ContentWithTargetPath Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
+                <TargetPath>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
+            </ContentWithTargetPath>
+
+        </ItemGroup>
+
+        <!-- WPF -->
+        <ItemGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">
+
+            <Resource Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
+                <LogicalName>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</LogicalName>
+                <Link>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</Link>
+            </Resource>
+
+        </ItemGroup>
+
+        <!-- Tizen -->
+        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
+            <TizenTpkUserIncludeFiles Include="@(_MauiFontCopied)"  Condition="'@(_MauiFontCopied)' != ''" TizenTpkSubDir="res\fonts\" />
+        </ItemGroup>
+
+        <!-- Touch/create our stamp file for outputs -->
+        <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
+
+        <!-- Include our fonts and stamp file as filewrites so they don't get rm'd -->
+        <ItemGroup>
+            <FileWrites Include="$(_MauiFontStampFile)" />
+            <FileWrites Include="@(_MauiFontCopied)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="ResizetizeImages"
+        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
+        Outputs="$(_ResizetizerStampFile)"
+        AfterTargets="$(ResizetizeAfterTargets)"
+        BeforeTargets="$(ResizetizeBeforeTargets)"
+        DependsOnTargets="$(ResizetizeDependsOnTargets)">
+
+        <DetectInvalidResourceOutputFilenamesTask
+            Items="@(MauiImage->Distinct())"
+            ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
+        </DetectInvalidResourceOutputFilenamesTask>
+
+        <!-- Resize the images -->
+        <ResizetizeImages
+            PlatformType="$(ResizetizerPlatformType)"
+            IntermediateOutputPath="$(_MauiIntermediateImages)"
+            InputsFile="$(_ResizetizerInputsFile)"
+            Images="@(MauiImage->Distinct())">
+        </ResizetizeImages>
+
+        <ItemGroup>
+            <!-- Get Images that were generated -->
+            <!-- Either from the task, or if the task was skipped (up to date), use the wildcard lookup -->
+            <_ResizetizerCollectedImages Condition="'@(CopiedResources)' != ''" Include="@(CopiedResources)" />
+            <_ResizetizerCollectedImages Condition="'@(CopiedResources)' == ''" Include="$(_MauiIntermediateImages)**\*" />
+        </ItemGroup>
+
+        <!-- iOS -->
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
+            <!-- Batch the collectd items into BundleResource which iOS expects -->
+            <_ResizetizerCollectedBundleResourceImages Include="@(_ResizetizerCollectedImages->'%(FullPath)')">
+                <LogicalName>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</LogicalName>
+                <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
+            </_ResizetizerCollectedBundleResourceImages>
+
+            <!-- iOS Expects images in this group -->
+            <BundleResource Include="@(_ResizetizerCollectedBundleResourceImages)" Condition="'@(_ResizetizerCollectedBundleResourceImages->Contains('Assets.xcassets'))' != 'True' and '%(_ResizetizerCollectedBundleResourceImages.Identity)' != ''" />
+
+            <ImageAsset
+                Include="@(_ResizetizerCollectedBundleResourceImages)"
+                Condition="'@(_ResizetizerCollectedBundleResourceImages->Contains('Assets.xcassets'))' == 'True' and '%(_ResizetizerCollectedBundleResourceImages.Identity)' != ''">
+                <LogicalName>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</LogicalName>
+                <TargetPath>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</TargetPath>
+                <Link>Assets.xcassets\$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_ResizetizerCollectedBundleResourceImages.Identity)))))\%(_ResizetizerCollectedBundleResourceImages.Filename)%(_ResizetizerCollectedBundleResourceImages.Extension)</Link>
+            </ImageAsset>
+
+            <FileWrites Include="@(_ResizetizerCollectedBundleResourceImages)" />
+        </ItemGroup>
+
+        <!-- Android -->
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+            <!-- If we had any images, add that obj/ folder as a resource directory -->
+            <LibraryResourceDirectories Condition="Exists ('$(_MauiIntermediateImages)')" Include="$(_MauiIntermediateImages)">
+                <StampFile>$(_ResizetizerStampFile)</StampFile>
+            </LibraryResourceDirectories>
+
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
+        </ItemGroup>
+
+        <!-- Windows App SDK -->
+        <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+            <ContentWithTargetPath Include="@(_ResizetizerCollectedImages)">
+                <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
+            </ContentWithTargetPath>
+
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
+
+            <_MauiAppIconFile Include="@(_ResizetizerCollectedImages)"
+                              Condition="'%(Extension)' == '.ico'" />
+        </ItemGroup>
+
+        <PropertyGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+            <ApplicationIcon Condition="'$(ApplicationIcon)' == ''">%(_MauiAppIconFile.Identity)</ApplicationIcon>
+        </PropertyGroup>
+
+        <!-- WPF -->
+        <ItemGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">
+            <Resource Include="@(_ResizetizerCollectedImages)">
+                <LogicalName>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</LogicalName>
+                <Link>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</Link>
+            </Resource>
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
+        </ItemGroup>
+
+        <!-- Tizen -->
+        <PropertyGroup>
+            <ResizetizerIntermediateOutputAbsolutePath>$([System.IO.Path]::GetFullPath('$(_MauiIntermediateImages)'))</ResizetizerIntermediateOutputAbsolutePath>
+        </PropertyGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(_ResizetizerCollectedImages)' != ''">
+            <TizenTpkUserIncludeFiles Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml" TizenTpkSubDir="res\" />
+            <FileWrites Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml)" />
+
+            <TizenTpkUserIncludeFiles Include="@(_ResizetizerCollectedImages)">
+                <TizenTpkSubDir>$([MSBuild]::MakeRelative($(ResizetizerIntermediateOutputAbsolutePath), $([System.IO.Path]::GetFullPath('%(_ResizetizerCollectedImages.RelativeDir)'))))</TizenTpkSubDir>
+            </TizenTpkUserIncludeFiles>
+            <FileWrites Include="@(_ResizetizerCollectedImages)" />
+        </ItemGroup>
+
+        <!-- Touch/create our stamp file for outputs -->
+        <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
+
+        <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
+        <ItemGroup>
+            <FileWrites Include="$(_ResizetizerStampFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!--
+        Make sure the properties are valid before validating. Instead of an error when the user
+        toggles between modes, just handle it and remove the AppxManifest item.
+    -->
+    <Target Name="_ValidateWindowsPackageTypeBeforeTarget"
+            BeforeTargets="_ValidateWindowsPackageType"
+            DependsOnTargets="_MauiRemoveRemoveAppxManifestForUnpackaged" />
+
+    <Target Name="_MauiRemoveRemoveAppxManifestForUnpackaged"
+            Condition="'$(WindowsPackageType)' == 'None' and '@(AppxManifest)' != ''">
+
+        <ItemGroup>
+            <_MauiAppxManifest Include="@(AppxManifest)" />
+            <AppxManifest Remove="@(AppxManifest)" />
+        </ItemGroup>
+
+    </Target>
+
+    <!-- This is required because the "CalculateAppxGenerateProjectPriEnabled" target explicitly depends
+         on "_ValidatePresenceOfAppxManifestItems" and we need to get in before then. -->
+    <Target Name="_ValidatePresenceOfAppxManifestItemsBeforeTarget"
+            BeforeTargets="_ValidatePresenceOfAppxManifestItems"
+            DependsOnTargets="MauiGeneratePackageAppxManifest"
+            Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
+
+    <Target Name="MauiGeneratePackageAppxManifest"
+            Condition="('$(_ResizetizerIsWindowsAppSdk)' == 'True') And ('@(AppxManifest)@(_MauiAppxManifest)' !='')"
+            DependsOnTargets="$(MauiGeneratePackageAppxManifestDependsOnTargets)"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);@(AppxManifest);@(_MauiAppxManifest)"
+            Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)Package.appxmanifest">
+
+        <PropertyGroup>
+            <_MauiWindowsApplicationId Condition="'$(_MauiWindowsApplicationId)' == '' and '$(ApplicationIdGuid)' != ''">$(ApplicationIdGuid)</_MauiWindowsApplicationId>
+            <_MauiWindowsApplicationId Condition="'$(_MauiWindowsApplicationId)' == '' and '$(ApplicationId)' != ''">$(ApplicationId)</_MauiWindowsApplicationId>
+        </PropertyGroup>
+
+        <GeneratePackageAppxManifest
+            IntermediateOutputPath="$(_MauiIntermediateManifest)"
+            AppxManifest="@(AppxManifest);@(_MauiAppxManifest)"
+            GeneratedFilename="Package.appxmanifest"
+            ApplicationId="$(_MauiWindowsApplicationId)"
+            ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
+            ApplicationVersion="$(ApplicationVersion)"
+            ApplicationTitle="$(ApplicationTitle)"
+            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
+            SplashScreen="@(MauiSplashScreen)" />
+
+        <!-- replace user manifest -->
+        <ItemGroup Condition="'@(AppxManifest)' != ''">
+            <AppxManifest Remove="@(AppxManifest)" />
+            <AppxManifest Include="$(_MauiIntermediateManifest)Package.appxmanifest" />
+        </ItemGroup>
+        <ItemGroup Condition="'@(_MauiAppxManifest)' != ''">
+            <_MauiAppxManifest Remove="@(_MauiAppxManifest)" />
+            <_MauiAppxManifest Include="$(_MauiIntermediateManifest)Package.appxmanifest" />
+        </ItemGroup>
+
+        <!-- Stamp file for Outputs -->
+        <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
+        <ItemGroup>
+            <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
+
+    </Target>
+
+    <!-- This is required because the "GetAssemblyAttributes" target does not have an open DependsOnTargets. -->
+    <Target Name="_GetAssemblyAttributesBeforeTarget"
+            BeforeTargets="GetAssemblyAttributes"
+            DependsOnTargets="MauiGeneratePackageAppxManifest;_MauiGetAssemblyAttributesFromAppxManifest"
+            Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
+
+    <Target Name="_MauiGetAssemblyAttributesFromAppxManifest"
+            Condition="('@(AppxManifest)@(_MauiAppxManifest)' !='')">
+
+        <PropertyGroup>
+            <_MauiAppxManifestContents>$([System.IO.File]::ReadAllText('$(_MauiIntermediateManifest)Package.appxmanifest'))</_MauiAppxManifestContents>
+        </PropertyGroup>
+
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Identity/@Name">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestIdentity" />
+        </XmlPeek>
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Identity/@Version">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestVersion" />
+        </XmlPeek>
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Properties/ns:PublisherDisplayName/text()">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestPublisher" />
+        </XmlPeek>
+        <XmlPeek
+            Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10'/&gt;"
+            XmlContent="$(_MauiAppxManifestContents)"
+            Query="/ns:Package/ns:Properties/ns:DisplayName/text()">
+            <Output TaskParameter="Result" ItemName="_MauiAppxManifestDisplayName" />
+        </XmlPeek>
+
+        <ItemGroup>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.PackageName</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestIdentity)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.PublisherName</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestPublisher)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.Name</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestDisplayName)</_Parameter2>
+            </AssemblyAttribute>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>Microsoft.Maui.ApplicationModel.AppInfo.Version</_Parameter1>
+                <_Parameter2>@(_MauiAppxManifestVersion)</_Parameter2>
+            </AssemblyAttribute>
+        </ItemGroup>
+    </Target>
+
+    <Target Name="MauiGenerateTizenManifest"
+            Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
+            BeforeTargets="$(ResizetizeBeforeTargets)"
+            AfterTargets="$(ResizetizeImages)"
+            Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);$(_MauiSplashInputsFile);$(TizenManifestFile)"
+            Outputs="$(_MauiManifestStampFile);$(_MauiIntermediateManifest)tizen-manifest.xml">
+
+        <GenerateTizenManifest
+            IntermediateOutputPath="$(_MauiIntermediateManifest)"
+            TizenManifestFile="$(TizenManifestFile)"
+            GeneratedFilename="tizen-manifest.xml"
+            ApplicationId="$(ApplicationId)"
+            ApplicationDisplayVersion="$(ApplicationDisplayVersion)"
+            ApplicationVersion="$(ApplicationVersion)"
+            ApplicationTitle="$(ApplicationTitle)"
+            AppIcon="@(MauiImage->WithMetadataValue('IsAppIcon', 'true'))"
+            SplashScreen="@(MauiSplashScreen)" />
+
+        <!-- replace user manifest -->
+        <PropertyGroup>
+          <TizenManifestFile>$(_MauiIntermediateManifest)tizen-manifest.xml</TizenManifestFile>
+        </PropertyGroup>
+
+        <!-- Stamp file for Outputs -->
+        <Touch Files="$(_MauiManifestStampFile)" AlwaysCreate="True" />
+        <ItemGroup>
+          <FileWrites Include="$(_MauiManifestStampFile)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_CleanResizetizer">
+        <RemoveDir Directories="$(_ResizetizerIntermediateOutputRoot)" Condition="Exists ('$(_ResizetizerIntermediateOutputRoot)' )" />
+    </Target>
+
+</Project>

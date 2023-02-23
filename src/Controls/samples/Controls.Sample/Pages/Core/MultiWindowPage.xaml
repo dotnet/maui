@@ -10,6 +10,11 @@
             Padding="12"
             Spacing="6">
 
+            <WebView
+                HeightRequest="300"
+                WidthRequest="300"
+                Source="https://github.com/dotnet/maui" />
+            
             <Label Text="Current Window Frame:" />
             <Label Text="{Binding Window.X, StringFormat='X = {0:0.00}'}" />
             <Label Text="{Binding Window.Y, StringFormat='Y = {0:0.00}'}" />
