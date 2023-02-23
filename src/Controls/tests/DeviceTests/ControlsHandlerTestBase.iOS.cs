@@ -80,10 +80,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		internal ControlsModalWrapper GetModalWrapper(Page modalPage)
+		internal ModalWrapper GetModalWrapper(Page modalPage)
 		{
 			var pageVC = (modalPage.Handler as IPlatformViewHandler).ViewController;
-			return (ControlsModalWrapper)pageVC.ParentViewController;
+			return (ModalWrapper)pageVC.ParentViewController;
 		}
 
 		protected bool IsBackButtonVisible(IElementHandler handler)

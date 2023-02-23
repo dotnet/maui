@@ -104,6 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (_) =>
 			{
 				finished = true;
+				return Task.CompletedTask;
 			});
 
 			Assert.True(finished);
@@ -813,6 +814,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				string title = GetToolbarTitle(handler);
 				Assert.Equal("Page Title", title);
+				return Task.CompletedTask;
 			});
 		}
 

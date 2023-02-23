@@ -99,16 +99,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
-			where THandler : class, IElementHandler
-		{
-			return CreateHandlerAndAddToWindow<THandler>(view, handler =>
-			{
-				action(handler);
-				return Task.CompletedTask;
-			});
-		}
-
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler

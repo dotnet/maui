@@ -314,6 +314,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal bool IsDestroyed { get; private set; }
+		internal bool IsCreated { get; private set; }
+
 		IFlowDirectionController FlowController => this;
 
 		public FlowDirection FlowDirection
@@ -465,6 +468,12 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Created()
 		{
+#if DEBUG
+			if (IsCreated)
+				throw new InvalidOperationException("Window was already created");
+#endif
+			IsCreated = true;
+
 			Created?.Invoke(this, EventArgs.Empty);
 			OnCreated();
 			Application?.SendStart();
@@ -493,6 +502,11 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Destroying()
 		{
+#if DEBUG
+			if (IsDestroyed)
+				throw new InvalidOperationException("Window was already destroyed");
+#endif
+			IsDestroyed = true;
 			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();

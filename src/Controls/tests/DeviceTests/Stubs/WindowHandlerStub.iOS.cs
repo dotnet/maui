@@ -114,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					platformView?.RootViewController?.PresentedViewController ??
 					vc.PresentedViewController;
 
-				if (presentedVC is ModalWrapper mw)
+				if (presentedVC is Microsoft.Maui.Controls.Platform.ModalWrapper mw)
 				{
 					await mw.PresentingViewController.DismissViewControllerAsync(false);
 				}
