@@ -75,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(weakReference);
 			Assert.False(weakReference.IsAlive, "ObservableCollection should not be alive!");
 			Assert.NotNull(logicalChildren);
-			Assert.True (logicalChildren.Count <= 3, "_logicalChildren should not grow in size!");
+			Assert.True(logicalChildren.Count <= 3, "_logicalChildren should not grow in size!");
 		}
 	}
 }
