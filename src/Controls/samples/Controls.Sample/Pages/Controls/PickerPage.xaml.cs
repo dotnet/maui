@@ -116,24 +116,22 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
+       void UpdateIndex (ref int index) {
+           index++;
+           if (index == 4)
+               index = 0;
+       }
+       
 		void OnUpdateHorizontalOptionsClicked(object sender, EventArgs e)
 		{
 			AlignmentPicker.HorizontalOptions = GetLayoutOptions(_horizontalOptionsIndex);
-
-			_horizontalOptionsIndex++;
-
-			if (_horizontalOptionsIndex == 4)
-				_horizontalOptionsIndex = 0;
+            UpdateIndex(_horizontalOptionsIndex);
 		}
 
 		void OnUpdateVerticalOptionsClicked(object sender, EventArgs e)
 		{
 			AlignmentPicker.VerticalOptions = GetLayoutOptions(_verticalOptionsIndex);
-
-			_verticalOptionsIndex++;
-
-			if (_verticalOptionsIndex == 4)
-				_verticalOptionsIndex = 0;
+			UpdateIndex(_verticalOptionsIndex);
 		}
 
 		LayoutOptions GetLayoutOptions(int index)
