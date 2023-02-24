@@ -511,7 +511,6 @@ namespace Microsoft.Maui.Controls
 
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = textColor });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.iOS)
