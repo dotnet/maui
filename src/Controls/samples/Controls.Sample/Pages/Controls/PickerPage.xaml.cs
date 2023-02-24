@@ -116,16 +116,17 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-       void UpdateIndex (ref int index) {
-           index++;
-           if (index == 4)
-               index = 0;
-       }
-       
+		void UpdateIndex(ref int index)
+		{
+			index++;
+			if (index == 4)
+				index = 0;
+		}
+
 		void OnUpdateHorizontalOptionsClicked(object sender, EventArgs e)
 		{
 			AlignmentPicker.HorizontalOptions = GetLayoutOptions(_horizontalOptionsIndex);
-            UpdateIndex(_horizontalOptionsIndex);
+			UpdateIndex(_horizontalOptionsIndex);
 		}
 
 		void OnUpdateVerticalOptionsClicked(object sender, EventArgs e)
