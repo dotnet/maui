@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			Color expected = Colors.Yellow;
 
-			var brush = new LinearGradientPaintStub(Colors.Blue, expected);
+			var brush = new SolidPaintStub(expected);
 
 			var imageButton = new ImageButtonStub
 			{
