@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 					if (addComment)
 					{
 						addComment = false;
-						services.AppendLine($"// {lifetime} Services");
+						services.AppendLine($"{Indent}// {lifetime} Services");
 					}
 
 					switch (routedPage.ViewModelType)
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 					if (addComment)
 					{
 						addComment = false;
-						services.AppendLine($"// {lifetime} Services");
+						services.AppendLine($"{Indent}// {lifetime} Services");
 					}
 
 					switch (service.RegisterFor)

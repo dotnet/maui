@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 				{
 					if (member is MethodDeclarationSyntax { Identifier.ValueText: "CreateMauiApp" })
 					{
-						MauiApp = cds;
+						MauiStartup = cds;
 						break;
 					}
 				}
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 									break;
 							}
 
-							if (argument.Expression is not null)
+							if (argument.NameColon is null && argument.NameEquals is null)
 							{
 								if (routeArgument)
 								{
