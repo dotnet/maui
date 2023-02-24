@@ -13,8 +13,7 @@
     <RunAOTCompilation>false</RunAOTCompilation>
     <!-- Physical device is recommended -->
     <RuntimeIdentifier>android-arm64</RuntimeIdentifier>
-    <!-- HACK: to workaround System.IO.FileNotFoundException: /System.Private.CoreLib.dll -->
-    <EmbedAssembliesIntoApk>false</EmbedAssembliesIntoApk>
+    <DisableTransitiveFrameworkReferenceDownloads>False</DisableTransitiveFrameworkReferenceDownloads>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
   </PropertyGroup>
   <ItemGroup>
@@ -28,7 +27,7 @@
     <Using Include="BenchmarkDotNet.Loggers" />
     <Using Include="BenchmarkDotNet.Order" />
     <Using Include="BenchmarkDotNet.Running" />
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.3" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.5" />
     <PackageReference Include="Xamarin.Android.Glide" Version="4.14.2.1" />
   </ItemGroup>
   <ItemGroup>
