@@ -16,8 +16,11 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateContent(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
-		{
-			platformRadioButton.Text = $"{radioButton.Content}";
+		{			
+			if (radioButton.GetWindow().FlowDirection == FlowDirection.RightToLeft)
+				platformRadioButton.Text = "\u200F" + $"{radioButton.Content}";
+			else
+				platformRadioButton.Text = $"{radioButton.Content}";
 		}
 
 		public static void UpdateStrokeColor(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
