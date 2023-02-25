@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Controls
 		/// or <paramref name="right"/> is less than or equal to <paramref name="left"/>.
 		/// </exception>
 		/// <remarks>If the <see cref="Grid"/> does not have enough rows/columns to encompass the specified spans, they will be added.</remarks>
+		[Obsolete("This method is obsolete. Please use AddWithSpan(this Grid, IView, int, int, int, int) instead.")]
 		public static void Add(this Grid grid, IView view, int left, int right, int top, int bottom)
 		{
 			grid.AddWithSpan(view, top, left, bottom - top, right - left);
