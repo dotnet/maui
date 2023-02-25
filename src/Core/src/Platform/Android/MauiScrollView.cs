@@ -2,6 +2,7 @@
 using Android.Animation;
 using Android.Content;
 using Android.Graphics;
+using Android.Hardware.Lights;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
@@ -194,6 +195,7 @@ namespace Microsoft.Maui.Platform
 				//if we are scrolling both ways we need to lay out our MauiHorizontalScrollView with more than the available height
 				//so its parent the NestedScrollView can scroll vertically
 				var newBottom = _isBidirectional ? Math.Max(hScrollViewHeight, scrollViewContentHeight) : hScrollViewHeight;
+				_hScrollView.Measure(MeasureSpec.MakeMeasureSpec(right - left, MeasureSpecMode.Exactly), MeasureSpec.MakeMeasureSpec(newBottom, MeasureSpecMode.Exactly));
 				_hScrollView.Layout(0, 0, right - left, (int)newBottom);
 			}
 
