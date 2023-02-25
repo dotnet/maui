@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Media
 		/// <param name="presentationSourceBounds"><inheritdoc cref="PresentationSourceBounds"  path="/summary"/></param>
 		/// <param name="types"><inheritdoc cref="Types"  path="/summary"/></param>
 		public MediaPickRequest(
-			string title = null, 
+			string title = null,
 			int selectionLimit = 1,
-			Rect  presentationSourceBounds = default,
+			Rect presentationSourceBounds = default,
 			params MediaFileType[] types)
 		{
 			Title = title;

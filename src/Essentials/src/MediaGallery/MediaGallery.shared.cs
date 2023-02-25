@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Media
 		/// Gets a value indicating whether <see cref="IMediaGallery"/> is supported on this platform.
 		/// </summary>
 		bool IsSupported { get; }
-		
+
 		/// <summary>
 		/// Gets a value indicating whether capturing media is supported on this device.
 		/// </summary>
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Media
 	public static class MediaGallery
 	{
 		static IMediaGallery? DefaultImplementation;
-		
+
 		/// <inheritdoc cref="IMediaGallery.CheckCaptureSupport(MediaFileType)" />
 		public static bool CheckCaptureSupport(MediaFileType type)
 			=> Default.CheckCaptureSupport(type);

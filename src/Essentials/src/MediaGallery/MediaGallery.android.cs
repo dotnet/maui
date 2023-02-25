@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Media
 		const string VideoType = "video/*";
 		static TaskCompletionSource<(Intent, Result)> TcsPick;
 		static TaskCompletionSource<(Intent, Result)> TcsCamera;
-		
+
 		public bool IsSupported => OperatingSystem.IsAndroidVersionAtLeast(21);
 
 		public bool CheckCaptureSupport(MediaFileType type)
@@ -133,65 +133,65 @@ namespace Microsoft.Maui.Media
 		{
 			var albumName = AppInfo.Name;
 
-            var context = Platform.AppContext;
+			var context = Platform.AppContext;
 
-            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-            var extension = Path.GetExtension(fileName).ToLower();
-            var newFileName = $"{GetNewImageName(DateTime.Now, fileNameWithoutExtension)}{extension}";
+			var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+			var extension = Path.GetExtension(fileName).ToLower();
+			var newFileName = $"{GetNewImageName(DateTime.Now, fileNameWithoutExtension)}{extension}";
 
-            using var values = new ContentValues();
+			using var values = new ContentValues();
 
-            values.Put(MediaColumns.DateAdded, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-            values.Put(MediaColumns.Title, fileNameWithoutExtension);
-            values.Put(MediaColumns.DisplayName, newFileName);
+			values.Put(MediaColumns.DateAdded, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+			values.Put(MediaColumns.Title, fileNameWithoutExtension);
+			values.Put(MediaColumns.DisplayName, newFileName);
 
-            var mimeType = MimeTypeMap.Singleton!.GetMimeTypeFromExtension(extension.Replace(".", string.Empty, StringComparison.Ordinal));
-            if (!string.IsNullOrWhiteSpace(mimeType))
-                values.Put(MediaColumns.MimeType, mimeType);
+			var mimeType = MimeTypeMap.Singleton!.GetMimeTypeFromExtension(extension.Replace(".", string.Empty, StringComparison.Ordinal));
+			if (!string.IsNullOrWhiteSpace(mimeType))
+				values.Put(MediaColumns.MimeType, mimeType);
 
-            using var externalContentUri = type == MediaFileType.Image
-                ? MediaStore.Images.Media.ExternalContentUri
-                : MediaStore.Video.Media.ExternalContentUri;
+			using var externalContentUri = type == MediaFileType.Image
+				? MediaStore.Images.Media.ExternalContentUri
+				: MediaStore.Video.Media.ExternalContentUri;
 
-            var relativePath = type == MediaFileType.Image
-                ? Environment.DirectoryPictures
-                : Environment.DirectoryMovies;
+			var relativePath = type == MediaFileType.Image
+				? Environment.DirectoryPictures
+				: Environment.DirectoryMovies;
 
-            if (OperatingSystem.IsAndroidVersionAtLeast(29))
-            {
-                values.Put(MediaColumns.RelativePath, Path.Combine(relativePath!, albumName));
-                values.Put(MediaColumns.IsPending, true);
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+			{
+				values.Put(MediaColumns.RelativePath, Path.Combine(relativePath!, albumName));
+				values.Put(MediaColumns.IsPending, true);
 
-                using var uri = context.ContentResolver!.Insert(externalContentUri!, values);
-                await using var stream = context.ContentResolver.OpenOutputStream(uri!);
-                await fileStream.CopyToAsync(stream!);
-                stream.Close();
+				using var uri = context.ContentResolver!.Insert(externalContentUri!, values);
+				await using var stream = context.ContentResolver.OpenOutputStream(uri!);
+				await fileStream.CopyToAsync(stream!);
+				stream.Close();
 
-                values.Put(MediaColumns.IsPending, false);
-                context.ContentResolver.Update(uri, values, null, null);
-            }
-            else
-            {
+				values.Put(MediaColumns.IsPending, false);
+				context.ContentResolver.Update(uri, values, null, null);
+			}
+			else
+			{
 #pragma warning disable CS0618 // Type or member is obsolete
-                using var directory = new File(Environment.GetExternalStoragePublicDirectory(relativePath), albumName);
+				using var directory = new File(Environment.GetExternalStoragePublicDirectory(relativePath), albumName);
 
-                directory.Mkdirs();
-                using var file = new File(directory, newFileName);
+				directory.Mkdirs();
+				using var file = new File(directory, newFileName);
 
-                await using var fileOutputStream = System.IO.File.Create(file.AbsolutePath);
-                await fileStream.CopyToAsync(fileOutputStream);
-                fileOutputStream.Close();
+				await using var fileOutputStream = System.IO.File.Create(file.AbsolutePath);
+				await fileStream.CopyToAsync(fileOutputStream);
+				fileOutputStream.Close();
 
-                values.Put(MediaColumns.Data, file.AbsolutePath);
-                context.ContentResolver!.Insert(externalContentUri!, values);
+				values.Put(MediaColumns.Data, file.AbsolutePath);
+				context.ContentResolver!.Insert(externalContentUri!, values);
 
-                using var mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
-                mediaScanIntent.SetData(Uri.FromFile(file));
-                context.SendBroadcast(mediaScanIntent);
+				using var mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
+				mediaScanIntent.SetData(Uri.FromFile(file));
+				context.SendBroadcast(mediaScanIntent);
 #pragma warning restore CS0618 // Type or member is obsolete
-            }
+			}
 		}
-		
+
 		static Intent GetPickerIntent(MediaPickRequest request)
 		{
 #if ANDROID33_0_OR_GREATER
@@ -239,17 +239,17 @@ namespace Microsoft.Maui.Media
 		}
 #pragma warning restore CA1416
 #endif
-		
+
 		static Intent GetCameraIntent(MediaFileType type)
 			=> new(type switch
-			{ 
-				MediaFileType.Video => MediaStore.ActionVideoCapture, 
+			{
+				MediaFileType.Video => MediaStore.ActionVideoCapture,
 				_ => MediaStore.ActionImageCapture,
 			});
 
 		static string GetNewImageName(string imgName = null)
 			=> GetNewImageName(DateTime.Now, imgName);
-		
+
 		static string GetNewImageName(DateTime val, string imgName = null)
 			=> $"{imgName ?? "IMG"}_{val:yyyyMMdd_HHmmss}";
 
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Media
 				Directory.CreateDirectory(dirPath);
 			return filePath;
 		}
-		
+
 		static IEnumerable<IMediaFile> GetFilesFromIntent(Intent intent)
 		{
 			var clipCount = intent?.ClipData?.ItemCount ?? 0;

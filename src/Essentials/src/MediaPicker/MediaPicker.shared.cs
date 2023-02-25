@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Media
 	public static class MediaPicker
 	{
 		internal const string ObsoleteMessage = "Use MediaGallery";
-		
+
 		/// <summary>
 		/// Gets a value indicating whether capturing media is supported on this device.
 		/// </summary>
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Media
 		[Obsolete(MediaPicker.ObsoleteMessage)]
 		public static IMediaPicker Default =>
 			defaultImplementation ??= new MediaPickerImplementation();
-		
+
 		[Obsolete(MediaPicker.ObsoleteMessage)]
 		internal static void SetDefault(IMediaPicker? implementation) =>
 			defaultImplementation = implementation;
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Media
 		[Obsolete(MediaPicker.ObsoleteMessage)]
 		public string? Title { get; set; }
 	}
-	
+
 	[EditorBrowsable(EditorBrowsableState.Never), Obsolete(MediaPicker.ObsoleteMessage)]
 	class MediaPickerImplementation : IMediaPicker
 	{
@@ -141,12 +141,12 @@ namespace Microsoft.Maui.Media
 		[Obsolete(MediaPicker.ObsoleteMessage)]
 		public Task<FileResult> PickPhotoAsync(MediaPickerOptions? options)
 			=> MediaGallery.PickAsync(
-				new (options?.Title, 1, default, MediaFileType.Image));
+				new(options?.Title, 1, default, MediaFileType.Image));
 
 		[Obsolete(MediaPicker.ObsoleteMessage)]
 		public Task<FileResult> PickVideoAsync(MediaPickerOptions? options)
 			=> MediaGallery.PickAsync(
-				new (options?.Title, 1, default, MediaFileType.Video));
+				new(options?.Title, 1, default, MediaFileType.Video));
 
 		[Obsolete(MediaPicker.ObsoleteMessage)]
 		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions? options)
