@@ -1198,7 +1198,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			WeakReference weakViewModel = null, weakBindable = null;
 
 			int i = 0;
-			void create ()
+			void create()
 			{
 				if (i++ < 1024)
 				{
