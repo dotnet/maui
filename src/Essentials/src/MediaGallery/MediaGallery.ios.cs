@@ -147,6 +147,11 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
+		public MultiPickingBehaviour GetMultiPickingBehaviour()
+			=> OperatingSystem.IsIOSVersionAtLeast(14)
+				? MultiPickingBehaviour.Limit
+				: MultiPickingBehaviour.AlwaysSingle;
+
 		public async Task PlatformSaveAsync(MediaFileType type, Stream fileStream, string fileName)
 		{
 			string filePath = null;

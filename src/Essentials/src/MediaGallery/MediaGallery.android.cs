@@ -112,6 +112,11 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
+		public MultiPickingBehaviour GetMultiPickingBehaviour()
+			=> ActionPickImagesIsSupported()
+				? MultiPickingBehaviour.Limit
+				: MultiPickingBehaviour.UnLimit;
+
 		public async Task PlatformSaveAsync(MediaFileType type, byte[] data, string fileName)
 		{
 			using var ms = new MemoryStream(data);
@@ -212,17 +217,21 @@ namespace Microsoft.Maui.Media
 			return intent;
 		}
 
-#if ANDROID33_0_OR_GREATER
-#pragma warning disable CA1416
 		static bool ActionPickImagesIsSupported()
 		{
+#if ANDROID33_0_OR_GREATER
+#pragma warning disable CA1416
 			if (OperatingSystem.IsAndroidVersionAtLeast(33))
 				return true;
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 				return Android.OS.Ext.SdkExtensions.GetExtensionVersion(30) >= 2;
+#pragma warning restore CA1416
+#endif
 			return false;
 		}
 
+#if ANDROID33_0_OR_GREATER
+#pragma warning disable CA1416
 		static Intent GetPickerActionPickImagesIntent(MediaPickRequest request)
 		{
 			var intent = new Intent(MediaStore.ActionPickImages);

@@ -71,6 +71,9 @@ namespace Microsoft.Maui.Media
 				return new[] { new MediaFileResult(result) };
 			}
 		}
+		
+		public MultiPickingBehaviour GetMultiPickingBehaviour()
+			=> MultiPickingBehaviour.UnLimit;
 
 		public async Task PlatformSaveAsync(MediaFileType type, Stream fileStream, string fileName)
 		{

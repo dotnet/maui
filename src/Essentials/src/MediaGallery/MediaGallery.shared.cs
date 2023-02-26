@@ -47,6 +47,12 @@ namespace Microsoft.Maui.Media
 		Task<MediaFilesResult> PickAsync(MediaPickRequest request, CancellationToken token = default);
 
 		/// <summary>
+		/// <inheritdoc cref="MultiPickingBehaviour" path="/summary"/>
+		/// </summary>
+		/// <returns></returns>
+		MultiPickingBehaviour GetMultiPickingBehaviour();
+
+		/// <summary>
 		/// Saves a media file with metadata
 		/// </summary>
 		/// <param name="type">Type of media file to save.</param>
@@ -55,7 +61,9 @@ namespace Microsoft.Maui.Media
 		/// <returns>A task representing the asynchronous save operation.</returns>
 		Task SaveAsync(MediaFileType type, Stream fileStream, string fileName);
 
-		/// <summary><inheritdoc cref="SaveAsync(MediaFileType, Stream, string)" path="/summary"/></summary>
+		/// <summary>
+		/// <inheritdoc cref="SaveAsync(MediaFileType, Stream, string)" path="/summary"/>
+		/// </summary>
 		/// <param name="type"><inheritdoc cref="SaveAsync(MediaFileType, Stream, string)" path="/param/type"/></param>
 		/// <param name="data">A byte array to save to the file.</param>
 		/// <param name="fileName"><inheritdoc cref="SaveAsync(MediaFileType, Stream, string)" path="/param/fileName"/></param>
@@ -91,6 +99,10 @@ namespace Microsoft.Maui.Media
 		/// <inheritdoc cref="IMediaGallery.PickAsync(MediaPickRequest, CancellationToken)" />
 		public static Task<MediaFilesResult> PickAsync(MediaPickRequest request, CancellationToken token = default)
 			=> Default.PickAsync(request, token);
+
+		/// <inheritdoc cref="IMediaGallery.GetMultiPickingBehaviour()" />
+		public static MultiPickingBehaviour GetMultiPickingBehaviour()
+			=> Default.GetMultiPickingBehaviour();
 
 		/// <inheritdoc cref="IMediaGallery.SaveAsync(MediaFileType, Stream, string)" />
 		public static Task SaveAsync(MediaFileType type, Stream fileStream, string fileName)

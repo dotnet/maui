@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Media
 
 		public Task<IEnumerable<MediaFileResult>> PlatformPickAsync(MediaPickRequest request, CancellationToken token = default)
 			=> throw new NotImplementedInReferenceAssemblyException();
+		
+		public MultiPickingBehaviour GetMultiPickingBehaviour()
+			=> throw new NotImplementedInReferenceAssemblyException();
 
 		public Task PlatformSaveAsync(MediaFileType type, Stream fileStream, string fileName)
 			=> throw new NotImplementedInReferenceAssemblyException();
