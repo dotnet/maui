@@ -46,7 +46,8 @@ namespace Microsoft.Maui.Media
 			});
 
 			var res = await tcs.Task
-			return res == null ? null : new [] { new MediaFileResult(res) };;
+			return res == null ? null : new[] { new MediaFileResult(res) };
+			;
 		}
 
 		public Task<IEnumerable<MediaFileResult>> PlatformPickAsync(MediaPickRequest request, CancellationToken token = default)
@@ -57,16 +58,16 @@ namespace Microsoft.Maui.Media
 				defaultTypes.AddRange(FilePickerFileType.Images.Value);
 			if (request.Types.Contains(MediaFileType.Video))
 				defaultTypes.AddRange(FilePickerFileType.Videos.Value);
-			
+
 			var res = await FilePicker.PickAsync(new PickOptions
 			{
 				PickerTitle = options?.Title,
 				FileTypes = new FilePickerFileType(
-					new Dictionary<DevicePlatform, IEnumerable<string>>() {DevicePlatform.Tizen, defaultTypes})
+					new Dictionary<DevicePlatform, IEnumerable<string>>() { DevicePlatform.Tizen, defaultTypes })
 			});
-			return res == null ? null : new [] { new MediaFileResult(res) };
+			return res == null ? null : new[] { new MediaFileResult(res) };
 		}
-		
+
 		public MultiPickingBehaviour GetMultiPickingBehaviour()
 			=> throw new NotImplementedInReferenceAssemblyException();
 
@@ -78,6 +79,6 @@ namespace Microsoft.Maui.Media
 
 		public Task PlatformSaveAsync(MediaFileType type, string filePath)
 			=> throw new NotImplementedInReferenceAssemblyException();
-		
+
 	}
 }

@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Storage
 	{
 		internal MediaFileResult(FileResult file) : base(file)
 		{
-			
+
 		}
-		
+
 		void PlatformDispose()
 		{
 
