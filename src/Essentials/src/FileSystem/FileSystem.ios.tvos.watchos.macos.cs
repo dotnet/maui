@@ -3,9 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using UTTypes = UniformTypeIdentifiers.UTTypes;
-using UTType = UniformTypeIdentifiers.UTType;
 using OldUTType = MobileCoreServices.UTType;
+using UTType = UniformTypeIdentifiers.UTType;
+using UTTypes = UniformTypeIdentifiers.UTTypes;
 
 namespace Microsoft.Maui.Storage
 {
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Storage
 		void PlatformInit(FileBase file)
 		{
 		}
-		
+
 #pragma warning disable CA1422
 		internal static string GetExtension(string identifier)
 			=> UTTypeISSupported()
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Storage
 		internal virtual Task<Stream> PlatformOpenReadAsync() =>
 			Task.FromResult((Stream)File.OpenRead(FullPath));
 	}
-	
+
 	public partial class MediaFileResult
 	{
 		/// <summary></summary>

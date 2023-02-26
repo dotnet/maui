@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Storage
 				ex = $".{ex}";
 			return (string.IsNullOrWhiteSpace(name) ? "mediaFile" : name) + ex;
 		}
-		
+
 		/// <inheritdoc cref="IDisposable.Dispose()"/>
 		public void Dispose()
 			=> PlatformDispose();

@@ -326,8 +326,8 @@ namespace Microsoft.Maui.ApplicationModel
 			/// <inheritdoc/>
 			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
 					 () => OperatingSystem.IsIOSVersionAtLeast(14)
-					 ? new [] { "NSPhotoLibraryAddUsageDescription" }
-					 : new [] { "NSPhotoLibraryUsageDescription" };
+					 ? new[] { "NSPhotoLibraryAddUsageDescription" }
+					 : new[] { "NSPhotoLibraryUsageDescription" };
 
 			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()

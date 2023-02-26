@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Storage
 			return Task.FromResult<Stream>(stream);
 		}
 	}
-	
+
 	public partial class MediaFileResult
 	{
 		readonly Android.Net.Uri _uri;
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Storage
 
 		void PlatformDispose()
 		{
-			if(!string.IsNullOrWhiteSpace(_tempFilePath) && File.Exists(_tempFilePath))
+			if (!string.IsNullOrWhiteSpace(_tempFilePath) && File.Exists(_tempFilePath))
 				File.Delete(_tempFilePath);
 
 			_uri?.Dispose();

@@ -6,13 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
+using MobileCoreServices;
 using Photos;
 using PhotosUI;
 using UIKit;
-using MobileCoreServices;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Media
 {
@@ -315,7 +315,7 @@ namespace Microsoft.Maui.Media
 			{
 #pragma warning disable CA1422
 				if (PHPhotoLibrary.AuthorizationStatus != PHAuthorizationStatus.Authorized
-				    || !info.ContainsKey(UIImagePickerController.PHAsset))
+					|| !info.ContainsKey(UIImagePickerController.PHAsset))
 					return null;
 
 				using var asset = info.ValueForKey(UIImagePickerController.PHAsset) as PHAsset;

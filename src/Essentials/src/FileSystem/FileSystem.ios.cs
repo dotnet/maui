@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Foundation;
 using ImageIO;
 using UIKit;
-using UTTypes = UniformTypeIdentifiers.UTTypes;
 using OldUTType = MobileCoreServices.UTType;
+using UTTypes = UniformTypeIdentifiers.UTTypes;
 
 namespace Microsoft.Maui.Storage
 {
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Storage
 		{
 			if (!(identifiers?.Length > 0))
 				return null;
-		
+
 			if (identifiers.Any(i => i.StartsWith(UTTypes.LivePhoto.Identifier)) && identifiers.Contains(UTTypes.Jpeg.Identifier))
 				return identifiers.FirstOrDefault(i => i == UTTypes.Jpeg.Identifier);
 			if (identifiers.Contains(UTTypes.QuickTimeMovie.Identifier))

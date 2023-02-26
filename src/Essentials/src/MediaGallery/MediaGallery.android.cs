@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Media
 				CancelTaskIfRequested(token, TcsCamera, false);
 				var result = await TcsCamera.Task.ConfigureAwait(false);
 				if (result.Item2 == Result.Ok)
-					return new []{ new MediaFileResult(fileName, outputUri, tempFilePath) } ;
+					return new[] { new MediaFileResult(fileName, outputUri, tempFilePath) };
 
 				outputUri?.Dispose();
 				return null;
