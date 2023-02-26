@@ -60,4 +60,12 @@ namespace Microsoft.Maui.Storage
 			return Task.FromResult<Stream>(stream).Result;
 		}
 	}
+
+	public partial class MediaFileResult
+	{
+		void PlatformDispose()
+		{
+
+		}
+	}
 }

@@ -105,4 +105,17 @@ namespace Microsoft.Maui.Storage
 		{
 		}
 	}
+
+	public partial class MediaFileResult
+	{
+		internal MediaFileResult(IStorageFile file)
+			: base(file)
+		{
+		}
+
+		void PlatformDispose()
+		{
+
+		}
+	}
 }
