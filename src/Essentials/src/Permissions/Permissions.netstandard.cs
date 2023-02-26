@@ -132,5 +132,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class Vibrate : BasePlatformPermission
 		{
 		}
+
+		public partial class SaveMediaPermission : BasePlatformPermission
+		{
+		}
 	}
 }

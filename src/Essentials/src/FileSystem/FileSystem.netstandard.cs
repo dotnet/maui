@@ -33,4 +33,10 @@ namespace Microsoft.Maui.Storage
 		void PlatformInit(FileBase file)
 			=> throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
+	
+	public partial class MediaFileResult
+	{
+		/// <summary></summary>
+		protected internal virtual void PlatformDispose() { }
+	}
 }

@@ -1,7 +1,9 @@
 #nullable enable
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Media
@@ -29,7 +31,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="type">Media file type use for capture</param>
 		/// <param name="token">A token that can be used for cancelling the operation.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo.</returns>
-		Task<FileResult> CaptureAsync(MediaFileType type, CancellationToken token = default);
+		Task<MediaFilesResult> CaptureAsync(MediaFileType type, CancellationToken token = default);
 
 		/// <summary>
 		/// Opens media files Picker
@@ -37,12 +39,12 @@ namespace Microsoft.Maui.Media
 		/// <param name="selectionLimit"><inheritdoc cref="MediaPickRequest.SelectionLimit" path="/summary"/></param>
 		/// <param name="types"><inheritdoc cref="MediaPickRequest.Types" path="/summary"/></param>
 		/// <returns>Media files selected by a user.</returns>
-		Task<FileResult> PickAsync(int selectionLimit = 1, params MediaFileType[] types);
+		Task<MediaFilesResult> PickAsync(int selectionLimit = 1, params MediaFileType[] types);
 
 		/// <param name="request">Media file request to pick.</param>
 		/// <param name="token">A token that can be used for cancelling the operation.</param>
 		/// <inheritdoc cref = "PickAsync(int, MediaFileType[])" path="//*[not(self::param)]"/>
-		Task<FileResult> PickAsync(MediaPickRequest request, CancellationToken token = default);
+		Task<MediaFilesResult> PickAsync(MediaPickRequest request, CancellationToken token = default);
 
 		/// <summary>
 		/// Saves a media file with metadata
@@ -79,15 +81,15 @@ namespace Microsoft.Maui.Media
 			=> Default.CheckCaptureSupport(type);
 
 		/// <inheritdoc cref="IMediaGallery.CaptureAsync(MediaFileType, CancellationToken)" />
-		public static Task<FileResult> CaptureAsync(MediaFileType type, CancellationToken token = default)
+		public static Task<MediaFilesResult> CaptureAsync(MediaFileType type, CancellationToken token = default)
 			=> Default.CaptureAsync(type, token);
 
 		/// <inheritdoc cref="IMediaGallery.PickAsync(int, MediaFileType[])" />
-		public static Task<FileResult> PickAsync(int selectionLimit = 1, params MediaFileType[] types)
+		public static Task<MediaFilesResult> PickAsync(int selectionLimit = 1, params MediaFileType[] types)
 			=> Default.PickAsync(selectionLimit, types);
 
 		/// <inheritdoc cref="IMediaGallery.PickAsync(MediaPickRequest, CancellationToken)" />
-		public static Task<FileResult> PickAsync(MediaPickRequest request, CancellationToken token = default)
+		public static Task<MediaFilesResult> PickAsync(MediaPickRequest request, CancellationToken token = default)
 			=> Default.PickAsync(request, token);
 
 		/// <inheritdoc cref="IMediaGallery.SaveAsync(MediaFileType, Stream, string)" />
@@ -110,5 +112,124 @@ namespace Microsoft.Maui.Media
 
 		internal static void SetDefault(IMediaGallery? implementation) =>
 			DefaultImplementation = implementation;
+	}
+
+
+	partial class MediaGalleryImplementation : IMediaGallery
+	{
+		const string cacheDir = "MediaGalleryCacheDir";
+
+		public async Task<MediaFilesResult> CaptureAsync(MediaFileType type, CancellationToken token = default)
+		{
+			await CheckPossibilityCamera(type);
+			return new MediaFilesResult(await PlatformCaptureAsync(type, token));
+		}
+
+		public Task<MediaFilesResult> PickAsync(int selectionLimit = 1, params MediaFileType[] types)
+			=> PickAsync(new MediaPickRequest(null, selectionLimit, default, types), default);
+
+		public async Task<MediaFilesResult> PickAsync(MediaPickRequest? request, CancellationToken token = default)
+		{
+			CheckSupport();
+
+			if (request == null)
+				throw new ArgumentNullException(nameof(request));
+
+			return new MediaFilesResult(await PlatformPickAsync(request, token).ConfigureAwait(false));
+		}
+
+		public async Task SaveAsync(MediaFileType type, Stream fileStream, string fileName)
+		{
+			await CheckPossibilitySave();
+			if (fileStream == null)
+				throw new ArgumentNullException(nameof(fileStream));
+			CheckFileName(fileName);
+
+			await PlatformSaveAsync(type, fileStream, fileName).ConfigureAwait(false);
+		}
+
+		public async Task SaveAsync(MediaFileType type, byte[] data, string fileName)
+		{
+			await CheckPossibilitySave();
+			if (!(data?.Length > 0))
+				throw new ArgumentNullException(nameof(data));
+			CheckFileName(fileName);
+
+			await PlatformSaveAsync(type, data, fileName).ConfigureAwait(false);
+		}
+
+		public async Task SaveAsync(MediaFileType type, string filePath)
+		{
+			await CheckPossibilitySave();
+			if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+				throw new ArgumentException(nameof(filePath));
+
+			await PlatformSaveAsync(type, filePath).ConfigureAwait(false);
+		}
+
+		async Task CheckPossibilitySave()
+		{
+			CheckSupport();
+			var status = await Permissions.CheckStatusAsync<Permissions.SaveMediaPermission>();
+
+			if (status != PermissionStatus.Granted)
+				throw new PermissionException($"{nameof(Permissions.Camera)} permission was not granted: {status}");
+		}
+
+		async Task CheckPossibilityCamera(MediaFileType type)
+		{
+			CheckSupport();
+			if (CheckCaptureSupport(type))
+				throw new FeatureNotSupportedException();
+
+
+			var status = await Permissions.CheckStatusAsync<Permissions.Camera>();
+
+			if (status != PermissionStatus.Granted)
+				throw new PermissionException($"{nameof(Permissions.Camera)} permission was not granted: {status}");
+		}
+
+		void CheckSupport()
+		{
+			if (!IsSupported)
+				throw new NotImplementedInReferenceAssemblyException();
+		}
+
+		static void CheckFileName(string fileName)
+		{
+			if (string.IsNullOrWhiteSpace(fileName))
+				throw new ArgumentNullException(nameof(fileName));
+		}
+
+		static string GetNewImageName(string? imgName = null)
+			=> GetNewImageName(DateTime.Now, imgName);
+
+		static string GetNewImageName(DateTime val, string? imgName = null)
+			=> $"{imgName ?? "IMG"}_{val:yyyyMMdd_HHmmss}";
+
+		static string GetMimeType(MediaFileType type)
+			=> type switch
+			{
+				MediaFileType.Image => FileMimeTypes.ImageAll,
+				MediaFileType.Video => FileMimeTypes.VideoAll,
+				_ => string.Empty,
+			};
+
+		static void DeleteFile(string filePath)
+		{
+			if (!string.IsNullOrWhiteSpace(filePath) && File.Exists(filePath))
+				File.Delete(filePath);
+		}
+
+		static string GetFilePath(string fileName)
+		{
+			fileName = fileName.Trim();
+			var dirPath = Path.Combine(FileSystem.CacheDirectory, cacheDir);
+			var filePath = Path.Combine(dirPath, fileName);
+
+			if (!Directory.Exists(dirPath))
+				Directory.CreateDirectory(dirPath);
+			return filePath;
+		}
 	}
 }

@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Media
 			return PlatformUtils.IsIntentSupported(intent);
 		}
 
-		public async Task<FileResult> CaptureAsync(MediaFileType type, CancellationToken token = default)
+		public async Task<IEnumerable<MediaFileResult>> PlatformCaptureAsync(MediaFileType type, CancellationToken token = default)
 		{
 			token.ThrowIfCancellationRequested();
 			Intent intent = null;
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Media
 				CancelTaskIfRequested(token, TcsCamera, false);
 				var result = await TcsCamera.Task.ConfigureAwait(false);
 				if (result.Item2 == Result.Ok)
-					return new MediaFile(fileName, outputUri, tempFilePath);
+					return new []{ new MediaFileResult(fileName, outputUri, tempFilePath) } ;
 
 				outputUri?.Dispose();
 				return null;
@@ -83,10 +83,7 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		public Task<FileResult> PickAsync(int selectionLimit = 1, params MediaFileType[] types)
-			=> PickAsync(new MediaPickRequest(null, selectionLimit, default, types), default);
-
-		public async Task<FileResult> PickAsync(MediaPickRequest request, CancellationToken token = default)
+		public async Task<IEnumerable<MediaFileResult>> PlatformPickAsync(MediaPickRequest request, CancellationToken token = default)
 		{
 			token.ThrowIfCancellationRequested();
 			Intent intent = null;
@@ -115,19 +112,19 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		public async Task SaveAsync(MediaFileType type, byte[] data, string fileName)
+		public async Task PlatformSaveAsync(MediaFileType type, byte[] data, string fileName)
 		{
 			using var ms = new MemoryStream(data);
 			await SaveAsync(type, ms, fileName).ConfigureAwait(false);
 		}
 
-		public async Task SaveAsync(MediaFileType type, string filePath)
+		public async Task PlatformSaveAsync(MediaFileType type, string filePath)
 		{
 			await using var fileStream = System.IO.File.OpenRead(filePath);
 			await SaveAsync(type, fileStream, Path.GetFileName(filePath)).ConfigureAwait(false);
 		}
 
-		public async Task SaveAsync(MediaFileType type, Stream fileStream, string fileName)
+		public async Task PlatformSaveAsync(MediaFileType type, Stream fileStream, string fileName)
 		{
 			var albumName = AppInfo.Name;
 
@@ -245,20 +242,6 @@ namespace Microsoft.Maui.Media
 				_ => MediaStore.ActionImageCapture,
 			});
 
-		static string GetNewImageName(string imgName = null)
-			=> GetNewImageName(DateTime.Now, imgName);
-
-		static string GetNewImageName(DateTime val, string imgName = null)
-			=> $"{imgName ?? "IMG"}_{val:yyyyMMdd_HHmmss}";
-
-		static string GetMimeType(MediaFileType type)
-			=> type switch
-			{
-				MediaFileType.Image => FileMimeTypes.ImageAll,
-				MediaFileType.Video => FileMimeTypes.VideoAll,
-				_ => string.Empty,
-			};
-
 		static void CancelTaskIfRequested(CancellationToken token, TaskCompletionSource<(Intent, Result)> tcs, bool needThrow = true)
 		{
 			if (!token.IsCancellationRequested)
@@ -282,18 +265,7 @@ namespace Microsoft.Maui.Media
 			Platform.CurrentActivity?.StartActivityForResult(intent, requestCode);
 		}
 
-		static string GetFilePath(string fileName)
-		{
-			fileName = fileName.Trim();
-			var dirPath = Path.Combine(FileSystem.CacheDirectory, cacheDir);
-			var filePath = Path.Combine(dirPath, fileName);
-
-			if (!Directory.Exists(dirPath))
-				Directory.CreateDirectory(dirPath);
-			return filePath;
-		}
-
-		static IEnumerable<IMediaFile> GetFilesFromIntent(Intent intent)
+		static IEnumerable<MediaFileResult> GetFilesFromIntent(Intent intent)
 		{
 			var clipCount = intent?.ClipData?.ItemCount ?? 0;
 			var data = intent?.Data;
@@ -316,12 +288,12 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		static IMediaFile GetFileResult(Uri uri)
+		static MediaFileResult GetFileResult(Uri uri)
 		{
 			var name = QueryContentResolverColumn(uri, MediaColumns.DisplayName);
 			return string.IsNullOrWhiteSpace(name)
 				? null
-				: new MediaFile(name, uri);
+				: new MediaFileResult(name, uri);
 		}
 
 		static string QueryContentResolverColumn(Uri contentUri, string columnName)

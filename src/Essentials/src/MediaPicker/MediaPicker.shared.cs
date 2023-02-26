@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
 
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo.</returns>
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		Task<FileResult> PickPhotoAsync(MediaPickerOptions? options = null);
+		Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the camera to take a photo.
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo.</returns>
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		Task<FileResult> CapturePhotoAsync(MediaPickerOptions? options = null);
+		Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the media browser to select a video.
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked video.</returns>
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		Task<FileResult> PickVideoAsync(MediaPickerOptions? options = null);
+		Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the camera to take a video.
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured video.</returns>
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		Task<FileResult> CaptureVideoAsync(MediaPickerOptions? options = null);
+		Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null);
 	}
 
 	/// <summary>
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo.</returns>
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		public static Task<FileResult> PickPhotoAsync(MediaPickerOptions? options = null) =>
+		public static Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null) =>
 			Default.PickPhotoAsync(options);
 
 		/// <summary>
@@ -81,7 +82,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo.</returns>
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		public static Task<FileResult> CapturePhotoAsync(MediaPickerOptions? options = null) =>
+		public static Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null) =>
 			Default.CapturePhotoAsync(options);
 
 		/// <summary>
@@ -90,7 +91,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked video.</returns>
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		public static Task<FileResult> PickVideoAsync(MediaPickerOptions? options = null) =>
+		public static Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null) =>
 			Default.PickVideoAsync(options);
 
 		/// <summary>
@@ -99,7 +100,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured video.</returns>
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		public static Task<FileResult> CaptureVideoAsync(MediaPickerOptions? options = null) =>
+		public static Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null) =>
 			Default.CaptureVideoAsync(options);
 
 		static IMediaPicker? defaultImplementation;
@@ -139,21 +140,33 @@ namespace Microsoft.Maui.Media
 				&& MediaGallery.CheckCaptureSupport(MediaFileType.Video);
 
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		public Task<FileResult> PickPhotoAsync(MediaPickerOptions? options)
-			=> MediaGallery.PickAsync(
+		public async Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options)
+		{
+			var res = await MediaGallery.PickAsync(
 				new(options?.Title, 1, default, MediaFileType.Image));
+			return res?.Files?.FirstOrDefault();
+		}
 
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		public Task<FileResult> PickVideoAsync(MediaPickerOptions? options)
-			=> MediaGallery.PickAsync(
+		public async Task<FileResult?> PickVideoAsync(MediaPickerOptions? options)
+		{
+			var res = await MediaGallery.PickAsync(
 				new(options?.Title, 1, default, MediaFileType.Video));
+			return res?.Files?.FirstOrDefault();
+		}
 
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions? options)
-			=> MediaGallery.CaptureAsync(MediaFileType.Image);
+		public async Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options)
+		{
+			var res = await MediaGallery.CaptureAsync(MediaFileType.Image);
+			return res?.Files?.FirstOrDefault();
+		}
 
 		[Obsolete(MediaPicker.ObsoleteMessage)]
-		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions? options)
-			=> MediaGallery.CaptureAsync(MediaFileType.Video);
+		public async Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options)
+		{
+			var res = await MediaGallery.CaptureAsync(MediaFileType.Video);
+			return res?.Files?.FirstOrDefault();
+		}
 	}
 }

@@ -8,6 +8,7 @@ using Microsoft.Maui.Storage;
 
 namespace Samples.ViewModel
 {
+#pragma warning disable CS0618
 	public class MediaPickerViewModel : BaseViewModel
 	{
 		string photoPath;
@@ -173,4 +174,5 @@ namespace Samples.ViewModel
 			base.OnDisappearing();
 		}
 	}
+#pragma warning restore CS0618
 }

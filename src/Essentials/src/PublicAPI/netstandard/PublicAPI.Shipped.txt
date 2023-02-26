@@ -711,11 +711,7 @@ Microsoft.Maui.Devices.Sensors.SensorSpeed.UI = 1 -> Microsoft.Maui.Devices.Sens
 Microsoft.Maui.Devices.Vibration
 Microsoft.Maui.Devices.VibrationExtensions
 Microsoft.Maui.Media.IMediaPicker
-Microsoft.Maui.Media.IMediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
-Microsoft.Maui.Media.IMediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
 Microsoft.Maui.Media.IMediaPicker.IsCaptureSupported.get -> bool
-Microsoft.Maui.Media.IMediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
-Microsoft.Maui.Media.IMediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
 Microsoft.Maui.Media.IPlatformScreenshot
 Microsoft.Maui.Media.IScreenshot
 Microsoft.Maui.Media.IScreenshot.CaptureAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
@@ -777,7 +773,6 @@ Microsoft.Maui.Storage.FileBase.ContentType.set -> void
 Microsoft.Maui.Storage.FileBase.FileBase(Microsoft.Maui.Storage.FileBase! file) -> void
 Microsoft.Maui.Storage.FileBase.FileName.get -> string!
 Microsoft.Maui.Storage.FileBase.FileName.set -> void
-Microsoft.Maui.Storage.FileBase.FullPath.get -> string!
 Microsoft.Maui.Storage.FileBase.OpenReadAsync() -> System.Threading.Tasks.Task<System.IO.Stream!>!
 Microsoft.Maui.Storage.FilePicker
 Microsoft.Maui.Storage.FilePickerFileType
@@ -1085,12 +1080,6 @@ static Microsoft.Maui.Devices.Vibration.Vibrate() -> void
 static Microsoft.Maui.Devices.Vibration.Vibrate(double duration) -> void
 static Microsoft.Maui.Devices.Vibration.Vibrate(System.TimeSpan duration) -> void
 static Microsoft.Maui.Devices.VibrationExtensions.Vibrate(this Microsoft.Maui.Devices.IVibration! vibration, double duration) -> void
-static Microsoft.Maui.Media.MediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
-static Microsoft.Maui.Media.MediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
-static Microsoft.Maui.Media.MediaPicker.Default.get -> Microsoft.Maui.Media.IMediaPicker!
-static Microsoft.Maui.Media.MediaPicker.IsCaptureSupported.get -> bool
-static Microsoft.Maui.Media.MediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
-static Microsoft.Maui.Media.MediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
 static Microsoft.Maui.Media.Screenshot.CaptureAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
 static Microsoft.Maui.Media.Screenshot.Default.get -> Microsoft.Maui.Media.IScreenshot!
 static Microsoft.Maui.Media.Screenshot.IsCaptureSupported.get -> bool

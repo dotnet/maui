@@ -487,5 +487,13 @@ namespace Microsoft.Maui.ApplicationModel
 			public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
 				new (string, bool)[] { (Manifest.Permission.Vibrate, false) };
 		}
+
+		public partial class SaveMediaPermission : BasePlatformPermission
+		{
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+			=> (int)Build.VERSION.SdkInt >= 29
+				? Array.Empty<(string, bool)>()
+				: new (string, bool)[] { (Manifest.Permission.WriteExternalStorage, true) };
+		}
 	}
 }

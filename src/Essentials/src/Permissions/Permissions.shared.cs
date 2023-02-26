@@ -293,5 +293,12 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class Vibrate
 		{
 		}
+
+		/// <summary>
+		/// Permission "NSPhotoLibraryAddUsageDescription" for iOS and "WRITE_EXTERNAL_STORAGE" for Android above 10
+		/// </summary>
+		public partial class SaveMediaPermission
+		{
+		}
 	}
 }

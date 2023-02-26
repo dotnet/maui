@@ -1,7 +1,11 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
+using UTTypes = UniformTypeIdentifiers.UTTypes;
+using UTType = UniformTypeIdentifiers.UTType;
+using OldUTType = MobileCoreServices.UTType;
 
 namespace Microsoft.Maui.Storage
 {
@@ -77,8 +81,34 @@ namespace Microsoft.Maui.Storage
 		void PlatformInit(FileBase file)
 		{
 		}
+		
+#pragma warning disable CA1422
+		internal static string GetExtension(string identifier)
+			=> UTTypeISSupported()
+				? UTType.CreateFromIdentifier(identifier)!.PreferredFilenameExtension
+				: OldUTType.CopyAllTags(identifier, OldUTType.TagClassFilenameExtension)?.FirstOrDefault();
+
+		internal static string GetMIMEType(string identifier)
+			=> UTTypeISSupported()
+				? UTType.CreateFromIdentifier(identifier)!.PreferredMimeType
+				: OldUTType.CopyAllTags(identifier, OldUTType.TagClassMIMEType)?.FirstOrDefault();
+#pragma warning restore CA1422
+
+		static bool UTTypeISSupported()
+			=> OperatingSystem.IsIOSVersionAtLeast(14)
+				|| OperatingSystem.IsMacOSVersionAtLeast(11)
+				|| OperatingSystem.IsMacCatalystVersionAtLeast(14)
+				|| OperatingSystem.IsWatchOSVersionAtLeast(14)
+				|| OperatingSystem.IsTvOSVersionAtLeast(14)
+				|| OperatingSystem.IsWatchOSVersionAtLeast(7);
 
 		internal virtual Task<Stream> PlatformOpenReadAsync() =>
 			Task.FromResult((Stream)File.OpenRead(FullPath));
+	}
+	
+	public partial class MediaFileResult
+	{
+		/// <summary></summary>
+		protected internal virtual void PlatformDispose() { }
 	}
 }

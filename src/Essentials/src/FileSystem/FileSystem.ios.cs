@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using Photos;
+using ImageIO;
 using UIKit;
+using UTTypes = UniformTypeIdentifiers.UTTypes;
+using OldUTType = MobileCoreServices.UTType;
 
 namespace Microsoft.Maui.Storage
 {
@@ -158,68 +160,134 @@ namespace Microsoft.Maui.Storage
 		}
 	}
 
-	class UIDocumentFileResult : FileResult
+	class UIDocumentFileResult : MediaFileResult
 	{
-		internal UIDocumentFileResult(NSUrl url)
-			: base()
+		UIDocument document;
+		NSUrl assetUrl;
+
+		internal UIDocumentFileResult(NSUrl assetUrl, string fileName)
 		{
-			var doc = new UIDocument(url);
-			FullPath = doc.FileUrl?.Path;
-			FileName = doc.LocalizedName ?? Path.GetFileName(FullPath);
+			this.assetUrl = assetUrl;
+			document = new UIDocument(assetUrl);
+			Extension = document.FileUrl.PathExtension!;
+			ContentType = GetMIMEType(document.FileType);
+			NameWithoutExtension = !string.IsNullOrWhiteSpace(fileName)
+				? Path.GetFileNameWithoutExtension(fileName)
+				: null;
+			Type = GetFileType(ContentType);
+			FileName = GetFileName(NameWithoutExtension, Extension);
 		}
 
 		internal override Task<Stream> PlatformOpenReadAsync()
-		{
-			Stream fileStream = File.OpenRead(FullPath);
+			=> Task.FromResult<Stream>(File.OpenRead(document.FileUrl.Path!));
 
-			return Task.FromResult(fileStream);
+		protected internal override void PlatformDispose()
+		{
+			document?.Dispose();
+			document = null;
+			assetUrl?.Dispose();
+			assetUrl = null;
+			base.PlatformDispose();
 		}
 	}
 
-	class UIImageFileResult : FileResult
+	class UIImageFileResult : MediaFileResult
 	{
-		readonly UIImage uiImage;
-		NSData data;
+		UIImage img;
+		NSDictionary metadata;
+		NSMutableData imgWithMetadata;
 
-		internal UIImageFileResult(UIImage image)
-			: base()
+		internal UIImageFileResult(UIImage img, NSDictionary metadata, string name)
 		{
-			uiImage = image;
-
-			FullPath = Guid.NewGuid().ToString() + FileExtensions.Png;
-			FileName = FullPath;
+			this.img = img;
+			this.metadata = metadata;
+			NameWithoutExtension = name;
+#pragma warning disable CA1422
+			ContentType = GetMIMEType(OldUTType.JPEG);
+			Extension = GetExtension(OldUTType.JPEG);
+#pragma warning restore CA1422
+			Type = GetFileType(ContentType);
+			FileName = GetFileName(NameWithoutExtension, Extension);
 		}
 
 		internal override Task<Stream> PlatformOpenReadAsync()
 		{
-			data ??= uiImage.AsPNG();
+			imgWithMetadata ??= GetImageWithMeta();
+			return Task.FromResult(imgWithMetadata?.AsStream());
+		}
 
-			return Task.FromResult(data.AsStream());
+		public NSMutableData GetImageWithMeta()
+		{
+			if (img == null || metadata == null)
+				return null;
+
+			using var source = CGImageSource.FromData(img.AsJPEG());
+			var destData = new NSMutableData();
+			using var destination = CGImageDestination.Create(destData, source.TypeIdentifier, 1, null);
+			destination.AddImage(source, 0, metadata);
+			destination.Close();
+			DisposeSources();
+			return destData;
+		}
+
+		protected internal override void PlatformDispose()
+		{
+			imgWithMetadata?.Dispose();
+			imgWithMetadata = null;
+			DisposeSources();
+			base.PlatformDispose();
+		}
+
+		void DisposeSources()
+		{
+			img?.Dispose();
+			img = null;
+			metadata?.Dispose();
+			metadata = null;
 		}
 	}
 
-	class PHAssetFileResult : FileResult
+	class PHPickerFileResult : MediaFileResult
 	{
-		readonly PHAsset phAsset;
+		readonly string identifier;
+		NSItemProvider provider;
 
-		internal PHAssetFileResult(NSUrl url, PHAsset asset, string originalFilename)
-			: base()
+		internal PHPickerFileResult(NSItemProvider provider)
 		{
-			phAsset = asset;
+			this.provider = provider;
+			NameWithoutExtension = provider?.SuggestedName;
 
-			FullPath = url?.AbsoluteString;
-			FileName = originalFilename;
+			identifier = GetIdentifier(provider?.RegisteredTypeIdentifiers);
+
+			if (string.IsNullOrWhiteSpace(identifier))
+				return;
+
+			Extension = GetExtension(identifier);
+			ContentType = GetMIMEType(identifier);
+			Type = GetFileType(ContentType);
+			FileName = GetFileName(NameWithoutExtension, Extension);
 		}
 
-		[System.Runtime.Versioning.UnsupportedOSPlatform("ios13.0")]
-		internal override Task<Stream> PlatformOpenReadAsync()
+		internal override async Task<Stream> PlatformOpenReadAsync()
+			=> (await provider?.LoadDataRepresentationAsync(identifier))?.AsStream();
+
+		protected internal override void PlatformDispose()
 		{
-			var tcsStream = new TaskCompletionSource<Stream>();
+			provider?.Dispose();
+			provider = null;
+			base.PlatformDispose();
+		}
 
-			PHImageManager.DefaultManager.RequestImageData(phAsset, null, new PHImageDataHandler((data, str, orientation, dict) =>
-				tcsStream.TrySetResult(data.AsStream())));
-
-			return tcsStream.Task;
+		private string GetIdentifier(string[] identifiers)
+		{
+			if (!(identifiers?.Length > 0))
+				return null;
+		
+			if (identifiers.Any(i => i.StartsWith(UTTypes.LivePhoto.Identifier)) && identifiers.Contains(UTTypes.Jpeg.Identifier))
+				return identifiers.FirstOrDefault(i => i == UTTypes.Jpeg.Identifier);
+			if (identifiers.Contains(UTTypes.QuickTimeMovie.Identifier))
+				return identifiers.FirstOrDefault(i => i == UTTypes.QuickTimeMovie.Identifier);
+			return identifiers.FirstOrDefault();
 		}
 	}
 }

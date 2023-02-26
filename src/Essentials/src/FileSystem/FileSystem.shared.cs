@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.Storage
 {
@@ -353,5 +354,53 @@ namespace Microsoft.Maui.Storage
 			: base(file)
 		{
 		}
+	}
+
+	/// <summary>
+	/// Describes and allows to open a media file
+	/// </summary>
+	public partial class MediaFileResult : FileResult, IDisposable
+	{
+		internal MediaFileResult()
+		{
+		}
+
+		/// <summary>
+		/// Returns the file name without extension. Can return an null or empty value
+		/// </summary>
+		public string? NameWithoutExtension { get; protected set; }
+
+		/// <summary>
+		/// Returns the file extension without a dot (eg:, "png").
+		/// </summary>
+		public string? Extension { get; protected set; }
+
+		/// <summary>
+		/// Returns the file type. Can return an null value.
+		/// </summary>
+		public MediaFileType? Type { get; protected set; }
+
+		internal MediaFileType? GetFileType(string contentType)
+		{
+			if (string.IsNullOrWhiteSpace(contentType))
+				return null;
+			if (ContentType.StartsWith("image"))
+				return MediaFileType.Image;
+			if (ContentType.StartsWith("video"))
+				return MediaFileType.Video;
+
+			return null;
+		}
+
+		internal string GetFileName(string? name, string? ex)
+		{
+			if (!string.IsNullOrWhiteSpace(ex))
+				ex = $".{ex}";
+			return (string.IsNullOrWhiteSpace(name) ? "mediaFile" : name) + ex;
+		}
+		
+		/// <inheritdoc cref="IDisposable.Dispose()"/>
+		public void Dispose()
+			=> PlatformDispose();
 	}
 }

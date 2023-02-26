@@ -1,8 +1,51 @@
 #nullable enable
+Microsoft.Maui.ApplicationModel.Permissions.SaveMediaPermission
+Microsoft.Maui.ApplicationModel.Permissions.SaveMediaPermission.SaveMediaPermission() -> void
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>?
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.get -> Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder?
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> void
+Microsoft.Maui.Media.IMediaGallery
+Microsoft.Maui.Media.IMediaGallery.CaptureAsync(Microsoft.Maui.Media.MediaFileType type, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
+Microsoft.Maui.Media.IMediaGallery.CheckCaptureSupport(Microsoft.Maui.Media.MediaFileType type) -> bool
+Microsoft.Maui.Media.IMediaGallery.IsSupported.get -> bool
+Microsoft.Maui.Media.IMediaGallery.PickAsync(int selectionLimit = 1, params Microsoft.Maui.Media.MediaFileType[]! types) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
+Microsoft.Maui.Media.IMediaGallery.PickAsync(Microsoft.Maui.Media.MediaPickRequest! request, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
+Microsoft.Maui.Media.IMediaGallery.SaveAsync(Microsoft.Maui.Media.MediaFileType type, byte[]! data, string! fileName) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Media.IMediaGallery.SaveAsync(Microsoft.Maui.Media.MediaFileType type, string! filePath) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Media.IMediaGallery.SaveAsync(Microsoft.Maui.Media.MediaFileType type, System.IO.Stream! fileStream, string! fileName) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Media.IMediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+Microsoft.Maui.Media.IMediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+Microsoft.Maui.Media.IMediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+Microsoft.Maui.Media.IMediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+Microsoft.Maui.Media.MediaFilesResult
+Microsoft.Maui.Media.MediaFileType
+Microsoft.Maui.Media.MediaFileType.Image = 0 -> Microsoft.Maui.Media.MediaFileType
+Microsoft.Maui.Media.MediaFileType.Video = 1 -> Microsoft.Maui.Media.MediaFileType
+Microsoft.Maui.Media.MediaGallery
+Microsoft.Maui.Media.MediaPickRequest
+Microsoft.Maui.Media.MediaPickRequest.PresentationSourceBounds.get -> Microsoft.Maui.Graphics.Rect
+Microsoft.Maui.Media.MediaPickRequest.SelectionLimit.get -> int
+Microsoft.Maui.Storage.FileBase.FullPath.get -> string!
+Microsoft.Maui.Storage.MediaFileResult
+Microsoft.Maui.Storage.MediaFileResult.Dispose() -> void
+Microsoft.Maui.Storage.MediaFileResult.Extension.get -> string?
+Microsoft.Maui.Storage.MediaFileResult.NameWithoutExtension.get -> string?
+Microsoft.Maui.Storage.MediaFileResult.Type.get -> Microsoft.Maui.Media.MediaFileType?
+static Microsoft.Maui.Media.MediaGallery.CaptureAsync(Microsoft.Maui.Media.MediaFileType type, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
+static Microsoft.Maui.Media.MediaGallery.CheckCaptureSupport(Microsoft.Maui.Media.MediaFileType type) -> bool
+static Microsoft.Maui.Media.MediaGallery.Default.get -> Microsoft.Maui.Media.IMediaGallery!
+static Microsoft.Maui.Media.MediaGallery.PickAsync(int selectionLimit = 1, params Microsoft.Maui.Media.MediaFileType[]! types) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
+static Microsoft.Maui.Media.MediaGallery.PickAsync(Microsoft.Maui.Media.MediaPickRequest! request, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
+static Microsoft.Maui.Media.MediaGallery.SaveAsync(Microsoft.Maui.Media.MediaFileType type, byte[]! data, string! fileName) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Media.MediaGallery.SaveAsync(Microsoft.Maui.Media.MediaFileType type, string! filePath) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Media.MediaGallery.SaveAsync(Microsoft.Maui.Media.MediaFileType type, System.IO.Stream! fileStream, string! fileName) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Media.MediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+static Microsoft.Maui.Media.MediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+static Microsoft.Maui.Media.MediaPicker.Default.get -> Microsoft.Maui.Media.IMediaPicker!
+static Microsoft.Maui.Media.MediaPicker.IsCaptureSupported.get -> bool
+static Microsoft.Maui.Media.MediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+static Microsoft.Maui.Media.MediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.CallbackUri.get -> System.Uri
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri, Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder responseDecoder) -> void
 *REMOVED*Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
@@ -38,3 +81,7 @@ static Microsoft.Maui.Devices.Sensors.Geolocation.LocationChanged -> System.Even
 static Microsoft.Maui.Devices.Sensors.Geolocation.StartListeningForegroundAsync(Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest! request) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.StopListeningForeground() -> void
 *REMOVED*static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.Current.get -> Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer!
+~Microsoft.Maui.Media.MediaFilesResult.Files.get -> System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.MediaFileResult>
+~Microsoft.Maui.Media.MediaPickRequest.MediaPickRequest(string title = null, int selectionLimit = 1, Microsoft.Maui.Graphics.Rect presentationSourceBounds = default(Microsoft.Maui.Graphics.Rect), params Microsoft.Maui.Media.MediaFileType[] types) -> void
+~Microsoft.Maui.Media.MediaPickRequest.Title.get -> string
+~Microsoft.Maui.Media.MediaPickRequest.Types.get -> Microsoft.Maui.Media.MediaFileType[]

@@ -242,5 +242,9 @@ namespace Microsoft.Maui.ApplicationModel
 			public override (string tizenPrivilege, bool isRuntime)[] RequiredPrivileges =>
 				new[] { ("http://tizen.org/privilege/haptic", false) };
 		}
+
+		public partial class SaveMediaPermission : BasePlatformPermission
+		{
+		}
 	}
 }

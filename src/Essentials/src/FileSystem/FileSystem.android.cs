@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Webkit;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Storage
 {
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Storage
 		{
 		}
 
-		string PlatformGetContentType(string extension) =>
+		internal string PlatformGetContentType(string extension) =>
 			MimeTypeMap.Singleton.GetMimeTypeFromExtension(extension.TrimStart('.'));
 
 		void PlatformInit(FileBase file)
@@ -66,6 +67,34 @@ namespace Microsoft.Maui.Storage
 		{
 			var stream = File.OpenRead(FullPath);
 			return Task.FromResult<Stream>(stream);
+		}
+	}
+	
+	public partial class MediaFileResult
+	{
+		readonly Android.Net.Uri _uri;
+		readonly string _tempFilePath;
+
+		internal MediaFileResult(string fileName, Android.Net.Uri uri, string tempFilePath = null)
+		{
+			_tempFilePath = tempFilePath;
+			_uri = uri;
+			NameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+			Extension = Path.GetExtension(fileName).TrimStart('.');
+			ContentType = PlatformGetContentType(Extension);
+			Type = GetFileType(ContentType);
+			FileName = GetFileName(NameWithoutExtension, Extension);
+		}
+
+		internal override Task<Stream> PlatformOpenReadAsync()
+			=> Task.FromResult(Platform.AppContext.ContentResolver!.OpenInputStream(_uri));
+
+		void PlatformDispose()
+		{
+			if(!string.IsNullOrWhiteSpace(_tempFilePath) && File.Exists(_tempFilePath))
+				File.Delete(_tempFilePath);
+
+			_uri?.Dispose();
 		}
 	}
 }

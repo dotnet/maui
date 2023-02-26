@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using AddressBook;
 using AVFoundation;
 using MediaPlayer;
+using Photos;
 using Speech;
+using UIKit;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -315,6 +317,53 @@ namespace Microsoft.Maui.ApplicationModel
 				return tcs.Task;
 			}
 #pragma warning restore CA1416
+		}
+
+
+		public partial class SaveMediaPermission : BasePlatformPermission
+		{
+#pragma warning disable CA1422
+			/// <inheritdoc/>
+			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
+					 () => OperatingSystem.IsIOSVersionAtLeast(14)
+					 ? new [] { "NSPhotoLibraryAddUsageDescription" }
+					 : new [] { "NSPhotoLibraryUsageDescription" };
+
+			/// <inheritdoc/>
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				EnsureDeclared();
+				var auth = OperatingSystem.IsIOSVersionAtLeast(14)
+					? PHPhotoLibrary.GetAuthorizationStatus(PHAccessLevel.AddOnly)
+					: PHPhotoLibrary.AuthorizationStatus;
+
+				return Task.FromResult(Convert(auth));
+			}
+
+			/// <inheritdoc/>
+			public override async Task<PermissionStatus> RequestAsync()
+			{
+				var status = await CheckStatusAsync();
+				if (status == PermissionStatus.Granted)
+					return status;
+
+				var auth = OperatingSystem.IsIOSVersionAtLeast(14)
+					? await PHPhotoLibrary.RequestAuthorizationAsync(PHAccessLevel.AddOnly)
+					: await PHPhotoLibrary.RequestAuthorizationAsync();
+
+				return Convert(auth);
+			}
+
+			PermissionStatus Convert(PHAuthorizationStatus status)
+				=> status switch
+				{
+					PHAuthorizationStatus.Authorized => PermissionStatus.Granted,
+					PHAuthorizationStatus.Limited => PermissionStatus.Granted,
+					PHAuthorizationStatus.Denied => PermissionStatus.Denied,
+					PHAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+					_ => PermissionStatus.Unknown,
+				};
+#pragma warning restore CA1422
 		}
 	}
 }
