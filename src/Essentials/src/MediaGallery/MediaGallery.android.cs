@@ -26,8 +26,6 @@ namespace Microsoft.Maui.Media
 {
 	partial class MediaGalleryImplementation : IMediaGallery
 	{
-		const string ImageType = "image/*";
-		const string VideoType = "video/*";
 		static TaskCompletionSource<(Intent, Result)> TcsPick;
 		static TaskCompletionSource<(Intent, Result)> TcsCamera;
 
@@ -256,8 +254,8 @@ namespace Microsoft.Maui.Media
 		static string GetMimeType(MediaFileType type)
 			=> type switch
 			{
-				MediaFileType.Image => ImageType,
-				MediaFileType.Video => VideoType,
+				MediaFileType.Image => FileMimeTypes.ImageAll,
+				MediaFileType.Video => FileMimeTypes.VideoAll,
 				_ => string.Empty,
 			};
 
