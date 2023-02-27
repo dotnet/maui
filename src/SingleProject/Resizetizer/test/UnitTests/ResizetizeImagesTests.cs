@@ -676,6 +676,43 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileMatches($"mipmap-xhdpi/{Path.GetFileNameWithoutExtension(bg)}_foreground.png", new object[] { fgScale, bg, fg, "xh", "f" });
 			}
 
+			[Fact]
+			public void NonExistantFilesAreDeleted()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "dog",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("drawable-hdpi/cat.png");
+				AssertFileExists("drawable-hdpi/dog.png");
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+
+				items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "cat",
+					}),
+				};
+
+				task = GetNewTask(items);
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("drawable-hdpi/dot.png");
+				AssertFileExists("drawable-hdpi/cat.png");
+			}
+
 			//[Theory]
 			//[InlineData(1, 1, "dotnet_background.svg", "tall_image.png", 300, 300)]
 			//[InlineData(1, 1, "dotnet_background.svg", "wide_image.png", 300, 300)]
@@ -1015,6 +1052,43 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					$"\"filename\": \"{outputName}20x20@2x.png\"",
 					$"\"size\": \"20x20\",");
 			}
+
+			[Fact]
+			public void NonExistantFilesAreDeleted()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "dog",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("cat.png");
+				AssertFileExists("dog.png");
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+
+				items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "cat",
+					}),
+				};
+
+				task = GetNewTask(items);
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("dot.png");
+				AssertFileExists("cat.png");
+			}
 		}
 
 		public class ExecuteForWindows : ExecuteForApp
@@ -1335,6 +1409,43 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertFileContains("not_working.scale-100.png", 0xFF71559B, 2, 6);
 			}
+
+			[Fact]
+			public void NonExistantFilesAreDeleted()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "dog",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("cat.scale-150.png");
+				AssertFileExists("dog.scale-150.png");
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+
+				items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "cat",
+					}),
+				};
+
+				task = GetNewTask(items);
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("dot.scale-150.png");
+				AssertFileExists("cat.scale-150.png");
+			}
 		}
 
 		public class ExecuteForAny : ExecuteForApp
@@ -1361,6 +1472,36 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				}
 				var size = ResizeImageInfo.Parse(item);
 				Assert.Equal(resize, size.Resize);
+			}
+
+			[Theory]
+			[InlineData("android")]
+			[InlineData("uwp")]
+			[InlineData("ios")]
+			public void GenerationSkippedOnIncrementalBuild(string platform)
+			{
+				var items = new[]
+				{
+					new TaskItem("images/dotnet_logo.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = $"images/dotnet_foreground.svg",
+						["Link"] = "appicon",
+						["BackgroundFile"] = $"images/dotnet_background.svg",
+					}),
+				};
+
+				var task = GetNewTask(platform, items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+				task = GetNewTask(platform, items);
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				Assert.True(LogMessageEvents.Any(x => x.Message.Contains("Skipping ", StringComparison.OrdinalIgnoreCase)), $"Image generation should have been skipped.");
 			}
 		}
 	}

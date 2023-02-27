@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Maui.Handlers;
-using static System.Net.Mime.MediaTypeNames;
-using Xunit;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Handlers;
+using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task CursorPositionPreservedWhenTextTransformPresent() 
+		public async Task CursorPositionPreservedWhenTextTransformPresent()
 		{
 			var entry = new Entry
 			{

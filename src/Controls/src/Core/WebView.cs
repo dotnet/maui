@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 
 			string result;
 
-			if (_evaluateJavaScriptRequested?.GetInvocationList().Length == 0)
+			if (_evaluateJavaScriptRequested != null) // With Handlers we don't use events, if is null we are using a renderer and a handler otherwise.
 			{
 				// This is the WebViewRenderer subscribing to these requests; the handler stuff
 				// doesn't use them.

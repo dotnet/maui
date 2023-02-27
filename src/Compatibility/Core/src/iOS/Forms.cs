@@ -33,7 +33,9 @@ using TNativeView = AppKit.NSView;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[Obsolete]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public struct InitializationOptions
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		public InitializationFlags Flags;
 	}
