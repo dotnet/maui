@@ -1,6 +1,9 @@
 #nullable enable
 using System;
+using System.Collections;
 using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests
@@ -65,6 +68,19 @@ namespace Microsoft.Maui.UnitTests
 			{
 				_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(TestEvent));
 			}
+
+			public int EventHandlerCount
+			{
+				get
+				{
+					// Access private members:
+					// Dictionary<string, List<Subscription>> eventHandlers = WeakEventManager._eventHandlers;
+					var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+					var eventHandlers = _weakEventManager.GetType().GetField("_eventHandlers", flags)?.GetValue(_weakEventManager) as IDictionary;
+					Assert.NotNull(eventHandlers);
+					return eventHandlers.Values.Cast<IList>().Sum(l => l.Count);
+				}
+			}
 		}
 
 		internal class TestSubscriber
@@ -72,6 +88,11 @@ namespace Microsoft.Maui.UnitTests
 			public void Subscribe(TestEventSource source)
 			{
 				source.TestEvent += SourceOnTestEvent;
+			}
+
+			public void Unsubscribe(TestEventSource source)
+			{
+				source.TestEvent -= SourceOnTestEvent;
 			}
 
 			void SourceOnTestEvent(object? sender, EventArgs eventArgs)
@@ -230,7 +251,7 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void VerifySubscriberCanBeCollected()
+		public void VerifySubscriberCanBeCollected_FireEvent()
 		{
 			WeakReference? wr = null;
 			var source = new TestEventSource();
@@ -250,6 +271,28 @@ namespace Microsoft.Maui.UnitTests
 			// The handler for this calls Assert.Fail, so if the subscriber has not been collected
 			// the handler will be called and the test will fail
 			source.FireTestEvent();
+			Assert.Equal(0, source.EventHandlerCount);
+		}
+
+		[Fact]
+		public void VerifySubscriberCanBeCollected_Unsubscribe()
+		{
+			WeakReference? wr = null;
+			var source = new TestEventSource();
+			new Action(() =>
+			{
+				var ts = new TestSubscriber();
+				wr = new WeakReference(ts);
+				ts.Subscribe(source);
+			})();
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			new TestSubscriber().Unsubscribe(source);
+
+			Assert.NotNull(wr);
+			Assert.False(wr?.IsAlive);
+			Assert.Equal(0, source.EventHandlerCount);
 		}
 
 		[Fact]

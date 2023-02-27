@@ -16,8 +16,8 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
-using UIModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+using UIModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
 
 namespace Microsoft.Maui.DeviceTests
 {

@@ -5,19 +5,40 @@ using UIKit;
 
 namespace Microsoft.Maui.ApplicationModel
 {
+	/// <summary>
+	/// Manager object that manages window states on iOS and macOS.
+	/// </summary>
 	public interface IWindowStateManager
 	{
+		/// <summary>
+		/// Initializes this <see cref="IWindowStateManager"/> instance.
+		/// </summary>
+		/// <param name="getCurrentUIViewController">The function task to retrieve the current <see cref="UIViewController"/>.</param>
 		void Init(Func<UIViewController?>? getCurrentUIViewController);
 
+		/// <summary>
+		/// Gets the currently presented <see cref="UIViewController"/>.
+		/// </summary>
+		/// <returns>The <see cref="UIViewController"/> object that is currently presented.</returns>
 		UIViewController? GetCurrentUIViewController();
 
+		/// <summary>
+		/// Gets the currently active <see cref="UIWindow"/>.
+		/// </summary>
+		/// <returns>The <see cref="UIWindow"/> object that is currently active.</returns>
 		UIWindow? GetCurrentUIWindow();
 	}
 
+	/// <summary>
+	/// Manager object that manages window states on iOS and macOS.
+	/// </summary>
 	public static class WindowStateManager
 	{
 		static IWindowStateManager? defaultImplementation;
 
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
 		public static IWindowStateManager Default =>
 			defaultImplementation ??= new WindowStateManagerImplementation();
 
@@ -27,6 +48,13 @@ namespace Microsoft.Maui.ApplicationModel
 
 	static class WindowStateManagerExtensions
 	{
+		/// <summary>
+		/// Gets the currently presented <see cref="UIViewController"/>.
+		/// </summary>
+		/// <param name="manager">The object to invoke this method on.</param>
+		/// <param name="throwOnNull">Throws an exception if no current <see cref="UIViewController"/> can be found and this value is set to <see langword="true"/>, otherwise this method returns <see langword="null"/>.</param>
+		/// <returns>The <see cref="UIViewController"/> object that is currently presented.</returns>
+		/// <exception cref="NullReferenceException">Thrown if no current <see cref="UIViewController"/> can be found and <paramref name="throwOnNull"/> is set to <see langword="true"/>.</exception>
 		public static UIViewController? GetCurrentUIViewController(this IWindowStateManager manager, bool throwOnNull)
 		{
 			var vc = manager.GetCurrentUIViewController();
@@ -35,6 +63,14 @@ namespace Microsoft.Maui.ApplicationModel
 
 			return vc;
 		}
+
+		/// <summary>
+		/// Gets the currently active <see cref="UIWindow"/>.
+		/// </summary>
+		/// <param name="manager">The object to invoke this method on.</param>
+		/// <param name="throwOnNull">Throws an exception if no current <see cref="UIWindow"/> can be found and this value is set to <see langword="true"/>, otherwise this method returns <see langword="null"/>.</param>
+		/// <returns>The <see cref="UIWindow"/> object that is currently active.</returns>
+		/// <exception cref="NullReferenceException">Thrown if no current <see cref="UIWindow"/> can be found and <paramref name="throwOnNull"/> is set to <see langword="true"/>.</exception>
 		public static UIWindow? GetCurrentUIWindow(this IWindowStateManager manager, bool throwOnNull)
 		{
 			var window = manager.GetCurrentUIWindow();

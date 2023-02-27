@@ -22,9 +22,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			string separator;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var name = (string)Element.GetValue(AutomationProperties.NameProperty);
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var hint = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 
 			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint))
