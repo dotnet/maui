@@ -125,10 +125,16 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 		}
 
-		public bool Focus() => false;
+		public bool Focus()
+		{
+			IsFocused = true;
+
+			return true;
+		}
 
 		public void Unfocus()
 		{
+			IsFocused = false;
 		}
 
 		public Size Measure(double widthConstraint, double heightConstraint)

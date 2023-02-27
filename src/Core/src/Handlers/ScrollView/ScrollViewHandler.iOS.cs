@@ -85,7 +85,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				handler.PlatformView.SetContentOffset(new CoreGraphics.CGPoint(request.HorizontalOffset, request.VerticalOffset), !request.Instant);
+				var uiScrollView = handler.PlatformView;
+				var availableScrollHeight = uiScrollView.ContentSize.Height - uiScrollView.Frame.Height;
+				var availableScrollWidth = uiScrollView.ContentSize.Width - uiScrollView.Frame.Width;
+				var minScrollHorizontal = Math.Min(request.HorizontalOffset, availableScrollWidth);
+				var minScrollVertical = Math.Min(request.VerticalOffset, availableScrollHeight);
+				uiScrollView.SetContentOffset(new CoreGraphics.CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
 
 				if (request.Instant)
 				{
