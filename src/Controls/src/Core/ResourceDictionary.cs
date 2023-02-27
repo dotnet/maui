@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][4]/Docs/*" />
 		public void Add(string key, object value)
 		{
-			if (ContainsKey(key))
+			if (_innerDictionary.ContainsKey(key))
 				throw new ArgumentException($"A resource with the key '{key}' is already present in the ResourceDictionary.");
 			_innerDictionary.Add(key, value);
 			OnValueChanged(key, value);
