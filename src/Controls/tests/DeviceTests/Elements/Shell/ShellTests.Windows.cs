@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler)  =>
+				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
 				{
 					var rootNavView = handler.PlatformView;
 					var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
