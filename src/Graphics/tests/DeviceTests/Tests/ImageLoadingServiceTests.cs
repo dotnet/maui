@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using Microsoft.Maui.Storage;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Storage;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 
 namespace Microsoft.Maui.Graphics.DeviceTests;
