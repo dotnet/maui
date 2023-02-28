@@ -287,97 +287,61 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedSetValue, nativeVal);
 		}
 
-		protected void OnLoaded(VisualElement frameworkElement, Action action)
+		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
+			var source = new TaskCompletionSource();
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
-				action();
-				return;
+				source.TrySetResult();
+			}
+			else
+			{
+				EventHandler loaded = null;
+
+				loaded = (_, __) =>
+				{
+					if (loaded != null)
+						frameworkElement.Loaded -= loaded;
+
+					source.TrySetResult();
+				};
+
+				frameworkElement.Loaded += loaded;
 			}
 
-			EventHandler loaded = null;
-
-			loaded = (_, __) =>
-			{
-				if (loaded != null)
-					frameworkElement.Loaded -= loaded;
-
-				action();
-			};
-
-			frameworkElement.Loaded += loaded;
+			return source.Task.WaitAsync(timeOut.Value);
 		}
 
-
-		protected void OnUnloaded(VisualElement frameworkElement, Action action)
+		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
+			var source = new TaskCompletionSource();
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
-				action();
-				return;
+				source.TrySetResult();
 			}
-
 			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
 			// This will happen before the the control has been unloaded at the platform level.
 			// This is most likely a bug.
-			if (frameworkElement.IsLoadedOnPlatform())
+			else if (frameworkElement.IsLoadedOnPlatform())
 			{
-				frameworkElement.OnUnloaded(action);
-				return;
+				frameworkElement.OnUnloaded(() => source.TrySetResult());
 			}
-
-			EventHandler unloaded = null;
-
-			unloaded = (_, __) =>
+			else
 			{
-				if (unloaded != null)
-					frameworkElement.Unloaded -= unloaded;
+				EventHandler unloaded = null;
 
-				action();
-			};
-
-			frameworkElement.Unloaded += unloaded;
-		}
-
-		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
-		{
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			try
-			{
-				timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-				OnUnloaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
-				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
-			}
-			catch (TimeoutException)
-			{
-				if (!frameworkElement.IsLoadedOnPlatform() && !frameworkElement.IsLoaded)
+				unloaded = (_, __) =>
 				{
-					taskCompletionSource.TrySetResult(true);
-				}
-				else
-					throw;
-			}
-		}
+					if (unloaded != null)
+						frameworkElement.Unloaded -= unloaded;
 
-		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
-		{
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			try
-			{
-				timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-				OnLoaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
-				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+					source.TrySetResult();
+				};
+
+				frameworkElement.Unloaded += unloaded;
 			}
-			catch (TimeoutException)
-			{
-				if (frameworkElement.IsLoadedOnPlatform() &&
-					frameworkElement.IsLoaded)
-				{
-					taskCompletionSource.TrySetResult(true);
-				}
-				else
-					throw;
-			}
+
+			return source.Task.WaitAsync(timeOut.Value);
 		}
 
 		protected async Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
