@@ -52,7 +52,7 @@
     />
     <_TargetPlatform
         Condition=" '$(MauiPlatformName)' == 'gtk' "
-        Include="net$(_MauiDotNetVersion)-gtk$(TizenTargetFrameworkVersion)"
+        Include="net$(_MauiDotNetVersion)-gtk$(GtkTargetFrameworkVersion)"
         FullTfm="%(Identity)"
         Tfm="net$(_MauiDotNetVersion)-gtk"
         Profile="Gtk"

@@ -706,6 +706,9 @@ void ProcessTFMSwitches()
     if(HasArgument("tizen"))
         replaceTarget.Add("_IncludeTizen");
 
+    if(HasArgument("gtk"))
+        replaceTarget.Add("_IncludeGtk");
+        
     if (replaceTarget.Count > 0)
     {
         CopyFile("Directory.Build.Override.props.in", "Directory.Build.Override.props");

@@ -26,6 +26,10 @@
     <EnableDefaultTizenItems>false</EnableDefaultTizenItems>
     <TizenProjectFolder Condition=" '$(TizenProjectFolder)' == '' ">$(PlatformsProjectFolder)Tizen\</TizenProjectFolder>
     <TizenProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(TizenProjectFolder)'))</TizenProjectFolder>
+    <!-- Gtk -->
+    <EnableDefaultGtkItems>false</EnableDefaultGtkItems>
+    <GtkProjectFolder Condition=" '$(GtkProjectFolder)' == '' ">$(PlatformsProjectFolder)Gtk\</GtkProjectFolder>
+    <GtkProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(GtkProjectFolder)'))</GtkProjectFolder>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,6 +38,7 @@
     <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" />
     <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
     <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
+    <MauiPlatformSpecificFolder Include="$(GtkProjectFolder)" TargetPlatformIdentifier="gtk" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
@@ -68,6 +73,9 @@
     <TizenSharedPrefix>$(TizenProjectFolder)shared</TizenSharedPrefix>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'gtk' ">
+  </PropertyGroup>
+  
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
     <!-- Add metadata indicating that the platform-specific files are not part of every build configuration. -->
     <Compile Update="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
@@ -98,6 +106,11 @@
     <Compile
         Condition=" '$(TargetPlatformIdentifier)' == 'tizen' "
         Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
+      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+    </Compile>
+    <Compile
+      Condition=" '$(TargetPlatformIdentifier)' == 'gtk' "
+      Update="$(GtkProjectFolder)**/*$(DefaultLanguageSourceExtension)">
       <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
     </Compile>
   </ItemGroup>
