@@ -34,6 +34,7 @@
 		public const string SearchBar = "SearchBar";
 		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
+		public const string TextInput = "TextInput";
 		public const string Toolbar = "Toolbar";
 		public const string TemplatedView = "TemplatedView";
 		public const string View = "View";

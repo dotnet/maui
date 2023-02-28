@@ -40,7 +40,7 @@
 
   <!-- include/exclude the *.<platform>.cs files -->
   <ItemGroup>
-    <None Include="@(Compile)" />
+    <None Include="Elements\TextInput\TextInputTests.Android.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
     <Compile Remove="**\*.Android.cs" />
