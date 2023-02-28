@@ -235,9 +235,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			var window = new Controls.Window(shell);
-			var mauiContextStub1 = new ContextStub(MauiContext.GetApplicationServices());
-			var activity = mauiContextStub1.GetActivity();
-			mauiContextStub1.Context = new ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+			var mauiContextStub1 = ContextStub.CreateNew(MauiContext);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
@@ -247,8 +245,7 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.GoToAsync("//FlyoutItem2");
 			}, mauiContextStub1);
 
-			var mauiContextStub2 = new ContextStub(MauiContext.GetApplicationServices());
-			mauiContextStub2.Context = new ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+			var mauiContextStub2 = ContextStub.CreateNew(MauiContext);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{

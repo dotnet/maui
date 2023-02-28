@@ -152,5 +152,61 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 			});
 		}
+
+		[Fact]
+		public async Task NullTemplateDoesntCrash()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"cat",
+				"dog",
+				"catdog"
+			};
+
+			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					return new ViewCell
+					{
+						View = new VerticalStackLayout
+						{
+							new Label()
+						}
+					};
+				}),
+				ItemsSource = data
+			};
+
+			var layout = new VerticalStackLayout
+			{
+				listView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+			});
+
+			// Default ctor
+			await InvokeOnMainThreadAsync(() => listView.ItemTemplate = new DataTemplate());
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+			});
+
+			// Return null
+			await InvokeOnMainThreadAsync(() => listView.ItemTemplate = null);
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
+			{
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+			});
+		}
 	}
 }

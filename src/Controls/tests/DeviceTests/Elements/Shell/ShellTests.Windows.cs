@@ -240,6 +240,36 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Shell Has Correct Item Count")]
+		public async Task ShellContentHasCorrectItemCount()
+		{
+			SetupBuilder();
+
+			var content1 = new ShellContent();
+			content1.Title = "Hello";
+			content1.Route = $"...";
+
+			var content2 = new ShellContent();
+			content2.Title = "World";
+			content2.Route = $"...";
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(content1);
+				shell.Items.Add(content2);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
+				handler.PlatformView.UpdateMenuItemSource();
+
+				var items = handler.PlatformView.MenuItemsSource as ObservableCollection<object>;
+				Assert.True(items.Count == 2);
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact(DisplayName = "Single Shell Section with Multiple Children")]
 		public async Task SingleShellSectionWithMultipleChildren()
 		{
