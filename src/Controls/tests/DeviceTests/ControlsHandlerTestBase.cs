@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,6 +72,16 @@ namespace Microsoft.Maui.DeviceTests
 		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view)
 			where THandler : IElementHandler, new() =>
 			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
+
+		protected IElementHandler CreateHandler(IElement view)
+		{
+			var handler = view.ToHandler(MauiContext);
+			InitializeViewHandler(view, handler, MauiContext);
+			return handler;
+		}
+
+		protected async Task<IElementHandler> CreateHandlerAsync(IElement view) =>
+			await InvokeOnMainThreadAsync(() => CreateHandler(view));
 
 		protected Task<TValue> GetValueAsync<TValue, THandler>(IElement view, Func<THandler, TValue> func)
 			 where THandler : IElementHandler, new()
