@@ -1,11 +1,7 @@
 using System;
-using Android.App;
 using Android.Content;
-using Android.OS;
-using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
-using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AView = Android.Views.View;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;

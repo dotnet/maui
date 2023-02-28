@@ -1,25 +1,15 @@
 using System;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;

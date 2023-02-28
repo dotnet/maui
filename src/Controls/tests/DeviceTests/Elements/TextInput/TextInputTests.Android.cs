@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.TextInput)]
 	public partial class TextInputTests
 	{
 		[Theory]
@@ -26,7 +25,6 @@ namespace Microsoft.Maui.DeviceTests
 				await platformView.AttachAndRun(async () =>
 				{
 					textInput.Focus();
-
 					await AssertionExtensions.WaitForKeyboardToShow(platformView);
 
 					// Test that keyboard reappears when refocusing on an already focused TextInput control
