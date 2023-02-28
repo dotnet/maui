@@ -490,7 +490,7 @@ Task("VS")
             Error("!!!!BUILD TASKS FAILED: !!!!!");
         }
 
-        UseLocalNuGetCacheFolder();
+        //UseLocalNuGetCacheFolder();
 
         StartVisualStudioForDotNet6();
     }); 
