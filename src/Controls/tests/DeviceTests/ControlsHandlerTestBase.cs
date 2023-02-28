@@ -289,6 +289,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			var source = new TaskCompletionSource();
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
@@ -314,6 +315,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			var source = new TaskCompletionSource();
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
