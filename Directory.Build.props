@@ -75,6 +75,7 @@
     <WindowsTargetFrameworkVersion>10.0.19041</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>6.5</TizenTargetFrameworkVersion>
+    <GtkTargetFrameworkVersion>3.24.24.64</GtkTargetFrameworkVersion>
   </PropertyGroup>
 
   <Import Condition="Exists('Directory.Build.Override.props')" Project="Directory.Build.Override.props" />
@@ -88,6 +89,7 @@
     <MauiPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiPlatforms)</MauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiPlatforms)</MauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeGtkTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-gtk;$(MauiPlatforms)</MauiPlatforms>
 
     <!-- Device Tests TFMs (no Tizen yet) -->
     <MauiDeviceTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>

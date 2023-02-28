@@ -50,6 +50,13 @@
         Tfm="net$(_MauiDotNetVersion)-tizen"
         Profile="Tizen"
     />
+    <_TargetPlatform
+        Condition=" '$(MauiPlatformName)' == 'gtk' "
+        Include="net$(_MauiDotNetVersion)-gtk$(TizenTargetFrameworkVersion)"
+        FullTfm="%(Identity)"
+        Tfm="net$(_MauiDotNetVersion)-gtk"
+        Profile="Gtk"
+    />
   </ItemGroup>
 
   <Import Condition=" '$(MauiPlatformName)' != '' " Project="FrameworkList.targets" />
