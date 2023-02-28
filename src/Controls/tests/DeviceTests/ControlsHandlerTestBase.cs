@@ -141,12 +141,12 @@ namespace Microsoft.Maui.DeviceTests
 						IView content = window.Content;
 
 						if (window is Window w && w.Navigation.ModalStack.Count > 0)
-							content = w.Navigation.ModalStack.LastOrDefault();
+							content = w.Navigation.ModalStack.Last();
 
 						if (content is IPageContainer<Page> pc)
 						{
 							content = pc.CurrentPage;
-							if (content == null)
+							if (content is null)
 							{
 								// This is mainly a timing issue with Shell.
 								// Basically the `CurrentPage` on Shell isn't initialized until it's
@@ -170,6 +170,7 @@ namespace Microsoft.Maui.DeviceTests
 						}
 						else
 						{
+							controlsWindow = null;
 							window.Activated();
 						}
 #if WINDOWS
@@ -185,9 +186,8 @@ namespace Microsoft.Maui.DeviceTests
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
 
-						bool isActivated = (window as Window)?.IsActivated ?? false;
-						bool isDestroyed = (window as Window)?.IsDestroyed ?? false;
-
+						bool isActivated = controlsWindow?.IsActivated ?? false;
+						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
 
 						if (isActivated)
 							window.Deactivated();
@@ -301,7 +301,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				loaded = (_, __) =>
 				{
-					if (loaded != null)
+					if (loaded is not null)
 						frameworkElement.Loaded -= loaded;
 
 					source.TrySetResult();
@@ -334,7 +334,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				unloaded = (_, __) =>
 				{
-					if (unloaded != null)
+					if (unloaded is not null)
 						frameworkElement.Unloaded -= unloaded;
 
 					source.TrySetResult();
@@ -422,7 +422,7 @@ namespace Microsoft.Maui.DeviceTests
 						.Window
 						.GetVisualTreeDescendants()
 						.OfType<IToolbarElement>()
-						.SingleOrDefault(x => x.Toolbar != null)
+						.SingleOrDefault(x => x.Toolbar is not null)
 						?.Toolbar;
 		}
 

@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 			var dispatcher = platformViewHandler.MauiContext!.GetDispatcher();
 			return dispatcher.DispatchAsync(async () =>
 			{
-				if (platformView.XamlRoot == null)
+				if (platformView.XamlRoot is null)
 				{
 					if (!expectation)
 						await AttachAndRun(platformView, RunAssertions);
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 			void RunAssertions()
 			{
 				Assert.Equal(expectation, view.Handler?.HasContainer ?? false);
-				Assert.Equal(expectation, view.Handler?.ContainerView != null);
+				Assert.Equal(expectation, view.Handler?.ContainerView is not null);
 				var parentView = platformView?.GetParent();
 				Assert.Equal(expectation, parentView is WrapperView);
 			}
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 #if PLATFORM
 			if (element.Handler is IPlatformViewHandler platformViewHandler &&
-				platformViewHandler.PlatformView != null)
+				platformViewHandler.PlatformView is not null)
 			{
 				return platformViewHandler.PlatformView.OnUnloaded(action);
 			}
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 #if PLATFORM
 			if (element.Handler is IPlatformViewHandler platformViewHandler &&
-				platformViewHandler.PlatformView != null)
+				platformViewHandler.PlatformView is not null)
 			{
 				return platformViewHandler.PlatformView.OnLoaded(action);
 			}
