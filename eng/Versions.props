@@ -18,7 +18,7 @@
     <MicrosoftiOSSdkPackageVersion>16.2.1026</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>16.1.1523</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
-    <SamsungTizenSdkPackageVersion>7.0.100</SamsungTizenSdkPackageVersion>
+    <SamsungTizenSdkPackageVersion>7.0.105</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenPackageVersion>7.0.3</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
@@ -78,11 +78,11 @@
   <PropertyGroup>
     <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">7.0.100</DotNetVersionBand>
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `\-(preview|rc).\d+`))</DotNetSdkManifestsFolder>
-    <DotNetMauiManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetMauiManifestVersionBand>
-    <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
+    <DotNetSdkManifestsFolder>7.0.200$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `\-(preview|rc).\d+`))</DotNetSdkManifestsFolder>
+    <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
-    <DotNetAndroidManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>$(DotNetSdkManifestsFolder)</DotNetMaciOSManifestVersionBand>
-    <DotNetTizenManifestVersionBand>7.0.100</DotNetTizenManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
+    <DotNetTizenManifestVersionBand>7.0.200</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>
