@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 
 		public IApplication Application { get; protected set; } = null!;
 
-		public void Run()
+		public void Run(params string[] args)
 		{
 			Launch(EventArgs.Empty);
 		}
