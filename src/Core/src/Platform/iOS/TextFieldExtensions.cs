@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -176,7 +177,61 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
 		{
-			textField.ClearButtonMode = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing ? UITextFieldViewMode.WhileEditing : UITextFieldViewMode.Never;
+			if (entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
+			{
+				textField.ClearButtonMode = UITextFieldViewMode.WhileEditing;
+				textField.UpdateClearButtonColor(entry);
+			}
+			else
+				textField.ClearButtonMode = UITextFieldViewMode.Never;
+		}
+
+		internal static void UpdateClearButtonColor(this UITextField textField, IEntry entry)
+		{
+			if (textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
+			{
+				UIImage defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
+
+				if (entry.TextColor is null)
+				{
+					clearButton.SetImage(defaultClearImage, UIControlState.Normal);
+					clearButton.SetImage(defaultClearImage, UIControlState.Highlighted);
+				}
+				else
+				{
+					clearButton.TintColor = entry.TextColor.ToPlatform();
+
+					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, entry.TextColor.ToPlatform());
+					clearButton.SetImage(tintedClearImage, UIControlState.Normal);
+					clearButton.SetImage(tintedClearImage, UIControlState.Highlighted);
+				}
+			}
+		}
+
+		internal static UIImage? GetClearButtonTintImage(UIImage image, UIColor color)
+		{
+			var size = image.Size;
+
+			UIGraphics.BeginImageContextWithOptions(size, false, UIScreen.MainScreen.Scale);
+
+			if (UIGraphics.GetCurrentContext() == null)
+				return null;
+
+			var context = UIGraphics.GetCurrentContext();
+
+			image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
+			context?.SetFillColor(color.CGColor);
+			context?.SetBlendMode(CGBlendMode.SourceIn);
+			context?.SetAlpha(1.0f);
+
+			var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
+			context?.FillRect(rect);
+
+			var tintedImage = UIGraphics.GetImageFromCurrentImageContext();
+
+			UIGraphics.EndImageContext();
+
+			return tintedImage;
 		}
 	}
 }
