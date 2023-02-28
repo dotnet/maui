@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateContent(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
-		{			
+		{
 			if (radioButton.GetWindow().FlowDirection == FlowDirection.RightToLeft)
 				// U+200F is the Unicode character for Right-To-Left Mark. This ensures the Android platform
 				// doesn't alter the content text using FirstStrong.
