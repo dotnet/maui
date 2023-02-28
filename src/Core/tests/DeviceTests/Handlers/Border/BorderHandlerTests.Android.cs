@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 				Width = 300
 			};
 
-			await ValidateHasColor(border, expected, () => border.Background = new SolidPaintStub(expected), updatePropertyValue: nameof(border.Background));
+			await ValidateHasColor(border, expected, () => border.Background = new SolidPaintStub(expected), nameof(border.Background));
 		}
 
 		ContentViewGroup GetNativeBorder(BorderHandler borderHandler) =>

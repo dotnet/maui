@@ -9,11 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarHandlerTests : CoreHandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
-		[Theory(DisplayName = "Background Initializes Correctly"
-#if IOS
-
-#endif
-			)]
+		[Theory(DisplayName = "Background Initializes Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
 		[InlineData(0xFF0000FF)]
@@ -24,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchBar = new SearchBarStub
 			{
 				Background = new SolidPaintStub(expected),
-				Text = "Background"
+				Text = "Background",
 			};
 
 			await ValidateHasColor(searchBar, expected);
@@ -129,12 +125,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var searchBar = new SearchBarStub()
 			{
-				Text = "foobar",
+				Text = "Search",
 				Width = 200,
 				CancelButtonColor = Colors.Yellow,
 			};
 
-			await ValidateHasColor(searchBar, Colors.Yellow, () => searchBar.CancelButtonColor = Colors.Yellow, updatePropertyValue: nameof(searchBar.CancelButtonColor));
+			await ValidateHasColor(searchBar, Colors.Yellow, () => searchBar.CancelButtonColor = Colors.Yellow, nameof(searchBar.CancelButtonColor));
 		}
 
 		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]
