@@ -44,6 +44,8 @@ pr:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
+  - name: AgentPoolAccessToken
+    value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
 
 parameters:
   - name: provisionatorChannel
@@ -70,18 +72,19 @@ parameters:
 
 resources:
   repositories:
-    - repository: xamarin-templates
+    - repository: yaml-templates
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
       ref: refs/heads/main
-      
+
 stages:
 
   - template: common/device-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
       iosPool: ${{ parameters.iosPool }}
+      agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
         # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
@@ -95,7 +98,7 @@ stages:
       projects:
         - name: essentials
           desc: Essentials
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable 
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
           android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
         - name: graphics
@@ -105,13 +108,13 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
         - name: core
           desc: Core
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable 
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
           iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
         - name: controls
           desc: Controls
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable 
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
           iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
@@ -121,4 +124,4 @@ stages:
           android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
           iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
           ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
-          
+
