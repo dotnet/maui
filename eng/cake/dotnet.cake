@@ -102,9 +102,14 @@ Task("dotnet-build")
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
+        {
             RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
+        }
         else
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", maxCpuCount: 1);
+        {
+            // NOTE: intentionally omit maxCpuCount, to avoid an issue with the 7.0.100 .NET SDK
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+        }
     });
 
 Task("dotnet-samples")
@@ -472,7 +477,7 @@ Task("dotnet-diff")
 
 // Tasks for Local Development
 Task("VS")
-    .Description("Provisions .NET 6, and launches an instance of Visual Studio using it.")
+    .Description("Provisions .NET, and launches an instance of Visual Studio using it.")
     .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
@@ -485,7 +490,9 @@ Task("VS")
             Error("!!!!BUILD TASKS FAILED: !!!!!");
         }
 
-        StartVisualStudioForDotNet6();
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioForDotNet();
     }); 
 
 // Keeping this for users that are already using this.
@@ -563,7 +570,24 @@ void SetDotNetEnvironmentVariables()
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 
-void StartVisualStudioForDotNet6()
+void UseLocalNuGetCacheFolder(bool reset = false)
+{
+    var temp = Context.Environment.GetSpecialPath(SpecialPath.LocalTemp);
+    var packages = temp.Combine("Microsoft.Maui.Cache/NuGet/packages");
+
+    EnsureDirectoryExists(packages);
+
+    CleanDirectories(packages.FullPath + "/microsoft.maui.*");
+    CleanDirectories(packages.FullPath + "/microsoft.aspnetcore.*");
+
+    if (reset)
+        CleanDirectories(packages.FullPath);
+
+    SetEnvironmentVariable("RestorePackagesPath", packages.FullPath);
+    SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
+}
+
+void StartVisualStudioForDotNet()
 {
     string sln = Argument<string>("sln", null);
 
@@ -580,7 +604,7 @@ void StartVisualStudioForDotNet6()
         }
         else
         {
-            sln = "_omnisharp.sln";
+            sln = "./Microsoft.Maui-mac.slnf";
         }
     }
 
