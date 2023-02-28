@@ -123,6 +123,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				CollectionViewSource.Source = null;
 				CollectionViewSource = null;
 			}
+			VirtualView?.ClearLogicalChildren();
 
 			if (VirtualView?.ItemsSource == null)
 			{
