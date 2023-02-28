@@ -399,7 +399,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				var layout = new StackLayout { IsPlatformEnabled = true };
 				BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
 				BindableLayout.SetItemsSource(layout, list);
-				
+
 				var controller = BindableLayout.GetBindableLayoutController(layout);
 				controllerRef = new WeakReference(controller);
 
