@@ -10,9 +10,9 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class TextInputTests
 	{
 		[Theory]
-		//[InlineData(typeof(Editor))]
+		[InlineData(typeof(Editor))]
 		[InlineData(typeof(Entry))]
-		//[InlineData(typeof(SearchBar))]
+		[InlineData(typeof(SearchBar))]
 		public async Task ShowsKeyboardOnFocus(Type controlType)
 		{
 			SetupBuilder();
@@ -20,23 +20,20 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				// Test passes with this line
-				//var handler = CreateHandler<EntryHandler>(textInput);
+				var handler = (IPlatformViewHandler)CreateHandler(textInput);
+				var platformView = handler.PlatformView;
 
-				// Test fails with this line
-				var handler = textInput.ToHandler(MauiContext);
-
-				await handler.PlatformView.AttachAndRun(async () =>
+				await platformView.AttachAndRun(async () =>
 				{
 					textInput.Focus();
 						
-					await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+					await AssertionExtensions.WaitForKeyboardToShow(platformView);
 
 					// Test that keyboard reappears when refocusing on an already focused TextInput control
-					await AssertionExtensions.HideKeyboardForView(handler.PlatformView);
-					await AssertionExtensions.WaitForKeyboardToHide(handler.PlatformView);
+					await AssertionExtensions.HideKeyboardForView(platformView);
+					await AssertionExtensions.WaitForKeyboardToHide(platformView);
 					textInput.Focus();
-					await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+					await AssertionExtensions.WaitForKeyboardToShow(platformView);
 			});
 		});
 
