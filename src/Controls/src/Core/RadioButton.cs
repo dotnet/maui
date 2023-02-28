@@ -465,7 +465,7 @@ namespace Microsoft.Maui.Controls
 				Padding = 6
 			};
 
-			BindToTemplatedParent(border, BackgroundProperty, HorizontalOptionsProperty,
+			BindToTemplatedParent(border, BackgroundColorProperty, HorizontalOptionsProperty,
 				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
 				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
 

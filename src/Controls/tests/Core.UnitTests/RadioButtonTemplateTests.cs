@@ -62,9 +62,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				yield return new object[] { RadioButton.VerticalOptionsProperty, LayoutOptions.End };
 				yield return new object[] { RadioButton.HorizontalOptionsProperty, LayoutOptions.End };
 				yield return new object[] { RadioButton.BackgroundColorProperty, Colors.Red };
-				yield return new object[] { RadioButton.BorderColorProperty, Colors.Magenta };
-				yield return new object[] { RadioButton.BorderWidthProperty, 4 };
-				yield return new object[] { RadioButton.CornerRadiusProperty, 4 };
 				yield return new object[] { RadioButton.MarginProperty, new Thickness(1, 2, 3, 4) };
 				yield return new object[] { RadioButton.OpacityProperty, 0.67 };
 				yield return new object[] { RadioButton.RotationProperty, 0.3 };
@@ -94,6 +91,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(root);
 			Assert.Equal(root.GetValue(property), value);
+		}
+
+		[Fact]
+		public void BorderSpecificRadioButtonStyleSetsPropertyOnTemplateRoot()
+		{
+			var borderColor = Colors.Magenta;
+			var borderWidthProperty = 4.3;
+			var cornerRadiusProperty = 5;
+			var radioButtonStyle = new Style(typeof(RadioButton));
+
+			radioButtonStyle.Setters.Add(new Setter() { Property = RadioButton.BorderColorProperty, Value = borderColor });
+			radioButtonStyle.Setters.Add(new Setter() { Property = RadioButton.BorderWidthProperty, Value = borderWidthProperty });
+			radioButtonStyle.Setters.Add(new Setter() { Property = RadioButton.CornerRadiusProperty, Value = cornerRadiusProperty });
+
+			var radioButton = new RadioButton() { ControlTemplate = RadioButton.DefaultTemplate, Style = radioButtonStyle };
+			var root = (radioButton as IControlTemplated)?.TemplateRoot as Border;
+
+			Assert.NotNull(root);
+			Assert.Equal(root.GetValue(Border.StrokeProperty), Brush.Magenta);
+			Assert.Equal(root.GetValue(Border.StrokeThicknessProperty), borderWidthProperty);
+
+			RoundRectangle rec = (RoundRectangle)root.StrokeShape;
+			Assert.Equal(rec.CornerRadius, cornerRadiusProperty);
 		}
 	}
 }
