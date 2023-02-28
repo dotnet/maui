@@ -15,10 +15,9 @@ if (TestTFM == "default")
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new string[] {
-    "Microsoft.Maui.Controls.*.nupkg",
-    "Microsoft.Maui.Core.*.nupkg",
-    "Microsoft.Maui.Essentials.*.nupkg",
+    "Microsoft.Maui.Controls.Foldable.*.nupkg",
     "Microsoft.Maui.Graphics.*.nupkg",
+    "Microsoft.Maui.Controls.Maps.*.nupkg",
     "Microsoft.Maui.Maps.*.nupkg",
     "Microsoft.AspNetCore.Components.WebView.*.nupkg",
 };
