@@ -1,4 +1,3 @@
-#nullable enable
 // Using code based on https://github.com/richardrigutins/maui-sample-windows-camera-workaround/blob/4e8ab1eb2fe36e9d8253773705df508b7979a968/src/MauiSampleCamera/Platforms/Windows/CustomMediaPicker.uwp.cs
 // Authors:
 //  - https://github.com/GiampaoloGabba
@@ -24,13 +23,13 @@ namespace Microsoft.Maui.Media
 		public bool IsCaptureSupported
 			=> true;
 
-		public Task<FileResult?> PickPhotoAsync(MediaPickerOptions options)
+		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PickAsync(options, true);
 
-		public Task<FileResult?> PickVideoAsync(MediaPickerOptions options)
+		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PickAsync(options, false);
 
-		public async Task<FileResult?> PickAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
 		{
 			var picker = new FileOpenPicker();
 
@@ -56,13 +55,13 @@ namespace Microsoft.Maui.Media
 			return new FileResult(result);
 		}
 
-		public Task<FileResult?> CapturePhotoAsync(MediaPickerOptions options)
+		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
 			=> CaptureAsync(options, true);
 
-		public Task<FileResult?> CaptureVideoAsync(MediaPickerOptions options)
+		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
 			=> CaptureAsync(options, false);
 
-		public async Task<FileResult?> CaptureAsync(MediaPickerOptions options, bool photo)
+		public async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
 		{
 			var captureUi = new WinUICameraCaptureUI();
 
