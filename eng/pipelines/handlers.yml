@@ -4,6 +4,7 @@ trigger:
     - main
     - release/*
     - net7.0
+    - net8.0
     - loc
   tags:
     include:
@@ -28,6 +29,7 @@ pr:
     - main
     - release/*
     - net7.0
+    - net8.0
   paths:
     include:
     - '*'
@@ -111,7 +113,7 @@ parameters:
 
 resources:
   repositories:
-    - repository: xamarin-templates
+    - repository: yaml-templates
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
@@ -124,13 +126,13 @@ resources:
 
 stages:
 
-  - stage: build_net6
+  - stage: build_net
     displayName: Build .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+          - job: build_net_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
@@ -152,8 +154,7 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
-                  provisioning: true
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -174,15 +175,13 @@ stages:
                 displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
-              - ${{ if eq(BuildPlatform.name, 'macos') }}: 
-                - template: sdk-unified/steps/mac-agent-info/v1.yml@xamarin-templates
 
-  - stage: pack_net6
+  - stage: pack_net
     displayName: Pack .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each PackPlatform in parameters.PackPlatforms }}:
-        - job: pack_net6_${{ PackPlatform.name }}
+        - job: pack_net_${{ PackPlatform.name }}
           workspace:
             clean: all
           displayName: ${{ PackPlatform.name }}
@@ -202,16 +201,15 @@ stages:
                 poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
-            - ${{ if eq(PackPlatform.name, 'macos') }}: 
-                - template: sdk-unified/steps/mac-agent-info/v1.yml@xamarin-templates
+                gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
-  - stage: samples_net6
+  - stage: samples_net
     displayName: Build .NET MAUI Samples
-    dependsOn: pack_net6
+    dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+          - job: build_net_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
@@ -233,8 +231,6 @@ stages:
                 parameters:
                   platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
-                  provisioning: true
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
                   
               - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
@@ -258,9 +254,9 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - stage: templates_net6
+  - stage: templates_net
     displayName: Build .NET MAUI Templates
-    dependsOn: pack_net6
+    dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
@@ -287,8 +283,7 @@ stages:
                   parameters:
                     platform: ${{ BuildPlatform.name }}
                     poolName: ${{ BuildPlatform.poolName }}
-                    provisioning: true
-                    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                    
                 - task: DownloadBuildArtifacts@0
                   displayName: 'Download Packages'
                   inputs:
@@ -310,8 +305,6 @@ stages:
                   displayName: publish artifacts
                   inputs:
                     ArtifactName: ${{ BuildPlatform.artifact }}
-                - ${{ if eq(BuildPlatform.name, 'macos') }}: 
-                  - template: sdk-unified/steps/mac-agent-info/v1.yml@xamarin-templates
 
   - template: common/security-compliance.yml
 
