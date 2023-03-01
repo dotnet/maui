@@ -176,9 +176,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(0, app.OnStartCount);
 			(window as IWindow).Created();
 			Assert.Equal(1, app.OnStartCount);
+#if DEBUG
+			Assert.Throws<InvalidOperationException>(() => (window as IWindow).Created());
+#else
 			(window as IWindow).Created();
 			Assert.Equal(1, app.OnStartCount);
-
+#endif
 		}
 
 		class StubApp : Application
