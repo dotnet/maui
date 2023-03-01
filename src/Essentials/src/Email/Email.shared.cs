@@ -65,13 +65,13 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 		static IEnumerable<string> Parameters(EmailMessage message)
 		{
-			if (message.To?.Any() == true)
+			if (message.To?.Count > 0)
 				yield return "to=" + Recipients(message.To);
 
-			if (message.Cc?.Any() == true)
+			if (message.Cc?.Count > 0)
 				yield return "cc=" + Recipients(message.Cc);
 
-			if (message.Bcc?.Any() == true)
+			if (message.Bcc?.Count > 0)
 				yield return "bcc=" + Recipients(message.Bcc);
 
 			if (!string.IsNullOrWhiteSpace(message.Subject))
