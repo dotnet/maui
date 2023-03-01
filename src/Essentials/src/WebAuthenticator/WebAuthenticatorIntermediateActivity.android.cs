@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Authentication
 
 			var extras = savedInstanceState ?? Intent.Extras;
 
-			if(extras == null)
+			if (extras == null)
 			{
 				return;
 			}
