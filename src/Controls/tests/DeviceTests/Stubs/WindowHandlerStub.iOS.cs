@@ -10,10 +10,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WindowHandlerStub : ElementHandler<IWindow, UIWindow>, IWindowHandler
 	{
-		TaskCompletionSource<bool> _finishedDisconnecting = new TaskCompletionSource<bool>();
+		TaskCompletionSource _finishedDisconnecting = new TaskCompletionSource();
 		public Task FinishedDisconnecting => _finishedDisconnecting.Task;
 		IView _currentView;
-		bool disconnected;
+		public bool IsDisconnected { get; private set; }
+
 		public static IPropertyMapper<IWindow, WindowHandlerStub> WindowMapper = new PropertyMapper<IWindow, WindowHandlerStub>(WindowHandler.Mapper)
 		{
 			[nameof(IWindow.Content)] = MapContent
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			ReplaceCurrentView(_currentView, platformView, () =>
 			{
-				if (disconnected)
+				if (IsDisconnected)
 					return;
 
 				var virtualView = VirtualView;
@@ -156,9 +157,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			ReplaceCurrentView(VirtualView.Content, platformView, () => _finishedDisconnecting.SetResult(true), true);
+			ReplaceCurrentView(VirtualView.Content, platformView, () => _finishedDisconnecting.TrySetResult(), true);
 			base.DisconnectHandler(platformView);
-			disconnected = true;
+			IsDisconnected = true;
 		}
 
 		public WindowHandlerStub()
