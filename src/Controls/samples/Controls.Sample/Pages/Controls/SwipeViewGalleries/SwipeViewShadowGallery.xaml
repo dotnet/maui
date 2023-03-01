@@ -32,7 +32,7 @@
                 <Border 
                     Stroke="Black"
                     StrokeThickness="3"
-                    Padding="10">
+                    HeightRequest="60">
                     <Border.StrokeShape>
                         <RoundRectangle 
                             CornerRadius="10"/>
@@ -90,7 +90,7 @@
                 <Border 
                     Stroke="Black"
                     StrokeThickness="3"
-                    Padding="10">
+                    HeightRequest="60">
                     <Border.StrokeShape>
                         <RoundRectangle 
                             CornerRadius="10"/>
