@@ -147,7 +147,7 @@ namespace Microsoft.Maui.DeviceTests
 			while (viewController.PresentedViewController is not null)
 			{
 				if (viewController is ModalWrapper || viewController.PresentedViewController is ModalWrapper)
-					throw new InvalidOperationException("Modal Window Is Still Pressent");
+					throw new InvalidOperationException("Modal Window Is Still Present");
 
 				viewController = viewController.PresentedViewController;
 			}

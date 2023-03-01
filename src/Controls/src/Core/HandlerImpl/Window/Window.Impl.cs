@@ -317,7 +317,6 @@ namespace Microsoft.Maui.Controls
 		internal bool IsDestroyed { get; private set; }
 		internal bool IsCreated { get; private set; }
 
-
 		IFlowDirectionController FlowController => this;
 
 		public FlowDirection FlowDirection

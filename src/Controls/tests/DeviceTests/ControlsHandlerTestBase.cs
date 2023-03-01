@@ -99,16 +99,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
-			where THandler : class, IElementHandler
-		{
-			return CreateHandlerAndAddToWindow<THandler>(view, handler =>
-			{
-				action(handler);
-				return Task.CompletedTask;
-			});
-		}
-
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
@@ -151,12 +141,12 @@ namespace Microsoft.Maui.DeviceTests
 						IView content = window.Content;
 
 						if (window is Window w && w.Navigation.ModalStack.Count > 0)
-							content = w.Navigation.ModalStack.LastOrDefault();
+							content = w.Navigation.ModalStack.Last();
 
 						if (content is IPageContainer<Page> pc)
 						{
 							content = pc.CurrentPage;
-							if (content == null)
+							if (content is null)
 							{
 								// This is mainly a timing issue with Shell.
 								// Basically the `CurrentPage` on Shell isn't initialized until it's
@@ -180,6 +170,7 @@ namespace Microsoft.Maui.DeviceTests
 						}
 						else
 						{
+							controlsWindow = null;
 							window.Activated();
 						}
 #if WINDOWS
@@ -195,9 +186,8 @@ namespace Microsoft.Maui.DeviceTests
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
 
-						bool isActivated = (window as Window)?.IsActivated ?? false;
-						bool isDestroyed = (window as Window)?.IsDestroyed ?? false;
-
+						bool isActivated = controlsWindow?.IsActivated ?? false;
+						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
 
 						if (isActivated)
 							window.Deactivated();
@@ -297,97 +287,63 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedSetValue, nativeVal);
 		}
 
-		protected void OnLoaded(VisualElement frameworkElement, Action action)
+		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			var source = new TaskCompletionSource();
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
-				action();
-				return;
+				source.TrySetResult();
+			}
+			else
+			{
+				EventHandler loaded = null;
+
+				loaded = (_, __) =>
+				{
+					if (loaded is not null)
+						frameworkElement.Loaded -= loaded;
+
+					source.TrySetResult();
+				};
+
+				frameworkElement.Loaded += loaded;
 			}
 
-			EventHandler loaded = null;
-
-			loaded = (_, __) =>
-			{
-				if (loaded != null)
-					frameworkElement.Loaded -= loaded;
-
-				action();
-			};
-
-			frameworkElement.Loaded += loaded;
+			return source.Task.WaitAsync(timeOut.Value);
 		}
 
-
-		protected void OnUnloaded(VisualElement frameworkElement, Action action)
+		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			var source = new TaskCompletionSource();
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
-				action();
-				return;
+				source.TrySetResult();
 			}
-
 			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
 			// This will happen before the the control has been unloaded at the platform level.
 			// This is most likely a bug.
-			if (frameworkElement.IsLoadedOnPlatform())
+			else if (frameworkElement.IsLoadedOnPlatform())
 			{
-				frameworkElement.OnUnloaded(action);
-				return;
+				frameworkElement.OnUnloaded(() => source.TrySetResult());
 			}
-
-			EventHandler unloaded = null;
-
-			unloaded = (_, __) =>
+			else
 			{
-				if (unloaded != null)
-					frameworkElement.Unloaded -= unloaded;
+				EventHandler unloaded = null;
 
-				action();
-			};
-
-			frameworkElement.Unloaded += unloaded;
-		}
-
-		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
-		{
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			try
-			{
-				timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-				OnUnloaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
-				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
-			}
-			catch (TimeoutException)
-			{
-				if (!frameworkElement.IsLoadedOnPlatform() && !frameworkElement.IsLoaded)
+				unloaded = (_, __) =>
 				{
-					taskCompletionSource.TrySetResult(true);
-				}
-				else
-					throw;
-			}
-		}
+					if (unloaded is not null)
+						frameworkElement.Unloaded -= unloaded;
 
-		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
-		{
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			try
-			{
-				timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-				OnLoaded(frameworkElement, () => taskCompletionSource.TrySetResult(true));
-				await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+					source.TrySetResult();
+				};
+
+				frameworkElement.Unloaded += unloaded;
 			}
-			catch (TimeoutException)
-			{
-				if (frameworkElement.IsLoadedOnPlatform() &&
-					frameworkElement.IsLoaded)
-				{
-					taskCompletionSource.TrySetResult(true);
-				}
-				else
-					throw;
-			}
+
+			return source.Task.WaitAsync(timeOut.Value);
 		}
 
 		protected async Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
@@ -466,7 +422,7 @@ namespace Microsoft.Maui.DeviceTests
 						.Window
 						.GetVisualTreeDescendants()
 						.OfType<IToolbarElement>()
-						.SingleOrDefault(x => x.Toolbar != null)
+						.SingleOrDefault(x => x.Toolbar is not null)
 						?.Toolbar;
 		}
 

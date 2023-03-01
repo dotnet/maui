@@ -30,14 +30,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				var view = virtualView.Content.ToPlatform(MauiContext);
 				_currentView = virtualView.Content;
 
-				var vc =
-					(_currentView.Handler as IPlatformViewHandler)
-						.ViewController;
-
-
-				bool fireEvents = !(virtualView as Window).IsActivated;
+				bool fireEvents = !(virtualView as Window)?.IsActivated ?? true;
 				if (virtualView.Content is IFlyoutView)
 				{
+					var vc =
+						((IPlatformViewHandler)_currentView.Handler).ViewController;
+
+					_ = vc ?? throw new Exception($"{_currentView} needs to have a ViewController");
+
 					vc.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
 
 					if (fireEvents)
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					platformView?.RootViewController?.PresentedViewController ??
 					vc.PresentedViewController;
 
-				if (presentedVC is ModalWrapper mw)
+				if (presentedVC is Microsoft.Maui.Controls.Platform.ModalWrapper mw)
 				{
 					await mw.PresentingViewController.DismissViewControllerAsync(false);
 				}
@@ -127,12 +127,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 				finishedClosing.Invoke();
 
-				if (disconnecting)
+				if (disconnecting &&
+					FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated()))
 				{
-					if (FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated()))
-					{
-						virtualView.Destroying();
-					}
+					virtualView.Destroying();
 				}
 			}
 
