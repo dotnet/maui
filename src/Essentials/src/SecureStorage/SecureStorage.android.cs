@@ -23,8 +23,10 @@ namespace Microsoft.Maui.Storage
 						if (sharedPreferences != null)
 							return sharedPreferences.GetString(key, null);
 
+						// TODO: Use Logger here?
 						System.Diagnostics.Debug.WriteLine(
 							$"Unable to decrypt key, {key}, which is likely due to key corruption. Removing old key and returning null.");
+						PlatformRemove(key);
 						return null;
 					}
 				}
@@ -33,7 +35,7 @@ namespace Microsoft.Maui.Storage
 					// TODO: Use Logger here?
 					System.Diagnostics.Debug.WriteLine(
 						$"Unable to decrypt key, {key}, which is likely due to an app uninstall. Removing old key and returning null.");
-
+					PlatformRemove(key);
 					return null;
 				}
 				catch (Java.Lang.SecurityException)
@@ -41,7 +43,7 @@ namespace Microsoft.Maui.Storage
 					// TODO: Use Logger here?
 					System.Diagnostics.Debug.WriteLine(
 						$"Unable to decrypt key, {key}, which is likely due to an app uninstall. Removing old key and returning null.");
-
+					PlatformRemove(key);
 					return null;
 				}
 			});
@@ -107,8 +109,8 @@ namespace Microsoft.Maui.Storage
 			{
 				// TODO: Use Logger here?
 				System.Diagnostics.Debug.WriteLine(
-					"Unable get encrypted shared preferences, which is likely due to an app uninstall. Returning null.");
-
+					"Unable get encrypted shared preferences, which is likely due to an app uninstall. Removing all keys and returning null.");
+				PlatformRemoveAll();
 				return null;
 			}
 		}
