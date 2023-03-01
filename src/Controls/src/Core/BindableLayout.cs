@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 			b.SetValue(EmptyViewTemplateProperty, value);
 		}
 
-		static BindableLayoutController GetBindableLayoutController(BindableObject b)
+		internal static BindableLayoutController GetBindableLayoutController(BindableObject b)
 		{
 			return (BindableLayoutController)b.GetValue(BindableLayoutControllerProperty);
 		}
@@ -201,6 +201,7 @@ namespace Microsoft.Maui.Controls
 	class BindableLayoutController
 	{
 		readonly WeakReference<IBindableLayout> _layoutWeakReference;
+		readonly WeakCollectionChangedProxy _collectionChangedProxy = new();
 		IEnumerable _itemsSource;
 		DataTemplate _itemTemplate;
 		DataTemplateSelector _itemTemplateSelector;
@@ -221,6 +222,8 @@ namespace Microsoft.Maui.Controls
 			_layoutWeakReference = new WeakReference<IBindableLayout>(layout);
 		}
 
+		~BindableLayoutController() => _collectionChangedProxy.Unsubscribe();
+
 		internal void StartBatchUpdate()
 		{
 			_isBatchUpdate = true;
@@ -234,16 +237,16 @@ namespace Microsoft.Maui.Controls
 
 		void SetItemsSource(IEnumerable itemsSource)
 		{
-			if (_itemsSource is INotifyCollectionChanged c)
+			if (_itemsSource is INotifyCollectionChanged)
 			{
-				c.CollectionChanged -= ItemsSourceCollectionChanged;
+				_collectionChangedProxy.Unsubscribe();
 			}
 
 			_itemsSource = itemsSource;
 
-			if (_itemsSource is INotifyCollectionChanged c1)
+			if (_itemsSource is INotifyCollectionChanged c)
 			{
-				c1.CollectionChanged += ItemsSourceCollectionChanged;
+				_collectionChangedProxy.Subscribe(c, ItemsSourceCollectionChanged);
 			}
 
 			if (!_isBatchUpdate)
@@ -391,6 +394,46 @@ namespace Microsoft.Maui.Controls
 			// UpdateEmptyView is called from within CreateChildren, therefor skip it for Reset
 			if (e.Action != NotifyCollectionChangedAction.Reset)
 				UpdateEmptyView(layout);
+		}
+
+		class WeakCollectionChangedProxy
+		{
+			WeakReference<NotifyCollectionChangedEventHandler> _handler;
+			WeakReference<INotifyCollectionChanged> _source;
+
+			void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+			{
+				if (_handler.TryGetTarget(out var handler))
+				{
+					handler(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			public void Subscribe(INotifyCollectionChanged source, NotifyCollectionChangedEventHandler handler)
+			{
+				if (_source is not null && _source.TryGetTarget(out var s))
+				{
+					s.CollectionChanged -= OnCollectionChanged;
+				}
+
+				_source = new WeakReference<INotifyCollectionChanged>(source);
+				_handler = new WeakReference<NotifyCollectionChangedEventHandler>(handler);
+				source.CollectionChanged += OnCollectionChanged;
+			}
+
+			public void Unsubscribe()
+			{
+				if (_source is not null && _source.TryGetTarget(out var s))
+				{
+					s.CollectionChanged -= OnCollectionChanged;
+				}
+				_source = null;
+				_handler = null;
+			}
 		}
 	}
 }

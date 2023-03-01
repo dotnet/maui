@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,15 +11,17 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		Location lastKnownLocation = new Location();
 
-		public Task<Location> GetLastKnownLocationAsync() => Task.FromResult(lastKnownLocation);
+		public bool IsListeningForeground { get => false; }
 
-		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public Task<Location?> GetLastKnownLocationAsync() => Task.FromResult<Location?>(lastKnownLocation);
+
+		public async Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
-			_ = request ?? throw new ArgumentNullException(nameof(request));
+			ArgumentNullException.ThrowIfNull(request);
 
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
 
-			Locator service = null;
+			Locator? service = null;
 			var gps = PlatformUtils.GetFeatureInfo<bool>("location.gps");
 			var wps = PlatformUtils.GetFeatureInfo<bool>("location.wps");
 			if (gps)
@@ -67,5 +70,11 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			return lastKnownLocation;
 		}
+
+		public Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request) =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
+
+		public void StopListeningForeground() =>
+			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }

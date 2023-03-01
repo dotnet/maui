@@ -318,7 +318,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(state.ContentAppearing);
 		}
 
-
 		[Fact]
 		public async Task ShellPartWithModalPush()
 		{
@@ -335,7 +334,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.Navigation.PopModalAsync();
 			lifeCycleState.AllTrue();
 		}
-
 
 		[Fact]
 		public async Task ShellPartWithPagePush()

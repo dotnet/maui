@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 			return result;
 		}
 
-		public static UIView FindContentView()
+		public static UIViewController FindContentViewController()
 		{
 			if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 			{
@@ -142,11 +142,6 @@ namespace Microsoft.Maui.DeviceTests
 			if (window.RootViewController is not UIViewController viewController)
 			{
 				throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
-			}
-
-			while (viewController.PresentedViewController != null)
-			{
-				viewController = viewController.PresentedViewController;
 			}
 
 			if (viewController == null)
@@ -159,7 +154,12 @@ namespace Microsoft.Maui.DeviceTests
 				viewController = nav.VisibleViewController;
 			}
 
-			var currentView = viewController.View;
+			return viewController;
+		}
+
+		public static UIView FindContentView()
+		{
+			var currentView = FindContentViewController().View;
 
 			if (currentView == null)
 			{
@@ -575,10 +575,16 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var item = uINavigationBar.GetBackButton();
 
-			var recognizer = item!.GestureRecognizers!.OfType<UITapGestureRecognizer>().FirstOrDefault();
-			_ = recognizer ?? throw new Exception("Unable to Back Button TapGestureRecognizer");
-
-			recognizer.State = UIGestureRecognizerState.Ended;
+			var recognizer = item?.GestureRecognizers?.OfType<UITapGestureRecognizer>()?.FirstOrDefault();
+			if (recognizer is null && item is UIControl control)
+			{
+				control.SendActionForControlEvents(UIControlEvent.TouchUpInside);
+			}
+			else
+			{
+				_ = recognizer ?? throw new Exception("Unable to figure out how to tap back button");
+				recognizer.State = UIGestureRecognizerState.Ended;
+			}
 		}
 
 		public static string? GetToolbarTitle(this UINavigationBar uINavigationBar)

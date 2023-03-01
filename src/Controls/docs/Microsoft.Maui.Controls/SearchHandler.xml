@@ -1004,8 +1004,8 @@
         Label nameLabel = new Label { FontAttributes = FontAttributes.Bold };
         nameLabel.SetBinding(Label.TextProperty, "Name");
         
-        grid.Children.Add(image);
-        grid.Children.Add(nameLabel, 1, 0);
+        grid.Add(image);
+        grid.Add(nameLabel, 1, 0);
         return grid;
     })
 });]]></code>
