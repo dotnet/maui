@@ -5,7 +5,8 @@
     x:Class="Maui.Controls.Sample.Pages.SwipeViewGalleries.SwipeViewShadowGallery"
     Title="Swipe ViewShadow Gallery">
     <ContentPage.Content>
-        <StackLayout>
+        <StackLayout
+            Padding="12">
             <Label
                 Text="Shadow in SwipeView Content"
                 Style="{StaticResource Headline}"/>
@@ -52,7 +53,7 @@
                 </Border>
             </SwipeView>
             <Label 
-                Text="SwipeItems"/>
+                Text="SwipeItemViews"/>
             <SwipeView>
                 <SwipeView.LeftItems>
                     <SwipeItems 
