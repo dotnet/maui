@@ -460,5 +460,57 @@ namespace Microsoft.Maui.DeviceTests
 		static int GetDrawableId(string image) =>
 			MauiProgram.DefaultContext.Resources.GetDrawableId(MauiProgram.DefaultContext.PackageName, image);
 #endif
+
+		[Fact]
+		public async Task UpdatingSourceToNullClearsImage()
+		{
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				Source = new FileImageSourceStub("red.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+
+				await image.Wait();
+
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
+
+				handler.ImageEvents.Clear();
+
+				image.Source = null;
+				handler.UpdateValue(nameof(IImage.Source));
+
+				await image.Wait();
+
+				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red);
+			});
+		}
+
+		[Fact]
+		public async Task UpdatingSourceToNonexistentSourceClearsImage()
+		{
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				Source = new FileImageSourceStub("red.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<ImageHandler>(image);
+				await image.Wait();
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
+
+				image.Source = new FileImageSourceStub("fail.png");
+				handler.UpdateValue(nameof(IImage.Source));
+				await handler.PlatformView.AttachAndRun(() => { });
+
+				await image.Wait(5000);
+				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red);
+			});
+		}
 	}
 }
