@@ -1,4 +1,7 @@
-﻿using Microsoft.Maui.Primitives;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -94,6 +97,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			(button as IControlsView).PlatformContainerViewChanged += (_, _) => fired = true;
 			handlerStub.UpdateValue(nameof(IViewHandler.ContainerView));
 			Assert.True(fired);
+		}
+
+		[Theory]
+		[InlineData(typeof(ImmutableBrush), false)]
+		[InlineData(typeof(SolidColorBrush), false)]
+		[InlineData(typeof(LinearGradientBrush), true)]
+		[InlineData(typeof(RadialGradientBrush), true)]
+		public async Task BackgroundDoesNotLeak(Type type, bool defaultCtor)
+		{
+			var brush = defaultCtor ?
+				(Brush)Activator.CreateInstance(type) :
+				(Brush)Activator.CreateInstance(type, Colors.CornflowerBlue);
+
+			var reference = new WeakReference(new VisualElement { Background = brush });
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
 		}
 	}
 }
