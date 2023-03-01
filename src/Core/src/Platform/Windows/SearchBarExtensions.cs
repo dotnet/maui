@@ -132,5 +132,35 @@ namespace Microsoft.Maui.Platform
 		{
 			// AutoSuggestBox does not support this property
 		}
+
+		private static readonly string[] CancelButtonColorKeys =
+		{
+			"TextControlButtonForeground",
+			"TextControlButtonForegroundPointerOver",
+			"TextControlButtonForegroundPressed",
+		};
+
+		internal static void UpdateCancelButtonColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			var cancelButton = platformControl.GetDescendantByName<Button>("DeleteButton");
+
+			if (cancelButton == null)
+				return;
+
+			var cancelButtonColor = searchBar.CancelButtonColor?.ToPlatform();
+
+			if (cancelButtonColor == null)
+			{
+				cancelButton.Resources.RemoveKeys(CancelButtonColorKeys);
+				cancelButton.Foreground = null;
+			}
+			else
+			{
+				cancelButton.Resources.SetValueForAllKey(CancelButtonColorKeys, cancelButtonColor);
+				cancelButton.Foreground = cancelButtonColor;
+			}
+
+			cancelButton.RefreshThemeResources();
+		}
 	}
 }

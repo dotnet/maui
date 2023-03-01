@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			// AutoSuggestBox does not support this property
+			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateHorizontalTextAlignment(VirtualView);
 				PlatformView?.UpdateMaxLength(VirtualView);
 				PlatformView?.UpdateIsReadOnly(VirtualView);
+				PlatformView?.UpdateCancelButtonColor(VirtualView);
 			}
 		}
 
