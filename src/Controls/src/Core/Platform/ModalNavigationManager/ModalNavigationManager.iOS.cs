@@ -120,8 +120,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_waitForModalToFinish = true;
 
-				modal.ToPlatform(WindowMauiContext);
-				var wrapper = new ControlsModalWrapper(modal.Handler as IPlatformViewHandler);
+				var wrapper = new ControlsModalWrapper(modal.ToHandler(WindowMauiContext));
 
 				if (_platformModalPages.Count > 1)
 				{
@@ -174,7 +173,6 @@ namespace Microsoft.Maui.Controls.Platform
 				uiViewController?.View?.Window?.EndEditing(true);
 				return;
 			}
-
 
 			// TODO MAUI
 			// If there aren't any modals, then the platform renderer will have the Window
