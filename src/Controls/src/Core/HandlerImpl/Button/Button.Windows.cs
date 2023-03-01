@@ -26,13 +26,10 @@ namespace Microsoft.Maui.Controls
 					_button.SizeChanged += OnButtonSizeChanged;
 				}
 			}
-			else
+			else if (_button is not null)
 			{
-				if (_button is not null)
-				{
-					_button.SizeChanged -= OnButtonSizeChanged;
-					_button = null;
-				}
+				_button.SizeChanged -= OnButtonSizeChanged;
+				_button = null;
 			}
 		}
 
