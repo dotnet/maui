@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Pages
 
 			UpdatePickerBackground();
 			UpdatePickerBindingContext();
-			
+
 			BindingContext = this;
 
 			Loaded += (s, e) =>
