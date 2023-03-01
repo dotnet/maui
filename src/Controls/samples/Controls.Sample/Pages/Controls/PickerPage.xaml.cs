@@ -17,8 +17,8 @@ namespace Maui.Controls.Sample.Pages
 
 			UpdatePickerBackground();
 			UpdatePickerBindingContext();
-
-			this.BindingContext = this;
+			
+			BindingContext = this;
 
 			Loaded += (s, e) =>
 			{
@@ -116,6 +116,18 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
+		void OnUpdateHorizontalOptionsClicked(object sender, EventArgs e)
+		{
+			AlignmentPicker.HorizontalOptions = GetLayoutOptions(_horizontalOptionsIndex);
+			UpdateIndex(ref _horizontalOptionsIndex);
+		}
+
+		void OnUpdateVerticalOptionsClicked(object sender, EventArgs e)
+		{
+			AlignmentPicker.VerticalOptions = GetLayoutOptions(_verticalOptionsIndex);
+			UpdateIndex(ref _verticalOptionsIndex);
+		}
+
 		void UpdateIndex(ref int index)
 		{
 			index++;
@@ -123,21 +135,9 @@ namespace Maui.Controls.Sample.Pages
 				index = 0;
 		}
 
-		void OnUpdateHorizontalOptionsClicked(object sender, EventArgs e)
-		{
-			AlignmentPicker.HorizontalOptions = GetLayoutOptions(_horizontalOptionsIndex);
-			UpdateIndex(_horizontalOptionsIndex);
-		}
-
-		void OnUpdateVerticalOptionsClicked(object sender, EventArgs e)
-		{
-			AlignmentPicker.VerticalOptions = GetLayoutOptions(_verticalOptionsIndex);
-			UpdateIndex(_verticalOptionsIndex);
-		}
-
 		LayoutOptions GetLayoutOptions(int index)
 		{
-			switch (_verticalOptionsIndex)
+			switch (index)
 			{
 				default:
 				case 0:
