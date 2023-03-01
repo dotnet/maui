@@ -1344,7 +1344,7 @@ namespace Microsoft.Maui.Platform
 
 			if (swipeItems == null || swipeItems.Count == 0)
 				return;
-			
+
 			UpdateSwipeItems();
 
 			var swipeThreshold = GetSwipeThreshold();
