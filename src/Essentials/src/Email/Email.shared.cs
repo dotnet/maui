@@ -60,7 +60,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			return PlatformComposeAsync(message);
 		}
 
-		static string GetMailToUri(EmailMessage message) =>
+		internal static string GetMailToUri(EmailMessage message) =>
 			"mailto:?" + string.Join("&", Parameters(message));
 
 		static IEnumerable<string> Parameters(EmailMessage message)
