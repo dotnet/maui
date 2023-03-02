@@ -147,20 +147,7 @@ namespace Microsoft.Maui.Platform
 			if (cancelButton is null)
 				return;
 
-			var cancelButtonColor = searchBar.CancelButtonColor?.ToPlatform();
-
-			if (cancelButtonColor is null)
-			{
-				cancelButton.Resources.RemoveKeys(CancelButtonColorKeys);
-				cancelButton.Foreground = null;
-			}
-			else
-			{
-				cancelButton.Resources.SetValueForAllKey(CancelButtonColorKeys, cancelButtonColor);
-				cancelButton.Foreground = cancelButtonColor;
-			}
-
-			cancelButton.RefreshThemeResources();
+			cancelButton.UpdateTextColor(searchBar.CancelButtonColor, CancelButtonColorKeys);
 		}
 	}
 }
