@@ -62,7 +62,9 @@
                 Text="IsFocused"
                 Style="{StaticResource Headline}"/>
             <DatePicker
-                x:Name="FocusDatePicker" />
+                x:Name="FocusDatePicker"
+                Focused="OnFocusDatePickerFocused"
+                Unfocused="OnFocusDatePickerUnfocused"/>
             <HorizontalStackLayout>
                 <Label 
                     Text="IsFocused"
