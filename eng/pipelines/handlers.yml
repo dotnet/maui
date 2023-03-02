@@ -78,6 +78,12 @@ parameters:
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
         artifact: build-windows
+        devicePool:
+          name: $(androidTestsVmPool)
+          vmImage: $(androidTestsVmImage)
+          demands:
+            - macOS.Name -equals Monterey
+            - macOS.Architecture -equals x64
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
@@ -85,6 +91,9 @@ parameters:
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
+        devicePool:
+          name: $(iosTestsVmPool)
+          vmImage: $(iosTestsVmImage)
   - name: PackPlatforms
     type: object
     default:
@@ -255,7 +264,7 @@ stages:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
   - stage: templates_net
-    displayName: Build .NET MAUI Templates
+    displayName: Build and Run .NET MAUI Templates
     dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
@@ -270,14 +279,7 @@ stages:
                 ${{ parameters.BuildEverything }},
                 ne(variables['Build.Reason'], 'PullRequest'),
                 eq('${{ BuildConfiguration }}', 'Release'))
-              pool:
-                name: ${{ BuildPlatform.poolName }}
-                vmImage: ${{ BuildPlatform.vmImage }}
-                demands:
-                  - macOS.Name -equals Monterey
-                  - macOS.Architecture -equals x64
-                  - Agent.HasDevices -equals False
-                  - Agent.IsPaired -equals False
+              pool: ${{ BuildPlatform.devicePool }}
               steps:
                 - template: common/provision.yml
                   parameters:
@@ -300,6 +302,8 @@ stages:
                     PRIVATE_BUILD: $(PrivateBuild)
                 - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --testtfm="${{ TestTFM.tfm }}" --verbosity=diagnostic
                   displayName: 'Build .NET MAUI Templates'
+                - pwsh: ./build.ps1 -Script eng/devices/android.cake --target=StopEmulator --boot-on-setup=false
+                  displayName: Stop Android emulator
                 - task: PublishBuildArtifacts@1
                   condition: always()
                   displayName: publish artifacts

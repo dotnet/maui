@@ -189,11 +189,13 @@ Task("dotnet-templates")
                 var type = forceDotNetBuild ? "DotNet" : "MSBuild";
                 var projectName = template.Key.Split(":")[0];
                 var templateName = template.Key.Split(":")[1];
+                var shouldRunTemplate = templateName == "maui" || templateName == "maui-blazor";
 
                 var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
 
                 projectName = $"{tempDir}/{projectName}_{type}";
                 projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM.Replace('.', '_')}";
+                var projectDirName = System.IO.Path.GetFileName(projectName);
 
                 // Create
                 StartProcess(dn, $"new {templateName} -o \"{projectName}\" {framework}");
@@ -210,6 +212,14 @@ Task("dotnet-templates")
                     "</TargetFrameworks> -->",
                     "</TargetFrameworks>");
 
+                // Modify template to support app launch testing
+                if (shouldRunTemplate) {
+                    var androidDir = System.IO.Path.Combine(projectName, "Platforms", "Android");
+                    CopyFiles("./src/TestUtils/scripts/TemplateLaunchInstrumentation.cs", androidDir);
+                    ReplaceTextInFiles(System.IO.Path.Combine(androidDir, "MainActivity.cs"), "MainLauncher = true", "MainLauncher = true, Name = \"com.microsoft.mauitemplate.MainActivity\"");
+                    ReplaceTextInFiles(System.IO.Path.Combine(androidDir, "TemplateLaunchInstrumentation.cs"), "namespace mauitemplate", $"namespace {projectDirName}");
+                }
+
                 // Build
                 RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, binlogPrefix: "template-");
 
@@ -218,6 +228,31 @@ Task("dotnet-templates")
                     var packProperties = new Dictionary<string, string>(properties);
                     packProperties["PackageVersion"] = FileReadText("GitInfo.txt").Trim();
                     RunMSBuildWithDotNet(projectName, packProperties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, target: "Pack", binlogPrefix: "template-");
+                }
+
+                if (shouldRunTemplate) {
+                    // Run template on Android
+                    CakeExecuteScript("./eng/devices/android.cake", new CakeSettings {
+                        Arguments = new Dictionary<string, string> {
+                            { "target", "StartEmulator" },
+                            { "boot-on-setup", "false" },
+                        }
+                    });
+                    RunMSBuildWithDotNet(projectName, properties, target: "Install", targetFramework: $"{TestTFM}-android", forceDotNetBuild: forceDotNetBuild, binlogPrefix: "template-android-install-");
+                    CakeExecuteScript("./eng/devices/android.cake", new CakeSettings {
+                        Arguments = new Dictionary<string, string> {
+                            { "target", "RunTemplate" },
+                            { "project", projectDirName.ToLower() },
+                            { "results", GetTestResultsDirectory().FullPath },
+                            { "boot-on-setup", "false" },
+                            { "boot", "false" },
+                        }
+                    });
+
+                    // Run template on iOS
+                    if (!IsRunningOnWindows()) {
+
+                    }
                 }
             }
         }
