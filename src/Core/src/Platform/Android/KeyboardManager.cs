@@ -10,17 +10,17 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class KeyboardManager
 	{
-		internal static void HideKeyboard(this AView inputView, bool overrideValidation = false)
+		internal static void HideKeyboard(this AView inputView)
 		{
 			if (inputView?.Context == null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be hidden.");
 
-			using (var inputMethodManager = (InputMethodManager)inputView.Context.GetSystemService(Context.InputMethodService)!)
-			{
-				if (!overrideValidation && !(inputView is EditText || inputView is TextView || inputView is SearchView))
-					throw new ArgumentException("inputView should be of type EditText, SearchView, or TextView");
+			var focusedView = inputView.Context?.GetActivity()?.Window?.CurrentFocus;
+			AView tokenView = focusedView ?? inputView;
 
-				var windowToken = inputView.WindowToken;
+			using (var inputMethodManager = (InputMethodManager)tokenView.Context?.GetSystemService(Context.InputMethodService)!)
+			{
+				var windowToken = tokenView.WindowToken;
 				if (windowToken != null && inputMethodManager != null)
 					inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
 			}
@@ -73,6 +73,7 @@ namespace Microsoft.Maui.Platform
 					break;
 			}
 		}
+
 
 		internal static void PostShowKeyboard(this AView view)
 		{
