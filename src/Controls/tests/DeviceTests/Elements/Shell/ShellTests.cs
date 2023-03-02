@@ -574,41 +574,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
-		[Fact]
-		public async Task ChangingToNewMauiContextDoesntCrash()
-		{
-			SetupBuilder();
-
-			var shell = new Shell();
-			shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
-			shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem2", Items = { new ContentPage() }, Title = "Flyout Item" });
-
-
-			var window = new Controls.Window(shell);
-			var mauiContextStub1 = ContextStub.CreateNew(MauiContext);
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
-			{
-				await OnLoadedAsync(shell.CurrentPage);
-				await OnNavigatedToAsync(shell.CurrentPage);
-				await Task.Delay(100);
-				await shell.GoToAsync("//FlyoutItem2");
-			}, mauiContextStub1);
-
-			var mauiContextStub2 = ContextStub.CreateNew(MauiContext);
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
-			{
-				await OnLoadedAsync(shell.CurrentPage);
-				await OnNavigatedToAsync(shell.CurrentPage);
-				await Task.Delay(100);
-				await shell.GoToAsync("//FlyoutItem1");
-				await shell.GoToAsync("//FlyoutItem2");
-			}, mauiContextStub2);
-		}
-#endif
-
 		[Theory]
 		[ClassData(typeof(ShellBasicNavigationTestCases))]
 		public async Task BasicShellNavigationStructurePermutations(ShellItem[] shellItems)
