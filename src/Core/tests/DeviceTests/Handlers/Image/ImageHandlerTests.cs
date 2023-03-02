@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
+using System.ComponentModel;
 
 #if ANDROID
 using Android.Graphics.Drawables;
@@ -333,7 +334,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				Assert.Empty(handler.ImageEvents);
+				// We expect that if the Image is created with no Source set, the platform image view
+				// will get a `null` image set
+				Assert.NotEmpty(handler.ImageEvents);
+				Assert.Null(handler.ImageEvents[0].Value);
 
 				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
