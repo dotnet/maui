@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 			var token = this.SourceManager.BeginLoad();
 			var imageSource = _imageSourcePart();
 
-			if (imageSource is not null && imageSource.Source is not null)
+			if (imageSource?.Source is not null)
 			{
 #if __IOS__ || __ANDROID__ || WINDOWS || TIZEN
 				var result = await imageSource.UpdateSourceAsync(PlatformView, ImageSourceServiceProvider, SetImage!, token)
