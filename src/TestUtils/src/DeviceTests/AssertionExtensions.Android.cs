@@ -13,6 +13,7 @@ using Microsoft.Maui.Platform;
 using Xunit;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -48,13 +49,23 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForFocused(this AView view, int timeout = 1000)
 		{
+			if (view is SearchView searchView)
+			{
+				var queryEditor = searchView.GetFirstChildOfType<EditText>();
+
+				if (queryEditor == null)
+					return;
+
+				view = queryEditor;
+			}
+
 			if (!view.IsFocused)
 			{
 				TaskCompletionSource focusSource = new TaskCompletionSource();
 				view.FocusChange += OnFocused;
 				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-				// Even thuogh the event fires focus hasn't fully been achieved
+				// Even though the event fires focus hasn't fully been achieved
 				await Task.Delay(10);
 
 				void OnFocused(object? sender, AView.FocusChangeEventArgs e)
