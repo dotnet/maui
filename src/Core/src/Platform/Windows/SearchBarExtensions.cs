@@ -144,12 +144,12 @@ namespace Microsoft.Maui.Platform
 		{
 			var cancelButton = platformControl.GetDescendantByName<Button>("DeleteButton");
 
-			if (cancelButton == null)
+			if (cancelButton is null)
 				return;
 
 			var cancelButtonColor = searchBar.CancelButtonColor?.ToPlatform();
 
-			if (cancelButtonColor == null)
+			if (cancelButtonColor is null)
 			{
 				cancelButton.Resources.RemoveKeys(CancelButtonColorKeys);
 				cancelButton.Foreground = null;
