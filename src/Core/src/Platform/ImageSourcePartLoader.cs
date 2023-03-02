@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Platform
 				await Task.CompletedTask;
 #endif
 			}
-			else 
+			else
 			{
 				SetImage?.Invoke(null);
 			}

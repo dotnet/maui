@@ -368,11 +368,11 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), unexpectedColor))
 					{
-						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");						
+						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");
 					}
 				}
 			}
-			
+
 			return bitmap;
 		}
 
