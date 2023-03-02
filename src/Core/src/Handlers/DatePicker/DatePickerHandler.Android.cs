@@ -1,6 +1,5 @@
 ﻿using System;
 using Android.App;
-using Android.Graphics.Drawables;
 using Android.Views;
 using Microsoft.Maui.Devices;
 
@@ -31,7 +30,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
-
 			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 

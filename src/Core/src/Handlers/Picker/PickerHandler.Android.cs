@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Specialized;
 using Android.App;
+using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
 using AResource = Android.Resource;
