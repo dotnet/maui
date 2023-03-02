@@ -95,12 +95,6 @@ namespace Microsoft.Maui.DeviceTests
 			return !vcs[vcs.Length - 1].NavigationItem.HidesBackButton;
 		}
 
-		protected bool IsNavigationBarVisible(IElementHandler handler)
-		{
-			var platformToolbar = GetPlatformToolbar(handler);
-			return platformToolbar?.Window is not null;
-		}
-
 		protected object GetTitleView(IElementHandler handler)
 		{
 			var activeVC = GetVisibleViewController(handler);
