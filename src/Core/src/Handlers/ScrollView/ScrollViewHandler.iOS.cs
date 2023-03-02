@@ -55,15 +55,9 @@ namespace Microsoft.Maui.Handlers
 			UpdateContentView(scrollView, handler);
 		}
 
-		// We don't actually have this mapped because we don't need it, but we can't remove it because it's public
-		public static void MapContentSize(IScrollViewHandler handler, IScrollView scrollView)
-		{
-			handler.PlatformView.UpdateContentSize(scrollView.ContentSize);
-		}
-
 		public static void MapIsEnabled(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.PlatformView.UpdateIsEnabled(scrollView);
+			handler.PlatformView?.UpdateIsEnabled(scrollView);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)

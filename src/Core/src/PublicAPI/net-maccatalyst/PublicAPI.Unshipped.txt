@@ -33,3 +33,5 @@ static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this WebKit.WKW
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
+*REMOVED*static Microsoft.Maui.Handlers.ScrollViewHandler.MapContentSize(Microsoft.Maui.Handlers.IScrollViewHandler! handler, Microsoft.Maui.IScrollView! scrollView) -> void
+*REMOVED*static Microsoft.Maui.Platform.ScrollViewExtensions.UpdateContentSize(this UIKit.UIScrollView! scrollView, Microsoft.Maui.Graphics.Size contentSize) -> void
