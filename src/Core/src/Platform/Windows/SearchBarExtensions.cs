@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var textBox = platformControl.GetFirstDescendant<TextBox>();
 
-			if (textBox == null)
+			if (textBox is null)
 				return;
 
 			textBox.UpdateIsTextPredictionEnabled(searchBar);
