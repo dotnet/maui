@@ -23,9 +23,9 @@ namespace Microsoft.Maui.DeviceTests
 			layoutFirst.Add(new RadioButton { GroupName = "FirstGroup" });
 			layoutFirst.Add(new RadioButton { GroupName = "FirstGroup" });
 			var layoutSecond = new VerticalStackLayout();
+			layoutSecond.Add(new RadioButton { GroupName = "SecondGroup" });
 			var rdSecond = new RadioButton { GroupName = "SecondGroup", IsChecked = xplatIsChecked };
 			layoutSecond.Add(rdSecond);
-			layoutSecond.Add(new RadioButton { GroupName = "SecondGroup" });
 			layoutSecond.Add(new RadioButton { GroupName = "SecondGroup" });
 			var layout = new VerticalStackLayout
 			{
