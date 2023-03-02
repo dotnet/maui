@@ -188,6 +188,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				string title = GetToolbarTitle(handler);
 				Assert.Equal("Page Title", title);
+				return Task.CompletedTask;
 			});
 		}
 
