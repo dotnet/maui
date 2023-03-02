@@ -6,6 +6,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.TextInput)]
+	[Collection(RunInNewWindowCollection)]
 	public partial class TextInputTests
 	{
 		[Theory]
