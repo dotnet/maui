@@ -44,5 +44,30 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeScrollView.ScrollEnabled = scrollView.IsEnabled;
 		}
+
+		internal static void UpdateOrientation(this UIScrollView platformScrollView, IScrollView scrollView)
+		{
+			var bounds = platformScrollView.GetPlatformViewBounds();
+			var widthConstraint = bounds.Width;
+			var heightConstraint = bounds.Height;
+			var result = scrollView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			var contentSize = result.AccountForOrientation(widthConstraint, heightConstraint, scrollView);
+			platformScrollView.ContentSize = contentSize;
+		}
+
+		internal static Size AccountForOrientation(this Size size, double widthConstraint, double heightConstraint, IScrollView view)
+		{
+			if (view.Orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither)
+			{
+				size.Width = widthConstraint;
+			}
+
+			if (view.Orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither)
+			{
+				size.Height = heightConstraint;
+			}
+
+			return size;
+		}
 	}
 }

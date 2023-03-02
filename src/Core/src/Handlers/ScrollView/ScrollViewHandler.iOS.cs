@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			// Nothing to do here for now, but we might need to make adjustments for FlowDirection when the orientation is set to Horizontal
+			handler.PlatformView?.UpdateOrientation(scrollView);
 		}
 
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
@@ -149,24 +149,24 @@ namespace Microsoft.Maui.Handlers
 				Tag = ContentPanelTag
 			};
 
-			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer, platformScrollView);
+			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer, platformScrollView, scrollView);
 
 			platformScrollView.ClearSubviews();
 			contentContainer.AddSubview(platformContent);
 			platformScrollView.AddSubview(contentContainer);
 		}
 
-		static Func<Rect, Size> ArrangeScrollViewContent(Func<Rect, Size> internalArrange, ContentView container, UIScrollView platformScrollView)
+		static Func<Rect, Size> ArrangeScrollViewContent(Func<Rect, Size> internalArrange, ContentView container, UIScrollView platformScrollView, IScrollView scrollView)
 		{
 			return (rect) =>
 			{
-				if (container.Superview is UIScrollView scrollView)
+				var scrollViewBounds = platformScrollView.Bounds;
+				if (container.Superview is UIScrollView uiScrollView)
 				{
 					// Ensure the container is at least the size of the UIScrollView itself, so that the 
 					// cross-platform layout logic makes sense and the contents don't arrange outside the 
 					// container. (Everything will look correct if they do, but hit testing won't work properly.)
 
-					var scrollViewBounds = scrollView.Bounds;
 					var containerBounds = container.Bounds;
 
 					container.Bounds = new CGRect(0, 0,
@@ -174,8 +174,8 @@ namespace Microsoft.Maui.Handlers
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
-
-				var contentSize = internalArrange(rect);
+				var crossPlatformSize = internalArrange(rect);
+				var contentSize = crossPlatformSize.AccountForOrientation(scrollViewBounds.Width, scrollViewBounds.Height, scrollView);
 				platformScrollView.ContentSize = contentSize;
 				return contentSize;
 			};
@@ -235,7 +235,8 @@ namespace Microsoft.Maui.Handlers
 			widthConstraint = AccountForPadding(widthConstraint, padding.HorizontalThickness);
 			heightConstraint = AccountForPadding(heightConstraint, padding.VerticalThickness);
 
-			var size = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			var crossPlatformSize = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			var size = crossPlatformSize.AccountForOrientation(widthConstraint, heightConstraint, virtualView);
 
 			// Add the padding back in for the final size
 			size.Width += padding.HorizontalThickness;
