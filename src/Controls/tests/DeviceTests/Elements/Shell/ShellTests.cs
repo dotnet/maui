@@ -76,6 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (_) =>
 			{
 				finished = true;
+				return Task.CompletedTask;
 			});
 
 			Assert.True(finished);
