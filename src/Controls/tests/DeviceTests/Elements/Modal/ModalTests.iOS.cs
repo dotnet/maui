@@ -30,6 +30,10 @@ namespace Microsoft.Maui.DeviceTests
 
 					var rootView = handler.PlatformView;
 					Assert.NotNull(rootView);
+
+					var currentView = currentPage.Handler.PlatformView as UIView;
+					Assert.NotNull(currentView);
+					Assert.NotNull(currentView.Window);
 				});
 		}
 	}
