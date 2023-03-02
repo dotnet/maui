@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
-    
+
 		[Fact(DisplayName = "Closing Window With WebView Doesnt Crash")]
 		public async Task ClosingWindowWithWebViewDoesntCrash()
 		{
