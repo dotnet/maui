@@ -315,6 +315,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var items = handler.PlatformView.MenuItemsSource as ObservableCollection<object>;
 				Assert.True(items.Count == 2);
+				return Task.CompletedTask;
 			});
 		}
 
