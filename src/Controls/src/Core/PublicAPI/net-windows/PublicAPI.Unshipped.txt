@@ -8,6 +8,7 @@ override Microsoft.Maui.Controls.Region.GetHashCode() -> int
 override Microsoft.Maui.Controls.Shapes.Matrix.GetHashCode() -> int
 static Microsoft.Maui.Controls.LayoutOptions.operator !=(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
 static Microsoft.Maui.Controls.LayoutOptions.operator ==(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.RecalculateSpanPositions(this Microsoft.UI.Xaml.Controls.TextBlock! control, Microsoft.Maui.Controls.Label! element, System.Collections.Generic.IList<double>! inlineHeights) -> void
 static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
 static Microsoft.Maui.Controls.Region.operator ==(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator !=(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool

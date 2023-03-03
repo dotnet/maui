@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return Tuple.Create(run, span.TextColor, span.BackgroundColor);
 		}
 
-		internal static void RecalculateSpanPositions(this TextBlock control, Label element, IList<double> inlineHeights)
+		public static void RecalculateSpanPositions(this TextBlock control, Label element, IList<double> inlineHeights)
 		{
 			if (element?.FormattedText?.Spans == null	
 				|| element.FormattedText.Spans.Count == 0)
