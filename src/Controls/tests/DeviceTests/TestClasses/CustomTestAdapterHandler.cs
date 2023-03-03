@@ -2,9 +2,9 @@
 using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using Microsoft.Maui.Controls;
 
 namespace Microsoft.Maui.DeviceTests
 {
