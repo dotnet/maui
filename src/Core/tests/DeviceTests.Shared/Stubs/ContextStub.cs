@@ -64,5 +64,17 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			set => _androidContext = value;
 		}
 #endif
+
+#if PLATFORM
+		public static ContextStub CreateNew(IMauiContext mauiContext)
+		{
+			var returnValue = new ContextStub(mauiContext.Services);
+#if ANDROID
+			var activity = returnValue.GetActivity();
+			returnValue.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+#endif
+			return returnValue;
+		}
+#endif
 	}
 }
