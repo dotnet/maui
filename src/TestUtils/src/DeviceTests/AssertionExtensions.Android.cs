@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var queryEditor = searchView.GetFirstChildOfType<EditText>();
 
-				if (queryEditor == null)
+				if (queryEditor is null)
 					return;
 
 				view = queryEditor;
