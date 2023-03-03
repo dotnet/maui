@@ -10,10 +10,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Editor)]
 	public partial class EditorTests : ControlsHandlerTestBase
 	{
-
-#if !IOS && !MACCATALYST
-		// iOS is broken until this point
-		// https://github.com/dotnet/maui/issues/3425
 		[Theory]
 		[InlineData(EditorAutoSizeOption.Disabled)]
 		[InlineData(EditorAutoSizeOption.TextChanges)]
@@ -49,7 +45,6 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
-#endif
 
 		[Theory(DisplayName = "Text is Transformed Correctly at Initialization")]
 		[ClassData(typeof(TextTransformCases))]
