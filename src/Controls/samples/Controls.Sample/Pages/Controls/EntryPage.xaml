@@ -27,6 +27,13 @@
                     Text="Text"
                     TextColor="Purple"/>
                 <Label
+                    Text="Using TextColor (for the text color and the clear button color)"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    ClearButtonVisibility="WhileEditing"
+                    Text="Text"
+                    TextColor="Red"/>
+                <Label
                     Text="With Placeholder"
                     Style="{StaticResource Headline}" />
                 <Entry 
