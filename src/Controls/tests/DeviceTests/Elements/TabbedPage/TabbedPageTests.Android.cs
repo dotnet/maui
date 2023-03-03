@@ -100,17 +100,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
 			{
-				//var lifeCycle = (MauiContext.Context.GetActivity() as FragmentActivity)!.Lifecycle;
-				//var fragmentManager = tabbedPage.Handler.MauiContext.GetFragmentManager();
-
-				//var adapter = new TestAdapter(MauiContext);
-				//((tabbedPage.Handler as IPlatformViewHandler).PlatformView as ViewPager2)
-				//	.Adapter = adapter;
-
-				//adapter.NotifyDataSetChanged();
-				await Task.Delay(100);
-
 				tabbedPage.Children.Add(new ContentPage());
+
 				// make sure changes have time to propagate
 				await Task.Delay(100);
 			});
