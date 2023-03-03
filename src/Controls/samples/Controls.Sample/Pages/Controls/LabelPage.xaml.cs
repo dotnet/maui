@@ -63,11 +63,10 @@ namespace Maui.Controls.Sample.Pages
 		{
 			var oldColor = span.BackgroundColor;
 
-			Color newColor;
-			do
-			{
-				newColor = _colors[_rand.Next(_colors.Length)];
-			} while (oldColor == newColor);
+			Color newColor = _colors[_rand.Next(_colors.Length)];
+			while (oldColor == newColor) {
+			    newColor = _colors[_rand.Next(_colors.Length)];
+			}
 
 			span.BackgroundColor = newColor;
 		}
