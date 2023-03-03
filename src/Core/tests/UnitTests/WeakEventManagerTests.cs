@@ -78,7 +78,7 @@ namespace Microsoft.Maui.UnitTests
 					var flags = BindingFlags.NonPublic | BindingFlags.Instance;
 					var eventHandlers = _weakEventManager.GetType().GetField("_eventHandlers", flags)?.GetValue(_weakEventManager) as IDictionary;
 					Assert.NotNull(eventHandlers);
-					return eventHandlers.Values.Cast<IList>().Sum(l => l.Count);
+					return eventHandlers!.Values.Cast<IList>().Sum(l => l.Count);
 				}
 			}
 		}
