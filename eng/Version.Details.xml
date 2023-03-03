@@ -1,6 +1,6 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.3.230302000-experimental.nightly">
+    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.3.230302002-experimental.nightly">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
       <Sha>99767f2ea484185b2a190d694a073406a79c465d</Sha>
     </Dependency>
