@@ -6,6 +6,17 @@ namespace Microsoft.Maui.Devices
 {
 	class FlashlightImplementation : IFlashlight
 	{
+		/// <summary>
+		/// Checks if the flashlight is available and can be turned on or off.
+		/// </summary>
+		/// <returns><see langword="true"/> when the flashlight is available, or <see langword="false"/> when not</returns>
+		public Task<bool> CheckIsSupported()
+		{
+			var captureDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
+			return captureDevice != null &&
+				(captureDevice.HasFlash || captureDevice.HasTorch);
+		}
+
 		public Task TurnOnAsync()
 		{
 			Toggle(true);

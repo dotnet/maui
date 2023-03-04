@@ -48,6 +48,20 @@ namespace Microsoft.Maui.Devices
 			Monitor.Exit(locker);
 		}
 
+		/// <summary>
+		/// Checks if the flashlight is available and can be turned on or off.
+		/// </summary>
+		/// <returns><see langword="true"/> when the flashlight is available, or <see langword="false"/> when not</returns>
+		public async Task<bool> CheckIsSupported()
+		{
+			await FindLampAsync();
+
+			lock (locker)
+			{
+				return hasLoadedLamp && lamp != null;
+			}
+		}
+
 		public async Task TurnOnAsync()
 		{
 			await FindLampAsync();
