@@ -9,7 +9,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarHandlerTests : CoreHandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
-		[Theory(DisplayName = "Background Initializes Correctly")]
+		[Theory(DisplayName = "Background Initializes Correctly"
+#if IOS
+			, Skip = "This test is currently invalid on iOS https://github.com/dotnet/maui/issues/13693"
+#endif
+			)]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
 		[InlineData(0xFF0000FF)]

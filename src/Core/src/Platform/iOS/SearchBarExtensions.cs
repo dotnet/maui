@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 			var background = searchBar.Background;
 
 			if (background is SolidPaint solidPaint)
-				ViewExtensions.UpdateBackground(uiSearchBar, solidPaint);
+				uiSearchBar.BarTintColor = solidPaint.Color.ToPlatform();
 
 			if (background is GradientPaint gradientPaint)
 				ViewExtensions.UpdateBackground(uiSearchBar, gradientPaint);
