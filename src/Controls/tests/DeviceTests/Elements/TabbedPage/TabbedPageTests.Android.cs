@@ -96,7 +96,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			var tabbedPage = CreateBasicTabbedPage();
-			tabbedPage.SelectedTabColor = Colors.Red;
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
 			{
