@@ -14,6 +14,7 @@ namespace Samples.ViewModel
 		public FlashlightViewModel()
 		{
 			ToggleCommand = new Command(OnToggle);
+			Device.BeginInvokeOnMainThread(this.InitViewModel);
 		}
 
 		public ICommand ToggleCommand { get; }
@@ -28,6 +29,11 @@ namespace Samples.ViewModel
 		{
 			get => isSupported;
 			set => SetProperty(ref isSupported, value);
+		}
+
+		private async Task InitViewModel()
+		{
+			IsSupported = await Flashlight.CheckIsSupported();
 		}
 
 		public override void OnDisappearing()
