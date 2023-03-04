@@ -100,10 +100,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
 			{
+				// If you currently try to modify the children too early.
+				// This will sometimes cause `NotifyDataSourceChanged` on the
+				// adapter to get called while it's already processing
+				await Task.Delay(50);
+
 				tabbedPage.Children.Add(new ContentPage());
 
 				// make sure changes have time to propagate
-				await Task.Delay(100);
+				await Task.Delay(50);
 			});
 		}
 
