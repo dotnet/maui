@@ -41,6 +41,12 @@
                     BackgroundColor="Blue"
                     Text="Button"/>
                 <Label
+                     Text="BackgroundColor (Binding)"
+                     Style="{StaticResource Headline}" />
+                 <Button 
+                     Text="Button"
+                     BackgroundColor="{Binding ButtonBackground}" />
+                <Label
                     Text="Background"
                     Style="{StaticResource Headline}" />
                 <Button 
