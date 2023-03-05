@@ -32,6 +32,15 @@ namespace Microsoft.Maui
 		public virtual void DidDisconnect(UIScene scene)
 		{
 			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneDidDisconnect>(del => del(scene));
+
+			if (Window is not null && Window.IsKeyWindow)
+			{
+				// manually resign the key window and rebuild the menu
+				Window.ResignKeyWindow();
+				UIMenuSystem
+					.MainSystem
+					.SetNeedsRebuild();
+			}
 		}
 
 		[Export("stateRestorationActivityForScene:")]
